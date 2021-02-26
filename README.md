@@ -1,4 +1,4 @@
-# FHIRCore
+# FHIRcore
 
 <img align=center width=400 src="fhircore.png">
 
