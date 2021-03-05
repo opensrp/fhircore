@@ -72,5 +72,8 @@ dependencies {
     implementation project(path: ':core')
     implementation project(path: ':datacapture')
 
+    implementation deps.core
+    implementation deps.fragment
+
     testImplementation deps.junit
 }
