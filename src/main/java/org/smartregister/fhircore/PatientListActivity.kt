@@ -100,7 +100,7 @@ class PatientListActivity : AppCompatActivity() {
             R.id.add_patient -> {
                 Snackbar.make(view, "Add Patient", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show()
-                addPatient()
+                addPatient(view)
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -113,7 +113,18 @@ class PatientListActivity : AppCompatActivity() {
         patientListViewModel.searchPatients()
     }
 
-    private fun addPatient() {
+    private fun addPatient(view: View) {
         // TO DO: Open patient registration form
+        val context = view.context
+        context.startActivity(Intent(context, QuestionnaireActivity::class.java).apply {
+            putExtra(
+                    QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
+                    "Patient registration"
+            )
+            putExtra(
+                    QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY,
+                    "patient-registration.json"
+            )
+        })
     }
 }
