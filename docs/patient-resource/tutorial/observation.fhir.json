@@ -1,0 +1,24 @@
+{
+    "resourceType": "Observation",
+    "status": "corrected",
+	  "id":"1864203",
+    "code": {
+        "coding": [
+            {
+                "system": "http://lonic.org",
+                "code": "15074-8",
+                "display": "Glucose [Moles/Volume] in blood"
+            }
+        ]
+    },
+    "subject": {
+        "reference": "Patient/1864203",
+        "display": "Francis Odhiambo"
+    },
+    "valueQuantity": {
+        "value": 6.3,
+        "unit": "mol/L",
+        "system": "http://unitsformeasure.org",
+        "code": "mol/L"
+    }
+}

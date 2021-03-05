@@ -1,0 +1,42 @@
+{
+    "resourceType": "RelatedPerson",
+    "patient": {
+        "reference": "Patient/1116151"
+    },
+    "name": [
+        {
+            "use": "official",
+            "family": "Harry",
+            "given": [
+                "HouseHold"
+            ]
+        }
+    ],
+    "relationship": [
+        {
+            "coding": [
+                {
+                    "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                    "code": "FAMMEMB",
+                    "display": "Family member"
+                }
+            ]
+        }
+    ],
+    "address": [
+        {
+            "use": "home",
+            "line": [
+                "2222 Home Street"
+            ],
+            "city": "Nairobi"
+        }
+    ],
+    "telecom": [
+        {
+            "system": "phone",
+            "value": "555-555-2003",
+            "use": "home"
+        }
+    ]
+}

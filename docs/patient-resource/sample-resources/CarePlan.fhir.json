@@ -1,0 +1,361 @@
+{
+    "resourceType": "CarePlan",
+    "id": "mom-pregnancy-plan",
+    "extension": [
+        {
+            "url": "http://fhir.org/guides/who/anc-cds/StructureDefinition/careplan-episodeOfCare",
+            "valueReference": {
+                "reference": "EpisodeOfCare/mom-pregnancy-episode"
+            }
+        }
+    ],
+    "instantiatesCanonical": [
+        "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact-schedule"
+    ],
+    "status": "active",
+    "intent": "plan",
+    "subject": {
+        "reference": "Patient/mom",
+        "display": "Eve Everywoman"
+    },
+    "period": {
+        "start": "2019-05-24",
+        "_start": {
+            "fhir_comments": [
+                "  The likely duration of the pregnancy  "
+            ]
+        },
+        "end": "2020-02-24"
+    },
+    "careTeam": [
+        {
+            "reference": "CareTeam/anc-team"
+        }
+    ],
+    "addresses": [
+        {
+            "reference": "Condition/mom-pregnancy",
+            "display": "pregnancy"
+        }
+    ],
+    "goal": [
+        {
+            "reference": "Goal/mom-pregnancy-goal"
+        }
+    ],
+    "activity": [
+        {
+            "fhir_comments": [
+                " First contact, occurred at about 12 weeks based on gestational age from LMP of 2019-03-01 "
+            ],
+            "outcomeReference": [
+                {
+                    "reference": "Encounter/mom-first-contact"
+                }
+            ],
+            "detail": {
+                "kind": "Appointment",
+                "instantiatesCanonical": [
+                    "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact"
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://example.org/CodeSystem/encounter-type",
+                            "code": "anc-contact",
+                            "display": "Antenatal care contact"
+                        }
+                    ],
+                    "text": "Antenatal care contact"
+                },
+                "status": "in-progress",
+                "performer": [
+                    {
+                        "reference": "Practitioner/midwife",
+                        "display": "Mabel Midwife"
+                    }
+                ],
+                "description": "First antenatal care contact"
+            }
+        },
+        {
+            "fhir_comments": [
+                " Second contact, scheduled based on gestational age from LMP of 2019-03-01, gathered during the first contact "
+            ],
+            "detail": {
+                "kind": "Appointment",
+                "instantiatesCanonical": [
+                    "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact"
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://example.org/CodeSystem/encounter-type",
+                            "code": "anc-contact",
+                            "display": "Antenatal care contact"
+                        }
+                    ],
+                    "text": "Antenatal care contact"
+                },
+                "status": "scheduled",
+                "scheduledPeriod": {
+                    "fhir_comments": [
+                        " Scheduled based on gestational age calculation "
+                    ],
+                    "start": "2019-07-26"
+                },
+                "performer": [
+                    {
+                        "reference": "Practitioner/midwife",
+                        "display": "Mabel Midwife"
+                    }
+                ],
+                "description": "Second contact to occur at 20 weeks of gestational age"
+            }
+        },
+        {
+            "fhir_comments": [
+                " Third contact, scheduled based on gestational age from LMP of 2019-03-01, gathered during the first contact "
+            ],
+            "detail": {
+                "kind": "Appointment",
+                "instantiatesCanonical": [
+                    "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact"
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://example.org/CodeSystem/encounter-type",
+                            "code": "anc-contact",
+                            "display": "Antenatal care contact"
+                        }
+                    ],
+                    "text": "Antenatal care contact"
+                },
+                "status": "not-started",
+                "scheduledPeriod": {
+                    "fhir_comments": [
+                        " Scheduled based on gestational age calculation "
+                    ],
+                    "start": "2019-09-06"
+                },
+                "performer": [
+                    {
+                        "reference": "Practitioner/midwife",
+                        "display": "Mabel Midwife"
+                    }
+                ],
+                "description": "Third contact to occur at 26 weeks of gestational age"
+            }
+        },
+        {
+            "fhir_comments": [
+                " Fourth contact, scheduled based on gestational age from LMP of 2019-03-01, gathered during the first contact "
+            ],
+            "detail": {
+                "kind": "Appointment",
+                "instantiatesCanonical": [
+                    "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact"
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://example.org/CodeSystem/encounter-type",
+                            "code": "anc-contact",
+                            "display": "Antenatal care contact"
+                        }
+                    ],
+                    "text": "Antenatal care contact"
+                },
+                "status": "not-started",
+                "scheduledPeriod": {
+                    "fhir_comments": [
+                        " Scheduled based on gestational age calculation "
+                    ],
+                    "start": "2019-10-04"
+                },
+                "performer": [
+                    {
+                        "reference": "Practitioner/midwife",
+                        "display": "Mabel Midwife"
+                    }
+                ],
+                "description": "Fourth contact to occur at 30 weeks of gestational age"
+            }
+        },
+        {
+            "fhir_comments": [
+                " Fifth contact, scheduled based on gestational age from LMP of 2019-03-01, gathered during the first contact "
+            ],
+            "detail": {
+                "kind": "Appointment",
+                "instantiatesCanonical": [
+                    "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact"
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://example.org/CodeSystem/encounter-type",
+                            "code": "anc-contact",
+                            "display": "Antenatal care contact"
+                        }
+                    ],
+                    "text": "Antenatal care contact"
+                },
+                "status": "not-started",
+                "scheduledPeriod": {
+                    "fhir_comments": [
+                        " Scheduled based on gestational age calculation "
+                    ],
+                    "start": "2019-11-01"
+                },
+                "performer": [
+                    {
+                        "reference": "Practitioner/midwife",
+                        "display": "Mabel Midwife"
+                    }
+                ],
+                "description": "Fifth contact to occur at 34 weeks of gestational age"
+            }
+        },
+        {
+            "fhir_comments": [
+                " Sixth contact, scheduled based on gestational age from LMP of 2019-03-01, gathered during the first contact "
+            ],
+            "detail": {
+                "kind": "Appointment",
+                "instantiatesCanonical": [
+                    "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact"
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://example.org/CodeSystem/encounter-type",
+                            "code": "anc-contact",
+                            "display": "Antenatal care contact"
+                        }
+                    ],
+                    "text": "Antenatal care contact"
+                },
+                "status": "not-started",
+                "scheduledPeriod": {
+                    "fhir_comments": [
+                        " Scheduled based on gestational age calculation "
+                    ],
+                    "start": "2019-11-15"
+                },
+                "performer": [
+                    {
+                        "reference": "Practitioner/midwife",
+                        "display": "Mabel Midwife"
+                    }
+                ],
+                "description": "Sixth contact to occur at 36 weeks of gestational age"
+            }
+        },
+        {
+            "fhir_comments": [
+                " Seventh contact, scheduled based on gestational age from LMP of 2019-03-01, gathered during the first contact "
+            ],
+            "detail": {
+                "kind": "Appointment",
+                "instantiatesCanonical": [
+                    "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact"
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://example.org/CodeSystem/encounter-type",
+                            "code": "anc-contact",
+                            "display": "Antenatal care contact"
+                        }
+                    ],
+                    "text": "Antenatal care contact"
+                },
+                "status": "not-started",
+                "scheduledPeriod": {
+                    "fhir_comments": [
+                        " Scheduled based on gestational age calculation "
+                    ],
+                    "start": "2019-11-29"
+                },
+                "performer": [
+                    {
+                        "reference": "Practitioner/midwife",
+                        "display": "Mabel Midwife"
+                    }
+                ],
+                "description": "Seventh contact to occur at 38 weeks of gestational age"
+            }
+        },
+        {
+            "fhir_comments": [
+                " Eighth contact, scheduled based on gestational age from LMP of 2019-03-01, gathered during the first contact "
+            ],
+            "detail": {
+                "kind": "Appointment",
+                "instantiatesCanonical": [
+                    "http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact"
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://example.org/CodeSystem/encounter-type",
+                            "code": "anc-contact",
+                            "display": "Antenatal care contact"
+                        }
+                    ],
+                    "text": "Antenatal care contact"
+                },
+                "status": "not-started",
+                "scheduledPeriod": {
+                    "fhir_comments": [
+                        " Scheduled based on gestational age calculation "
+                    ],
+                    "start": "2019-12-13"
+                },
+                "performer": [
+                    {
+                        "reference": "Practitioner/midwife",
+                        "display": "Mabel Midwife"
+                    }
+                ],
+                "description": "Eighth contact to occur at 40 weeks of gestational age"
+            }
+        },
+        {
+            "detail": {
+                "kind": "Appointment",
+                "_kind": {
+                    "fhir_comments": [
+                        "  This will be the delivery. It is not yet scheduled.  "
+                    ]
+                },
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://example.org/mySystem",
+                            "code": "del"
+                        }
+                    ],
+                    "text": "Delivery"
+                },
+                "status": "not-started",
+                "scheduledPeriod": {
+                    "start": "2019-12-13",
+                    "end": "2019-12-27"
+                },
+                "performer": [
+                    {
+                        "fhir_comments": [
+                            " TODO: location "
+                        ],
+                        "reference": "Practitioner/midwife",
+                        "display": "Mabel Midwife"
+                    }
+                ],
+                "description": "Delivery"
+            }
+        }
+    ]
+}
