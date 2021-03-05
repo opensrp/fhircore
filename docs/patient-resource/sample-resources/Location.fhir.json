@@ -1,0 +1,41 @@
+{
+    "resourceType": "Location",
+    "name": "Mwango_House",
+    "identifier": [
+        {
+            "system": "biophics",
+            "value": "HL0122"
+        }, {
+            "system": "external",
+            "value": "09898-jkj0i"
+        }
+    ],
+    "position": {
+        "latitude": -14.09989,
+        "longitude": 36.09809,
+        "altitude": 1200
+    },
+    "physicalType": {
+        "coding": [
+            {
+                "system": "http://terminology.hl7.org/CodeSystem/location-physical-type",
+                "code": "ho",
+                "display": "House"
+            }
+        ]
+    },
+    "address": {
+        "city": "Nairobi",
+        "line": [
+            "1234 Main street, Bolivard"
+        ]
+    },
+    "extension": [
+        {
+            "url": "http://build.fhir.org/extension-location-boundary-geojson.html",
+            "valueAttachment": {
+                "data": "IHsKICAgICAgICAgICAgImNvb3JkaW5hdGVzIjogWwogICAgICAgICAgICAgICAgOTkuMTgxNzc5NTExNjc3NTgsCiAgICAgICAgICAgICAgICAxNy4wMTA5ODU4OTE5NzU1MDUKICAgICAgICAgICAgXSwKICAgICAgICAgICAgInR5cGUiOiAiUG9pbnQiCiAgICAgICAgfSw="
+            }
+        }
+    ]
+}

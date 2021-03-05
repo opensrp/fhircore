@@ -1,0 +1,35 @@
+{
+    "resourceType": "Patient",
+    "name": [
+        {
+            "use": "official",
+            "given": [
+                "Francis"
+            ],
+            "family": "Otieno"
+        }
+    ],
+    "gender": "male",
+    "birthDate": "1988-08-04",
+    "telecom": [
+        {
+            "value": "+254722123456",
+            "use": "mobile",
+            "system": "phone"
+        },
+        {
+            "system": "email",
+            "value": "fotieno@ona.io"
+        }
+    ],
+    "address": [
+        {
+            "line": [
+                "213,One Pademore"
+            ],
+            "city": "Nairobi",
+            "country": "Kenya",
+            "postalCode": "00100"
+        }
+    ]
+}
