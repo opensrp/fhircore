@@ -1,3 +1,23 @@
+buildscript {
+    repositories {
+        jcenter()
+        google() // For Gradle 4.0+
+        maven { url 'https://maven.google.com' } // For Gradle < 4.0
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.1.0'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.30'
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        google()
+    }
+}
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
@@ -76,4 +96,8 @@ dependencies {
     implementation deps.fragment
 
     testImplementation deps.junit
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }
