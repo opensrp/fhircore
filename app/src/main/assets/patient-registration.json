@@ -25,10 +25,20 @@
           "linkId": "PR-name",
           "type": "group",
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
+              "valueExpression": {
+                "language": "application/x-fhir-query",
+                "expression": "HumanName",
+                "name": "humanName"
+              }
+            }
+          ],
           "item": [
             {
               "linkId": "PR-name-text",
-              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.text",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.given",
               "type": "string",
               "text": "First Name"
             },
@@ -45,6 +55,12 @@
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
           "type": "date",
           "text": "Date of Birth"
+        },
+        {
+          "linkId": "patient-0-gender",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
+          "type": "string",
+          "text": "Gender"
         },
         {
           "linkId": "PR-active",
