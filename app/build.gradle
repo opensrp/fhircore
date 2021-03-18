@@ -1,23 +1,3 @@
-buildscript {
-    repositories {
-        jcenter()
-        google() // For Gradle 4.0+
-        maven { url 'https://maven.google.com' } // For Gradle < 4.0
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.0'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.30'
-    }
-}
-
-allprojects {
-    repositories {
-        jcenter()
-        google()
-    }
-}
-
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
@@ -58,6 +38,12 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
+
+    // avoid errors with message 'Duplicate files copied in APK ...'
+    packagingOptions {
+        exclude 'LICENSE.txt'
+        exclude 'META-INF/*'
+    }
 }
 
 configurations {
@@ -72,6 +58,15 @@ dependencies {
     androidTestImplementation deps.atsl.espresso
 
     coreLibraryDesugaring deps.desugar
+
+    implementation('com.google.android.fhir:core:0.0.1') {
+        transitive = true
+        exclude group: 'org.hamcrest', module: 'hamcrest-core'
+        exclude group: 'javax.xml.bind', module: 'jaxb-api'
+        exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
+        exclude group: 'com.sun.activation', module: 'javax.activation'
+    }
+    implementation 'com.google.android.fhir:datacapture:0.0.1'
 
     implementation deps.appcompat
     implementation deps.constraint_layout
@@ -89,11 +84,37 @@ dependencies {
     implementation deps.retrofit.gson
     implementation deps.retrofit.mock
     implementation deps.work.runtime
-    implementation project(path: ':core')
-    implementation project(path: ':datacapture')
 
     implementation deps.core
     implementation deps.fragment
+
+    implementation(deps.cql_engine.fhir){
+        transitive = false
+    }
+    implementation(deps.caffeine){
+        transitive = false
+    }
+    implementation(deps.guava){
+        transitive = false
+    }
+    implementation(deps.room.ktx){
+        transitive = false
+    }
+    implementation(deps.room.runtime){
+        transitive = false
+    }
+    implementation(deps.json_tools.json_patch){
+        transitive = false
+    }
+
+    api(deps.cql_engine.core){
+        transitive = false
+    }
+    api (deps.hapi_r4) {
+        transitive = false
+    }
+
+    kapt deps.room.compiler
 
     testImplementation deps.junit
 }
