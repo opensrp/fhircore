@@ -78,6 +78,24 @@
           ],
           "item": [
             {
+              "linkId": "PR-telecom-system",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom.system",
+              "type": "string",
+              "text": "system",
+              "initial": [
+                {
+                  "valueString": "phone"
+                }
+              ],
+              "enableWhen": [
+                {
+                  "question": "patient-0-gender",
+                  "operator": "=",
+                  "answerString": "ok"
+                }
+              ]
+            },
+            {
               "linkId": "PR-telecom-value",
               "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom.value",
               "type": "string",
