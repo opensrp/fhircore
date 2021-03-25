@@ -17,6 +17,8 @@
 package org.smartregister.fhircore
 
 import android.annotation.SuppressLint
+import android.app.SearchManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -24,19 +26,29 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.menu.MenuBuilder
+import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
+import androidx.core.view.MenuItemCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.fhir.search.filter.FilterCriterion
+import com.google.android.fhir.search.filter.string
 import com.google.android.material.snackbar.Snackbar
+import org.hl7.fhir.r4.model.Patient
 
 /** An activity representing a list of Patients. */
 class PatientListActivity : AppCompatActivity() {
     private lateinit var fhirEngine: FhirEngine
     private lateinit var patientListViewModel: PatientListViewModel
+    // TODO : Generify this adapter
+    private lateinit var adapter : PatientItemRecyclerViewAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,10 +66,14 @@ class PatientListActivity : AppCompatActivity() {
         )).get(PatientListViewModel::class.java)
         val recyclerView: RecyclerView = findViewById(R.id.patient_list)
 
-        val adapter = PatientItemRecyclerViewAdapter(this::onPatientItemClicked)
+        adapter = PatientItemRecyclerViewAdapter(this::onPatientItemClicked)
         recyclerView.adapter = adapter
 
-        patientListViewModel.getSearchedPatients().observe(this,
+        fetchUsers()
+    }
+
+    private fun fetchUsers(filterCriterion: FilterCriterion? = null){
+        patientListViewModel.getSearchedPatients(filterCriterion).observe(this,
             {
                 Log.d("PatientListActivity", "Submitting ${it.count()} patient records")
                 adapter.submitList(it)
@@ -85,7 +101,47 @@ class PatientListActivity : AppCompatActivity() {
         if (menu is MenuBuilder) {
             menu.setOptionalIconsVisible(true)
         }
+        menu?.let { bindSearchMenu(it) }
         return true
+    }
+
+    private fun bindSearchMenu(menu: Menu){
+        val searchItem: MenuItem? = menu.findItem(R.id.action_search)
+        if (searchItem != null) {
+            val searchView = searchItem.actionView as SearchView
+            searchView.setOnCloseListener { true }
+
+            val searchPlate =
+                searchView.findViewById(androidx.appcompat.R.id.search_src_text) as EditText
+            searchPlate.hint = "Search"
+            val searchPlateView: View =
+                searchView.findViewById(androidx.appcompat.R.id.search_plate)
+            searchPlateView.setBackgroundColor(
+                ContextCompat.getColor(
+                    this,
+                    android.R.color.transparent
+                )
+            )
+
+            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    return false
+                }
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    fetchUsers(
+                        if(newText.isNullOrBlank()) null else
+                            string(Patient.GIVEN, ParamPrefixEnum.EQUAL, newText)
+                                .or(string(Patient.FAMILY, ParamPrefixEnum.EQUAL, newText))
+                    )
+                    return false
+                }
+            })
+
+            val searchManager =
+                getSystemService(Context.SEARCH_SERVICE) as SearchManager
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName))
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

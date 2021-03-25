@@ -25,6 +25,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.filter.FilterCriterion
 import org.smartregister.fhircore.data.SamplePatients
 import com.google.android.fhir.search.filter.string
 import org.hl7.fhir.r4.model.Patient
@@ -52,8 +53,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     private val _liveSearchedPatients: MutableLiveData<List<PatientItem>> = MutableLiveData()
     val liveSearchedPatients: LiveData<List<PatientItem>> = _liveSearchedPatients
 
-    fun getSearchedPatients(): LiveData<List<PatientItem>> {
-        searchedPatients = samplePatients.getPatientItems(patientResults)
+    fun getSearchedPatients(filterCriterion: FilterCriterion? = null): LiveData<List<PatientItem>> {
+        searchedPatients = samplePatients.getPatientItems(getSearchResults(filterCriterion))
         _liveSearchedPatients.value = searchedPatients
         Log.d("PatientListViewModel", "getSearchedPatients(): " +
             "patientResults[${patientResults.count()}], searchedPatients[${searchedPatients
@@ -69,11 +70,13 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
         return liveObservations
     }
 
-    private fun getSearchResults(): List<Patient> {
-        val searchResults: List<Patient> = fhirEngine.search()
+    private fun getSearchResults(filterCriterion: FilterCriterion? = null): List<Patient> {
+        val searchBuilder = fhirEngine.search()
             .of(Patient::class.java)
-            //.filter(string(Patient.ADDRESS_CITY, ParamPrefixEnum.EQUAL, "NAIROBI"))
-            .run()
+
+        if(filterCriterion != null) searchBuilder.filter(filterCriterion)
+
+        val searchResults: List<Patient> = searchBuilder.run()
         Log.d("PatientListViewModel", "${searchResults.count()} search results: " +
             "${searchResults.joinToString(" ")}")
         return searchResults

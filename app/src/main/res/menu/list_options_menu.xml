@@ -19,6 +19,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:theme="@android:style/Theme.NoTitleBar">
     <item
+        android:id="@+id/action_search"
+        android:icon="@drawable/ic_baseline_search_24"
+        android:title="Search"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/sync_resources"
         app:showAsAction="always"
         android:icon="@android:drawable/stat_notify_sync"
