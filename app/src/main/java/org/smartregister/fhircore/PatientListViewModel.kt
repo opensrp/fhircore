@@ -71,12 +71,11 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     }
 
     private fun getSearchResults(filterCriterion: FilterCriterion? = null): List<Patient> {
-        val searchBuilder = fhirEngine.search()
+        val searchResults: List<Patient>  = fhirEngine.search()
             .of(Patient::class.java)
+            .also { builder -> filterCriterion?.let { builder.filter(it)  } }
+            .run()
 
-        if(filterCriterion != null) searchBuilder.filter(filterCriterion)
-
-        val searchResults: List<Patient> = searchBuilder.run()
         Log.d("PatientListViewModel", "${searchResults.count()} search results: " +
             "${searchResults.joinToString(" ")}")
         return searchResults
