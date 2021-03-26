@@ -44,7 +44,6 @@ versions.truth = '1.0.1'
 versions.work = '2.3.4'
 versions.json_tools = '1.13'
 versions.kotlin_coveralls = '2.10.2'
-versions.jacoco = '2.10.2'
 versions.jacoco_tool = '0.8.6'
 ext.versions = versions
 
