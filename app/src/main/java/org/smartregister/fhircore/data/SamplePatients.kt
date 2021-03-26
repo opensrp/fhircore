@@ -60,9 +60,9 @@ class SamplePatients {
         val patients: MutableList<PatientListViewModel.PatientItem> = mutableListOf()
 
         // Create a list of PatientItems from fhirPatients. The display index is 1 based.
-        fhirPatients.take(MAX_RESOURCE_COUNT)?.mapIndexed { index, fhirPatient ->
+        fhirPatients.take(MAX_RESOURCE_COUNT).mapIndexed { index, fhirPatient ->
             createPatientItem(index + 1, fhirPatient)
-        }?.let { patients.addAll(it) }
+        }.let { patients.addAll(it) }
 
         // Return a cloned List
         return patients
