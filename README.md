@@ -15,6 +15,9 @@ One needs a [GitHub token](https://docs.github.com/en/github/authenticating-to-g
 
 While creating the token, check the read:packages permission.
 
-Add your token details in this file ~/.gradle/gradle.properties in the format below:-
+Add your token details in this file ~/.gradle/gradle.properties in the format below:
+
+```
 GITHUB_USER=Xxxx
 GITHUB_PERSONAL_ACCESS_TOKEN=xxxxxx
+```
