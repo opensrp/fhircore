@@ -17,6 +17,7 @@ While creating the token, check the read:packages permission.
 
 Add your token details in this file ~/.gradle/gradle.properties in the format below:
 
+
 ```
 GITHUB_USER=Xxxx
 GITHUB_PERSONAL_ACCESS_TOKEN=xxxxxx
