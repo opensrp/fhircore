@@ -25,6 +25,6 @@ jobs:
       run: chmod +x gradlew
 
     - name: Run unit tests with Gradle and upload to coveralls
-      run: ./gradlew :clean :jacocoTestReport coveralls --stacktrace
+      run: ./gradlew clean jacocoTestReport coveralls --stacktrace
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}

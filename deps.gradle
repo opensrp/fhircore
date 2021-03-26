@@ -43,12 +43,16 @@ versions.spotless = '5.11.0'
 versions.truth = '1.0.1'
 versions.work = '2.3.4'
 versions.json_tools = '1.13'
+versions.kotlin_coveralls = '2.10.2'
+versions.jacoco = '2.10.2'
+versions.jacoco_tool = '0.8.6'
 ext.versions = versions
 
 def deps = [:]
 deps.activity = "androidx.activity:activity:$versions.activity"
 deps.android_gradle_plugin = "com.android.tools.build:gradle:$versions.android_gradle_plugin"
 deps.appcompat = "androidx.appcompat:appcompat:$versions.appcompat"
+deps.kotlin_coveralls_plugin = "gradle.plugin.org.kt3k.gradle.plugin:coveralls-gradle-plugin:$versions.kotlin_coveralls"
 def atsl = [:]
 atsl.core = "androidx.test:core:$versions.atsl_core"
 atsl.espresso = "androidx.test.espresso:espresso-core:$versions.atsl_expresso"
