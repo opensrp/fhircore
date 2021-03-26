@@ -7,3 +7,18 @@
 <img align=center width=400 src="docs/assets/fhircore.png">
 
 Next generation OpenSRP FHIR native digital health platform powered by the [Google FHIR SDK](https://github.com/google/android-fhir).
+
+
+## Build instructions
+
+One needs a [GitHub token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token#creating-a-token) to pull packages from https://github.com/orgs/google/packages?repo_name=android-fhir.
+
+While creating the token, check the read:packages permission.
+
+Add your token details in this file ~/.gradle/gradle.properties in the format below:
+
+
+```
+GITHUB_USER=Xxxx
+GITHUB_PERSONAL_ACCESS_TOKEN=xxxxxx
+```
