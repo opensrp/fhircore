@@ -76,13 +76,9 @@ class PatientDetailFragment : Fragment() {
 
     private fun setupPatientData(view: View, patient: PatientListViewModel.PatientItem?) {
         if (patient != null) {
-            view.findViewById<TextView>(R.id.patient_detail).text = HtmlCompat.fromHtml(
-                patient.html,
-                HtmlCompat.FROM_HTML_MODE_LEGACY
-            )
             view.findViewById<TextView>(R.id.name).text = patient.name
             view.findViewById<TextView>(R.id.dob).text = patient.dob
-            view.findViewById<TextView>(R.id.gender).text = patient.phone
+            view.findViewById<TextView>(R.id.gender).text = patient.gender
         }
     }
 
