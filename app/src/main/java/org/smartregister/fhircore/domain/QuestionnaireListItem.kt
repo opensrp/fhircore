@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.domain
 
 /**
  * @param name the name of the questionnaire to be displayed

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.activity
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -30,8 +30,10 @@ import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import org.smartregister.fhircore.*
+import org.smartregister.fhircore.adapter.PatientItemRecyclerViewAdapter
+import org.smartregister.fhircore.fragment.PatientDetailFragment
 
 /** An activity representing a list of Patients. */
 class PatientListActivity : AppCompatActivity() {

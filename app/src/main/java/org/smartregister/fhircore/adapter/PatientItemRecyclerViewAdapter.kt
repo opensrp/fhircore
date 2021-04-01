@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
+import org.smartregister.fhircore.PatientListViewModel
+import org.smartregister.fhircore.R
+import org.smartregister.fhircore.viewholder.PatientItemViewHolder
 
 /**
  * UI Controller helper class to monitor Patient viewmodel and display list of patients.
@@ -32,13 +35,13 @@ class PatientItemRecyclerViewAdapter(
 
     class PatientItemDiffCallback : DiffUtil.ItemCallback<PatientListViewModel.PatientItem>() {
         override fun areItemsTheSame(
-            oldItem: PatientListViewModel.PatientItem,
-            newItem: PatientListViewModel.PatientItem
+                oldItem: PatientListViewModel.PatientItem,
+                newItem: PatientListViewModel.PatientItem
         ): Boolean = oldItem.id == newItem.id
 
         override fun areContentsTheSame(
-            oldItem: PatientListViewModel.PatientItem,
-            newItem: PatientListViewModel.PatientItem
+                oldItem: PatientListViewModel.PatientItem,
+                newItem: PatientListViewModel.PatientItem
         ): Boolean = oldItem.id == newItem.id
     }
 
