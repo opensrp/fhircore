@@ -45,7 +45,7 @@ class PatientListActivity : AppCompatActivity() {
         Log.d("PatientListActivity", "onCreate() called")
         setContentView(R.layout.activity_patient_list)
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        val toolbar = findViewById<Toolbar>(R.id.patient_register_toolbar)
         setSupportActionBar(toolbar)
         toolbar.title = title
 
