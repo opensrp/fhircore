@@ -81,12 +81,12 @@ class PatientListActivity : AppCompatActivity() {
     // prefix (referenced groupId=androidx.appcompat with prefix androidx from groupId=fhir-engine"
     @SuppressLint("RestrictedApi")
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        val inflater: MenuInflater = menuInflater
-        inflater.inflate(R.menu.list_options_menu, menu)
-        // To ensure that icons show up in the overflow options menu. Icons go missing without this.
-        if (menu is MenuBuilder) {
-            menu.setOptionalIconsVisible(true)
-        }
+//        val inflater: MenuInflater = menuInflater
+//        inflater.inflate(R.menu.list_options_menu, menu)
+//        // To ensure that icons show up in the overflow options menu. Icons go missing without this.
+//        if (menu is MenuBuilder) {
+//            menu.setOptionalIconsVisible(true)
+//        }
         return true
     }
 
