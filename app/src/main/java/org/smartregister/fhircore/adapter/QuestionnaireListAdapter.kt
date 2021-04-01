@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.adapter
 
 import android.content.Intent
 import android.view.LayoutInflater
@@ -23,6 +23,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Adapter
+import org.smartregister.fhircore.domain.QuestionnaireListItem
+import org.smartregister.fhircore.R
+import org.smartregister.fhircore.activity.QuestionnaireActivity
 
 class QuestionnaireListAdapter(
     private val questionnaireList: List<QuestionnaireListItem>
