@@ -2,38 +2,74 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="15dp">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical">
 
-    <ImageButton
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_gravity="center_vertical" />
+        android:layout_marginLeft="10dp">
 
-    <TextView
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="COVAX clients"
-        android:layout_weight="4"
-        android:gravity="center"
-        android:textSize="22sp"
-        android:layout_gravity="center_vertical" />
+        <ImageButton
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_hamburger"
+            android:backgroundTint="@color/colorPrimary" />
 
-    <TextView
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Show overdue"
-        android:layout_gravity="center_vertical"
-        android:layout_weight="2" />
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="COVAX clients"
+            android:layout_weight="5"
+            android:gravity="center"
+            android:textSize="22sp"
+            android:layout_gravity="center_vertical"
+            android:textColor="@color/colorAccent"
+            tools:textColor="#000000"/>
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/btn_show_overdue_patients"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text=""
-        android:checked="true"
-        android:layout_gravity="center_vertical"
-        android:layout_weight="1" />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="4" >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Show overdue"
+                android:layout_gravity="center_vertical"
+                android:textColor="@color/colorAccent"
+                tools:textColor="#000000" />
 
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/btn_show_overdue_patients"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:checked="true" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/edit_text_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorAccent"
+            android:layout_below="@+id/register_nav_bar_container"
+            android:textSize="22sp"
+            android:textColor="#000000"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:gravity="center_vertical"
+            android:drawableStart="@drawable/ic_search"
+            android:drawablePadding="10dp"
+            android:hint="@string/search_hint"
+            android:textColorHint="#C3C3C3"
+            android:paddingLeft="10dp" />
+    </LinearLayout>
 </LinearLayout>
