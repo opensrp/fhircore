@@ -1,0 +1,725 @@
+{
+  "resourceType": "Questionnaire",
+  "url": "http://fhir.data4life.care/covid-19/r4/Questionnaire/covid19-recommendation",
+  "version": "3.0.0",
+  "date": "2020-04-24T22:00:00.000Z",
+  "subjectType": [
+    "Patient"
+  ],
+  "status": "draft",
+  "publisher": "D4L data4life gGmbH",
+  "contact": [
+    {
+      "name": "D4L data4life gGmbH",
+      "telecom": [
+        {
+          "system": "url",
+          "value": "https://www.data4life.care"
+        }
+      ]
+    }
+  ],
+  "copyright": "D4L data4life gGmbH, Charité – Universitätsmedizin Berlin, BIH - Berliner Institut für Gesundheitsforschung, hih - health innovation hub des Bundesministeriums für Gesundheit, and MOLIT Institut gGmbH",
+  "description": "COVID-19 assessment questionnaire",
+  "name": "Covid19_assesment_questionnaire",
+  "code": [
+    {
+      "system": "http://loinc.org",
+      "code": "84170-0",
+      "display": "Infectious disease Risk assessment and screening note"
+    }
+  ],
+  "item": [
+    {
+      "type": "group",
+      "required": true,
+      "linkId": "P",
+      "text": "Personal information",
+      "item": [
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "P0",
+          "code": [
+            {
+              "code": "46251-5",
+              "display": "Age group",
+              "system": "http://loinc.org"
+            }
+          ],
+          "text": "How old are you?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/age-group"
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "P1",
+          "code": [
+            {
+              "code": "21612-7",
+              "display": "Age - Reported",
+              "system": "http://loinc.org"
+            }
+          ],
+          "text": "Are you 65 years old or older?",
+          "enableWhen": [
+            {
+              "question": "P0",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://fhir.data4life.care/covid-19/r4/CodeSystem/age-group",
+                "code": "61-70"
+              }
+            }
+          ],
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesno"
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "P2",
+          "code": [
+            {
+              "code": "71802-3",
+              "display": "Housing status",
+              "system": "http://loinc.org"
+            }
+          ],
+          "text": "What is your current living situation?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/housing-situation"
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "P3",
+          "text": "At least once a week, do you privately care for people with age-related conditions, chronic illnesses, or frailty?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesno",
+          "item": [
+            {
+              "linkId": "P3-Explanation",
+              "type": "display",
+              "text": "Care services or support that you provide in connection with your professional activity isn't meant."
+            }
+          ]
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "P4",
+          "code": [
+            {
+              "code": "85658-3",
+              "display": "Occupation [Type]",
+              "system": "http://loinc.org"
+            }
+          ],
+          "text": "Do you work in one of the following areas?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/occupation-class"
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "P5",
+          "code": [
+            {
+              "code": "72166-2",
+              "display": "Tobacco smoking status",
+              "system": "http://loinc.org"
+            }
+          ],
+          "text": "Do you smoke?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesno"
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "P6",
+          "code": [
+            {
+              "code": "82810-3",
+              "display": "Pregnancy status",
+              "system": "http://loinc.org"
+            }
+          ],
+          "text": "Are you pregnant?",
+          "answerValueSet": "http://loinc.org/vs/LL4129-4"
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "required": true,
+      "linkId": "C",
+      "text": "Contact with COVID-19 cases",
+      "item": [
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "C0",
+          "code": [
+            {
+              "code": "840546002",
+              "display": "Exposure to SARS-CoV-2",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "Have you had close contact with a confirmed case?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesno",
+          "item": [
+            {
+              "linkId": "C0-Explanation",
+              "type": "display",
+              "text": "Close contact with a confirmed case means:\n\n* Face-to-face contact for longer than 15 minutes\n* Direct, physical contact (touching, shaking hands, kissing)\n* Being within 1.5 meters of the person for more than 15 minutes\n* Contact with or exchange of body fluids\n* Living in the same apartment\n\n\nChoose \"no\" if you have worn adequate protective measures (mask, smock) on contact."
+            }
+          ]
+        },
+        {
+          "type": "date",
+          "required": true,
+          "linkId": "CZ",
+          "code": [
+            {
+              "code": "94652-5",
+              "display": "Known exposure date",
+              "system": "http://loinc.org"
+            }
+          ],
+          "text": "What day was the last contact?",
+          "enableWhen": [
+            {
+              "question": "C0",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://loinc.org",
+                "code": "LA33-6"
+              }
+            }
+          ],
+          "item": [
+            {
+              "linkId": "CZ-Explanation",
+              "type": "display",
+              "text": "Make sure to enter a full date in the DD MM YYYY format that isn’t in the future."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "required": true,
+      "linkId": "S",
+      "text": "Symptoms",
+      "item": [
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "S0",
+          "code": [
+            {
+              "code": "386661006",
+              "display": "Fever (finding)",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "Have you had a fever (over 38°C) in the past 24 hours?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesno"
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "S1",
+          "code": [
+            {
+              "code": "386661006",
+              "display": "Fever (finding)",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "Have you had a fever (over 38°C) in the past 4 days?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesno",
+          "enableWhen": [
+            {
+              "question": "S0",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://loinc.org",
+                "code": "LA32-8"
+              }
+            }
+          ]
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "S2",
+          "code": [
+            {
+              "code": "8315-4",
+              "display": "Body temperature 24 hour maximum",
+              "system": "http://loinc.org"
+            }
+          ],
+          "text": "What was the highest temperature, approx.?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/fever-class",
+          "enableWhen": [
+            {
+              "question": "S0",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://loinc.org",
+                "code": "LA33-6"
+              }
+            },
+            {
+              "question": "S1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://loinc.org",
+                "code": "LA33-6"
+              }
+            }
+          ],
+          "enableBehavior": "any"
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "S3",
+          "code": [
+            {
+              "code": "43724002",
+              "display": "Chill (finding)",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "Have you had chills in the past 24 hours?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesno"
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "S4",
+          "code": [
+            {
+              "code": "84229001",
+              "display": "Fatigue (finding)",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "In the past 24 hours, have you felt tired or worn out?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesno",
+          "item": [
+            {
+              "linkId": "S4-Explanation",
+              "type": "display",
+              "text": "The question relates to acute or exacerbated symptoms and excludes chronic complaints or seasonal or allergic complaints. If you have a chronic illness, compare your current symptoms with your previous problems to answer the question."
+            }
+          ]
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "S5",
+          "code": [
+            {
+              "code": "68962001",
+              "display": "Muscle pain (finding)",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "In the past 24 hours, have you had body aches?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesno",
+          "item": [
+            {
+              "linkId": "S5-Explanation",
+              "type": "display",
+              "text": "The question relates to acute or exacerbated symptoms and excludes chronic complaints or seasonal or allergic complaints. If you have a chronic illness, compare your current symptoms with your previous problems to answer the question."
+            }
+          ]
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "S6",
+          "code": [
+            {
+              "code": "49727002",
+              "display": "Cough (finding)",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "In the past 24 hours, have you had a persistent cough?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesno",
+          "item": [
+            {
+              "linkId": "S6-Explanation",
+              "type": "display",
+              "text": "The question relates to cold symptoms and excludes chronic cough, seasonal or allergy-related cough. If you have a chronic cough, compare your current coughing to your regular problems."
+            }
+          ]
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "S7",
+          "code": [
+            {
+              "code": "82272006",
+              "display": "Common cold (disorder)",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "In the past 24 hours, have you had a runny nose?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesno",
+          "item": [
+            {
+              "linkId": "S7-Explanation",
+              "type": "display",
+              "text": "The question relates to cold symptoms and excludes chronic runny nose, seasonal or allergy-related runny nose. If you have chronic sniffling, compare your current conditions with your existing problems."
+            }
+          ]
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "S8",
+          "code": [
+            {
+              "code": "62315008",
+              "display": "Diarrhea (finding)",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "In the past 24 hours, have you had diarrhea?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesno",
+          "item": [
+            {
+              "linkId": "S8-Explanation",
+              "type": "display",
+              "text": "The question relates to acute or exacerbated symptoms and excludes chronic complaints or seasonal or allergic complaints. If you have a chronic illness, compare your current symptoms with your previous problems to answer the question."
+            }
+          ]
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "S9",
+          "code": [
+            {
+              "code": "162397003",
+              "display": "Pain in throat (finding)",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "In the past 24 hours, have you had a sore throat?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesno"
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "SA",
+          "code": [
+            {
+              "code": "25064002",
+              "display": "Headache (finding)",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "In the past 24 hours, have you had a headache?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesno",
+          "item": [
+            {
+              "linkId": "SA-Explanation",
+              "type": "display",
+              "text": "The question relates to acute or exacerbated symptoms and excludes chronic complaints or seasonal or allergic complaints. If you have a chronic illness, compare your current symptoms with your previous problems to answer the question."
+            }
+          ]
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "SB",
+          "code": [
+            {
+              "code": "267036007",
+              "display": "Dyspnea (finding)",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "In the past 24 hours, did you feel that you were more quickly out of breath than usual?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesno",
+          "item": [
+            {
+              "linkId": "SB-Explanation",
+              "type": "display",
+              "text": "Choose \"Yes\" if you:\n* Become breathless faster than usual or have difficulty breathing with light loads, such as a walk or climbing a short flight of stairs\n* Experience difficulty breathing or shortness of breath when sitting or lying down\n* Have a feeling of breathlessness/shortness of breath when getting up from bed or a chair\n\n\nIf you have chronic lung disease, compare your current breathing problems with your existing breathing problems."
+            }
+          ]
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "SC",
+          "code": [
+            {
+              "code": "44169009",
+              "display": "Loss of sense of smell (finding)",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "Have you had any taste and/or smell loss in the last 24 hours?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesno",
+          "item": [
+            {
+              "linkId": "SC-Explanation",
+              "type": "display",
+              "text": "The question relates to acute or exacerbated symptoms and excludes chronic complaints or seasonal or allergic complaints. If you have a chronic illness, compare your current symptoms with your previous problems to answer the question."
+            }
+          ]
+        },
+        {
+          "type": "date",
+          "required": true,
+          "linkId": "SZ",
+          "code": [
+            {
+              "code": "85585-8",
+              "display": "Date of condition onset",
+              "system": "http://loinc.org"
+            }
+          ],
+          "text": "With regard to all questions about symptoms: since when have you had the symptoms you specified?",
+          "enableWhen": [
+            {
+              "question": "S0",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://loinc.org",
+                "code": "LA33-6"
+              }
+            },
+            {
+              "question": "S1",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://loinc.org",
+                "code": "LA33-6"
+              }
+            },
+            {
+              "question": "S3",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://loinc.org",
+                "code": "LA33-6"
+              }
+            },
+            {
+              "question": "S4",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://loinc.org",
+                "code": "LA33-6"
+              }
+            },
+            {
+              "question": "S5",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://loinc.org",
+                "code": "LA33-6"
+              }
+            },
+            {
+              "question": "S6",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://loinc.org",
+                "code": "LA33-6"
+              }
+            },
+            {
+              "question": "S7",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://loinc.org",
+                "code": "LA33-6"
+              }
+            },
+            {
+              "question": "S8",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://loinc.org",
+                "code": "LA33-6"
+              }
+            },
+            {
+              "question": "S9",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://loinc.org",
+                "code": "LA33-6"
+              }
+            },
+            {
+              "question": "SA",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://loinc.org",
+                "code": "LA33-6"
+              }
+            },
+            {
+              "question": "SB",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://loinc.org",
+                "code": "LA33-6"
+              }
+            },
+            {
+              "question": "SC",
+              "operator": "=",
+              "answerCoding": {
+                "system": "http://loinc.org",
+                "code": "LA33-6"
+              }
+            }
+          ],
+          "enableBehavior": "any",
+          "item": [
+            {
+              "linkId": "SZ-Explanation",
+              "type": "display",
+              "text": "Make sure to enter a full date in the DD MM YYYY format that isn’t in the future."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "required": true,
+      "linkId": "D",
+      "text": "Chronic illnesses",
+      "item": [
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "D0",
+          "code": [
+            {
+              "code": "413839001",
+              "display": "Chronic lung disease (disorder)",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "Have you been diagnosed with chronic lung disease by a doctor?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesnodontknow"
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "D1",
+          "code": [
+            {
+              "code": "73211009",
+              "display": "Diabetes mellitus (disorder)",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "Have you been diagnosed with diabetes by a doctor?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesnodontknow"
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "D2",
+          "code": [
+            {
+              "code": "56265001",
+              "display": "Heart disease (disorder)",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "Have you been diagnosed with heart disease by a doctor?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesnodontknow"
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "D3",
+          "code": [
+            {
+              "code": "414916001",
+              "display": "Obesity (disorder)",
+              "system": "http://snomed.info/sct"
+            }
+          ],
+          "text": "Have you been diagnosed with obesity by a doctor?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesnodontknow"
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "required": true,
+      "linkId": "M",
+      "text": "Medication",
+      "item": [
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "M0",
+          "code": [
+            {
+              "code": "steroid-intake",
+              "display": "Taking steroids",
+              "system": "http://fhir.data4life.care/covid-19/r4/CodeSystem/medication-questions"
+            }
+          ],
+          "text": "Are you currently taking steroids?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesnodontknow"
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "M1",
+          "code": [
+            {
+              "code": "immunosuppressant-intake",
+              "display": "Taking immunosuppressants",
+              "system": "http://fhir.data4life.care/covid-19/r4/CodeSystem/medication-questions"
+            }
+          ],
+          "text": "Are you currently taking immunosuppressants?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesnodontknow",
+          "item": [
+            {
+              "linkId": "M1-Explanation",
+              "type": "display",
+              "text": "You take or get immunosuppresives after an organ transplant, in the therapy of an autoimmune disease, or during chemotherapy."
+            }
+          ]
+        },
+        {
+          "type": "choice",
+          "required": true,
+          "linkId": "M2",
+          "code": [
+            {
+              "code": "recent-influenza-vaccine",
+              "display": "Influenza vaccine for the current influenza season",
+              "system": "http://fhir.data4life.care/covid-19/r4/CodeSystem/medication-questions"
+            }
+          ],
+          "text": "Have you been vaccinated against flu between October 2019 and today?",
+          "answerValueSet": "http://fhir.data4life.care/covid-19/r4/ValueSet/yesno"
+        }
+      ]
+    }
+  ],
+  "language": "en"
+}
