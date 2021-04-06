@@ -36,6 +36,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
+            android:background="@color/profile_header_background"
             app:contentScrim="?attr/colorPrimary"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:toolbarId="@+id/toolbar">
@@ -44,7 +45,9 @@
                 android:id="@+id/detail_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="30dp"
+                android:textColor="@color/black"
                 app:layout_collapseMode="pin"
+                app:theme="@style/ThemeOverlay.AppCompat.Light"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light" >
 
             </androidx.appcompat.widget.Toolbar>>
@@ -60,12 +63,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
-                    android:layout_alignParentEnd="true"
-                    android:layout_marginStart="@dimen/small_text_margin"
+                    android:layout_alignParentEnd="false"
+                    android:layout_marginStart="@dimen/text_margin"
                     android:layout_marginTop="@dimen/text_margin"
-                    android:layout_marginEnd="@dimen/small_text_margin"
+                    android:layout_marginEnd="@dimen/text_margin"
                     android:layout_marginBottom="@dimen/small_text_margin"
                     android:gravity="center_vertical"
+                    android:textColor="@color/black"
                     android:textAppearance="?attr/textAppearanceListItem" />
 
                 <TextView
@@ -81,6 +85,7 @@
                     android:layout_marginBottom="@dimen/text_margin"
                     android:gravity="center_vertical"
                     android:layout_below="@id/patient_bio_data"
+                    android:textColor="@color/black"
                     android:textAppearance="?attr/textAppearanceListItem" />
 
             </RelativeLayout>
