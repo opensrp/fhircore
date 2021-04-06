@@ -25,7 +25,6 @@ jobs:
       run: chmod +x gradlew
 
     - name: Spotless check
-#      if: matrix.api-level == 29  # don't run spotless on older APIs
       run: ./gradlew spotlessCheck
 
     - name: Run unit tests with Gradle and upload to coveralls
