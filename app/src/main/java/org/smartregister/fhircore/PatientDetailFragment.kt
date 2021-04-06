@@ -26,7 +26,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
-import com.google.android.material.appbar.CollapsingToolbarLayout
 import org.smartregister.fhircore.util.Utils
 
 /**
@@ -64,23 +63,19 @@ class PatientDetailFragment : Fragment() {
                 patient = it.getString(ARG_ITEM_ID)?.let {
                         patient_index -> viewModel.getPatientItem(patient_index)
                 }
-                // TODO find a better way of implementing this
-                var patientDetailLabel = patient?.name + ", " + patient?.gender + ", " + patient?.dob?.let { it1 -> Utils.getAgeFromDate(it1) } + "\n ID: " + patient?.id
-                activity?.findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout)?.title =
-                        patientDetailLabel
             }
         }
 
-        //setupPatientData(rootView, patient)
+        setupPatientData(rootView, patient)
 
         return rootView
     }
 
     private fun setupPatientData(view: View, patient: PatientListViewModel.PatientItem?) {
         if (patient != null) {
-            view.findViewById<TextView>(R.id.name).text = patient.name
-            view.findViewById<TextView>(R.id.dob).text = patient.dob
-            view.findViewById<TextView>(R.id.gender).text = patient.gender
+            var patientDetailLabel = patient?.name + ", " + patient?.gender + ", " + patient?.dob?.let { it1 -> Utils.getAgeFromDate(it1) }
+            activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
+            activity?.findViewById<TextView>(R.id.id_patient_number)?.text = "ID: " + patient.id
         }
     }
 

@@ -38,7 +38,7 @@
         </activity>
         <activity
             android:name="org.smartregister.fhircore.PatientDetailActivity"
-            android:label="@string/title_patient_detail"
+            android:label=""
             android:parentActivityName="org.smartregister.fhircore.PatientListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
