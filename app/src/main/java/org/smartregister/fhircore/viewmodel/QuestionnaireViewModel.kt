@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
+import org.smartregister.fhircore.activity.QuestionnaireActivity
 
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
     AndroidViewModel(application) {
