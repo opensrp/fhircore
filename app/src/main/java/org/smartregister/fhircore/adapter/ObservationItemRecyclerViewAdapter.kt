@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
+import org.smartregister.fhircore.PatientListViewModel
+import org.smartregister.fhircore.R
+import org.smartregister.fhircore.viewholder.ObservationItemViewHolder
 
 /**
  * UI Controller helper class to display list of observations.
@@ -32,13 +35,13 @@ ListAdapter<PatientListViewModel.ObservationItem, ObservationItemViewHolder>(
     class ObservationItemDiffCallback :
         DiffUtil.ItemCallback<PatientListViewModel.ObservationItem>() {
         override fun areItemsTheSame(
-            oldItem: PatientListViewModel.ObservationItem,
-            newItem: PatientListViewModel.ObservationItem
+                oldItem: PatientListViewModel.ObservationItem,
+                newItem: PatientListViewModel.ObservationItem
         ): Boolean = oldItem.id == newItem.id
 
         override fun areContentsTheSame(
-            oldItem: PatientListViewModel.ObservationItem,
-            newItem: PatientListViewModel.ObservationItem
+                oldItem: PatientListViewModel.ObservationItem,
+                newItem: PatientListViewModel.ObservationItem
         ): Boolean = oldItem.id == newItem.id
     }
 

@@ -14,29 +14,31 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.viewholder
 
 import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import org.smartregister.fhircore.PatientListViewModel
+import org.smartregister.fhircore.R
 
 class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val idView: TextView = itemView.findViewById(
-        R.id.id_patient_number
+            R.id.id_patient_number
     )
     private val nameView: TextView = itemView.findViewById(
-        R.id.name
+            R.id.name
     )
     private val genderView: TextView = itemView.findViewById(
-        R.id.gender
+            R.id.gender
     )
     private val dobView: TextView = itemView.findViewById(
-        R.id.dob
+            R.id.dob
     )
 
     fun bindTo(
-        patientItem: PatientListViewModel.PatientItem,
-        onItemClicked: (PatientListViewModel.PatientItem) -> Unit
+            patientItem: PatientListViewModel.PatientItem,
+            onItemClicked: (PatientListViewModel.PatientItem) -> Unit
     ) {
         this.idView.text = patientItem.id
         this.nameView.text = patientItem.name
