@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.fragment
 
 import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
+import org.smartregister.fhircore.R
 
 class QuestionnaireResponseDialogFragment() : DialogFragment() {
 
@@ -28,7 +29,7 @@ class QuestionnaireResponseDialogFragment() : DialogFragment() {
         val contents = requireArguments().getString(BUNDLE_KEY_CONTENTS)
         return activity?.let {
             val view = requireActivity().layoutInflater.inflate(
-                R.layout.questionnaire_response_dialog_contents,
+                    R.layout.questionnaire_response_dialog_contents,
                 null
             )
             view.findViewById<TextView>(R.id.contents).text = contents

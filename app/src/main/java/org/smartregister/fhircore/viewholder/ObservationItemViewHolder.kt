@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.viewholder
 
 import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import org.smartregister.fhircore.PatientListViewModel
+import org.smartregister.fhircore.R
 
 class ObservationItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val observationTextView: TextView = itemView.findViewById(
-        R.id.observation_detail
+            R.id.observation_detail
     )
 
     fun bindTo(observationItem: PatientListViewModel.ObservationItem) {
