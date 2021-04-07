@@ -26,9 +26,12 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
-import org.smartregister.fhircore.util.Utils
-import org.smartregister.fhircore.*
+import org.smartregister.fhircore.FhirApplication
+import org.smartregister.fhircore.PatientListViewModel
+import org.smartregister.fhircore.PatientListViewModelFactory
+import org.smartregister.fhircore.R
 import org.smartregister.fhircore.adapter.ObservationItemRecyclerViewAdapter
+import org.smartregister.fhircore.util.Utils
 
 /**
  * A fragment representing a single Patient detail screen.
@@ -68,12 +71,12 @@ class PatientDetailFragment : Fragment() {
             }
         }
 
-        setupPatientData(rootView, patient)
+        setupPatientData(patient)
 
         return rootView
     }
 
-    private fun setupPatientData(view: View, patient: PatientListViewModel.PatientItem?) {
+    private fun setupPatientData(patient: PatientListViewModel.PatientItem?) {
         if (patient != null) {
             var patientDetailLabel = patient?.name + ", " + patient?.gender + ", " + patient?.dob?.let { it1 -> Utils.getAgeFromDate(it1) }
             activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
