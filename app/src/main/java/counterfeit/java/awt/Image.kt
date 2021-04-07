@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-package java.awt
+package counterfeit.java.awt
 
 class Image
