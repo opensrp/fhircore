@@ -45,6 +45,7 @@ versions.work = '2.3.4'
 versions.json_tools = '1.13'
 versions.kotlin_coveralls = '2.10.2'
 versions.jacoco_tool = '0.8.6'
+versions.ktlint = '0.41.0'
 ext.versions = versions
 
 def deps = [:]

@@ -38,9 +38,9 @@ allprojects {
         spotless {
             kotlin {
                 target '**/*.kt'
-                ktlint('0.41.0').userData(['indent_size': '2', 'continuation_indent_size': '2'])
+                ktlint(versions.ktlint).userData(['indent_size': '2', 'continuation_indent_size': '2'])
                 ktfmt().googleStyle()
-                licenseHeaderFile "../license-header.txt"
+                licenseHeaderFile "${project.rootProject.projectDir}/license-header.txt"
             }
         }
     }
