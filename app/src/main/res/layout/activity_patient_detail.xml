@@ -52,10 +52,13 @@
 
             </androidx.appcompat.widget.Toolbar>>
 
-            <RelativeLayout
-                android:layout_width="fill_parent"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                >
+                android:id="@+id/patient_profile_details"
+                app:layout_constraintTop_toBottomOf="@id/detail_toolbar"
+                android:minHeight="200dp"
+                android:layout_marginBottom="30dp">
 
                 <TextView
                     android:id="@+id/patient_bio_data"
@@ -63,12 +66,15 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
-                    android:layout_alignParentEnd="false"
                     android:layout_marginStart="@dimen/text_margin"
                     android:layout_marginTop="@dimen/text_margin"
                     android:layout_marginEnd="@dimen/text_margin"
-                    android:layout_marginBottom="@dimen/small_text_margin"
-                    android:gravity="center_vertical"
+                    android:layout_marginBottom="@dimen/text_margin"
+                    android:layout_gravity="center_horizontal"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     android:textColor="@color/black"
                     android:textAppearance="?attr/textAppearanceListItem" />
 
@@ -77,18 +83,19 @@
                     style="@android:style/TextAppearance.Large"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentTop="false"
+                    android:layout_alignParentBottom="false"
                     android:layout_marginStart="@dimen/text_margin"
-                    android:layout_marginTop="@dimen/text_margin"
                     android:layout_marginEnd="@dimen/text_margin"
                     android:layout_marginBottom="@dimen/text_margin"
-                    android:gravity="center_vertical"
-                    android:layout_below="@id/patient_bio_data"
+                    android:layout_gravity="center_horizontal"
+                    app:layout_constraintTop_toBottomOf="@id/patient_bio_data"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
                     android:textColor="@color/black"
                     android:textAppearance="?attr/textAppearanceListItem" />
 
-            </RelativeLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
