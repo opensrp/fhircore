@@ -60,7 +60,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/colorAccent"
-            android:layout_below="@+id/register_nav_bar_container"
             android:textSize="22sp"
             android:textColor="#000000"
             android:paddingTop="10dp"
@@ -69,7 +68,10 @@
             android:drawableStart="@drawable/ic_search"
             android:drawablePadding="10dp"
             android:hint="@string/search_hint"
-            android:textColorHint="#C3C3C3"
-            android:paddingLeft="10dp" />
+            android:textColorHint="#AEAEAE"
+            android:paddingLeft="20dp"
+            android:drawableTint="#AEAEAE" />
+
     </LinearLayout>
+
 </LinearLayout>
