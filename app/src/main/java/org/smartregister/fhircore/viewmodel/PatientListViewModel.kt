@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Ona Systems Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import org.smartregister.fhircore.data.SamplePatients
-import com.google.android.fhir.search.filter.string
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.data.SamplePatients
 
 private const val OBSERVATIONS_JSON_FILENAME = "sample_observations_bundle.json"
 
@@ -36,97 +34,102 @@ private const val OBSERVATIONS_JSON_FILENAME = "sample_observations_bundle.json"
  * data for UI.
  */
 class PatientListViewModel(application: Application, private val fhirEngine: FhirEngine) :
-    AndroidViewModel(application) {
+  AndroidViewModel(application) {
 
-    // Make sample Fhir Patients and Observations available, in case needed for demo.
-    private val jsonStringObservations = getAssetFileAsString(OBSERVATIONS_JSON_FILENAME)
+  // Make sample Fhir Patients and Observations available, in case needed for demo.
+  private val jsonStringObservations = getAssetFileAsString(OBSERVATIONS_JSON_FILENAME)
 
-    private val samplePatients = SamplePatients()
+  private val samplePatients = SamplePatients()
 
-    private val observations = samplePatients.getObservationItems(jsonStringObservations)
-    private val liveObservations: MutableLiveData<List<ObservationItem>> =
-        MutableLiveData(observations)
+  private val observations = samplePatients.getObservationItems(jsonStringObservations)
+  private val liveObservations: MutableLiveData<List<ObservationItem>> =
+    MutableLiveData(observations)
 
-    private var patientResults: List<Patient> = getSearchResults()
-    private var searchedPatients = samplePatients.getPatientItems(patientResults)
-    private val _liveSearchedPatients: MutableLiveData<List<PatientItem>> = MutableLiveData()
-    val liveSearchedPatients: LiveData<List<PatientItem>> = _liveSearchedPatients
+  private var patientResults: List<Patient> = getSearchResults()
+  private var searchedPatients = samplePatients.getPatientItems(patientResults)
+  private val _liveSearchedPatients: MutableLiveData<List<PatientItem>> = MutableLiveData()
+  val liveSearchedPatients: LiveData<List<PatientItem>> = _liveSearchedPatients
 
-    fun getSearchedPatients(): LiveData<List<PatientItem>> {
-        searchedPatients = samplePatients.getPatientItems(patientResults)
-        _liveSearchedPatients.value = searchedPatients
-        Log.d("PatientListViewModel", "getSearchedPatients(): " +
-            "patientResults[${patientResults.count()}], searchedPatients[${searchedPatients
-                .count()}]")
-        return liveSearchedPatients
-    }
+  fun getSearchedPatients(): LiveData<List<PatientItem>> {
+    searchedPatients = samplePatients.getPatientItems(patientResults)
+    _liveSearchedPatients.value = searchedPatients
+    Log.d(
+      "PatientListViewModel",
+      "getSearchedPatients(): " +
+        "patientResults[${patientResults.count()}], searchedPatients[${searchedPatients
+          .count()}]"
+    )
+    return liveSearchedPatients
+  }
 
-    fun getPatientItem(id: String): PatientItem? {
-        return searchedPatients.associateBy { it.id }[id]
-    }
+  fun getPatientItem(id: String): PatientItem? {
+    return searchedPatients.associateBy { it.id }[id]
+  }
 
-    fun getObservations(): LiveData<List<ObservationItem>> {
-        return liveObservations
-    }
+  fun getObservations(): LiveData<List<ObservationItem>> {
+    return liveObservations
+  }
 
-    private fun getSearchResults(): List<Patient> {
-        val searchResults: List<Patient> = fhirEngine.search()
-            .of(Patient::class.java)
-            //.filter(string(Patient.ADDRESS_CITY, ParamPrefixEnum.EQUAL, "NAIROBI"))
-            .run()
-        Log.d("PatientListViewModel", "${searchResults.count()} search results: " +
-            "${searchResults.joinToString(" ")}")
-        return searchResults
-    }
+  private fun getSearchResults(): List<Patient> {
+    val searchResults: List<Patient> =
+      fhirEngine
+        .search()
+        .of(Patient::class.java)
+        // .filter(string(Patient.ADDRESS_CITY, ParamPrefixEnum.EQUAL, "NAIROBI"))
+        .run()
+    Log.d(
+      "PatientListViewModel",
+      "${searchResults.count()} search results: " + "${searchResults.joinToString(" ")}"
+    )
+    return searchResults
+  }
 
-    fun searchPatients() {
-        patientResults = getSearchResults()
-        searchedPatients = samplePatients.getPatientItems(patientResults)
-        _liveSearchedPatients.value = searchedPatients
-    }
+  fun searchPatients() {
+    patientResults = getSearchResults()
+    searchedPatients = samplePatients.getPatientItems(patientResults)
+    _liveSearchedPatients.value = searchedPatients
+  }
 
-    private fun getAssetFileAsString(filename: String): String {
-        return this.getApplication<Application>().applicationContext
-            .assets.open(filename).bufferedReader().use {
-                it.readText()
-            }
-    }
+  private fun getAssetFileAsString(filename: String): String {
+    return this.getApplication<Application>()
+      .applicationContext
+      .assets
+      .open(filename)
+      .bufferedReader()
+      .use { it.readText() }
+  }
 
-    /**
-     * The Patient's details for display purposes.
-     */
-    data class PatientItem(
-        val id: String,
-        val name: String,
-        val gender: String,
-        val dob: String,
-        val html: String,
-        val phone: String
-    ) {
-        override fun toString(): String = name
-    }
+  /** The Patient's details for display purposes. */
+  data class PatientItem(
+    val id: String,
+    val name: String,
+    val gender: String,
+    val dob: String,
+    val html: String,
+    val phone: String
+  ) {
+    override fun toString(): String = name
+  }
 
-    /**
-     * The Observation's details for display purposes.
-     */
-    data class ObservationItem(
-        val id: String,
-        val code: String,
-        val effective: String,
-        val value: String
-    ) {
-        override fun toString(): String = code
-    }
+  /** The Observation's details for display purposes. */
+  data class ObservationItem(
+    val id: String,
+    val code: String,
+    val effective: String,
+    val value: String
+  ) {
+    override fun toString(): String = code
+  }
 }
 
 class PatientListViewModelFactory(
-    private val application: Application,
-    private val fhirEngine: FhirEngine
+  private val application: Application,
+  private val fhirEngine: FhirEngine
 ) : ViewModelProvider.Factory {
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(PatientListViewModel::class.java)) {
-            return PatientListViewModel(application, fhirEngine) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
+  override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    if (modelClass.isAssignableFrom(PatientListViewModel::class.java)) {
+      return PatientListViewModel(application, fhirEngine) as T
     }
+    throw IllegalArgumentException("Unknown ViewModel class")
+  }
 }
