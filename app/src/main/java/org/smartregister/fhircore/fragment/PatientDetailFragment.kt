@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -27,6 +27,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.util.Utils
+import org.smartregister.fhircore.*
+import org.smartregister.fhircore.adapter.ObservationItemRecyclerViewAdapter
 
 /**
  * A fragment representing a single Patient detail screen.
