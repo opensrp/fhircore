@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-package java.awt.datatransfer
+package counterfeit.java.awt.datatransfer
 
 interface Transferable
