@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Ona Systems Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,31 +25,26 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Url
 
-/**
- * hapi.fhir.org API communication via Retrofit
- */
+/** hapi.fhir.org API communication via Retrofit */
 interface HapiFhirService {
 
-    @GET
-    suspend fun getResource(@Url url: String): Bundle
+  @GET suspend fun getResource(@Url url: String): Bundle
 
-    companion object {
-        const val BASE_URL = "https://fhir.labs.smartregister.org/fhir/"
+  companion object {
+    const val BASE_URL = "https://fhir.labs.smartregister.org/fhir/"
 
-        fun create(parser: IParser): HapiFhirService {
-            val logger = HttpLoggingInterceptor()
-            logger.level = HttpLoggingInterceptor.Level.BODY
+    fun create(parser: IParser): HapiFhirService {
+      val logger = HttpLoggingInterceptor()
+      logger.level = HttpLoggingInterceptor.Level.BODY
 
-            val client = OkHttpClient.Builder()
-                .addInterceptor(logger)
-                .build()
-            return Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .client(client)
-                .addConverterFactory(FhirConverterFactory(parser))
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-                .create(HapiFhirService::class.java)
-        }
+      val client = OkHttpClient.Builder().addInterceptor(logger).build()
+      return Retrofit.Builder()
+        .baseUrl(BASE_URL)
+        .client(client)
+        .addConverterFactory(FhirConverterFactory(parser))
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(HapiFhirService::class.java)
     }
+  }
 }
