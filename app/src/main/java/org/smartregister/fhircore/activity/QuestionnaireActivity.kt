@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -32,6 +32,10 @@ import com.google.android.fhir.datacapture.model.Patient
 import com.google.fhir.common.JsonFormat
 import com.google.fhir.r4.core.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Questionnaire
+import org.smartregister.fhircore.FhirApplication
+import org.smartregister.fhircore.fragment.QuestionnaireResponseDialogFragment
+import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
+import org.smartregister.fhircore.R
 
 class QuestionnaireActivity : AppCompatActivity() {
     private val viewModel: QuestionnaireViewModel by viewModels()
@@ -85,7 +89,7 @@ class QuestionnaireActivity : AppCompatActivity() {
         )
         dialogFragment.show(
             supportFragmentManager,
-            QuestionnaireResponseDialogFragment.TAG
+                QuestionnaireResponseDialogFragment.TAG
         )
     }
 

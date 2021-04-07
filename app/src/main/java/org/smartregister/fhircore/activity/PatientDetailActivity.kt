@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.activity
 
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import org.smartregister.fhircore.fragment.PatientDetailFragment
+import org.smartregister.fhircore.R
 
 /**
  * An activity representing a single Patient detail screen.
