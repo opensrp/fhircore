@@ -67,26 +67,32 @@ class PatientDetailFragment : Fragment() {
         Observer<List<PatientListViewModel.ObservationItem>> { adapter.submitList(it) }
       )
 
-        arguments?.let {
-            if (it.containsKey(ARG_ITEM_ID)) {
-                patient = it.getString(ARG_ITEM_ID)?.let {
-                        patient_index -> viewModel.getPatientItem(patient_index)
-                }
-            }
-        }
+    arguments?.let {
+      if (it.containsKey(ARG_ITEM_ID)) {
+        patient =
+          it.getString(ARG_ITEM_ID)?.let { patient_index ->
+            viewModel.getPatientItem(patient_index)
+          }
+      }
+    }
 
-        setupPatientData(patient)
+    setupPatientData(patient)
 
     return rootView
   }
 
-    private fun setupPatientData(patient: PatientListViewModel.PatientItem?) {
-        if (patient != null) {
-            var patientDetailLabel = patient?.name + ", " + patient?.gender + ", " + patient?.dob?.let { it1 -> Utils.getAgeFromDate(it1) }
-            activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
-            activity?.findViewById<TextView>(R.id.id_patient_number)?.text = "ID: " + patient.id
-        }
+  private fun setupPatientData(patient: PatientListViewModel.PatientItem?) {
+    if (patient != null) {
+      var patientDetailLabel =
+        patient?.name +
+          ", " +
+          patient?.gender +
+          ", " +
+          patient?.dob?.let { it1 -> Utils.getAgeFromDate(it1) }
+      activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
+      activity?.findViewById<TextView>(R.id.id_patient_number)?.text = "ID: " + patient.id
     }
+  }
 
   companion object {
     /** The fragment argument representing the patient item ID that this fragment represents. */
