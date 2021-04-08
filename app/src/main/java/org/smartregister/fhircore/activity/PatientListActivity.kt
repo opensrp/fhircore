@@ -24,6 +24,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.Toolbar
@@ -65,6 +66,13 @@ class PatientListActivity : AppCompatActivity() {
                 adapter.submitList(it)
             }
         )
+
+        findViewById<Button>(R.id.btn_register_new_patient).setOnClickListener {
+            Snackbar.make(it, "Add Patient", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show()
+            addPatient(it)
+            true
+        }
     }
 
     // Click handler to help display the details about the patients from the list.
@@ -76,20 +84,6 @@ class PatientListActivity : AppCompatActivity() {
         this.startActivity(intent)
     }
 
-    // To suppress the warning. Seems to be an issue with androidx library.
-    // "MenuBuilder.setOptionalIconsVisible can only be called from within the same library group
-    // prefix (referenced groupId=androidx.appcompat with prefix androidx from groupId=fhir-engine"
-    @SuppressLint("RestrictedApi")
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-//        val inflater: MenuInflater = menuInflater
-//        inflater.inflate(R.menu.list_options_menu, menu)
-//        // To ensure that icons show up in the overflow options menu. Icons go missing without this.
-//        if (menu is MenuBuilder) {
-//            menu.setOptionalIconsVisible(true)
-//        }
-        return true
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val view: View = findViewById(R.id.app_bar)
 
@@ -97,12 +91,6 @@ class PatientListActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.sync_resources -> {
                 syncResources(view)
-                true
-            }
-            R.id.add_patient -> {
-                Snackbar.make(view, "Add Patient", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show()
-                addPatient(view)
                 true
             }
             else -> super.onOptionsItemSelected(item)

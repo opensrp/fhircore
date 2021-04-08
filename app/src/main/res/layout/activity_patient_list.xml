@@ -43,9 +43,33 @@
 
     </androidx.appcompat.widget.Toolbar>
 
-    <include layout="@layout/patient_list"
+    <include
+        android:id="@+id/patient_list"
+        layout="@layout/patient_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/patient_register_toolbar"/>
+        app:layout_constraintTop_toBottomOf="@id/patient_register_toolbar"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <Button
+        android:id="@+id/btn_register_new_patient"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:text="Register new client"
+        android:textAllCaps="true"
+        android:textColor="@color/white"
+        android:background="@drawable/rounded_white_bg"
+        android:backgroundTint="@color/colorPrimary"
+        android:paddingHorizontal="10dp"
+        android:fontFamily="sans-serif-medium"
+        android:textSize="18sp"
+        android:drawableStart="@drawable/ic_add"
+        android:drawablePadding="5dp"
+        android:padding="10dp"
+        android:paddingEnd="15dp"
+        android:layout_marginBottom="15dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
