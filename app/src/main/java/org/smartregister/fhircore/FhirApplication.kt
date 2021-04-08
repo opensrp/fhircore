@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Ona Systems Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,6 @@ import androidx.work.Constraints
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineBuilder
-import org.smartregister.fhircore.api.HapiFhirService.Companion.create
-import org.smartregister.fhircore.data.FhirPeriodicSyncWorker
-import org.smartregister.fhircore.data.HapiFhirResourceDataSource
 import com.google.android.fhir.sync.FhirDataSource
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
@@ -33,37 +30,37 @@ import com.google.android.fhir.sync.SyncData
 import java.util.ArrayList
 import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.api.HapiFhirService.Companion.create
+import org.smartregister.fhircore.data.FhirPeriodicSyncWorker
+import org.smartregister.fhircore.data.HapiFhirResourceDataSource
 
 class FhirApplication : Application() {
 
-    // only initiate the FhirEngine when used for the first time, not when the app is created
-    private val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
+  // only initiate the FhirEngine when used for the first time, not when the app is created
+  private val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
 
-    private fun constructFhirEngine(): FhirEngine {
-        val parser = FhirContext.forR4().newJsonParser()
-        val service = create(parser)
-        val params = mutableMapOf("address-city" to "NAIROBI")
-        val syncData: MutableList<SyncData> = ArrayList()
-        syncData.add(SyncData(ResourceType.Patient, params))
-        val configuration = SyncConfiguration(syncData, false)
-        val periodicSyncConfiguration = PeriodicSyncConfiguration(
-            syncConfiguration = configuration,
-            syncConstraints = Constraints.Builder().build(),
-            periodicSyncWorker = FhirPeriodicSyncWorker::class.java,
-            repeat = RepeatInterval(
-                interval = 1,
-            timeUnit = TimeUnit.HOURS
-            )
-        )
-        val dataSource: FhirDataSource = HapiFhirResourceDataSource(service)
-        return FhirEngineBuilder(dataSource, this)
-            .periodicSyncConfiguration(periodicSyncConfiguration)
-            .build()
-    }
+  private fun constructFhirEngine(): FhirEngine {
+    val parser = FhirContext.forR4().newJsonParser()
+    val service = create(parser)
+    val params = mutableMapOf("address-city" to "NAIROBI")
+    val syncData: MutableList<SyncData> = ArrayList()
+    syncData.add(SyncData(ResourceType.Patient, params))
+    val configuration = SyncConfiguration(syncData, false)
+    val periodicSyncConfiguration =
+      PeriodicSyncConfiguration(
+        syncConfiguration = configuration,
+        syncConstraints = Constraints.Builder().build(),
+        periodicSyncWorker = FhirPeriodicSyncWorker::class.java,
+        repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
+      )
+    val dataSource: FhirDataSource = HapiFhirResourceDataSource(service)
+    return FhirEngineBuilder(dataSource, this)
+      .periodicSyncConfiguration(periodicSyncConfiguration)
+      .build()
+  }
 
-    companion object {
-        @JvmStatic
-        fun fhirEngine(context: Context) =
-            (context.applicationContext as FhirApplication).fhirEngine
-    }
+  companion object {
+    @JvmStatic
+    fun fhirEngine(context: Context) = (context.applicationContext as FhirApplication).fhirEngine
+  }
 }
