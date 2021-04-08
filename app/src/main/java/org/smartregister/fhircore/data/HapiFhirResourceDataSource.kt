@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Ona Systems Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,14 @@
 
 package org.smartregister.fhircore.data
 
-import org.smartregister.fhircore.api.HapiFhirService
 import com.google.android.fhir.sync.FhirDataSource
 import org.hl7.fhir.r4.model.Bundle
+import org.smartregister.fhircore.api.HapiFhirService
 
-/**
- * Implementation of the [FhirDataSource] that communicates with hapi fhir.
- */
-class HapiFhirResourceDataSource(
-    private val service: HapiFhirService
-) : FhirDataSource {
+/** Implementation of the [FhirDataSource] that communicates with hapi fhir. */
+class HapiFhirResourceDataSource(private val service: HapiFhirService) : FhirDataSource {
 
-    override suspend fun loadData(path: String): Bundle {
-        return service.getResource(path)
-    }
+  override suspend fun loadData(path: String): Bundle {
+    return service.getResource(path)
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Ona Systems Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,28 +23,20 @@ import org.smartregister.fhircore.PatientListViewModel
 import org.smartregister.fhircore.R
 
 class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    private val idView: TextView = itemView.findViewById(
-            R.id.id_patient_number
-    )
-    private val nameView: TextView = itemView.findViewById(
-            R.id.name
-    )
-    private val genderView: TextView = itemView.findViewById(
-            R.id.gender
-    )
-    private val dobView: TextView = itemView.findViewById(
-            R.id.dob
-    )
+  private val idView: TextView = itemView.findViewById(R.id.id_patient_number)
+  private val nameView: TextView = itemView.findViewById(R.id.name)
+  private val genderView: TextView = itemView.findViewById(R.id.gender)
+  private val dobView: TextView = itemView.findViewById(R.id.dob)
 
-    fun bindTo(
-            patientItem: PatientListViewModel.PatientItem,
-            onItemClicked: (PatientListViewModel.PatientItem) -> Unit
-    ) {
-        this.idView.text = patientItem.id
-        this.nameView.text = patientItem.name
-        this.genderView.text = patientItem.gender
-        this.dobView.text = patientItem.dob
+  fun bindTo(
+    patientItem: PatientListViewModel.PatientItem,
+    onItemClicked: (PatientListViewModel.PatientItem) -> Unit
+  ) {
+    this.idView.text = patientItem.id
+    this.nameView.text = patientItem.name
+    this.genderView.text = patientItem.gender
+    this.dobView.text = patientItem.dob
 
-        this.itemView.setOnClickListener { onItemClicked(patientItem) }
-    }
+    this.itemView.setOnClickListener { onItemClicked(patientItem) }
+  }
 }

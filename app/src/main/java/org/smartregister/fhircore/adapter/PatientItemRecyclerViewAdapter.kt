@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Ona Systems Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,35 +24,32 @@ import org.smartregister.fhircore.PatientListViewModel
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.viewholder.PatientItemViewHolder
 
-/**
- * UI Controller helper class to monitor Patient viewmodel and display list of patients.
- */
+/** UI Controller helper class to monitor Patient viewmodel and display list of patients. */
 class PatientItemRecyclerViewAdapter(
-    private val onItemClicked: (PatientListViewModel.PatientItem) -> Unit
-) : ListAdapter<PatientListViewModel.PatientItem, PatientItemViewHolder>(
-    PatientItemDiffCallback()
-) {
+  private val onItemClicked: (PatientListViewModel.PatientItem) -> Unit
+) :
+  ListAdapter<PatientListViewModel.PatientItem, PatientItemViewHolder>(PatientItemDiffCallback()) {
 
-    class PatientItemDiffCallback : DiffUtil.ItemCallback<PatientListViewModel.PatientItem>() {
-        override fun areItemsTheSame(
-                oldItem: PatientListViewModel.PatientItem,
-                newItem: PatientListViewModel.PatientItem
-        ): Boolean = oldItem.id == newItem.id
+  class PatientItemDiffCallback : DiffUtil.ItemCallback<PatientListViewModel.PatientItem>() {
+    override fun areItemsTheSame(
+      oldItem: PatientListViewModel.PatientItem,
+      newItem: PatientListViewModel.PatientItem
+    ): Boolean = oldItem.id == newItem.id
 
-        override fun areContentsTheSame(
-                oldItem: PatientListViewModel.PatientItem,
-                newItem: PatientListViewModel.PatientItem
-        ): Boolean = oldItem.id == newItem.id
-    }
+    override fun areContentsTheSame(
+      oldItem: PatientListViewModel.PatientItem,
+      newItem: PatientListViewModel.PatientItem
+    ): Boolean = oldItem.id == newItem.id
+  }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PatientItemViewHolder {
-        val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.patient_list_item, parent, false)
-        return PatientItemViewHolder(view)
-    }
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PatientItemViewHolder {
+    val view =
+      LayoutInflater.from(parent.context).inflate(R.layout.patient_list_item, parent, false)
+    return PatientItemViewHolder(view)
+  }
 
-    override fun onBindViewHolder(holder: PatientItemViewHolder, position: Int) {
-        val item = currentList[position]
-        holder.bindTo(item, onItemClicked)
-    }
+  override fun onBindViewHolder(holder: PatientItemViewHolder, position: Int) {
+    val item = currentList[position]
+    holder.bindTo(item, onItemClicked)
+  }
 }
