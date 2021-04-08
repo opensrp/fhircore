@@ -16,28 +16,32 @@
 
 package org.smartregister.fhircore.activity
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
+import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
+import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-import org.smartregister.fhircore.*
+import org.smartregister.fhircore.FhirApplication
+import org.smartregister.fhircore.PatientListViewModel
+import org.smartregister.fhircore.PatientListViewModelFactory
+import org.smartregister.fhircore.R
 import org.smartregister.fhircore.adapter.PatientItemRecyclerViewAdapter
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 
 /** An activity representing a list of Patients. */
 class PatientListActivity : AppCompatActivity() {
+
     private lateinit var fhirEngine: FhirEngine
     private lateinit var patientListViewModel: PatientListViewModel
 
@@ -53,7 +57,7 @@ class PatientListActivity : AppCompatActivity() {
         fhirEngine = FhirApplication.fhirEngine(this)
 
         patientListViewModel = ViewModelProvider(this, PatientListViewModelFactory(
-            this.application, fhirEngine
+                this.application, fhirEngine
         )).get(PatientListViewModel::class.java)
         val recyclerView: RecyclerView = findViewById(R.id.patient_list)
 
@@ -61,24 +65,37 @@ class PatientListActivity : AppCompatActivity() {
         recyclerView.adapter = adapter
 
         patientListViewModel.getSearchedPatients().observe(this,
-            {
-                Log.d("PatientListActivity", "Submitting ${it.count()} patient records")
-                adapter.submitList(it)
-            }
+                {
+                    Log.d("PatientListActivity", "Submitting ${it.count()} patient records")
+                    adapter.submitList(it)
+                }
         )
 
+        setUpViews();
+    }
+
+    private fun setUpViews() {
         findViewById<Button>(R.id.btn_register_new_patient).setOnClickListener {
             Snackbar.make(it, "Add Patient", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
             addPatient(it)
             true
         }
+        setupDrawerContent();
+    }
+
+    private fun setupDrawerContent() {
+        val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout);
+        findViewById<ImageButton>(R.id.btn_drawer_menu).setOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+        val navigationView = findViewById<NavigationView>(R.id.nav_view)
     }
 
     // Click handler to help display the details about the patients from the list.
     private fun onPatientItemClicked(patientItem: PatientListViewModel.PatientItem) {
         val intent = Intent(this.applicationContext,
-            PatientDetailActivity::class.java).apply {
+                PatientDetailActivity::class.java).apply {
             putExtra(PatientDetailFragment.ARG_ITEM_ID, patientItem.id)
         }
         this.startActivity(intent)
