@@ -70,8 +70,10 @@
             android:drawablePadding="10dp"
             android:hint="@string/search_hint"
             android:textColorHint="#AEAEAE"
-            android:paddingLeft="20dp"
-            android:drawableTint="#AEAEAE" />
+            android:paddingStart="15dp"
+            android:paddingEnd="15dp"
+            android:drawableTint="#AEAEAE"
+            android:drawableEnd="@drawable/ic_cancel" />
 
     </LinearLayout>
 
