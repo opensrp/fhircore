@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Ona Systems Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,34 +34,38 @@ import org.smartregister.fhircore.adapter.ObservationItemRecyclerViewAdapter
 import org.smartregister.fhircore.util.Utils
 
 /**
- * A fragment representing a single Patient detail screen.
- * This fragment is contained in a [PatientDetailActivity].
+ * A fragment representing a single Patient detail screen. This fragment is contained in a
+ * [PatientDetailActivity].
  */
 class PatientDetailFragment : Fragment() {
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val rootView = inflater.inflate(R.layout.patient_detail, container, false)
+  override fun onCreateView(
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?
+  ): View? {
+    val rootView = inflater.inflate(R.layout.patient_detail, container, false)
 
-        val recyclerView: RecyclerView = rootView.findViewById(R.id.observation_list)
-        val adapter = ObservationItemRecyclerViewAdapter()
-        recyclerView.adapter = adapter
+    val recyclerView: RecyclerView = rootView.findViewById(R.id.observation_list)
+    val adapter = ObservationItemRecyclerViewAdapter()
+    recyclerView.adapter = adapter
 
-        val fhirEngine: FhirEngine = FhirApplication.fhirEngine(requireContext())
-        var patient: PatientListViewModel.PatientItem? = null
+    val fhirEngine: FhirEngine = FhirApplication.fhirEngine(requireContext())
+    var patient: PatientListViewModel.PatientItem? = null
 
-        val viewModel: PatientListViewModel = ViewModelProvider(this, PatientListViewModelFactory(
-            this.requireActivity().application, fhirEngine
-        ))
-            .get(PatientListViewModel::class.java)
+    val viewModel: PatientListViewModel =
+      ViewModelProvider(
+          this,
+          PatientListViewModelFactory(this.requireActivity().application, fhirEngine)
+        )
+        .get(PatientListViewModel::class.java)
 
-        viewModel.getObservations().observe(viewLifecycleOwner,
-            Observer<List<PatientListViewModel.ObservationItem>> {
-                adapter.submitList(it)
-            })
+    viewModel
+      .getObservations()
+      .observe(
+        viewLifecycleOwner,
+        Observer<List<PatientListViewModel.ObservationItem>> { adapter.submitList(it) }
+      )
 
         arguments?.let {
             if (it.containsKey(ARG_ITEM_ID)) {
@@ -73,8 +77,8 @@ class PatientDetailFragment : Fragment() {
 
         setupPatientData(patient)
 
-        return rootView
-    }
+    return rootView
+  }
 
     private fun setupPatientData(patient: PatientListViewModel.PatientItem?) {
         if (patient != null) {
@@ -84,11 +88,8 @@ class PatientDetailFragment : Fragment() {
         }
     }
 
-    companion object {
-        /**
-         * The fragment argument representing the patient item ID that this fragment
-         * represents.
-         */
-        const val ARG_ITEM_ID = "patient_item_id"
-    }
+  companion object {
+    /** The fragment argument representing the patient item ID that this fragment represents. */
+    const val ARG_ITEM_ID = "patient_item_id"
+  }
 }
