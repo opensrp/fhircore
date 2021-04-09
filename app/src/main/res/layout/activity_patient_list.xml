@@ -85,14 +85,15 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
-        android:background="#2C2C2C"
+        android:background="@color/drawer_menu_bg_color"
         app:menu="@menu/drawer_menu"
         app:headerLayout="@layout/drawer_menu_header"
         app:itemIconTint="#AEAEAE"
         app:itemTextColor="@color/white"
         app:itemTextAppearance="@style/menu_text_style"
         app:itemIconSize="32dp"
-        app:itemIconPadding="10dp">
+        app:itemIconPadding="10dp"
+        app:itemBackground="@drawable/drawer_menu_item_selector">
 
         <LinearLayout
             android:layout_width="match_parent"
