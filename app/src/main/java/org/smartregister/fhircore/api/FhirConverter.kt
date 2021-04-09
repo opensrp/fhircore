@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Ona Systems Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,20 +25,18 @@ import retrofit2.Converter
 import retrofit2.Retrofit
 
 class FhirConverterFactory(private val parser: IParser) : Converter.Factory() {
-    override fun responseBodyConverter(
-        type: Type,
-        annotations: Array<Annotation>,
-        retrofit: Retrofit
-    ): Converter<ResponseBody, *>? {
-        return FhirConverter(parser)
-    }
+  override fun responseBodyConverter(
+    type: Type,
+    annotations: Array<Annotation>,
+    retrofit: Retrofit
+  ): Converter<ResponseBody, *>? {
+    return FhirConverter(parser)
+  }
 }
 
-/**
- * Retrofit converter that allows us to parse FHIR resources
- */
+/** Retrofit converter that allows us to parse FHIR resources */
 class FhirConverter(private val parser: IParser) : Converter<ResponseBody, Resource> {
-    override fun convert(value: ResponseBody): Resource? {
-        return parser.parseResource(Bundle::class.java, value.string()) as Resource
-    }
+  override fun convert(value: ResponseBody): Resource? {
+    return parser.parseResource(Bundle::class.java, value.string()) as Resource
+  }
 }

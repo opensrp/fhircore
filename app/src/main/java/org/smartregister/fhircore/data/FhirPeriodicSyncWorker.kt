@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Ona Systems Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,13 @@ package org.smartregister.fhircore.data
 import android.content.Context
 import androidx.work.WorkerParameters
 import com.google.android.fhir.FhirEngine
-import org.smartregister.fhircore.FhirApplication
 import com.google.android.fhir.sync.PeriodicSyncWorker
+import org.smartregister.fhircore.FhirApplication
 
-class FhirPeriodicSyncWorker(
-    appContext: Context,
-    workerParams: WorkerParameters
-) : PeriodicSyncWorker(appContext, workerParams) {
+class FhirPeriodicSyncWorker(appContext: Context, workerParams: WorkerParameters) :
+  PeriodicSyncWorker(appContext, workerParams) {
 
-    override fun getFhirEngine(): FhirEngine {
-        return FhirApplication.fhirEngine(applicationContext)
-    }
+  override fun getFhirEngine(): FhirEngine {
+    return FhirApplication.fhirEngine(applicationContext)
+  }
 }

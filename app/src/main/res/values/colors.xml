@@ -23,4 +23,6 @@
     <color name="white">#FFFFFF</color>
     <color name="white_slightly_opaque">#38ffffff</color>
     <color name="drawer_menu_bg_color">#2C2C2C</color>
+    <color name="profile_header_background">#ECF1F7</color>
+    <color name="black">#000000</color>
 </resources>

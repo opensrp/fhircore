@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Ona Systems Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,35 +24,33 @@ import org.smartregister.fhircore.PatientListViewModel
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.viewholder.ObservationItemViewHolder
 
-/**
- * UI Controller helper class to display list of observations.
- */
+/** UI Controller helper class to display list of observations. */
 class ObservationItemRecyclerViewAdapter :
-ListAdapter<PatientListViewModel.ObservationItem, ObservationItemViewHolder>(
+  ListAdapter<PatientListViewModel.ObservationItem, ObservationItemViewHolder>(
     ObservationItemDiffCallback()
-) {
+  ) {
 
-    class ObservationItemDiffCallback :
-        DiffUtil.ItemCallback<PatientListViewModel.ObservationItem>() {
-        override fun areItemsTheSame(
-                oldItem: PatientListViewModel.ObservationItem,
-                newItem: PatientListViewModel.ObservationItem
-        ): Boolean = oldItem.id == newItem.id
+  class ObservationItemDiffCallback :
+    DiffUtil.ItemCallback<PatientListViewModel.ObservationItem>() {
+    override fun areItemsTheSame(
+      oldItem: PatientListViewModel.ObservationItem,
+      newItem: PatientListViewModel.ObservationItem
+    ): Boolean = oldItem.id == newItem.id
 
-        override fun areContentsTheSame(
-                oldItem: PatientListViewModel.ObservationItem,
-                newItem: PatientListViewModel.ObservationItem
-        ): Boolean = oldItem.id == newItem.id
-    }
+    override fun areContentsTheSame(
+      oldItem: PatientListViewModel.ObservationItem,
+      newItem: PatientListViewModel.ObservationItem
+    ): Boolean = oldItem.id == newItem.id
+  }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ObservationItemViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.observation_list_item, parent, false)
-        return ObservationItemViewHolder(view)
-    }
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ObservationItemViewHolder {
+    val view =
+      LayoutInflater.from(parent.context).inflate(R.layout.observation_list_item, parent, false)
+    return ObservationItemViewHolder(view)
+  }
 
-    override fun onBindViewHolder(holder: ObservationItemViewHolder, position: Int) {
-        val item = currentList[position]
-        holder.bindTo(item)
-    }
+  override fun onBindViewHolder(holder: ObservationItemViewHolder, position: Int) {
+    val item = currentList[position]
+    holder.bindTo(item)
+  }
 }
