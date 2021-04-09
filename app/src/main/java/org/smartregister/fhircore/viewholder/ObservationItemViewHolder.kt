@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Ona Systems Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.viewholder
 
 import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import org.smartregister.fhircore.PatientListViewModel
+import org.smartregister.fhircore.R
 
 class ObservationItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    private val observationTextView: TextView = itemView.findViewById(
-        R.id.observation_detail
-    )
+  private val observationTextView: TextView = itemView.findViewById(R.id.observation_detail)
 
-    fun bindTo(observationItem: PatientListViewModel.ObservationItem) {
-        this.observationTextView.text =
-            itemView.resources.getString(R.string.observation_brief_text, observationItem.code,
-                observationItem.value, observationItem.effective)
-    }
+  fun bindTo(observationItem: PatientListViewModel.ObservationItem) {
+    this.observationTextView.text =
+      itemView.resources.getString(
+        R.string.observation_brief_text,
+        observationItem.code,
+        observationItem.value,
+        observationItem.effective
+      )
+  }
 }

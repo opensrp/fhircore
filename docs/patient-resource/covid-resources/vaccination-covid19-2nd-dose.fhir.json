@@ -1,0 +1,60 @@
+{
+  "resourceType": "Immunization",
+  "id": "1955672",
+  "extension": [
+    {
+      "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-VaccinationProcedure",
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "1324691000000104",
+            "display": "Administration of second dose of severe acute respiratory syndrome coronavirus 2 vaccine (procedure)"
+          }
+        ]
+      }
+    }
+  ],
+  "identifier": [
+    {
+      "system": "https://tools.ietf.org/html/rfc4122",
+      "value": "7ec28d82-33bf-4e6d-a8de-91dcbc8d1802"
+    }
+  ],
+  "status": "completed",
+  "primarySource": true,
+  "occurrenceDateTime": "2021-02-23T13:00:08.476+00:00",
+  "patient": {
+    "reference": "Patient/1953684",
+    "type": "Patient",
+    "identifier": {
+      "system": "https://fhir.nhs.uk/Id/nhs-number",
+      "value": "9912003888"
+    }
+  },
+  "vaccineCode": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "39114911000001105",
+        "display": "COVID-19 Vaccine AstraZeneca (ChAdOx1 S [recombinant]) 5x10,000,000,000 viral particles/0.5ml dose solution for injection multidose vials (AstraZeneca)"
+      }
+    ]
+  },
+  "manufacturer": {
+    "display": "DREAMLAND Pharmaceuticals Ltd"
+  },
+  "lotNumber": "R04X",
+  "protocolApplied": {
+    "targetDisease": {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "840544004",
+          "display": "Suspected disease caused by Severe acute respiratory coronavirus 2 (situation)"
+        }
+      ]
+    },
+    "doseNumberPositiveInt": 2
+  }
+}

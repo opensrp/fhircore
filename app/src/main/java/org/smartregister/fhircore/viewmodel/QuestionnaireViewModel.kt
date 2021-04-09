@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Ona Systems Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,26 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
+import org.smartregister.fhircore.activity.QuestionnaireActivity
 
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
-    AndroidViewModel(application) {
-    var questionnaireJson: String? = null
-    val questionnaire: String
-        get() {
-            if (questionnaireJson == null) {
-                questionnaireJson = getApplication<Application>().assets
-                    .open(state[QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY]!!)
-                    .bufferedReader()
-                    .use { it.readText() }
-            }
-            return questionnaireJson!!
-        }
+  AndroidViewModel(application) {
+  var questionnaireJson: String? = null
+  val questionnaire: String
+    get() {
+      if (questionnaireJson == null) {
+        questionnaireJson =
+          getApplication<Application>()
+            .assets
+            .open(state[QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY]!!)
+            .bufferedReader()
+            .use { it.readText() }
+      }
+      return questionnaireJson!!
+    }
 }
