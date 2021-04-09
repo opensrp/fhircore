@@ -19,10 +19,12 @@ package org.smartregister.fhircore.activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.MenuItem
+import android.view.Gravity
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
@@ -31,7 +33,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
 import com.google.android.material.navigation.NavigationView
-import com.google.android.material.snackbar.Snackbar
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.PatientListViewModel
 import org.smartregister.fhircore.PatientListViewModelFactory
@@ -76,11 +77,14 @@ class PatientListActivity : AppCompatActivity() {
 
     private fun setUpViews() {
         findViewById<Button>(R.id.btn_register_new_patient).setOnClickListener {
-            Snackbar.make(it, "Add Patient", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
             addPatient(it)
-            true
         }
+
+        findViewById<TextView>(R.id.tv_sync).setOnClickListener {
+            findViewById<DrawerLayout>(R.id.drawer_layout).closeDrawer(GravityCompat.START);
+            syncResources()
+        }
+
         setupDrawerContent();
     }
 
@@ -89,7 +93,6 @@ class PatientListActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.btn_drawer_menu).setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
         }
-        val navigationView = findViewById<NavigationView>(R.id.nav_view)
     }
 
     // Click handler to help display the details about the patients from the list.
@@ -101,22 +104,8 @@ class PatientListActivity : AppCompatActivity() {
         this.startActivity(intent)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val view: View = findViewById(R.id.app_bar)
-
-        // Handle item selection
-        return when (item.itemId) {
-            R.id.sync_resources -> {
-                syncResources(view)
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
-    private fun syncResources(view: View) {
-        Snackbar.make(view, "Getting Patients List", Snackbar.LENGTH_LONG)
-            .setAction("Action", null).show()
+    private fun syncResources() {
+        Toast.makeText(this, "Syncing...", Toast.LENGTH_LONG).show()
         patientListViewModel.searchPatients()
     }
 

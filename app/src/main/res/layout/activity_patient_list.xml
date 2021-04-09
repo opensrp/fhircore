@@ -103,7 +103,7 @@
             android:paddingTop="15dp">
 
             <TextView
-                android:id="@+id/btn_sync"
+                android:id="@+id/tv_sync"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="Sync"
