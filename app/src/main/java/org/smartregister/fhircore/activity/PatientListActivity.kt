@@ -51,7 +51,6 @@ class PatientListActivity : AppCompatActivity() {
 
     val toolbar = findViewById<Toolbar>(R.id.toolbar)
     setSupportActionBar(toolbar)
-    toolbar.title = title
 
     fhirEngine = FhirApplication.fhirEngine(this)
 
