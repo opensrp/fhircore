@@ -1,0 +1,93 @@
+{
+  "resourceType": "ValueSet",
+  "id": "covid-19-detection-result-vs",
+  "url": "https://fhir.nhs.uk/ValueSet/covid-19-detection-result-vs",
+  "version": "1.1.6-2",
+  "name": "COVID19DetectionResultVS",
+  "title": "COVID-19 SNOMED CT Detection Result Value Set",
+  "status": "draft",
+  "date": "2021-01-23T06:00:00+00:00",
+  "publisher": "NHS Digital",
+  "contact": [
+    {
+      "name": "Interoperability Team",
+      "telecom": [
+        {
+          "system": "email",
+          "value": "interoperabilityteam@nhs.net",
+          "use": "work"
+        }
+      ]
+    }
+  ],
+  "description": "SNOMED CT-coded requestable tests is to be used",
+  "compose": {
+    "include": [
+      {
+        "system": "http://snomed.info/sct",
+        "concept": [
+          {
+            "code": "1240581000000104",
+            "display": "SARS-CoV-2 (severe acute respiratory syndrome coronavirus 2) detection result positive"
+          },
+          {
+            "code": "1240591000000102",
+            "display": "SARS-CoV-2 (severe acute respiratory syndrome coronavirus 2) detection result negative"
+          },
+          {
+            "code": "1321681000000104",
+            "display": "SARS-CoV-2 (severe acute respiratory syndrome coronavirus 2) detection result equivocal"
+          },
+          {
+            "code": "1321691000000102",
+            "display": "SARS-CoV-2 (severe acute respiratory syndrome coronavirus 2) detection result unknown"
+          },
+          {
+            "code": "1321341000000103",
+            "display": "SARS-CoV-2 (severe acute respiratory syndrome coronavirus 2) IgG arbitrary concentration in serum"
+          },
+          {
+            "code": "1321351000000100",
+            "display": "SARS-CoV-2 (severe acute respiratory syndrome coronavirus 2) IgM arbitrary concentration in serum"
+          },
+          {
+            "code": "1321331000000107",
+            "display": "SARS-CoV-2 (severe acute respiratory syndrome coronavirus 2) total immunoglobulin arbitrary concentration in serum"
+          },
+          {
+            "code": "1321541000000108",
+            "display": "SARS-CoV-2 (severe acute respiratory syndrome coronavirus 2) IgG detection result positive"
+          },
+          {
+            "code": "1321571000000102",
+            "display": "SARS-CoV-2 (severe acute respiratory syndrome coronavirus 2) IgG detection result negative"
+          },
+          {
+            "code": "1321591000000103",
+            "display": "SARS-CoV-2 (severe acute respiratory syndrome coronavirus 2) IgG detection result equivocal"
+          },
+          {
+            "code": "1321641000000107",
+            "display": "SARS-CoV-2 (severe acute respiratory syndrome coronavirus 2) IgG detection result unknown"
+          },
+          {
+            "code": "1321551000000106",
+            "display": "SARS-CoV-2 (severe acute respiratory syndrome coronavirus 2) IgM detection result positive"
+          },
+          {
+            "code": "1321561000000109",
+            "display": "SARS-CoV-2 (severe acute respiratory syndrome coronavirus 2) IgM detection result negative"
+          },
+          {
+            "code": "1321631000000103",
+            "display": "SARS-CoV-2 (severe acute respiratory syndrome coronavirus 2) IgM detection result equivocal"
+          },
+          {
+            "code": "1321581000000100",
+            "display": "SARS-CoV-2 (severe acute respiratory syndrome coronavirus 2) IgM detection result unknown"
+          }
+        ]
+      }
+    ]
+  }
+}
