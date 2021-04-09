@@ -1,0 +1,65 @@
+{
+  "resourceType": "ValueSet",
+  "id": "covid-19-snomed-test-vs",
+  "url": "https://fhir.nhs.uk/ValueSet/covid-19-snomed-test-vs",
+  "version": "1.1.6-1",
+  "name": "COVID19SNOMEDTestVS",
+  "title": "COVID-19 SNOMED CT Tests Value Set",
+  "status": "draft",
+  "date": "2021-01-23T06:00:00+00:00",
+  "publisher": "NHS Digital",
+  "contact": [
+    {
+      "name": "Interoperability Team",
+      "telecom": [
+        {
+          "system": "email",
+          "value": "interoperabilityteam@nhs.net",
+          "use": "work"
+        }
+      ]
+    }
+  ],
+  "description": "SNOMED CT-coded requestable tests is to be used",
+  "compose": {
+    "include": [
+      {
+        "system": "http://snomed.info/sct",
+        "concept": [
+          {
+            "code": "1321291000000100",
+            "display": "SARS-CoV-2 species detection test (procedure)"
+          },
+          {
+            "code": "1321711000000100",
+            "display": "Point-of-care SARS-CoV-2 species detection test (procedure)"
+          },
+          {
+            "code": "1321721000000106",
+            "display": "Central laboratory SARS-CoV-2 species detection test (procedure)"
+          },
+          {
+            "code": "1240511000000106",
+            "display": "detection of severe acute respiratory syndrome coronavirus 2 using polymerase chain reaction technique (procedure)"
+          },
+          {
+            "code": "1240471000000102",
+            "display": "measurement of severe acute respiratory syndrome coronavirus 2 antigen (procedure)"
+          },
+          {
+            "code": "1240461000000109",
+            "display": "Measurement of SARS-CoV-2 antibody (procedure)"
+          },
+          {
+            "code": "1321731000000108",
+            "display": "Point-of-care measurement of SARS-CoV-2 antibody (procedure)"
+          },
+          {
+            "code": " 1321741000000104",
+            "display": "Central laboratory measurement of SARS-CoV-2 antibody (procedure)"
+          }
+        ]
+      }
+    ]
+  }
+}

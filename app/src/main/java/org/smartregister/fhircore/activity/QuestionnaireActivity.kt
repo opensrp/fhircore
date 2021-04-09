@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Ona Systems Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,98 +33,91 @@ import com.google.fhir.common.JsonFormat
 import com.google.fhir.r4.core.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Questionnaire
 import org.smartregister.fhircore.FhirApplication
+import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.QuestionnaireResponseDialogFragment
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
-import org.smartregister.fhircore.R
 
 class QuestionnaireActivity : AppCompatActivity() {
-    private val viewModel: QuestionnaireViewModel by viewModels()
+  private val viewModel: QuestionnaireViewModel by viewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_questionnaire)
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.activity_questionnaire)
 
-        supportActionBar!!.apply {
-            title = intent.getStringExtra(QUESTIONNAIRE_TITLE_KEY)
-            setDisplayHomeAsUpEnabled(true)
-        }
-
-        // Only add the fragment once, when the activity is first created.
-        if (savedInstanceState == null) {
-            val fragment = QuestionnaireFragment()
-            fragment.arguments = bundleOf(
-                QuestionnaireFragment.BUNDLE_KEY_QUESTIONNAIRE to viewModel.questionnaire
-            )
-
-            supportFragmentManager.commit {
-                add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG)
-            }
-        }
+    supportActionBar!!.apply {
+      title = intent.getStringExtra(QUESTIONNAIRE_TITLE_KEY)
+      setDisplayHomeAsUpEnabled(true)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.top_bar_menu, menu)
-        return true
+    // Only add the fragment once, when the activity is first created.
+    if (savedInstanceState == null) {
+      val fragment = QuestionnaireFragment()
+      fragment.arguments =
+        bundleOf(QuestionnaireFragment.BUNDLE_KEY_QUESTIONNAIRE to viewModel.questionnaire)
+
+      supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
     }
+  }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.getItemId()) {
-            R.id.action_submit -> {
-                val questionnaireFragment = supportFragmentManager.findFragmentByTag(
-                    QUESTIONNAIRE_FRAGMENT_TAG
-                ) as QuestionnaireFragment
-                savePatientResource(questionnaireFragment.getQuestionnaireResponse())
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
+  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    menuInflater.inflate(R.menu.top_bar_menu, menu)
+    return true
+  }
+
+  override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    return when (item.getItemId()) {
+      R.id.action_submit -> {
+        val questionnaireFragment =
+          supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
+            QuestionnaireFragment
+        savePatientResource(questionnaireFragment.getQuestionnaireResponse())
+        true
+      }
+      else -> super.onOptionsItemSelected(item)
     }
+  }
 
-    // Display Quesitonnaire response as a dialog
-    fun displayQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
-        val questionnaireResponseJson = JsonFormat.getPrinter().print(questionnaireResponse)
-        val dialogFragment = QuestionnaireResponseDialogFragment()
-        dialogFragment.arguments = bundleOf(
-            QuestionnaireResponseDialogFragment.BUNDLE_KEY_CONTENTS to questionnaireResponseJson
-        )
-        dialogFragment.show(
-            supportFragmentManager,
-                QuestionnaireResponseDialogFragment.TAG
-        )
-    }
+  // Display Quesitonnaire response as a dialog
+  fun displayQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
+    val questionnaireResponseJson = JsonFormat.getPrinter().print(questionnaireResponse)
+    val dialogFragment = QuestionnaireResponseDialogFragment()
+    dialogFragment.arguments =
+      bundleOf(QuestionnaireResponseDialogFragment.BUNDLE_KEY_CONTENTS to questionnaireResponseJson)
+    dialogFragment.show(supportFragmentManager, QuestionnaireResponseDialogFragment.TAG)
+  }
 
-    fun savePatientResource(questionnaireResponse: QuestionnaireResponse) {
-        val questionnaireResponseJson = JsonFormat.getPrinter().print(questionnaireResponse)
+  fun savePatientResource(questionnaireResponse: QuestionnaireResponse) {
+    val questionnaireResponseJson = JsonFormat.getPrinter().print(questionnaireResponse)
 
-        val iParser: IParser = FhirContext.forR4().newJsonParser()
-        val questionnaire =
-                iParser.parseResource(
-                        org.hl7.fhir.r4.model.Questionnaire::class.java,
-                        viewModel.questionnaire
-                ) as
-                        Questionnaire
-        val questionnaireResponse =
-                iParser.parseResource(
-                        org.hl7.fhir.r4.model.QuestionnaireResponse::class.java,
-                        questionnaireResponseJson
-                ) as
-                        org.hl7.fhir.r4.model.QuestionnaireResponse
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val questionnaire =
+      iParser.parseResource(
+        org.hl7.fhir.r4.model.Questionnaire::class.java,
+        viewModel.questionnaire
+      ) as
+        Questionnaire
+    val questionnaireResponse =
+      iParser.parseResource(
+        org.hl7.fhir.r4.model.QuestionnaireResponse::class.java,
+        questionnaireResponseJson
+      ) as
+        org.hl7.fhir.r4.model.QuestionnaireResponse
 
-        var patient = ResourceMapperHAPI.extract(questionnaire, questionnaireResponse)
+    var patient = ResourceMapperHAPI.extract(questionnaire, questionnaireResponse)
 
-        patient.setId((patient as Patient).name.first().family)
-        FhirApplication.fhirEngine(applicationContext).save(patient)
+    patient.setId((patient as Patient).name.first().family)
+    FhirApplication.fhirEngine(applicationContext).save(patient)
 
-        val dialogFragment = QuestionnaireResponseDialogFragment()
-        dialogFragment.arguments =
-                bundleOf(QuestionnaireResponseDialogFragment.BUNDLE_KEY_CONTENTS to questionnaireResponseJson)
+    val dialogFragment = QuestionnaireResponseDialogFragment()
+    dialogFragment.arguments =
+      bundleOf(QuestionnaireResponseDialogFragment.BUNDLE_KEY_CONTENTS to questionnaireResponseJson)
 
-        this.startActivity(Intent(this, PatientListActivity::class.java))
-    }
+    this.startActivity(Intent(this, PatientListActivity::class.java))
+  }
 
-    companion object {
-        const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
-        const val QUESTIONNAIRE_FILE_PATH_KEY = "questionnaire-file-path-key"
-        const val QUESTIONNAIRE_FRAGMENT_TAG = "questionannire-fragment-tag"
-    }
+  companion object {
+    const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
+    const val QUESTIONNAIRE_FILE_PATH_KEY = "questionnaire-file-path-key"
+    const val QUESTIONNAIRE_FRAGMENT_TAG = "questionannire-fragment-tag"
+  }
 }
