@@ -34,4 +34,5 @@
     <style name="AppCard" parent="Widget.MaterialComponents.CardView">
         <item name="cardElevation">8dp</item>
     </style>
+
 </resources>
