@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <group android:checkableBehavior="single"
+        android:id="@+id/global_controls">
+
+        <item
+            android:id="@+id/menu_item_clients"
+            android:title="COVAX Clients"
+            android:icon="@drawable/ic_baby_mother_covax" />
+
+        <item
+            android:id="@+id/menu_item_logout"
+            android:title="Log out as Francis"
+            android:icon="@drawable/ic_logout" />
+
+    </group>
+
+</menu>
