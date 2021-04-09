@@ -39,16 +39,6 @@
             android:paddingRight="16dp"
             android:orientation="vertical">
 
-            <include layout="@layout/patient_list_item" />
-
-            <TextView
-                android:id="@+id/patient_detail"
-                style="?android:attr/textAppearanceSmall"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="16dp"
-                android:textIsSelectable="true"
-                tools:context=".fragment.PatientDetailFragment" />
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.cardview.widget.CardView>
     <androidx.core.widget.NestedScrollView

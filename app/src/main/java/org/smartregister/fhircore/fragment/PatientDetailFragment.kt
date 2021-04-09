@@ -21,18 +21,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
-import com.google.android.material.appbar.CollapsingToolbarLayout
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.PatientListViewModel
 import org.smartregister.fhircore.PatientListViewModelFactory
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.adapter.ObservationItemRecyclerViewAdapter
+import org.smartregister.fhircore.util.Utils
 
 /**
  * A fragment representing a single Patient detail screen. This fragment is contained in a
@@ -74,22 +73,24 @@ class PatientDetailFragment : Fragment() {
           it.getString(ARG_ITEM_ID)?.let { patient_index ->
             viewModel.getPatientItem(patient_index)
           }
-        activity?.findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout)?.title = patient?.name
       }
     }
 
-    setupPatientData(rootView, patient)
+    setupPatientData(patient)
 
     return rootView
   }
 
-  private fun setupPatientData(view: View, patient: PatientListViewModel.PatientItem?) {
+  private fun setupPatientData(patient: PatientListViewModel.PatientItem?) {
     if (patient != null) {
-      view.findViewById<TextView>(R.id.patient_detail).text =
-        HtmlCompat.fromHtml(patient.html, HtmlCompat.FROM_HTML_MODE_LEGACY)
-      view.findViewById<TextView>(R.id.name).text = patient.name
-      view.findViewById<TextView>(R.id.dob).text = patient.dob
-      view.findViewById<TextView>(R.id.gender).text = patient.phone
+      var patientDetailLabel =
+        patient?.name +
+          ", " +
+          patient?.gender +
+          ", " +
+          patient?.dob?.let { it1 -> Utils.getAgeFromDate(it1) }
+      activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
+      activity?.findViewById<TextView>(R.id.id_patient_number)?.text = "ID: " + patient.id
     }
   }
 
