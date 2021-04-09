@@ -3,18 +3,29 @@
 
 
     <group android:checkableBehavior="single"
-        android:id="@+id/global_controls">
+        android:id="@+id/grp_clients">
 
         <item
             android:id="@+id/menu_item_clients"
-            android:title="COVAX Clients"
+            android:title="COVAX clients"
             android:icon="@drawable/ic_baby_mother_covax" />
+
+    </group>
+
+    <group android:checkableBehavior="single"
+        android:id="@+id/grp_logout">
 
         <item
             android:id="@+id/menu_item_logout"
             android:title="Log out as Francis"
             android:icon="@drawable/ic_logout" />
 
+    </group>
+
+<!--    hack to add an extra divider at bottom of menu-->
+    <group android:checkableBehavior="single"
+        android:id="@+id/grp_empty">
+        <item android:id="@+id/blank" android:title="" />
     </group>
 
 </menu>

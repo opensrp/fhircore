@@ -98,13 +98,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:background="#404040">
+            android:background="#404040"
+            android:paddingBottom="15dp"
+            android:paddingTop="15dp">
 
             <TextView
                 android:id="@+id/btn_sync"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:padding="15dp"
                 android:text="Sync"
                 android:textColor="@color/white"
                 android:textAllCaps="false"
@@ -113,7 +114,7 @@
                 android:drawablePadding="10dp"
                 android:textSize="19sp"
                 android:layout_weight="1"
-                android:layout_gravity="right"/>
+                android:paddingStart="15dp"/>
 
             <TextView
                 android:id="@+id/tv_last_sync_timestamp"
