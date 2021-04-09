@@ -90,7 +90,9 @@
         app:headerLayout="@layout/drawer_menu_header"
         app:itemIconTint="#AEAEAE"
         app:itemTextColor="@color/white"
-        android:fontFamily="sans-serif">
+        app:itemTextAppearance="@style/menu_text_style"
+        app:itemIconSize="32dp"
+        app:itemIconPadding="10dp" >
 
 
     </com.google.android.material.navigation.NavigationView>
