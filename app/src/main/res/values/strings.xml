@@ -27,4 +27,5 @@
     <string name="observation_brief_text">%1$s: %2$s\nEffective: %3$s</string>
 
     <string name="submit_button_text">Submit</string>
+    <string name="search_hint">Search name or ID</string>
 </resources>
