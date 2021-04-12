@@ -22,7 +22,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <TextView
-        android:id="@+id/name"
+        android:id="@+id/tv_patient_demographics"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/text_margin"
@@ -41,7 +41,7 @@
         android:layout_marginStart="@dimen/text_margin"
         android:layout_marginEnd="@dimen/small_text_margin"
         android:text="Last seen 29-3-2021"
-        app:layout_constraintTop_toBottomOf="@id/name"
+        app:layout_constraintTop_toBottomOf="@id/tv_patient_demographics"
         app:layout_constraintLeft_toLeftOf="parent"
         android:textColor="#7A7A7A"
         android:textSize="17sp"
