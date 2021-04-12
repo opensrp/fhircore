@@ -21,14 +21,22 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.PatientListViewModel
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.util.Utils.getAgeFromDate
 
 class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-  private val nameView: TextView = itemView.findViewById(R.id.name)
+  private val tvPatientDemographics: TextView = itemView.findViewById(R.id.tv_patient_demographics)
   fun bindTo(
     patientItem: PatientListViewModel.PatientItem,
     onItemClicked: (PatientListViewModel.PatientItem) -> Unit
   ) {
-    this.nameView.text = patientItem.name
+    this.tvPatientDemographics.text = getPatientDemographics(patientItem)
     this.itemView.setOnClickListener { onItemClicked(patientItem) }
+  }
+
+  private fun getPatientDemographics(patientItem: PatientListViewModel.PatientItem): String {
+    val age = getAgeFromDate(patientItem.dob)
+    val names = patientItem.name.split(' ')
+    val gender = if (patientItem.gender == "male") 'M' else 'F'
+    return listOf(names[1], names[0], gender, "$age").joinToString()
   }
 }
