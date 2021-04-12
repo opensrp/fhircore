@@ -27,14 +27,12 @@ import androidx.fragment.app.commit
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import com.google.android.fhir.datacapture.mapping.ResourceMapperHAPI
-import com.google.android.fhir.datacapture.model.Patient
-import com.google.fhir.common.JsonFormat
-import com.google.fhir.r4.core.QuestionnaireResponse
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.fragment.QuestionnaireResponseDialogFragment
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 class QuestionnaireActivity : AppCompatActivity() {
@@ -77,17 +75,7 @@ class QuestionnaireActivity : AppCompatActivity() {
     }
   }
 
-  // Display Quesitonnaire response as a dialog
-  fun displayQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
-    val questionnaireResponseJson = JsonFormat.getPrinter().print(questionnaireResponse)
-    val dialogFragment = QuestionnaireResponseDialogFragment()
-    dialogFragment.arguments =
-      bundleOf(QuestionnaireResponseDialogFragment.BUNDLE_KEY_CONTENTS to questionnaireResponseJson)
-    dialogFragment.show(supportFragmentManager, QuestionnaireResponseDialogFragment.TAG)
-  }
-
   fun savePatientResource(questionnaireResponse: QuestionnaireResponse) {
-    val questionnaireResponseJson = JsonFormat.getPrinter().print(questionnaireResponse)
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val questionnaire =
@@ -96,21 +84,11 @@ class QuestionnaireActivity : AppCompatActivity() {
         viewModel.questionnaire
       ) as
         Questionnaire
-    val questionnaireResponse =
-      iParser.parseResource(
-        org.hl7.fhir.r4.model.QuestionnaireResponse::class.java,
-        questionnaireResponseJson
-      ) as
-        org.hl7.fhir.r4.model.QuestionnaireResponse
 
-    var patient = ResourceMapperHAPI.extract(questionnaire, questionnaireResponse)
+    val patient = ResourceMapper.extract(questionnaire, questionnaireResponse) as Patient
 
-    patient.setId((patient as Patient).name.first().family)
+    patient.id = patient.name.first().family
     FhirApplication.fhirEngine(applicationContext).save(patient)
-
-    val dialogFragment = QuestionnaireResponseDialogFragment()
-    dialogFragment.arguments =
-      bundleOf(QuestionnaireResponseDialogFragment.BUNDLE_KEY_CONTENTS to questionnaireResponseJson)
 
     this.startActivity(Intent(this, PatientListActivity::class.java))
   }
