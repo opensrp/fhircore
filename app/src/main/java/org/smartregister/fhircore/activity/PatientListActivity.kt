@@ -16,21 +16,21 @@
 
 package org.smartregister.fhircore.activity
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
+import android.widget.Button
+import android.widget.ImageButton
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
-import com.google.android.material.snackbar.Snackbar
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.PatientListViewModel
 import org.smartregister.fhircore.PatientListViewModelFactory
@@ -40,6 +40,7 @@ import org.smartregister.fhircore.fragment.PatientDetailFragment
 
 /** An activity representing a list of Patients. */
 class PatientListActivity : AppCompatActivity() {
+
   private lateinit var fhirEngine: FhirEngine
   private lateinit var patientListViewModel: PatientListViewModel
 
@@ -50,7 +51,6 @@ class PatientListActivity : AppCompatActivity() {
 
     val toolbar = findViewById<Toolbar>(R.id.toolbar)
     setSupportActionBar(toolbar)
-    toolbar.title = title
 
     fhirEngine = FhirApplication.fhirEngine(this)
 
@@ -71,6 +71,26 @@ class PatientListActivity : AppCompatActivity() {
           adapter.submitList(it)
         }
       )
+
+    setUpViews()
+  }
+
+  private fun setUpViews() {
+    findViewById<Button>(R.id.btn_register_new_patient).setOnClickListener { addPatient(it) }
+
+    findViewById<TextView>(R.id.tv_sync).setOnClickListener {
+      findViewById<DrawerLayout>(R.id.drawer_layout).closeDrawer(GravityCompat.START)
+      syncResources()
+    }
+
+    setupDrawerContent()
+  }
+
+  private fun setupDrawerContent() {
+    val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
+    findViewById<ImageButton>(R.id.btn_drawer_menu).setOnClickListener {
+      drawerLayout.openDrawer(GravityCompat.START)
+    }
   }
 
   // Click handler to help display the details about the patients from the list.
@@ -82,42 +102,8 @@ class PatientListActivity : AppCompatActivity() {
     this.startActivity(intent)
   }
 
-  // To suppress the warning. Seems to be an issue with androidx library.
-  // "MenuBuilder.setOptionalIconsVisible can only be called from within the same library group
-  // prefix (referenced groupId=androidx.appcompat with prefix androidx from groupId=fhir-engine"
-  @SuppressLint("RestrictedApi")
-  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-    val inflater: MenuInflater = menuInflater
-    inflater.inflate(R.menu.list_options_menu, menu)
-    // To ensure that icons show up in the overflow options menu. Icons go missing without this.
-    if (menu is MenuBuilder) {
-      menu.setOptionalIconsVisible(true)
-    }
-    return true
-  }
-
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    val view: View = findViewById(R.id.app_bar)
-
-    // Handle item selection
-    return when (item.itemId) {
-      R.id.sync_resources -> {
-        syncResources(view)
-        true
-      }
-      R.id.add_patient -> {
-        Snackbar.make(view, "Add Patient", Snackbar.LENGTH_LONG).setAction("Action", null).show()
-        addPatient(view)
-        true
-      }
-      else -> super.onOptionsItemSelected(item)
-    }
-  }
-
-  private fun syncResources(view: View) {
-    Snackbar.make(view, "Getting Patients List", Snackbar.LENGTH_LONG)
-      .setAction("Action", null)
-      .show()
+  private fun syncResources() {
+    Toast.makeText(this, "Syncing...", Toast.LENGTH_LONG).show()
     patientListViewModel.searchPatients()
   }
 
