@@ -62,11 +62,21 @@ class PatientDetailActivity : AppCompatActivity() {
   }
   override fun onOptionsItemSelected(item: MenuItem) =
     when (item.itemId) {
-      android.R.id.home -> {
-        navigateUpTo(Intent(this, PatientListActivity::class.java))
+      R.id.patient_profile_edit -> {
+        editPatientDetails()
 
         true
       }
       else -> super.onOptionsItemSelected(item)
     }
+
+  private fun editPatientDetails() {
+    // TO DO: Open patient registration form with pre-filled data
+      startActivity(
+      Intent(this, QuestionnaireActivity::class.java).apply {
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
+      }
+    )
+  }
 }
