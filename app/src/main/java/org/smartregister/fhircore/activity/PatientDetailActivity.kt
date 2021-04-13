@@ -18,6 +18,7 @@ package org.smartregister.fhircore.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import org.smartregister.fhircore.R
@@ -55,6 +56,10 @@ class PatientDetailActivity : AppCompatActivity() {
     }
   }
 
+  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    menuInflater.inflate(R.menu.profile_menu, menu)
+    return true
+  }
   override fun onOptionsItemSelected(item: MenuItem) =
     when (item.itemId) {
       android.R.id.home -> {

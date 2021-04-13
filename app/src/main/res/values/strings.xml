@@ -28,4 +28,5 @@
 
     <string name="submit_button_text">Submit</string>
     <string name="search_hint">Search name or ID</string>
+    <string name="edit">Edit</string>
 </resources>
