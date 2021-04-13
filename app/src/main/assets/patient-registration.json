@@ -58,9 +58,67 @@
         },
         {
           "linkId": "patient-0-gender",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
+              "valueExpression": {
+                "language": "application/x-fhir-query",
+                "expression": "Enumerations$AdministrativeGender",
+                "name": "administrativeGender"
+              }
+            }
+          ],
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
-          "type": "string",
-          "text": "Gender"
+          "type": "choice",
+          "item": [
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "radio-button",
+                        "display": "Radio Button"
+                      }
+                    ],
+                    "text": "A control where choices are listed with a button beside them. The button can be toggled to select or de-select a given choice. Selecting one item deselects all others."
+                  }
+                }
+              ],
+              "linkId": "1.0",
+              "text": "Gender:",
+              "type": "choice",
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "code": "F",
+                    "display": "Female"
+                  },
+                  "initialSelected": true
+                },
+                {
+                  "valueCoding": {
+                    "code": "M",
+                    "display": "Male"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "code": "O",
+                    "display": "Other"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "code": "U",
+                    "display": "Unknown"
+                  }
+                }
+              ]
+            }
+          ]
         },
         {
           "linkId": "PR-telecom",
@@ -80,6 +138,16 @@
             {
               "linkId": "PR-telecom-system",
               "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom.system",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "ContactPoint$ContactPointSystem",
+                    "name": "contactPointSystem"
+                  }
+                }
+              ],
               "type": "string",
               "text": "system",
               "initial": [

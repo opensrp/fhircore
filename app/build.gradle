@@ -84,7 +84,13 @@ dependencies {
         exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
         exclude group: 'com.sun.activation', module: 'javax.activation'
     }
-    implementation 'com.google.android.fhir:datacapture:0.0.1'
+    implementation('com.google.android.fhir:datacapture:0.0.3') {
+        transitive = true
+        exclude group: 'org.hamcrest', module: 'hamcrest-core'
+        exclude group: 'javax.xml.bind', module: 'jaxb-api'
+        exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
+        exclude group: 'com.sun.activation', module: 'javax.activation'
+    }
 
     implementation deps.appcompat
     implementation deps.constraint_layout
