@@ -25,11 +25,10 @@
         android:id="@+id/patient_list"
         android:name="com.google.fhirengine.example.PatientListFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
+        android:layout_height="match_parent"
         app:layoutManager="LinearLayoutManager"
         tools:context=".activity.PatientListActivity"
-        tools:listitem="@layout/patient_list_item" />
+        tools:listitem="@layout/patient_list_item"
+        android:maxHeight="300dp"/>
 
 </ScrollView>
