@@ -22,27 +22,19 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
-import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.fhir.FhirEngine
-import org.smartregister.fhircore.FhirApplication
-import org.smartregister.fhircore.PatientListViewModel
-import org.smartregister.fhircore.PatientListViewModelFactory
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.adapter.PatientItemRecyclerViewAdapter
-import org.smartregister.fhircore.fragment.PatientDetailFragment
+import org.smartregister.fhircore.fragment.PatientListFragment
 
 /** An activity representing a list of Patients. */
 class PatientListActivity : AppCompatActivity() {
-
-  private lateinit var fhirEngine: FhirEngine
-  private lateinit var patientListViewModel: PatientListViewModel
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -52,36 +44,13 @@ class PatientListActivity : AppCompatActivity() {
     val toolbar = findViewById<Toolbar>(R.id.toolbar)
     setSupportActionBar(toolbar)
 
-    fhirEngine = FhirApplication.fhirEngine(this)
-
-    patientListViewModel =
-      ViewModelProvider(this, PatientListViewModelFactory(this.application, fhirEngine))
-        .get(PatientListViewModel::class.java)
-    val recyclerView: RecyclerView = findViewById(R.id.patient_list)
-
-    val adapter = PatientItemRecyclerViewAdapter(this::onPatientItemClicked)
-    recyclerView.adapter = adapter
-
-    patientListViewModel
-      .getSearchedPatients()
-      .observe(
-        this,
-        {
-          Log.d("PatientListActivity", "Submitting ${it.count()} patient records")
-          adapter.submitList(it)
-        }
-      )
-
     setUpViews()
   }
 
   private fun setUpViews() {
     findViewById<Button>(R.id.btn_register_new_patient).setOnClickListener { addPatient(it) }
 
-    findViewById<TextView>(R.id.tv_sync).setOnClickListener {
-      findViewById<DrawerLayout>(R.id.drawer_layout).closeDrawer(GravityCompat.START)
-      syncResources()
-    }
+    findViewById<ViewPager2>(R.id.patient_list_pager).adapter = PatientListPagerAdapter(this)
 
     setupDrawerContent()
   }
@@ -93,20 +62,6 @@ class PatientListActivity : AppCompatActivity() {
     }
   }
 
-  // Click handler to help display the details about the patients from the list.
-  private fun onPatientItemClicked(patientItem: PatientListViewModel.PatientItem) {
-    val intent =
-      Intent(this.applicationContext, PatientDetailActivity::class.java).apply {
-        putExtra(PatientDetailFragment.ARG_ITEM_ID, patientItem.id)
-      }
-    this.startActivity(intent)
-  }
-
-  private fun syncResources() {
-    Toast.makeText(this, "Syncing...", Toast.LENGTH_LONG).show()
-    patientListViewModel.searchPatients()
-  }
-
   private fun addPatient(view: View) {
     // TO DO: Open patient registration form
     val context = view.context
@@ -116,5 +71,16 @@ class PatientListActivity : AppCompatActivity() {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
       }
     )
+  }
+
+  // pager adapter
+  private inner class PatientListPagerAdapter(fa: FragmentActivity): FragmentStateAdapter(fa) {
+    override fun getItemCount(): Int {
+      return 50
+    }
+
+    override fun createFragment(position: Int): Fragment {
+      return PatientListFragment()
+    }
   }
 }
