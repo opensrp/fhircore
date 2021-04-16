@@ -19,6 +19,10 @@ package org.smartregister.fhircore.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Resource
+import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.activity.QuestionnaireActivity
 
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
@@ -36,4 +40,8 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
       }
       return questionnaireJson!!
     }
+
+  fun savePatient(resource: Resource) {
+    viewModelScope.launch { FhirApplication.fhirEngine(getApplication()).save(resource) }
+  }
 }
