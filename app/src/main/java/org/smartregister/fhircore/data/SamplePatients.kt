@@ -21,7 +21,7 @@ import ca.uhn.fhir.parser.IParser
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.PatientListViewModel
+import org.smartregister.fhircore.viewmodel.PatientListViewModel
 
 private const val MAX_RESOURCE_COUNT = 20
 

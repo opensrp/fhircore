@@ -20,9 +20,9 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import org.smartregister.fhircore.PatientListViewModel
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.viewholder.PatientItemViewHolder
+import org.smartregister.fhircore.viewmodel.PatientListViewModel
 
 /** UI Controller helper class to monitor Patient viewmodel and display list of patients. */
 class PatientItemRecyclerViewAdapter(

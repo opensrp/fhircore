@@ -19,8 +19,8 @@ package org.smartregister.fhircore.viewholder
 import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import org.smartregister.fhircore.PatientListViewModel
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.viewmodel.PatientListViewModel
 
 class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val idView: TextView = itemView.findViewById(R.id.id_patient_number)
