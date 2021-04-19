@@ -15,44 +15,120 @@
  limitations under the License.
 -->
 
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:context=".PatientListActivity">
+    android:layout_height="match_parent">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/app_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
-
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <FrameLayout
-        android:id="@+id/frameLayout"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:fitsSystemWindows="true"
+        tools:context=".activity.PatientListActivity">
 
-        <include layout="@layout/patient_list" />
-    </FrameLayout>
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/patient_register_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:contentInsetStart="0dp"
+            android:contentInsetRight="0dp"
+            android:contentInsetEnd="0dp"
+            app:contentInsetEnd="0dp" >
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        android:visibility="gone"
-        app:srcCompat="@android:drawable/ic_menu_add" />
+            <include layout="@layout/toolbar_patient_register" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        </androidx.appcompat.widget.Toolbar>
+
+        <include
+            android:id="@+id/patient_list"
+            layout="@layout/patient_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/patient_register_toolbar"
+            tools:layout_editor_absoluteX="0dp" />
+
+        <Button
+            android:id="@+id/btn_register_new_patient"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:text="Register new client"
+            android:textAllCaps="true"
+            android:textColor="@color/white"
+            android:background="@drawable/rounded_white_bg"
+            android:backgroundTint="@color/colorPrimary"
+            android:paddingHorizontal="10dp"
+            android:fontFamily="sans-serif-medium"
+            android:textSize="18sp"
+            android:drawableStart="@drawable/ic_add"
+            android:drawablePadding="5dp"
+            android:padding="10dp"
+            android:paddingEnd="15dp"
+            android:layout_marginBottom="15dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true"
+        android:background="@color/drawer_menu_bg_color"
+        app:menu="@menu/drawer_menu"
+        app:headerLayout="@layout/drawer_menu_header"
+        app:itemIconTint="#AEAEAE"
+        app:itemTextColor="@color/white"
+        app:itemTextAppearance="@style/menu_text_style"
+        app:itemIconSize="32dp"
+        app:itemIconPadding="10dp"
+        app:itemBackground="@drawable/drawer_menu_item_selector">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="#404040"
+            android:paddingBottom="15dp"
+            android:paddingTop="15dp">
+
+            <TextView
+                android:id="@+id/tv_sync"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Sync"
+                android:textColor="@color/white"
+                android:textAllCaps="false"
+                android:drawableStart="@drawable/ic_sync_covax"
+                android:gravity="center_vertical"
+                android:drawablePadding="10dp"
+                android:textSize="19sp"
+                android:layout_weight="1"
+                android:paddingStart="15dp"/>
+
+            <TextView
+                android:id="@+id/tv_last_sync_timestamp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Last 05:30 PM, Mar 3"
+                android:textColor="#E0E0E0"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="2"
+                android:gravity="end"
+                android:paddingEnd="15dp" />
+
+        </LinearLayout>
+
+    </com.google.android.material.navigation.NavigationView>
+
+</androidx.drawerlayout.widget.DrawerLayout>

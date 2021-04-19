@@ -26,5 +26,5 @@
     android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp"
     app:layoutManager="LinearLayoutManager"
-    tools:context=".PatientListActivity"
+    tools:context=".activity.PatientListActivity"
     tools:listitem="@layout/observation_list_item" />
