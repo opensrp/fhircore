@@ -20,15 +20,13 @@ A `CarePlan` :
 - Specific to a particular patient or group
 - It does not replace a `PlanDefinition`
 
-It uncomplicates some patient, scheduling and patient-specific details/options in care from the `PlanDefinition` to the `CarePlan` . For Goldsmith, we ended up not being able to include certain schedule and logic specific to ANC care while maintaining the generic form of the action. The `ActivityDefinition` would have helped with this while the `CarePlan` will be brief enough for computational purposes as compared to a `PlanDefinition`
+It uncomplicates some patient, scheduling and patient-specific details/options in care from the `PlanDefinition` to the `CarePlan` . The `CarePlan` will also be brief enough for computational purposes as compared to a `PlanDefinition`. Furthermore, the `CarePlan` contains the final patient care details derived from the `PlanDefinition` and `ActivityDefinition` dependent on the patient details/medical state.
 
-  → Still trying to come up with clear examples of this understand why this is required and  the clear differences/benefits on this.
-
-It seems, there should always be a task for every clinical `Request` to request fulfillment of the `Request` and track progress. The `Request` is referenced in the `Task.focus` and also contains the operational details. Inputs and outputs are tracked by the task also. A Task could request fulfilment of a `ServiceRequest` ordering a radiology that would end with and `ImagingStudy`. The `ImagingStudy` would be the output and can be tracked on the task. Once the images are ready, another `ServiceRequest` would be generated and a `Task` would be used to track the `ImagingStudy` to be read/analysed with the output being a `DiagnosticReport`
+Ideally, there should always be a task for every clinical `Request` that requests fulfillment of the `Request` and tracks progress. The `Request` is referenced in the `Task.focus` and also contains the operational details. Inputs and outputs are also tracked by the task. A Task could request fulfilment of a `ServiceRequest` by ordering a radiology that would end with an `ImagingStudy`. The `ImagingStudy` is the group of the patient's body. The `ImagingStudy` would be the output and can be tracked on the task. Once the images are ready, another `ServiceRequest` would be generated and a `Task` would be used to track the `ImagingStudy` being analysed with the output being a `DiagnosticReport`.
 
 ### CareTeam
 
-CareTeam is a group of practitioners, care takers, patients and organisations who plan to participate in the coordination and delivery of care for a patient. CareTeam can be used in different contexts where there can be a subject such as a a patient or within context such as emergency services, type of service provided. The `CareTeam.category` which describes the types of care team can be:
+CareTeam is a group of practitioners, care takers, patients and organisations who plan to participate in the coordination and delivery of care for a patient(group of patients). CareTeam can be used in different contexts where there can be a subject such as a a patient or within context such as emergency services, type of service provided. The `CareTeam.category`, an optional property, describes the type of care and can be one of the following:
 
 - Event-focused care team
 - Encounter-focused care team
@@ -40,11 +38,11 @@ CareTeam is a group of practitioners, care takers, patients and organisations wh
 - Public health-focused care team
 - Longitudinal care-coordination focused care team
 
-IMO, CareTeam can be used to limit access to care details within a domain in cases where we have a global patient directory and global patient history in a country eg. HIV details, PHI(Protected Health Information) and also limit access for different modules of providing care eg. a practitioner might have access to a location and not be part of a CareTeam in that Location. Therefore, this pracititioner should not have access to certain records, health modules. Read HIPAA for US on such laws
+In my opinion, CareTeam can be used to limit access to care details within a domain in cases where we have a global patient directory and global patient history in a country eg. HIV details, PHI(Protected Health Information) and also limit access for different healthcare modules  eg. a practitioner might have access to a location and not be part of a CareTeam in that Location. Therefore, this pracititioner should not have access to certain records, health modules. Read HIPAA for US on such laws
 
 ## FHIR Location
 
-Location enables us to define a jurisdiction or HealthCenter [https://www.hl7.org/fhir/location.html](https://www.hl7.org/fhir/location.html) . The GeoJSON is described as a location boundary extension to the location here [http://build.fhir.org/extension-location-boundary-geojson.html](http://build.fhir.org/extension-location-boundary-geojson.html). The extension is a draft with little information but it enables representing the geojson as a base64 string in the `Attachment.data`
+Location enables us to define a jurisdiction or HealthCenter [https://www.hl7.org/fhir/location.html](https://www.hl7.org/fhir/location.html) . The GeoJSON is described as a location boundary extension to the location here [http://build.fhir.org/extension-location-boundary-geojson.html](http://build.fhir.org/extension-location-boundary-geojson.html). The extension is a draft with little information but it enables representing the geojson as a base64 string in the `Attachment.data` or the link to the geojson on the `Attatchment.url`
 
 Example 1
 
