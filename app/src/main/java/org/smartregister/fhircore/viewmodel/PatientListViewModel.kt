@@ -57,13 +57,21 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     return liveObservations
   }
 
-  fun getSearchResults() {
+  fun getSearchResults(query:String?= null) {
     viewModelScope.launch {
       val searchResults: List<Patient> =
         fhirEngine.search {
           filter(Patient.ADDRESS_CITY) {
             prefix = ParamPrefixEnum.EQUAL
             value = "NAIROBI"
+          }
+          apply {
+            if(query?.isNotBlank() == true){
+              filter(Patient.FAMILY) {
+                prefix = ParamPrefixEnum.EQUAL
+                value = query.trim()
+              }
+            }
           }
           sort(Patient.GIVEN, Order.ASCENDING)
           count = 100
