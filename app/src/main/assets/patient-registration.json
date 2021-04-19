@@ -69,56 +69,13 @@
             }
           ],
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
-          "type": "choice",
-          "item": [
+          "initial": [
             {
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "radio-button",
-                        "display": "Radio Button"
-                      }
-                    ],
-                    "text": "A control where choices are listed with a button beside them. The button can be toggled to select or de-select a given choice. Selecting one item deselects all others."
-                  }
-                }
-              ],
-              "linkId": "1.0",
-              "text": "Gender:",
-              "type": "choice",
-              "answerOption": [
-                {
-                  "valueCoding": {
-                    "code": "F",
-                    "display": "Female"
-                  },
-                  "initialSelected": true
-                },
-                {
-                  "valueCoding": {
-                    "code": "M",
-                    "display": "Male"
-                  }
-                },
-                {
-                  "valueCoding": {
-                    "code": "O",
-                    "display": "Other"
-                  }
-                },
-                {
-                  "valueCoding": {
-                    "code": "U",
-                    "display": "Unknown"
-                  }
-                }
-              ]
+              "valueString": "female"
             }
-          ]
+          ],
+          "type": "string",
+          "text": "Gender"
         },
         {
           "linkId": "PR-telecom",
