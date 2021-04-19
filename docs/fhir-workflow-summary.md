@@ -1,16 +1,26 @@
 _Below is a brief summary of the FHIR R4 docs review_. This is the foundation on FHIR. It helps understand how to design and use resources in a workflow.
 
-### Summary
+## FHIR Resources and Workflow Summary
 
 FHIR categorises resources in a clinical workflow as:
 
 1. Definition - Resources that define something that can potentially happen in a patient and time-independent manner
-2. Request
-3. Event
+2. Request - Resources that ask for or express a desire/intention for something to be done
+3. Event - Resources express something that has been done
+
+A clinical workflow starts with a definition of a activities that should occur, their order, circumstances, conditions and their dependencies. This becomes a `request` that needs to be acted on and ends with an `event` that describes what has been done and the output(s).
+
+This [link](https://www.hl7.org/fhir/workflow.html#list) provides a list of FHIR resources grouped into the three categories
+
+### Task
 
 The `Task` is categorised as a `Request` and `Event` . A `Task` keeps track of a request and contains a link to the request. A Task can be generated but not initially assigned to any entity. This task can be picked(self-assigned) and its status can start changing. The implementation details for the Task are contained inside the attached `Request`.
 
+### PlanDefinition
+
 A `PlanDefinition` contains actions. These actions can link to an `ActivityDefinition` which enables definition more properties/details. `ActivityDefinition` can also be more generic and be re-used by multiple PlanDefinitions. `Action` and `ActivityDefintion` share properties and in cases where an `ActivityDefinition` also exists, the properties in the `Action` override the property values in the `ActivityDefinition`. This is useful in cases where an `ActivityDefinition` is generic and shared but specific details such as title and description for the use-case, time, region, module or purpose are included in the `PlanDefinition`. `ActivityDefinition` is used to create a `Request`. The `Request` progress, assignment and status is tracked by a `Task`.
+
+### CarePlan
 
 Running an apply operation on a `Patient`(Context) + `PlanDefinition` generates a `CarePlan` that is specific to a person.
 
@@ -40,7 +50,7 @@ CareTeam is a group of practitioners, care takers, patients and organisations wh
 
 In my opinion, CareTeam can be used to limit access to care details within a domain in cases where we have a global patient directory and global patient history in a country eg. HIV details, PHI(Protected Health Information) and also limit access for different healthcare modules  eg. a practitioner might have access to a location and not be part of a CareTeam in that Location. Therefore, this pracititioner should not have access to certain records, health modules. Read HIPAA for US on such laws
 
-## FHIR Location
+### Location
 
 Location enables us to define a jurisdiction or HealthCenter [https://www.hl7.org/fhir/location.html](https://www.hl7.org/fhir/location.html) . The GeoJSON is described as a location boundary extension to the location here [http://build.fhir.org/extension-location-boundary-geojson.html](http://build.fhir.org/extension-location-boundary-geojson.html). The extension is a draft with little information but it enables representing the geojson as a base64 string in the `Attachment.data` or the link to the geojson on the `Attatchment.url`
 
