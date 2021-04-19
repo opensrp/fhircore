@@ -31,7 +31,6 @@ import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
@@ -88,7 +87,8 @@ class QuestionnaireActivity : AppCompatActivity() {
     val patient = ResourceMapper.extract(questionnaire, questionnaireResponse) as Patient
 
     patient.id = patient.name.first().family
-    FhirApplication.fhirEngine(applicationContext).save(patient)
+    // FhirApplication.fhirEngine(applicationContext).save(patient)
+    viewModel.savePatient(patient)
 
     this.startActivity(Intent(this, PatientListActivity::class.java))
   }
