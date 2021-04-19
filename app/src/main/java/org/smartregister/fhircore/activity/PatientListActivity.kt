@@ -32,17 +32,18 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.FhirApplication
-import org.smartregister.fhircore.PatientListViewModel
-import org.smartregister.fhircore.PatientListViewModelFactory
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.adapter.PatientItemRecyclerViewAdapter
 import org.smartregister.fhircore.fragment.PatientDetailFragment
+import org.smartregister.fhircore.viewmodel.PatientListViewModel
+import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
 
 /** An activity representing a list of Patients. */
 class PatientListActivity : AppCompatActivity() {
 
   private lateinit var fhirEngine: FhirEngine
   private lateinit var patientListViewModel: PatientListViewModel
+  private lateinit var adapter: PatientItemRecyclerViewAdapter
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -59,20 +60,20 @@ class PatientListActivity : AppCompatActivity() {
         .get(PatientListViewModel::class.java)
     val recyclerView: RecyclerView = findViewById(R.id.patient_list)
 
-    val adapter = PatientItemRecyclerViewAdapter(this::onPatientItemClicked)
+    adapter = PatientItemRecyclerViewAdapter(this::onPatientItemClicked)
     recyclerView.adapter = adapter
 
-    patientListViewModel
-      .getSearchedPatients()
-      .observe(
-        this,
-        {
-          Log.d("PatientListActivity", "Submitting ${it.count()} patient records")
-          adapter.submitList(it)
-        }
-      )
+    patientListViewModel.liveSearchedPatients.observe(
+      this,
+      {
+        Log.d("PatientListActivity", "Submitting ${it.count()} patient records")
+        adapter.submitList(it)
+        adapter.notifyDataSetChanged()
+      }
+    )
 
     setUpViews()
+    patientListViewModel.getSearchResults()
   }
 
   private fun setUpViews() {
@@ -103,8 +104,9 @@ class PatientListActivity : AppCompatActivity() {
   }
 
   private fun syncResources() {
+    patientListViewModel.getSearchResults()
     Toast.makeText(this, "Syncing...", Toast.LENGTH_LONG).show()
-    patientListViewModel.searchPatients()
+    patientListViewModel.syncUpload()
   }
 
   private fun addPatient(view: View) {

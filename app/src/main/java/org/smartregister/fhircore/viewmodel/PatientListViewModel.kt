@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.viewmodel
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.search
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.data.SamplePatients
 
@@ -45,49 +49,32 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   private val liveObservations: MutableLiveData<List<ObservationItem>> =
     MutableLiveData(observations)
 
-  private var patientResults: List<Patient> = getSearchResults()
-  private var searchedPatients = samplePatients.getPatientItems(patientResults)
-  private val _liveSearchedPatients: MutableLiveData<List<PatientItem>> = MutableLiveData()
-  val liveSearchedPatients: LiveData<List<PatientItem>> = _liveSearchedPatients
-
-  fun getSearchedPatients(): LiveData<List<PatientItem>> {
-    searchedPatients = samplePatients.getPatientItems(patientResults)
-    _liveSearchedPatients.value = searchedPatients
-    Log.d(
-      "PatientListViewModel",
-      "getSearchedPatients(): " +
-        "patientResults[${patientResults.count()}], searchedPatients[${searchedPatients
-          .count()}]"
-    )
-    return liveSearchedPatients
-  }
-
-  fun getPatientItem(id: String): PatientItem? {
-    return searchedPatients.associateBy { it.id }[id]
+  val liveSearchedPatients: MutableLiveData<List<PatientItem>> by lazy {
+    MutableLiveData<List<PatientItem>>()
   }
 
   fun getObservations(): LiveData<List<ObservationItem>> {
     return liveObservations
   }
 
-  private fun getSearchResults(): List<Patient> {
-    val searchResults: List<Patient> =
-      fhirEngine
-        .search()
-        .of(Patient::class.java)
-        // .filter(string(Patient.ADDRESS_CITY, ParamPrefixEnum.EQUAL, "NAIROBI"))
-        .run()
-    Log.d(
-      "PatientListViewModel",
-      "${searchResults.count()} search results: " + "${searchResults.joinToString(" ")}"
-    )
-    return searchResults
+  fun getSearchResults() {
+    viewModelScope.launch {
+      val searchResults: List<Patient> =
+        fhirEngine.search {
+          filter(Patient.ADDRESS_CITY) {
+            prefix = ParamPrefixEnum.EQUAL
+            value = "NAIROBI"
+          }
+          sort(Patient.GIVEN, Order.ASCENDING)
+          count = 100
+          from = 0
+        }
+      liveSearchedPatients.value = samplePatients.getPatientItems(searchResults)
+    }
   }
 
-  fun searchPatients() {
-    patientResults = getSearchResults()
-    searchedPatients = samplePatients.getPatientItems(patientResults)
-    _liveSearchedPatients.value = searchedPatients
+  fun syncUpload() {
+    viewModelScope.launch { fhirEngine.syncUpload() }
   }
 
   private fun getAssetFileAsString(filename: String): String {

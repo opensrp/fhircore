@@ -27,11 +27,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.FhirApplication
-import org.smartregister.fhircore.PatientListViewModel
-import org.smartregister.fhircore.PatientListViewModelFactory
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.adapter.ObservationItemRecyclerViewAdapter
 import org.smartregister.fhircore.util.Utils
+import org.smartregister.fhircore.viewmodel.PatientListViewModel
+import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
 
 /**
  * A fragment representing a single Patient detail screen. This fragment is contained in a
@@ -66,15 +66,6 @@ class PatientDetailFragment : Fragment() {
         viewLifecycleOwner,
         Observer<List<PatientListViewModel.ObservationItem>> { adapter.submitList(it) }
       )
-
-    arguments?.let {
-      if (it.containsKey(ARG_ITEM_ID)) {
-        patient =
-          it.getString(ARG_ITEM_ID)?.let { patient_index ->
-            viewModel.getPatientItem(patient_index)
-          }
-      }
-    }
 
     setupPatientData(patient)
 
