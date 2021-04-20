@@ -22,7 +22,11 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
@@ -83,15 +87,18 @@ class PatientListActivity : AppCompatActivity() {
       syncResources()
     }
 
-    findViewById<EditText>(R.id.edit_text_search).addTextChangedListener(object: TextWatcher{
-      override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+    findViewById<EditText>(R.id.edit_text_search)
+      .addTextChangedListener(
+        object : TextWatcher {
+          override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
-      override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        patientListViewModel.getSearchResults(s?.toString())
-      }
+          override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            patientListViewModel.getSearchResults(s?.toString())
+          }
 
-      override fun afterTextChanged(s: Editable?) {}
-    })
+          override fun afterTextChanged(s: Editable?) {}
+        }
+      )
 
     setupDrawerContent()
   }

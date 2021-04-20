@@ -57,7 +57,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     return liveObservations
   }
 
-  fun getSearchResults(query:String?= null) {
+  fun getSearchResults(query: String? = null) {
     viewModelScope.launch {
       val searchResults: List<Patient> =
         fhirEngine.search {
@@ -66,7 +66,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
             value = "NAIROBI"
           }
           apply {
-            if(query?.isNotBlank() == true){
+            if (query?.isNotBlank() == true) {
               filter(Patient.FAMILY) {
                 prefix = ParamPrefixEnum.EQUAL
                 value = query.trim()
