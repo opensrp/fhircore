@@ -67,9 +67,25 @@ class PatientDetailFragment : Fragment() {
         Observer<List<PatientListViewModel.ObservationItem>> { adapter.submitList(it) }
       )
 
-    setupPatientData(patient)
+    arguments?.let {
+      if (it.containsKey(ARG_ITEM_ID)) {
+        it.getString(ARG_ITEM_ID)?.let { it1 -> observePatientList(viewModel, it1) }
+      }
+    }
+
+    viewModel.getSearchResults()
 
     return rootView
+  }
+
+  //Workaround till search by id is implemented
+  private fun observePatientList(viewModel: PatientListViewModel, itemId: String) {
+    viewModel.liveSearchedPatients.observe(
+      viewLifecycleOwner,
+      Observer<List<PatientListViewModel.PatientItem>> {
+        setupPatientData(it.associateBy { it.id }[itemId])
+      }
+    )
   }
 
   private fun setupPatientData(patient: PatientListViewModel.PatientItem?) {
