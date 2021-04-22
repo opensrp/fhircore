@@ -6,9 +6,8 @@ FHIRcore is an OpenSRP implementation of the [HL7 Fhir](http://hl7.org/fhir/R4/i
 
 
 ## Getting Started
-The repo is currently organized to in this structure:
+this folder is organized as such:
+* **android**: The root folder for building the Android applications. [Read more for Android Studio setup instructions](android/README.md)
+* **docs**: A library of documents describing the FHIR Core Solution. [read more](docs/README.md)
 
-* **android** : The root folder for building the Android applications. For setup instructions [follow this instructions](android/README.md)
-* **docs** : A library of documents describing the FHIR Core Solution. [read more](docs/readme.md)
-
-We recommend going through some of the documentation to have some understanding of the FHIR core project before setting up your Andorid Studio and running the Andorid Project in  the `andorid` folder.
+We recommend going through some of the documentation to have some understanding of the FHIR core project before setting up your Android Studio and running the Android Project in the `android` folder.
