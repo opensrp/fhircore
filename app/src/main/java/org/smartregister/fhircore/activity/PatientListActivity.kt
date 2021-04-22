@@ -114,7 +114,7 @@ class PatientListActivity : AppCompatActivity() {
   private fun onPatientItemClicked(patientItem: PatientListViewModel.PatientItem) {
     val intent =
       Intent(this.applicationContext, PatientDetailActivity::class.java).apply {
-        putExtra(PatientDetailFragment.ARG_ITEM_ID, patientItem.id)
+        putExtra(PatientDetailFragment.ARG_ITEM_ID, patientItem.logicalId)
       }
     this.startActivity(intent)
   }
