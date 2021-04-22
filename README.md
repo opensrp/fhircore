@@ -10,4 +10,4 @@ this folder is organized as such:
 * **android**: The root folder for building the Android applications. [Read more for Android Studio setup instructions](android/README.md)
 * **docs**: A library of documents describing the FHIR Core Solution. [read more](docs/README.md)
 
-We recommend going through some of the documentation to have some understanding of the FHIR core project before setting up your Android Studio and running the Android Project in the `android` folder.
+We recommend going through some of the [docs](docs) before setting up the Android Studio Project in the [android](android) folder.
