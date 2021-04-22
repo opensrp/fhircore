@@ -84,7 +84,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   fun getPatientItem(id: String): PatientItem? {
     var patientItems: List<PatientItem>? = null
     viewModelScope.launch {
-      var patient = fhirEngine.load(Patient::class.java,id)
+      var patient = fhirEngine.load(Patient::class.java, id)
       patientItems = samplePatients.getPatientItems(listOf(patient))
     }
 
