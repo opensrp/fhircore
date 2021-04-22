@@ -57,6 +57,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     return liveObservations
   }
 
+  val liveSearchPatient: MutableLiveData<PatientItem> by lazy { MutableLiveData<PatientItem>() }
+
   fun getSearchResults(query: String? = null) {
     viewModelScope.launch {
       val searchResults: List<Patient> =
@@ -81,14 +83,14 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     }
   }
 
-  fun getPatientItem(id: String): PatientItem? {
+  fun getPatientItem(id: String) {
     var patientItems: List<PatientItem>? = null
     viewModelScope.launch {
       var patient = fhirEngine.load(Patient::class.java, id)
       patientItems = samplePatients.getPatientItems(listOf(patient))
     }
 
-    return patientItems?.get(0)
+    liveSearchPatient.value = patientItems?.get(0)
   }
 
   fun syncUpload() {

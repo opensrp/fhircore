@@ -66,9 +66,14 @@ class PatientDetailFragment : Fragment() {
         Observer<List<PatientListViewModel.ObservationItem>> { adapter.submitList(it) }
       )
 
+    viewModel.liveSearchPatient.observe(
+      viewLifecycleOwner,
+      Observer<PatientListViewModel.PatientItem> { setupPatientData(it) }
+    )
+
     arguments?.let {
       if (it.containsKey(ARG_ITEM_ID)) {
-        it.getString(ARG_ITEM_ID)?.let { it1 -> setupPatientData(viewModel.getPatientItem(it1)) }
+        it.getString(ARG_ITEM_ID)?.let { it1 -> viewModel.getPatientItem(it1) }
       }
     }
     viewModel.getSearchResults()
