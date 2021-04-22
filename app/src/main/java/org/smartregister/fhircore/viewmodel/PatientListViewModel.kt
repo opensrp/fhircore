@@ -81,6 +81,16 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     }
   }
 
+  fun getPatientItem(id: String): PatientItem? {
+    var patientItems: List<PatientItem>? = null
+    viewModelScope.launch {
+      var patient = fhirEngine.load(Patient::class.java,id)
+      patientItems = samplePatients.getPatientItems(listOf(patient))
+    }
+
+    return patientItems?.get(0)
+  }
+
   fun syncUpload() {
     viewModelScope.launch { fhirEngine.syncUpload() }
   }
@@ -101,7 +111,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     val gender: String,
     val dob: String,
     val html: String,
-    val phone: String
+    val phone: String,
+    val logicalId: String
   ) {
     override fun toString(): String = name
   }
