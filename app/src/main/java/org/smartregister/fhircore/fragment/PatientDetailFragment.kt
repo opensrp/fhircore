@@ -67,17 +67,34 @@ class PatientDetailFragment : Fragment() {
         Observer<List<PatientListViewModel.ObservationItem>> { adapter.submitList(it) }
       )
 
-    setupPatientData(patient)
+    arguments?.let {
+      if (it.containsKey(ARG_ITEM_ID)) {
+        it.getString(ARG_ITEM_ID)?.let { it1 -> observePatientList(viewModel, it1) }
+      }
+    }
+
+    viewModel.getSearchResults()
 
     return rootView
   }
 
+  // Workaround till search by id is implemented
+  private fun observePatientList(viewModel: PatientListViewModel, itemId: String) {
+    viewModel.liveSearchedPatients.observe(
+      viewLifecycleOwner,
+      Observer<List<PatientListViewModel.PatientItem>> {
+        setupPatientData(it.associateBy { it.id }[itemId])
+      }
+    )
+  }
+
   private fun setupPatientData(patient: PatientListViewModel.PatientItem?) {
+    val gender = if (patient?.gender == "male") 'M' else 'F'
     if (patient != null) {
       var patientDetailLabel =
         patient?.name +
           ", " +
-          patient?.gender +
+          gender +
           ", " +
           patient?.dob?.let { it1 -> Utils.getAgeFromDate(it1) }
       activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
