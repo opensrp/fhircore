@@ -78,7 +78,7 @@ class PatientDetailFragment : Fragment() {
     return rootView
   }
 
-  //Workaround till search by id is implemented
+  // Workaround till search by id is implemented
   private fun observePatientList(viewModel: PatientListViewModel, itemId: String) {
     viewModel.liveSearchedPatients.observe(
       viewLifecycleOwner,
@@ -89,11 +89,12 @@ class PatientDetailFragment : Fragment() {
   }
 
   private fun setupPatientData(patient: PatientListViewModel.PatientItem?) {
+    val gender = if (patient?.gender == "male") 'M' else 'F'
     if (patient != null) {
       var patientDetailLabel =
         patient?.name +
           ", " +
-          patient?.gender +
+          gender +
           ", " +
           patient?.dob?.let { it1 -> Utils.getAgeFromDate(it1) }
       activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
