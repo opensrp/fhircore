@@ -18,6 +18,7 @@ package org.smartregister.fhircore.data
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
+import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -78,8 +79,17 @@ class SamplePatients {
     val dob = if (patient.hasBirthDateElement()) patient.birthDateElement.valueAsString else ""
     val html: String = if (patient.hasText()) patient.text.div.valueAsString else ""
     val phone: String = if (patient.hasTelecom()) patient.telecom[0].value else ""
+    val logicalId: String = patient.logicalId
 
-    return PatientListViewModel.PatientItem(position.toString(), name, gender, dob, html, phone)
+    return PatientListViewModel.PatientItem(
+      position.toString(),
+      name,
+      gender,
+      dob,
+      html,
+      phone,
+      logicalId
+    )
   }
 
   /** Returns list of ObservationItem objects based on observations from the json string. */

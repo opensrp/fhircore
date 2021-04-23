@@ -51,7 +51,6 @@ class PatientDetailFragment : Fragment() {
     recyclerView.adapter = adapter
 
     val fhirEngine: FhirEngine = FhirApplication.fhirEngine(requireContext())
-    var patient: PatientListViewModel.PatientItem? = null
 
     val viewModel: PatientListViewModel =
       ViewModelProvider(
@@ -67,25 +66,19 @@ class PatientDetailFragment : Fragment() {
         Observer<List<PatientListViewModel.ObservationItem>> { adapter.submitList(it) }
       )
 
+    viewModel.liveSearchPatient.observe(
+      viewLifecycleOwner,
+      Observer<PatientListViewModel.PatientItem> { setupPatientData(it) }
+    )
+
     arguments?.let {
       if (it.containsKey(ARG_ITEM_ID)) {
-        it.getString(ARG_ITEM_ID)?.let { it1 -> observePatientList(viewModel, it1) }
+        it.getString(ARG_ITEM_ID)?.let { it1 -> viewModel.getPatientItem(it1) }
       }
     }
-
     viewModel.getSearchResults()
 
     return rootView
-  }
-
-  // Workaround till search by id is implemented
-  private fun observePatientList(viewModel: PatientListViewModel, itemId: String) {
-    viewModel.liveSearchedPatients.observe(
-      viewLifecycleOwner,
-      Observer<List<PatientListViewModel.PatientItem>> {
-        setupPatientData(it.associateBy { it.id }[itemId])
-      }
-    )
   }
 
   private fun setupPatientData(patient: PatientListViewModel.PatientItem?) {
@@ -98,7 +91,7 @@ class PatientDetailFragment : Fragment() {
           ", " +
           patient?.dob?.let { it1 -> Utils.getAgeFromDate(it1) }
       activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
-      activity?.findViewById<TextView>(R.id.id_patient_number)?.text = "ID: " + patient.id
+      activity?.findViewById<TextView>(R.id.id_patient_number)?.text = "ID: " + patient.logicalId
     }
   }
 
