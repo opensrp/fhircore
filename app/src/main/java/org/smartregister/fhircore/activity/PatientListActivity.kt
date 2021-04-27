@@ -68,13 +68,11 @@ class PatientListActivity : AppCompatActivity() {
         )
       } else {
         editText.setCompoundDrawablesWithIntrinsicBounds(
-          getDrawable(R.drawable.ic_back_arrow),
+              null,
           null,
           getDrawable(R.drawable.ic_cancel),
           null
         )
-        // TODO: replace this approach with dedicated image views for each drawable
-        editText.addOnDrawableClickedListener(Utils.DrawablePosition.DRAWABLE_LEFT) {}
         editText.addOnDrawableClickedListener(Utils.DrawablePosition.DRAWABLE_RIGHT) { it.clear() }
       }
     }
