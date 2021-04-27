@@ -60,9 +60,20 @@ class PatientListActivity : AppCompatActivity() {
     editText.doAfterTextChanged {
       if (it!!.isEmpty()) {
         editText.setOnTouchListener(null)
-        editText.setCompoundDrawablesWithIntrinsicBounds(getDrawable(R.drawable.ic_search), null, null, null)
+        editText.setCompoundDrawablesWithIntrinsicBounds(
+          getDrawable(R.drawable.ic_search),
+          null,
+          null,
+          null
+        )
       } else {
-        editText.setCompoundDrawablesWithIntrinsicBounds(getDrawable(R.drawable.ic_back_arrow), null, getDrawable(R.drawable.ic_cancel), null)
+        editText.setCompoundDrawablesWithIntrinsicBounds(
+          getDrawable(R.drawable.ic_back_arrow),
+          null,
+          getDrawable(R.drawable.ic_cancel),
+          null
+        )
+        // TODO: replace this approach with dedicated image views for each drawable
         editText.addOnDrawableClickedListener(Utils.DrawablePosition.DRAWABLE_LEFT) {}
         editText.addOnDrawableClickedListener(Utils.DrawablePosition.DRAWABLE_RIGHT) { it.clear() }
       }
@@ -90,7 +101,7 @@ class PatientListActivity : AppCompatActivity() {
   }
 
   // pager adapter
-  private inner class PatientListPagerAdapter(fa: FragmentActivity): FragmentStateAdapter(fa) {
+  private inner class PatientListPagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
     override fun getItemCount(): Int {
       return 50
     }
