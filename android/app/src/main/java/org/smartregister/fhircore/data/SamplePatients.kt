@@ -78,7 +78,8 @@ class SamplePatients {
     val gender = if (patient.hasGenderElement()) patient.genderElement.valueAsString else ""
     val dob = if (patient.hasBirthDateElement()) patient.birthDateElement.valueAsString else ""
     val html: String = if (patient.hasText()) patient.text.div.valueAsString else ""
-    val phone: String = if (patient.hasTelecom()) patient.telecom[0].value else ""
+    val phone: String =
+      if (patient.hasTelecom() && patient.telecom[0].hasValue()) patient.telecom[0].value else ""
     val logicalId: String = patient.logicalId
 
     return PatientListViewModel.PatientItem(
