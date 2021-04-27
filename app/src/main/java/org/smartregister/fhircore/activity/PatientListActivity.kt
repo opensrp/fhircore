@@ -19,7 +19,6 @@ package org.smartregister.fhircore.activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -35,6 +34,8 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientListFragment
+import org.smartregister.fhircore.util.Utils
+import org.smartregister.fhircore.util.Utils.addOnDrawableClickedListener
 
 /** An activity representing a list of Patients. */
 class PatientListActivity : AppCompatActivity() {
@@ -62,44 +63,12 @@ class PatientListActivity : AppCompatActivity() {
         editText.setCompoundDrawablesWithIntrinsicBounds(getDrawable(R.drawable.ic_search), null, null, null)
       } else {
         editText.setCompoundDrawablesWithIntrinsicBounds(getDrawable(R.drawable.ic_back_arrow), null, getDrawable(R.drawable.ic_cancel), null)
-        editText.addOnDrawableClickedListener(DrawablePosition.DRAWABLE_LEFT) {}
-        editText.addOnDrawableClickedListener(DrawablePosition.DRAWABLE_RIGHT) { it.clear() }
+        editText.addOnDrawableClickedListener(Utils.DrawablePosition.DRAWABLE_LEFT) {}
+        editText.addOnDrawableClickedListener(Utils.DrawablePosition.DRAWABLE_RIGHT) { it.clear() }
       }
     }
 
     setupDrawerContent()
-  }
-
-  fun EditText.addOnDrawableClickedListener(drawablePosition: DrawablePosition, onClicked: ()-> Unit) {
-      this.setOnTouchListener(
-        object : View.OnTouchListener {
-
-          override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-            if (event!!.action == MotionEvent.ACTION_UP && isDrawableClicked(drawablePosition, event, v as EditText)) {
-                onClicked()
-                return true;
-            }
-            return false;
-          }
-        }
-      )
-  }
-
-  private fun isDrawableClicked(drawablePosition: DrawablePosition, event: MotionEvent?, view: EditText): Boolean {
-    return when (drawablePosition) {
-      DrawablePosition.DRAWABLE_RIGHT -> event!!.rawX >= (view.right - view.compoundDrawables[drawablePosition.position].bounds.width())
-      DrawablePosition.DRAWABLE_LEFT -> event!!.rawX <= (view.compoundDrawables[drawablePosition.position].bounds.width())
-      else -> {
-        return false
-      }
-    }
-  }
-
-  enum class DrawablePosition (val position: Int) {
-    DRAWABLE_LEFT(0),
-    DRAWABLE_TOP(1),
-    DRAWABLE_RIGHT(2),
-    DRAWABLE_BOTTOM(3)
   }
 
   private fun setupDrawerContent() {
