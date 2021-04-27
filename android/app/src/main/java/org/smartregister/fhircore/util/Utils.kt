@@ -23,7 +23,7 @@ import org.joda.time.Years
 
 object Utils {
 
-  fun getAgeFromDate(dateOfBirth: String, currentDate : ReadablePartial? = null): Int {
+  fun getAgeFromDate(dateOfBirth: String, currentDate: ReadablePartial? = null): Int {
     val date: DateTime = DateTime.parse(dateOfBirth)
     val age: Years = Years.yearsBetween(date.toLocalDate(), currentDate ?: LocalDate.now())
     return age.getYears()
