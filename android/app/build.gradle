@@ -77,7 +77,7 @@ dependencies {
 
     coreLibraryDesugaring deps.desugar
 
-    implementation('com.google.android.fhir:datacapture:0.0.4') {
+    implementation('com.google.android.fhir:datacapture:0.0.5') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
