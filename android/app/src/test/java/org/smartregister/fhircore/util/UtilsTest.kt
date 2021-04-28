@@ -17,15 +17,16 @@
 package org.smartregister.fhircore.util
 
 import org.joda.time.DateTime
-import org.joda.time.LocalDate
-import org.joda.time.ReadablePartial
-import org.joda.time.Years
+import org.junit.Assert
+import org.junit.Test
 
-object Utils {
+class UtilsTest {
 
-  fun getAgeFromDate(dateOfBirth: String, currentDate: ReadablePartial? = null): Int {
-    val date: DateTime = DateTime.parse(dateOfBirth)
-    val age: Years = Years.yearsBetween(date.toLocalDate(), currentDate ?: LocalDate.now())
-    return age.getYears()
+  @Test
+  fun getAgeFromDate_CalculatesAge() {
+    Assert.assertEquals(
+      1,
+      Utils.getAgeFromDate("2020-01-01", DateTime.parse("2021-01-01").toLocalDate())
+    )
   }
 }
