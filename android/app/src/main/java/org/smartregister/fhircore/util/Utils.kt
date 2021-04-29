@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.util
 
+import android.view.MotionEvent
+import android.view.View
+import android.widget.EditText
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.joda.time.ReadablePartial
@@ -27,5 +30,49 @@ object Utils {
     val date: DateTime = DateTime.parse(dateOfBirth)
     val age: Years = Years.yearsBetween(date.toLocalDate(), currentDate ?: LocalDate.now())
     return age.getYears()
+  }
+
+  fun EditText.addOnDrawableClickedListener(
+    drawablePosition: DrawablePosition,
+    onClicked: () -> Unit
+  ) {
+    this.setOnTouchListener(
+      object : View.OnTouchListener {
+
+        override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+          if (event!!.action == MotionEvent.ACTION_UP &&
+              isDrawableClicked(drawablePosition, event, v as EditText)
+          ) {
+            onClicked()
+            return true
+          }
+          return false
+        }
+      }
+    )
+  }
+
+  private fun isDrawableClicked(
+    drawablePosition: DrawablePosition,
+    event: MotionEvent?,
+    view: EditText
+  ): Boolean {
+    return when (drawablePosition) {
+      DrawablePosition.DRAWABLE_RIGHT ->
+        event!!.rawX >=
+          (view.right - view.compoundDrawables[drawablePosition.position].bounds.width())
+      DrawablePosition.DRAWABLE_LEFT ->
+        event!!.rawX <= (view.compoundDrawables[drawablePosition.position].bounds.width())
+      else -> {
+        return false
+      }
+    }
+  }
+
+  enum class DrawablePosition(val position: Int) {
+    DRAWABLE_LEFT(0),
+    DRAWABLE_TOP(1),
+    DRAWABLE_RIGHT(2),
+    DRAWABLE_BOTTOM(3)
   }
 }
