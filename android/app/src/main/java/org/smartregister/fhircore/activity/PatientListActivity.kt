@@ -68,7 +68,7 @@ class PatientListActivity : AppCompatActivity() {
         )
       } else {
         editText.setCompoundDrawablesWithIntrinsicBounds(
-              null,
+          null,
           null,
           getDrawable(R.drawable.ic_cancel),
           null
