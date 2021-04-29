@@ -74,28 +74,28 @@ class PatientListFragment : Fragment() {
         )
         .get(PatientListViewModel::class.java)
 
-
     patientListViewModel.liveSearchedPatients.observe(
-            requireActivity(),
-            {
-              Log.d("PatientListActivity", "Submitting ${it.count()} patient records")
-              adapter.submitList(it)
-              adapter.notifyDataSetChanged()
-            }
+      requireActivity(),
+      {
+        Log.d("PatientListActivity", "Submitting ${it.count()} patient records")
+        adapter.submitList(it)
+        adapter.notifyDataSetChanged()
+      }
     )
 
-    requireActivity().findViewById<EditText>(R.id.edit_text_search)
-            .addTextChangedListener(
-                    object : TextWatcher {
-                      override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+    requireActivity()
+      .findViewById<EditText>(R.id.edit_text_search)
+      .addTextChangedListener(
+        object : TextWatcher {
+          override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
-                      override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                        patientListViewModel.getSearchResults(s?.toString())
-                      }
+          override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            patientListViewModel.getSearchResults(s?.toString())
+          }
 
-                      override fun afterTextChanged(s: Editable?) {}
-                    }
-            )
+          override fun afterTextChanged(s: Editable?) {}
+        }
+      )
 
     patientListViewModel.getSearchResults()
     super.onViewCreated(view, savedInstanceState)
@@ -104,9 +104,9 @@ class PatientListFragment : Fragment() {
   // Click handler to help display the details about the patients from the list.
   private fun onPatientItemClicked(patientItem: PatientListViewModel.PatientItem) {
     val intent =
-            Intent(requireContext(), PatientDetailActivity::class.java).apply {
-              putExtra(PatientDetailFragment.ARG_ITEM_ID, patientItem.logicalId)
-            }
+      Intent(requireContext(), PatientDetailActivity::class.java).apply {
+        putExtra(PatientDetailFragment.ARG_ITEM_ID, patientItem.logicalId)
+      }
     this.startActivity(intent)
   }
 
