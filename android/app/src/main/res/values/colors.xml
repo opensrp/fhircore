@@ -25,4 +25,6 @@
     <color name="drawer_menu_bg_color">#2C2C2C</color>
     <color name="profile_header_background">#ECF1F7</color>
     <color name="black">#000000</color>
+
+    <color name="transparent_blue">#44389cc8</color>
 </resources>

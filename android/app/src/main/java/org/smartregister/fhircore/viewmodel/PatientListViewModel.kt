@@ -30,6 +30,7 @@ import com.google.android.fhir.search.search
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.data.SamplePatients
+import org.smartregister.fhircore.domain.Pagination
 
 private const val OBSERVATIONS_JSON_FILENAME = "sample_observations_bundle.json"
 
@@ -49,8 +50,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   private val liveObservations: MutableLiveData<List<ObservationItem>> =
     MutableLiveData(observations)
 
-  val liveSearchedPatients: MutableLiveData<List<PatientItem>> by lazy {
-    MutableLiveData<List<PatientItem>>()
+  val liveSearchedPaginatedPatients: MutableLiveData<Pair<List<PatientItem>, Pagination>> by lazy {
+    MutableLiveData<Pair<List<PatientItem>, Pagination>>()
   }
 
   fun getObservations(): LiveData<List<ObservationItem>> {
@@ -59,7 +60,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
   val liveSearchPatient: MutableLiveData<PatientItem> by lazy { MutableLiveData<PatientItem>() }
 
-  fun getSearchResults(query: String? = null) {
+  fun getSearchResults(query: String? = null, page: Int = 0, count: Int = 10) {
     viewModelScope.launch {
       val searchResults: List<Patient> =
         fhirEngine.search {
@@ -76,17 +77,47 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
             }
           }
           sort(Patient.GIVEN, Order.ASCENDING)
-          count = 100
-          from = 0
+          this.count = count
+          from = (page * count)
         }
-      liveSearchedPatients.value = samplePatients.getPatientItems(searchResults)
+
+      liveSearchedPaginatedPatients.value =
+        Pair(
+          samplePatients.getPatientItems(searchResults),
+          Pagination(totalItems = getCount(query), pageSize = count, currentPage = page)
+        )
     }
+  }
+
+  /** Returns number of records in database */
+  // TODO This is a wasteful query that will be replaced by implementation of
+  // https://github.com/google/android-fhir/issues/458
+  private suspend fun getCount(query: String? = null): Int {
+    val searchResults: List<Patient> =
+      fhirEngine.search {
+        filter(Patient.ADDRESS_CITY) {
+          prefix = ParamPrefixEnum.EQUAL
+          value = "NAIROBI"
+        }
+        apply {
+          if (query?.isNotBlank() == true) {
+            filter(Patient.FAMILY) {
+              prefix = ParamPrefixEnum.EQUAL
+              value = query.trim()
+            }
+          }
+        }
+        sort(Patient.GIVEN, Order.ASCENDING)
+        count = 10000
+        from = 0
+      }
+    return searchResults.size
   }
 
   fun getPatientItem(id: String) {
     var patientItems: List<PatientItem>? = null
     viewModelScope.launch {
-      var patient = fhirEngine.load(Patient::class.java, id)
+      val patient = fhirEngine.load(Patient::class.java, id)
       patientItems = samplePatients.getPatientItems(listOf(patient))
     }
 
