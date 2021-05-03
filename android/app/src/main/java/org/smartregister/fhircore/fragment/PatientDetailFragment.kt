@@ -76,7 +76,7 @@ class PatientDetailFragment : Fragment() {
         it.getString(ARG_ITEM_ID)?.let { it1 -> viewModel.getPatientItem(it1) }
       }
     }
-    viewModel.getSearchResults()
+    viewModel.searchResults()
 
     return rootView
   }
