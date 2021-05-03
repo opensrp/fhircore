@@ -47,6 +47,7 @@ versions.kotlin_coveralls = '2.10.2'
 versions.jacoco_tool = '0.8.6'
 versions.ktlint = '0.41.0'
 versions.joda_time = '2.10.5'
+versions.timber = '4.7.1'
 ext.versions = versions
 
 def deps = [:]
@@ -115,4 +116,5 @@ def json_tools = [:]
 json_tools.json_patch = "com.github.java-json-tools:json-patch:$versions.json_tools"
 deps.json_tools = json_tools
 deps.guava = "joda-time:joda-time:$versions.joda_time"
+deps.timber = "com.jakewharton.timber:timber:$versions.timber"
 ext.deps = deps

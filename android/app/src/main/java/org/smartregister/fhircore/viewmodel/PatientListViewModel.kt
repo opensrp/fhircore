@@ -60,7 +60,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
   val liveSearchPatient: MutableLiveData<PatientItem> by lazy { MutableLiveData<PatientItem>() }
 
-  fun getSearchResults(query: String? = null, page: Int = 0, count: Int = 10) {
+  fun searchResults(query: String? = null, page: Int = 0, pageSize: Int = 10) {
     viewModelScope.launch {
       val searchResults: List<Patient> =
         fhirEngine.search {
@@ -77,14 +77,14 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
             }
           }
           sort(Patient.GIVEN, Order.ASCENDING)
-          this.count = count
-          from = (page * count)
+          count = pageSize
+          from = (page * pageSize)
         }
 
       liveSearchedPaginatedPatients.value =
         Pair(
           samplePatients.getPatientItems(searchResults),
-          Pagination(totalItems = getCount(query), pageSize = count, currentPage = page)
+          Pagination(totalItems = count(query), pageSize = pageSize, currentPage = page)
         )
     }
   }
@@ -92,7 +92,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   /** Returns number of records in database */
   // TODO This is a wasteful query that will be replaced by implementation of
   // https://github.com/google/android-fhir/issues/458
-  private suspend fun getCount(query: String? = null): Int {
+  // https://github.com/opensrp/fhircore/issues/107
+  private suspend fun count(query: String? = null): Int {
     val searchResults: List<Patient> =
       fhirEngine.search {
         filter(Patient.ADDRESS_CITY) {

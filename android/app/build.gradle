@@ -119,6 +119,7 @@ dependencies {
     implementation deps.retrofit.gson
     implementation deps.retrofit.mock
     implementation deps.work.runtime
+    implementation deps.timber
 
     implementation deps.core
     implementation deps.fragment
