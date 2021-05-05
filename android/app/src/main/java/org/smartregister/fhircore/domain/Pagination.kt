@@ -19,7 +19,7 @@ package org.smartregister.fhircore.domain
 data class Pagination(val totalItems: Int, val pageSize: Int, var currentPage: Int)
 
 fun Pagination.hasNextPage(): Boolean {
-  return this.currentPage == (this.totalPages() - 1)
+  return this.totalPages() > 0 && this.currentPage == (this.totalPages() - 1)
 }
 
 fun Pagination.currentPageNumber(): Int {
@@ -27,7 +27,7 @@ fun Pagination.currentPageNumber(): Int {
 }
 
 fun Pagination.totalPages(): Int {
-  return this.totalItems / this.pageSize + (if (this.totalItems % this.pageSize > 0) 1 else 0)
+  return this.totalItems / this.pageSize + (if (this.totalItems % this.pageSize > 0) 1 else 0) + if(this.totalItems  == 0) 1 else 0
 }
 
 fun Pagination.hasPreviousPage(): Boolean {
