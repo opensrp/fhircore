@@ -18,6 +18,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.smartregister.fhircore">
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+
     <application
         android:name="org.smartregister.fhircore.FhirApplication"
         android:allowBackup="true"
@@ -28,14 +33,18 @@
         android:theme="@style/AppTheme">
         <activity android:name=".activity.RecordVaccineActivity"></activity>
         <activity
-                android:name="org.smartregister.fhircore.activity.PatientListActivity"
-                android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustPan" >
+            android:name=".activity.LoginActivity"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+                android:name="org.smartregister.fhircore.activity.PatientListActivity"
+                android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustPan" >
         </activity>
         <activity
             android:name="org.smartregister.fhircore.activity.PatientDetailActivity"
