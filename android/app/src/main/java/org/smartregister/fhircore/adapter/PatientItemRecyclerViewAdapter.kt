@@ -32,7 +32,7 @@ import org.smartregister.fhircore.viewmodel.PatientListViewModel
 class PatientItemRecyclerViewAdapter(
   private val onItemClicked: (PatientListViewModel.PatientItem) -> Unit,
   private val paginationListener: (NavigationDirection, Int) -> Unit,
-  private val onRecordVaccineClicked: () -> Unit
+  private val onRecordVaccineClicked: (PatientListViewModel.PatientItem) -> Unit
 ) : ListAdapter<Any, RecyclerView.ViewHolder>(PatientItemDiffCallback()) {
 
   class PatientItemDiffCallback : DiffUtil.ItemCallback<Any>() {
