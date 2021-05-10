@@ -68,7 +68,11 @@ class PatientItemRecyclerViewAdapter(
 
     when (holder) {
       is PatientItemViewHolder ->
-        holder.bindTo(item as PatientListViewModel.PatientItem, onItemClicked, onRecordVaccineClicked)
+        holder.bindTo(
+          item as PatientListViewModel.PatientItem,
+          onItemClicked,
+          onRecordVaccineClicked
+        )
       is PaginationViewHolder -> holder.bindTo(item as Pagination, paginationListener)
     }
   }
