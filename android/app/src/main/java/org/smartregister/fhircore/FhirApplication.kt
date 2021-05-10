@@ -33,6 +33,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.api.HapiFhirService.Companion.create
 import org.smartregister.fhircore.data.FhirPeriodicSyncWorker
 import org.smartregister.fhircore.data.HapiFhirResourceDataSource
+import org.smartregister.fhircore.util.SharedPrefrencesHelper
 
 class FhirApplication : Application() {
 
@@ -40,6 +41,7 @@ class FhirApplication : Application() {
   private val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
 
   private fun constructFhirEngine(): FhirEngine {
+    SharedPrefrencesHelper.init(this)
     val parser = FhirContext.forR4().newJsonParser()
     val service = create(parser)
     val params = mutableMapOf("address-city" to "NAIROBI")

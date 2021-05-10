@@ -28,6 +28,7 @@ import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.adapter.ObservationItemRecyclerViewAdapter
+import org.smartregister.fhircore.util.SharedPrefrencesHelper
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
@@ -37,6 +38,8 @@ import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
  * [PatientDetailActivity].
  */
 class PatientDetailFragment : Fragment() {
+
+  var patitentId: String? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -74,10 +77,23 @@ class PatientDetailFragment : Fragment() {
 
     arguments?.let {
       if (it.containsKey(ARG_ITEM_ID)) {
-        it.getString(ARG_ITEM_ID)?.let { it1 -> viewModel.getPatientItem(it1) }
+        it.getString(ARG_ITEM_ID)?.let { it1 ->
+          viewModel.getPatientItem(it1)
+          patitentId = it1
+        }
       }
     }
     viewModel.searchResults()
+
+    patitentId?.let {
+      val vaccineRecorded = SharedPrefrencesHelper.read(it, "")
+      vaccineRecorded?.let { it1 ->
+        if (it1.isNotEmpty()) {
+          val tvVaccineRecorded = rootView.findViewById<TextView>(R.id.vaccination_status)
+          tvVaccineRecorded.text = "Received $it1 dose 1"
+        }
+      }
+    }
 
     return rootView
   }
