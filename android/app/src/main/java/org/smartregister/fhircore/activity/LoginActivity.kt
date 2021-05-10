@@ -9,6 +9,10 @@ import androidx.core.widget.doAfterTextChanged
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.api.OauthService
 import org.smartregister.fhircore.auth.account.AccountHelper
+import org.smartregister.fhircore.auth.account.OauthResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class LoginActivity: AppCompatActivity() {
     private lateinit var usernameTxt: EditText
@@ -36,7 +40,23 @@ class LoginActivity: AppCompatActivity() {
 
         loginButton.setOnClickListener(View.OnClickListener {
             Toast.makeText(this, "I am clicked!!! yeah", Toast.LENGTH_LONG).show()
-            AccountHelper().fetchToken(usernameTxt.text.toString(), passwordTxt.text.toString().toCharArray())
+            AccountHelper().fetchToken(
+                usernameTxt.text.toString(),
+                passwordTxt.text.toString().toCharArray())
+                .enqueue(object : Callback<OauthResponse>{
+                    override fun onResponse(
+                        call: Call<OauthResponse>,
+                        response: Response<OauthResponse>
+                    ) {
+                        Log.i(localClassName, response.toString())
+                    }
+
+                    override fun onFailure(call: Call<OauthResponse>, t: Throwable) {
+                        Log.e(localClassName, t.stackTraceToString())
+                    }
+
+
+                })
         })
     }
 

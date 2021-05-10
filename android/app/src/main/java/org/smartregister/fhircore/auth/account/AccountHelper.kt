@@ -22,9 +22,7 @@ class AccountHelper {
         data["refresh_token"] = refreshToken
         data["grant_type"] = "refresh_token"
         return try {
-            val bodyString: String = getBody(data)
-
-            return OauthService.create()!!.refreshToken(bodyString).execute().body()
+            return OauthService.create()!!.refreshToken(data).execute().body()
         } catch (e: HttpException) {
             throw e
         } catch (e: Exception) {
@@ -33,41 +31,19 @@ class AccountHelper {
     }
 
     @Throws(NetworkErrorException::class)
-    fun fetchToken(username: String, password: CharArray): OauthResponse? {
+    fun fetchToken(username: String, password: CharArray): Call<OauthResponse> {
         val data: MutableMap<String, String> = HashMap()
+        data["grant_type"] = "password"
         data["username"] = username
-        data["password"] = password.toString()
+        data["password"] = password.concatToString()
         data["client_id"] = BuildConfig.OAUTH_CIENT_ID
-        data["client_secret"] = BuildConfig.OAUTH_CLIENT_SECRET
+       // data["client_secret"] = BuildConfig.OAUTH_CLIENT_SECRET
         return try {
-            val bodyString: String = getBody(data)
-
-            return OauthService.create()!!.fetchToken(bodyString).execute().body()
+            return OauthService.create()!!.fetchToken(data)
         } catch (e: HttpException) {
             throw e
         } catch (e: Exception) {
             throw NetworkErrorException(e)
         }
-    }
-
-    private fun getBody(data: Map<String, String>): String {
-        val bodyBuilder = StringBuilder()
-        val formTemplate = "%s=%s"
-        var amp = ""
-        for ((key, value) in data) {
-            bodyBuilder.append(amp)
-            try {
-                bodyBuilder.append(
-                    format(
-                        formTemplate,
-                        key, URLEncoder.encode(value, "UTF-8")
-                    )
-                )
-            } catch (e: UnsupportedEncodingException) {
-                throw RuntimeException(e)
-            }
-            amp = "&"
-        }
-        return bodyBuilder.toString()
     }
 }
