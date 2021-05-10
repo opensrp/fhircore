@@ -1,5 +1,6 @@
 package org.smartregister.fhircore.auth.account
 
+import android.R.attr
 import android.accounts.AbstractAccountAuthenticator
 import android.accounts.Account
 import android.accounts.AccountAuthenticatorResponse
@@ -8,7 +9,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.text.TextUtils
 import androidx.core.os.bundleOf
 import org.smartregister.fhircore.activity.LoginActivity
 
@@ -24,7 +24,18 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
         requiredFeatures: Array<out String>?,
         options: Bundle?
     ): Bundle {
-        TODO("Not yet implemented")
+        val intent = Intent(
+            myContext,
+            LoginActivity::class.java
+        )
+        intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, attr.accountType)
+        intent.putExtra(AccountConfig.KEY_AUTH_TOKEN_TYPE, authTokenType) //todo
+        intent.putExtra(AccountConfig.KEY_IS_NEW_ACCOUNT, true)
+        intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
+
+        val bundle = Bundle()
+        bundle.putParcelable(AccountManager.KEY_INTENT, intent)
+        return bundle
     }
 
     override fun getAuthToken(
@@ -82,7 +93,7 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
     }
 
     override fun getAuthTokenLabel(authTokenType: String?): String {
-        TODO("Not yet implemented")
+        return authTokenType!!.toUpperCase()
     }
 
     override fun updateCredentials(

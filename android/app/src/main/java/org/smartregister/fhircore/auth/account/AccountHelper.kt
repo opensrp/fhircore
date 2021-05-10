@@ -15,6 +15,7 @@ import java.net.URLEncoder
 
 
 class AccountHelper {
+
     @Throws(NetworkErrorException::class)
     fun refreshToken(refreshToken: String): OauthResponse? {
         val data: MutableMap<String, String> = HashMap()
@@ -24,6 +25,24 @@ class AccountHelper {
             val bodyString: String = getBody(data)
 
             return OauthService.create()!!.refreshToken(bodyString).execute().body()
+        } catch (e: HttpException) {
+            throw e
+        } catch (e: Exception) {
+            throw NetworkErrorException(e)
+        }
+    }
+
+    @Throws(NetworkErrorException::class)
+    fun fetchToken(username: String, password: CharArray): OauthResponse? {
+        val data: MutableMap<String, String> = HashMap()
+        data["username"] = username
+        data["password"] = password.toString()
+        data["client_id"] = BuildConfig.OAUTH_CIENT_ID
+        data["client_secret"] = BuildConfig.OAUTH_CLIENT_SECRET
+        return try {
+            val bodyString: String = getBody(data)
+
+            return OauthService.create()!!.fetchToken(bodyString).execute().body()
         } catch (e: HttpException) {
             throw e
         } catch (e: Exception) {

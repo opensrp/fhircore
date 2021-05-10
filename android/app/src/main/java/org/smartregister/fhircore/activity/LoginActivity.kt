@@ -7,6 +7,8 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.api.OauthService
+import org.smartregister.fhircore.auth.account.AccountHelper
 
 class LoginActivity: AppCompatActivity() {
     private lateinit var usernameTxt: EditText
@@ -34,6 +36,7 @@ class LoginActivity: AppCompatActivity() {
 
         loginButton.setOnClickListener(View.OnClickListener {
             Toast.makeText(this, "I am clicked!!! yeah", Toast.LENGTH_LONG).show()
+            AccountHelper().fetchToken(usernameTxt.text.toString(), passwordTxt.text.toString().toCharArray())
         })
     }
 
