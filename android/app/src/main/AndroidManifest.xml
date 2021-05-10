@@ -47,6 +47,11 @@
             android:windowSoftInputMode="adjustPan" >
         </activity>
         <activity
+                android:name="org.smartregister.fhircore.activity.PatientListActivity"
+                android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustPan" >
+        </activity>
+        <activity
             android:name="org.smartregister.fhircore.activity.PatientDetailActivity"
             android:label=""
             android:parentActivityName="org.smartregister.fhircore.activity.PatientListActivity"

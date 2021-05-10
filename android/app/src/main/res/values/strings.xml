@@ -62,7 +62,6 @@
     <string name="login_button_txt">Login</string>
     <string name="username_input_hint">Enter username</string>
     <string name="password_input_hint">Enter password</string>
-    <string name="forgot_password_button_hint">Forgot password</string>
     <string name="show_password_button_hint">Show password</string>
     <string name="login_error_message">Invalid username or password</string>
     <string name="login_call_fail_error_message">Failed to verify credentials from server. Check your internet connection</string>
