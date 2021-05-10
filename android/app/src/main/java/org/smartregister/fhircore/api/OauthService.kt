@@ -18,6 +18,9 @@ interface OauthService {
     @POST("/protocol/openid-connect/token/refresh")
     fun refreshToken(@Body body: String): Call<OauthResponse>
 
+    @POST("/protocol/openid-connect/token")
+    fun fetchToken(@Body body: String): Call<OauthResponse>
+
     companion object {
         fun create(): OauthService? {
             val logger = HttpLoggingInterceptor()
@@ -32,4 +35,5 @@ interface OauthService {
                 .create(OauthService::class.java)
         }
     }
+
 }
