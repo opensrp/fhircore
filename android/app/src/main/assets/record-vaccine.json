@@ -1,0 +1,62 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "client-registration-sample",
+  "status": "active",
+  "date": "2020-11-18T07:24:47.111Z",
+  "subjectType": [
+    "Patient"
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
+      "valueExpression": {
+        "language": "application/x-fhir-query",
+        "expression": "Patient",
+        "name": "patient"
+      }
+    }
+  ],
+  "item": [
+    {
+      "linkId": "Record-Vaccine",
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "radio-button",
+                "display": "Radio Button"
+              }
+            ],
+            "text": "A control where choices are listed with a button beside them. The button can be toggled to select or de-select a given choice. Selecting one item deselects all others."
+          }
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "Moderna"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "Pfizer"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "AstraZeneca"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "Janssen"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -31,7 +31,8 @@ import org.smartregister.fhircore.viewmodel.PatientListViewModel
 /** UI Controller helper class to monitor Patient viewmodel and display list of patients. */
 class PatientItemRecyclerViewAdapter(
   private val onItemClicked: (PatientListViewModel.PatientItem) -> Unit,
-  private val paginationListener: (NavigationDirection, Int) -> Unit
+  private val paginationListener: (NavigationDirection, Int) -> Unit,
+  private val onRecordVaccineClicked: () -> Unit
 ) : ListAdapter<Any, RecyclerView.ViewHolder>(PatientItemDiffCallback()) {
 
   class PatientItemDiffCallback : DiffUtil.ItemCallback<Any>() {
@@ -67,7 +68,11 @@ class PatientItemRecyclerViewAdapter(
 
     when (holder) {
       is PatientItemViewHolder ->
-        holder.bindTo(item as PatientListViewModel.PatientItem, onItemClicked)
+        holder.bindTo(
+          item as PatientListViewModel.PatientItem,
+          onItemClicked,
+          onRecordVaccineClicked
+        )
       is PaginationViewHolder -> holder.bindTo(item as Pagination, paginationListener)
     }
   }

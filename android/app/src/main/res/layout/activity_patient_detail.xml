@@ -50,7 +50,7 @@
                 app:theme="@style/ThemeOverlay.AppCompat.Light"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light" >
 
-            </androidx.appcompat.widget.Toolbar>>
+            </androidx.appcompat.widget.Toolbar>
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
