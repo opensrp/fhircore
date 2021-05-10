@@ -9,6 +9,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.text.TextUtils
+import androidx.core.os.bundleOf
 import org.smartregister.fhircore.activity.LoginActivity
 
 
@@ -63,16 +64,7 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
             return result
         }
 
-        val intent = Intent(
-            myContext,
-            LoginActivity::class.java
-        )
-        intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
-        intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, account!!.type)
-        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, account!!.name)
-        val bundle = Bundle()
-        bundle.putParcelable(AccountManager.KEY_INTENT, intent)
-        return bundle
+        return updateCredentials(response, account, authTokenType, options)
     }
 
     override fun editProperties(
@@ -99,7 +91,16 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
         authTokenType: String?,
         options: Bundle?
     ): Bundle {
-        TODO("Not yet implemented")
+        val intent = Intent(
+            myContext,
+            LoginActivity::class.java
+        )
+        intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
+        intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, account!!.type)
+        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, account!!.name)
+        val bundle = Bundle()
+        bundle.putParcelable(AccountManager.KEY_INTENT, intent)
+        return bundle
     }
 
     override fun hasFeatures(
@@ -107,6 +108,6 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
         account: Account?,
         features: Array<out String>?
     ): Bundle {
-        TODO("Not yet implemented")
+        return bundleOf(Pair(AccountManager.KEY_BOOLEAN_RESULT, false))
     }
 }
