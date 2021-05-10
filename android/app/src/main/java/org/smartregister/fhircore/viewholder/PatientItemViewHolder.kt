@@ -30,12 +30,12 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
   fun bindTo(
     patientItem: PatientListViewModel.PatientItem,
     onItemClicked: (PatientListViewModel.PatientItem) -> Unit,
-    onRecordVaccineClicked: () -> Unit
+    onRecordVaccineClicked: (PatientListViewModel.PatientItem) -> Unit
   ) {
     this.tvPatientDemographics.text = getPatientDemographics(patientItem)
     this.tvPatientDemographics.setOnClickListener { onItemClicked(patientItem) }
     this.tvDateLastSeen.setOnClickListener { onItemClicked(patientItem) }
-    this.tvRecordVaccine.setOnClickListener { onRecordVaccineClicked() }
+    this.tvRecordVaccine.setOnClickListener { onRecordVaccineClicked(patientItem) }
   }
 
   private fun getPatientDemographics(patientItem: PatientListViewModel.PatientItem): String {

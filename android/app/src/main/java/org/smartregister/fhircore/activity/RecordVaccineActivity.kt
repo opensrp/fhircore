@@ -18,13 +18,19 @@ package org.smartregister.fhircore.activity
 
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.Button
+import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.util.SharedPrefrencesHelper
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
+
+const val USER_ID = "user_id"
 
 class RecordVaccineActivity : AppCompatActivity() {
 
@@ -49,6 +55,20 @@ class RecordVaccineActivity : AppCompatActivity() {
         add(R.id.container, fragment, QuestionnaireActivity.QUESTIONNAIRE_FRAGMENT_TAG)
       }
     }
+
+    findViewById<Button>(R.id.btn_record_vaccine).setOnClickListener {
+      val questionnaireFragment =
+        supportFragmentManager.findFragmentByTag(
+          QuestionnaireActivity.QUESTIONNAIRE_FRAGMENT_TAG
+        ) as
+          QuestionnaireFragment
+      val vaccineSelected = questionnaireFragment.getQuestionnaireResponse()
+      try {
+        showVaccineRecordDialog(vaccineSelected.item[0].answer[0].valueCoding.code)
+      } catch (e: IndexOutOfBoundsException) {
+        Toast.makeText(this, "Please Select Vaccine", Toast.LENGTH_SHORT).show()
+      }
+    }
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -59,5 +79,27 @@ class RecordVaccineActivity : AppCompatActivity() {
       } // do whatever
       else -> super.onOptionsItemSelected(item)
     }
+  }
+
+  private fun showVaccineRecordDialog(vaccineName: String) {
+    val userId = intent?.getStringExtra(USER_ID)!!
+    SharedPrefrencesHelper.write(userId, vaccineName)
+
+    val builder = AlertDialog.Builder(this)
+    // set title for alert dialog
+    builder.setTitle("$vaccineName 1st dose recorded")
+    // set message for alert dialog
+    builder.setMessage("Second dose due at 27-04-2021")
+
+    // performing negative action
+    builder.setNegativeButton("Done") { dialogInterface, _ ->
+      dialogInterface.dismiss()
+      finish()
+    }
+    // Create the AlertDialog
+    val alertDialog: AlertDialog = builder.create()
+    // Set other dialog properties
+    alertDialog.setCancelable(false)
+    alertDialog.show()
   }
 }
