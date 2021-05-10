@@ -62,7 +62,11 @@ class PatientListFragment : Fragment() {
 
     val recyclerView = view.findViewById<RecyclerView>(R.id.patient_list)
     val adapter =
-      PatientItemRecyclerViewAdapter(this::onPatientItemClicked, this::onNavigationClicked, this::onRecordVaccineClicked)
+      PatientItemRecyclerViewAdapter(
+        this::onPatientItemClicked,
+        this::onNavigationClicked,
+        this::onRecordVaccineClicked
+      )
     recyclerView.adapter = adapter
 
     requireActivity().findViewById<TextView>(R.id.tv_sync).setOnClickListener {
@@ -125,10 +129,12 @@ class PatientListFragment : Fragment() {
   }
 
   private fun onRecordVaccineClicked() {
-    startActivity(Intent(requireContext(), RecordVaccineActivity::class.java).apply {
-      putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
-      putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
-    })
+    startActivity(
+      Intent(requireContext(), RecordVaccineActivity::class.java).apply {
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
+      }
+    )
   }
 
   private fun syncResources() {
