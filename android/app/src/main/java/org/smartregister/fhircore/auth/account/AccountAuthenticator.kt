@@ -5,8 +5,12 @@ import android.accounts.Account
 import android.accounts.AccountAuthenticatorResponse
 import android.accounts.AccountManager
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.text.TextUtils
+import org.smartregister.fhircore.activity.LoginActivity
+
 
 class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(context) {
 
@@ -31,17 +35,19 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
         var am = AccountManager.get(myContext);
 
         var accessToken = am.peekAuthToken(account, authTokenType)
+        var tokenResponse: OauthResponse
 
-        var tokenResponse: OauthResponse =  null
         // if no access token try getting one with refresh token
         if(accessToken.isNullOrEmpty()){
             var refreshToken = am.getPassword(account)
 
             if(!refreshToken.isNullOrEmpty()){
-                var tokenResponse = AccountHelper().refreshToken(refreshToken)
+                tokenResponse = AccountHelper().refreshToken(refreshToken)!!
+
+                accessToken = tokenResponse?.accessToken
 
                 am.setPassword(account, refreshToken);
-                am.setAuthToken(account, authTokenType, tokenResponse?.accessToken);
+                am.setAuthToken(account, authTokenType, tokenResponse!!.accessToken);
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     am.notifyAccountAuthenticated(account);
@@ -49,9 +55,24 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
             }
         }
 
-        val toReturn = Bundle()
-        toReturn.putString(AccountManager.KEY_AUTHTOKEN, tokenResponse?.accessToken)
-        return toReturn
+        if (!accessToken.isNullOrEmpty()) {
+            val result = Bundle()
+            result.putString(AccountManager.KEY_ACCOUNT_NAME, account!!.name)
+            result.putString(AccountManager.KEY_ACCOUNT_TYPE, account!!.type)
+            result.putString(AccountManager.KEY_AUTHTOKEN, accessToken)
+            return result
+        }
+
+        val intent = Intent(
+            myContext,
+            LoginActivity::class.java
+        )
+        intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
+        intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, account!!.type)
+        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, account!!.name)
+        val bundle = Bundle()
+        bundle.putParcelable(AccountManager.KEY_INTENT, intent)
+        return bundle
     }
 
     override fun editProperties(

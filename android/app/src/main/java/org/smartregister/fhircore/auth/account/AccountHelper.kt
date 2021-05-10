@@ -23,7 +23,7 @@ class AccountHelper {
         return try {
             val bodyString: String = getBody(data)
 
-            return OauthService.create()?.refreshToken(bodyString)?.execute()?.body()
+            return OauthService.create()!!.refreshToken(bodyString).execute().body()
         } catch (e: HttpException) {
             throw e
         } catch (e: Exception) {
