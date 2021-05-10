@@ -19,6 +19,7 @@ package org.smartregister.fhircore.activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
@@ -52,6 +53,13 @@ class PatientDetailActivity : AppCompatActivity() {
         .beginTransaction()
         .add(R.id.patient_detail_container, fragment)
         .commit()
+    }
+
+    findViewById<Button>(R.id.btn_record_vaccine).setOnClickListener {
+      startActivity(Intent(this, RecordVaccineActivity::class.java).apply {
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
+      })
     }
   }
 
