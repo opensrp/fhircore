@@ -35,6 +35,8 @@ import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.PatientDetailActivity
+import org.smartregister.fhircore.activity.QuestionnaireActivity
+import org.smartregister.fhircore.activity.RecordVaccineActivity
 import org.smartregister.fhircore.adapter.PatientItemRecyclerViewAdapter
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
@@ -60,7 +62,7 @@ class PatientListFragment : Fragment() {
 
     val recyclerView = view.findViewById<RecyclerView>(R.id.patient_list)
     val adapter =
-      PatientItemRecyclerViewAdapter(this::onPatientItemClicked, this::onNavigationClicked)
+      PatientItemRecyclerViewAdapter(this::onPatientItemClicked, this::onNavigationClicked, this::onRecordVaccineClicked)
     recyclerView.adapter = adapter
 
     requireActivity().findViewById<TextView>(R.id.tv_sync).setOnClickListener {
@@ -120,6 +122,13 @@ class PatientListFragment : Fragment() {
         putExtra(PatientDetailFragment.ARG_ITEM_ID, patientItem.logicalId)
       }
     this.startActivity(intent)
+  }
+
+  private fun onRecordVaccineClicked() {
+    startActivity(Intent(requireContext(), RecordVaccineActivity::class.java).apply {
+      putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
+      putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
+    })
   }
 
   private fun syncResources() {

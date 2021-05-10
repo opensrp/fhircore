@@ -25,12 +25,17 @@ import org.smartregister.fhircore.viewmodel.PatientListViewModel
 
 class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val tvPatientDemographics: TextView = itemView.findViewById(R.id.tv_patient_demographics)
+  private val tvDateLastSeen: TextView = itemView.findViewById(R.id.date_last_seen)
+  private val tvRecordVaccine: TextView = itemView.findViewById(R.id.tv_record_vaccine)
   fun bindTo(
     patientItem: PatientListViewModel.PatientItem,
-    onItemClicked: (PatientListViewModel.PatientItem) -> Unit
+    onItemClicked: (PatientListViewModel.PatientItem) -> Unit,
+    onRecordVaccineClicked: () -> Unit
   ) {
     this.tvPatientDemographics.text = getPatientDemographics(patientItem)
-    this.itemView.setOnClickListener { onItemClicked(patientItem) }
+    this.tvPatientDemographics.setOnClickListener { onItemClicked(patientItem) }
+    this.tvDateLastSeen.setOnClickListener { onItemClicked(patientItem) }
+    this.tvRecordVaccine.setOnClickListener { onRecordVaccineClicked() }
   }
 
   private fun getPatientDemographics(patientItem: PatientListViewModel.PatientItem): String {

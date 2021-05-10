@@ -26,6 +26,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".activity.RecordVaccineActivity"></activity>
         <activity
                 android:name="org.smartregister.fhircore.activity.PatientListActivity"
                 android:theme="@style/AppTheme.NoActionBar"
@@ -47,6 +48,6 @@
         </activity>
         <activity
             android:name=".activity.QuestionnaireActivity"
-            android:parentActivityName=".activity.PatientListActivity"></activity>
+            android:parentActivityName=".activity.PatientListActivity" />
     </application>
 </manifest>

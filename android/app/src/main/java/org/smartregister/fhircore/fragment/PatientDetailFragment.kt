@@ -46,9 +46,11 @@ class PatientDetailFragment : Fragment() {
   ): View? {
     val rootView = inflater.inflate(R.layout.patient_detail, container, false)
 
-    val recyclerView: RecyclerView = rootView.findViewById(R.id.observation_list)
     val adapter = ObservationItemRecyclerViewAdapter()
-    recyclerView.adapter = adapter
+
+    //Commenting as we don't need this in Patient Detail Screen
+    /*val recyclerView: RecyclerView = rootView.findViewById(R.id.observation_list)
+    recyclerView.adapter = adapter*/
 
     val fhirEngine: FhirEngine = FhirApplication.fhirEngine(requireContext())
 
