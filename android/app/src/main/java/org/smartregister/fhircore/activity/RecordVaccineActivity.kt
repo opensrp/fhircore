@@ -32,15 +32,12 @@ import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import java.util.Date
 import java.util.UUID
 import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.api.HapiFhirService
 import org.smartregister.fhircore.util.SharedPrefrencesHelper
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
@@ -100,27 +97,7 @@ class RecordVaccineActivity : AppCompatActivity() {
           }
         immunization.occurrence = DateTimeType.today()
         immunization.patient =
-          Reference().apply {
-            this.reference = "Patient/" + intent?.getStringExtra(USER_ID)
-            this.type = "Patient"
-            this.identifier =
-              Identifier().apply {
-                this.use = Identifier.IdentifierUse.USUAL
-                this.type =
-                  CodeableConcept().apply {
-                    this.coding =
-                      listOf(
-                        Coding(
-                          "http://terminology.hl7.org/CodeSystem/v2-0203",
-                          "PatientID",
-                          "Patient ID"
-                        )
-                      )
-                  }
-                this.system = HapiFhirService.BASE_URL + "/patients"
-                this.value = intent?.getStringExtra(USER_ID)
-              }
-          }
+          Reference().apply { this.reference = "Patient/" + intent?.getStringExtra(USER_ID) }
         immunization.protocolApplied =
           listOf(
             Immunization.ImmunizationProtocolAppliedComponent().apply {
@@ -152,7 +129,7 @@ class RecordVaccineActivity : AppCompatActivity() {
     val builder = AlertDialog.Builder(this)
     // set title for alert dialog
     builder.setTitle(
-      "${immunization.vaccineCode.text} dose ${immunization.protocolApplied.first().doseNumber} recorded"
+      "${immunization.vaccineCode.text} dose ${immunization.protocolApplied.first().doseNumberPositiveIntType.value} recorded"
     )
     // set message for alert dialog
     builder.setMessage("Second dose due at 27-04-2021")
