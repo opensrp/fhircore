@@ -41,7 +41,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
       return questionnaireJson!!
     }
 
-  fun savePatient(resource: Resource) {
+  fun saveResource(resource: Resource) {
     viewModelScope.launch { FhirApplication.fhirEngine(getApplication()).save(resource) }
   }
 }

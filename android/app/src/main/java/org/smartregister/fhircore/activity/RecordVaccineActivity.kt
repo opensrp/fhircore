@@ -25,7 +25,18 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import java.util.Date
+import java.util.UUID
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.PositiveIntType
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.util.SharedPrefrencesHelper
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
@@ -62,9 +73,39 @@ class RecordVaccineActivity : AppCompatActivity() {
           QuestionnaireActivity.QUESTIONNAIRE_FRAGMENT_TAG
         ) as
           QuestionnaireFragment
-      val vaccineSelected = questionnaireFragment.getQuestionnaireResponse()
+      val questionnaireResponse = questionnaireFragment.getQuestionnaireResponse()
+
+      val iParser: IParser = FhirContext.forR4().newJsonParser()
+      val questionnaire =
+        iParser.parseResource(
+          org.hl7.fhir.r4.model.Questionnaire::class.java,
+          viewModel.questionnaire
+        ) as
+          Questionnaire
+
+      // TODO Replace manual mapping with resource mapper
       try {
-        showVaccineRecordDialog(vaccineSelected.item[0].answer[0].valueCoding.code)
+        val immunization =
+          ResourceMapper.extract(questionnaire, questionnaireResponse) as Immunization
+        immunization.id = UUID.randomUUID().toString().toLowerCase()
+        immunization.recorded = Date()
+        immunization.status = Immunization.ImmunizationStatus.COMPLETED
+        immunization.vaccineCode =
+          CodeableConcept().apply {
+            this.text = questionnaireResponse.item[0].answer[0].valueCoding.code
+            this.coding = listOf(questionnaireResponse.item[0].answer[0].valueCoding)
+          }
+        immunization.occurrence = DateTimeType.today()
+        immunization.patient =
+          Reference().apply { this.reference = "Patient/" + intent?.getStringExtra(USER_ID) }
+        immunization.protocolApplied =
+          listOf(
+            Immunization.ImmunizationProtocolAppliedComponent().apply {
+              this.doseNumber = PositiveIntType(1)
+            }
+          )
+        viewModel.saveResource(immunization)
+        showVaccineRecordDialog(immunization)
       } catch (e: IndexOutOfBoundsException) {
         Toast.makeText(this, "Please Select Vaccine", Toast.LENGTH_SHORT).show()
       }
@@ -81,13 +122,15 @@ class RecordVaccineActivity : AppCompatActivity() {
     }
   }
 
-  private fun showVaccineRecordDialog(vaccineName: String) {
+  private fun showVaccineRecordDialog(immunization: Immunization) {
     val userId = intent?.getStringExtra(USER_ID)!!
-    SharedPrefrencesHelper.write(userId, vaccineName)
+    SharedPrefrencesHelper.write(userId, immunization.vaccineCode.text)
 
     val builder = AlertDialog.Builder(this)
     // set title for alert dialog
-    builder.setTitle("$vaccineName 1st dose recorded")
+    builder.setTitle(
+      "${immunization.vaccineCode.text} dose ${immunization.protocolApplied.first().doseNumberPositiveIntType.value} recorded"
+    )
     // set message for alert dialog
     builder.setMessage("Second dose due at 27-04-2021")
 
