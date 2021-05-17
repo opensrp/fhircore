@@ -41,7 +41,7 @@ import org.smartregister.fhircore.R
 import org.smartregister.fhircore.util.SharedPrefrencesHelper
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
-const val USER_ID = "user_id"
+const val PATIENT_ID = "patient_id"
 
 class RecordVaccineActivity : AppCompatActivity() {
 
@@ -97,7 +97,7 @@ class RecordVaccineActivity : AppCompatActivity() {
           }
         immunization.occurrence = DateTimeType.today()
         immunization.patient =
-          Reference().apply { this.reference = "Patient/" + intent?.getStringExtra(USER_ID) }
+          Reference().apply { this.reference = "Patient/" + intent?.getStringExtra(PATIENT_ID) }
         immunization.protocolApplied =
           listOf(
             Immunization.ImmunizationProtocolAppliedComponent().apply {
@@ -123,8 +123,8 @@ class RecordVaccineActivity : AppCompatActivity() {
   }
 
   private fun showVaccineRecordDialog(immunization: Immunization) {
-    val userId = intent?.getStringExtra(USER_ID)!!
-    SharedPrefrencesHelper.write(userId, immunization.vaccineCode.text)
+    val patientId = intent?.getStringExtra(PATIENT_ID)!!
+    SharedPrefrencesHelper.write(patientId, immunization.vaccineCode.text)
 
     val builder = AlertDialog.Builder(this)
     // set title for alert dialog
