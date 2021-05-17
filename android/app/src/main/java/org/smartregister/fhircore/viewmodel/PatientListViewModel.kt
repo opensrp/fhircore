@@ -99,10 +99,10 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   }
 
   /** Basic search for immunizations */
-  fun searchImmunizations(query: String? = null, page: Int = 0, pageSize: Int = 10) {
+  fun searchImmunizations(patientId: String? = null) {
     viewModelScope.launch {
-      val searchResults: List<Immunization> = fhirEngine.search {}
-
+      val searchResults: List<Immunization> =
+        fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/" + patientId } }
       liveSearchImmunization.value = searchResults
     }
   }

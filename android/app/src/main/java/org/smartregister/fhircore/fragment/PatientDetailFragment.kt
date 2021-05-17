@@ -90,7 +90,7 @@ class PatientDetailFragment : Fragment() {
     }
 
     // load immunization data
-    viewModel.searchImmunizations()
+    viewModel.searchImmunizations(patitentId)
 
     viewModel
       .getImmunizations()
@@ -110,6 +110,7 @@ class PatientDetailFragment : Fragment() {
           patient?.dob?.let { it1 -> Utils.getAgeFromDate(it1) }
       activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
       activity?.findViewById<TextView>(R.id.id_patient_number)?.text = "ID: " + patient.logicalId
+      patitentId = patient.logicalId
     }
   }
 
