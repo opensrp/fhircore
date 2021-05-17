@@ -30,8 +30,10 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentResultListener
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
+import com.google.mlkit.md.LiveBarcodeScanningFragment
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientListFragment
 import org.smartregister.fhircore.util.Utils
@@ -76,6 +78,21 @@ class PatientListActivity : AppCompatActivity() {
         editText.addOnDrawableClickedListener(Utils.DrawablePosition.DRAWABLE_RIGHT) { it.clear() }
       }
     }
+
+
+
+    val btnScanBarcode = findViewById<Button>(R.id.btn_scan_barcode)
+    supportFragmentManager.setFragmentResultListener(
+            "result",
+            this,
+            object : FragmentResultListener {
+              override fun onFragmentResult(requestKey: String, result: Bundle) {
+                btnScanBarcode.setText(result.getString("result"))
+              }
+            }
+    )
+
+    btnScanBarcode.setOnClickListener { LiveBarcodeScanningFragment().show(supportFragmentManager, "TAG") }
 
     setupDrawerContent()
   }
