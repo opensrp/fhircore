@@ -24,6 +24,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
@@ -51,8 +52,8 @@ class PatientDetailFragment : Fragment() {
     val adapter = ObservationItemRecyclerViewAdapter()
 
     // Commenting as we don't need this in Patient Detail Screen
-    /*val recyclerView: RecyclerView = rootView.findViewById(R.id.observation_list)
-    recyclerView.adapter = adapter*/
+    val recyclerView: RecyclerView = rootView.findViewById(R.id.observation_list)
+    recyclerView.adapter = adapter
 
     val fhirEngine: FhirEngine = FhirApplication.fhirEngine(requireContext())
 
@@ -94,6 +95,9 @@ class PatientDetailFragment : Fragment() {
         }
       }
     }
+
+    // load immunization data
+    viewModel.searchImmunizations()
 
     return rootView
   }

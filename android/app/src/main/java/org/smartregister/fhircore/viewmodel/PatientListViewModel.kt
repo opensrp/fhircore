@@ -28,6 +28,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.data.SamplePatients
 import org.smartregister.fhircore.domain.Pagination
@@ -60,6 +61,14 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
   val liveSearchPatient: MutableLiveData<PatientItem> by lazy { MutableLiveData<PatientItem>() }
 
+  val liveSearchImmunization: MutableLiveData<List<Immunization>> by lazy {
+    MutableLiveData<List<Immunization>>()
+  }
+
+  fun getImmunizations(): MutableLiveData<List<Immunization>> {
+    return liveSearchImmunization
+  }
+
   fun searchResults(query: String? = null, page: Int = 0, pageSize: Int = 10) {
     viewModelScope.launch {
       val searchResults: List<Patient> =
@@ -86,6 +95,15 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
           samplePatients.getPatientItems(searchResults),
           Pagination(totalItems = count(query), pageSize = pageSize, currentPage = page)
         )
+    }
+  }
+
+  /** Basic search for immunizations */
+  fun searchImmunizations(query: String? = null, page: Int = 0, pageSize: Int = 10) {
+    viewModelScope.launch {
+      val searchResults: List<Immunization> = fhirEngine.search {}
+
+      liveSearchImmunization.value = searchResults
     }
   }
 
