@@ -26,9 +26,10 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
+import org.hl7.fhir.r4.model.Immunization
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.adapter.ObservationItemRecyclerViewAdapter
+import org.smartregister.fhircore.adapter.ImmunizationItemRecyclerViewAdapter
 import org.smartregister.fhircore.util.SharedPrefrencesHelper
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
@@ -49,9 +50,8 @@ class PatientDetailFragment : Fragment() {
   ): View? {
     val rootView = inflater.inflate(R.layout.patient_detail, container, false)
 
-    val adapter = ObservationItemRecyclerViewAdapter()
+    val adapter = ImmunizationItemRecyclerViewAdapter()
 
-    // Commenting as we don't need this in Patient Detail Screen
     val recyclerView: RecyclerView = rootView.findViewById(R.id.observation_list)
     recyclerView.adapter = adapter
 
@@ -63,13 +63,6 @@ class PatientDetailFragment : Fragment() {
           PatientListViewModelFactory(this.requireActivity().application, fhirEngine)
         )
         .get(PatientListViewModel::class.java)
-
-    viewModel
-      .getObservations()
-      .observe(
-        viewLifecycleOwner,
-        Observer<List<PatientListViewModel.ObservationItem>> { adapter.submitList(it) }
-      )
 
     viewModel.liveSearchPatient.observe(
       viewLifecycleOwner,
@@ -91,13 +84,17 @@ class PatientDetailFragment : Fragment() {
       vaccineRecorded?.let { it1 ->
         if (it1.isNotEmpty()) {
           val tvVaccineRecorded = rootView.findViewById<TextView>(R.id.vaccination_status)
-          tvVaccineRecorded.text = "Received $it1 dose 1"
+          tvVaccineRecorded?.text = "Received $it1 dose 1"
         }
       }
     }
 
     // load immunization data
     viewModel.searchImmunizations()
+
+    viewModel
+      .getImmunizations()
+      .observe(viewLifecycleOwner, Observer<List<Immunization>> { adapter.submitList(it) })
 
     return rootView
   }
