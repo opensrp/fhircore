@@ -25,7 +25,6 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
@@ -35,7 +34,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentResultListener
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
@@ -124,13 +122,13 @@ class PatientListFragment : Fragment() {
   }
 
     private fun setUpBarcodeScanner() {
-        val btnScanBarcode = requireActivity().findViewById<TextView>(R.id.btn_scan_barcode)
+        val btnScanBarcode: View = requireActivity().findViewById(R.id.layout_scan_barcode)
         requireActivity().supportFragmentManager.setFragmentResultListener(
                 "result",
                 this,
                 { _, result ->
                     val barcode = result.getString("result")
-                    btnScanBarcode.text = barcode
+                    btnScanBarcode.findViewById<TextView>(R.id.btn_scan_barcode).text = barcode
                 }
         )
 

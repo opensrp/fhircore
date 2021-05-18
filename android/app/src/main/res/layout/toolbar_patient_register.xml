@@ -73,7 +73,8 @@
             android:background="@drawable/rounded_white_thicker_stroked_bg"
             android:gravity="center"
             android:padding="15dp"
-            android:layout_marginTop="10dp" >
+            android:layout_marginTop="10dp"
+            android:id="@+id/layout_scan_barcode" >
 
             <TextView
                 android:layout_width="wrap_content"
