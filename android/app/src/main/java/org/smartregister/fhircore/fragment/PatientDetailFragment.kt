@@ -83,7 +83,7 @@ class PatientDetailFragment : Fragment() {
       val vaccineRecorded = SharedPrefrencesHelper.read(it, "")
       vaccineRecorded?.let { it1 ->
         if (it1.isNotEmpty()) {
-          val tvVaccineRecorded = rootView.findViewById<TextView>(R.id.vaccination_status)
+          val tvVaccineRecorded = rootView.findViewById<TextView>(R.id.observation_detail)
           tvVaccineRecorded?.text = "Received $it1 dose 1"
         }
       }

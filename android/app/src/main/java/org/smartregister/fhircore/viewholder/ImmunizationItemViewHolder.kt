@@ -20,6 +20,7 @@ import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.PositiveIntType
 import org.smartregister.fhircore.R
 
 class ImmunizationItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -28,10 +29,9 @@ class ImmunizationItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemV
   fun bindTo(immunizationItem: Immunization) {
     this.observationTextView.text =
       itemView.resources.getString(
-        R.string.observation_brief_text,
-        immunizationItem.vaccineCode.coding[0].code,
+        R.string.immunization_brief_text,
         immunizationItem.vaccineCode.text,
-        immunizationItem.occurrenceDateTimeType.toHumanDisplay()
+        (immunizationItem.protocolApplied[0].doseNumber as PositiveIntType).value
       )
   }
 }
