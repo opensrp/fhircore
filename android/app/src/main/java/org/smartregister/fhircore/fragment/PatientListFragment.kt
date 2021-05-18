@@ -140,8 +140,8 @@ class PatientListFragment : Fragment() {
   }
 
   private fun syncResources() {
+    patientListViewModel.runSync()
     patientListViewModel.searchResults()
     Toast.makeText(requireContext(), "Syncing...", Toast.LENGTH_LONG).show()
-    patientListViewModel.syncUpload()
   }
 }
