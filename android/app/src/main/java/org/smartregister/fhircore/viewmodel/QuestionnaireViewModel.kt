@@ -27,6 +27,7 @@ import org.smartregister.fhircore.activity.QuestionnaireActivity
 
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
   AndroidViewModel(application) {
+
   var questionnaireJson: String? = null
   val questionnaire: String
     get() {
@@ -41,7 +42,13 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
       return questionnaireJson!!
     }
 
-  fun saveResource(resource: Resource) {
-    viewModelScope.launch { FhirApplication.fhirEngine(getApplication()).save(resource) }
+  fun saveResource(resource: Resource, listeners: List<ResourceSaveListener> = emptyList()) {
+    viewModelScope.launch { save(resource, listeners) }
+  }
+
+  private suspend fun save(resource: Resource, listeners: List<ResourceSaveListener>) {
+    FhirApplication.fhirEngine(getApplication()).save(resource)
+
+    listeners.forEach { it.afterSave(resource) }
   }
 }

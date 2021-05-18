@@ -32,8 +32,12 @@ import java.util.UUID
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
+import org.smartregister.fhircore.viewmodel.ResourceSaveListener
 
 class QuestionnaireActivity : AppCompatActivity() {
   private val viewModel: QuestionnaireViewModel by viewModels()
@@ -89,7 +93,21 @@ class QuestionnaireActivity : AppCompatActivity() {
 
     patient.id = UUID.randomUUID().toString().toLowerCase()
     // FhirApplication.fhirEngine(applicationContext).save(patient)
-    viewModel.saveResource(patient)
+    viewModel.saveResource(
+      patient,
+      listOf(
+        object : ResourceSaveListener {
+          override suspend fun afterSave(resource: Resource) {
+            // generate a task
+            FhirApplication.fhirEngine(application).save(
+              Task().apply {
+                status = Task.TaskStatus.READY
+              }
+            )
+          }
+        }
+      )
+    )
 
     this.startActivity(Intent(this, PatientListActivity::class.java))
   }
