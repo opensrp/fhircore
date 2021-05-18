@@ -82,8 +82,10 @@ class RecordVaccineActivity : AppCompatActivity() {
   }
 
   private fun showVaccineRecordDialog(vaccineName: String) {
-    val userId = intent?.getStringExtra(USER_ID)!!
-    SharedPrefrencesHelper.write(userId, vaccineName)
+    val userId = intent?.getStringExtra(USER_ID)
+    if (userId != null) {
+      SharedPrefrencesHelper.write(userId, vaccineName)
+    }
 
     val builder = AlertDialog.Builder(this)
     // set title for alert dialog

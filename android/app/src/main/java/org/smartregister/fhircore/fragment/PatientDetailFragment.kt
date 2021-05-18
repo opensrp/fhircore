@@ -40,13 +40,14 @@ import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
 class PatientDetailFragment : Fragment() {
 
   var patitentId: String? = null
+  lateinit var rootView: View
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View? {
-    val rootView = inflater.inflate(R.layout.patient_detail, container, false)
+    rootView = inflater.inflate(R.layout.patient_detail, container, false)
 
     val adapter = ObservationItemRecyclerViewAdapter()
 
@@ -85,6 +86,12 @@ class PatientDetailFragment : Fragment() {
     }
     viewModel.searchResults()
 
+    updateVaccineStatus()
+
+    return rootView
+  }
+
+  private fun updateVaccineStatus() {
     patitentId?.let {
       val vaccineRecorded = SharedPrefrencesHelper.read(it, "")
       vaccineRecorded?.let { it1 ->
@@ -94,8 +101,11 @@ class PatientDetailFragment : Fragment() {
         }
       }
     }
+  }
 
-    return rootView
+  override fun onResume() {
+    super.onResume()
+    updateVaccineStatus()
   }
 
   private fun setupPatientData(patient: PatientListViewModel.PatientItem?) {
