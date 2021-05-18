@@ -16,15 +16,21 @@
 
 package org.smartregister.fhircore.activity
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.drawerlayout.widget.DrawerLayout
@@ -79,8 +85,11 @@ class PatientListActivity : AppCompatActivity() {
       }
     }
 
+    setUpBarcodeScanner()
+    setUpDrawerContent()
+  }
 
-
+  private fun setUpBarcodeScanner() {
     val btnScanBarcode = findViewById<Button>(R.id.btn_scan_barcode)
     supportFragmentManager.setFragmentResultListener(
             "result",
@@ -92,12 +101,35 @@ class PatientListActivity : AppCompatActivity() {
             }
     )
 
-    btnScanBarcode.setOnClickListener { LiveBarcodeScanningFragment().show(supportFragmentManager, "TAG") }
-
-    setupDrawerContent()
+    val requestPermissionLauncher = getBarcodePermissionLauncher()
+    btnScanBarcode.setOnClickListener {
+      launchBarcodeReader(requestPermissionLauncher)
+    }
   }
 
-  private fun setupDrawerContent() {
+  private fun getBarcodePermissionLauncher(): ActivityResultLauncher<String> {
+    return registerForActivityResult(ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+      if (isGranted) {
+        LiveBarcodeScanningFragment().show(supportFragmentManager, "TAG")
+      } else {
+        Toast.makeText(this, "Camera permissions are needed to launch barcode reader!", Toast.LENGTH_LONG).show()
+      }
+    }
+  }
+
+  private fun launchBarcodeReader(requestPermissionLauncher: ActivityResultLauncher<String>) {
+      if (ContextCompat.checkSelfPermission(
+              this,
+              Manifest.permission.CAMERA
+      ) == PackageManager.PERMISSION_GRANTED) {
+        LiveBarcodeScanningFragment().show(supportFragmentManager, "TAG")
+      } else  {
+        requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+      }
+  }
+
+  private fun setUpDrawerContent() {
     val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
     findViewById<ImageButton>(R.id.btn_drawer_menu).setOnClickListener {
       drawerLayout.openDrawer(GravityCompat.START)
