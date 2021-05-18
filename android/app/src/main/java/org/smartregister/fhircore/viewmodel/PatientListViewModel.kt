@@ -96,7 +96,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   }
 
   protected fun Patient.idMatchesFilter(filter: String?) : Boolean {
-    return (filter == null || filter.equals(this.id))
+    return (filter == null || filter.equals(this.idElement.idPart))
   }
 
   /** Returns number of records in database */
