@@ -94,7 +94,20 @@ class PatientDetailFragment : Fragment() {
 
     viewModel
       .getImmunizations()
-      .observe(viewLifecycleOwner, Observer<List<Immunization>> { adapter.submitList(it) })
+      .observe(
+        viewLifecycleOwner,
+        Observer<List<Immunization>> {
+          adapter.submitList(it)
+          if (it.isNotEmpty()) {
+            val tvNoVaccinePlaceholder =
+              rootView.findViewById<TextView>(R.id.no_vaccination_placeholder)
+            tvNoVaccinePlaceholder.visibility = View.GONE
+            val noVaccinePlaceholder =
+              rootView.findViewById<View>(R.id.view_vaccination_status_separator)
+            noVaccinePlaceholder.visibility = View.GONE
+          }
+        }
+      )
 
     return rootView
   }
