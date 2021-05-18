@@ -16,22 +16,30 @@
 
 package org.smartregister.fhircore.fragment
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentResultListener
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
+import com.google.mlkit.md.LiveBarcodeScanningFragment
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.PatientDetailActivity
@@ -111,8 +119,49 @@ class PatientListFragment : Fragment() {
       )
 
     patientListViewModel.searchResults(page = 0, pageSize = pageCount)
+      setUpBarcodeScanner()
     super.onViewCreated(view, savedInstanceState)
   }
+
+    private fun setUpBarcodeScanner() {
+        val btnScanBarcode = requireActivity().findViewById<Button>(R.id.btn_scan_barcode)
+        requireActivity().supportFragmentManager.setFragmentResultListener(
+                "result",
+                this,
+                { _, result ->
+                    val barcode = result.getString("result")
+                    patientListViewModel.searchResults(barcode, 0, pageCount)
+                    btnScanBarcode.text = barcode
+                }
+        )
+
+        val requestPermissionLauncher = getBarcodePermissionLauncher()
+        btnScanBarcode.setOnClickListener {
+            launchBarcodeReader(requestPermissionLauncher)
+        }
+    }
+
+    private fun getBarcodePermissionLauncher(): ActivityResultLauncher<String> {
+        return registerForActivityResult(ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                LiveBarcodeScanningFragment().show(requireActivity().supportFragmentManager, "TAG")
+            } else {
+                Toast.makeText(requireContext(), "Camera permissions are needed to launch barcode reader!", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun launchBarcodeReader(requestPermissionLauncher: ActivityResultLauncher<String>) {
+        if (ContextCompat.checkSelfPermission(
+                        requireContext(),
+                        Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED) {
+            LiveBarcodeScanningFragment().show(requireActivity().supportFragmentManager, "TAG")
+        } else  {
+            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
 
   // Click handler to help display the details about the patients from the list.
   private fun onNavigationClicked(direction: NavigationDirection, currentPage: Int) {

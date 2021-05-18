@@ -84,49 +84,7 @@ class PatientListActivity : AppCompatActivity() {
         editText.addOnDrawableClickedListener(Utils.DrawablePosition.DRAWABLE_RIGHT) { it.clear() }
       }
     }
-
-    setUpBarcodeScanner()
     setUpDrawerContent()
-  }
-
-  private fun setUpBarcodeScanner() {
-    val btnScanBarcode = findViewById<Button>(R.id.btn_scan_barcode)
-    supportFragmentManager.setFragmentResultListener(
-            "result",
-            this,
-            object : FragmentResultListener {
-              override fun onFragmentResult(requestKey: String, result: Bundle) {
-                btnScanBarcode.setText(result.getString("result"))
-              }
-            }
-    )
-
-    val requestPermissionLauncher = getBarcodePermissionLauncher()
-    btnScanBarcode.setOnClickListener {
-      launchBarcodeReader(requestPermissionLauncher)
-    }
-  }
-
-  private fun getBarcodePermissionLauncher(): ActivityResultLauncher<String> {
-    return registerForActivityResult(ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-      if (isGranted) {
-        LiveBarcodeScanningFragment().show(supportFragmentManager, "TAG")
-      } else {
-        Toast.makeText(this, "Camera permissions are needed to launch barcode reader!", Toast.LENGTH_LONG).show()
-      }
-    }
-  }
-
-  private fun launchBarcodeReader(requestPermissionLauncher: ActivityResultLauncher<String>) {
-      if (ContextCompat.checkSelfPermission(
-              this,
-              Manifest.permission.CAMERA
-      ) == PackageManager.PERMISSION_GRANTED) {
-        LiveBarcodeScanningFragment().show(supportFragmentManager, "TAG")
-      } else  {
-        requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-      }
   }
 
   private fun setUpDrawerContent() {
