@@ -124,13 +124,12 @@ class PatientListFragment : Fragment() {
   }
 
     private fun setUpBarcodeScanner() {
-        val btnScanBarcode = requireActivity().findViewById<Button>(R.id.btn_scan_barcode)
+        val btnScanBarcode = requireActivity().findViewById<TextView>(R.id.btn_scan_barcode)
         requireActivity().supportFragmentManager.setFragmentResultListener(
                 "result",
                 this,
                 { _, result ->
                     val barcode = result.getString("result")
-                    patientListViewModel.searchResults(barcode, 0, pageCount)
                     btnScanBarcode.text = barcode
                 }
         )
