@@ -27,8 +27,11 @@ import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
+import com.google.android.fhir.sync.SyncConfiguration
+import com.google.android.fhir.sync.SyncData
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.data.SamplePatients
 import org.smartregister.fhircore.domain.Pagination
 
@@ -125,8 +128,17 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     liveSearchPatient.value = patientItems?.get(0)
   }
 
-  fun syncUpload() {
-    viewModelScope.launch { fhirEngine.syncUpload() }
+  fun runSync() {
+    viewModelScope.launch {
+      fhirEngine.syncUpload()
+
+      /** Download Immediately from the server */
+      val syncData =
+        listOf(
+          SyncData(resourceType = ResourceType.Patient, params = mapOf("address-city" to "NAIROBI"))
+        )
+      fhirEngine.sync(SyncConfiguration(syncData = syncData))
+    }
   }
 
   private fun getAssetFileAsString(filename: String): String {
