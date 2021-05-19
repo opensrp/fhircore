@@ -1,17 +1,10 @@
 package org.smartregister.fhircore.auth.account
 
-import android.accounts.Account
 import android.accounts.NetworkErrorException
-import okhttp3.internal.format
-import org.json.JSONObject
 import org.smartregister.fhircore.BuildConfig
 import org.smartregister.fhircore.api.OauthService
 import retrofit2.Call
 import retrofit2.HttpException
-import retrofit2.Retrofit
-import java.io.UnsupportedEncodingException
-import java.net.URL
-import java.net.URLEncoder
 
 
 class AccountHelper {

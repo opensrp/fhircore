@@ -25,13 +25,7 @@ import org.hl7.fhir.r4.model.OperationOutcome
 import org.hl7.fhir.r4.model.Resource
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Body
-import retrofit2.http.DELETE
-import retrofit2.http.GET
-import retrofit2.http.PATCH
-import retrofit2.http.PUT
-import retrofit2.http.Path
-import retrofit2.http.Url
+import retrofit2.http.*
 
 /** hapi.fhir.org API communication via Retrofit */
 interface HapiFhirService {

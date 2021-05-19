@@ -5,26 +5,20 @@ import android.accounts.AccountManager
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.content.IntentSender.SendIntentException
-import android.net.wifi.hotspot2.pps.Credential
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
-import android.widget.EditText
-import android.widget.Toast
 import androidx.databinding.InverseMethod
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.google.android.material.internal.TextWatcherAdapter
-import org.smartregister.fhircore.BuildConfig
 import org.smartregister.fhircore.activity.PatientListActivity
 import org.smartregister.fhircore.auth.account.*
 import org.smartregister.fhircore.model.LoginUser
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.lang.Exception
 
 
 class LoginViewModel (application: Application) : AndroidViewModel(application), Callback<OauthResponse>{
