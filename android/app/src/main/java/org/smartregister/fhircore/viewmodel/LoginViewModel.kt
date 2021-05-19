@@ -1,224 +1,125 @@
-/*
- * Copyright 2021 Ona Systems, Inc
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.smartregister.fhircore.viewmodel
 
-import android.accounts.AccountAuthenticatorResponse
+import android.accounts.Account
 import android.accounts.AccountManager
-import android.accounts.AccountManagerCallback
-import android.accounts.AccountManagerFuture
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
-import android.os.Handler
-import android.os.Message
+import android.content.IntentSender.SendIntentException
+import android.net.wifi.hotspot2.pps.Credential
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
+import android.widget.EditText
 import android.widget.Toast
-import androidx.core.os.bundleOf
 import androidx.databinding.InverseMethod
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.google.android.material.internal.TextWatcherAdapter
-import okhttp3.ResponseBody
 import org.smartregister.fhircore.BuildConfig
-import org.smartregister.fhircore.R
-import org.smartregister.fhircore.auth.OAuthResponse
-import org.smartregister.fhircore.auth.account.AccountHelper
-import org.smartregister.fhircore.auth.secure.Credentials
-import org.smartregister.fhircore.auth.secure.SecureConfig
+import org.smartregister.fhircore.activity.PatientListActivity
+import org.smartregister.fhircore.auth.account.*
 import org.smartregister.fhircore.model.LoginUser
-import org.smartregister.fhircore.util.SharedPreferencesHelper
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import timber.log.Timber
+import java.lang.Exception
 
-class LoginViewModel(application: Application) :
-  AndroidViewModel(application), Callback<OAuthResponse>, AccountManagerCallback<Bundle> {
 
-  var loginUser: LoginUser = LoginUser()
-  var allowLogin = MutableLiveData(false)
-  var loginFailed = MutableLiveData(false)
-  var showPassword = MutableLiveData(false)
-  var goHome = MutableLiveData(false)
+class LoginViewModel (application: Application) : AndroidViewModel(application), Callback<OauthResponse>{
+    var loginUser: LoginUser = LoginUser()
+    var allowLogin = MutableLiveData(false)
 
-  private val secureConfig: SecureConfig = SecureConfig(application)
-  private var baseContext: Context = application.baseContext
+    val secureConfig: SecureConfig = SecureConfig(application)
 
-  private var accountManager: AccountManager
+    lateinit var context: Context
 
-  init {
-    Timber.i("Starting auth flow for login")
-
-    accountManager = AccountManager.get(application)
-
-    if (BuildConfig.DEBUG && BuildConfig.SKIP_AUTH_CHECK) {
-      goHome.value = true
-    } else if (AccountHelper(baseContext).isSessionActive(secureConfig.retrieveSessionToken())) {
-      goHome.value = true
-    } else {
-      AccountHelper(baseContext)
-        .loadAccount(
-          accountManager,
-          secureConfig.retrieveSessionUsername(),
-          this,
-          Handler(OnTokenError())
-        )
-    }
-  }
-
-  private fun shouldEnableLogin(): Boolean {
-    val username: String = loginUser.username
-    val password: CharArray = loginUser.password
-
-    return username.isNotEmpty() && password.isNotEmpty()
-  }
-
-  private fun enableLoginButton(enable: Boolean) {
-    allowLogin.value = enable
-  }
-
-  var credentialsWatcher: TextWatcher =
-    object : TextWatcherAdapter() {
-      override fun afterTextChanged(s: Editable) {
-        enableLoginButton(shouldEnableLogin())
-      }
+    init{
+        loadCredentials()
     }
 
-  fun remoteLogin(view: View) {
-    Timber.i("Logging in for ${loginUser.username} ")
+    private fun loadCredentials() {
+        Log.i(javaClass.name, "Loading credentials from secure storage")
 
-    enableLoginButton(false)
+        var savedCreds = secureConfig.retrieveCredentials()
 
-    AccountHelper(baseContext).fetchToken(loginUser.username, loginUser.password).enqueue(this)
-  }
+        if(savedCreds != null){
+            // todo
+            Log.i(javaClass.name, "Found credentials for ${savedCreds.username} -- ${savedCreds.password}")
 
-  override fun onResponse(call: Call<OAuthResponse>, response: Response<OAuthResponse>) {
-    Timber.i("Got login response ${response.isSuccessful}")
-
-    loginFailed.value = !response.isSuccessful
-
-    if (!response.isSuccessful) {
-      Timber.i("Error in fetching credentials %s", response.errorBody())
-
-      enableLoginButton(true)
-
-      if (allowLocalLogin()) {
-        goHome.value = true // todo
-      }
-
-      return
+            loginUser.username = savedCreds.username
+            loginUser.password = savedCreds.password
+            loginUser.rememberMe = true
+            allowLogin.value = shouldEnableLogin()
+        }
     }
 
-    AccountHelper(baseContext).addAuthenticatedAccount(accountManager, response, loginUser.username)
+    private fun shouldEnableLogin(): Boolean {
+        val username: String = loginUser.username
+        val password: CharArray = loginUser.password
 
-    val accessToken = response.body()!!.accessToken!!
-
-    secureConfig.saveCredentials(Credentials(loginUser.username, loginUser.password, accessToken))
-
-    // destroy password
-    loginUser.password = charArrayOf()
-
-    AccountHelper(baseContext).getUserInfo().enqueue(OnUserInfoResponse(baseContext))
-
-    goHome.value = true
-  }
-
-  override fun onFailure(call: Call<OAuthResponse>, t: Throwable) {
-    Timber.e(javaClass.name, t.stackTraceToString())
-
-    Toast.makeText(baseContext, R.string.login_call_fail_error_message, Toast.LENGTH_LONG).show()
-
-    if (allowLocalLogin()) {
-      goHome.value = true
-      return
+        return username.isNotEmpty() && password.isNotEmpty()
     }
 
-    enableLoginButton(true)
-  }
-
-  private fun allowLocalLogin(): Boolean {
-    val creds = secureConfig.retrieveCredentials()
-    if (creds?.username.equals(loginUser.username) &&
-        creds?.password?.concatToString().equals(loginUser.password.concatToString())
-    ) {
-      return true
-    }
-    return false
-  }
-
-  object Converter {
-    @InverseMethod("stringToCharArray")
-    @JvmStatic
-    fun charArrayToString(value: CharArray): String {
-      return value.concatToString()
+    var credentialsWatcher: TextWatcher = object : TextWatcherAdapter() {
+        override fun afterTextChanged(s: Editable) {
+            allowLogin.value = shouldEnableLogin()
+        }
     }
 
-    @JvmStatic
-    fun stringToCharArray(value: String): CharArray {
-      return value.toCharArray()
-    }
-  }
+    fun remoteLogin(view: View) {
+        Log.i(javaClass.name, "Logging in for ${loginUser.username} ")
 
-  override fun run(future: AccountManagerFuture<Bundle>?) {
-    // Get the result of the operation from the AccountManagerFuture.
-    val bundle: Bundle = future?.result ?: bundleOf()
+        AccountHelper().fetchToken(
+                loginUser.username,
+                loginUser.password)
+            .enqueue(this)
 
-    // The token is a named value in the bundle. The name of the value
-    // is stored in the constant AccountManager.KEY_AUTHTOKEN.
-    val token: String? = bundle.getString(AccountManager.KEY_AUTHTOKEN)
-    val resp: AccountAuthenticatorResponse? =
-      bundle.getParcelable(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE)
-    val launch: Intent? = bundle.get(AccountManager.KEY_INTENT) as? Intent
-
-    Timber.i("Got launch ${launch?.data}")
-
-    Timber.i("Got token $token")
-
-    if (!token.isNullOrEmpty() && AccountHelper(baseContext).isSessionActive(token)) {
-      goHome.value = true
+        context = view.context
     }
 
-    Timber.i("Got resp $resp")
-  }
-}
+    override fun onResponse(call: Call<OauthResponse>, response: Response<OauthResponse>) {
+        Log.i(javaClass.name, response.toString()) //todo
 
-private class OnUserInfoResponse(context: Context) : Callback<ResponseBody> {
-  val baseContext = context
+        val account = Account(
+            loginUser.username,
+            AccountConfig.ACCOUNT_TYPE)
+        AccountManager.get(getApplication()).addAccountExplicitly(account, response.body()!!.refreshToken, null)
+        AccountManager.get(getApplication()).setAuthToken(account, AccountConfig.AUTH_TOKEN_TYPE, response.body()!!.accessToken)
 
-  override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
-    Timber.e(t)
+        if(loginUser.rememberMe){
+            Log.i(javaClass.name, "Remember password for ${loginUser.username}")
 
-    Toast.makeText(baseContext, R.string.userinfo_call_fail_error_message, Toast.LENGTH_LONG).show()
-  }
+            secureConfig.saveCredentials(Credentials(loginUser.username, loginUser.password))
+        }
+        else {
+            secureConfig.deleteCredentials()
+        }
 
-  override fun onResponse(call: Call<ResponseBody>?, response: Response<ResponseBody>?) {
-    Timber.i(response?.body()?.string())
+        // destroy password
+        loginUser.password = charArrayOf()
 
-    SharedPreferencesHelper.init(baseContext).write("USER", response?.body()?.string()!!)
-  }
-}
+        startHome()
+    }
 
-private class OnTokenError : Handler.Callback {
-  override fun handleMessage(msg: Message): Boolean {
-    Timber.i("Error in getting token in view model ${msg.data}")
+    private  fun startHome(){//todo find right way of calling setting context
+        var intent = Intent(getApplication(), PatientListActivity::class.java)
+        context.startActivity(intent);
+    }
 
-    return true
-  }
+    override fun onFailure(call: Call<OauthResponse>, t: Throwable) {
+        Log.e(javaClass.name, t.stackTraceToString())
+    }
+
+    object Converter {
+        @InverseMethod("stringToCharArray")
+        @JvmStatic fun charArrayToString(value: CharArray): String {
+            return value.concatToString()
+        }
+
+        @JvmStatic fun stringToCharArray(value: String): CharArray {
+            return value.toCharArray()
+        }
+    }
 }
