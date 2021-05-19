@@ -30,7 +30,7 @@ import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.SyncConfiguration
 import com.google.android.fhir.sync.SyncData
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.data.SamplePatients
@@ -63,6 +63,14 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   }
 
   val liveSearchPatient: MutableLiveData<PatientItem> by lazy { MutableLiveData<PatientItem>() }
+
+  val liveSearchImmunization: MutableLiveData<List<Immunization>> by lazy {
+    MutableLiveData<List<Immunization>>()
+  }
+
+  fun getImmunizations(): MutableLiveData<List<Immunization>> {
+    return liveSearchImmunization
+  }
 
   fun searchResults(query: String? = null, page: Int = 0, pageSize: Int = 10) {
     viewModelScope.launch {
@@ -100,6 +108,15 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
   protected fun Patient.idMatchesFilter(filter: String?) : Boolean {
     return (filter == null || filter.equals(this.idElement.idPart))
+  }
+
+  /** Basic search for immunizations */
+  fun searchImmunizations(patientId: String? = null) {
+    viewModelScope.launch {
+      val searchResults: List<Immunization> =
+        fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/" + patientId } }
+      liveSearchImmunization.value = searchResults
+    }
   }
 
   /** Returns number of records in database */
