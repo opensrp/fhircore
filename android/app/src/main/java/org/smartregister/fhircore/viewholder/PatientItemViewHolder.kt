@@ -18,6 +18,7 @@ package org.smartregister.fhircore.viewholder
 
 import android.view.View
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.util.Utils.getAgeFromDate
@@ -32,10 +33,50 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
     onItemClicked: (PatientListViewModel.PatientItem) -> Unit,
     onRecordVaccineClicked: (PatientListViewModel.PatientItem) -> Unit
   ) {
+    setPatientStatus(patientItem, this.tvRecordVaccine, onRecordVaccineClicked)
     this.tvPatientDemographics.text = getPatientDemographics(patientItem)
     this.tvPatientDemographics.setOnClickListener { onItemClicked(patientItem) }
     this.tvDateLastSeen.setOnClickListener { onItemClicked(patientItem) }
-    this.tvRecordVaccine.setOnClickListener { onRecordVaccineClicked(patientItem) }
+  }
+
+  private fun setPatientStatus(
+    patientItem: PatientListViewModel.PatientItem,
+    tvRecordVaccine: TextView,
+    onRecordVaccineClicked: (PatientListViewModel.PatientItem) -> Unit
+  ) {
+    tvRecordVaccine.text = ""
+    val status = patientItem.status?.status ?: return
+
+    when (status) {
+      PatientListViewModel.VaccineStatus.VACCINATED -> {
+        tvRecordVaccine.text = "Vaccinated"
+        tvRecordVaccine.setTextColor(
+          ContextCompat.getColor(tvRecordVaccine.context, R.color.status_green)
+        )
+        tvRecordVaccine.setOnClickListener {}
+      }
+      PatientListViewModel.VaccineStatus.OVERDUE -> {
+        tvRecordVaccine.text = "Overdue"
+        tvRecordVaccine.setTextColor(
+          ContextCompat.getColor(tvRecordVaccine.context, R.color.status_red)
+        )
+        tvRecordVaccine.setOnClickListener { onRecordVaccineClicked(patientItem) }
+      }
+      PatientListViewModel.VaccineStatus.PARTIAL -> {
+        tvRecordVaccine.text = "Vaccine 1 \n " + patientItem.status?.details
+        tvRecordVaccine.setTextColor(
+          ContextCompat.getColor(tvRecordVaccine.context, R.color.status_gray)
+        )
+        tvRecordVaccine.setOnClickListener { onRecordVaccineClicked(patientItem) }
+      }
+      PatientListViewModel.VaccineStatus.DUE -> {
+        tvRecordVaccine.text = "Record \n Vaccine"
+        tvRecordVaccine.setTextColor(
+          ContextCompat.getColor(tvRecordVaccine.context, R.color.status_blue)
+        )
+        tvRecordVaccine.setOnClickListener { onRecordVaccineClicked(patientItem) }
+      }
+    }
   }
 
   private fun getPatientDemographics(patientItem: PatientListViewModel.PatientItem): String {

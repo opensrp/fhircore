@@ -42,13 +42,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
       return questionnaireJson!!
     }
 
-  fun saveResource(resource: Resource, listeners: List<ResourceSaveListener> = emptyList()) {
-    viewModelScope.launch { save(resource, listeners) }
-  }
-
-  private suspend fun save(resource: Resource, listeners: List<ResourceSaveListener>) {
-    FhirApplication.fhirEngine(getApplication()).save(resource)
-
-    listeners.forEach { it.afterSave(resource) }
+  fun saveResource(resource: Resource) {
+    viewModelScope.launch { FhirApplication.fhirEngine(getApplication()).save(resource) }
   }
 }
