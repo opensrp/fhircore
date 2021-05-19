@@ -117,11 +117,14 @@ class PatientListFragment : Fragment(), OnPatientSearchResult {
           override fun afterTextChanged(s: Editable?) {}
         }
       )
-
-    patientListViewModel.searchResults(page = 0, pageSize = pageCount)
       setUpBarcodeScanner()
     super.onViewCreated(view, savedInstanceState)
   }
+
+    override fun onResume() {
+        patientListViewModel.searchResults(page = 0, pageSize = pageCount) // TODO: might need to move this to happen when a user clicks a button
+        super.onResume()
+    }
 
     private fun setUpBarcodeScanner() {
         val btnScanBarcode: View = requireActivity().findViewById(R.id.layout_scan_barcode)
