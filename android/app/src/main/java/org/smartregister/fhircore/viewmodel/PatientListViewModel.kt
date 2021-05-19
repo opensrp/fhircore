@@ -27,9 +27,12 @@ import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
+import com.google.android.fhir.sync.SyncConfiguration
+import com.google.android.fhir.sync.SyncData
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.data.SamplePatients
 import org.smartregister.fhircore.domain.Pagination
 
@@ -71,24 +74,24 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
   fun searchResults(query: String? = null, page: Int = 0, pageSize: Int = 10) {
     viewModelScope.launch {
-      val searchResults: List<Patient> =
+      var searchResults: List<Patient> =
         fhirEngine.search {
           filter(Patient.ADDRESS_CITY) {
             prefix = ParamPrefixEnum.EQUAL
             value = "NAIROBI"
           }
-          apply {
-            if (query?.isNotBlank() == true) {
-              filter(Patient.FAMILY) {
-                prefix = ParamPrefixEnum.EQUAL
-                value = query.trim()
-              }
-            }
-          }
+
           sort(Patient.GIVEN, Order.ASCENDING)
-          count = pageSize
-          from = (page * pageSize)
         }
+
+      searchResults = searchResults.filter {
+        it.nameMatchesFilter(query) || it.idMatchesFilter(query)
+      }
+      var startIndex = page * pageSize
+      startIndex = if (searchResults.size > startIndex) startIndex else 0
+      var endIndex = pageSize + (page * pageSize)
+      endIndex = if (searchResults.size > endIndex) endIndex else searchResults.size
+      searchResults = searchResults.subList(startIndex, endIndex)
 
       liveSearchedPaginatedPatients.value =
         Pair(
@@ -96,6 +99,15 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
           Pagination(totalItems = count(query), pageSize = pageSize, currentPage = page)
         )
     }
+  }
+
+  protected fun Patient.nameMatchesFilter(filter: String?) : Boolean {
+    return (filter == null || (!this.name.isEmpty() && (this.name.first().family.contains(filter, true)
+                    || this.name.first().given?.first()?.asStringValue()?.contains(filter, true) == true)))
+  }
+
+  protected fun Patient.idMatchesFilter(filter: String?) : Boolean {
+    return (filter == null || filter.equals(this.idElement.idPart))
   }
 
   /** Basic search for immunizations */
@@ -143,8 +155,17 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     liveSearchPatient.value = patientItems?.get(0)
   }
 
-  fun syncUpload() {
-    viewModelScope.launch { fhirEngine.syncUpload() }
+  fun runSync() {
+    viewModelScope.launch {
+      fhirEngine.syncUpload()
+
+      /** Download Immediately from the server */
+      val syncData =
+        listOf(
+          SyncData(resourceType = ResourceType.Patient, params = mapOf("address-city" to "NAIROBI"))
+        )
+      fhirEngine.sync(SyncConfiguration(syncData = syncData))
+    }
   }
 
   private fun getAssetFileAsString(filename: String): String {
