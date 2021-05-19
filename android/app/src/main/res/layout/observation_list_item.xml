@@ -29,7 +29,7 @@
         android:layout_marginLeft="10dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/view_registration_detail"/>
+        app:layout_constraintBottom_toBottomOf="@id/view_observation_detail"/>
 
     <TextView
         android:id="@+id/observation_detail"
@@ -46,7 +46,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/view_registration_detail"
+        android:id="@+id/view_observation_detail"
         style="?android:attr/textAppearanceSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -65,14 +65,14 @@
         app:srcCompat = "@drawable/ic_forward_arrow"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/observation_detail"
-        app:layout_constraintBottom_toBottomOf="@id/view_registration_detail" />
+        app:layout_constraintBottom_toBottomOf="@id/view_observation_detail" />
 
     <View
         android:id="@+id/view_registration"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/light"
-        app:layout_constraintTop_toBottomOf="@id/view_registration_detail" />
+        app:layout_constraintTop_toBottomOf="@id/view_observation_detail" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

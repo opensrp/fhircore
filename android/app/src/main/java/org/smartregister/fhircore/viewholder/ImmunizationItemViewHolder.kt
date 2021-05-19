@@ -22,16 +22,30 @@ import androidx.recyclerview.widget.RecyclerView
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.util.Utils
 
 class ImmunizationItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val observationTextView: TextView = itemView.findViewById(R.id.observation_detail)
+  private val viewObservationDetailTextView: TextView =
+    itemView.findViewById(R.id.view_observation_detail)
 
   fun bindTo(immunizationItem: Immunization) {
+    val doseNumber = (immunizationItem.protocolApplied[0].doseNumber as PositiveIntType).value
+    val nextDoseNumber = doseNumber + 1
+    val vaccineDate = immunizationItem.occurrenceDateTimeType.toHumanDisplay()
+    val nextVaccineDate = Utils.addDays(vaccineDate, 28)
     this.observationTextView.text =
       itemView.resources.getString(
         R.string.immunization_brief_text,
         immunizationItem.vaccineCode.text,
-        (immunizationItem.protocolApplied[0].doseNumber as PositiveIntType).value
+        doseNumber
+      )
+
+    this.viewObservationDetailTextView.text =
+      itemView.resources.getString(
+        R.string.immunization_next_dose_text,
+        nextDoseNumber,
+        nextVaccineDate
       )
   }
 }
