@@ -1,16 +1,16 @@
 package org.smartregister.fhircore.api
 
 import android.util.Log
-import ca.uhn.fhir.parser.IParser
 import okhttp3.OkHttpClient
-import okhttp3.RequestBody
 import okhttp3.logging.HttpLoggingInterceptor
 import org.smartregister.fhircore.BuildConfig
 import org.smartregister.fhircore.auth.account.OauthResponse
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.*
+import retrofit2.http.FieldMap
+import retrofit2.http.FormUrlEncoded
+import retrofit2.http.POST
 
 interface OauthService {
 

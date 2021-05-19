@@ -17,12 +17,12 @@
 package org.smartregister.fhircore.api
 
 import ca.uhn.fhir.parser.IParser
-import java.lang.reflect.Type
 import okhttp3.ResponseBody
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Resource
 import retrofit2.Converter
 import retrofit2.Retrofit
+import java.lang.reflect.Type
 
 class FhirConverterFactory(private val parser: IParser) : Converter.Factory() {
   override fun responseBodyConverter(
