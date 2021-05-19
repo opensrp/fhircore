@@ -30,7 +30,8 @@ import retrofit2.http.*
 /** hapi.fhir.org API communication via Retrofit */
 interface HapiFhirService {
 
-  @GET suspend fun getResource(@Url url: String): Bundle
+  @GET
+  suspend fun getResource(@Url url: String): Bundle
   @PUT("{type}/{id}")
   suspend fun insertResource(
     @Path("type") type: String,

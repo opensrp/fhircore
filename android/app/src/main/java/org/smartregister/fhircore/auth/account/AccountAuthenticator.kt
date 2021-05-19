@@ -9,13 +9,16 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.core.os.bundleOf
 import org.smartregister.fhircore.activity.LoginActivity
+import org.smartregister.fhircore.auth.account.AccountConfig.AUTH_HANDLER_ACTIVITY
+import timber.log.Timber
 
 
 class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(context) {
 
-    private var myContext = context;
+    private val myContext = context;
 
     override fun addAccount(
         response: AccountAuthenticatorResponse?,
@@ -24,10 +27,10 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
         requiredFeatures: Array<out String>?,
         options: Bundle?
     ): Bundle {
-        val intent = Intent(
-            myContext,
-            LoginActivity::class.java
-        )
+        Timber.i("Adding account of type $accountType with auth token of type $authTokenType")
+
+        val intent = Intent(myContext, AUTH_HANDLER_ACTIVITY)
+
         intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, attr.accountType)
         intent.putExtra(AccountConfig.KEY_AUTH_TOKEN_TYPE, authTokenType) //todo
         intent.putExtra(AccountConfig.KEY_IS_NEW_ACCOUNT, true)
@@ -44,37 +47,51 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
         authTokenType: String?,
         options: Bundle?
     ): Bundle {
-        var am = AccountManager.get(myContext);
+        val am = AccountManager.get(myContext)
 
         var accessToken = am.peekAuthToken(account, authTokenType)
         var tokenResponse: OauthResponse
 
         // if no access token try getting one with refresh token
         if(accessToken.isNullOrEmpty()){
-            var refreshToken = am.getPassword(account)
+            val refreshToken = am.getPassword(account)
 
-            if(!refreshToken.isNullOrEmpty()){
-                tokenResponse = AccountHelper().refreshToken(refreshToken)!!
+            Timber.i("GetAuthToken: AccessToken (%b), Refresh Token (%b) for %s ",
+                accessToken.isNullOrEmpty(), refreshToken.isNullOrEmpty(), account?.name)
 
-                accessToken = tokenResponse?.accessToken
+            if (!refreshToken.isNullOrEmpty()) {
+                runCatching {
+                    tokenResponse = AccountHelper().refreshToken(refreshToken)
 
-                am.setPassword(account, refreshToken);
-                am.setAuthToken(account, authTokenType, tokenResponse!!.accessToken);
+                    accessToken = tokenResponse.accessToken
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    am.notifyAccountAuthenticated(account);
+                    am.setPassword(account, refreshToken)
+                    am.setAuthToken(account, authTokenType, accessToken)
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        am.notifyAccountAuthenticated(account)
+                    }
                 }
+                .onFailure {
+                    Timber.i("Error refreshing token")
+                    Timber.i(it.stackTraceToString())
+                }
+                .onSuccess {
+                    Timber.i("Got new accessToken and registered")
+                }
+
             }
         }
 
         if (!accessToken.isNullOrEmpty()) {
             val result = Bundle()
-            result.putString(AccountManager.KEY_ACCOUNT_NAME, account!!.name)
-            result.putString(AccountManager.KEY_ACCOUNT_TYPE, account!!.type)
+            result.putString(AccountManager.KEY_ACCOUNT_NAME, account?.name)
+            result.putString(AccountManager.KEY_ACCOUNT_TYPE, account?.type)
             result.putString(AccountManager.KEY_AUTHTOKEN, accessToken)
             return result
         }
 
+        // failed to validate any token. now update credentials using auth activity
         return updateCredentials(response, account, authTokenType, options)
     }
 
@@ -93,7 +110,7 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
     }
 
     override fun getAuthTokenLabel(authTokenType: String?): String {
-        return authTokenType!!.toUpperCase()
+        return authTokenType?.toUpperCase().toString()
     }
 
     override fun updateCredentials(
@@ -104,11 +121,11 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
     ): Bundle {
         val intent = Intent(
             myContext,
-            LoginActivity::class.java
+            AUTH_HANDLER_ACTIVITY
         )
         intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
-        intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, account!!.type)
-        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, account!!.name)
+        intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, account?.type)
+        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, account?.name)
         val bundle = Bundle()
         bundle.putParcelable(AccountManager.KEY_INTENT, intent)
         return bundle

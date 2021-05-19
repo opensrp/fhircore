@@ -22,7 +22,7 @@
     <string name="menu_load_resource">Load CQL Resources &amp; Patients</string>
     <string name="add_patient">Add Patient</string>
     <string name="menu_sync_resources">Sync Resources</string>
-    <string name="authenticator_label">Authenticate FHIR Core</string>
+    <string name="authenticator_label" translatable="false">Authenticate FHIR Core</string>
 
     <string name="menu_clients_list_title">COVAX Clients</string>
     <string name="language">Language</string>
@@ -61,6 +61,7 @@
     <string name="username_input_hint">Enter username</string>
     <string name="password_input_hint">Enter password</string>
     <string name="forgot_password_button_hint">Forgot password</string>
+    <string name="login_error_message">Invalid username or password</string>
 
 
 </resources>

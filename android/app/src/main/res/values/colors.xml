@@ -16,6 +16,7 @@
 -->
 
 <resources>
+    <color name="colorError">#DD0000</color>
     <color name="colorPrimary">#005084</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorPrimaryLight">#006EB8</color>
