@@ -53,8 +53,10 @@ class PatientListFragment : Fragment() {
 
   private lateinit var patientListViewModel: PatientListViewModel
   private lateinit var fhirEngine: FhirEngine
+    private var liveBarcodeScanningFragment: LiveBarcodeScanningFragment? = null
   private var search: String? = null
   private val pageCount: Int = 7
+
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -128,9 +130,9 @@ class PatientListFragment : Fragment() {
                 this,
                 { _, result ->
                     val barcode = result.getString("result")!!.trim()
-                    startPatientDetailActivity(barcode)
+                    launchPatientDetailActivity(barcode)
                     btnScanBarcode.findViewById<TextView>(R.id.btn_scan_barcode).text = barcode
-                    onStop()
+                    getBarcodeScannerInstance().onDestroy()
                 }
         )
 
@@ -140,11 +142,18 @@ class PatientListFragment : Fragment() {
         }
     }
 
+    private fun getBarcodeScannerInstance(): LiveBarcodeScanningFragment {
+        if (liveBarcodeScanningFragment == null) {
+            liveBarcodeScanningFragment = LiveBarcodeScanningFragment()
+        }
+        return liveBarcodeScanningFragment!!
+    }
+
     private fun getBarcodePermissionLauncher(): ActivityResultLauncher<String> {
         return registerForActivityResult(ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
             if (isGranted) {
-                LiveBarcodeScanningFragment().show(requireActivity().supportFragmentManager, "TAG")
+                getBarcodeScannerInstance().show(requireActivity().supportFragmentManager, "TAG")
             } else {
                 Toast.makeText(requireContext(), "Camera permissions are needed to launch barcode reader!", Toast.LENGTH_LONG).show()
             }
@@ -156,7 +165,7 @@ class PatientListFragment : Fragment() {
                         requireContext(),
                         Manifest.permission.CAMERA
                 ) == PackageManager.PERMISSION_GRANTED) {
-            LiveBarcodeScanningFragment().show(requireActivity().supportFragmentManager, "TAG")
+            getBarcodeScannerInstance().show(requireActivity().supportFragmentManager, "TAG")
         } else  {
             requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
@@ -170,10 +179,10 @@ class PatientListFragment : Fragment() {
 
   // Click handler to help display the details about the patients from the list.
   private fun onPatientItemClicked(patientItem: PatientListViewModel.PatientItem) {
-    startPatientDetailActivity(patientItem.logicalId)
+    launchPatientDetailActivity(patientItem.logicalId)
   }
 
-    private fun startPatientDetailActivity(patientLogicalId: String) {
+    private fun launchPatientDetailActivity(patientLogicalId: String) {
         val intent =
                 Intent(requireContext(), PatientDetailActivity::class.java).apply {
                     putExtra(PatientDetailFragment.ARG_ITEM_ID, patientLogicalId)
