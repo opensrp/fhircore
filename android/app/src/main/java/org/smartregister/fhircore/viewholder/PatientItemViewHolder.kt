@@ -60,14 +60,14 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
 
     when (status) {
       PatientListViewModel.VaccineStatus.VACCINATED -> {
-        tvRecordVaccine.text = "Vaccinated"
+        tvRecordVaccine.text = tvRecordVaccine.context.getString(R.string.status_vaccinated)
         tvRecordVaccine.setTextColor(
           ContextCompat.getColor(tvRecordVaccine.context, R.color.status_green)
         )
         tvRecordVaccine.setOnClickListener {}
       }
       PatientListViewModel.VaccineStatus.OVERDUE -> {
-        tvRecordVaccine.text = "Overdue"
+        tvRecordVaccine.text = tvRecordVaccine.context.getString(R.string.status_overdue)
         tvRecordVaccine.setTextColor(
           ContextCompat.getColor(tvRecordVaccine.context, R.color.status_red)
         )
@@ -76,7 +76,12 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
         }
       }
       PatientListViewModel.VaccineStatus.PARTIAL -> {
-        tvRecordVaccine.text = "Vaccine 1 \n " + patientStatus?.details
+        tvRecordVaccine.text =
+          tvRecordVaccine.context.getString(
+            R.string.status_received_vaccine,
+            1,
+            patientStatus.details
+          )
         tvRecordVaccine.setTextColor(
           ContextCompat.getColor(tvRecordVaccine.context, R.color.status_gray)
         )
@@ -85,7 +90,7 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
         }
       }
       PatientListViewModel.VaccineStatus.DUE -> {
-        tvRecordVaccine.text = "Record \n Vaccine"
+        tvRecordVaccine.text = tvRecordVaccine.context.getString(R.string.status_record_vaccine)
         tvRecordVaccine.setTextColor(
           ContextCompat.getColor(tvRecordVaccine.context, R.color.status_blue)
         )
