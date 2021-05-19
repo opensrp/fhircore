@@ -1,0 +1,34 @@
+<ServiceRequest xmlns='http://hl7.org/fhir'>
+  <category>
+    <text value='OB'/>
+    <coding>
+      <display value='Obstetric procedure (procedure)'/>
+      <system value='http://snomed.info/sct'/>
+      <code value='386637004'/>
+    </coding>
+  </category>
+  <requester>
+    <display value='Women’s Hospital'/>
+  </requester>
+  <performer>
+    <display value='Midwife Amina'/>
+  </performer>
+  <reasonCode>
+    <text value='further clinical examination'/>
+  </reasonCode>
+  <intent value='order'/>
+  <subject>
+    <reference value='Patient/exmaple'/>
+    <display value='Charity ANC'/>
+  </subject>
+  <occurrenceDateTime value='2021-02-09'/>
+  <status value='completed'/>
+  <code>
+    <text value='further clinical examination'/>
+    <coding>
+      <display value='medical personnel present (procedure)'/>
+      <system value='http://snomed.info/sct'/>
+      <code value='22633006'/>
+    </coding>
+  </code>
+</ServiceRequest>

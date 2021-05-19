@@ -1,0 +1,35 @@
+{
+  "resourceType": "Patient",
+  "id": "exmaple",
+  "identifier": [
+    {
+      "use": "official",
+      "value": "1000"
+    }
+  ],
+  "active": true,
+  "name": [
+    {
+      "use": "official",
+      "family": "ANC",
+      "given": [
+        "Charity"
+      ]
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "555-555-2003",
+      "use": "mobile"
+    }
+  ],
+  "gender": "female",
+  "birthDate": "1993-05-31",
+  "address": [
+    {
+      "use": "home",
+      "text": "2222 Home Street"
+    }
+  ]
+}
