@@ -2,6 +2,7 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
+        <import type="android.view.View"/>
         <import type="org.smartregister.fhircore.viewmodel.LoginViewModel.Converter"/>
         <variable
             name="usr"
@@ -31,6 +32,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="100dp"/>
+
+        <TextView
+            android:id="@+id/login_error_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/login_error_message"
+            android:textColor="@color/colorError"
+            android:visibility="@{usr.loginFailed ? View.VISIBLE : View.GONE}"/>
 
         <EditText
             android:id="@+id/login_username_input"

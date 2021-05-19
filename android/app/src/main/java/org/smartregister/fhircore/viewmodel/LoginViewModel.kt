@@ -19,33 +19,36 @@ import org.smartregister.fhircore.model.LoginUser
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import timber.log.Timber
 
 
 class LoginViewModel (application: Application) : AndroidViewModel(application), Callback<OauthResponse>{
     var loginUser: LoginUser = LoginUser()
     var allowLogin = MutableLiveData(false)
+    var loginFailed = MutableLiveData(false)
 
     val secureConfig: SecureConfig = SecureConfig(application)
 
-    lateinit var context: Context
+    private lateinit var context: Context
 
     init{
         loadCredentials()
     }
 
     private fun loadCredentials() {
-        Log.i(javaClass.name, "Loading credentials from secure storage")
+        Timber.i("Loading credentials from secure storage")
 
-        var savedCreds = secureConfig.retrieveCredentials()
+        val savedCreds = secureConfig.retrieveCredentials()
 
         if(savedCreds != null){
             // todo
-            Log.i(javaClass.name, "Found credentials for ${savedCreds.username} -- ${savedCreds.password}")
+            Timber.i("Found credentials for ${savedCreds.username} -- ${savedCreds.password}")
 
             loginUser.username = savedCreds.username
             loginUser.password = savedCreds.password
             loginUser.rememberMe = true
-            allowLogin.value = shouldEnableLogin()
+
+            enableLoginButton( shouldEnableLogin() )
         }
     }
 
@@ -56,34 +59,51 @@ class LoginViewModel (application: Application) : AndroidViewModel(application),
         return username.isNotEmpty() && password.isNotEmpty()
     }
 
+    private fun enableLoginButton(enable: Boolean) {
+        allowLogin.value = enable
+    }
+
     var credentialsWatcher: TextWatcher = object : TextWatcherAdapter() {
         override fun afterTextChanged(s: Editable) {
-            allowLogin.value = shouldEnableLogin()
+            enableLoginButton( shouldEnableLogin() )
         }
     }
 
     fun remoteLogin(view: View) {
-        Log.i(javaClass.name, "Logging in for ${loginUser.username} ")
+        Timber.i("Logging in for ${loginUser.username} ")
+
+        context = view.context
+
+        enableLoginButton(false)
 
         AccountHelper().fetchToken(
                 loginUser.username,
                 loginUser.password)
             .enqueue(this)
-
-        context = view.context
     }
 
     override fun onResponse(call: Call<OauthResponse>, response: Response<OauthResponse>) {
-        Log.i(javaClass.name, response.toString()) //todo
+        Timber.i(response.toString()) //todo
+
+        loginFailed.value = !response.isSuccessful
+
+        if(!response.isSuccessful){
+            Timber.i("Error in fetching credentials %s", response.errorBody())
+
+            enableLoginButton(true)
+
+            return
+        }
 
         val account = Account(
             loginUser.username,
             AccountConfig.ACCOUNT_TYPE)
-        AccountManager.get(getApplication()).addAccountExplicitly(account, response.body()!!.refreshToken, null)
+
+        AccountManager.get(getApplication()).addAccountExplicitly(account, response.body()?.refreshToken, null)
         AccountManager.get(getApplication()).setAuthToken(account, AccountConfig.AUTH_TOKEN_TYPE, response.body()!!.accessToken)
 
         if(loginUser.rememberMe){
-            Log.i(javaClass.name, "Remember password for ${loginUser.username}")
+            Timber.i("Remember password for ${loginUser.username}")
 
             secureConfig.saveCredentials(Credentials(loginUser.username, loginUser.password))
         }
@@ -104,6 +124,10 @@ class LoginViewModel (application: Application) : AndroidViewModel(application),
 
     override fun onFailure(call: Call<OauthResponse>, t: Throwable) {
         Log.e(javaClass.name, t.stackTraceToString())
+
+        loginFailed.value = true
+
+        enableLoginButton(true)
     }
 
     object Converter {

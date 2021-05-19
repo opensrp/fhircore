@@ -9,18 +9,12 @@ import retrofit2.HttpException
 
 class AccountHelper {
 
-    @Throws(NetworkErrorException::class)
-    fun refreshToken(refreshToken: String): OauthResponse? {
+    fun refreshToken(refreshToken: String): OauthResponse {
         val data: MutableMap<String, String> = HashMap()
         data["refresh_token"] = refreshToken
         data["grant_type"] = "refresh_token"
-        return try {
-            return OauthService.create()!!.refreshToken(data).execute().body()
-        } catch (e: HttpException) {
-            throw e
-        } catch (e: Exception) {
-            throw NetworkErrorException(e)
-        }
+
+        return OauthService.create()!!.refreshToken(data)
     }
 
     @Throws(NetworkErrorException::class)
