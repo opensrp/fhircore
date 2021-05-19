@@ -98,39 +98,40 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
       liveSearchedPaginatedPatients.value =
         Pair(
-          computeStatus(samplePatients.getPatientItems(searchResults)),
+          samplePatients.getPatientItems(searchResults),
           Pagination(totalItems = count(query), pageSize = pageSize, currentPage = page)
         )
     }
   }
 
-  private suspend fun computeStatus(patients: List<PatientItem>): List<PatientItem> {
+  fun fetchPatientStatus(id: String): LiveData<PatientStatus> {
+    val status = MutableLiveData<PatientStatus>()
+
     // check database for immunizations
     val cal: Calendar = Calendar.getInstance()
     cal.add(Calendar.DATE, -28)
-    val dateMark: Date = cal.getTime()
+    val overDueStart: Date = cal.time
 
     val formatter = SimpleDateFormat("dd-MM-yy", Locale.US)
 
-    patients.forEach {
+    viewModelScope.launch {
       val searchResults: List<Immunization> =
-        fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/${it.logicalId}" } }
+        fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$id" } }
 
       val computedStatus =
         if (searchResults.size == 2) VaccineStatus.VACCINATED
-        else if (searchResults.size == 1 && searchResults[0].recorded.before(dateMark))
+        else if (searchResults.size == 1 && searchResults[0].recorded.before(overDueStart))
           VaccineStatus.OVERDUE
         else if (searchResults.size == 1) VaccineStatus.PARTIAL else VaccineStatus.DUE
 
-      it.status =
+      status.value =
         PatientStatus(
           status = computedStatus,
           details =
             if (searchResults.isNotEmpty()) formatter.format(searchResults[0].recorded) else ""
         )
     }
-
-    return patients
+    return status
   }
 
   protected fun Patient.nameMatchesFilter(filter: String?): Boolean {
@@ -219,8 +220,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     val dob: String,
     val html: String,
     val phone: String,
-    val logicalId: String,
-    var status: PatientStatus? = null
+    val logicalId: String
   ) {
     override fun toString(): String = name
   }

@@ -29,6 +29,7 @@ import android.widget.Toast
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
@@ -49,6 +50,7 @@ class PatientListFragment : Fragment() {
   private lateinit var fhirEngine: FhirEngine
   private var search: String? = null
   private val pageCount: Int = 7
+  private var adapter: PatientItemRecyclerViewAdapter? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -58,15 +60,22 @@ class PatientListFragment : Fragment() {
     return inflater.inflate(R.layout.fragment_patient_list, container, false)
   }
 
+  private fun patientStatusObserver(
+    patientId: String,
+    observer: Observer<PatientListViewModel.PatientStatus>
+  ) {
+    patientListViewModel.fetchPatientStatus(patientId).observe(requireActivity(), observer)
+  }
+
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     fhirEngine = FhirApplication.fhirEngine(requireContext())
 
     val recyclerView = view.findViewById<RecyclerView>(R.id.patient_list)
-    val adapter =
+    adapter =
       PatientItemRecyclerViewAdapter(
         this::onPatientItemClicked,
         this::onNavigationClicked,
-        this::onRecordVaccineClicked
+        this::patientStatusObserver
       )
     recyclerView.adapter = adapter
 
@@ -90,8 +99,8 @@ class PatientListFragment : Fragment() {
         Timber.d("Submitting ${it.first.count()} patient records")
         val list = ArrayList<Any>(it.first)
         list.add(it.second)
-        adapter.submitList(list)
-        adapter.notifyDataSetChanged()
+        adapter!!.submitList(list)
+        adapter!!.notifyDataSetChanged()
       }
     )
 
@@ -121,27 +130,43 @@ class PatientListFragment : Fragment() {
   }
 
   // Click handler to help display the details about the patients from the list.
-  private fun onPatientItemClicked(patientItem: PatientListViewModel.PatientItem) {
-    val intent =
-      Intent(requireContext(), PatientDetailActivity::class.java).apply {
-        putExtra(PatientDetailFragment.ARG_ITEM_ID, patientItem.logicalId)
+  private fun onPatientItemClicked(
+    intention: Intention,
+    patientItem: PatientListViewModel.PatientItem
+  ) {
+    when (intention) {
+      Intention.RECORD_VACCINE -> {
+        startActivity(
+          Intent(requireContext(), RecordVaccineActivity::class.java).apply {
+            putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
+            putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
+            putExtra(PATIENT_ID, patientItem.logicalId)
+          }
+        )
       }
-    this.startActivity(intent)
-  }
-
-  private fun onRecordVaccineClicked(patientItem: PatientListViewModel.PatientItem) {
-    startActivity(
-      Intent(requireContext(), RecordVaccineActivity::class.java).apply {
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
-        putExtra(PATIENT_ID, patientItem.logicalId)
+      Intention.VIEW -> {
+        this.startActivity(
+          Intent(requireContext(), PatientDetailActivity::class.java).apply {
+            putExtra(PatientDetailFragment.ARG_ITEM_ID, patientItem.logicalId)
+          }
+        )
       }
-    )
+    }
   }
 
   private fun syncResources() {
     patientListViewModel.runSync()
     patientListViewModel.searchResults()
     Toast.makeText(requireContext(), "Syncing...", Toast.LENGTH_LONG).show()
+  }
+
+  override fun onResume() {
+    super.onResume()
+    adapter?.notifyDataSetChanged()
+  }
+
+  enum class Intention {
+    RECORD_VACCINE,
+    VIEW
   }
 }
