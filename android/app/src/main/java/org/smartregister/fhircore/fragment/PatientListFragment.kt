@@ -127,8 +127,10 @@ class PatientListFragment : Fragment() {
                 "result",
                 this,
                 { _, result ->
-                    val barcode = result.getString("result")
+                    val barcode = result.getString("result")!!.trim()
+                    startPatientDetailActivity(barcode)
                     btnScanBarcode.findViewById<TextView>(R.id.btn_scan_barcode).text = barcode
+                    onStop()
                 }
         )
 
@@ -168,12 +170,16 @@ class PatientListFragment : Fragment() {
 
   // Click handler to help display the details about the patients from the list.
   private fun onPatientItemClicked(patientItem: PatientListViewModel.PatientItem) {
-    val intent =
-      Intent(requireContext(), PatientDetailActivity::class.java).apply {
-        putExtra(PatientDetailFragment.ARG_ITEM_ID, patientItem.logicalId)
-      }
-    this.startActivity(intent)
+    startPatientDetailActivity(patientItem.logicalId)
   }
+
+    private fun startPatientDetailActivity(patientLogicalId: String) {
+        val intent =
+                Intent(requireContext(), PatientDetailActivity::class.java).apply {
+                    putExtra(PatientDetailFragment.ARG_ITEM_ID, patientLogicalId)
+                }
+        this.startActivity(intent)
+    }
 
   private fun onRecordVaccineClicked(patientItem: PatientListViewModel.PatientItem) {
     startActivity(
