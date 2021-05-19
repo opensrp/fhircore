@@ -25,12 +25,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.ResourceNotFoundException
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.data.SamplePatients
 import org.smartregister.fhircore.domain.Pagination
+import org.smartregister.fhircore.fragment.OnPatientSearchResult
 
 private const val OBSERVATIONS_JSON_FILENAME = "sample_observations_bundle.json"
 
@@ -127,6 +129,25 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
   fun syncUpload() {
     viewModelScope.launch { fhirEngine.syncUpload() }
+  }
+
+  fun isPatientExists(id: String, callback: OnPatientSearchResult) {
+    viewModelScope.launch {
+      try {
+         fhirEngine.load(Patient::class.java, id)
+         callback.onSearchDone(true, id)
+      } catch (e: ResourceNotFoundException) {
+         callback.onSearchDone(false, id)
+      }
+    }
+  }
+
+  fun clearPatientList() {
+    liveSearchedPaginatedPatients.value =
+            Pair(
+                    listOf(),
+                    Pagination(totalItems = 0, pageSize = 1, currentPage = 0)
+            )
   }
 
   private fun getAssetFileAsString(filename: String): String {
