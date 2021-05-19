@@ -41,12 +41,14 @@
 
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.cardview.widget.CardView>
+    <include layout="@layout/patient_registration_details" />
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginVertical="10dp">
 
-        <include layout="@layout/observation_list_item" />
+        <include layout="@layout/observation_list" />
+        <!--<include layout="@layout/observation_list_item" />-->
 
     </androidx.core.widget.NestedScrollView>
 </androidx.appcompat.widget.LinearLayoutCompat>

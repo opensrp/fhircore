@@ -34,10 +34,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.activity.PATIENT_ID
 import org.smartregister.fhircore.activity.PatientDetailActivity
 import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.activity.RecordVaccineActivity
-import org.smartregister.fhircore.activity.USER_ID
 import org.smartregister.fhircore.adapter.PatientItemRecyclerViewAdapter
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
@@ -134,14 +134,14 @@ class PatientListFragment : Fragment() {
       Intent(requireContext(), RecordVaccineActivity::class.java).apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
-        putExtra(USER_ID, patientItem.logicalId)
+        putExtra(PATIENT_ID, patientItem.logicalId)
       }
     )
   }
 
   private fun syncResources() {
+    patientListViewModel.runSync()
     patientListViewModel.searchResults()
     Toast.makeText(requireContext(), "Syncing...", Toast.LENGTH_LONG).show()
-    patientListViewModel.syncUpload()
   }
 }
