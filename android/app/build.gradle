@@ -25,20 +25,16 @@ android {
         // Required when setting minSdkVersion to 20 or lower
         // See https://developer.android.com/studio/write/java8-support
         multiDexEnabled true
+
+        buildConfigField("String", 'OAUTH_BASE_URL', "\"${OAUTH_BASE_URL}\"")
+        buildConfigField("String", 'OAUTH_CIENT_ID', "\"${OAUTH_CIENT_ID}\"")
+        buildConfigField("String", 'OAUTH_CLIENT_SECRET', "\"${OAUTH_CLIENT_SECRET}\"")
     }
     buildTypes {
         debug {
-            buildConfigField("String", 'OAUTH_BASE_URL', '"http://10.0.2.2:8080/auth/realms/fhircore/"')
-            buildConfigField("String", 'OAUTH_CIENT_ID', '"fhircore-client"')
-            buildConfigField("String", 'OAUTH_CLIENT_SECRET', '"74383j43u4y3b3jj"')
-
             testCoverageEnabled true
         }
         release {
-            buildConfigField("String", 'OAUTH_BASE_URL', '"http://10.0.2.2:8080/auth/realms/fhircore/"')
-            buildConfigField("String", 'OAUTH_CIENT_ID', '"fhircore-client"')
-            buildConfigField("String", 'OAUTH_CLIENT_SECRET', '"74383j43u4y3b3jj"')
-
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -92,6 +88,9 @@ configurations {
 
 dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+    implementation 'androidx.security:security-crypto:1.1.0-alpha03'
+
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
 

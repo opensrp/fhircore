@@ -82,4 +82,5 @@ class FhirApplication : Application() {
 
     fun getContext() = mContext
   }
+
 }

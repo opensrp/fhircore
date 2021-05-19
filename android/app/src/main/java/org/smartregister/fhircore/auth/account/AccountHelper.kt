@@ -37,7 +37,7 @@ class AccountHelper {
         data["username"] = username
         data["password"] = password.concatToString()
         data["client_id"] = BuildConfig.OAUTH_CIENT_ID
-       // data["client_secret"] = BuildConfig.OAUTH_CLIENT_SECRET
+        data["client_secret"] = BuildConfig.OAUTH_CLIENT_SECRET
         return try {
             return OauthService.create()!!.fetchToken(data)
         } catch (e: HttpException) {

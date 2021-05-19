@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="org.smartregister.fhircore.viewmodel.LoginViewModel.Converter"/>
         <variable
             name="usr"
             type="org.smartregister.fhircore.viewmodel.LoginViewModel" />
@@ -49,7 +50,7 @@
             android:ems="10"
             android:hint="@string/password_input_hint"
             android:inputType="textVisiblePassword"
-            android:text="@={usr.loginUser.password}"
+            android:text="@={Converter.charArrayToString(usr.loginUser.password)}"
             android:addTextChangedListener="@{usr.credentialsWatcher}"/>
 
         <Button
