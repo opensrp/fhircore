@@ -148,6 +148,8 @@ class PatientDetailFragment : Fragment() {
 
   override fun onResume() {
     super.onResume()
+    // load immunization data
+    viewModel.searchImmunizations(patitentId)
     viewModel
       .getImmunizations()
       .observe(
