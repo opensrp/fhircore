@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -45,6 +46,7 @@ class PatientDetailFragment : Fragment() {
   var patitentId: String? = null
   lateinit var rootView: View
   lateinit var viewModel: PatientListViewModel
+  val finalDoseNumber = 2
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -102,9 +104,13 @@ class PatientDetailFragment : Fragment() {
 
   private fun updateVaccineStatus(immunizations: List<Immunization>) {
 
+    var isFullyVaccinated = false
     viewModel.viewModelScope.launch {
       immunizations.forEach { immunization ->
         val doseNumber = (immunization.protocolApplied[0].doseNumber as PositiveIntType).value
+        if (isFullyVaccinated) {
+          return@forEach
+        }
         val nextDoseNumber = doseNumber + 1
         val vaccineDate = immunization.occurrenceDateTimeType.toHumanDisplay()
         val nextVaccineDate = Utils.addDays(vaccineDate, 28)
@@ -116,13 +122,24 @@ class PatientDetailFragment : Fragment() {
             doseNumber
           )
 
-        if (doseNumber == 2) {
-          return@forEach
-        }
         val tvVaccineSecondDose = rootView.findViewById<TextView>(R.id.vaccination_second_dose)
+        val btnRecordVaccine = activity?.findViewById<Button>(R.id.btn_record_vaccine)
         tvVaccineSecondDose.visibility = View.VISIBLE
-        tvVaccineSecondDose.text =
-          resources.getString(R.string.immunization_next_dose_text, nextDoseNumber, nextVaccineDate)
+        if (doseNumber == finalDoseNumber) {
+          isFullyVaccinated = true
+          tvVaccineRecorded.text = resources.getString(R.string.fully_vaccinated)
+          tvVaccineSecondDose.text = resources.getString(R.string.view_vaccine_certificate)
+          if (btnRecordVaccine != null) {
+            btnRecordVaccine.visibility = View.GONE
+          }
+        } else {
+          tvVaccineSecondDose.text =
+            resources.getString(
+              R.string.immunization_next_dose_text,
+              nextDoseNumber,
+              nextVaccineDate
+            )
+        }
       }
     }
   }
