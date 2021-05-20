@@ -193,7 +193,11 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
       /** Download Immediately from the server */
       val syncData =
         listOf(
-          SyncData(resourceType = ResourceType.Patient, params = mapOf("address-city" to "NAIROBI"))
+          SyncData(
+            resourceType = ResourceType.Patient,
+            params = mapOf("address-city" to "NAIROBI")
+          ),
+          SyncData(resourceType = ResourceType.Immunization)
         )
       fhirEngine.sync(SyncConfiguration(syncData = syncData))
     }
