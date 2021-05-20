@@ -115,6 +115,14 @@ class PatientDetailFragment : Fragment() {
             immunization.vaccineCode.text,
             doseNumber
           )
+
+        if (doseNumber == 2) {
+          return@forEach
+        }
+        val tvVaccineSecondDose = rootView.findViewById<TextView>(R.id.vaccination_second_dose)
+        tvVaccineSecondDose.visibility = View.VISIBLE
+        tvVaccineSecondDose.text =
+          resources.getString(R.string.immunization_next_dose_text, nextDoseNumber, nextVaccineDate)
       }
     }
   }
