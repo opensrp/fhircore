@@ -87,7 +87,7 @@ class QuestionnaireActivity : AppCompatActivity() {
 
     val patient = ResourceMapper.extract(questionnaire, questionnaireResponse) as Patient
 
-    patient.id = UUID.randomUUID().toString().toLowerCase()
+    patient.id = patient.id ?: UUID.randomUUID().toString().toLowerCase()
     // FhirApplication.fhirEngine(applicationContext).save(patient)
     viewModel.saveResource(patient)
 
