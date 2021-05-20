@@ -38,6 +38,7 @@ import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 const val PATIENT_ID = "patient_id"
@@ -131,12 +132,22 @@ class RecordVaccineActivity : AppCompatActivity() {
   private fun showVaccineRecordDialog(immunization: Immunization) {
 
     val builder = AlertDialog.Builder(this)
+    val doseNumber = immunization.protocolApplied.first().doseNumberPositiveIntType.value
+    var msgText = ""
+    val vaccineDate = immunization.occurrenceDateTimeType.toHumanDisplay()
+    val nextVaccineDate = Utils.addDays(vaccineDate, 28)
+
+    if (doseNumber == 2) {
+      msgText = resources.getString(R.string.fully_vaccinated)
+    } else {
+      msgText =
+        resources.getString(R.string.immunization_next_dose_text, doseNumber + 1, nextVaccineDate)
+    }
+
     // set title for alert dialog
-    builder.setTitle(
-      "${immunization.vaccineCode.text} dose ${immunization.protocolApplied.first().doseNumberPositiveIntType.value} recorded"
-    )
+    builder.setTitle("${immunization.vaccineCode.text} dose $doseNumber recorded")
     // set message for alert dialog
-    builder.setMessage("Second dose due at 27-04-2021")
+    builder.setMessage(msgText)
 
     // performing negative action
     builder.setNegativeButton("Done") { dialogInterface, _ ->
