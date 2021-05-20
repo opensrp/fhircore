@@ -29,7 +29,7 @@
         android:layout_marginLeft="10dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/view_observation_detail"/>
+        app:layout_constraintBottom_toBottomOf="@id/view_registration_detail"/>
 
     <TextView
         android:id="@+id/observation_detail"
@@ -46,7 +46,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/view_observation_detail"
+        android:id="@+id/view_registration_detail"
         style="?android:attr/textAppearanceSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -65,14 +65,48 @@
         app:srcCompat = "@drawable/ic_forward_arrow"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/observation_detail"
-        app:layout_constraintBottom_toBottomOf="@id/view_observation_detail" />
+        app:layout_constraintBottom_toBottomOf="@id/view_registration_detail" />
 
     <View
         android:id="@+id/view_registration"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/light"
-        app:layout_constraintTop_toBottomOf="@id/view_observation_detail" />
+        app:layout_constraintTop_toBottomOf="@id/view_registration_detail" />
 
+    <TextView
+        android:id="@+id/vaccination_status"
+        style="?android:attr/textAppearanceSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:paddingStart="16dp"
+        android:text="No vaccine received"
+        android:textIsSelectable="true"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        app:layout_constraintStart_toEndOf="@+id/observation_detail_checkbox"
+        app:layout_constraintTop_toBottomOf="@id/view_registration" />
+
+    <TextView
+        android:id="@+id/vaccination_second_dose"
+        style="?android:attr/textAppearanceSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:visibility="gone"
+        android:text="No vaccine received"
+        android:textIsSelectable="true"
+        android:textSize="14sp"
+        app:layout_constraintStart_toEndOf="@+id/observation_detail_checkbox"
+        app:layout_constraintTop_toBottomOf="@id/vaccination_status" />
+
+    <View
+        android:id="@+id/view_vaccination_status"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/light"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/vaccination_second_dose" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
