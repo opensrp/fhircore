@@ -27,6 +27,7 @@ import org.smartregister.fhircore.activity.QuestionnaireActivity
 
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
   AndroidViewModel(application) {
+
   var questionnaireJson: String? = null
   val questionnaire: String
     get() {

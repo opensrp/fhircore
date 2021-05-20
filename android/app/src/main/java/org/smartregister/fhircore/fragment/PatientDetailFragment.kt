@@ -22,11 +22,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
-import org.hl7.fhir.r4.model.Immunization
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.adapter.ImmunizationItemRecyclerViewAdapter
@@ -64,10 +62,7 @@ class PatientDetailFragment : Fragment() {
         )
         .get(PatientListViewModel::class.java)
 
-    viewModel.liveSearchPatient.observe(
-      viewLifecycleOwner,
-      Observer<PatientListViewModel.PatientItem> { setupPatientData(it) }
-    )
+    viewModel.liveSearchPatient.observe(viewLifecycleOwner, { setupPatientData(it) })
 
     arguments?.let {
       if (it.containsKey(ARG_ITEM_ID)) {
@@ -92,22 +87,20 @@ class PatientDetailFragment : Fragment() {
     // load immunization data
     viewModel.searchImmunizations(patitentId)
 
-    viewModel
-      .getImmunizations()
-      .observe(
-        viewLifecycleOwner,
-        Observer<List<Immunization>> {
-          adapter.submitList(it)
-          if (it.isNotEmpty()) {
-            val tvNoVaccinePlaceholder =
-              rootView.findViewById<TextView>(R.id.no_vaccination_placeholder)
-            tvNoVaccinePlaceholder.visibility = View.GONE
-            val noVaccinePlaceholder =
-              rootView.findViewById<View>(R.id.view_vaccination_status_separator)
-            noVaccinePlaceholder.visibility = View.GONE
-          }
+    viewModel.liveSearchImmunization.observe(
+      viewLifecycleOwner,
+      {
+        adapter.submitList(it)
+        if (it.isNotEmpty()) {
+          val tvNoVaccinePlaceholder =
+            rootView.findViewById<TextView>(R.id.no_vaccination_placeholder)
+          tvNoVaccinePlaceholder.visibility = View.GONE
+          val noVaccinePlaceholder =
+            rootView.findViewById<View>(R.id.view_vaccination_status_separator)
+          noVaccinePlaceholder.visibility = View.GONE
         }
-      )
+      }
+    )
 
     return rootView
   }
@@ -115,12 +108,8 @@ class PatientDetailFragment : Fragment() {
   private fun setupPatientData(patient: PatientListViewModel.PatientItem?) {
     val gender = if (patient?.gender == "male") 'M' else 'F'
     if (patient != null) {
-      var patientDetailLabel =
-        patient?.name +
-          ", " +
-          gender +
-          ", " +
-          patient?.dob?.let { it1 -> Utils.getAgeFromDate(it1) }
+      val patientDetailLabel =
+        patient.name + ", " + gender + ", " + patient.dob.let { it1 -> Utils.getAgeFromDate(it1) }
       activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
       activity?.findViewById<TextView>(R.id.id_patient_number)?.text = "ID: " + patient.logicalId
       patitentId = patient.logicalId
