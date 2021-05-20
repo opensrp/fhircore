@@ -26,6 +26,7 @@ import org.smartregister.fhircore.fragment.PatientDetailFragment
 
 /** An activity representing a single Patient detail screen. */
 class PatientDetailActivity : AppCompatActivity() {
+  lateinit var fragment: PatientDetailFragment
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -38,7 +39,7 @@ class PatientDetailActivity : AppCompatActivity() {
     if (savedInstanceState == null) {
       // Create the detail fragment and add it to the activity
       // using a fragment transaction.
-      val fragment =
+      fragment =
         PatientDetailFragment().apply {
           arguments =
             Bundle().apply {
@@ -60,6 +61,7 @@ class PatientDetailActivity : AppCompatActivity() {
         Intent(this, RecordVaccineActivity::class.java).apply {
           putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
           putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
+          putExtra(PATIENT_ID, fragment.patitentId)
         }
       )
     }

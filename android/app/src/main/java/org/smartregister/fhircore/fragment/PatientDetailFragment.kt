@@ -22,12 +22,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.adapter.ObservationItemRecyclerViewAdapter
+import org.smartregister.fhircore.adapter.ImmunizationItemRecyclerViewAdapter
 import org.smartregister.fhircore.util.SharedPrefrencesHelper
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
@@ -48,11 +48,10 @@ class PatientDetailFragment : Fragment() {
   ): View? {
     val rootView = inflater.inflate(R.layout.patient_detail, container, false)
 
-    val adapter = ObservationItemRecyclerViewAdapter()
+    val adapter = ImmunizationItemRecyclerViewAdapter()
 
-    // Commenting as we don't need this in Patient Detail Screen
-    /*val recyclerView: RecyclerView = rootView.findViewById(R.id.observation_list)
-    recyclerView.adapter = adapter*/
+    val recyclerView: RecyclerView = rootView.findViewById(R.id.observation_list)
+    recyclerView.adapter = adapter
 
     val fhirEngine: FhirEngine = FhirApplication.fhirEngine(requireContext())
 
@@ -63,17 +62,7 @@ class PatientDetailFragment : Fragment() {
         )
         .get(PatientListViewModel::class.java)
 
-    viewModel
-      .getObservations()
-      .observe(
-        viewLifecycleOwner,
-        Observer<List<PatientListViewModel.ObservationItem>> { adapter.submitList(it) }
-      )
-
-    viewModel.liveSearchPatient.observe(
-      viewLifecycleOwner,
-      Observer<PatientListViewModel.PatientItem> { setupPatientData(it) }
-    )
+    viewModel.liveSearchPatient.observe(viewLifecycleOwner, { setupPatientData(it) })
 
     arguments?.let {
       if (it.containsKey(ARG_ITEM_ID)) {
@@ -89,11 +78,29 @@ class PatientDetailFragment : Fragment() {
       val vaccineRecorded = SharedPrefrencesHelper.read(it, "")
       vaccineRecorded?.let { it1 ->
         if (it1.isNotEmpty()) {
-          val tvVaccineRecorded = rootView.findViewById<TextView>(R.id.vaccination_status)
-          tvVaccineRecorded.text = "Received $it1 dose 1"
+          val tvVaccineRecorded = rootView.findViewById<TextView>(R.id.observation_detail)
+          tvVaccineRecorded?.text = "Received $it1 dose 1"
         }
       }
     }
+
+    // load immunization data
+    viewModel.searchImmunizations(patitentId)
+
+    viewModel.liveSearchImmunization.observe(
+      viewLifecycleOwner,
+      {
+        adapter.submitList(it)
+        if (it.isNotEmpty()) {
+          val tvNoVaccinePlaceholder =
+            rootView.findViewById<TextView>(R.id.no_vaccination_placeholder)
+          tvNoVaccinePlaceholder.visibility = View.GONE
+          val noVaccinePlaceholder =
+            rootView.findViewById<View>(R.id.view_vaccination_status_separator)
+          noVaccinePlaceholder.visibility = View.GONE
+        }
+      }
+    )
 
     return rootView
   }
@@ -101,14 +108,11 @@ class PatientDetailFragment : Fragment() {
   private fun setupPatientData(patient: PatientListViewModel.PatientItem?) {
     val gender = if (patient?.gender == "male") 'M' else 'F'
     if (patient != null) {
-      var patientDetailLabel =
-        patient?.name +
-          ", " +
-          gender +
-          ", " +
-          patient?.dob?.let { it1 -> Utils.getAgeFromDate(it1) }
+      val patientDetailLabel =
+        patient.name + ", " + gender + ", " + patient.dob.let { it1 -> Utils.getAgeFromDate(it1) }
       activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
       activity?.findViewById<TextView>(R.id.id_patient_number)?.text = "ID: " + patient.logicalId
+      patitentId = patient.logicalId
     }
   }
 

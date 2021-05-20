@@ -108,7 +108,7 @@ class PatientListActivity : AppCompatActivity() {
   // pager adapter
   private inner class PatientListPagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
     override fun getItemCount(): Int {
-      return 50
+      return 1
     }
 
     override fun createFragment(position: Int): Fragment {
