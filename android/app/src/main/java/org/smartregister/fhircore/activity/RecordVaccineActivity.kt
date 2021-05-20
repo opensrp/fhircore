@@ -38,10 +38,10 @@ import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.util.SharedPrefrencesHelper
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 const val PATIENT_ID = "patient_id"
+const val IS_FIRST_DOSE_ADMINISTERED = "is_first_dose_administered"
 
 class RecordVaccineActivity : AppCompatActivity() {
 
@@ -98,10 +98,16 @@ class RecordVaccineActivity : AppCompatActivity() {
         immunization.occurrence = DateTimeType.today()
         immunization.patient =
           Reference().apply { this.reference = "Patient/" + intent?.getStringExtra(PATIENT_ID) }
+
+        val isFirstDoseAdministered = intent?.getBooleanExtra(IS_FIRST_DOSE_ADMINISTERED, false)
         immunization.protocolApplied =
           listOf(
             Immunization.ImmunizationProtocolAppliedComponent().apply {
-              this.doseNumber = PositiveIntType(1)
+              if (isFirstDoseAdministered == true) {
+                this.doseNumber = PositiveIntType(2)
+              } else {
+                this.doseNumber = PositiveIntType(1)
+              }
             }
           )
         viewModel.saveResource(immunization)
@@ -123,8 +129,6 @@ class RecordVaccineActivity : AppCompatActivity() {
   }
 
   private fun showVaccineRecordDialog(immunization: Immunization) {
-    val patientId = intent?.getStringExtra(PATIENT_ID)!!
-    SharedPrefrencesHelper.write(patientId, immunization.vaccineCode.text)
 
     val builder = AlertDialog.Builder(this)
     // set title for alert dialog
