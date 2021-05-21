@@ -62,7 +62,7 @@ class PatientDetailActivity : AppCompatActivity() {
           putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
           putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
           putExtra(PATIENT_ID, fragment.patitentId)
-          putExtra(IS_FIRST_DOSE_ADMINISTERED, fragment.isFirstDoseAdministered)
+          putExtra(DOSE_NUMBER, fragment.doseNumber)
         }
       )
     }

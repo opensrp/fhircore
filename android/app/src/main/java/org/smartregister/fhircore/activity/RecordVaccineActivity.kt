@@ -42,7 +42,7 @@ import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 const val PATIENT_ID = "patient_id"
-const val IS_FIRST_DOSE_ADMINISTERED = "is_first_dose_administered"
+const val DOSE_NUMBER = "dose_number"
 
 class RecordVaccineActivity : AppCompatActivity() {
 
@@ -100,14 +100,12 @@ class RecordVaccineActivity : AppCompatActivity() {
         immunization.patient =
           Reference().apply { this.reference = "Patient/" + intent?.getStringExtra(PATIENT_ID) }
 
-        val isFirstDoseAdministered = intent?.getBooleanExtra(IS_FIRST_DOSE_ADMINISTERED, false)
         immunization.protocolApplied =
           listOf(
             Immunization.ImmunizationProtocolAppliedComponent().apply {
-              if (isFirstDoseAdministered == true) {
-                this.doseNumber = PositiveIntType(2)
-              } else {
-                this.doseNumber = PositiveIntType(1)
+              var currentDoseNumber = intent?.getIntExtra(DOSE_NUMBER, 0)
+              if (currentDoseNumber != null) {
+                this.doseNumber = PositiveIntType(currentDoseNumber + 1)
               }
             }
           )

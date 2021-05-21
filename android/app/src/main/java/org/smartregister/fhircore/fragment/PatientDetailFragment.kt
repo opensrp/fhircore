@@ -47,7 +47,7 @@ class PatientDetailFragment : Fragment() {
   lateinit var rootView: View
   lateinit var viewModel: PatientListViewModel
   val finalDoseNumber = 2
-  var isFirstDoseAdministered: Boolean = false
+  var doseNumber = 0
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -108,7 +108,7 @@ class PatientDetailFragment : Fragment() {
     var isFullyVaccinated = false
     viewModel.viewModelScope.launch {
       immunizations.forEach { immunization ->
-        val doseNumber = (immunization.protocolApplied[0].doseNumber as PositiveIntType).value
+        doseNumber = (immunization.protocolApplied[0].doseNumber as PositiveIntType).value
         if (isFullyVaccinated) {
           return@forEach
         }
@@ -134,7 +134,6 @@ class PatientDetailFragment : Fragment() {
             btnRecordVaccine.visibility = View.GONE
           }
         } else {
-          isFirstDoseAdministered = true
           tvVaccineSecondDose.text =
             resources.getString(
               R.string.immunization_next_dose_text,
