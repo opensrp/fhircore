@@ -90,7 +90,7 @@ class PatientDetailFragment : Fragment() {
     viewModel.searchImmunizations(patitentId)
 
     viewModel
-      .getImmunizations()
+      .liveSearchImmunization
       .observe(
         viewLifecycleOwner,
         Observer<List<Immunization>> {
@@ -150,7 +150,7 @@ class PatientDetailFragment : Fragment() {
     // load immunization data
     viewModel.searchImmunizations(patitentId)
     viewModel
-      .getImmunizations()
+      .liveSearchImmunization
       .observe(
         viewLifecycleOwner,
         Observer<List<Immunization>> {

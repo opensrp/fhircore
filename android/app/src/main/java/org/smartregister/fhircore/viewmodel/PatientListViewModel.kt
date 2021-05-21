@@ -72,10 +72,6 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     MutableLiveData<List<Immunization>>()
   }
 
-  fun getImmunizations(): MutableLiveData<List<Immunization>> {
-    return liveSearchImmunization
-  }
-
   fun searchResults(query: String? = null, page: Int = 0, pageSize: Int = 10) {
     viewModelScope.launch {
       var searchResults: List<Patient> =
