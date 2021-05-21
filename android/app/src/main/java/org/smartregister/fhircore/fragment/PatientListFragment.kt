@@ -132,6 +132,7 @@ class PatientListFragment : Fragment(), OnPatientSearchResult {
 
     override fun onResume() {
         patientListViewModel.searchResults(page = 0, pageSize = pageCount) // TODO: might need to move this to happen when a user clicks a button
+        adapter?.notifyDataSetChanged()
         super.onResume()
     }
 
