@@ -42,4 +42,6 @@
     <string name="status_overdue">Overdue</string>
     <string name="status_received_vaccine">Vaccine %1$d \n%2$s</string>
     <string name="status_record_vaccine">Record \n Vaccine</string>
+    <string name="view_vaccine_certificate">"View vaccine certificate"</string>
+    <string name="fully_vaccinated">"Fully vaccinated"</string>
 </resources>
