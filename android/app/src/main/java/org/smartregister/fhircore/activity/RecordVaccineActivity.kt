@@ -38,10 +38,11 @@ import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.util.SharedPrefrencesHelper
+import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 const val PATIENT_ID = "patient_id"
+const val DOSE_NUMBER = "dose_number"
 
 class RecordVaccineActivity : AppCompatActivity() {
 
@@ -98,10 +99,14 @@ class RecordVaccineActivity : AppCompatActivity() {
         immunization.occurrence = DateTimeType.today()
         immunization.patient =
           Reference().apply { this.reference = "Patient/" + intent?.getStringExtra(PATIENT_ID) }
+
         immunization.protocolApplied =
           listOf(
             Immunization.ImmunizationProtocolAppliedComponent().apply {
-              this.doseNumber = PositiveIntType(1)
+              var currentDoseNumber = intent?.getIntExtra(DOSE_NUMBER, 0)
+              if (currentDoseNumber != null) {
+                this.doseNumber = PositiveIntType(currentDoseNumber + 1)
+              }
             }
           )
         viewModel.saveResource(immunization)
@@ -123,16 +128,24 @@ class RecordVaccineActivity : AppCompatActivity() {
   }
 
   private fun showVaccineRecordDialog(immunization: Immunization) {
-    val patientId = intent?.getStringExtra(PATIENT_ID)!!
-    SharedPrefrencesHelper.write(patientId, immunization.vaccineCode.text)
 
     val builder = AlertDialog.Builder(this)
+    val doseNumber = immunization.protocolApplied.first().doseNumberPositiveIntType.value
+    var msgText = ""
+    val vaccineDate = immunization.occurrenceDateTimeType.toHumanDisplay()
+    val nextVaccineDate = Utils.addDays(vaccineDate, 28)
+
+    if (doseNumber == 2) {
+      msgText = resources.getString(R.string.fully_vaccinated)
+    } else {
+      msgText =
+        resources.getString(R.string.immunization_next_dose_text, doseNumber + 1, nextVaccineDate)
+    }
+
     // set title for alert dialog
-    builder.setTitle(
-      "${immunization.vaccineCode.text} dose ${immunization.protocolApplied.first().doseNumberPositiveIntType.value} recorded"
-    )
+    builder.setTitle("${immunization.vaccineCode.text} dose $doseNumber recorded")
     // set message for alert dialog
-    builder.setMessage("Second dose due at 27-04-2021")
+    builder.setMessage(msgText)
 
     // performing negative action
     builder.setNegativeButton("Done") { dialogInterface, _ ->
