@@ -18,12 +18,19 @@
   ],
   "item": [
     {
+      "linkId": "patient-barcode",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
+      "type": "text",
+      "text": "Barcode"
+    },
+    {
       "linkId": "PR",
       "type": "group",
       "item": [
         {
           "linkId": "PR-name",
           "type": "group",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name",
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
@@ -36,18 +43,14 @@
           ],
           "item": [
             {
-              "linkId": "patient-barcode",
-              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.id",
-              "type": "text",
-              "text": "Barcode"
-            },
-            {
               "linkId": "PR-name-text",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.given",
               "type": "string",
               "text": "First Name"
             },
             {
               "linkId": "PR-name-family",
+              "definition": "http://hl7.org/fhir/StructureDefinition/datatypes#HumanName.family",
               "type": "string",
               "text": "Family Name"
             }
@@ -55,6 +58,7 @@
         },
         {
           "linkId": "patient-0-birth-date",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
           "type": "date",
           "text": "Date of Birth"
         },
@@ -70,6 +74,7 @@
               }
             }
           ],
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
           "initial": [
             {
               "valueString": "female"
@@ -81,6 +86,7 @@
         {
           "linkId": "PR-telecom",
           "type": "group",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom",
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
@@ -94,6 +100,7 @@
           "item": [
             {
               "linkId": "PR-telecom-system",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom.system",
               "extension": [
                 {
                   "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
@@ -121,6 +128,7 @@
             },
             {
               "linkId": "PR-telecom-value",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom.value",
               "type": "string",
               "text": "Phone Number"
             }
@@ -129,6 +137,7 @@
         {
           "linkId": "PR-address",
           "type": "group",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.address",
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
@@ -142,11 +151,13 @@
           "item": [
             {
               "linkId": "PR-address-city",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.address.city",
               "type": "string",
               "text": "City"
             },
             {
               "linkId": "PR-address-country",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.address.country",
               "type": "string",
               "text": "Country"
             }
@@ -154,6 +165,7 @@
         },
         {
           "linkId": "PR-active",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.active",
           "type": "boolean",
           "text": "Is Active?"
         }
