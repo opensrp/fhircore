@@ -149,16 +149,6 @@ class PatientDetailFragment : Fragment() {
     super.onResume()
     // load immunization data
     viewModel.searchImmunizations(patitentId)
-    viewModel
-      .liveSearchImmunization
-      .observe(
-        viewLifecycleOwner,
-        Observer<List<Immunization>> {
-          if (it.isNotEmpty()) {
-            updateVaccineStatus(it)
-          }
-        }
-      )
   }
 
   private fun setupPatientData(patient: PatientListViewModel.PatientItem?) {
