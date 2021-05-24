@@ -48,6 +48,7 @@ class PatientDetailFragment : Fragment() {
   lateinit var viewModel: PatientListViewModel
   val finalDoseNumber = 2
   var doseNumber = 0
+  var initialDose: String = ""
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -89,16 +90,14 @@ class PatientDetailFragment : Fragment() {
     // load immunization data
     viewModel.searchImmunizations(patitentId)
 
-    viewModel
-      .liveSearchImmunization
-      .observe(
-        viewLifecycleOwner,
-        Observer<List<Immunization>> {
-          if (it.isNotEmpty()) {
-            updateVaccineStatus(it)
-          }
+    viewModel.liveSearchImmunization.observe(
+      viewLifecycleOwner,
+      Observer<List<Immunization>> {
+        if (it.isNotEmpty()) {
+          updateVaccineStatus(it)
         }
-      )
+      }
+    )
 
     return rootView
   }
@@ -109,6 +108,7 @@ class PatientDetailFragment : Fragment() {
     viewModel.viewModelScope.launch {
       immunizations.forEach { immunization ->
         doseNumber = (immunization.protocolApplied[0].doseNumber as PositiveIntType).value
+        initialDose = immunization.vaccineCode.coding.first().code
         if (isFullyVaccinated) {
           return@forEach
         }
