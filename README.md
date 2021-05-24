@@ -2,7 +2,7 @@
 
 # OpenSRP FHIR Core
 
-FHIRcore is an OpenSRP implementation of the [HL7 Fhir](http://hl7.org/fhir/R4/index.html) standard for Health Care data based on [Google FHIR SDK](https://github.com/google/android-fhir).
+FHIRcore is an OpenSRP implementation of the [HL7 Fhir](http://hl7.org/fhir/R4/index.html) standard for Health Care data based on [Android FHIR SDK](https://github.com/google/android-fhir).
 
 <img align=center width=400 src="docs/assets/fhircore.png">
 
