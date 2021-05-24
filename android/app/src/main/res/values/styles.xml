@@ -22,7 +22,7 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:listDivider">@color/white_slightly_opaque</item>
-
+        <item name="questionnaire_theme">@style/Theme.MaterialComponents.Light.DarkActionBar</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
