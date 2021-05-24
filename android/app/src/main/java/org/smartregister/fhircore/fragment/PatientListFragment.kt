@@ -50,7 +50,7 @@ import org.smartregister.fhircore.viewmodel.PatientListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
 import timber.log.Timber
 
-class PatientListFragment : Fragment(), OnPatientSearchResult {
+class PatientListFragment : Fragment() {
 
   private lateinit var patientListViewModel: PatientListViewModel
   private lateinit var fhirEngine: FhirEngine
@@ -143,7 +143,14 @@ class PatientListFragment : Fragment(), OnPatientSearchResult {
                 this,
                 { _, result ->
                     val barcode = result.getString("result")!!.trim()
-                    patientListViewModel.isPatientExists(barcode, this)
+                    patientListViewModel.isPatientExists(barcode).observe(viewLifecycleOwner, {
+                        if (it.isSuccess) {
+                            launchPatientDetailActivity(barcode)
+                        } else {
+                            patientListViewModel.clearPatientList()
+                        }
+                        liveBarcodeScanningFragment.onDestroy()
+                    })
                 }
         )
 
@@ -228,13 +235,4 @@ class PatientListFragment : Fragment(), OnPatientSearchResult {
     RECORD_VACCINE,
     VIEW
   }
-
-    override fun onSearchDone(isPatientFound: Boolean, patientLogicalId: String) {
-        if (isPatientFound) {
-            launchPatientDetailActivity(patientLogicalId)
-        } else {
-            patientListViewModel.clearPatientList()
-        }
-        liveBarcodeScanningFragment.onDestroy()
-    }
 }

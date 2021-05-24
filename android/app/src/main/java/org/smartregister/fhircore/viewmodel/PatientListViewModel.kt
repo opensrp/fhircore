@@ -40,7 +40,6 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.data.SamplePatients
 import org.smartregister.fhircore.domain.Pagination
-import org.smartregister.fhircore.fragment.OnPatientSearchResult
 
 private const val OBSERVATIONS_JSON_FILENAME = "sample_observations_bundle.json"
 
@@ -205,15 +204,17 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     }
   }
 
-  fun isPatientExists(id: String, callback: OnPatientSearchResult) {
+  fun isPatientExists(id: String) : LiveData<Result<Boolean>> {
+    val result = MutableLiveData<Result<Boolean>>()
     viewModelScope.launch {
       try {
-         fhirEngine.load(Patient::class.java, id)
-         callback.onSearchDone(true, id)
+        fhirEngine.load(Patient::class.java, id)
+        result.value = Result.success(true)
       } catch (e: ResourceNotFoundException) {
-         callback.onSearchDone(false, id)
+        result.value = Result.failure(e)
       }
     }
+    return result
   }
 
   fun clearPatientList() {
