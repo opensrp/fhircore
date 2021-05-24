@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CareTeam xmlns="http://hl7.org/fhir">
+  <id value="anc-team"/>
+  <participant>
+    <role>
+			<coding>
+				<system value="http://hl7.org/fhir/uv/cpg/CodeSystem/cpg-common-persona"/>
+				<code value="2222"/>
+				<display value="Midwifery professional"/>
+			</coding>
+	    <text value="Midwifery professional"/>
+    </role>
+    <member>
+      <reference value="Practitioner/midwife"/>
+      <display value="Mabel Midwife"/>
+    </member>
+  </participant>
+</CareTeam>
