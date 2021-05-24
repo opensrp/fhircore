@@ -54,7 +54,7 @@ class PatientListFragment : Fragment(), OnPatientSearchResult {
 
   private lateinit var patientListViewModel: PatientListViewModel
   private lateinit var fhirEngine: FhirEngine
-    private var liveBarcodeScanningFragment: LiveBarcodeScanningFragment? = null
+    private val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
   private var search: String? = null
   private val pageCount: Int = 7
   private var adapter: PatientItemRecyclerViewAdapter? = null
@@ -153,18 +153,11 @@ class PatientListFragment : Fragment(), OnPatientSearchResult {
         }
     }
 
-    private fun getBarcodeScannerInstance(): LiveBarcodeScanningFragment {
-        if (liveBarcodeScanningFragment == null) {
-            liveBarcodeScanningFragment = LiveBarcodeScanningFragment()
-        }
-        return liveBarcodeScanningFragment!!
-    }
-
     private fun getBarcodePermissionLauncher(): ActivityResultLauncher<String> {
         return registerForActivityResult(ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
             if (isGranted) {
-                getBarcodeScannerInstance().show(requireActivity().supportFragmentManager, "TAG")
+                liveBarcodeScanningFragment.show(requireActivity().supportFragmentManager, "TAG")
             } else {
                 Toast.makeText(requireContext(), "Camera permissions are needed to launch barcode reader!", Toast.LENGTH_LONG).show()
             }
@@ -176,7 +169,7 @@ class PatientListFragment : Fragment(), OnPatientSearchResult {
                         requireContext(),
                         Manifest.permission.CAMERA
                 ) == PackageManager.PERMISSION_GRANTED) {
-            getBarcodeScannerInstance().show(requireActivity().supportFragmentManager, "TAG")
+                    liveBarcodeScanningFragment.show(requireActivity().supportFragmentManager, "TAG")
         } else  {
             requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
@@ -242,6 +235,6 @@ class PatientListFragment : Fragment(), OnPatientSearchResult {
         } else {
             patientListViewModel.clearPatientList()
         }
-        getBarcodeScannerInstance().onDestroy()
+        liveBarcodeScanningFragment.onDestroy()
     }
 }
