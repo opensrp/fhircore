@@ -219,7 +219,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   fun clearPatientList() {
     liveSearchedPaginatedPatients.value =
             Pair(
-                    listOf(),
+                    emptyList(),
                     Pagination(totalItems = 0, pageSize = 1, currentPage = 0)
             )
   }
