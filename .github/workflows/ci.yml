@@ -23,12 +23,15 @@ jobs:
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+      working-directory: android
 
     - name: Spotless check
       run: ./gradlew spotlessCheck
+      working-directory: android
 
     - name: Run unit tests with Gradle and upload to coveralls
       run: ./gradlew clean jacocoTestReport coveralls --stacktrace
+      working-directory: android
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
         FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
