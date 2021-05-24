@@ -76,11 +76,10 @@ class PatientListActivity : AppCompatActivity() {
         editText.addOnDrawableClickedListener(Utils.DrawablePosition.DRAWABLE_RIGHT) { it.clear() }
       }
     }
-
-    setupDrawerContent()
+    setUpDrawerContent()
   }
 
-  private fun setupDrawerContent() {
+  private fun setUpDrawerContent() {
     val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
     findViewById<ImageButton>(R.id.btn_drawer_menu).setOnClickListener {
       drawerLayout.openDrawer(GravityCompat.START)

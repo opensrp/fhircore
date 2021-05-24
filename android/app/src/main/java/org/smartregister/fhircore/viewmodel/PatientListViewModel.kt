@@ -25,6 +25,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.ResourceNotFoundException
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.SyncConfiguration
@@ -201,6 +202,24 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
         )
       fhirEngine.sync(SyncConfiguration(syncData = syncData))
     }
+  }
+
+  fun isPatientExists(id: String): LiveData<Result<Boolean>> {
+    val result = MutableLiveData<Result<Boolean>>()
+    viewModelScope.launch {
+      try {
+        fhirEngine.load(Patient::class.java, id)
+        result.value = Result.success(true)
+      } catch (e: ResourceNotFoundException) {
+        result.value = Result.failure(e)
+      }
+    }
+    return result
+  }
+
+  fun clearPatientList() {
+    liveSearchedPaginatedPatients.value =
+      Pair(emptyList(), Pagination(totalItems = 0, pageSize = 1, currentPage = 0))
   }
 
   private fun getAssetFileAsString(filename: String): String {
