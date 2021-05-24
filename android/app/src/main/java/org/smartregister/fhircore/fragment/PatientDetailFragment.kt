@@ -89,16 +89,14 @@ class PatientDetailFragment : Fragment() {
     // load immunization data
     viewModel.searchImmunizations(patitentId)
 
-    viewModel
-      .liveSearchImmunization
-      .observe(
-        viewLifecycleOwner,
-        Observer<List<Immunization>> {
-          if (it.isNotEmpty()) {
-            updateVaccineStatus(it)
-          }
+    viewModel.liveSearchImmunization.observe(
+      viewLifecycleOwner,
+      Observer<List<Immunization>> {
+        if (it.isNotEmpty()) {
+          updateVaccineStatus(it)
         }
-      )
+      }
+    )
 
     return rootView
   }

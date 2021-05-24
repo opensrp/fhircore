@@ -204,7 +204,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     }
   }
 
-  fun isPatientExists(id: String) : LiveData<Result<Boolean>> {
+  fun isPatientExists(id: String): LiveData<Result<Boolean>> {
     val result = MutableLiveData<Result<Boolean>>()
     viewModelScope.launch {
       try {
@@ -219,10 +219,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
   fun clearPatientList() {
     liveSearchedPaginatedPatients.value =
-            Pair(
-                    emptyList(),
-                    Pagination(totalItems = 0, pageSize = 1, currentPage = 0)
-            )
+      Pair(emptyList(), Pagination(totalItems = 0, pageSize = 1, currentPage = 0))
   }
 
   private fun getAssetFileAsString(filename: String): String {

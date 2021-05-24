@@ -54,11 +54,10 @@ class PatientListFragment : Fragment() {
 
   private lateinit var patientListViewModel: PatientListViewModel
   private lateinit var fhirEngine: FhirEngine
-    private val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
+  private val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
   private var search: String? = null
   private val pageCount: Int = 7
   private var adapter: PatientItemRecyclerViewAdapter? = null
-
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -126,61 +125,73 @@ class PatientListFragment : Fragment() {
           override fun afterTextChanged(s: Editable?) {}
         }
       )
-      setUpBarcodeScanner()
+    setUpBarcodeScanner()
     super.onViewCreated(view, savedInstanceState)
   }
 
-    override fun onResume() {
-        patientListViewModel.searchResults(page = 0, pageSize = pageCount) // TODO: might need to move this to happen when a user clicks a button
-        adapter?.notifyDataSetChanged()
-        super.onResume()
-    }
+  override fun onResume() {
+    patientListViewModel.searchResults(
+      page = 0,
+      pageSize = pageCount
+    ) // TODO: might need to move this to happen when a user clicks a button
+    adapter?.notifyDataSetChanged()
+    super.onResume()
+  }
 
-    private fun setUpBarcodeScanner() {
-        val btnScanBarcode: View = requireActivity().findViewById(R.id.layout_scan_barcode)
-        requireActivity().supportFragmentManager.setFragmentResultListener(
-                "result",
-                this,
-                { _, result ->
-                    val barcode = result.getString("result")!!.trim()
-                    patientListViewModel.isPatientExists(barcode).observe(viewLifecycleOwner, {
-                        if (it.isSuccess) {
-                            launchPatientDetailActivity(barcode)
-                        } else {
-                            patientListViewModel.clearPatientList()
-                        }
-                        liveBarcodeScanningFragment.onDestroy()
-                    })
+  private fun setUpBarcodeScanner() {
+    val btnScanBarcode: View = requireActivity().findViewById(R.id.layout_scan_barcode)
+    requireActivity()
+      .supportFragmentManager
+      .setFragmentResultListener(
+        "result",
+        this,
+        { _, result ->
+          val barcode = result.getString("result")!!.trim()
+          patientListViewModel
+            .isPatientExists(barcode)
+            .observe(
+              viewLifecycleOwner,
+              {
+                if (it.isSuccess) {
+                  launchPatientDetailActivity(barcode)
+                } else {
+                  patientListViewModel.clearPatientList()
                 }
-        )
-
-        val requestPermissionLauncher = getBarcodePermissionLauncher()
-        btnScanBarcode.setOnClickListener {
-            launchBarcodeReader(requestPermissionLauncher)
+                liveBarcodeScanningFragment.onDestroy()
+              }
+            )
         }
-    }
+      )
 
-    private fun getBarcodePermissionLauncher(): ActivityResultLauncher<String> {
-        return registerForActivityResult(ActivityResultContracts.RequestPermission()
-        ) { isGranted: Boolean ->
-            if (isGranted) {
-                liveBarcodeScanningFragment.show(requireActivity().supportFragmentManager, "TAG")
-            } else {
-                Toast.makeText(requireContext(), "Camera permissions are needed to launch barcode reader!", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
+    val requestPermissionLauncher = getBarcodePermissionLauncher()
+    btnScanBarcode.setOnClickListener { launchBarcodeReader(requestPermissionLauncher) }
+  }
 
-    private fun launchBarcodeReader(requestPermissionLauncher: ActivityResultLauncher<String>) {
-        if (ContextCompat.checkSelfPermission(
-                        requireContext(),
-                        Manifest.permission.CAMERA
-                ) == PackageManager.PERMISSION_GRANTED) {
-                    liveBarcodeScanningFragment.show(requireActivity().supportFragmentManager, "TAG")
-        } else  {
-            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-        }
+  private fun getBarcodePermissionLauncher(): ActivityResultLauncher<String> {
+    return registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+      isGranted: Boolean ->
+      if (isGranted) {
+        liveBarcodeScanningFragment.show(requireActivity().supportFragmentManager, "TAG")
+      } else {
+        Toast.makeText(
+            requireContext(),
+            "Camera permissions are needed to launch barcode reader!",
+            Toast.LENGTH_LONG
+          )
+          .show()
+      }
     }
+  }
+
+  private fun launchBarcodeReader(requestPermissionLauncher: ActivityResultLauncher<String>) {
+    if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) ==
+        PackageManager.PERMISSION_GRANTED
+    ) {
+      liveBarcodeScanningFragment.show(requireActivity().supportFragmentManager, "TAG")
+    } else {
+      requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+    }
+  }
 
   // Click handler to help display the details about the patients from the list.
   private fun onNavigationClicked(direction: NavigationDirection, currentPage: Int) {
@@ -188,17 +199,15 @@ class PatientListFragment : Fragment() {
     patientListViewModel.searchResults(search, nextPage, pageCount)
   }
 
+  private fun launchPatientDetailActivity(patientLogicalId: String) {
+    val intent =
+      Intent(requireContext(), PatientDetailActivity::class.java).apply {
+        putExtra(PatientDetailFragment.ARG_ITEM_ID, patientLogicalId)
+      }
+    this.startActivity(intent)
+  }
 
-
-    private fun launchPatientDetailActivity(patientLogicalId: String) {
-        val intent =
-                Intent(requireContext(), PatientDetailActivity::class.java).apply {
-                    putExtra(PatientDetailFragment.ARG_ITEM_ID, patientLogicalId)
-                }
-        this.startActivity(intent)
-    }
-
-// Click handler to help display the details about the patients from the list.
+  // Click handler to help display the details about the patients from the list.
   private fun onPatientItemClicked(
     intention: Intention,
     patientItem: PatientListViewModel.PatientItem
@@ -228,8 +237,6 @@ class PatientListFragment : Fragment() {
     patientListViewModel.searchResults()
     Toast.makeText(requireContext(), "Syncing...", Toast.LENGTH_LONG).show()
   }
-
-
 
   enum class Intention {
     RECORD_VACCINE,
