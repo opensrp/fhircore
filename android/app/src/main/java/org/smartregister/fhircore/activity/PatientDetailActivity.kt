@@ -83,6 +83,6 @@ class PatientDetailActivity : AppCompatActivity() {
     }
 
   private fun editPatientDetails() {
-    fragment.editPatient();
+    fragment.editPatient()
   }
 }

@@ -79,9 +79,9 @@ class PatientListFragment : Fragment() {
 
     patientListViewModel =
       ViewModelProvider(
-          this,
-          PatientListViewModelFactory(requireActivity().application, fhirEngine)
-        )
+        this,
+        PatientListViewModelFactory(requireActivity().application, fhirEngine)
+      )
         .get(PatientListViewModel::class.java)
 
     patientListViewModel.liveSearchedPaginatedPatients.observe(
