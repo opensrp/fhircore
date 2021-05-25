@@ -28,6 +28,7 @@ import org.smartregister.fhircore.api.HapiFhirService.Companion.create
 import org.smartregister.fhircore.data.FhirPeriodicSyncWorker
 import org.smartregister.fhircore.data.HapiFhirResourceDataSource
 import org.smartregister.fhircore.util.SharedPreferencesHelper
+
 import timber.log.Timber
 import java.util.*
 import java.util.concurrent.TimeUnit
