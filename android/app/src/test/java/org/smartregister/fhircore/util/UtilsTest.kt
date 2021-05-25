@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.util
 
+import java.text.SimpleDateFormat
+import java.util.Date
+import org.apache.commons.lang3.time.DateUtils
 import org.joda.time.DateTime
 import org.junit.Assert
 import org.junit.Test
@@ -23,10 +26,20 @@ import org.junit.Test
 class UtilsTest {
 
   @Test
-  fun getAgeFromDate_CalculatesAge() {
+  fun `getAgeFromDate calculates correct age when current date is not null`() {
     Assert.assertEquals(
       1,
       Utils.getAgeFromDate("2020-01-01", DateTime.parse("2021-01-01").toLocalDate())
     )
+  }
+
+  @Test
+  fun `getAgeFromDate calculates correct age when current date is NULL`() {
+
+    val date: Date = DateUtils.addYears(Date(), -4)
+    val sdf = SimpleDateFormat("yyyy-MM-dd")
+    val fourYearsAgo = sdf.format(date)
+
+    Assert.assertEquals(4, Utils.getAgeFromDate(fourYearsAgo, null))
   }
 }
