@@ -16,12 +16,12 @@
 
 package org.smartregister.fhircore.util
 
+import java.text.SimpleDateFormat
+import java.util.Date
 import org.apache.commons.lang3.time.DateUtils
 import org.joda.time.DateTime
 import org.junit.Assert
 import org.junit.Test
-import java.text.SimpleDateFormat
-import java.util.Date
 
 class UtilsTest {
 

@@ -41,7 +41,7 @@ object Utils {
 
         override fun onTouch(v: View?, event: MotionEvent?): Boolean {
           if (event!!.action == MotionEvent.ACTION_UP &&
-            isDrawableClicked(drawablePosition, event, v as EditText)
+              isDrawableClicked(drawablePosition, event, v as EditText)
           ) {
             onClicked()
             return true
