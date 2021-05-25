@@ -115,74 +115,72 @@ class QuestionnaireActivity : AppCompatActivity() {
 
         // set first name
         questionnaire.item[0].item[0].item[0].apply {
-          initial = mutableListOf(
-            Questionnaire.QuestionnaireItemInitialComponent().setValue(
-              StringType(it.name[0].given[0].value)
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.name[0].given[0].value))
             )
-          )
         }
 
         // set family name
         questionnaire.item[0].item[0].item[1].apply {
-          initial = mutableListOf(
-            Questionnaire.QuestionnaireItemInitialComponent().setValue(
-              StringType(it.name[0].family)
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.name[0].family))
             )
-          )
         }
 
         // set birthdate
         questionnaire.item[0].item[1].apply {
-          initial = mutableListOf(
-            Questionnaire.QuestionnaireItemInitialComponent().setValue(
-              DateType(it.birthDate)
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent().setValue(DateType(it.birthDate))
             )
-          )
         }
 
         // set gender
         questionnaire.item[0].item[2].apply {
-          initial = mutableListOf(
-            Questionnaire.QuestionnaireItemInitialComponent().setValue(
-              StringType(it.gender.toCode())
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.gender.toCode()))
             )
-          )
         }
 
         // set telecom
         questionnaire.item[0].item[3].item[1].apply {
-          initial = mutableListOf(
-            Questionnaire.QuestionnaireItemInitialComponent().setValue(
-              StringType(it.telecom[0].value)
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.telecom[0].value))
             )
-          )
         }
 
         // set city
         questionnaire.item[0].item[4].item[0].apply {
-          initial = mutableListOf(
-            Questionnaire.QuestionnaireItemInitialComponent().setValue(
-              StringType(it.address[0].city)
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.address[0].city))
             )
-          )
         }
 
         // set country
         questionnaire.item[0].item[4].item[1].apply {
-          initial = mutableListOf(
-            Questionnaire.QuestionnaireItemInitialComponent().setValue(
-              StringType(it.address[0].country)
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.address[0].country))
             )
-          )
         }
 
         // set is-active
         questionnaire.item[0].item[5].apply {
-          initial = mutableListOf(
-            Questionnaire.QuestionnaireItemInitialComponent().setValue(
-              BooleanType(it.active)
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent().setValue(BooleanType(it.active))
             )
-          )
         }
       }
     }
