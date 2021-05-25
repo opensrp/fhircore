@@ -15,10 +15,6 @@ import retrofit2.http.POST
 interface OauthService {
 
     @FormUrlEncoded
-    @POST("protocol/openid-connect/token/refresh")
-    fun refreshToken(@FieldMap(encoded = false) body: Map<String, String>): OauthResponse
-
-    @FormUrlEncoded
     @POST("protocol/openid-connect/token")
     fun fetchToken(@FieldMap(encoded = false) body: Map<String, String>): Call<OauthResponse>
 

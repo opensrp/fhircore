@@ -61,7 +61,7 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
 
             if (!refreshToken.isNullOrEmpty()) {
                 runCatching {
-                    tokenResponse = AccountHelper().refreshToken(refreshToken)
+                    tokenResponse = AccountHelper().refreshToken(refreshToken)!!
 
                     accessToken = tokenResponse.accessToken
 
@@ -119,6 +119,8 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
         authTokenType: String?,
         options: Bundle?
     ): Bundle {
+        Timber.i("Updating credentials for ${account?.name}")
+
         val intent = Intent(
             myContext,
             AUTH_HANDLER_ACTIVITY
