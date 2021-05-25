@@ -38,17 +38,16 @@ import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.util.Utils.addOnDrawableClickedListener
 
 /** An activity representing a list of Patients. */
-class PatientListActivity : AppCompatActivity() {
+class PatientListActivity : BaseSimpleActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    Log.d("PatientListActivity", "onCreate() called")
-    setContentView(R.layout.activity_patient_list)
-
-    val toolbar = findViewById<Toolbar>(R.id.toolbar)
-    setSupportActionBar(toolbar)
 
     setUpViews()
+  }
+
+  override fun getContentLayout(): Int {
+    return R.layout.activity_patient_list
   }
 
   private fun setUpViews() {
@@ -75,15 +74,6 @@ class PatientListActivity : AppCompatActivity() {
         )
         editText.addOnDrawableClickedListener(Utils.DrawablePosition.DRAWABLE_RIGHT) { it.clear() }
       }
-    }
-
-    setupDrawerContent()
-  }
-
-  private fun setupDrawerContent() {
-    val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
-    findViewById<ImageButton>(R.id.btn_drawer_menu).setOnClickListener {
-      drawerLayout.openDrawer(GravityCompat.START)
     }
   }
 
