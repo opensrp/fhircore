@@ -67,7 +67,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       questionnaireActivity.supportFragmentManager.findFragmentByTag(
         QuestionnaireActivity.QUESTIONNAIRE_FRAGMENT_TAG
       ) as
-          QuestionnaireFragment
+        QuestionnaireFragment
 
     Assert.assertNotNull(fragment)
 
@@ -111,9 +111,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   private fun init() {
-    runBlocking {
-      FhirApplication.fhirEngine(FhirApplication.getContext()).save(TEST_PATIENT_1)
-    }
+    runBlocking { FhirApplication.fhirEngine(FhirApplication.getContext()).save(TEST_PATIENT_1) }
   }
 
   companion object {
@@ -123,23 +121,21 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     init {
       TEST_PATIENT_1.id = TEST_PATIENT_1_ID
       TEST_PATIENT_1.gender = Enumerations.AdministrativeGender.MALE
-      TEST_PATIENT_1.name = mutableListOf(
-        HumanName().apply {
-          addGiven("jane")
-          setFamily("Mc")
-        }
-      )
-      TEST_PATIENT_1.telecom = mutableListOf(
-        ContactPoint().apply {
-          value = "12345678"
-        }
-      )
-      TEST_PATIENT_1.address = mutableListOf(
-        Address().apply {
-          city = "Nairobi"
-          country = "Kenya"
-        }
-      )
+      TEST_PATIENT_1.name =
+        mutableListOf(
+          HumanName().apply {
+            addGiven("jane")
+            setFamily("Mc")
+          }
+        )
+      TEST_PATIENT_1.telecom = mutableListOf(ContactPoint().apply { value = "12345678" })
+      TEST_PATIENT_1.address =
+        mutableListOf(
+          Address().apply {
+            city = "Nairobi"
+            country = "Kenya"
+          }
+        )
       TEST_PATIENT_1.active = true
       TEST_PATIENT_1.birthDate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25")
     }
