@@ -153,6 +153,14 @@ dependencies {
     kapt deps.room.compiler
 
     testImplementation deps.junit
+    testImplementation deps.robolectric
+    testImplementation deps.power_mock.module_junit4
+    testImplementation deps.power_mock.module_junit4_rule
+    testImplementation deps.power_mock.powermock_api_mockito2
+    testImplementation deps.power_mock.powermock_classloading_xstream
+    testImplementation deps.power_mock.powermock_reflect
+    testImplementation deps.atsl.ext_junit
+    testImplementation deps.atsl.ext_junit_ktx
 }
 
 task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'createDebugCoverageReport']) {
