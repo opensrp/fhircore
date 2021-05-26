@@ -2,7 +2,6 @@ package org.smartregister.fhircore.activity
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageButton
@@ -14,16 +13,14 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.get
-import com.google.android.fhir.FhirEngine
 import com.google.android.material.navigation.NavigationView
-import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.viewmodel.BaseViewModel
 import timber.log.Timber
 
 
-abstract class BaseSimpleActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+abstract class BaseSimpleActivity : AppCompatActivity(),
+    NavigationView.OnNavigationItemSelectedListener {
     private lateinit var viewModel: BaseViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -91,7 +88,7 @@ abstract class BaseSimpleActivity : AppCompatActivity(), NavigationView.OnNaviga
     private fun setMenuCounter(@IdRes itemId: Int, count: Int) {
         val counter = getNavigationView().menu.findItem(itemId).actionView as TextView
         counter.text =
-             if (count > 0) count.toString() else null
+            if (count > 0) count.toString() else null
     }
 
     private fun initClientCountObserver() {
@@ -103,7 +100,7 @@ abstract class BaseSimpleActivity : AppCompatActivity(), NavigationView.OnNaviga
     }
 
     // TODO look into ways on how to improve performance for this
-    private fun loadCounts(){
+    private fun loadCounts() {
         viewModel.loadClientCount()
     }
 }
