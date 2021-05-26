@@ -19,6 +19,7 @@ package org.smartregister.fhircore.robolectric.activity
 import android.app.Activity
 import android.content.Intent
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import java.text.SimpleDateFormat
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.ContactPoint
@@ -34,7 +35,6 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.robolectric.shadow.FhirApplicationShadow
-import java.text.SimpleDateFormat
 
 @Config(shadows = [FhirApplicationShadow::class])
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
@@ -46,11 +46,12 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     init()
 
-    val intent = Intent().apply {
-      putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
-      putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
-      putExtra(PatientDetailFragment.ARG_ITEM_ID, TEST_PATIENT_1_ID)
-    }
+    val intent =
+      Intent().apply {
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
+        putExtra(PatientDetailFragment.ARG_ITEM_ID, TEST_PATIENT_1_ID)
+      }
     questionnaireActivity =
       Robolectric.buildActivity(QuestionnaireActivity::class.java, intent).create().resume().get()
   }
@@ -62,9 +63,11 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testVerifyPrePopulatedQuestionnaire() {
-    val fragment = questionnaireActivity.supportFragmentManager.findFragmentByTag(
-      QuestionnaireActivity.QUESTIONNAIRE_FRAGMENT_TAG
-    ) as QuestionnaireFragment
+    val fragment =
+      questionnaireActivity.supportFragmentManager.findFragmentByTag(
+        QuestionnaireActivity.QUESTIONNAIRE_FRAGMENT_TAG
+      ) as
+          QuestionnaireFragment
 
     Assert.assertNotNull(fragment)
 
