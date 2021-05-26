@@ -14,27 +14,25 @@ import org.smartregister.fhircore.util.Utils
 import timber.log.Timber
 
 class BaseViewModel(application: Application) : AndroidViewModel(application) {
-    private var fhirEngine: FhirEngine = FhirApplication.fhirEngine(application)
+  private var fhirEngine: FhirEngine = FhirApplication.fhirEngine(application)
 
-    var covaxClientsCount = MutableLiveData(0)
+  var covaxClientsCount = MutableLiveData(0)
 
-    fun loadClientCount() {
-        Timber.d("Loading client counts")
+  fun loadClientCount() {
+    Timber.d("Loading client counts")
 
-        viewModelScope.launch {
-            var p: List<Patient> = fhirEngine.search {
-                Utils.addBasePatientFilter(this)
+    viewModelScope.launch {
+      var p: List<Patient> =
+        fhirEngine.search {
+          Utils.addBasePatientFilter(this)
 
-                apply {
-
-                }
-                sort(Patient.GIVEN, Order.ASCENDING)
-            }
-
-            covaxClientsCount.value =
-                p.size //TODO use a proper count query after Google devs respond
-
-            Timber.d("Loaded %s clients from db", p.size)
+          apply {}
+          sort(Patient.GIVEN, Order.ASCENDING)
         }
+
+      covaxClientsCount.value = p.size // TODO use a proper count query after Google devs respond
+
+      Timber.d("Loaded %s clients from db", p.size)
     }
+  }
 }

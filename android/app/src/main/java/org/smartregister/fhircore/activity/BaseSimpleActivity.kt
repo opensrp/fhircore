@@ -18,89 +18,88 @@ import org.smartregister.fhircore.R
 import org.smartregister.fhircore.viewmodel.BaseViewModel
 import timber.log.Timber
 
+abstract class BaseSimpleActivity :
+  AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+  private lateinit var viewModel: BaseViewModel
 
-abstract class BaseSimpleActivity : AppCompatActivity(),
-    NavigationView.OnNavigationItemSelectedListener {
-    private lateinit var viewModel: BaseViewModel
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    Timber.d("Starting BaseSimpleActivity")
 
-        Timber.d("Starting BaseSimpleActivity")
+    setContentView(getContentLayout())
 
-        setContentView(getContentLayout())
+    Timber.d("Now setting toolbar and navbar")
 
-        Timber.d("Now setting toolbar and navbar")
+    val toolbar = findViewById<Toolbar>(R.id.toolbar)
+    setSupportActionBar(toolbar)
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
+    setNavigationViewListener()
 
-        setNavigationViewListener()
+    Timber.d("Now init viewmodel")
 
-        Timber.d("Now init viewmodel")
+    viewModel = ViewModelProvider(this).get(BaseViewModel::class.java)
 
-        viewModel = ViewModelProvider(this).get(BaseViewModel::class.java)
+    Timber.d("Now setting drawer")
+    setupDrawer()
 
-        Timber.d("Now setting drawer")
-        setupDrawer()
+    initClientCountObserver()
 
-        initClientCountObserver()
+    loadCounts()
+  }
 
-        loadCounts()
+  abstract fun getContentLayout(): Int
+
+  protected fun getDrawerLayout(): DrawerLayout {
+    return findViewById(R.id.drawer_layout)
+  }
+
+  override fun onNavigationItemSelected(item: MenuItem): Boolean {
+    Timber.i("Selected Navbar item %s", item.title)
+
+    when (item.itemId) {
+      R.id.menu_item_clients -> {
+        startActivity(Intent(baseContext, PatientListActivity::class.java))
+      }
     }
 
-    abstract fun getContentLayout(): Int
+    getDrawerLayout().closeDrawer(GravityCompat.START)
+    return true
+  }
 
-    protected fun getDrawerLayout(): DrawerLayout {
-        return findViewById(R.id.drawer_layout)
+  protected fun setNavigationViewListener() {
+    val navigationView = getNavigationView()
+    navigationView.setNavigationItemSelectedListener(this)
+  }
+
+  protected fun getNavigationView(): NavigationView {
+    return findViewById<View>(R.id.nav_view) as NavigationView
+  }
+
+  protected fun setupDrawer() {
+    val drawerLayout = getDrawerLayout()
+
+    findViewById<ImageButton>(R.id.btn_drawer_menu).setOnClickListener {
+      drawerLayout.openDrawer(GravityCompat.START)
     }
+  }
 
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        Timber.i("Selected Navbar item %s", item.title)
+  private fun setMenuCounter(@IdRes itemId: Int, count: Int) {
+    val counter = getNavigationView().menu.findItem(itemId).actionView as TextView
+    counter.text = if (count > 0) count.toString() else null
+  }
 
-        when (item.itemId) {
-            R.id.menu_item_clients -> {
-                startActivity(Intent(baseContext, PatientListActivity::class.java))
-            }
-        }
+  private fun initClientCountObserver() {
+    Timber.d("Observing client counts livedata")
 
-        getDrawerLayout().closeDrawer(GravityCompat.START)
-        return true
-    }
+    viewModel.covaxClientsCount.observe(
+      this,
+      Observer { event -> setMenuCounter(R.id.menu_item_clients, event) }
+    )
+  }
 
-    protected fun setNavigationViewListener() {
-        val navigationView = getNavigationView()
-        navigationView.setNavigationItemSelectedListener(this)
-    }
-
-    protected fun getNavigationView(): NavigationView {
-        return findViewById<View>(R.id.nav_view) as NavigationView
-    }
-
-    protected fun setupDrawer() {
-        val drawerLayout = getDrawerLayout()
-
-        findViewById<ImageButton>(R.id.btn_drawer_menu).setOnClickListener {
-            drawerLayout.openDrawer(GravityCompat.START)
-        }
-    }
-
-    private fun setMenuCounter(@IdRes itemId: Int, count: Int) {
-        val counter = getNavigationView().menu.findItem(itemId).actionView as TextView
-        counter.text =
-            if (count > 0) count.toString() else null
-    }
-
-    private fun initClientCountObserver() {
-        Timber.d("Observing client counts livedata")
-
-        viewModel.covaxClientsCount.observe(this, Observer { event ->
-            setMenuCounter(R.id.menu_item_clients, event)
-        })
-    }
-
-    // TODO look into ways on how to improve performance for this
-    private fun loadCounts() {
-        viewModel.loadClientCount()
-    }
+  // TODO look into ways on how to improve performance for this
+  private fun loadCounts() {
+    viewModel.loadClientCount()
+  }
 }
