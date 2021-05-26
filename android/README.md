@@ -22,3 +22,10 @@ Add your token details in this file ~/.gradle/gradle.properties in the format be
 GITHUB_USER=Xxxx
 GITHUB_PERSONAL_ACCESS_TOKEN=xxxxxx
 ```
+
+or export them to your system environment variables:
+
+```
+export GITHUB_USER=Xxxx
+export GITHUB_PERSONAL_ACCESS_TOKEN=xxxxxx
+```
