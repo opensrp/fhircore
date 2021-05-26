@@ -65,9 +65,9 @@ class FhirApplicationShadow : ShadowApplication() {
     val constructor = clazz.getDeclaredConstructor(FhirDataSource::class.java, Context::class.java)
     constructor.isAccessible = true
     val builder = constructor.newInstance(dataSource, ApplicationProvider.getApplicationContext())
-    val obj = Class.forName("com.google.android.fhir.FhirServices").cast(
-      builder.javaClass.getDeclaredMethod("build").invoke(builder)
-    )
+    val obj =
+      Class.forName("com.google.android.fhir.FhirServices")
+        .cast(builder.javaClass.getDeclaredMethod("build").invoke(builder))
     val field = obj?.javaClass?.getDeclaredField("fhirEngine")
     field?.isAccessible = true
     return field?.get(obj) as FhirEngine
