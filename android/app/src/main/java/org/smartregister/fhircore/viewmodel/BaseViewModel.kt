@@ -23,12 +23,12 @@ class BaseViewModel(application: Application) : AndroidViewModel(application) {
 
     viewModelScope.launch {
       var p: List<Patient> =
-        fhirEngine.search {
-          Utils.addBasePatientFilter(this)
+          fhirEngine.search {
+            Utils.addBasePatientFilter(this)
 
-          apply {}
-          sort(Patient.GIVEN, Order.ASCENDING)
-        }
+            apply {}
+            sort(Patient.GIVEN, Order.ASCENDING)
+          }
 
       covaxClientsCount.value = p.size // TODO use a proper count query after Google devs respond
 
