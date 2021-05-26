@@ -35,7 +35,7 @@ object Utils {
     return age.getYears()
   }
 
-  fun addBasePatientFilter(search: Search){
+  fun addBasePatientFilter(search: Search) {
     search.filter(Patient.ADDRESS_CITY) {
       prefix = ParamPrefixEnum.EQUAL
       value = "NAIROBI"
