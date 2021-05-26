@@ -22,10 +22,10 @@ import org.smartregister.fhircore.robolectric.RobolectricTest
 
 abstract class ActivityRobolectricTest : RobolectricTest() {
 
-    @After
-    fun testDown() {
-        getActivity().finish()
-    }
+  @After
+  fun testDown() {
+    getActivity().finish()
+  }
 
-    abstract fun getActivity(): Activity
+  abstract fun getActivity(): Activity
 }
