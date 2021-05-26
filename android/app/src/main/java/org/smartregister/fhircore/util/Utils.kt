@@ -19,6 +19,9 @@ package org.smartregister.fhircore.util
 import android.view.MotionEvent
 import android.view.View
 import android.widget.EditText
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
+import com.google.android.fhir.search.Search
+import org.hl7.fhir.r4.model.Patient
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.joda.time.ReadablePartial
@@ -30,6 +33,13 @@ object Utils {
     val date: DateTime = DateTime.parse(dateOfBirth)
     val age: Years = Years.yearsBetween(date.toLocalDate(), currentDate ?: LocalDate.now())
     return age.getYears()
+  }
+
+  fun addBasePatientFilter(search: Search){
+    search.filter(Patient.ADDRESS_CITY) {
+      prefix = ParamPrefixEnum.EQUAL
+      value = "NAIROBI"
+    }
   }
 
   fun EditText.addOnDrawableClickedListener(

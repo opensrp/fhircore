@@ -1,5 +1,6 @@
 package org.smartregister.fhircore.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -32,22 +33,23 @@ abstract class BaseSimpleActivity : AppCompatActivity(), NavigationView.OnNaviga
 
         setContentView(getContentLayout())
 
-        Timber.d("Now setting toolbar")
+        Timber.d("Now setting toolbar and navbar")
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
 
-        Timber.d("Now setting navbar")
         setNavigationViewListener()
+
+        Timber.d("Now init viewmodel")
+
+        viewModel = ViewModelProvider(this).get(BaseViewModel::class.java)
 
         Timber.d("Now setting drawer")
         setupDrawer()
 
-        Timber.d("Now init fhirEngine")
-
-        viewModel = ViewModelProvider(this).get(BaseViewModel::class.java)
-
         initClientCountObserver()
+
+        loadCounts()
     }
 
     abstract fun getContentLayout(): Int
@@ -60,20 +62,13 @@ abstract class BaseSimpleActivity : AppCompatActivity(), NavigationView.OnNaviga
         Timber.i("Selected Navbar item %s", item.title)
 
         when (item.itemId) {
-//            R.id.???? -> {
-//            }
+            R.id.menu_item_clients -> {
+                startActivity(Intent(baseContext, PatientListActivity::class.java))
+            }
         }
-
-        viewModel.loadClientCount() // TODO move this to on sync or add
 
         getDrawerLayout().closeDrawer(GravityCompat.START)
         return true
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        return super.onCreateOptionsMenu(menu)
-
-        Timber.d("Options menu created")
     }
 
     protected fun setNavigationViewListener() {
@@ -100,10 +95,15 @@ abstract class BaseSimpleActivity : AppCompatActivity(), NavigationView.OnNaviga
     }
 
     private fun initClientCountObserver() {
-        Timber.d("Observing client counts live")
+        Timber.d("Observing client counts livedata")
 
         viewModel.covaxClientsCount.observe(this, Observer { event ->
             setMenuCounter(R.id.menu_item_clients, event)
         })
+    }
+
+    // TODO look into ways on how to improve performance for this
+    private fun loadCounts(){
+        viewModel.loadClientCount()
     }
 }

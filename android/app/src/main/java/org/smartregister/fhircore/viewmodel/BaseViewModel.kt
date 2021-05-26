@@ -14,9 +14,11 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.FhirApplication
 import com.google.android.fhir.search.search
+import com.google.common.cache.LoadingCache
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.util.Utils
 import timber.log.Timber
 
 class BaseViewModel(application: Application) : AndroidViewModel(application) {
@@ -25,12 +27,11 @@ class BaseViewModel(application: Application) : AndroidViewModel(application) {
     var covaxClientsCount = MutableLiveData(0)
 
     fun loadClientCount() {
+        Timber.d("Loading client counts")
+
         viewModelScope.launch {
             var p: List<Patient> = fhirEngine.search {
-                filter(Patient.ADDRESS_CITY) {
-                    prefix = ParamPrefixEnum.EQUAL
-                    value = "NAIROBI"
-                }
+                Utils.addBasePatientFilter(this)
 
                 apply {
 
@@ -38,9 +39,9 @@ class BaseViewModel(application: Application) : AndroidViewModel(application) {
                 sort(Patient.GIVEN, Order.ASCENDING)
             }
 
-            Timber.i(p.toString())
+            covaxClientsCount.value = p.size //TODO use a proper count query after Google devs respond
 
-            covaxClientsCount.value = covaxClientsCount.value?.plus(1) //p.size //TODO use a proper count query
+            Timber.d("Loaded %s clients from db", p.size)
         }
     }
 }
