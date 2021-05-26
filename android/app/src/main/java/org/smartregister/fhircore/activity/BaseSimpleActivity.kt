@@ -19,7 +19,7 @@ import org.smartregister.fhircore.viewmodel.BaseViewModel
 import timber.log.Timber
 
 abstract class BaseSimpleActivity :
-    AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+  AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
   private lateinit var viewModel: BaseViewModel
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -93,7 +93,9 @@ abstract class BaseSimpleActivity :
     Timber.d("Observing client counts livedata")
 
     viewModel.covaxClientsCount.observe(
-        this, Observer { event -> setMenuCounter(R.id.menu_item_clients, event) })
+      this,
+      Observer { event -> setMenuCounter(R.id.menu_item_clients, event) }
+    )
   }
 
   // TODO look into ways on how to improve performance for this
