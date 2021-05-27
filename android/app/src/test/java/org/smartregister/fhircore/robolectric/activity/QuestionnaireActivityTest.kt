@@ -115,8 +115,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   companion object {
-    private const val TEST_PATIENT_1_ID = "test_patient_1"
-    private var TEST_PATIENT_1 = Patient()
+    const val TEST_PATIENT_1_ID = "test_patient_1"
+    var TEST_PATIENT_1 = Patient()
 
     init {
       TEST_PATIENT_1.id = TEST_PATIENT_1_ID

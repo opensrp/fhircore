@@ -49,6 +49,7 @@ versions.ktlint = '0.41.0'
 versions.joda_time = '2.10.5'
 versions.timber = '4.7.1'
 versions.power_mock = '2.0.2'
+versions.fragment_testing = '1.2.5'
 ext.versions = versions
 
 def deps = [:]
@@ -125,4 +126,5 @@ power_mock.powermock_api_mockito2 = "org.powermock:powermock-api-mockito2:$versi
 power_mock.powermock_classloading_xstream = "org.powermock:powermock-classloading-xstream:$versions.power_mock"
 power_mock.powermock_reflect = "org.powermock:powermock-reflect:$versions.power_mock"
 deps.power_mock = power_mock
+deps.fragment_testing = "androidx.fragment:fragment-testing:$versions.fragment_testing"
 ext.deps = deps
