@@ -114,7 +114,7 @@ class QuestionnaireActivity : AppCompatActivity() {
       patient?.let {
 
         // set first name
-        questionnaire.item[0].item[0].item[0].apply {
+        questionnaire.find("PR-name-text")?.apply {
           initial =
             mutableListOf(
               Questionnaire.QuestionnaireItemInitialComponent()
@@ -123,7 +123,7 @@ class QuestionnaireActivity : AppCompatActivity() {
         }
 
         // set family name
-        questionnaire.item[0].item[0].item[1].apply {
+        questionnaire.find("PR-name-family")?.apply {
           initial =
             mutableListOf(
               Questionnaire.QuestionnaireItemInitialComponent()
@@ -132,7 +132,7 @@ class QuestionnaireActivity : AppCompatActivity() {
         }
 
         // set birthdate
-        questionnaire.item[0].item[1].apply {
+        questionnaire.find("patient-0-birth-date")?.apply {
           initial =
             mutableListOf(
               Questionnaire.QuestionnaireItemInitialComponent().setValue(DateType(it.birthDate))
@@ -140,7 +140,7 @@ class QuestionnaireActivity : AppCompatActivity() {
         }
 
         // set gender
-        questionnaire.item[0].item[2].apply {
+        questionnaire.find("patient-0-gender")?.apply {
           initial =
             mutableListOf(
               Questionnaire.QuestionnaireItemInitialComponent()
@@ -149,7 +149,7 @@ class QuestionnaireActivity : AppCompatActivity() {
         }
 
         // set telecom
-        questionnaire.item[0].item[3].item[1].apply {
+        questionnaire.find("PR-telecom-value")?.apply {
           initial =
             mutableListOf(
               Questionnaire.QuestionnaireItemInitialComponent()
@@ -158,7 +158,7 @@ class QuestionnaireActivity : AppCompatActivity() {
         }
 
         // set city
-        questionnaire.item[0].item[4].item[0].apply {
+        questionnaire.find("PR-address-city")?.apply {
           initial =
             mutableListOf(
               Questionnaire.QuestionnaireItemInitialComponent()
@@ -167,7 +167,7 @@ class QuestionnaireActivity : AppCompatActivity() {
         }
 
         // set country
-        questionnaire.item[0].item[4].item[1].apply {
+        questionnaire.find("PR-address-country")?.apply {
           initial =
             mutableListOf(
               Questionnaire.QuestionnaireItemInitialComponent()
@@ -176,7 +176,7 @@ class QuestionnaireActivity : AppCompatActivity() {
         }
 
         // set is-active
-        questionnaire.item[0].item[5].apply {
+        questionnaire.find("PR-active")?.apply {
           initial =
             mutableListOf(
               Questionnaire.QuestionnaireItemInitialComponent().setValue(BooleanType(it.active))
@@ -186,6 +186,29 @@ class QuestionnaireActivity : AppCompatActivity() {
     }
 
     return FhirContext.forR4().newJsonParser().encodeResourceToString(questionnaire)
+  }
+
+  private fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {
+    return item.find(linkId, null)
+  }
+
+  private fun List<Questionnaire.QuestionnaireItemComponent>.find(
+    linkId: String,
+    default: Questionnaire.QuestionnaireItemComponent?
+  ): Questionnaire.QuestionnaireItemComponent? {
+    var result = default
+    run loop@{
+      forEach {
+        if (it.linkId == linkId) {
+          result = it
+          return@loop
+        } else if (it.item.isNotEmpty()) {
+          result = it.item.find(linkId, result)
+        }
+      }
+    }
+
+    return result
   }
 
   companion object {
