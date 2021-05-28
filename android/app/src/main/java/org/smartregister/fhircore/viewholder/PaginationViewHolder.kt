@@ -21,7 +21,11 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.domain.*
+import org.smartregister.fhircore.domain.Pagination
+import org.smartregister.fhircore.domain.currentPageNumber
+import org.smartregister.fhircore.domain.hasNextPage
+import org.smartregister.fhircore.domain.hasPreviousPage
+import org.smartregister.fhircore.domain.totalPages
 import org.smartregister.fhircore.fragment.NavigationDirection
 
 class PaginationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

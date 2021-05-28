@@ -17,6 +17,7 @@
 
 <androidx.appcompat.widget.LinearLayoutCompat
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingStart="16dp"
@@ -29,8 +30,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:padding="16dp">
-
-        <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+        <androidx.appcompat.widget.LinearLayoutCompat
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:paddingStart="16dp"

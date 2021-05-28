@@ -27,13 +27,18 @@ import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.BuildConfig
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.PATCH
+import retrofit2.http.PUT
+import retrofit2.http.Path
+import retrofit2.http.Url
 
 /** hapi.fhir.org API communication via Retrofit */
 interface HapiFhirService {
 
-  @GET
-  suspend fun getResource(@Url url: String): Bundle
+  @GET suspend fun getResource(@Url url: String): Bundle
   @PUT("{type}/{id}")
   suspend fun insertResource(
     @Path("type") type: String,
