@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.fragment
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -27,6 +28,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.adapter.ObservationItemRecyclerViewAdapter
 import org.smartregister.fhircore.util.SharedPrefrencesHelper
 import org.smartregister.fhircore.util.Utils
@@ -41,6 +43,7 @@ class PatientDetailFragment : Fragment() {
 
   var patitentId: String? = null
   lateinit var rootView: View
+  lateinit var viewModel: PatientListViewModel
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -57,7 +60,7 @@ class PatientDetailFragment : Fragment() {
 
     val fhirEngine: FhirEngine = FhirApplication.fhirEngine(requireContext())
 
-    val viewModel: PatientListViewModel =
+    viewModel =
       ViewModelProvider(
           this,
           PatientListViewModelFactory(this.requireActivity().application, fhirEngine)
@@ -119,6 +122,19 @@ class PatientDetailFragment : Fragment() {
           patient?.dob?.let { it1 -> Utils.getAgeFromDate(it1) }
       activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
       activity?.findViewById<TextView>(R.id.id_patient_number)?.text = "ID: " + patient.logicalId
+    }
+  }
+
+  fun editPatient() {
+
+    viewModel.liveSearchPatient.value?.let {
+      startActivity(
+        Intent(requireContext(), QuestionnaireActivity::class.java).apply {
+          putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
+          putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
+          putExtra(ARG_ITEM_ID, it.logicalId)
+        }
+      )
     }
   }
 

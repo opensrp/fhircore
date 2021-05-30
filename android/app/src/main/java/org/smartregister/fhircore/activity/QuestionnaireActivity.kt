@@ -24,14 +24,21 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
+import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.BooleanType
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.StringType
+import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 class QuestionnaireActivity : AppCompatActivity() {
@@ -50,7 +57,7 @@ class QuestionnaireActivity : AppCompatActivity() {
     if (savedInstanceState == null) {
       val fragment = QuestionnaireFragment()
       fragment.arguments =
-        bundleOf(QuestionnaireFragment.BUNDLE_KEY_QUESTIONNAIRE to viewModel.questionnaire)
+        bundleOf(QuestionnaireFragment.BUNDLE_KEY_QUESTIONNAIRE to getQuestionnaire())
 
       supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
     }
@@ -86,11 +93,122 @@ class QuestionnaireActivity : AppCompatActivity() {
 
     val patient = ResourceMapper.extract(questionnaire, questionnaireResponse) as Patient
 
-    patient.id = patient.name.first().family
-    // FhirApplication.fhirEngine(applicationContext).save(patient)
+    patient.id =
+      intent.getStringExtra(PatientDetailFragment.ARG_ITEM_ID) ?: patient.name.first().family
+
     viewModel.savePatient(patient)
 
     this.startActivity(Intent(this, PatientListActivity::class.java))
+  }
+
+  private fun getQuestionnaire(): String {
+    val questionnaire =
+      FhirContext.forR4().newJsonParser().parseResource(viewModel.questionnaire) as Questionnaire
+
+    intent.getStringExtra(PatientDetailFragment.ARG_ITEM_ID)?.let {
+      var patient: Patient? = null
+      viewModel.viewModelScope.launch {
+        patient = FhirApplication.fhirEngine(applicationContext).load(Patient::class.java, it)
+      }
+
+      patient?.let {
+
+        // set first name
+        questionnaire.find("PR-name-text")?.apply {
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.name[0].given[0].value))
+            )
+        }
+
+        // set family name
+        questionnaire.find("PR-name-family")?.apply {
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.name[0].family))
+            )
+        }
+
+        // set birthdate
+        questionnaire.find("patient-0-birth-date")?.apply {
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent().setValue(DateType(it.birthDate))
+            )
+        }
+
+        // set gender
+        questionnaire.find("patient-0-gender")?.apply {
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.gender.toCode()))
+            )
+        }
+
+        // set telecom
+        questionnaire.find("PR-telecom-value")?.apply {
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.telecom[0].value))
+            )
+        }
+
+        // set city
+        questionnaire.find("PR-address-city")?.apply {
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.address[0].city))
+            )
+        }
+
+        // set country
+        questionnaire.find("PR-address-country")?.apply {
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.address[0].country))
+            )
+        }
+
+        // set is-active
+        questionnaire.find("PR-active")?.apply {
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent().setValue(BooleanType(it.active))
+            )
+        }
+      }
+    }
+
+    return FhirContext.forR4().newJsonParser().encodeResourceToString(questionnaire)
+  }
+
+  private fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {
+    return item.find(linkId, null)
+  }
+
+  private fun List<Questionnaire.QuestionnaireItemComponent>.find(
+    linkId: String,
+    default: Questionnaire.QuestionnaireItemComponent?
+  ): Questionnaire.QuestionnaireItemComponent? {
+    var result = default
+    run loop@{
+      forEach {
+        if (it.linkId == linkId) {
+          result = it
+          return@loop
+        } else if (it.item.isNotEmpty()) {
+          result = it.item.find(linkId, result)
+        }
+      }
+    }
+
+    return result
   }
 
   companion object {
