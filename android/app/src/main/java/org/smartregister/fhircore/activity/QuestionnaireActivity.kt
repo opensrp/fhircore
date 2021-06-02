@@ -88,7 +88,8 @@ class QuestionnaireActivity : AppCompatActivity() {
 
     patient.id = patient.name.first().family
     // FhirApplication.fhirEngine(applicationContext).save(patient)
-    viewModel.savePatient(patient)
+   // viewModel.savePatient(patient)
+    val list = ResourceMapper.populate(questionnaire , patient)
 
     this.startActivity(Intent(this, PatientListActivity::class.java))
   }
