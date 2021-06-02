@@ -22,11 +22,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
+import java.util.Calendar
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.PositiveIntType
@@ -140,6 +142,14 @@ class PatientDetailFragment : Fragment() {
               nextDoseNumber,
               nextVaccineDate
             )
+          val cal: Calendar = Calendar.getInstance()
+          cal.add(Calendar.DATE, -28)
+          val overDueStart = cal.time
+          if (immunization.recorded.before(overDueStart)) {
+            tvVaccineSecondDose.setTextColor(
+              ContextCompat.getColor(requireContext(), R.color.status_red)
+            )
+          }
         }
       }
     }

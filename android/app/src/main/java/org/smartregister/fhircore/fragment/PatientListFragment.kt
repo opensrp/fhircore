@@ -38,6 +38,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.mlkit.md.LiveBarcodeScanningFragment
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
@@ -58,12 +59,14 @@ class PatientListFragment : Fragment() {
   private var search: String? = null
   private val pageCount: Int = 7
   private var adapter: PatientItemRecyclerViewAdapter? = null
+  private lateinit var btnOverdue: SwitchMaterial
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View? {
+    btnOverdue = requireActivity().findViewById(R.id.btn_show_overdue_patients)
     return inflater.inflate(R.layout.fragment_patient_list, container, false)
   }
 
@@ -111,6 +114,15 @@ class PatientListFragment : Fragment() {
       }
     )
 
+    btnOverdue.setOnCheckedChangeListener { buttonView, isChecked ->
+      patientListViewModel.searchResults(
+        requireActivity().findViewById<EditText>(R.id.edit_text_search).text.toString(),
+        0,
+        pageCount,
+        isChecked
+      )
+    }
+
     requireActivity()
       .findViewById<EditText>(R.id.edit_text_search)
       .addTextChangedListener(
@@ -119,7 +131,7 @@ class PatientListFragment : Fragment() {
 
           override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             search = s?.toString()
-            patientListViewModel.searchResults(s?.toString(), 0, pageCount)
+            patientListViewModel.searchResults(s?.toString(), 0, pageCount, btnOverdue.isChecked)
           }
 
           override fun afterTextChanged(s: Editable?) {}
@@ -132,7 +144,8 @@ class PatientListFragment : Fragment() {
   override fun onResume() {
     patientListViewModel.searchResults(
       page = 0,
-      pageSize = pageCount
+      pageSize = pageCount,
+      showOverdue = btnOverdue.isChecked
     ) // TODO: might need to move this to happen when a user clicks a button
     adapter?.notifyDataSetChanged()
     super.onResume()
@@ -196,7 +209,7 @@ class PatientListFragment : Fragment() {
   // Click handler to help display the details about the patients from the list.
   private fun onNavigationClicked(direction: NavigationDirection, currentPage: Int) {
     val nextPage = currentPage + if (direction == NavigationDirection.NEXT) 1 else -1
-    patientListViewModel.searchResults(search, nextPage, pageCount)
+    patientListViewModel.searchResults(search, nextPage, pageCount, btnOverdue.isChecked)
   }
 
   private fun launchPatientDetailActivity(patientLogicalId: String) {

@@ -73,7 +73,12 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     MutableLiveData<List<Immunization>>()
   }
 
-  fun searchResults(query: String? = null, page: Int = 0, pageSize: Int = 10) {
+  fun searchResults(
+    query: String? = null,
+    page: Int = 0,
+    pageSize: Int = 10,
+    showOverdue: Boolean = true
+  ) {
     viewModelScope.launch {
       var searchResults: List<Patient> =
         fhirEngine.search {
@@ -86,7 +91,10 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
         }
 
       searchResults =
-        searchResults.filter { it.nameMatchesFilter(query) || it.idMatchesFilter(query) }
+        searchResults.filter {
+          (it.nameMatchesFilter(query) || it.idMatchesFilter(query)) &&
+            it.canAddOverdue(showOverdue)
+        }
       var startIndex = page * pageSize
       startIndex = if (searchResults.size > startIndex) startIndex else 0
       var endIndex = pageSize + (page * pageSize)
@@ -140,6 +148,19 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
   protected fun Patient.idMatchesFilter(filter: String?): Boolean {
     return (filter == null || filter.equals(this.idElement.idPart))
+  }
+
+  protected suspend fun Patient.canAddOverdue(showOverdue: Boolean): Boolean {
+    return if (showOverdue) {
+      true
+    } else {
+      val cal: Calendar = Calendar.getInstance()
+      cal.add(Calendar.DATE, -28)
+      val overDueStart: Date = cal.time
+      val searchResults: List<Immunization> =
+        fhirEngine.search { filter(Immunization.PATIENT) { value = id } }
+      !(searchResults.size == 1 && searchResults[0].recorded.before(overDueStart))
+    }
   }
 
   /** Basic search for immunizations */
