@@ -38,7 +38,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
-import com.google.mlkit.md.LiveBarcodeScanningFragment
+import com.google.android.fhir.datacapture.views.barcode.mlkit.md.LiveBarcodeScanningFragment
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.PATIENT_ID
