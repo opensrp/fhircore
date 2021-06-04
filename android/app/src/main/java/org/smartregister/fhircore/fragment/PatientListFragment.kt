@@ -255,4 +255,8 @@ class PatientListFragment : Fragment() {
     RECORD_VACCINE,
     VIEW
   }
+
+  companion object {
+    val SECOND_DOSE_OVERDUE_DAYS = -28
+  }
 }

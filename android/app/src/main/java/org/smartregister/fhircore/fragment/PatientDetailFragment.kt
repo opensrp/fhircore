@@ -143,7 +143,7 @@ class PatientDetailFragment : Fragment() {
               nextVaccineDate
             )
           val cal: Calendar = Calendar.getInstance()
-          cal.add(Calendar.DATE, -28)
+          cal.add(Calendar.DATE, PatientListFragment.SECOND_DOSE_OVERDUE_DAYS)
           val overDueStart = cal.time
           if (immunization.recorded.before(overDueStart)) {
             tvVaccineSecondDose.setTextColor(

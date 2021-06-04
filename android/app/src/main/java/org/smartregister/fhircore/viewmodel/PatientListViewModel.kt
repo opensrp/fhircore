@@ -40,6 +40,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.data.SamplePatients
 import org.smartregister.fhircore.domain.Pagination
+import org.smartregister.fhircore.fragment.PatientListFragment
 
 private const val OBSERVATIONS_JSON_FILENAME = "sample_observations_bundle.json"
 
@@ -114,7 +115,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
     // check database for immunizations
     val cal: Calendar = Calendar.getInstance()
-    cal.add(Calendar.DATE, -28)
+    cal.add(Calendar.DATE, PatientListFragment.SECOND_DOSE_OVERDUE_DAYS)
     val overDueStart: Date = cal.time
 
     val formatter = SimpleDateFormat("dd-MM-yy", Locale.US)
@@ -155,7 +156,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
       true
     } else {
       val cal: Calendar = Calendar.getInstance()
-      cal.add(Calendar.DATE, -28)
+      cal.add(Calendar.DATE, PatientListFragment.SECOND_DOSE_OVERDUE_DAYS)
       val overDueStart: Date = cal.time
       val searchResults: List<Immunization> =
         fhirEngine.search { filter(Immunization.PATIENT) { value = id } }
