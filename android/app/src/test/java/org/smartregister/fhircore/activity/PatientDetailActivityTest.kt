@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.robolectric.activity
+package org.smartregister.fhircore.activity
 
 import android.app.Activity
 import android.view.MenuItem
@@ -25,7 +25,6 @@ import org.mockito.Mockito
 import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.activity.PatientDetailActivity
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.robolectric.shadow.FhirApplicationShadow
 

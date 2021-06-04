@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.robolectric.fragment
+package org.smartregister.fhircore.fragment
 
 import android.content.Intent
 import androidx.core.os.bundleOf
@@ -28,8 +28,8 @@ import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.activity.QuestionnaireActivity
-import org.smartregister.fhircore.fragment.PatientDetailFragment
-import org.smartregister.fhircore.robolectric.activity.QuestionnaireActivityTest
+import org.smartregister.fhircore.activity.QuestionnaireActivityTest
+import org.smartregister.fhircore.robolectric.fragment.FragmentRobolectricTest
 import org.smartregister.fhircore.robolectric.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.util.SharedPrefrencesHelper
 
