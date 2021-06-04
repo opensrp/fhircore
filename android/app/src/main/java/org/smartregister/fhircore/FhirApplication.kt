@@ -56,7 +56,8 @@ class FhirApplication : Application() {
   private fun constructFhirEngine(): FhirEngine {
     SharedPreferencesHelper.init(this)
     val parser = FhirContext.forR4().newJsonParser()
-    val service = create(parser)
+
+    val service = create(parser, this)
     val params = mutableMapOf("address-city" to "NAIROBI")
     val syncData: MutableList<SyncData> = ArrayList()
     syncData.add(SyncData(ResourceType.Patient, params))

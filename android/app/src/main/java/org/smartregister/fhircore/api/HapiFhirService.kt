@@ -23,6 +23,8 @@ import okhttp3.logging.HttpLoggingInterceptor
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.OperationOutcome
 import org.hl7.fhir.r4.model.Resource
+import org.smartregister.fhircore.BuildConfig
+import org.smartregister.fhircore.FhirApplication
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
@@ -53,13 +55,19 @@ interface HapiFhirService {
   suspend fun deleteResource(@Path("type") type: String, @Path("id") id: String): OperationOutcome
 
   companion object {
-    const val BASE_URL = "https://fhir.labs.smartregister.org/fhir/"
+    private const val BASE_URL: String = "${BuildConfig.FHIR_BASE_URL}"
 
-    fun create(parser: IParser): HapiFhirService {
+    fun create(parser: IParser, application: FhirApplication): HapiFhirService {
       val logger = HttpLoggingInterceptor()
       logger.level = HttpLoggingInterceptor.Level.BODY
 
-      val client = OkHttpClient.Builder().addInterceptor(logger).build()
+      val oauthInterceptor = OAuthInterceptor(application.baseContext)
+
+      val client = OkHttpClient.Builder()
+        .addInterceptor(oauthInterceptor)
+        .addInterceptor(logger)
+        .build()
+
       return Retrofit.Builder()
         .baseUrl(BASE_URL)
         .client(client)

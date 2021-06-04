@@ -10,6 +10,14 @@ jacoco {
     toolVersion = versions.jacoco_tool
 }
 
+Properties props = new Properties()
+if (rootProject.file("local.properties").exists()) {
+    props.load(rootProject.file("local.properties").newDataInputStream())
+    props.each { prop ->
+        project.ext.set(prop.key, prop.value)
+    }
+}
+
 android {
     compileSdkVersion sdk_versions.compile_sdk
     dataBinding {
@@ -26,6 +34,9 @@ android {
         // See https://developer.android.com/studio/write/java8-support
         multiDexEnabled true
 
+        buildConfigField("boolean", 'SKIP_AUTH_CHECK', "false")
+
+        buildConfigField("String", 'FHIR_BASE_URL', "\"${FHIR_BASE_URL}\"")
         buildConfigField("String", 'OAUTH_BASE_URL', "\"${OAUTH_BASE_URL}\"")
         buildConfigField("String", 'OAUTH_CIENT_ID', "\"${OAUTH_CIENT_ID}\"")
         buildConfigField("String", 'OAUTH_CLIENT_SECRET', "\"${OAUTH_CLIENT_SECRET}\"")
@@ -177,8 +188,19 @@ dependencies {
     testImplementation deps.atsl.ext_junit
     testImplementation deps.atsl.ext_junit_ktx
     debugImplementation deps.fragment_testing
+<<<<<<< HEAD
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk
+=======
+
+  //  testImplementation('androidx.test:core:1.3.0')
+    // Optional -- Mockito framework
+  //  testImplementation "io.mockk:mockk:1.10.6"
+
+  //  testImplementation("org.mockito:mockito-core:3.6.28")
+  //  testImplementation 'org.mockito:mockito-inline:2.13.0'
+
+>>>>>>> Resolving comments
 }
 
 task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'createDebugCoverageReport']) {
