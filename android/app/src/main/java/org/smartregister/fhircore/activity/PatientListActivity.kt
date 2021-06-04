@@ -32,8 +32,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.switchmaterial.SwitchMaterial
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientListFragment
+import org.smartregister.fhircore.util.SharedPrefrencesHelper
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.util.Utils.addOnDrawableClickedListener
 
@@ -52,6 +54,8 @@ class PatientListActivity : AppCompatActivity() {
   }
 
   private fun setUpViews() {
+    findViewById<SwitchMaterial>(R.id.btn_show_overdue_patients).isChecked =
+      SharedPrefrencesHelper.read(PatientListFragment.SHOW_OVERDUE_PATIENTS, true)
     findViewById<Button>(R.id.btn_register_new_patient).setOnClickListener { addPatient(it) }
 
     findViewById<ViewPager2>(R.id.patient_list_pager).adapter = PatientListPagerAdapter(this)

@@ -28,7 +28,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
-import java.util.Calendar
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.PositiveIntType
@@ -36,6 +35,7 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.adapter.ObservationItemRecyclerViewAdapter
 import org.smartregister.fhircore.util.Utils
+import org.smartregister.fhircore.util.Utils.isOverdue
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
 
@@ -142,10 +142,7 @@ class PatientDetailFragment : Fragment() {
               nextDoseNumber,
               nextVaccineDate
             )
-          val cal: Calendar = Calendar.getInstance()
-          cal.add(Calendar.DATE, PatientListFragment.SECOND_DOSE_OVERDUE_DAYS)
-          val overDueStart = cal.time
-          if (immunization.recorded.before(overDueStart)) {
+          if (immunization.isOverdue(PatientListFragment.SECOND_DOSE_OVERDUE_DAYS)) {
             tvVaccineSecondDose.setTextColor(
               ContextCompat.getColor(requireContext(), R.color.status_red)
             )

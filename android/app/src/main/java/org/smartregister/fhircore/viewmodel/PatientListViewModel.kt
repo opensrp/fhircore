@@ -31,8 +31,6 @@ import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.SyncConfiguration
 import com.google.android.fhir.sync.SyncData
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
@@ -41,6 +39,8 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.data.SamplePatients
 import org.smartregister.fhircore.domain.Pagination
 import org.smartregister.fhircore.fragment.PatientListFragment
+import org.smartregister.fhircore.util.SharedPrefrencesHelper
+import org.smartregister.fhircore.util.Utils.isOverdue
 
 private const val OBSERVATIONS_JSON_FILENAME = "sample_observations_bundle.json"
 
@@ -74,12 +74,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     MutableLiveData<List<Immunization>>()
   }
 
-  fun searchResults(
-    query: String? = null,
-    page: Int = 0,
-    pageSize: Int = 10,
-    showOverdue: Boolean = true
-  ) {
+  fun searchResults(query: String? = null, page: Int = 0, pageSize: Int = 10) {
     viewModelScope.launch {
       var searchResults: List<Patient> =
         fhirEngine.search {
@@ -93,8 +88,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
       searchResults =
         searchResults.filter {
-          (it.nameMatchesFilter(query) || it.idMatchesFilter(query)) &&
-            it.canAddOverdue(showOverdue)
+          (it.nameMatchesFilter(query) || it.idMatchesFilter(query)) && it.canAddOverdue()
         }
       var startIndex = page * pageSize
       startIndex = if (searchResults.size > startIndex) startIndex else 0
@@ -113,11 +107,6 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   fun fetchPatientStatus(id: String): LiveData<PatientStatus> {
     val status = MutableLiveData<PatientStatus>()
 
-    // check database for immunizations
-    val cal: Calendar = Calendar.getInstance()
-    cal.add(Calendar.DATE, PatientListFragment.SECOND_DOSE_OVERDUE_DAYS)
-    val overDueStart: Date = cal.time
-
     val formatter = SimpleDateFormat("dd-MM-yy", Locale.US)
 
     viewModelScope.launch {
@@ -126,7 +115,9 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
       val computedStatus =
         if (searchResults.size == 2) VaccineStatus.VACCINATED
-        else if (searchResults.size == 1 && searchResults[0].recorded.before(overDueStart))
+        else if (searchResults.size == 1 &&
+            searchResults[0].isOverdue(PatientListFragment.SECOND_DOSE_OVERDUE_DAYS)
+        )
           VaccineStatus.OVERDUE
         else if (searchResults.size == 1) VaccineStatus.PARTIAL else VaccineStatus.DUE
 
@@ -151,16 +142,14 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     return (filter == null || filter.equals(this.idElement.idPart))
   }
 
-  protected suspend fun Patient.canAddOverdue(showOverdue: Boolean): Boolean {
-    return if (showOverdue) {
+  protected suspend fun Patient.canAddOverdue(): Boolean {
+    return if (SharedPrefrencesHelper.read(PatientListFragment.SHOW_OVERDUE_PATIENTS, true)) {
       true
     } else {
-      val cal: Calendar = Calendar.getInstance()
-      cal.add(Calendar.DATE, PatientListFragment.SECOND_DOSE_OVERDUE_DAYS)
-      val overDueStart: Date = cal.time
       val searchResults: List<Immunization> =
         fhirEngine.search { filter(Immunization.PATIENT) { value = id } }
-      !(searchResults.size == 1 && searchResults[0].recorded.before(overDueStart))
+      !(searchResults.size == 1 &&
+        searchResults[0].isOverdue(PatientListFragment.SECOND_DOSE_OVERDUE_DAYS))
     }
   }
 

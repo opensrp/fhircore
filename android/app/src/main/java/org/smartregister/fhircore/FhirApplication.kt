@@ -40,8 +40,12 @@ class FhirApplication : Application() {
   // only initiate the FhirEngine when used for the first time, not when the app is created
   private val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
 
-  private fun constructFhirEngine(): FhirEngine {
+  override fun onCreate() {
+    super.onCreate()
     SharedPrefrencesHelper.init(this)
+  }
+
+  private fun constructFhirEngine(): FhirEngine {
     val parser = FhirContext.forR4().newJsonParser()
     val service = create(parser)
     val syncData: MutableList<SyncData> = ArrayList()
