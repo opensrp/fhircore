@@ -29,8 +29,7 @@ import org.robolectric.annotation.Config
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.activity.QuestionnaireActivityTest
-import org.smartregister.fhircore.robolectric.fragment.FragmentRobolectricTest
-import org.smartregister.fhircore.robolectric.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.util.SharedPrefrencesHelper
 
 @Config(shadows = [FhirApplicationShadow::class])

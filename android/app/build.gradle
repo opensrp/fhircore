@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: "com.github.kt3k.coveralls"
 apply plugin: 'jacoco'
+apply plugin: 'de.mannodermaus.android-junit5'
 
 jacoco {
     toolVersion = versions.jacoco_tool
@@ -152,7 +153,9 @@ dependencies {
 
     kapt deps.room.compiler
 
-    testImplementation deps.junit
+    testImplementation deps.junit5_api
+    testRuntimeOnly deps.junit5_engine
+    testRuntimeOnly deps.junit5_engine_vintage
     testImplementation deps.robolectric
     testImplementation deps.power_mock.module_junit4
     testImplementation deps.power_mock.module_junit4_rule
