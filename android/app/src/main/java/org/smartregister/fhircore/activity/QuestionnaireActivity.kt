@@ -18,8 +18,7 @@ package org.smartregister.fhircore.activity
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
+import android.widget.Button
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
@@ -61,23 +60,12 @@ class QuestionnaireActivity : AppCompatActivity() {
 
       supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
     }
-  }
 
-  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-    menuInflater.inflate(R.menu.top_bar_menu, menu)
-    return true
-  }
-
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    return when (item.getItemId()) {
-      R.id.action_submit -> {
-        val questionnaireFragment =
-          supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
-            QuestionnaireFragment
-        savePatientResource(questionnaireFragment.getQuestionnaireResponse())
-        true
-      }
-      else -> super.onOptionsItemSelected(item)
+    findViewById<Button>(R.id.btn_save_client_info).setOnClickListener {
+      val questionnaireFragment =
+        supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
+          QuestionnaireFragment
+      savePatientResource(questionnaireFragment.getQuestionnaireResponse())
     }
   }
 

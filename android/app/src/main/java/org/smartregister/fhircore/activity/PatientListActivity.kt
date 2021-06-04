@@ -92,7 +92,7 @@ class PatientListActivity : AppCompatActivity() {
     val context = view.context
     context.startActivity(
       Intent(context, QuestionnaireActivity::class.java).apply {
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Client info")
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
       }
     )
