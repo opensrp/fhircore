@@ -44,10 +44,6 @@ class FhirApplication : Application() {
   override fun onCreate() {
     super.onCreate()
     mContext = this
-  }
-
-  override fun onCreate() {
-    super.onCreate()
     SharedPrefrencesHelper.init(this)
   }
 
