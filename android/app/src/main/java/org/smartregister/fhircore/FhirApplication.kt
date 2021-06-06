@@ -39,6 +39,12 @@ class FhirApplication : Application() {
 
   // only initiate the FhirEngine when used for the first time, not when the app is created
   private val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
+  private val mInstance: FhirApplication by lazy { this }
+
+  override fun onCreate() {
+    super.onCreate()
+    mContext = this
+  }
 
   override fun onCreate() {
     super.onCreate()
@@ -66,7 +72,12 @@ class FhirApplication : Application() {
   }
 
   companion object {
+
+    private lateinit var mContext: FhirApplication
+
     @JvmStatic
     fun fhirEngine(context: Context) = (context.applicationContext as FhirApplication).fhirEngine
+
+    fun getContext() = mContext
   }
 }

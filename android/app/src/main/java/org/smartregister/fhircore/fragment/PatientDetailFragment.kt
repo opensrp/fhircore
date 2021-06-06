@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.fragment
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -33,6 +34,7 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.adapter.ObservationItemRecyclerViewAdapter
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.util.Utils.isOverdue
@@ -73,6 +75,13 @@ class PatientDetailFragment : Fragment() {
           PatientListViewModelFactory(this.requireActivity().application, fhirEngine)
         )
         .get(PatientListViewModel::class.java)
+
+    viewModel
+      .getObservations()
+      .observe(
+        viewLifecycleOwner,
+        Observer<List<PatientListViewModel.ObservationItem>> { adapter.submitList(it) }
+      )
 
     viewModel.liveSearchPatient.observe(
       viewLifecycleOwner,
@@ -170,6 +179,19 @@ class PatientDetailFragment : Fragment() {
       activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
       activity?.findViewById<TextView>(R.id.id_patient_number)?.text = "ID: " + patient.logicalId
       patitentId = patient.logicalId
+    }
+  }
+
+  fun editPatient() {
+
+    viewModel.liveSearchPatient.value?.let {
+      startActivity(
+        Intent(requireContext(), QuestionnaireActivity::class.java).apply {
+          putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
+          putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
+          putExtra(ARG_ITEM_ID, it.logicalId)
+        }
+      )
     }
   }
 
