@@ -27,9 +27,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
-import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.smartregister.fhircore.FhirApplication
@@ -38,6 +36,7 @@ import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.adapter.ObservationItemRecyclerViewAdapter
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.util.Utils.isOverdue
+import org.smartregister.fhircore.util.Utils.makeItReadable
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
 
@@ -101,63 +100,54 @@ class PatientDetailFragment : Fragment() {
     // load immunization data
     viewModel.searchImmunizations(patitentId)
 
-    viewModel.liveSearchImmunization.observe(
-      viewLifecycleOwner,
-      Observer<List<Immunization>> {
-        if (it.isNotEmpty()) {
-          updateVaccineStatus(it)
-        }
-      }
-    )
+    viewModel.liveSearchImmunization.observe(viewLifecycleOwner, { updateVaccineStatus(it) })
 
     return rootView
   }
 
   private fun updateVaccineStatus(immunizations: List<Immunization>) {
 
-    var isFullyVaccinated = false
-    viewModel.viewModelScope.launch {
-      immunizations.forEach { immunization ->
-        doseNumber = (immunization.protocolApplied[0].doseNumber as PositiveIntType).value
-        initialDose = immunization.vaccineCode.coding.first().code
-        if (isFullyVaccinated) {
-          return@forEach
-        }
-        val nextDoseNumber = doseNumber + 1
-        val vaccineDate = immunization.occurrenceDateTimeType.toHumanDisplay()
+    val tvVaccineRecorded = rootView.findViewById<TextView>(R.id.vaccination_status)
+    val tvVaccineSecondDose = rootView.findViewById<TextView>(R.id.vaccination_second_dose)
+    val btnRecordVaccine = activity?.findViewById<Button>(R.id.btn_record_vaccine)
+
+    if (immunizations.isNotEmpty()) {
+      doseNumber =
+        (immunizations[immunizations.size.minus(1)].protocolApplied[0].doseNumber as
+            PositiveIntType)
+          .value
+      initialDose = immunizations[immunizations.size.minus(1)].vaccineCode.coding.first().code
+
+      if (immunizations.size == finalDoseNumber) {
+
+        tvVaccineRecorded.text = resources.getString(R.string.fully_vaccinated)
+        tvVaccineSecondDose.text = resources.getString(R.string.view_vaccine_certificate)
+        btnRecordVaccine?.visibility = View.GONE
+      } else if (immunizations.size == 1) {
+
+        val vaccineDate = immunizations[0].occurrenceDateTimeType.toHumanDisplay()
         val nextVaccineDate = Utils.addDays(vaccineDate, 28)
-        val tvVaccineRecorded = rootView.findViewById<TextView>(R.id.vaccination_status)
         tvVaccineRecorded.text =
           resources.getString(
             R.string.immunization_brief_text,
-            immunization.vaccineCode.text,
+            immunizations[0].vaccineCode.text,
             doseNumber
           )
-
-        val tvVaccineSecondDose = rootView.findViewById<TextView>(R.id.vaccination_second_dose)
-        val btnRecordVaccine = activity?.findViewById<Button>(R.id.btn_record_vaccine)
-        tvVaccineSecondDose.visibility = View.VISIBLE
-        if (doseNumber == finalDoseNumber) {
-          isFullyVaccinated = true
-          tvVaccineRecorded.text = resources.getString(R.string.fully_vaccinated)
-          tvVaccineSecondDose.text = resources.getString(R.string.view_vaccine_certificate)
-          if (btnRecordVaccine != null) {
-            btnRecordVaccine.visibility = View.GONE
-          }
-        } else {
-          tvVaccineSecondDose.text =
-            resources.getString(
-              R.string.immunization_next_dose_text,
-              nextDoseNumber,
-              nextVaccineDate
-            )
-          if (immunization.isOverdue(PatientListFragment.SECOND_DOSE_OVERDUE_DAYS)) {
-            tvVaccineSecondDose.setTextColor(
-              ContextCompat.getColor(requireContext(), R.color.status_red)
-            )
-          }
+        tvVaccineSecondDose.text =
+          resources.getString(
+            R.string.immunization_next_dose_text,
+            finalDoseNumber,
+            nextVaccineDate
+          )
+        if (immunizations[0].isOverdue(PatientListFragment.SECOND_DOSE_OVERDUE_DAYS)) {
+          tvVaccineSecondDose.setTextColor(
+            ContextCompat.getColor(requireContext(), R.color.status_red)
+          )
         }
       }
+    } else {
+      tvVaccineRecorded.text = resources.getString(R.string.no_vaccine_received)
+      tvVaccineSecondDose.visibility = View.GONE
     }
   }
 
@@ -179,6 +169,9 @@ class PatientDetailFragment : Fragment() {
       activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
       activity?.findViewById<TextView>(R.id.id_patient_number)?.text = "ID: " + patient.logicalId
       patitentId = patient.logicalId
+
+      rootView.findViewById<TextView>(R.id.observation_detail).text =
+        "Registered ${patient.lastUpdated?.makeItReadable() ?: ""}"
     }
   }
 
