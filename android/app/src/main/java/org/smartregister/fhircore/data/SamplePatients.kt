@@ -83,7 +83,8 @@ class SamplePatients {
     val logicalId: String = patient.logicalId
     val lastUpdate = patient.meta?.lastUpdated
 
-    return PatientListViewModel.PatientItem(patient.id,
+    return PatientListViewModel.PatientItem(
+      patient.id,
       name,
       gender,
       dob,
