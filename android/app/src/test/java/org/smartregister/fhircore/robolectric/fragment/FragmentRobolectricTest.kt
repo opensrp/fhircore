@@ -20,8 +20,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.lifecycle.Lifecycle
 import org.junit.After
+import org.robolectric.annotation.Config
 import org.smartregister.fhircore.robolectric.RobolectricTest
+import org.smartregister.fhircore.robolectric.shadow.FhirApplicationShadow
 
+@Config(shadows = [FhirApplicationShadow::class])
 abstract class FragmentRobolectricTest : RobolectricTest() {
 
   @After

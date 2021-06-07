@@ -37,6 +37,10 @@ object SharedPrefrencesHelper {
     return prefs.getLong(key, value)
   }
 
+  fun read(key: String, value: Boolean = false): Boolean {
+    return prefs.getBoolean(key, value)
+  }
+
   fun write(key: String, value: String) {
     val prefsEditor: SharedPreferences.Editor = prefs.edit()
     with(prefsEditor) {
@@ -49,6 +53,14 @@ object SharedPrefrencesHelper {
     val prefsEditor: SharedPreferences.Editor = prefs.edit()
     with(prefsEditor) {
       putLong(key, value)
+      commit()
+    }
+  }
+
+  fun write(key: String, value: Boolean) {
+    val prefsEditor: SharedPreferences.Editor = prefs.edit()
+    with(prefsEditor) {
+      putBoolean(key, value)
       commit()
     }
   }
