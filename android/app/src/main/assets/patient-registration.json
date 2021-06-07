@@ -20,6 +20,7 @@
     {
       "linkId": "PR",
       "type": "group",
+      "text": "Client info",
       "item": [
         {
           "linkId": "PR-name",
@@ -61,6 +62,9 @@
         },
         {
           "linkId": "patient-0-gender",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
+          "type": "choice",
+          "text": "Gender:",
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
@@ -69,47 +73,36 @@
                 "expression": "Enumerations$AdministrativeGender",
                 "name": "administrativeGender"
               }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button",
+                    "display": "Radio Button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
             }
           ],
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
-          "type": "choice",
-          "item": [
+          "answerOption": [
             {
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "radio-button",
-                        "display": "Radio Button"
-                      }
-                    ]
-                  }
-                },
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
-                  "valueCode": "horizontal"
-                }
-              ],
-              "linkId": "1.0",
-              "text": "Gender:",
-              "type": "choice",
-              "answerOption": [
-                {
-                  "valueCoding": {
-                    "code": "F",
-                    "display": "Female"
-                  }
-                },
-                {
-                  "valueCoding": {
-                    "code": "M",
-                    "display": "Male"
-                  }
-                }
-              ]
+              "valueCoding": {
+                "code": "F",
+                "display": "Female"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "M",
+                "display": "Male"
+              }
             }
           ]
         },

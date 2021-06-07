@@ -47,10 +47,7 @@ class QuestionnaireActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_questionnaire)
 
-    supportActionBar!!.apply {
-      title = intent.getStringExtra(QUESTIONNAIRE_TITLE_KEY)
-      setDisplayHomeAsUpEnabled(true)
-    }
+    supportActionBar!!.hide()
 
     // Only add the fragment once, when the activity is first created.
     if (savedInstanceState == null) {
