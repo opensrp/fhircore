@@ -40,6 +40,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.mlkit.md.LiveBarcodeScanningFragment
+import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.PATIENT_ID
@@ -73,7 +74,9 @@ class PatientListFragment : Fragment() {
     patientId: String,
     observer: Observer<PatientListViewModel.PatientStatus>
   ) {
-    patientListViewModel.fetchPatientStatus(patientId).observe(requireActivity(), observer)
+    runBlocking {
+      patientListViewModel.fetchPatientStatus(patientId).observe(requireActivity(), observer)
+    }
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

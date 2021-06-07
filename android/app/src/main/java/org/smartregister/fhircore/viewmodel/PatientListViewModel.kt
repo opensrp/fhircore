@@ -26,6 +26,7 @@ import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.ResourceNotFoundException
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.SyncConfiguration
@@ -85,11 +86,15 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
           sort(Patient.GIVEN, Order.ASCENDING)
         }
-
+      val showOnlyOverdue = SharedPrefrencesHelper.read(PatientListFragment.SHOW_OVERDUE_PATIENTS)
+      searchResults = searchResults.distinctBy { it.logicalId }
       searchResults =
         searchResults.filter {
-          (it.nameMatchesFilter(query) || it.idMatchesFilter(query)) && it.canAddOverdue()
+          (it.nameMatchesFilter(query) || it.idMatchesFilter(query)) &&
+            if (!showOnlyOverdue) true
+            else fetchPatientStatus(it.logicalId).value?.status == VaccineStatus.OVERDUE
         }
+
       var startIndex = page * pageSize
       startIndex = if (searchResults.size > startIndex) startIndex else 0
       var endIndex = pageSize + (page * pageSize)
@@ -104,30 +109,28 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     }
   }
 
-  fun fetchPatientStatus(id: String): LiveData<PatientStatus> {
+  suspend fun fetchPatientStatus(id: String): LiveData<PatientStatus> {
     val status = MutableLiveData<PatientStatus>()
 
     val formatter = SimpleDateFormat("dd-MM-yy", Locale.US)
 
-    viewModelScope.launch {
-      val searchResults: List<Immunization> =
-        fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$id" } }
+    val searchResults: List<Immunization> =
+      fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$id" } }
 
-      val computedStatus =
-        if (searchResults.size == 2) VaccineStatus.VACCINATED
-        else if (searchResults.size == 1 &&
-            searchResults[0].isOverdue(PatientListFragment.SECOND_DOSE_OVERDUE_DAYS)
-        )
-          VaccineStatus.OVERDUE
-        else if (searchResults.size == 1) VaccineStatus.PARTIAL else VaccineStatus.DUE
+    val computedStatus =
+      if (searchResults.size == 2) VaccineStatus.VACCINATED
+      else if (searchResults.size == 1 &&
+          searchResults[0].isOverdue(PatientListFragment.SECOND_DOSE_OVERDUE_DAYS)
+      )
+        VaccineStatus.OVERDUE
+      else if (searchResults.size == 1) VaccineStatus.PARTIAL else VaccineStatus.DUE
 
-      status.value =
-        PatientStatus(
-          status = computedStatus,
-          details =
-            if (searchResults.isNotEmpty()) formatter.format(searchResults[0].recorded) else ""
-        )
-    }
+    status.value =
+      PatientStatus(
+        status = computedStatus,
+        details =
+          if (searchResults.isNotEmpty()) formatter.format(searchResults[0].recorded) else ""
+      )
     return status
   }
 
@@ -140,17 +143,6 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
   protected fun Patient.idMatchesFilter(filter: String?): Boolean {
     return (filter == null || filter.equals(this.idElement.idPart))
-  }
-
-  protected suspend fun Patient.canAddOverdue(): Boolean {
-    return if (SharedPrefrencesHelper.read(PatientListFragment.SHOW_OVERDUE_PATIENTS, true)) {
-      true
-    } else {
-      val searchResults: List<Immunization> =
-        fhirEngine.search { filter(Immunization.PATIENT) { value = id } }
-      !(searchResults.size == 1 &&
-        searchResults[0].isOverdue(PatientListFragment.SECOND_DOSE_OVERDUE_DAYS))
-    }
   }
 
   /** Basic search for immunizations */
@@ -167,7 +159,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   // https://github.com/google/android-fhir/issues/458
   // https://github.com/opensrp/fhircore/issues/107
   private suspend fun count(query: String? = null): Int {
-    val searchResults: List<Patient> =
+    var searchResults: List<Patient> =
       fhirEngine.search {
         filter(Patient.ADDRESS_CITY) {
           prefix = ParamPrefixEnum.EQUAL
@@ -184,6 +176,14 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
         sort(Patient.GIVEN, Order.ASCENDING)
         count = 10000
         from = 0
+      }
+
+    val showOnlyOverdue = SharedPrefrencesHelper.read(PatientListFragment.SHOW_OVERDUE_PATIENTS)
+    searchResults = searchResults.distinctBy { it.logicalId }
+    searchResults =
+      searchResults.filter {
+        if (!showOnlyOverdue) true
+        else fetchPatientStatus(it.logicalId).value?.status == VaccineStatus.OVERDUE
       }
     return searchResults.size
   }

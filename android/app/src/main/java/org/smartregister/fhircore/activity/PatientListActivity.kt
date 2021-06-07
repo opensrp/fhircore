@@ -55,7 +55,7 @@ class PatientListActivity : AppCompatActivity() {
 
   private fun setUpViews() {
     findViewById<SwitchMaterial>(R.id.btn_show_overdue_patients).isChecked =
-      SharedPrefrencesHelper.read(PatientListFragment.SHOW_OVERDUE_PATIENTS, true)
+      SharedPrefrencesHelper.read(PatientListFragment.SHOW_OVERDUE_PATIENTS)
     findViewById<Button>(R.id.btn_register_new_patient).setOnClickListener { addPatient(it) }
 
     findViewById<ViewPager2>(R.id.patient_list_pager).adapter = PatientListPagerAdapter(this)
