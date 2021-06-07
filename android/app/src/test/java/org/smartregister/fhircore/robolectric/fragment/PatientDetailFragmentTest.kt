@@ -76,7 +76,7 @@ class PatientDetailFragmentTest : FragmentRobolectricTest() {
     cal.add(Calendar.DATE, PatientListFragment.SECOND_DOSE_OVERDUE_DAYS)
     val date = Date(cal.timeInMillis)
 
-    val immunication =
+    val immunization =
       listOf(
         Immunization().apply {
           protocolApplied =
@@ -92,7 +92,7 @@ class PatientDetailFragmentTest : FragmentRobolectricTest() {
           occurrence = DateTimeType.today().setValue(date)
         }
       )
-    patientDetailFragment.viewModel.liveSearchImmunization.value = immunication
+    patientDetailFragment.viewModel.liveSearchImmunization.value = immunization
 
     val tvVaccineSecondDose =
       patientDetailFragment.rootView.findViewById<TextView>(R.id.vaccination_second_dose)
