@@ -27,6 +27,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.PositiveIntType
