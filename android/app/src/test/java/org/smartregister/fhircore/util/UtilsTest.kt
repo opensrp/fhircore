@@ -19,9 +19,13 @@ package org.smartregister.fhircore.util
 import java.text.SimpleDateFormat
 import java.util.Date
 import org.apache.commons.lang3.time.DateUtils
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Immunization
 import org.joda.time.DateTime
 import org.junit.Assert
 import org.junit.Test
+import org.smartregister.fhircore.fragment.PatientListFragment
+import org.smartregister.fhircore.util.Utils.isOverdue
 
 class UtilsTest {
 
@@ -41,5 +45,28 @@ class UtilsTest {
     val fourYearsAgo = sdf.format(date)
 
     Assert.assertEquals(4, Utils.getAgeFromDate(fourYearsAgo, null))
+  }
+
+  @Test
+  fun testVerifyImmunizationOverdueStatus() {
+    val immunization = getImmunization()
+    Assert.assertTrue(immunization.isOverdue(PatientListFragment.SECOND_DOSE_OVERDUE_DAYS))
+  }
+
+  @Test
+  fun testAddDaysShouldReturnValid() {
+    val immunization = getImmunization()
+    val vaccineDate = immunization.occurrenceDateTimeType.toHumanDisplay()
+    val nextVaccineDate = Utils.addDays(vaccineDate, 28)
+    Assert.assertEquals("1-29-2021", nextVaccineDate)
+  }
+
+  private fun getImmunization(): Immunization {
+    val date = SimpleDateFormat("MM-dd-yyyy").parse("01-01-2021")
+
+    return Immunization().apply {
+      recorded = date
+      occurrence = DateTimeType.today().setValue(date)
+    }
   }
 }

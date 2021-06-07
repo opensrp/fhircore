@@ -18,8 +18,11 @@ package org.smartregister.fhircore.viewholder
 
 import android.view.View
 import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.fragment.PatientListFragment
 import org.smartregister.fhircore.util.Utils.getAgeFromDate
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 
@@ -29,13 +32,73 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
   private val tvRecordVaccine: TextView = itemView.findViewById(R.id.tv_record_vaccine)
   fun bindTo(
     patientItem: PatientListViewModel.PatientItem,
-    onItemClicked: (PatientListViewModel.PatientItem) -> Unit,
-    onRecordVaccineClicked: (PatientListViewModel.PatientItem) -> Unit
+    onItemClicked: (PatientListFragment.Intention, PatientListViewModel.PatientItem) -> Unit,
+    patientStatusObserver: (String, Observer<PatientListViewModel.PatientStatus>) -> Unit
   ) {
+    setPatientStatus(null, patientItem, this.tvRecordVaccine, onItemClicked)
     this.tvPatientDemographics.text = getPatientDemographics(patientItem)
-    this.tvPatientDemographics.setOnClickListener { onItemClicked(patientItem) }
-    this.tvDateLastSeen.setOnClickListener { onItemClicked(patientItem) }
-    this.tvRecordVaccine.setOnClickListener { onRecordVaccineClicked(patientItem) }
+    this.tvPatientDemographics.setOnClickListener {
+      onItemClicked(PatientListFragment.Intention.VIEW, patientItem)
+    }
+    this.tvDateLastSeen.setOnClickListener {
+      onItemClicked(PatientListFragment.Intention.VIEW, patientItem)
+    }
+
+    patientStatusObserver(patientItem.logicalId) {
+      setPatientStatus(it, patientItem, this.tvRecordVaccine, onItemClicked)
+    }
+  }
+
+  private fun setPatientStatus(
+    patientStatus: PatientListViewModel.PatientStatus?,
+    patientItem: PatientListViewModel.PatientItem,
+    tvRecordVaccine: TextView,
+    onItemClicked: (PatientListFragment.Intention, PatientListViewModel.PatientItem) -> Unit,
+  ) {
+    tvRecordVaccine.text = ""
+    val status = patientStatus?.status ?: return
+
+    when (status) {
+      PatientListViewModel.VaccineStatus.VACCINATED -> {
+        tvRecordVaccine.text = tvRecordVaccine.context.getString(R.string.status_vaccinated)
+        tvRecordVaccine.setTextColor(
+          ContextCompat.getColor(tvRecordVaccine.context, R.color.status_green)
+        )
+        tvRecordVaccine.setOnClickListener {}
+      }
+      PatientListViewModel.VaccineStatus.OVERDUE -> {
+        tvRecordVaccine.text = tvRecordVaccine.context.getString(R.string.status_overdue)
+        tvRecordVaccine.setTextColor(
+          ContextCompat.getColor(tvRecordVaccine.context, R.color.status_red)
+        )
+        tvRecordVaccine.setOnClickListener {
+          onItemClicked(PatientListFragment.Intention.RECORD_VACCINE, patientItem)
+        }
+      }
+      PatientListViewModel.VaccineStatus.PARTIAL -> {
+        tvRecordVaccine.text =
+          tvRecordVaccine.context.getString(
+            R.string.status_received_vaccine,
+            1,
+            patientStatus.details
+          )
+        tvRecordVaccine.setTextColor(
+          ContextCompat.getColor(tvRecordVaccine.context, R.color.status_gray)
+        )
+        tvRecordVaccine.setOnClickListener {
+          onItemClicked(PatientListFragment.Intention.RECORD_VACCINE, patientItem)
+        }
+      }
+      PatientListViewModel.VaccineStatus.DUE -> {
+        tvRecordVaccine.text = tvRecordVaccine.context.getString(R.string.status_record_vaccine)
+        tvRecordVaccine.setTextColor(
+          ContextCompat.getColor(tvRecordVaccine.context, R.color.status_blue)
+        )
+        tvRecordVaccine.setOnClickListener {
+          onItemClicked(PatientListFragment.Intention.RECORD_VACCINE, patientItem)
+        }
+      }
+    }
   }
 
   private fun getPatientDemographics(patientItem: PatientListViewModel.PatientItem): String {
