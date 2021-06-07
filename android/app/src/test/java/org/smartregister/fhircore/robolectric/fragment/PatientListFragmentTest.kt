@@ -50,10 +50,10 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
         .findViewById<SwitchMaterial>(R.id.btn_show_overdue_patients)
 
     btnOverdue.performClick()
-    Assert.assertFalse(SharedPrefrencesHelper.read(PatientListFragment.SHOW_OVERDUE_PATIENTS))
+    Assert.assertTrue(SharedPrefrencesHelper.read(PatientListFragment.SHOW_OVERDUE_PATIENTS))
 
     btnOverdue.performClick()
-    Assert.assertTrue(SharedPrefrencesHelper.read(PatientListFragment.SHOW_OVERDUE_PATIENTS))
+    Assert.assertFalse(SharedPrefrencesHelper.read(PatientListFragment.SHOW_OVERDUE_PATIENTS))
   }
 
   override fun getFragmentScenario(): FragmentScenario<out Fragment> {
