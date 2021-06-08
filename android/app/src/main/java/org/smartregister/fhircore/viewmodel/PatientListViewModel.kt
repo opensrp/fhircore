@@ -32,7 +32,6 @@ import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.SyncConfiguration
 import com.google.android.fhir.sync.SyncData
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
@@ -251,8 +250,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     val dob: String,
     val html: String,
     val phone: String,
-    val logicalId: String,
-    val lastUpdated: Date?
+    val logicalId: String
   ) {
     override fun toString(): String = name
   }
