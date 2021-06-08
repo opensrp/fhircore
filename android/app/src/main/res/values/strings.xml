@@ -45,5 +45,4 @@
     <string name="status_record_vaccine">Record \n Vaccine</string>
     <string name="view_vaccine_certificate">"View vaccine certificate"</string>
     <string name="fully_vaccinated">"Fully vaccinated"</string>
-    <string name="no_vaccine_received">No vaccine received</string>
 </resources>
