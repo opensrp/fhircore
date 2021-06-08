@@ -23,7 +23,6 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientListFragment
-import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.util.Utils.getAgeFromDate
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 
@@ -38,7 +37,6 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
   ) {
     setPatientStatus(null, patientItem, this.tvRecordVaccine, onItemClicked)
     this.tvPatientDemographics.text = getPatientDemographics(patientItem)
-    this.tvDateLastSeen.text = Utils.getLastSeen(patientItem.logicalId, patientItem.lastUpdated)
     this.tvPatientDemographics.setOnClickListener {
       onItemClicked(PatientListFragment.Intention.VIEW, patientItem)
     }
