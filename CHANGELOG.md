@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - 
+## [0.0.4] - 2021-06-08
+### Added
+
+- Enable patient overdue toggle filter
+
+### Fixed
+
+- Fixed patient overdue vaccine status color
+
 
 ## [0.0.3] - 2021-05-24
 ### Added
