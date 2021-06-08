@@ -31,7 +31,7 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
     val intent = Intent(myContext, AUTH_HANDLER_ACTIVITY)
 
     intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, attr.accountType)
-    intent.putExtra(AccountConfig.KEY_AUTH_TOKEN_TYPE, authTokenType) // todo
+    intent.putExtra(AccountConfig.KEY_AUTH_TOKEN_TYPE, authTokenType)
     intent.putExtra(AccountConfig.KEY_IS_NEW_ACCOUNT, true)
     intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
 
@@ -51,16 +51,13 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
     var accessToken = am.peekAuthToken(account, authTokenType)
     var tokenResponse: OAuthResponse
 
+    Timber.i("GetAuthToken for %s: AccessToken (%b)", account.name, accessToken?.isNotBlank())
+
     // if no access token try getting one with refresh token
     if (accessToken.isNullOrEmpty()) {
       val refreshToken = am.getPassword(account)
 
-      Timber.i(
-        "GetAuthToken: AccessToken (%b), Refresh Token (%b) for %s ",
-        accessToken?.isNotBlank(),
-        refreshToken?.isNotBlank(),
-        account.name
-      )
+      Timber.i("GetAuthToken: Refresh Token (%b)", refreshToken?.isNotBlank())
 
       if (!refreshToken.isNullOrEmpty()) {
         runCatching {
@@ -76,10 +73,10 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
           }
         }
           .onFailure {
-            Timber.i("Error refreshing token")
-            Timber.i(it.stackTraceToString())
+            Timber.e("Error refreshing token")
+            Timber.e(it.stackTraceToString())
           }
-          .onSuccess { Timber.i("Got new accessToken and registered") }
+          .onSuccess { Timber.i("Got new accessToken") }
       }
     }
 
@@ -111,7 +108,7 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
   }
 
   override fun getAuthTokenLabel(authTokenType: String): String {
-    return authTokenType.toUpperCase(Locale.ROOT).toString()
+    return authTokenType.toUpperCase(Locale.ROOT)
   }
 
   override fun updateCredentials(
@@ -120,7 +117,7 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
     authTokenType: String?,
     options: Bundle?
   ): Bundle {
-    Timber.i("Updating credentials for ${account.name}")
+    Timber.i("Updating credentials for ${account.name} from auth activity")
 
     val intent = Intent(myContext, AUTH_HANDLER_ACTIVITY)
     intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)

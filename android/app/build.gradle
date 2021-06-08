@@ -40,6 +40,7 @@ android {
         buildConfigField("String", 'OAUTH_BASE_URL', "\"${OAUTH_BASE_URL}\"")
         buildConfigField("String", 'OAUTH_CIENT_ID', "\"${OAUTH_CIENT_ID}\"")
         buildConfigField("String", 'OAUTH_CLIENT_SECRET', "\"${OAUTH_CLIENT_SECRET}\"")
+        buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
     }
     buildTypes {
         debug {

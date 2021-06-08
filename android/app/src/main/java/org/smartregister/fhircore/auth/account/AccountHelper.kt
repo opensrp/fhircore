@@ -25,28 +25,22 @@ class AccountHelper(context: Context) {
   }
 
   fun refreshToken(refreshToken: String): OAuthResponse? {
-    val data: MutableMap<String, String> = HashMap()
+    val data = buildOAuthPayload("refresh_token")
+
     data["refresh_token"] = refreshToken
-    data["grant_type"] = "refresh_token"
-    data["client_id"] = BuildConfig.OAUTH_CIENT_ID
-    data["client_secret"] = BuildConfig.OAUTH_CLIENT_SECRET
-    data["scope"] = "openid"
 
     return OAuthService.create(mContext).fetchToken(data).execute().body()
   }
 
   @Throws(NetworkErrorException::class)
   fun fetchToken(username: String, password: CharArray): Call<OAuthResponse> {
-    val data: MutableMap<String, String> = HashMap()
-    data["grant_type"] = "password"
+    val data = buildOAuthPayload("password")
+
     data["username"] = username
     data["password"] = password.concatToString()
-    data["client_id"] = BuildConfig.OAUTH_CIENT_ID
-    data["client_secret"] = BuildConfig.OAUTH_CLIENT_SECRET
-    data["scope"] = "openid"
 
     return try {
-      return OAuthService.create(mContext).fetchToken(data)
+      OAuthService.create(mContext).fetchToken(data)
     } catch (e: HttpException) {
       throw e
     } catch (e: Exception) {
@@ -54,7 +48,24 @@ class AccountHelper(context: Context) {
     }
   }
 
-  fun addAuthenticatedAccount(accountManager: AccountManager, successResponse: Response<OAuthResponse>, username: String) {
+  private fun buildOAuthPayload(grantType: String): MutableMap<String, String> {
+    val payload = mutableMapOf<String, String>()
+
+    payload["grant_type"] = grantType
+    payload["client_id"] = BuildConfig.OAUTH_CIENT_ID
+    payload["client_secret"] = BuildConfig.OAUTH_CLIENT_SECRET
+    payload["scope"] = BuildConfig.OAUTH_SCOPE
+
+    return payload
+  }
+
+  fun addAuthenticatedAccount(
+    accountManager: AccountManager,
+    successResponse: Response<OAuthResponse>,
+    username: String
+  ) {
+    Timber.i("Adding authenticated account %s", username)
+
     val accessToken = successResponse.body()!!.accessToken!!
     val refreshToken = successResponse.body()!!.refreshToken!!
 
@@ -69,23 +80,25 @@ class AccountHelper(context: Context) {
     }
   }
 
-  fun loadAccount(accountManager: AccountManager, username: String?,
-                          callback: AccountManagerCallback<Bundle>, errorHandler: Handler) {
+  fun loadAccount(
+    accountManager: AccountManager,
+    username: String?,
+    callback: AccountManagerCallback<Bundle>,
+    errorHandler: Handler
+  ) {
     val accounts = accountManager.getAccountsByType(AccountConfig.ACCOUNT_TYPE)
 
     if (accounts.isEmpty()) {
       return
     }
 
-    val account = accounts.find {
-      it.name.equals(username)
-    } ?: return
+    val account = accounts.find { it.name.equals(username) } ?: return
 
     Timber.i("Got account %s : ", account.name)
 
     accountManager.getAuthToken(
       account,
-      AccountConfig.AUTH_TOKEN_TYPE, // ,            // Auth scope
+      AccountConfig.AUTH_TOKEN_TYPE,
       Bundle(),
       true,
       callback,
