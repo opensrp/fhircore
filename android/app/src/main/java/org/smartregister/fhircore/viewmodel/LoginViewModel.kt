@@ -14,6 +14,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.databinding.InverseMethod
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
@@ -21,7 +22,6 @@ import com.google.android.material.internal.TextWatcherAdapter
 import okhttp3.ResponseBody
 import org.smartregister.fhircore.BuildConfig
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.activity.PatientListActivity
 import org.smartregister.fhircore.auth.account.AccountHelper
 import org.smartregister.fhircore.auth.OAuthResponse
 import org.smartregister.fhircore.auth.secure.Credentials
@@ -33,12 +33,14 @@ import retrofit2.Callback
 import retrofit2.Response
 import timber.log.Timber
 
-class LoginViewModel(application: Application) : AndroidViewModel(application), Callback<OAuthResponse> {
+class LoginViewModel(application: Application) : AndroidViewModel(application),
+  Callback<OAuthResponse>, AccountManagerCallback<Bundle> {
 
   var loginUser: LoginUser = LoginUser()
   var allowLogin = MutableLiveData(false)
   var loginFailed = MutableLiveData(false)
-  var showPassword= MutableLiveData(false)
+  var showPassword = MutableLiveData(false)
+  var goHome = MutableLiveData(false)
 
   private val secureConfig: SecureConfig = SecureConfig(application)
   private var baseContext: Context = application.baseContext
@@ -48,18 +50,19 @@ class LoginViewModel(application: Application) : AndroidViewModel(application), 
   init {
     Timber.i("Starting auth flow for login")
 
-    if (BuildConfig.DEBUG && BuildConfig.SKIP_AUTH_CHECK) {
-      startHome()
-    }
-
     accountManager = AccountManager.get(application)
 
-    AccountHelper(baseContext).loadAccount(
-      accountManager,
-      secureConfig.retrieveSessionUsername(),
-      OnTokenAcquired(),
-      Handler(OnTokenError())
-    )
+    if (BuildConfig.DEBUG && BuildConfig.SKIP_AUTH_CHECK) {
+      goHome.value = true
+    }
+    else {
+      AccountHelper(baseContext).loadAccount(
+        accountManager,
+        secureConfig.retrieveSessionUsername(),
+        this,
+        Handler(OnTokenError())
+      )
+    }
   }
 
   private fun shouldEnableLogin(): Boolean {
@@ -98,6 +101,10 @@ class LoginViewModel(application: Application) : AndroidViewModel(application), 
 
       enableLoginButton(true)
 
+      if(allowLocalLogin()){
+        goHome.value = true //todo
+      }
+
       return
     }
 
@@ -114,7 +121,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application), 
       .getUserInfo()
       .enqueue(OnUserInfoResponse(baseContext))
 
-    startHome()
+    goHome.value = true
   }
 
   override fun onFailure(call: Call<OAuthResponse>, t: Throwable) {
@@ -123,18 +130,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application), 
     Toast.makeText(baseContext, R.string.login_call_fail_error_message, Toast.LENGTH_LONG).show()
 
     if (allowLocalLogin()) {
-      startHome()
+      goHome.value = true
       return
     }
 
     enableLoginButton(true)
-  }
-
-  private fun startHome() {
-    val intent = Intent(getApplication(), PatientListActivity::class.java)
-    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-    baseContext.startActivity(intent)
   }
 
   private fun allowLocalLogin(): Boolean {
@@ -159,10 +159,32 @@ class LoginViewModel(application: Application) : AndroidViewModel(application), 
       return value.toCharArray()
     }
   }
+
+  override fun run(future: AccountManagerFuture<Bundle>?) {
+    // Get the result of the operation from the AccountManagerFuture.
+    val bundle: Bundle = future?.result ?: bundleOf()
+
+    // The token is a named value in the bundle. The name of the value
+    // is stored in the constant AccountManager.KEY_AUTHTOKEN.
+    val token: String? = bundle.getString(AccountManager.KEY_AUTHTOKEN)
+    val resp: AccountAuthenticatorResponse? =
+      bundle.getParcelable(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE)
+    val launch: Intent? = bundle.get(AccountManager.KEY_INTENT) as? Intent
+
+    Timber.i("Got launch ${launch?.data}")
+
+    Timber.i("Got token $token")
+
+    if(!token.isNullOrEmpty() && AccountHelper(baseContext).isSessionActive(token)){
+      goHome.value = true
+    }
+
+    Timber.i("Got resp ${resp.toString()}")
+  }
 }
 
 private class OnUserInfoResponse (context: Context): Callback<ResponseBody> {
-  val baseContext = context;
+  val baseContext = context
 
   override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
     Timber.e(t)
@@ -179,29 +201,8 @@ private class OnUserInfoResponse (context: Context): Callback<ResponseBody> {
 
 private class OnTokenError : Handler.Callback {
   override fun handleMessage(msg: Message): Boolean {
-    Timber.i("Error ${msg.data}")
+    Timber.i("Error in getting token in view model ${msg.data}")
 
-    return true // todo ??
-  }
-}
-
-private class OnTokenAcquired : AccountManagerCallback<Bundle> {
-
-  override fun run(result: AccountManagerFuture<Bundle>) {
-    // Get the result of the operation from the AccountManagerFuture.
-    val bundle: Bundle = result.result
-
-    // The token is a named value in the bundle. The name of the value
-    // is stored in the constant AccountManager.KEY_AUTHTOKEN.
-    val token: String? = bundle.getString(AccountManager.KEY_AUTHTOKEN)
-    val resp: AccountAuthenticatorResponse? =
-      bundle.getParcelable(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE)
-    val launch: Intent? = bundle.get(AccountManager.KEY_INTENT) as? Intent
-
-    Timber.i("Got launch ${launch?.data}")
-
-    Timber.i("Got token $token")
-
-    Timber.i("Got resp ${resp.toString()}")
+    return true
   }
 }

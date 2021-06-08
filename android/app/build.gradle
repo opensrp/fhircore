@@ -102,6 +102,7 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     implementation 'androidx.security:security-crypto:1.1.0-alpha03'
+    implementation 'io.jsonwebtoken:jjwt:0.9.1'
 
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
