@@ -29,7 +29,6 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
-import java.util.UUID
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.DateType
@@ -95,10 +94,9 @@ class QuestionnaireActivity : AppCompatActivity() {
     val patient = ResourceMapper.extract(questionnaire, questionnaireResponse) as Patient
 
     patient.id =
-      intent.getStringExtra(PatientDetailFragment.ARG_ITEM_ID)
-        ?: patient.id ?: UUID.randomUUID().toString().toLowerCase()
+      intent.getStringExtra(PatientDetailFragment.ARG_ITEM_ID) ?: patient.name.first().family
 
-    viewModel.saveResource(patient)
+    viewModel.savePatient(patient)
 
     this.startActivity(Intent(this, PatientListActivity::class.java))
   }
@@ -216,6 +214,6 @@ class QuestionnaireActivity : AppCompatActivity() {
   companion object {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
     const val QUESTIONNAIRE_FILE_PATH_KEY = "questionnaire-file-path-key"
-    const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
+    const val QUESTIONNAIRE_FRAGMENT_TAG = "questionannire-fragment-tag"
   }
 }

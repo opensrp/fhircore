@@ -26,7 +26,6 @@ import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -75,35 +74,35 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val response = fragment.getQuestionnaireResponse()
     Assert.assertEquals(
       TEST_PATIENT_1.name[0].given[0].toString(),
-      response.find("PR-name-text")?.value.toString()
+      response.item[0].item[0].item[0].answer[0].value.toString()
     )
     Assert.assertEquals(
       TEST_PATIENT_1.name[0].family,
-      response.find("PR-name-family")?.value.toString()
+      response.item[0].item[0].item[1].answer[0].value.toString()
     )
     Assert.assertEquals(
       TEST_PATIENT_1.birthDate.toString(),
-      response.find("patient-0-birth-date")?.valueDateType?.value.toString()
+      response.item[0].item[1].answer[0].valueDateType.value.toString()
     )
     Assert.assertEquals(
       TEST_PATIENT_1.gender.toCode(),
-      response.find("patient-0-gender")?.value.toString()
+      response.item[0].item[2].answer[0].value.toString()
     )
     Assert.assertEquals(
       TEST_PATIENT_1.telecom[0].value,
-      response.find("PR-telecom-value")?.value.toString()
+      response.item[0].item[3].item[1].answer[0].value.toString()
     )
     Assert.assertEquals(
       TEST_PATIENT_1.address[0].city,
-      response.find("PR-address-city")?.value.toString()
+      response.item[0].item[4].item[0].answer[0].value.toString()
     )
     Assert.assertEquals(
       TEST_PATIENT_1.address[0].country,
-      response.find("PR-address-country")?.value.toString()
+      response.item[0].item[4].item[1].answer[0].value.toString()
     )
     Assert.assertEquals(
       TEST_PATIENT_1.active,
-      response.find("PR-active")?.valueBooleanType?.booleanValue()
+      response.item[0].item[5].answer[0].valueBooleanType.booleanValue()
     )
   }
 
@@ -113,31 +112,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   private fun init() {
     runBlocking { FhirApplication.fhirEngine(FhirApplication.getContext()).save(TEST_PATIENT_1) }
-  }
-
-  private fun QuestionnaireResponse.find(
-    linkId: String
-  ): QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent? {
-    return item.find(linkId, null)
-  }
-
-  private fun List<QuestionnaireResponse.QuestionnaireResponseItemComponent>.find(
-    linkId: String,
-    default: QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent?
-  ): QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent? {
-    var result = default
-    run loop@{
-      forEach {
-        if (it.linkId == linkId) {
-          result = it.answer[0]
-          return@loop
-        } else if (it.item.isNotEmpty()) {
-          result = it.item.find(linkId, result)
-        }
-      }
-    }
-
-    return result
   }
 
   companion object {
