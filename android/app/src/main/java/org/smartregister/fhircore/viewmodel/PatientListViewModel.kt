@@ -25,23 +25,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.ResourceNotFoundException
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
-import com.google.android.fhir.sync.SyncConfiguration
-import com.google.android.fhir.sync.SyncData
-import java.text.SimpleDateFormat
-import java.util.Locale
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.data.SamplePatients
 import org.smartregister.fhircore.domain.Pagination
-import org.smartregister.fhircore.fragment.PatientListFragment
-import org.smartregister.fhircore.util.SharedPrefrencesHelper
-import org.smartregister.fhircore.util.Utils.isOverdue
 
 private const val OBSERVATIONS_JSON_FILENAME = "sample_observations_bundle.json"
 
@@ -71,35 +60,26 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
   val liveSearchPatient: MutableLiveData<PatientItem> by lazy { MutableLiveData<PatientItem>() }
 
-  val liveSearchImmunization: MutableLiveData<List<Immunization>> by lazy {
-    MutableLiveData<List<Immunization>>()
-  }
-
   fun searchResults(query: String? = null, page: Int = 0, pageSize: Int = 10) {
     viewModelScope.launch {
-      var searchResults: List<Patient> =
+      val searchResults: List<Patient> =
         fhirEngine.search {
           filter(Patient.ADDRESS_CITY) {
             prefix = ParamPrefixEnum.EQUAL
             value = "NAIROBI"
           }
-
+          apply {
+            if (query?.isNotBlank() == true) {
+              filter(Patient.FAMILY) {
+                prefix = ParamPrefixEnum.EQUAL
+                value = query.trim()
+              }
+            }
+          }
           sort(Patient.GIVEN, Order.ASCENDING)
+          count = pageSize
+          from = (page * pageSize)
         }
-      val showOnlyOverdue = SharedPrefrencesHelper.read(PatientListFragment.SHOW_OVERDUE_PATIENTS)
-      searchResults = searchResults.distinctBy { it.logicalId }
-      searchResults =
-        searchResults.filter {
-          (it.nameMatchesFilter(query) || it.idMatchesFilter(query)) &&
-            if (!showOnlyOverdue) true
-            else fetchPatientStatus(it.logicalId).value?.status == VaccineStatus.OVERDUE
-        }
-
-      var startIndex = page * pageSize
-      startIndex = if (searchResults.size > startIndex) startIndex else 0
-      var endIndex = pageSize + (page * pageSize)
-      endIndex = if (searchResults.size > endIndex) endIndex else searchResults.size
-      searchResults = searchResults.subList(startIndex, endIndex)
 
       liveSearchedPaginatedPatients.value =
         Pair(
@@ -109,57 +89,12 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     }
   }
 
-  suspend fun fetchPatientStatus(id: String): LiveData<PatientStatus> {
-    val status = MutableLiveData<PatientStatus>()
-
-    val formatter = SimpleDateFormat("dd-MM-yy", Locale.US)
-
-    val searchResults: List<Immunization> =
-      fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$id" } }
-
-    val computedStatus =
-      if (searchResults.size == 2) VaccineStatus.VACCINATED
-      else if (searchResults.size == 1 &&
-          searchResults[0].isOverdue(PatientListFragment.SECOND_DOSE_OVERDUE_DAYS)
-      )
-        VaccineStatus.OVERDUE
-      else if (searchResults.size == 1) VaccineStatus.PARTIAL else VaccineStatus.DUE
-
-    status.value =
-      PatientStatus(
-        status = computedStatus,
-        details =
-          if (searchResults.isNotEmpty()) formatter.format(searchResults[0].recorded) else ""
-      )
-    return status
-  }
-
-  protected fun Patient.nameMatchesFilter(filter: String?): Boolean {
-    return (filter == null ||
-      (!this.name.isEmpty() &&
-        (this.name.first().family.contains(filter, true) ||
-          this.name.first().given?.first()?.asStringValue()?.contains(filter, true) == true)))
-  }
-
-  protected fun Patient.idMatchesFilter(filter: String?): Boolean {
-    return (filter == null || filter.equals(this.idElement.idPart))
-  }
-
-  /** Basic search for immunizations */
-  fun searchImmunizations(patientId: String? = null) {
-    viewModelScope.launch {
-      val searchResults: List<Immunization> =
-        fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$patientId" } }
-      liveSearchImmunization.value = searchResults
-    }
-  }
-
   /** Returns number of records in database */
   // TODO This is a wasteful query that will be replaced by implementation of
   // https://github.com/google/android-fhir/issues/458
   // https://github.com/opensrp/fhircore/issues/107
   private suspend fun count(query: String? = null): Int {
-    var searchResults: List<Patient> =
+    val searchResults: List<Patient> =
       fhirEngine.search {
         filter(Patient.ADDRESS_CITY) {
           prefix = ParamPrefixEnum.EQUAL
@@ -177,14 +112,6 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
         count = 10000
         from = 0
       }
-
-    val showOnlyOverdue = SharedPrefrencesHelper.read(PatientListFragment.SHOW_OVERDUE_PATIENTS)
-    searchResults = searchResults.distinctBy { it.logicalId }
-    searchResults =
-      searchResults.filter {
-        if (!showOnlyOverdue) true
-        else fetchPatientStatus(it.logicalId).value?.status == VaccineStatus.OVERDUE
-      }
     return searchResults.size
   }
 
@@ -198,39 +125,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     liveSearchPatient.value = patientItems?.get(0)
   }
 
-  fun runSync() {
-    viewModelScope.launch {
-      fhirEngine.syncUpload()
-
-      /** Download Immediately from the server */
-      val syncData =
-        listOf(
-          SyncData(
-            resourceType = ResourceType.Patient,
-            params = mapOf("address-city" to "NAIROBI")
-          ),
-          SyncData(resourceType = ResourceType.Immunization)
-        )
-      fhirEngine.sync(SyncConfiguration(syncData = syncData))
-    }
-  }
-
-  fun isPatientExists(id: String): LiveData<Result<Boolean>> {
-    val result = MutableLiveData<Result<Boolean>>()
-    viewModelScope.launch {
-      try {
-        fhirEngine.load(Patient::class.java, id)
-        result.value = Result.success(true)
-      } catch (e: ResourceNotFoundException) {
-        result.value = Result.failure(e)
-      }
-    }
-    return result
-  }
-
-  fun clearPatientList() {
-    liveSearchedPaginatedPatients.value =
-      Pair(emptyList(), Pagination(totalItems = 0, pageSize = 1, currentPage = 0))
+  fun syncUpload() {
+    viewModelScope.launch { fhirEngine.syncUpload() }
   }
 
   private fun getAssetFileAsString(filename: String): String {
@@ -253,15 +149,6 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     val logicalId: String
   ) {
     override fun toString(): String = name
-  }
-
-  data class PatientStatus(val status: VaccineStatus, val details: String)
-
-  enum class VaccineStatus {
-    VACCINATED,
-    PARTIAL,
-    OVERDUE,
-    DUE
   }
 
   /** The Observation's details for display purposes. */
