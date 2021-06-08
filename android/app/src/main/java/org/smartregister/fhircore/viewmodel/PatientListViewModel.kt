@@ -92,8 +92,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
       searchResults =
         searchResults.filter {
           (it.nameMatchesFilter(query) || it.idMatchesFilter(query)) &&
-            if (!showOnlyOverdue) true
-            else fetchPatientStatus(it.logicalId).value?.status == VaccineStatus.OVERDUE
+            !showOnlyOverdue or
+              (fetchPatientStatus(it.logicalId).value?.status == VaccineStatus.OVERDUE)
         }
 
       var startIndex = page * pageSize
