@@ -9,14 +9,13 @@ jacoco {
 }
 
 android {
-
     compileSdkVersion sdk_versions.compile_sdk
     defaultConfig {
         applicationId "org.smartregister.fhircore"
         minSdkVersion sdk_versions.min_sdk
         targetSdkVersion sdk_versions.target_sdk
         versionCode 1
-        versionName "0.0.3"
+        versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // Required when setting minSdkVersion to 20 or lower
         // See https://developer.android.com/studio/write/java8-support
@@ -79,7 +78,7 @@ dependencies {
 
     coreLibraryDesugaring deps.desugar
 
-    implementation('com.google.android.fhir:datacapture:0.0.7') {
+    implementation('com.google.android.fhir:datacapture:0.0.5') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'

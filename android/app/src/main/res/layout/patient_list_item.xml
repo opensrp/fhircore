@@ -45,7 +45,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         android:textColor="#7A7A7A"
         android:textSize="17sp"
-        android:paddingBottom="20dp"
         android:paddingLeft="10dp" />
 
     <View
@@ -61,14 +60,12 @@
         android:id="@+id/tv_record_vaccine"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:maxWidth="120sp"
-        android:minWidth="120sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:text="Record\nvaccine"
         android:textAllCaps="false"
-        android:textSize="16sp"
+        android:textSize="20sp"
         android:textColor="@color/colorPrimaryLight"
         android:backgroundTint="@color/white"
         android:gravity="center"
