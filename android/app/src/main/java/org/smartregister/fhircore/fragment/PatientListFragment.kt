@@ -29,16 +29,20 @@ import android.widget.Toast
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
+import com.google.android.material.switchmaterial.SwitchMaterial
+import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.activity.PATIENT_ID
 import org.smartregister.fhircore.activity.PatientDetailActivity
 import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.activity.RecordVaccineActivity
-import org.smartregister.fhircore.activity.USER_ID
 import org.smartregister.fhircore.adapter.PatientItemRecyclerViewAdapter
+import org.smartregister.fhircore.util.SharedPrefrencesHelper
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
 import timber.log.Timber
@@ -49,6 +53,7 @@ class PatientListFragment : Fragment() {
   private lateinit var fhirEngine: FhirEngine
   private var search: String? = null
   private val pageCount: Int = 7
+  private var adapter: PatientItemRecyclerViewAdapter? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -58,15 +63,24 @@ class PatientListFragment : Fragment() {
     return inflater.inflate(R.layout.fragment_patient_list, container, false)
   }
 
+  private fun patientStatusObserver(
+    patientId: String,
+    observer: Observer<PatientListViewModel.PatientStatus>
+  ) {
+    runBlocking {
+      patientListViewModel.fetchPatientStatus(patientId).observe(requireActivity(), observer)
+    }
+  }
+
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     fhirEngine = FhirApplication.fhirEngine(requireContext())
 
     val recyclerView = view.findViewById<RecyclerView>(R.id.patient_list)
-    val adapter =
+    adapter =
       PatientItemRecyclerViewAdapter(
         this::onPatientItemClicked,
         this::onNavigationClicked,
-        this::onRecordVaccineClicked
+        this::patientStatusObserver
       )
     recyclerView.adapter = adapter
 
@@ -90,10 +104,21 @@ class PatientListFragment : Fragment() {
         Timber.d("Submitting ${it.first.count()} patient records")
         val list = ArrayList<Any>(it.first)
         list.add(it.second)
-        adapter.submitList(list)
-        adapter.notifyDataSetChanged()
+        adapter?.submitList(list)
+        adapter?.notifyDataSetChanged()
       }
     )
+
+    requireActivity()
+      .findViewById<SwitchMaterial>(R.id.btn_show_overdue_patients)
+      .setOnCheckedChangeListener { buttonView, isChecked ->
+        SharedPrefrencesHelper.write(SHOW_OVERDUE_PATIENTS, isChecked)
+        patientListViewModel.searchResults(
+          requireActivity().findViewById<EditText>(R.id.edit_text_search).text.toString(),
+          0,
+          pageCount
+        )
+      }
 
     requireActivity()
       .findViewById<EditText>(R.id.edit_text_search)
@@ -110,8 +135,16 @@ class PatientListFragment : Fragment() {
         }
       )
 
-    patientListViewModel.searchResults(page = 0, pageSize = pageCount)
     super.onViewCreated(view, savedInstanceState)
+  }
+
+  override fun onResume() {
+    patientListViewModel.searchResults(
+      page = 0,
+      pageSize = pageCount
+    ) // TODO: might need to move this to happen when a user clicks a button
+    adapter?.notifyDataSetChanged()
+    super.onResume()
   }
 
   // Click handler to help display the details about the patients from the list.
@@ -121,27 +154,43 @@ class PatientListFragment : Fragment() {
   }
 
   // Click handler to help display the details about the patients from the list.
-  private fun onPatientItemClicked(patientItem: PatientListViewModel.PatientItem) {
-    val intent =
-      Intent(requireContext(), PatientDetailActivity::class.java).apply {
-        putExtra(PatientDetailFragment.ARG_ITEM_ID, patientItem.logicalId)
+  private fun onPatientItemClicked(
+    intention: Intention,
+    patientItem: PatientListViewModel.PatientItem
+  ) {
+    when (intention) {
+      Intention.RECORD_VACCINE -> {
+        startActivity(
+          Intent(requireContext(), RecordVaccineActivity::class.java).apply {
+            putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
+            putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
+            putExtra(PATIENT_ID, patientItem.logicalId)
+          }
+        )
       }
-    this.startActivity(intent)
-  }
-
-  private fun onRecordVaccineClicked(patientItem: PatientListViewModel.PatientItem) {
-    startActivity(
-      Intent(requireContext(), RecordVaccineActivity::class.java).apply {
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
-        putExtra(USER_ID, patientItem.logicalId)
+      Intention.VIEW -> {
+        this.startActivity(
+          Intent(requireContext(), PatientDetailActivity::class.java).apply {
+            putExtra(PatientDetailFragment.ARG_ITEM_ID, patientItem.logicalId)
+          }
+        )
       }
-    )
+    }
   }
 
   private fun syncResources() {
     patientListViewModel.searchResults()
     Toast.makeText(requireContext(), "Syncing...", Toast.LENGTH_LONG).show()
     patientListViewModel.syncUpload()
+  }
+
+  enum class Intention {
+    RECORD_VACCINE,
+    VIEW
+  }
+
+  companion object {
+    const val SHOW_OVERDUE_PATIENTS = "show_overdue_patients"
+    const val SECOND_DOSE_OVERDUE_DAYS = -28
   }
 }

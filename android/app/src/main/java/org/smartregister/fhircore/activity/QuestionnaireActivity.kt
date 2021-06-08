@@ -96,7 +96,7 @@ class QuestionnaireActivity : AppCompatActivity() {
     patient.id =
       intent.getStringExtra(PatientDetailFragment.ARG_ITEM_ID) ?: patient.name.first().family
 
-    viewModel.savePatient(patient)
+    viewModel.saveResource(patient)
 
     this.startActivity(Intent(this, PatientListActivity::class.java))
   }

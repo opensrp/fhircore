@@ -44,10 +44,10 @@ class FhirApplication : Application() {
   override fun onCreate() {
     super.onCreate()
     mContext = this
+    SharedPrefrencesHelper.init(this)
   }
 
   private fun constructFhirEngine(): FhirEngine {
-    SharedPrefrencesHelper.init(this)
     val parser = FhirContext.forR4().newJsonParser()
     val service = create(parser)
     val params = mutableMapOf("address-city" to "NAIROBI")
