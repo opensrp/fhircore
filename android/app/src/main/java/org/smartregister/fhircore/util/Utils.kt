@@ -19,14 +19,10 @@ package org.smartregister.fhircore.util
 import android.view.MotionEvent
 import android.view.View
 import android.widget.EditText
-import java.util.Calendar
-import org.hl7.fhir.r4.model.Immunization
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.joda.time.ReadablePartial
 import org.joda.time.Years
-import org.joda.time.format.DateTimeFormat
-import org.joda.time.format.DateTimeFormatter
 
 object Utils {
 
@@ -78,16 +74,5 @@ object Utils {
     DRAWABLE_TOP(1),
     DRAWABLE_RIGHT(2),
     DRAWABLE_BOTTOM(3)
-  }
-
-  fun addDays(initialDate: String, daysToAdd: Int = 0, returnDateFormat: String = "M-d-Y"): String {
-    val fmt: DateTimeFormatter = DateTimeFormat.forPattern(returnDateFormat)
-    val date: DateTime = DateTime.parse(initialDate)
-    return date.plusDays(daysToAdd).toString(fmt)
-  }
-
-  fun Immunization.isOverdue(daysToAdd: Int): Boolean {
-    val cal: Calendar = Calendar.getInstance().apply { add(Calendar.DATE, daysToAdd) }
-    return recorded.before(cal.time)
   }
 }

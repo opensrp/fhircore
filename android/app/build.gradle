@@ -3,20 +3,20 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: "com.github.kt3k.coveralls"
 apply plugin: 'jacoco'
+apply plugin: 'de.mannodermaus.android-junit5'
 
 jacoco {
     toolVersion = versions.jacoco_tool
 }
 
 android {
-
     compileSdkVersion sdk_versions.compile_sdk
     defaultConfig {
         applicationId "org.smartregister.fhircore"
         minSdkVersion sdk_versions.min_sdk
         targetSdkVersion sdk_versions.target_sdk
         versionCode 1
-        versionName "0.0.3"
+        versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // Required when setting minSdkVersion to 20 or lower
         // See https://developer.android.com/studio/write/java8-support
@@ -56,11 +56,17 @@ android {
     }
 
     testOptions {
-        execution 'ANDROID_TEST_ORCHESTRATOR'
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
         animationsDisabled true
         unitTests {
             returnDefaultValues = true
             includeAndroidResources = true
+        }
+        unitTests.all {
+            jacoco {
+                includeNoLocationClasses = true
+                excludes = ['jdk.internal.*']
+            }
         }
     }
 }
@@ -79,7 +85,7 @@ dependencies {
 
     coreLibraryDesugaring deps.desugar
 
-    implementation('com.google.android.fhir:datacapture:0.0.7') {
+    implementation('com.google.android.fhir:datacapture:0.0.5') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -153,16 +159,15 @@ dependencies {
 
     kapt deps.room.compiler
 
-    testImplementation deps.junit
+    testImplementation deps.junit5_api
+    testRuntimeOnly deps.junit5_engine
+    testRuntimeOnly deps.junit5_engine_vintage
     testImplementation deps.robolectric
-    testImplementation deps.power_mock.module_junit4
-    testImplementation deps.power_mock.module_junit4_rule
-    testImplementation deps.power_mock.powermock_api_mockito2
-    testImplementation deps.power_mock.powermock_classloading_xstream
-    testImplementation deps.power_mock.powermock_reflect
     testImplementation deps.atsl.ext_junit
     testImplementation deps.atsl.ext_junit_ktx
     debugImplementation deps.fragment_testing
+    releaseImplementation deps.fragment_testing
+    testImplementation deps.mockk
 }
 
 task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'createDebugCoverageReport']) {
@@ -183,7 +188,7 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'crea
     sourceDirectories.from(files([mainSrc]))
     classDirectories.from(files([debugTreeJava, debugTreeKotlin]))
     executionData.from(fileTree(dir: project.buildDir, includes: [
-            'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec'
+            'jacoco/testDebugUnitTest.exec', 'outputs/code_coverage/debugAndroidTest/connected/*coverage.ec'
     ]))
 }
 

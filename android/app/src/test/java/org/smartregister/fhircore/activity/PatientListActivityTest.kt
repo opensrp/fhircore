@@ -14,23 +14,33 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.robolectric.fragment
+package org.smartregister.fhircore.activity
 
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.testing.FragmentScenario
-import androidx.lifecycle.Lifecycle
-import org.junit.After
+import android.app.Activity
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.robolectric.RobolectricTest
-import org.smartregister.fhircore.robolectric.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
 @Config(shadows = [FhirApplicationShadow::class])
-abstract class FragmentRobolectricTest : RobolectricTest() {
+class PatientListActivityTest : ActivityRobolectricTest() {
 
-  @After
-  fun tearDown() {
-    getFragmentScenario().moveToState(Lifecycle.State.DESTROYED)
+  private lateinit var patientListActivity: PatientListActivity
+
+  @Before
+  fun setUp() {
+    patientListActivity =
+      Robolectric.buildActivity(PatientListActivity::class.java, null).create().resume().get()
   }
 
-  abstract fun getFragmentScenario(): FragmentScenario<out Fragment>
+  @Test
+  fun testPatientActivityShouldNotNull() {
+    Assert.assertNotNull(patientListActivity)
+  }
+
+  override fun getActivity(): Activity {
+    return patientListActivity
+  }
 }

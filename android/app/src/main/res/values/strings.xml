@@ -23,6 +23,9 @@
     <string name="add_patient">Add Patient</string>
     <string name="menu_sync_resources">Sync Resources</string>
 
+    <string name="empty_client_list_message_title">No Results</string>
+    <string name="empty_client_list_message_details">Sorry, we could not find client with given name or ID</string>
+
     <!-- For display observations in brief, for a patient -->
     <string name="observation_brief_text">%1$s: %2$s\nEffective: %3$s</string>
 
@@ -35,14 +38,4 @@
     <string name="str_previous">&lt;&lt; Previous</string>
     <string name="str_page_info">Page %1$d of %2$d</string>
     <string name="edit">Edit</string>
-
-    <string name="immunization_brief_text">"Received %1$s dose %2$d"</string>
-    <string name="immunization_next_dose_text">"Dose %1$d due %2$s"</string>
-
-    <string name="status_vaccinated">Vaccinated</string>
-    <string name="status_overdue">Overdue</string>
-    <string name="status_received_vaccine">Vaccine %1$d \n%2$s</string>
-    <string name="status_record_vaccine">Record \n Vaccine</string>
-    <string name="view_vaccine_certificate">"View vaccine certificate"</string>
-    <string name="fully_vaccinated">"Fully vaccinated"</string>
 </resources>

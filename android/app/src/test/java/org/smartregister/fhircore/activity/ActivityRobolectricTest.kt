@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.robolectric
+package org.smartregister.fhircore.activity
 
-import android.os.Build
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import org.junit.runner.RunWith
-import org.robolectric.annotation.Config
+import android.app.Activity
+import org.junit.After
+import org.smartregister.fhircore.RobolectricTest
 
-@RunWith(AndroidJUnit4::class)
-@Config(sdk = [Build.VERSION_CODES.O_MR1])
-abstract class RobolectricTest
+abstract class ActivityRobolectricTest : RobolectricTest() {
+
+  @After
+  fun testDown() {
+    getActivity().finish()
+  }
+
+  abstract fun getActivity(): Activity
+}
