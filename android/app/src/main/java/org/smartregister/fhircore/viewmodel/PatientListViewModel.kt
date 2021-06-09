@@ -42,8 +42,8 @@ import org.smartregister.fhircore.data.SamplePatients
 import org.smartregister.fhircore.domain.Pagination
 import org.smartregister.fhircore.fragment.PatientListFragment
 import org.smartregister.fhircore.util.SharedPrefrencesHelper
-import org.smartregister.fhircore.util.Utils.isOverdue
 import org.smartregister.fhircore.util.Utils
+import org.smartregister.fhircore.util.Utils.isOverdue
 
 private const val OBSERVATIONS_JSON_FILENAME = "sample_observations_bundle.json"
 
