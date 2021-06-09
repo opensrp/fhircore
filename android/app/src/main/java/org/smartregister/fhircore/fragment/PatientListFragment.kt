@@ -95,10 +95,9 @@ class PatientListFragment : Fragment() {
         adapter.submitList(list)
         adapter.notifyDataSetChanged()
 
-        if(it.first.count() == 0){
+        if (it.first.count() == 0) {
           showEmptyListViews()
-        }
-        else {
+        } else {
           hideEmptyListViews()
         }
       }
@@ -123,29 +122,28 @@ class PatientListFragment : Fragment() {
     super.onViewCreated(view, savedInstanceState)
   }
 
-  private fun hideEmptyListViews(){
+  private fun hideEmptyListViews() {
     setVisibility(R.id.empty_list_message_container, View.INVISIBLE)
     setRegisterButtonAlignment(RelativeLayout.ALIGN_PARENT_BOTTOM)
   }
 
-  private fun showEmptyListViews(){
+  private fun showEmptyListViews() {
     setVisibility(R.id.empty_list_message_container, View.VISIBLE)
     setRegisterButtonAlignment(RelativeLayout.BELOW)
   }
 
-  private fun setVisibility(id: Int, visibility: Int){
+  private fun setVisibility(id: Int, visibility: Int) {
     requireActivity().findViewById<View>(id).visibility = visibility
   }
 
-  private fun setRegisterButtonAlignment(alignment: Int){
+  private fun setRegisterButtonAlignment(alignment: Int) {
     val button = requireActivity().findViewById<Button>(R.id.btn_register_new_patient)
     val params = button.layoutParams as RelativeLayout.LayoutParams
 
-    if(alignment == RelativeLayout.BELOW){
+    if (alignment == RelativeLayout.BELOW) {
       params.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
       params.addRule(RelativeLayout.BELOW, R.id.empty_list_message_container)
-    }
-    else {
+    } else {
       params.removeRule(RelativeLayout.BELOW)
       params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE)
     }

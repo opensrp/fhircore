@@ -44,10 +44,9 @@ class PaginationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     nextButton.visibility = if (pagination.hasNextPage()) View.GONE else View.VISIBLE
     prevButton.visibility = if (pagination.hasPreviousPage()) View.GONE else View.VISIBLE
 
-    if(pagination.totalPages() < 2){
+    if (pagination.totalPages() < 2) {
       this.infoTextView.text = ""
-    }
-    else {
+    } else {
       this.infoTextView.text =
         itemView.resources.getString(
           R.string.str_page_info,
