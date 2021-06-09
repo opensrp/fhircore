@@ -1,4 +1,4 @@
-[![Android CI with Gradle](https://github.com/opensrp/fhircore/actions/workflows/ci.yml/badge.svg)](https://github.com/opensrp/fhircore/actions/workflows/ci.yml) [![Coverage Status](https://coveralls.io/repos/github/OpenSRP/fhircore/badge.svg?branch=main)](https://coveralls.io/github/OpenSRP/fhircore?branch=main)
+[![Android CI with Gradle](https://github.com/opensrp/fhircore/actions/workflows/ci.yml/badge.svg)](https://github.com/opensrp/fhircore/actions/workflows/ci.yml) [![Coverage Status](https://coveralls.io/repos/github/opensrp/fhircore/badge.svg?branch=main)](https://coveralls.io/github/opensrp/fhircore?branch=main)
 
 # OpenSRP FHIR Core
 
