@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.robolectric
+package org.smartregister.fhircore
 
 import android.os.Build
 import androidx.test.ext.junit.runners.AndroidJUnit4
