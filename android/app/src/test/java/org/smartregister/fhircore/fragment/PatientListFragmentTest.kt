@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.fragment
 
+import android.os.Looper
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
@@ -25,7 +26,9 @@ import org.junit.Before
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.LooperMode
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.RobolectricTest
 import org.smartregister.fhircore.activity.PatientDetailActivity
@@ -71,6 +74,9 @@ class PatientListFragmentTest : RobolectricTest() {
         "0700 000 000",
         logicalId
       )
+
+    shadowOf(Looper.getMainLooper()).idle()
+
     patientListFragment.onPatientItemClicked(patientItem)
 
     val shadowActivity = Shadows.shadowOf(patientListActivity)
@@ -88,6 +94,8 @@ class PatientListFragmentTest : RobolectricTest() {
 
   @Test
   fun testEmptyListMessageWithZeroClients() {
+    shadowOf(Looper.getMainLooper()).idle()
+
     val container = getView<LinearLayout>(R.id.empty_list_message_container)
     val buttonLayout =
       getView<Button>(R.id.btn_register_new_patient).layoutParams as RelativeLayout.LayoutParams
@@ -111,12 +119,15 @@ class PatientListFragmentTest : RobolectricTest() {
         "0700 000 000",
         "test_id"
       )
+    shadowOf(Looper.getMainLooper()).idle()
+
     patientListFragment.patientListViewModel.liveSearchedPaginatedPatients.value =
       Pair(mutableListOf(patient), Pagination(totalItems = 1, pageSize = 5, currentPage = 1))
 
     val container = getView<LinearLayout>(R.id.empty_list_message_container)
     val buttonLayout =
       getView<Button>(R.id.btn_register_new_patient).layoutParams as RelativeLayout.LayoutParams
+
 
     Assert.assertEquals(View.INVISIBLE, container.visibility)
     Assert.assertEquals(
