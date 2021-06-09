@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.robolectric.fragment
+package org.smartregister.fhircore.fragment
 
 import android.content.Intent
 import android.widget.TextView
