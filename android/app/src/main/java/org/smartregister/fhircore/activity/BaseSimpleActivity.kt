@@ -36,7 +36,7 @@ import timber.log.Timber
 
 abstract class BaseSimpleActivity :
   AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-  private lateinit var viewModel: BaseViewModel
+  lateinit var viewModel: BaseViewModel
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -88,7 +88,7 @@ abstract class BaseSimpleActivity :
     navigationView.setNavigationItemSelectedListener(this)
   }
 
-  protected fun getNavigationView(): NavigationView {
+  fun getNavigationView(): NavigationView {
     return findViewById<View>(R.id.nav_view) as NavigationView
   }
 

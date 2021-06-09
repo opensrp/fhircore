@@ -50,11 +50,6 @@ class FhirApplication : Application() {
   private val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
   private val mInstance: FhirApplication by lazy { this }
 
-  override fun onCreate() {
-    super.onCreate()
-    mContext = this
-  }
-
   private fun constructFhirEngine(): FhirEngine {
     SharedPrefrencesHelper.init(this)
     val parser = FhirContext.forR4().newJsonParser()
