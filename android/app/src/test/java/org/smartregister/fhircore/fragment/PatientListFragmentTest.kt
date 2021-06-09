@@ -28,7 +28,6 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
-import org.robolectric.annotation.LooperMode
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.RobolectricTest
 import org.smartregister.fhircore.activity.PatientDetailActivity
@@ -127,7 +126,6 @@ class PatientListFragmentTest : RobolectricTest() {
     val container = getView<LinearLayout>(R.id.empty_list_message_container)
     val buttonLayout =
       getView<Button>(R.id.btn_register_new_patient).layoutParams as RelativeLayout.LayoutParams
-
 
     Assert.assertEquals(View.INVISIBLE, container.visibility)
     Assert.assertEquals(
