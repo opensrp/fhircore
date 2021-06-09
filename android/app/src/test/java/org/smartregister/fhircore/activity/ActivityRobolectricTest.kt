@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.activity
 
-import org.junit.Assert
-import org.junit.Test
+import android.app.Activity
+import org.junit.After
+import org.smartregister.fhircore.RobolectricTest
 
-class Sample {
+abstract class ActivityRobolectricTest : RobolectricTest() {
 
-  @Test
-  fun helloTest() {
-    Assert.assertEquals(1, 1)
+  @After
+  fun testDown() {
+    getActivity().finish()
   }
+
+  abstract fun getActivity(): Activity
 }

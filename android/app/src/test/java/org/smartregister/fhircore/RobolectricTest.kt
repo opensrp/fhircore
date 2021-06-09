@@ -17,10 +17,9 @@
 package org.smartregister.fhircore
 
 import android.os.Build
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 
-@RunWith(AndroidJUnit4::class)
+@RunWith(FhircoreTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1])
 abstract class RobolectricTest
