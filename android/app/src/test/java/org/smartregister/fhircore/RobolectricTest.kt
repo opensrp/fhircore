@@ -19,6 +19,7 @@ package org.smartregister.fhircore
 import android.os.Build
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.robolectric.FhircoreTestRunner
 
 @RunWith(FhircoreTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1])

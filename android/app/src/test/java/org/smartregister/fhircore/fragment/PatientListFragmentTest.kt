@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.robolectric.fragment
+package org.smartregister.fhircore.fragment
 
 import android.view.View
 import android.widget.Button
@@ -31,9 +31,7 @@ import org.smartregister.fhircore.RobolectricTest
 import org.smartregister.fhircore.activity.PatientDetailActivity
 import org.smartregister.fhircore.activity.PatientListActivity
 import org.smartregister.fhircore.domain.Pagination
-import org.smartregister.fhircore.fragment.PatientDetailFragment
-import org.smartregister.fhircore.fragment.PatientListFragment
-import org.smartregister.fhircore.robolectric.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 
 /**
