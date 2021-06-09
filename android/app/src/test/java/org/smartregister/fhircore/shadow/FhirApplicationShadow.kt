@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.robolectric.shadow
+package org.smartregister.fhircore.shadow
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider

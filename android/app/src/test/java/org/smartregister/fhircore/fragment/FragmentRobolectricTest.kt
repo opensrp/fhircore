@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.fragment
 
-import org.junit.Assert
-import org.junit.Test
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.testing.FragmentScenario
+import androidx.lifecycle.Lifecycle
+import org.junit.After
+import org.smartregister.fhircore.robolectric.RobolectricTest
 
-class Sample {
+abstract class FragmentRobolectricTest : RobolectricTest() {
 
-  @Test
-  fun helloTest() {
-    Assert.assertEquals(1, 1)
+  @After
+  fun tearDown() {
+    getFragmentScenario().moveToState(Lifecycle.State.DESTROYED)
   }
+
+  abstract fun getFragmentScenario(): FragmentScenario<out Fragment>
 }
