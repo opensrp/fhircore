@@ -76,7 +76,7 @@ class PatientListFragmentTest : RobolectricTest() {
 
     shadowOf(Looper.getMainLooper()).idle()
 
-    patientListFragment.onPatientItemClicked(patientItem)
+    patientListFragment.onPatientItemClicked(PatientListFragment.Intention.VIEW, patientItem)
 
     val shadowActivity = Shadows.shadowOf(patientListActivity)
     val startedActivityIntent = shadowActivity.peekNextStartedActivity()

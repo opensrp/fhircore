@@ -33,6 +33,7 @@ import com.google.android.fhir.sync.SyncConfiguration
 import com.google.android.fhir.sync.SyncData
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
@@ -96,13 +97,15 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
           from = (page * pageSize)
         }
 
-      val showOnlyOverdue = SharedPrefrencesHelper.read(PatientListFragment.SHOW_OVERDUE_PATIENTS)
+      val shouldShowOnlyOverduePatients =
+        SharedPrefrencesHelper.read(PatientListFragment.SHOW_OVERDUE_PATIENTS)
       searchResults = searchResults.distinctBy { it.logicalId }
-      searchResults =
-        searchResults.filter {
-          !showOnlyOverdue or
-            (fetchPatientStatus(it.logicalId).value?.status == VaccineStatus.OVERDUE)
-        }
+      if (shouldShowOnlyOverduePatients) {
+        searchResults =
+          searchResults.filter {
+            fetchPatientStatus(it.logicalId).value?.status == VaccineStatus.OVERDUE
+          }
+      }
 
       liveSearchedPaginatedPatients.value =
         Pair(
@@ -168,13 +171,15 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
         from = 0
       }
 
-    val showOnlyOverdue = SharedPrefrencesHelper.read(PatientListFragment.SHOW_OVERDUE_PATIENTS)
+    val shouldShowOnlyOverduePatients =
+      SharedPrefrencesHelper.read(PatientListFragment.SHOW_OVERDUE_PATIENTS)
     searchResults = searchResults.distinctBy { it.logicalId }
-    searchResults =
-      searchResults.filter {
-        !showOnlyOverdue or
-          (fetchPatientStatus(it.logicalId).value?.status == VaccineStatus.OVERDUE)
-      }
+    if (shouldShowOnlyOverduePatients) {
+      searchResults =
+        searchResults.filter {
+          fetchPatientStatus(it.logicalId).value?.status == VaccineStatus.OVERDUE
+        }
+    }
     return searchResults.size
   }
 

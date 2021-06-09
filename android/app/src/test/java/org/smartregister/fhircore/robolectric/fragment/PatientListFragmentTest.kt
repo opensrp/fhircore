@@ -20,13 +20,15 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
 import com.google.android.material.switchmaterial.SwitchMaterial
+import io.mockk.every
+import io.mockk.spyk
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.PatientListActivity
+import org.smartregister.fhircore.fragment.FragmentRobolectricTest
 import org.smartregister.fhircore.fragment.PatientListFragment
 import org.smartregister.fhircore.util.SharedPrefrencesHelper
 
@@ -65,8 +67,8 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
       override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
         val patientListActivity =
           Robolectric.buildActivity(PatientListActivity::class.java).create().resume().get()
-        val fragment = Mockito.spy(PatientListFragment())
-        Mockito.`when`(fragment.activity).thenReturn(patientListActivity)
+        val fragment = spyk(PatientListFragment())
+        every { fragment.activity } returns patientListActivity
         return fragment
       }
     }

@@ -191,10 +191,7 @@ class PatientListFragment : Fragment() {
   }
 
   // Click handler to help display the details about the patients from the list.
-  private fun onPatientItemClicked(
-    intention: Intention,
-    patientItem: PatientListViewModel.PatientItem
-  ) {
+  fun onPatientItemClicked(intention: Intention, patientItem: PatientListViewModel.PatientItem) {
     when (intention) {
       Intention.RECORD_VACCINE -> {
         startActivity(

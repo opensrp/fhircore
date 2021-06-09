@@ -38,9 +38,7 @@ import org.robolectric.Shadows
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.QuestionnaireActivity
-import org.smartregister.fhircore.fragment.PatientDetailFragment
-import org.smartregister.fhircore.fragment.PatientListFragment
-import org.smartregister.fhircore.robolectric.activity.QuestionnaireActivityTest
+import org.smartregister.fhircore.activity.QuestionnaireActivityTest
 import org.smartregister.fhircore.util.SharedPrefrencesHelper
 
 class PatientDetailFragmentTest : FragmentRobolectricTest() {
