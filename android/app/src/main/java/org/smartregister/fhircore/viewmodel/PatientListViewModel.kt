@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.data.SamplePatients
 import org.smartregister.fhircore.domain.Pagination
+import org.smartregister.fhircore.util.Utils
 
 private const val OBSERVATIONS_JSON_FILENAME = "sample_observations_bundle.json"
 
@@ -64,10 +65,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     viewModelScope.launch {
       val searchResults: List<Patient> =
         fhirEngine.search {
-          filter(Patient.ADDRESS_CITY) {
-            prefix = ParamPrefixEnum.EQUAL
-            value = "NAIROBI"
-          }
+          Utils.addBasePatientFilter(this)
+
           apply {
             if (query?.isNotBlank() == true) {
               filter(Patient.FAMILY) {
@@ -96,10 +95,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   private suspend fun count(query: String? = null): Int {
     val searchResults: List<Patient> =
       fhirEngine.search {
-        filter(Patient.ADDRESS_CITY) {
-          prefix = ParamPrefixEnum.EQUAL
-          value = "NAIROBI"
-        }
+        Utils.addBasePatientFilter(this)
+
         apply {
           if (query?.isNotBlank() == true) {
             filter(Patient.FAMILY) {

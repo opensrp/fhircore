@@ -31,7 +31,6 @@ import org.smartregister.fhircore.FhirApplication
 
 @Implements(FhirApplication::class)
 class FhirApplicationShadow : ShadowApplication() {
-
   private val dataSource =
     object : FhirDataSource {
       override suspend fun loadData(path: String): Bundle {
