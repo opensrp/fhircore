@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.robolectric.activity
+package org.smartregister.fhircore.activity
 
 import android.app.Activity
 import org.junit.After
