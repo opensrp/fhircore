@@ -56,11 +56,16 @@ android {
     }
 
     testOptions {
-        execution 'ANDROID_TEST_ORCHESTRATOR'
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
         animationsDisabled true
         unitTests {
             returnDefaultValues = true
             includeAndroidResources = true
+        }
+        unitTests.all {
+            jacoco {
+                includeNoLocationClasses = true
+            }
         }
     }
 }
@@ -157,14 +162,11 @@ dependencies {
     testRuntimeOnly deps.junit5_engine
     testRuntimeOnly deps.junit5_engine_vintage
     testImplementation deps.robolectric
-    testImplementation deps.power_mock.module_junit4
-    testImplementation deps.power_mock.module_junit4_rule
-    testImplementation deps.power_mock.powermock_api_mockito2
-    testImplementation deps.power_mock.powermock_classloading_xstream
-    testImplementation deps.power_mock.powermock_reflect
     testImplementation deps.atsl.ext_junit
     testImplementation deps.atsl.ext_junit_ktx
     debugImplementation deps.fragment_testing
+    releaseImplementation deps.fragment_testing
+    testImplementation deps.mockk
 }
 
 task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'createDebugCoverageReport']) {
@@ -185,7 +187,7 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'crea
     sourceDirectories.from(files([mainSrc]))
     classDirectories.from(files([debugTreeJava, debugTreeKotlin]))
     executionData.from(fileTree(dir: project.buildDir, includes: [
-            'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec'
+            'jacoco/testDebugUnitTest.exec', 'outputs/code_coverage/debugAndroidTest/connected/*coverage.ec'
     ]))
 }
 

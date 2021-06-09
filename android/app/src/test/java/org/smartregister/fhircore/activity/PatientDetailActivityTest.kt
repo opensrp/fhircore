@@ -18,13 +18,15 @@ package org.smartregister.fhircore.activity
 
 import android.app.Activity
 import android.view.MenuItem
+import io.mockk.confirmVerified
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
-import org.mockito.Mockito
 import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
+import org.robolectric.fakes.RoboMenuItem
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
@@ -46,16 +48,17 @@ class PatientDetailActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  @Ignore("TO DO fix : Fails with threading error ")
   fun testOnOptionsItemSelectedShouldCallEditPatientInfo() {
-    val menuItem = Mockito.mock(MenuItem::class.java)
-    Mockito.`when`(menuItem.itemId).thenReturn(R.id.patient_profile_edit)
 
-    val fragment = Mockito.mock(PatientDetailFragment::class.java)
+    val fragment = mockk<PatientDetailFragment>(relaxed = true)
     patientDetailActivity.fragment = fragment
 
+    val menuItem: MenuItem = RoboMenuItem(R.id.patient_profile_edit)
     patientDetailActivity.onOptionsItemSelected(menuItem)
-    Mockito.verify(fragment, Mockito.times(1)).editPatient()
+
+    verify { fragment.editPatient() }
+
+    confirmVerified(fragment)
   }
 
   override fun getActivity(): Activity {

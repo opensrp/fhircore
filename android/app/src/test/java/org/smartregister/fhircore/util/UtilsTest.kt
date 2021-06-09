@@ -22,7 +22,10 @@ import org.apache.commons.lang3.time.DateUtils
 import org.joda.time.DateTime
 import org.junit.Assert
 import org.junit.Test
+import org.robolectric.annotation.Config
+import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
+@Config(shadows = [FhirApplicationShadow::class])
 class UtilsTest {
 
   @Test

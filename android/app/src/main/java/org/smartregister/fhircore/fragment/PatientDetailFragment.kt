@@ -80,8 +80,8 @@ class PatientDetailFragment : Fragment() {
     )
 
     arguments?.let {
-      if (it.containsKey(ARG_ITEM_ID)) {
-        it.getString(ARG_ITEM_ID)?.let { it1 ->
+      if (it.containsKey(Companion.ARG_ITEM_ID)) {
+        it.getString(Companion.ARG_ITEM_ID)?.let { it1 ->
           viewModel.getPatientItem(it1)
           patitentId = it1
         }
@@ -132,7 +132,7 @@ class PatientDetailFragment : Fragment() {
         Intent(requireContext(), QuestionnaireActivity::class.java).apply {
           putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
           putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
-          putExtra(ARG_ITEM_ID, it.logicalId)
+          putExtra(Companion.ARG_ITEM_ID, it.logicalId)
         }
       )
     }
