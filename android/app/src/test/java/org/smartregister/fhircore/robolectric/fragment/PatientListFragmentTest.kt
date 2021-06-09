@@ -14,17 +14,25 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.fragment
+package org.smartregister.fhircore.robolectric.fragment
 
+import android.view.View
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.R
 import org.smartregister.fhircore.RobolectricTest
 import org.smartregister.fhircore.activity.PatientDetailActivity
 import org.smartregister.fhircore.activity.PatientListActivity
+import org.smartregister.fhircore.domain.Pagination
+import org.smartregister.fhircore.fragment.PatientDetailFragment
+import org.smartregister.fhircore.fragment.PatientListFragment
 import org.smartregister.fhircore.robolectric.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 
@@ -78,5 +86,48 @@ class PatientListFragmentTest : RobolectricTest() {
       PatientDetailActivity::class.java.name,
       startedActivityIntent.component?.className
     )
+  }
+
+  @Test
+  fun testEmptyListMessageWithZeroClients() {
+    val container = getView<LinearLayout>(R.id.empty_list_message_container)
+    val buttonLayout =
+      getView<Button>(R.id.btn_register_new_patient).layoutParams as RelativeLayout.LayoutParams
+
+    Assert.assertEquals(View.VISIBLE, container.visibility)
+    Assert.assertEquals(
+      R.id.empty_list_message_container,
+      buttonLayout.getRule(RelativeLayout.BELOW)
+    )
+  }
+
+  @Test
+  fun testEmptyListMessageWithNonZeroClients() {
+    var patient =
+      PatientListViewModel.PatientItem(
+        "12",
+        "John Doe",
+        "male",
+        "1985-05-21",
+        "somehtml",
+        "0700 000 000",
+        "test_id"
+      )
+    patientListFragment.patientListViewModel.liveSearchedPaginatedPatients.value =
+      Pair(mutableListOf(patient), Pagination(totalItems = 1, pageSize = 5, currentPage = 1))
+
+    val container = getView<LinearLayout>(R.id.empty_list_message_container)
+    val buttonLayout =
+      getView<Button>(R.id.btn_register_new_patient).layoutParams as RelativeLayout.LayoutParams
+
+    Assert.assertEquals(View.INVISIBLE, container.visibility)
+    Assert.assertEquals(
+      RelativeLayout.TRUE,
+      buttonLayout.getRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+    )
+  }
+
+  private fun <T : View?> getView(id: Int): T {
+    return patientListFragment.requireActivity().findViewById<T>(id)
   }
 }

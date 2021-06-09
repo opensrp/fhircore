@@ -47,7 +47,7 @@ import timber.log.Timber
 
 class PatientListFragment : Fragment() {
 
-  private lateinit var patientListViewModel: PatientListViewModel
+  internal lateinit var patientListViewModel: PatientListViewModel
   private lateinit var fhirEngine: FhirEngine
   private var search: String? = null
   private val pageCount: Int = 6
