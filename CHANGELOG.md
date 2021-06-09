@@ -14,3 +14,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Build barcode scanner
 - Track patient vaccine status
 - Display immunization info on the Patient Profile 
+- Display message on empty list along with new client register button
