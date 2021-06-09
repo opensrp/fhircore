@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.robolectric.activity
+package org.smartregister.fhircore.activity
 
 import android.app.Activity
 import android.widget.TextView
@@ -24,8 +24,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.activity.PatientListActivity
-import org.smartregister.fhircore.robolectric.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
 @Config(shadows = [FhirApplicationShadow::class])
 class PatientListActivityTest : ActivityRobolectricTest() {

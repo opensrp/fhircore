@@ -47,7 +47,7 @@ import timber.log.Timber
 
 class PatientListFragment : Fragment() {
 
-  private lateinit var patientListViewModel: PatientListViewModel
+  internal lateinit var patientListViewModel: PatientListViewModel
   private lateinit var fhirEngine: FhirEngine
   private var search: String? = null
   private val pageCount: Int = 6
@@ -158,7 +158,7 @@ class PatientListFragment : Fragment() {
   }
 
   // Click handler to help display the details about the patients from the list.
-  private fun onPatientItemClicked(patientItem: PatientListViewModel.PatientItem) {
+  internal fun onPatientItemClicked(patientItem: PatientListViewModel.PatientItem) {
     val intent =
       Intent(requireContext(), PatientDetailActivity::class.java).apply {
         putExtra(PatientDetailFragment.ARG_ITEM_ID, patientItem.logicalId)

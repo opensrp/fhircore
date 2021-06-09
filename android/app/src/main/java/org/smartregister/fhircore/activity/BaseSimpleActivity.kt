@@ -27,9 +27,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.fhir.FhirEngine
 import com.google.android.material.navigation.NavigationView
+import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.viewmodel.BaseViewModel
 import timber.log.Timber
@@ -54,7 +55,11 @@ abstract class BaseSimpleActivity :
 
     Timber.d("Now init viewmodel")
 
-    viewModel = ViewModelProvider(this).get(BaseViewModel::class.java)
+    val fhirEngine: FhirEngine = FhirApplication.fhirEngine(this)
+
+    viewModel =
+      ViewModelProvider(this, BaseViewModel.BaseViewModelFactory(application, fhirEngine))
+        .get(BaseViewModel::class.java)
 
     Timber.d("Now setting drawer")
     setupDrawer()
@@ -110,7 +115,7 @@ abstract class BaseSimpleActivity :
 
     viewModel.covaxClientsCount.observe(
       this,
-      Observer { event -> setMenuCounter(R.id.menu_item_clients, event) }
+      { event -> setMenuCounter(R.id.menu_item_clients, event) }
     )
   }
 
