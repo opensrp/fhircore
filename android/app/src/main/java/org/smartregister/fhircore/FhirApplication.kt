@@ -40,6 +40,7 @@ class FhirApplication : Application() {
 
   override fun onCreate() {
     super.onCreate()
+    mContext = this
 
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
