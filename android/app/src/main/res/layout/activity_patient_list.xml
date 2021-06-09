@@ -45,13 +45,40 @@
 
         </androidx.appcompat.widget.Toolbar>
 
+        <LinearLayout
+            android:id="@+id/empty_list_message_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_centerInParent="true">
+
+            <TextView
+                android:id="@+id/patient_list_empty_message_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:text="@string/empty_client_list_message_title"
+                android:layout_gravity="center"/>
+
+            <TextView
+                android:id="@+id/patient_list_empty_message_details"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/patient_list_empty_message_title"
+                android:layout_marginBottom="40dp"
+                android:text="@string/empty_client_list_message_details"
+                android:layout_gravity="center"/>
+        </LinearLayout>
+
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/patient_list_pager"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/patient_register_toolbar"
             android:layout_above="@id/btn_register_new_patient"
-            android:layout_marginBottom="15dp" />
+            android:layout_below="@id/patient_register_toolbar"
+            android:layout_marginBottom="15dp">
+
+        </androidx.viewpager2.widget.ViewPager2>
 
         <Button
             android:id="@+id/btn_register_new_patient"

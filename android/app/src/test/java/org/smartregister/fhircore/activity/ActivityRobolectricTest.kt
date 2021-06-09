@@ -18,7 +18,7 @@ package org.smartregister.fhircore.activity
 
 import android.app.Activity
 import org.junit.After
-import org.smartregister.fhircore.robolectric.RobolectricTest
+import org.smartregister.fhircore.RobolectricTest
 
 abstract class ActivityRobolectricTest : RobolectricTest() {
 

@@ -23,7 +23,9 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.EditText
+import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.GravityCompat
@@ -49,10 +51,10 @@ import timber.log.Timber
 
 class PatientListFragment : Fragment() {
 
-  private lateinit var patientListViewModel: PatientListViewModel
+  internal lateinit var patientListViewModel: PatientListViewModel
   private lateinit var fhirEngine: FhirEngine
   private var search: String? = null
-  private val pageCount: Int = 7
+  private val pageCount: Int = 6
   private var adapter: PatientItemRecyclerViewAdapter? = null
 
   override fun onCreateView(
@@ -106,6 +108,12 @@ class PatientListFragment : Fragment() {
         list.add(it.second)
         adapter?.submitList(list)
         adapter?.notifyDataSetChanged()
+
+        if (it.first.count() == 0) {
+          showEmptyListViews()
+        } else {
+          hideEmptyListViews()
+        }
       }
     )
 
@@ -145,6 +153,35 @@ class PatientListFragment : Fragment() {
     ) // TODO: might need to move this to happen when a user clicks a button
     adapter?.notifyDataSetChanged()
     super.onResume()
+  }
+
+  private fun hideEmptyListViews() {
+    setVisibility(R.id.empty_list_message_container, View.INVISIBLE)
+    setRegisterButtonAlignment(RelativeLayout.ALIGN_PARENT_BOTTOM)
+  }
+
+  private fun showEmptyListViews() {
+    setVisibility(R.id.empty_list_message_container, View.VISIBLE)
+    setRegisterButtonAlignment(RelativeLayout.BELOW)
+  }
+
+  private fun setVisibility(id: Int, visibility: Int) {
+    requireActivity().findViewById<View>(id).visibility = visibility
+  }
+
+  private fun setRegisterButtonAlignment(alignment: Int) {
+    val button = requireActivity().findViewById<Button>(R.id.btn_register_new_patient)
+    val params = button.layoutParams as RelativeLayout.LayoutParams
+
+    if (alignment == RelativeLayout.BELOW) {
+      params.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+      params.addRule(RelativeLayout.BELOW, R.id.empty_list_message_container)
+    } else {
+      params.removeRule(RelativeLayout.BELOW)
+      params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE)
+    }
+
+    button.layoutParams = params
   }
 
   // Click handler to help display the details about the patients from the list.
