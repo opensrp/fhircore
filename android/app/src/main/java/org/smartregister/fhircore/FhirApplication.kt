@@ -33,18 +33,23 @@ import org.smartregister.fhircore.api.HapiFhirService.Companion.create
 import org.smartregister.fhircore.data.FhirPeriodicSyncWorker
 import org.smartregister.fhircore.data.HapiFhirResourceDataSource
 import org.smartregister.fhircore.util.SharedPrefrencesHelper
+import timber.log.Timber
 
 class FhirApplication : Application() {
-
-  // only initiate the FhirEngine when used for the first time, not when the app is created
-  private val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
-  private val mInstance: FhirApplication by lazy { this }
 
   override fun onCreate() {
     super.onCreate()
     mContext = this
     SharedPrefrencesHelper.init(this)
+
+    if (BuildConfig.DEBUG) {
+      Timber.plant(Timber.DebugTree())
+    }
   }
+
+  // only initiate the FhirEngine when used for the first time, not when the app is created
+  private val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
+  private val mInstance: FhirApplication by lazy { this }
 
   private fun constructFhirEngine(): FhirEngine {
     val parser = FhirContext.forR4().newJsonParser()

@@ -23,6 +23,7 @@
     <string name="add_patient">Add Patient</string>
     <string name="menu_sync_resources">Sync Resources</string>
 
+    <string name="menu_clients_list_title">COVAX Clients</string>
     <string name="empty_client_list_message_title">No Results</string>
     <string name="empty_client_list_message_details">Sorry, we could not find client with given name or ID</string>
 

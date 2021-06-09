@@ -43,6 +43,7 @@ import org.smartregister.fhircore.domain.Pagination
 import org.smartregister.fhircore.fragment.PatientListFragment
 import org.smartregister.fhircore.util.SharedPrefrencesHelper
 import org.smartregister.fhircore.util.Utils.isOverdue
+import org.smartregister.fhircore.util.Utils
 
 private const val OBSERVATIONS_JSON_FILENAME = "sample_observations_bundle.json"
 
@@ -80,10 +81,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     viewModelScope.launch {
       var searchResults: List<Patient> =
         fhirEngine.search {
-          filter(Patient.ADDRESS_CITY) {
-            prefix = ParamPrefixEnum.EQUAL
-            value = "NAIROBI"
-          }
+          Utils.addBasePatientFilter(this)
+
           apply {
             if (query?.isNotBlank() == true) {
               filter(Patient.FAMILY) {
@@ -154,10 +153,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   private suspend fun count(query: String? = null): Int {
     var searchResults: List<Patient> =
       fhirEngine.search {
-        filter(Patient.ADDRESS_CITY) {
-          prefix = ParamPrefixEnum.EQUAL
-          value = "NAIROBI"
-        }
+        Utils.addBasePatientFilter(this)
+
         apply {
           if (query?.isNotBlank() == true) {
             filter(Patient.FAMILY) {
