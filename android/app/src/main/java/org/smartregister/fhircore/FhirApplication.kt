@@ -40,6 +40,7 @@ class FhirApplication : Application() {
 
   override fun onCreate() {
     super.onCreate()
+    SharedPrefrencesHelper.init(this)
     mContext = this
 
     if (BuildConfig.DEBUG) {

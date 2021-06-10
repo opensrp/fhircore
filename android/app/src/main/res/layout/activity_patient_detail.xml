@@ -132,7 +132,7 @@
         android:padding="10dp"
         android:paddingHorizontal="10dp"
         android:paddingEnd="15dp"
-        android:text="Record Vaccine"
+        android:text="@string/record_vaccine"
         android:textAllCaps="true"
         android:textColor="@color/white"
         android:textSize="18sp"

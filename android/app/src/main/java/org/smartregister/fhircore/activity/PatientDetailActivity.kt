@@ -21,12 +21,11 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
-import androidx.appcompat.app.AppCompatActivity
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 
 /** An activity representing a single Patient detail screen. */
-class PatientDetailActivity : AppCompatActivity() {
+class PatientDetailActivity : MultiLanguageBaseActivity() {
   lateinit var fragment: PatientDetailFragment
 
   override fun onCreate(savedInstanceState: Bundle?) {

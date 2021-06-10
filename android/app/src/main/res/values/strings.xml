@@ -15,7 +15,7 @@
 -->
 
 <resources>
-    <string name="app_name">FHIR Engine Example</string>
+    <string name="app_name" translatable="false">FHIR Engine Example</string>
     <string name="title_patient_list">Registered Patients</string>
     <string name="title_patient_detail">SamplePatient Detail</string>
     <string name="menu_about">About Fhir Engine</string>
@@ -24,11 +24,12 @@
     <string name="menu_sync_resources">Sync Resources</string>
 
     <string name="menu_clients_list_title">COVAX Clients</string>
+    <string name="language">Language</string>
     <string name="empty_client_list_message_title">No Results</string>
     <string name="empty_client_list_message_details">Sorry, we could not find client with given name or ID</string>
 
     <!-- For display observations in brief, for a patient -->
-    <string name="observation_brief_text">%1$s: %2$s\nEffective: %3$s</string>
+    <string name="observation_brief_text" translatable="false">%1$s: %2$s\nEffective: %3$s</string>
 
     <string name="submit_button_text">Submit</string>
     <string name="search_hint">Search name or ID</string>
@@ -40,4 +41,13 @@
     <string name="str_page_info">Page %1$d of %2$d</string>
     <string name="edit">Edit</string>
     <string name="str_save">Save</string>
+    <string name="select_language">Select Language</string>
+    <string name="register_new_patient">Register new client</string>
+    <string name="sync">Sync</string>
+    <string name="record_vaccine">Record Vaccine</string>
+    <string name="no_vaccine_received">No vaccine received</string>
+    <string name="view_registration_details">View Registration Details</string>
+    <string name="covax_client">COVAX clients</string>
+    <string name="show_overdue">Show overdue</string>
+    <string name="record_vaccine_nl">Record\nvaccine</string>
 </resources>

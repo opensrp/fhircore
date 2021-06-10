@@ -23,20 +23,25 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.annotation.IdRes
-import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.material.navigation.NavigationView
+import java.util.Locale
+import kotlin.collections.ArrayList
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.util.Constants
+import org.smartregister.fhircore.util.SharedPrefrencesHelper
+import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.BaseViewModel
 import timber.log.Timber
 
 abstract class BaseSimpleActivity :
-  AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+  MultiLanguageBaseActivity(), NavigationView.OnNavigationItemSelectedListener {
   lateinit var viewModel: BaseViewModel
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,6 +70,7 @@ abstract class BaseSimpleActivity :
     setupDrawer()
 
     initClientCountObserver()
+    initLanguageObserver()
 
     loadCounts()
   }
@@ -81,11 +87,42 @@ abstract class BaseSimpleActivity :
     when (item.itemId) {
       R.id.menu_item_clients -> {
         startActivity(Intent(baseContext, PatientListActivity::class.java))
+        getDrawerLayout().closeDrawer(GravityCompat.START)
+      }
+      R.id.menu_item_language -> {
+        selectLanguage()
       }
     }
 
-    getDrawerLayout().closeDrawer(GravityCompat.START)
     return true
+  }
+
+  open fun selectLanguage() {
+    val languageList: ArrayList<String> = ArrayList()
+    languageList.add("English")
+    languageList.add("Swahili")
+
+    val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+    builder.setTitle(this.getString(R.string.select_language))
+    builder.setIcon(R.drawable.outline_language_black_48)
+    builder
+      .setItems(languageList.toArray(arrayOfNulls<String>(0))) { _, i ->
+        run {
+          val lang = languageList[i]
+
+          (getNavigationView().menu.findItem(R.id.menu_item_language).actionView as TextView)
+            .apply { text = lang }
+
+          val languageTag = lang.substring(0, 2).toLowerCase(Locale.ENGLISH)
+
+          Utils.setAppLocale(this@BaseSimpleActivity, languageTag)
+          SharedPrefrencesHelper.write(Constants.SHARED_PREF_KEY.LANG, languageTag)
+
+          Utils.refreshActivity(this@BaseSimpleActivity)
+        }
+      }
+      .create()
+      .show()
   }
 
   protected fun setNavigationViewListener() {
@@ -116,6 +153,21 @@ abstract class BaseSimpleActivity :
     viewModel.covaxClientsCount.observe(
       this,
       { event -> setMenuCounter(R.id.menu_item_clients, event) }
+    )
+  }
+
+  private fun setLanguage(lang: String) {
+
+    (getNavigationView().menu.findItem(R.id.menu_item_language).actionView as TextView).apply {
+      text = lang
+    }
+  }
+  private fun initLanguageObserver() {
+    Timber.d("Observing language livedata")
+
+    viewModel.selectedLanguage.observe(
+      this,
+      { event -> setLanguage(Locale(event).getDisplayName(Locale.ENGLISH)) }
     )
   }
 

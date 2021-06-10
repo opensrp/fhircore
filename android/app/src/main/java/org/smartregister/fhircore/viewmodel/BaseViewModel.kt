@@ -25,14 +25,21 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
+import java.util.Locale
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.util.Constants
+import org.smartregister.fhircore.util.SharedPrefrencesHelper
 import org.smartregister.fhircore.util.Utils
 import timber.log.Timber
 
 class BaseViewModel(application: Application, private val fhirEngine: FhirEngine) :
   AndroidViewModel(application) {
   var covaxClientsCount = MutableLiveData(0)
+  var selectedLanguage =
+    MutableLiveData(
+      SharedPrefrencesHelper.read(Constants.SHARED_PREF_KEY.LANG, Locale.ENGLISH.toLanguageTag())
+    )
 
   fun loadClientCount() {
     Timber.d("Loading client counts")
