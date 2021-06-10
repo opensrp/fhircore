@@ -64,7 +64,6 @@
           "linkId": "patient-0-gender",
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
           "type": "choice",
-          "text": "Gender:",
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
@@ -94,13 +93,13 @@
           "answerOption": [
             {
               "valueCoding": {
-                "code": "F",
+                "code": "female",
                 "display": "Female"
               }
             },
             {
               "valueCoding": {
-                "code": "M",
+                "code": "male",
                 "display": "Male"
               }
             }
