@@ -13,8 +13,10 @@ jacoco {
 Properties props = new Properties()
 if (rootProject.file("local.properties").exists()) {
     props.load(rootProject.file("local.properties").newDataInputStream())
-    props.each { prop ->
-        project.ext.set(prop.key, prop.value)
+
+    def arr = ["FHIR_BASE_URL", "OAUTH_BASE_URL", "OAUTH_CIENT_ID", "OAUTH_CLIENT_SECRET", "OAUTH_SCOPE"]
+    arr.each { prop ->
+        project.ext.set(prop, props.getProperty(prop, ""))
     }
 }
 
