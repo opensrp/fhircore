@@ -21,7 +21,11 @@ import android.view.View
 import android.widget.EditText
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.search
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.joda.time.DateTime
@@ -30,6 +34,7 @@ import org.joda.time.ReadablePartial
 import org.joda.time.Years
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
+import org.smartregister.fhircore.FhirApplication
 
 object Utils {
 
@@ -99,5 +104,28 @@ object Utils {
   fun Immunization.isOverdue(daysToAdd: Int): Boolean {
     val cal: Calendar = Calendar.getInstance().apply { add(Calendar.DATE, daysToAdd) }
     return recorded.before(cal.time)
+  }
+
+  fun getLastSeen(patientId: String, lastUpdated: Date?): String {
+
+    var lastSeenDate = lastUpdated?.makeItReadable() ?: ""
+
+    var searchResults = listOf<Immunization>()
+    runBlocking {
+      searchResults =
+        FhirApplication.fhirEngine(FhirApplication.getContext()).search {
+          filter(Immunization.PATIENT) { value = "Patient/$patientId" }
+        }
+    }
+
+    if (searchResults.isNotEmpty()) {
+      lastSeenDate = searchResults[searchResults.size.minus(1)].recorded.makeItReadable()
+    }
+
+    return lastSeenDate
+  }
+
+  fun Date.makeItReadable(): String {
+    return SimpleDateFormat("MM-dd-yyyy").format(this)
   }
 }
