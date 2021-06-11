@@ -50,4 +50,5 @@
     <string name="covax_client">COVAX clients</string>
     <string name="show_overdue">Show overdue</string>
     <string name="record_vaccine_nl">Record\nvaccine</string>
+    <string name="client_info">Client info</string>
 </resources>
