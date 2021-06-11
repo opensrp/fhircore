@@ -41,6 +41,11 @@ import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.activity.RecordVaccineActivity
 import org.smartregister.fhircore.activity.USER_ID
 import org.smartregister.fhircore.adapter.PatientItemRecyclerViewAdapter
+import org.smartregister.fhircore.domain.Pagination
+import org.smartregister.fhircore.domain.currentPageNumber
+import org.smartregister.fhircore.domain.hasNextPage
+import org.smartregister.fhircore.domain.hasPreviousPage
+import org.smartregister.fhircore.domain.totalPages
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
 import timber.log.Timber
@@ -51,6 +56,10 @@ class PatientListFragment : Fragment() {
   private lateinit var fhirEngine: FhirEngine
   private var search: String? = null
   private val pageCount: Int = 6
+  private lateinit var paginationView: RelativeLayout
+  private lateinit var nextButton: Button
+  private lateinit var prevButton: Button
+  private lateinit var infoTextView: TextView
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -64,12 +73,12 @@ class PatientListFragment : Fragment() {
     fhirEngine = FhirApplication.fhirEngine(requireContext())
 
     val recyclerView = view.findViewById<RecyclerView>(R.id.patient_list)
+    paginationView = view.findViewById(R.id.rl_pagination)
+    nextButton = view.findViewById(R.id.btn_next_page)
+    prevButton = view.findViewById(R.id.btn_previous_page)
+    infoTextView = view.findViewById(R.id.txt_page_info)
     val adapter =
-      PatientItemRecyclerViewAdapter(
-        this::onPatientItemClicked,
-        this::onNavigationClicked,
-        this::onRecordVaccineClicked
-      )
+      PatientItemRecyclerViewAdapter(this::onPatientItemClicked, this::onRecordVaccineClicked)
     recyclerView.adapter = adapter
 
     requireActivity().findViewById<TextView>(R.id.tv_sync).setOnClickListener {
@@ -91,7 +100,7 @@ class PatientListFragment : Fragment() {
       {
         Timber.d("Submitting ${it.first.count()} patient records")
         val list = ArrayList<Any>(it.first)
-        list.add(it.second)
+        updatePagination(it.second)
         adapter.submitList(list)
         adapter.notifyDataSetChanged()
 
@@ -183,5 +192,32 @@ class PatientListFragment : Fragment() {
     patientListViewModel.searchResults()
     Toast.makeText(requireContext(), "Syncing...", Toast.LENGTH_LONG).show()
     patientListViewModel.syncUpload()
+  }
+
+  private fun updatePagination(pagination: Pagination) {
+    nextButton.setOnClickListener {
+      onNavigationClicked(NavigationDirection.NEXT, pagination.currentPage)
+    }
+    prevButton.setOnClickListener {
+      onNavigationClicked(NavigationDirection.PREVIOUS, pagination.currentPage)
+    }
+
+    nextButton.visibility = if (pagination.hasNextPage()) View.GONE else View.VISIBLE
+    prevButton.visibility = if (pagination.hasPreviousPage()) View.GONE else View.VISIBLE
+    paginationView.visibility =
+      if (nextButton.visibility == View.VISIBLE || prevButton.visibility == View.VISIBLE)
+        View.VISIBLE
+      else View.GONE
+
+    if (pagination.totalPages() < 2) {
+      this.infoTextView.text = ""
+    } else {
+      this.infoTextView.text =
+        resources.getString(
+          R.string.str_page_info,
+          pagination.currentPageNumber(),
+          pagination.totalPages()
+        )
+    }
   }
 }
