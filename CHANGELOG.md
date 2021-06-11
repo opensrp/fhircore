@@ -5,7 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- 
+- Display message on empty list along with new client register button
+- Client count display in drawer
 
 ## [0.0.3] - 2021-05-24
 ### Added
@@ -14,3 +15,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Build barcode scanner
 - Track patient vaccine status
 - Display immunization info on the Patient Profile 
+
