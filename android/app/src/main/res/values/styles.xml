@@ -22,13 +22,8 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:listDivider">@color/white_slightly_opaque</item>
-        <item name="questionnaire_theme">@style/Theme.MyQuestionnaire</item>
-    </style>
-
-    <style name="Theme.MyQuestionnaire" parent="Theme.Questionnaire">
-        <item name="groupHeaderTextAppearance">@style/TextAppearance.MaterialComponents.Subtitle1
-        </item>
-        <item name="actionBarTheme">@style/Theme.MaterialComponents.Light.DarkActionBar</item>
+        <item name="questionnaire_theme">@style/Theme.MaterialComponents.Light.DarkActionBar</item>
+        <item name="groupHeaderTextAppearance">@style/TextAppearance.MaterialComponents.Subtitle2</item>
     </style>
 
     <style name="AppTheme.NoActionBar">

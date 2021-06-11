@@ -95,7 +95,8 @@
               "valueCoding": {
                 "code": "female",
                 "display": "Female"
-              }
+              },
+              "initialSelected": true
             },
             {
               "valueCoding": {
