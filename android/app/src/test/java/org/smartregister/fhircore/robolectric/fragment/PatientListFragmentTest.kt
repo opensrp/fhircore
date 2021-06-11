@@ -82,7 +82,8 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
         "1985-05-21",
         "somehtml",
         "0700 000 000",
-        logicalId
+        logicalId,
+        null
       )
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
@@ -127,7 +128,8 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
         "1985-05-21",
         "somehtml",
         "0700 000 000",
-        "test_id"
+        "test_id",
+        null
       )
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
