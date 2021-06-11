@@ -16,13 +16,11 @@
 
 package org.smartregister.fhircore
 
-import org.junit.Assert
-import org.junit.Test
+import android.os.Build
+import org.junit.runner.RunWith
+import org.robolectric.annotation.Config
+import org.smartregister.fhircore.robolectric.FhircoreTestRunner
 
-class Sample {
-
-  @Test
-  fun helloTest() {
-    Assert.assertEquals(1, 1)
-  }
-}
+@RunWith(FhircoreTestRunner::class)
+@Config(sdk = [Build.VERSION_CODES.O_MR1])
+abstract class RobolectricTest

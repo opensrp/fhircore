@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.robolectric.activity
+package org.smartregister.fhircore.fragment
 
-import android.app.Activity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.testing.FragmentScenario
+import androidx.lifecycle.Lifecycle
 import org.junit.After
-import org.smartregister.fhircore.robolectric.RobolectricTest
+import org.smartregister.fhircore.RobolectricTest
 
-abstract class ActivityRobolectricTest : RobolectricTest() {
+abstract class FragmentRobolectricTest : RobolectricTest() {
 
   @After
-  fun testDown() {
-    getActivity().finish()
+  fun tearDown() {
+    getFragmentScenario().moveToState(Lifecycle.State.DESTROYED)
   }
 
-  abstract fun getActivity(): Activity
+  abstract fun getFragmentScenario(): FragmentScenario<out Fragment>
 }

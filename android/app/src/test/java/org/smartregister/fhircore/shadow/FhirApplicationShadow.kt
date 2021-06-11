@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.robolectric.shadow
+package org.smartregister.fhircore.shadow
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
@@ -31,7 +31,6 @@ import org.smartregister.fhircore.FhirApplication
 
 @Implements(FhirApplication::class)
 class FhirApplicationShadow : ShadowApplication() {
-
   private val dataSource =
     object : FhirDataSource {
       override suspend fun loadData(path: String): Bundle {
