@@ -20,6 +20,7 @@
     {
       "linkId": "PR",
       "type": "group",
+      "text": "Client info",
       "item": [
         {
           "linkId": "PR-name",
@@ -40,12 +41,14 @@
               "linkId": "PR-name-text",
               "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.given",
               "type": "string",
+              "required": true,
               "text": "First Name"
             },
             {
               "linkId": "PR-name-family",
               "definition": "http://hl7.org/fhir/StructureDefinition/datatypes#HumanName.family",
               "type": "string",
+              "required": true,
               "text": "Family Name"
             }
           ]
@@ -54,10 +57,13 @@
           "linkId": "patient-0-birth-date",
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
           "type": "date",
+          "required": true,
           "text": "Date of Birth"
         },
         {
           "linkId": "patient-0-gender",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
+          "type": "choice",
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
@@ -66,16 +72,39 @@
                 "expression": "Enumerations$AdministrativeGender",
                 "name": "administrativeGender"
               }
-            }
-          ],
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
-          "initial": [
+            },
             {
-              "valueString": "female"
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button",
+                    "display": "Radio Button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
             }
           ],
-          "type": "string",
-          "text": "Gender"
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "female",
+                "display": "Female"
+              },
+              "initialSelected": true
+            },
+            {
+              "valueCoding": {
+                "code": "male",
+                "display": "Male"
+              }
+            }
+          ]
         },
         {
           "linkId": "PR-telecom",
@@ -124,6 +153,7 @@
               "linkId": "PR-telecom-value",
               "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom.value",
               "type": "string",
+              "required": true,
               "text": "Phone Number"
             }
           ]
