@@ -13,11 +13,11 @@
         android:text="Covax"
         android:textAllCaps="true"
         android:layout_marginTop="20dp"
-        android:layout_marginLeft="15dp"
+        android:layout_marginStart="15dp"
         android:textSize="24sp"
         android:fontFamily="sans-serif-medium"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <View
         android:layout_width="match_parent"
