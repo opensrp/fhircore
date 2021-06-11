@@ -20,6 +20,7 @@ import android.app.Activity
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.viewpager2.widget.ViewPager2
 import io.mockk.every
 import io.mockk.mockkClass
 import io.mockk.spyk
@@ -129,6 +130,13 @@ class PatientListActivityTest : ActivityRobolectricTest() {
       patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_language).actionView as
         TextView
     Assert.assertEquals("French", languageMenuItem.text)
+  }
+
+  @Test
+  fun `test patientListFragmentAdapterCount should return one`() {
+    val viewPager = patientListActivity.findViewById<ViewPager2>(R.id.patient_list_pager)
+    Assert.assertNotNull(viewPager)
+    Assert.assertEquals(1, viewPager?.adapter?.itemCount)
   }
 
   override fun getActivity(): Activity {
