@@ -90,13 +90,20 @@
               "valueCode": "horizontal"
             }
           ],
+          "initial": [
+            {
+              "valueCoding": {
+                "code": "female",
+                "display": "Female"
+              }
+            }
+          ],
           "answerOption": [
             {
               "valueCoding": {
                 "code": "female",
                 "display": "Female"
-              },
-              "initialSelected": true
+              }
             },
             {
               "valueCoding": {
