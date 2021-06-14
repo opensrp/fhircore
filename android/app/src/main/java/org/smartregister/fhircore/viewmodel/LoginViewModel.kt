@@ -27,7 +27,7 @@ import org.smartregister.fhircore.auth.OAuthResponse
 import org.smartregister.fhircore.auth.secure.Credentials
 import org.smartregister.fhircore.auth.secure.SecureConfig
 import org.smartregister.fhircore.model.LoginUser
-import org.smartregister.fhircore.util.SharedPrefrencesHelper
+import org.smartregister.fhircore.util.SharedPreferencesHelper
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -55,13 +55,17 @@ class LoginViewModel(application: Application) : AndroidViewModel(application),
     if (BuildConfig.DEBUG && BuildConfig.SKIP_AUTH_CHECK) {
       goHome.value = true
     }
+    else if(AccountHelper(baseContext).isSessionActive(secureConfig.retrieveSessionToken())){
+      goHome.value = true
+    }
     else {
-      AccountHelper(baseContext).loadAccount(
-        accountManager,
-        secureConfig.retrieveSessionUsername(),
-        this,
-        Handler(OnTokenError())
-      )
+      AccountHelper(baseContext)
+        .loadAccount(
+          accountManager,
+          secureConfig.retrieveSessionUsername(),
+          this,
+          Handler(OnTokenError())
+        )
     }
   }
 
@@ -195,7 +199,7 @@ private class OnUserInfoResponse (context: Context): Callback<ResponseBody> {
   override fun onResponse(call: Call<ResponseBody>?, response: Response<ResponseBody>?) {
     Timber.i(response?.body()?.string())
 
-    SharedPrefrencesHelper.init(baseContext).write("USER", response?.body()?.string()!!)
+    SharedPreferencesHelper.init(baseContext).write("USER", response?.body()?.string()!!)
   }
 }
 
