@@ -25,7 +25,7 @@
 
         <item
             android:id="@+id/menu_item_logout"
-            android:title="Log out as Francis"
+            android:title="@string/logout_as_user"
             android:icon="@drawable/ic_logout" />
 
     </group>

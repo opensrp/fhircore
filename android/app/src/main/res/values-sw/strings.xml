@@ -28,4 +28,8 @@
     <string name="record_vaccine_nl">Rekodi\nchanjo</string>
     <string name="client_info">Maelezo ya mteja</string>
     <string name="str_save">Hifadhi</string>
+    <string name="last_seen_date">Mara ya mwisho kuonekana 29-3-2021</string>
+    <string name="last_sync_timestamp">Mara ya mwisho 05:30 PM, Mar 3</string>
+    <string name="logout_as_user">Toka kama Francis</string>
+    <string name="registered_date">Tarehe ya kusajiliwa 20-01-2021</string>
 </resources>

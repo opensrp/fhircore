@@ -59,7 +59,10 @@ class PatientDetailActivity : MultiLanguageBaseActivity() {
     findViewById<Button>(R.id.btn_record_vaccine).setOnClickListener {
       startActivity(
         Intent(this, RecordVaccineActivity::class.java).apply {
-          putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
+          putExtra(
+            QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
+            this@PatientDetailActivity.getString(R.string.record_vaccine)
+          )
           putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
           putExtra(USER_ID, fragment.patitentId)
         }

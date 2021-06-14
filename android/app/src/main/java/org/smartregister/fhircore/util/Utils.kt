@@ -71,11 +71,11 @@ object Utils {
     )
   }
 
-  fun setAppLocale(context: Context, language: String?): Configuration? {
+  fun setAppLocale(context: Context, languageTag: String?): Configuration? {
     val res: Resources = context.resources
     val configuration: Configuration = res.configuration
     try {
-      val locale = Locale(language)
+      val locale = Locale.forLanguageTag(languageTag)
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         configuration.setLocale(locale)
         val localeList = LocaleList(locale)

@@ -38,7 +38,7 @@
         android:layout_height="wrap_content"
         android:paddingStart="16dp"
         android:paddingTop="16dp"
-        android:text="Registered 20-01-2021"
+        android:text="@string/registered_date"
         android:textColor="@color/black"
         android:textIsSelectable="true"
         android:textSize="16sp"

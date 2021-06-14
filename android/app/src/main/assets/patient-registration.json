@@ -22,6 +22,23 @@
       "linkId": "PR",
       "type": "group",
       "text": "Client info",
+      "_text": {
+        "extension": [
+          {
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "sw"
+              },
+              {
+                "url": "content",
+                "valueString": "Maelezo ya mteja"
+              }
+            ],
+            "url": "http://hl7.org/fhir/StructureDefinition/translation"
+          }
+        ]
+      },
       "item": [
         {
           "linkId": "PR-name",
