@@ -20,6 +20,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.annotation.IdRes
@@ -31,9 +32,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.material.navigation.NavigationView
 import java.util.Locale
-import kotlin.collections.ArrayList
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.domain.Language
 import org.smartregister.fhircore.util.Constants
 import org.smartregister.fhircore.util.SharedPrefrencesHelper
 import org.smartregister.fhircore.util.Utils
@@ -73,6 +74,7 @@ abstract class BaseSimpleActivity :
     initLanguageObserver()
 
     loadCounts()
+    loadLanguages()
   }
 
   abstract fun getContentLayout(): Int
@@ -98,28 +100,24 @@ abstract class BaseSimpleActivity :
   }
 
   open fun selectLanguage() {
-    val languageList: ArrayList<String> = ArrayList()
-    languageList.add("English")
-    languageList.add("Swahili")
+
+    val adapter: ArrayAdapter<Language> =
+      ArrayAdapter<Language>(this, android.R.layout.simple_list_item_1, languageList)
 
     val builder: AlertDialog.Builder = AlertDialog.Builder(this)
     builder.setTitle(this.getString(R.string.select_language))
     builder.setIcon(R.drawable.outline_language_black_48)
     builder
-      .setItems(languageList.toArray(arrayOfNulls<String>(0))) { _, i ->
-        run {
-          val lang = languageList[i]
+      .setAdapter(adapter) { _, i ->
+        val language = languageList[i]
 
-          (getNavigationView().menu.findItem(R.id.menu_item_language).actionView as TextView)
-            .apply { text = lang }
+        setLanguage(language.displayName)
 
-          val languageTag = lang.substring(0, 2).toLowerCase(Locale.ENGLISH)
+        Utils.setAppLocale(this@BaseSimpleActivity, language.tag)
 
-          Utils.setAppLocale(this@BaseSimpleActivity, languageTag)
-          SharedPrefrencesHelper.write(Constants.SHARED_PREF_KEY.LANG, languageTag)
+        SharedPrefrencesHelper.write(Constants.SHARED_PREF_KEY.LANG, language.tag)
 
-          Utils.refreshActivity(this@BaseSimpleActivity)
-        }
+        Utils.refreshActivity(this@BaseSimpleActivity)
       }
       .create()
       .show()
@@ -162,6 +160,7 @@ abstract class BaseSimpleActivity :
       text = lang
     }
   }
+
   private fun initLanguageObserver() {
     Timber.d("Observing language livedata")
 
@@ -174,5 +173,9 @@ abstract class BaseSimpleActivity :
   // TODO look into ways on how to improve performance for this
   private fun loadCounts() {
     viewModel.loadClientCount()
+  }
+
+  private fun loadLanguages() {
+    viewModel.loadLanguages()
   }
 }
