@@ -71,7 +71,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     Assert.assertNotNull(fragment)
 
     val response = fragment.getQuestionnaireResponse()
-    //TODO change these to proper mapping
+    // TODO change these to proper mapping
     Assert.assertEquals(
       TEST_PATIENT_1.name[0].given[0].toString(),
       response.item[1].item[0].item[0].answer[0].value.toString()

@@ -110,35 +110,39 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
   fun fetchPatientStatus(id: String): LiveData<PatientStatus> {
     val status = MutableLiveData<PatientStatus>()
-
-    // check database for immunizations
-    val cal: Calendar = Calendar.getInstance()
-    cal.add(Calendar.DATE, -28)
-    val overDueStart: Date = cal.time
-
     val formatter = SimpleDateFormat("dd-MM-yy", Locale.US)
 
     viewModelScope.launch {
       val searchResults: List<Immunization> =
         fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$id" } }
 
-      val computedStatus =
-        when {
-          searchResults.isEmpty() -> VaccineStatus.DUE
-          searchResults.size == 1 && searchResults[0].recorded.before(overDueStart) ->
-            VaccineStatus.OVERDUE
-          searchResults.size == 1 -> VaccineStatus.PARTIAL
-          else -> VaccineStatus.VACCINATED
-        }
+      val computedStatus = computeVaccineStatus(searchResults)
 
       status.value =
         PatientStatus(
           status = computedStatus,
           details =
-            if (searchResults.isNotEmpty()) formatter.format(searchResults[searchResults.size-1].recorded) else ""
+            if (searchResults.isNotEmpty())
+              formatter.format(searchResults[searchResults.size - 1].recorded)
+            else ""
         )
     }
     return status
+  }
+
+  internal fun computeVaccineStatus(searchResults: List<Immunization>): VaccineStatus {
+    // check database for immunizations
+    val cal: Calendar = Calendar.getInstance()
+    cal.add(Calendar.DATE, -28)
+    val overDueStart: Date = cal.time
+
+    return when {
+      searchResults.isEmpty() -> VaccineStatus.DUE
+      searchResults.size == 1 && searchResults[0].recorded.before(overDueStart) ->
+        VaccineStatus.OVERDUE
+      searchResults.size == 1 -> VaccineStatus.PARTIAL
+      else -> VaccineStatus.VACCINATED
+    }
   }
 
   protected fun Patient.nameMatchesFilter(filter: String?): Boolean {

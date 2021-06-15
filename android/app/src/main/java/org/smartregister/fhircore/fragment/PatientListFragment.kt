@@ -59,7 +59,7 @@ class PatientListFragment : Fragment() {
   private val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
   private var search: String? = null
   private val pageCount: Int = 6
-  private var adapter: PatientItemRecyclerViewAdapter? = null
+  internal var adapter: PatientItemRecyclerViewAdapter? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -246,10 +246,7 @@ class PatientListFragment : Fragment() {
   }
 
   // Click handler to help display the details about the patients from the list.
-  fun onPatientItemClicked(
-    intention: Intention,
-    patientItem: PatientListViewModel.PatientItem
-  ) {
+  fun onPatientItemClicked(intention: Intention, patientItem: PatientListViewModel.PatientItem) {
     when (intention) {
       Intention.RECORD_VACCINE -> {
         startActivity(

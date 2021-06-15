@@ -20,7 +20,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import androidx.annotation.IdRes
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.search.Search
 import org.hl7.fhir.r4.model.Patient
@@ -30,7 +29,6 @@ import org.joda.time.ReadablePartial
 import org.joda.time.Years
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
-
 
 object Utils {
 
@@ -114,9 +112,7 @@ object Utils {
   }
 
   fun hideViewsByTag(root: ViewGroup, tag: String) {
-    getViewsByTag(root, tag)?.forEach {
-      it.visibility = View.GONE
-    }
+    getViewsByTag(root, tag)?.forEach { it.visibility = View.GONE }
   }
 
   fun hideViewById(root: ViewGroup, id: Int) {

@@ -18,9 +18,7 @@ package org.smartregister.fhircore.viewholder
 
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
@@ -32,7 +30,8 @@ import org.smartregister.fhircore.viewmodel.PatientListViewModel
 class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val tvPatientDemographics: TextView = itemView.findViewById(R.id.tv_patient_demographics)
   private val tvDateLastSeen: TextView = itemView.findViewById(R.id.date_last_seen)
-  private val vaccineActionContainer: ViewGroup = itemView.findViewById(R.id.vaccine_action_container)
+  private val vaccineActionContainer: ViewGroup =
+    itemView.findViewById(R.id.vaccine_action_container)
   fun bindTo(
     patientItem: PatientListViewModel.PatientItem,
     onItemClicked: (PatientListFragment.Intention, PatientListViewModel.PatientItem) -> Unit,
@@ -58,10 +57,7 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
     val status = patientStatus?.status ?: return
 
     tvDateLastSeen.text =
-      vaccineActionContainer.context.getString(
-        R.string.client_last_seen,
-        patientStatus.details
-      )
+      vaccineActionContainer.context.getString(R.string.client_last_seen, patientStatus.details)
 
     Utils.hideViewsByTag(vaccineActionContainer, "status_container")
 
@@ -71,7 +67,6 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
 
         vaccineActionContainer.setOnClickListener {}
       }
-
       PatientListViewModel.VaccineStatus.OVERDUE -> {
         Utils.showViewById(vaccineActionContainer, R.id.status_overdue_container)
 
@@ -79,7 +74,6 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
           onItemClicked(PatientListFragment.Intention.RECORD_VACCINE, patientItem)
         }
       }
-
       PatientListViewModel.VaccineStatus.PARTIAL -> {
         Utils.showViewById(vaccineActionContainer, R.id.status_vaccinated_container)
 
@@ -94,7 +88,6 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
           onItemClicked(PatientListFragment.Intention.RECORD_VACCINE, patientItem)
         }
       }
-
       PatientListViewModel.VaccineStatus.DUE -> {
         Utils.showViewById(vaccineActionContainer, R.id.status_due_container)
 
