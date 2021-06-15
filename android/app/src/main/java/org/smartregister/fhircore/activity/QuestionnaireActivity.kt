@@ -39,6 +39,7 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
+import java.util.UUID
 
 class QuestionnaireActivity : AppCompatActivity() {
   private val viewModel: QuestionnaireViewModel by viewModels()
@@ -78,10 +79,9 @@ class QuestionnaireActivity : AppCompatActivity() {
 
     val patient = ResourceMapper.extract(questionnaire, questionnaireResponse) as Patient
 
-    patient.id =
-      intent.getStringExtra(PatientDetailFragment.ARG_ITEM_ID) ?: patient.name.first().family
-
-    viewModel.savePatient(patient)
+    patient.id = patient.id ?: UUID.randomUUID().toString().toLowerCase()
+    // FhirApplication.fhirEngine(applicationContext).save(patient)
+    viewModel.saveResource(patient)
 
     this.startActivity(Intent(this, PatientListActivity::class.java))
   }
@@ -199,6 +199,6 @@ class QuestionnaireActivity : AppCompatActivity() {
   companion object {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
     const val QUESTIONNAIRE_FILE_PATH_KEY = "questionnaire-file-path-key"
-    const val QUESTIONNAIRE_FRAGMENT_TAG = "questionannire-fragment-tag"
+    const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
   }
 }
