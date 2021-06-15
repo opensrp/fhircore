@@ -22,9 +22,8 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import androidx.core.view.get
-import androidx.recyclerview.widget.RecyclerView
+import java.util.Date
 import org.hl7.fhir.r4.model.Immunization
-import org.hl7.fhir.r4.model.Patient
 import org.joda.time.DateTime
 import org.junit.Assert
 import org.junit.Before
@@ -40,7 +39,6 @@ import org.smartregister.fhircore.activity.PatientListActivity
 import org.smartregister.fhircore.domain.Pagination
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
-import java.util.Date
 
 /**
  * The PatientListActivity should be removed from this test in favour FragmentScenario once the
@@ -154,7 +152,7 @@ class PatientListFragmentTest : RobolectricTest() {
   fun testFullyVaccinatedVaccinationStatus() {
     shadowOf(Looper.getMainLooper()).idle()
 
-    var imm = Immunization();
+    var imm = Immunization()
     imm.recorded = Date()
     imm.status = Immunization.ImmunizationStatus.COMPLETED
 
@@ -169,7 +167,7 @@ class PatientListFragmentTest : RobolectricTest() {
   fun testPartiallyVaccinatedVaccinationStatus() {
     shadowOf(Looper.getMainLooper()).idle()
 
-    var imm = Immunization();
+    var imm = Immunization()
     imm.recorded = Date()
     imm.status = Immunization.ImmunizationStatus.COMPLETED
 
@@ -184,7 +182,7 @@ class PatientListFragmentTest : RobolectricTest() {
   fun testOverdueVaccinatedVaccinationStatus() {
     shadowOf(Looper.getMainLooper()).idle()
 
-    var imm = Immunization();
+    var imm = Immunization()
     imm.recorded = DateTime.now().minusDays(29).toDate()
     imm.status = Immunization.ImmunizationStatus.COMPLETED
 
