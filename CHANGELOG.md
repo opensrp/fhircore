@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Select initial/default value of Radio Button on client info screen
 
+### Changed
+- Reduce font size and spacing on patient list screen
+
 ## [0.0.3] - 2021-05-24
 ### Added
 
