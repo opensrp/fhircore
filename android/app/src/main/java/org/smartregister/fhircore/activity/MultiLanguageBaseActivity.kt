@@ -21,7 +21,7 @@ import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatActivity
 import java.util.Locale
 import org.smartregister.fhircore.util.Constants
-import org.smartregister.fhircore.util.SharedPrefrencesHelper
+import org.smartregister.fhircore.util.SharedPreferencesHelper
 import org.smartregister.fhircore.util.Utils
 
 /** Created by ndegwamartin on 10/06/2021. */
@@ -29,7 +29,7 @@ abstract class MultiLanguageBaseActivity : AppCompatActivity() {
 
   override fun attachBaseContext(base: Context) {
     val lang: String? =
-      SharedPrefrencesHelper.read(Constants.SHARED_PREF_KEY.LANG, Locale.ENGLISH.toLanguageTag())
+      SharedPreferencesHelper.read(Constants.SHARED_PREF_KEY.LANG, Locale.ENGLISH.toLanguageTag())
     val newConfiguration: Configuration? = Utils.setAppLocale(base, lang)
     super.attachBaseContext(base)
     applyOverrideConfiguration(newConfiguration)
