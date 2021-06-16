@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.util.SharedPrefrencesHelper
+import org.smartregister.fhircore.util.SharedPreferencesHelper
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 const val USER_ID = "user_id"
@@ -84,7 +84,7 @@ class RecordVaccineActivity : AppCompatActivity() {
   private fun showVaccineRecordDialog(vaccineName: String) {
     val userId = intent?.getStringExtra(USER_ID)
     if (userId != null) {
-      SharedPrefrencesHelper.write(userId, vaccineName)
+      SharedPreferencesHelper.write(userId, vaccineName)
     }
 
     val builder = AlertDialog.Builder(this)

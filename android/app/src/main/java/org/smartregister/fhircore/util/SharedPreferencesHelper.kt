@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package org.smartregister.fhircore.util
 import android.content.Context
 import android.content.SharedPreferences
 
-object SharedPrefrencesHelper {
+object SharedPreferencesHelper {
 
   private lateinit var prefs: SharedPreferences
 
