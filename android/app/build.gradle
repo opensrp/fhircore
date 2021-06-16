@@ -11,12 +11,18 @@ jacoco {
 }
 
 Properties props = new Properties()
+
+def arr = ["FHIR_BASE_URL", "OAUTH_BASE_URL", "OAUTH_CIENT_ID", "OAUTH_CLIENT_SECRET", "OAUTH_SCOPE"]
 if (rootProject.file("local.properties").exists()) {
     props.load(rootProject.file("local.properties").newDataInputStream())
 
-    def arr = ["FHIR_BASE_URL", "OAUTH_BASE_URL", "OAUTH_CIENT_ID", "OAUTH_CLIENT_SECRET", "OAUTH_SCOPE"]
     arr.each { prop ->
-        project.ext.set(prop, props.getProperty(prop, ""))
+        project.ext.set(prop, props.getProperty(prop, "sample"))
+    }
+} else {
+    println("local.properties does not exist. The following values are required " + arr.join(", "))
+    arr.each { prop ->
+        project.ext.set(prop, "sample_" + prop)
     }
 }
 
