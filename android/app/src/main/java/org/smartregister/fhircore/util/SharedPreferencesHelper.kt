@@ -19,7 +19,7 @@ package org.smartregister.fhircore.util
 import android.content.Context
 import android.content.SharedPreferences
 
-object SharedPrefrencesHelper {
+object SharedPreferencesHelper {
 
   private lateinit var prefs: SharedPreferences
 

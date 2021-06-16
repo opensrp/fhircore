@@ -21,7 +21,6 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.internal.bytecode.InstrumentationConfiguration
 import org.robolectric.util.inject.Injector
 
-/** Created by ndegwamartin on 07/06/2021. */
 internal class FhircoreTestRunner : RobolectricTestRunner {
   constructor(testClass: Class<*>?) : super(testClass) {}
   constructor(testClass: Class<*>?, injector: Injector?) : super(testClass, injector) {}

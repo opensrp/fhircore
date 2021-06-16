@@ -30,7 +30,7 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.activity.QuestionnaireActivityTest
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
-import org.smartregister.fhircore.util.SharedPrefrencesHelper
+import org.smartregister.fhircore.util.SharedPreferencesHelper
 
 @Config(shadows = [FhirApplicationShadow::class])
 class PatientDetailFragmentTest : FragmentRobolectricTest() {
@@ -60,7 +60,7 @@ class PatientDetailFragmentTest : FragmentRobolectricTest() {
   }
 
   private fun init() {
-    SharedPrefrencesHelper.init(FhirApplication.getContext())
+    SharedPreferencesHelper.init(FhirApplication.getContext())
     runBlocking {
       FhirApplication.fhirEngine(FhirApplication.getContext())
         .save(QuestionnaireActivityTest.TEST_PATIENT_1)
