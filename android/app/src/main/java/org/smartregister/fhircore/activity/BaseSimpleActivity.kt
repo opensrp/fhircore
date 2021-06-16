@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.activity
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
@@ -24,6 +25,7 @@ import android.widget.ArrayAdapter
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.annotation.IdRes
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
@@ -92,35 +94,46 @@ abstract class BaseSimpleActivity :
         getDrawerLayout().closeDrawer(GravityCompat.START)
       }
       R.id.menu_item_language -> {
-        selectLanguage()
+        renderSelectLanguageDialog(this)
       }
     }
 
     return true
   }
 
-  open fun selectLanguage() {
+  @VisibleForTesting
+  fun getLanguageArrayAdapter() =
+    ArrayAdapter(this, android.R.layout.simple_list_item_1, viewModel.languageList)
 
-    val adapter: ArrayAdapter<Language> =
-      ArrayAdapter<Language>(this, android.R.layout.simple_list_item_1, languageList)
+  @VisibleForTesting fun getAlertDialogBuilder() = AlertDialog.Builder(this@BaseSimpleActivity)
 
-    val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-    builder.setTitle(this.getString(R.string.select_language))
+  @VisibleForTesting fun getLanguageDialogTitle() = this.getString(R.string.select_language)
+
+  fun renderSelectLanguageDialog(context: Activity) {
+
+    val adapter: ArrayAdapter<Language> = getLanguageArrayAdapter()
+
+    val builder: AlertDialog.Builder = getAlertDialogBuilder()
+    builder.setTitle(getLanguageDialogTitle())
     builder.setIcon(R.drawable.outline_language_black_48)
     builder
       .setAdapter(adapter) { _, i ->
-        val language = languageList[i]
+        val language = viewModel.languageList[i]
 
-        setLanguage(language.displayName)
-
-        Utils.setAppLocale(this@BaseSimpleActivity, language.tag)
-
-        SharedPrefrencesHelper.write(Constants.SHARED_PREF_KEY.LANG, language.tag)
-
-        Utils.refreshActivity(this@BaseSimpleActivity)
+        refreshSelectedLanguage(language, context)
       }
       .create()
       .show()
+  }
+
+  fun refreshSelectedLanguage(language: Language, context: Activity) {
+    setLanguage(language.displayName)
+
+    Utils.setAppLocale(context, language.tag)
+
+    SharedPrefrencesHelper.write(Constants.SHARED_PREF_KEY.LANG, language.tag)
+
+    Utils.refreshActivity(context)
   }
 
   protected fun setNavigationViewListener() {
@@ -154,10 +167,10 @@ abstract class BaseSimpleActivity :
     )
   }
 
-  private fun setLanguage(lang: String) {
+  private fun setLanguage(language: String) {
 
     (getNavigationView().menu.findItem(R.id.menu_item_language).actionView as TextView).apply {
-      text = lang
+      text = language
     }
   }
 
