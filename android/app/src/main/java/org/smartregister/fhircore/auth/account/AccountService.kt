@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.auth.account
 
+import AccountAuthenticator
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
