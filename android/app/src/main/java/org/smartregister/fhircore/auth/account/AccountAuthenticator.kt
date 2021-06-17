@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.auth.account
 
-import android.R.attr
 import android.accounts.AbstractAccountAuthenticator
 import android.accounts.Account
 import android.accounts.AccountAuthenticatorResponse
@@ -34,6 +33,8 @@ import java.util.Locale
 class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(context) {
 
   private val myContext = context
+  internal var accountHelper = AccountHelper(myContext)
+  var accountManager = AccountManager.get(myContext)
 
   override fun addAccount(
     response: AccountAuthenticatorResponse,
@@ -46,7 +47,7 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
 
     val intent = Intent(myContext, AUTH_HANDLER_ACTIVITY)
 
-    intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, attr.accountType)
+    intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountConfig.ACCOUNT_TYPE)
     intent.putExtra(AccountConfig.KEY_AUTH_TOKEN_TYPE, authTokenType)
     intent.putExtra(AccountConfig.KEY_IS_NEW_ACCOUNT, true)
     intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
@@ -62,30 +63,28 @@ class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(cont
     authTokenType: String,
     options: Bundle
   ): Bundle {
-    val am = AccountManager.get(myContext)
-
-    var accessToken = am.peekAuthToken(account, authTokenType)
+    var accessToken = accountManager.peekAuthToken(account, authTokenType)
     var tokenResponse: OAuthResponse
 
     Timber.i("GetAuthToken for %s: AccessToken (%b)", account.name, accessToken?.isNotBlank())
 
     // if no access token try getting one with refresh token
     if (accessToken.isNullOrEmpty()) {
-      val refreshToken = am.getPassword(account)
+      val refreshToken = accountManager.getPassword(account)
 
       Timber.i("GetAuthToken: Refresh Token (%b)", refreshToken?.isNotBlank())
 
       if (!refreshToken.isNullOrEmpty()) {
         runCatching {
-          tokenResponse = AccountHelper(myContext).refreshToken(refreshToken)!!
+          tokenResponse = accountHelper.refreshToken(refreshToken)!!
 
           accessToken = tokenResponse.accessToken
 
-          am.setPassword(account, refreshToken)
-          am.setAuthToken(account, authTokenType, accessToken)
+          accountManager.setPassword(account, refreshToken)
+          accountManager.setAuthToken(account, authTokenType, accessToken)
 
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            am.notifyAccountAuthenticated(account)
+            accountManager.notifyAccountAuthenticated(account)
           }
         }
           .onFailure {

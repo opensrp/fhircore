@@ -83,6 +83,31 @@ class SecureConfigTest {
   }
 
   @Test
+  fun `verify secure preferences session token retrieve`() {
+    val credentials = Credentials("testuser", "testpw".toCharArray(), "my-token")
+
+    secureConfig.saveCredentials(credentials)
+
+    val sessionToken = secureConfig.retrieveSessionToken()
+
+    assertEquals("my-token", sessionToken)
+  }
+
+  @Test
+  fun `verify secure preferences session username retrieve`() {
+    val credentials = Credentials("testuser", "testpw".toCharArray(), "my-token")
+    val credentialsExpectedStr = Gson().toJson(credentials)
+
+    testSharedPreferences.edit {
+      putString(SecureConfig.KEY_LATEST_CREDENTIALS_PREFERENCE, credentialsExpectedStr)
+    }
+
+    val sessionUsername = secureConfig.retrieveSessionUsername()
+
+    assertEquals("testuser", sessionUsername)
+  }
+
+  @Test
   fun `verify secure preferences credentials delete`() {
     val credentials = Credentials("testuser", "testpw".toCharArray(), "my-token")
     val credentialsStr = Gson().toJson(credentials)
