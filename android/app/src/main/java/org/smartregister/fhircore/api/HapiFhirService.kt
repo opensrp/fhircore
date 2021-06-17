@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.api
 
+import android.content.Context
 import ca.uhn.fhir.parser.IParser
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
@@ -24,7 +25,6 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.OperationOutcome
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.BuildConfig
-import org.smartregister.fhircore.FhirApplication
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
@@ -57,11 +57,11 @@ interface HapiFhirService {
   companion object {
     private const val BASE_URL: String = "${BuildConfig.FHIR_BASE_URL}"
 
-    fun create(parser: IParser, application: FhirApplication): HapiFhirService {
+    fun create(parser: IParser, context: Context): HapiFhirService {
       val logger = HttpLoggingInterceptor()
       logger.level = HttpLoggingInterceptor.Level.BODY
 
-      val oauthInterceptor = OAuthInterceptor(application.baseContext)
+      val oauthInterceptor = OAuthInterceptor(context)
 
       val client = OkHttpClient.Builder()
         .addInterceptor(oauthInterceptor)
