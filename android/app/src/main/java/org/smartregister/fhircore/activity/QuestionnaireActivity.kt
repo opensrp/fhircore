@@ -20,7 +20,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.viewModelScope
@@ -40,7 +39,7 @@ import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
-class QuestionnaireActivity : AppCompatActivity() {
+class QuestionnaireActivity : MultiLanguageBaseActivity() {
   private val viewModel: QuestionnaireViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {

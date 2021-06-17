@@ -11,6 +11,13 @@
             android:icon="@drawable/ic_baby_mother_covax"
             android:title="@string/menu_clients_list_title"
             app:actionLayout="@layout/menu_counter"/>
+
+        <item
+            android:id="@+id/menu_item_language"
+            android:icon="@drawable/outline_language_white_36"
+            android:title="@string/language"
+            app:actionLayout="@layout/menu_counter"/>
+
     </group>
 
     <group android:checkableBehavior="single"
@@ -18,7 +25,7 @@
 
         <item
             android:id="@+id/menu_item_logout"
-            android:title="Log out as Francis"
+            android:title="@string/logout_as_user"
             android:icon="@drawable/ic_logout" />
 
     </group>

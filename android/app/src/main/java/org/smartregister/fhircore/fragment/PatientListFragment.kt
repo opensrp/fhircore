@@ -169,7 +169,10 @@ class PatientListFragment : Fragment() {
   private fun onRecordVaccineClicked(patientItem: PatientListViewModel.PatientItem) {
     startActivity(
       Intent(requireContext(), RecordVaccineActivity::class.java).apply {
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
+        putExtra(
+          QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
+          activity?.getString(R.string.record_vaccine)
+        )
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
         putExtra(USER_ID, patientItem.logicalId)
       }

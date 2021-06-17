@@ -22,7 +22,6 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import com.google.android.fhir.datacapture.QuestionnaireFragment
@@ -32,7 +31,7 @@ import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 const val USER_ID = "user_id"
 
-class RecordVaccineActivity : AppCompatActivity() {
+class RecordVaccineActivity : MultiLanguageBaseActivity() {
 
   private val viewModel: QuestionnaireViewModel by viewModels()
 
