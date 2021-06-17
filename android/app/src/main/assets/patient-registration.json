@@ -1,6 +1,7 @@
 {
   "resourceType": "Questionnaire",
   "id": "client-registration-sample",
+  "language": "en",
   "status": "active",
   "date": "2020-11-18T07:24:47.111Z",
   "subjectType": [
@@ -21,6 +22,23 @@
       "linkId": "PR",
       "type": "group",
       "text": "Client info",
+      "_text": {
+        "extension": [
+          {
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "sw"
+              },
+              {
+                "url": "content",
+                "valueString": "Maelezo ya mteja"
+              }
+            ],
+            "url": "http://hl7.org/fhir/StructureDefinition/translation"
+          }
+        ]
+      },
       "item": [
         {
           "linkId": "PR-name",
@@ -42,14 +60,48 @@
               "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.given",
               "type": "string",
               "required": true,
-              "text": "First Name"
+              "text": "First Name",
+              "_text": {
+                "extension": [
+                  {
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "sw"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "Jina la kwanza"
+                      }
+                    ],
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                  }
+                ]
+              }
             },
             {
               "linkId": "PR-name-family",
               "definition": "http://hl7.org/fhir/StructureDefinition/datatypes#HumanName.family",
               "type": "string",
               "required": true,
-              "text": "Family Name"
+              "text": "Family Name",
+              "_text": {
+                "extension": [
+                  {
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "sw"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "Jina la ukoo"
+                      }
+                    ],
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                  }
+                ]
+              }
             }
           ]
         },
@@ -58,7 +110,24 @@
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
           "type": "date",
           "required": true,
-          "text": "Date of Birth"
+          "text": "Date of Birth",
+          "_text": {
+            "extension": [
+              {
+                "extension": [
+                  {
+                    "url": "lang",
+                    "valueCode": "sw"
+                  },
+                  {
+                    "url": "content",
+                    "valueString": "Tarehe ya kuzaliwa"
+                  }
+                ],
+                "url": "http://hl7.org/fhir/StructureDefinition/translation"
+              }
+            ]
+          }
         },
         {
           "linkId": "patient-0-gender",
@@ -102,13 +171,23 @@
             {
               "valueCoding": {
                 "code": "female",
-                "display": "Female"
+                "display": "Female",
+                "designation": [
+                  {
+                    "language": "sw",
+                    "value": "Mwanamke"
+                  }]
               }
             },
             {
               "valueCoding": {
                 "code": "male",
-                "display": "Male"
+                "display": "Male",
+                "designation": [
+                  {
+                  "language": "sw",
+                  "value": "Mwanaume"
+                }]
               }
             }
           ]
@@ -161,7 +240,24 @@
               "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom.value",
               "type": "string",
               "required": true,
-              "text": "Phone Number"
+              "text": "Phone Number",
+              "_text": {
+                "extension": [
+                  {
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "sw"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "Nambari ya simu"
+                      }
+                    ],
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                  }
+                ]
+              }
             }
           ]
         },
@@ -184,13 +280,47 @@
               "linkId": "PR-address-city",
               "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.address.city",
               "type": "string",
-              "text": "City"
+              "text": "City",
+              "_text": {
+                "extension": [
+                  {
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "sw"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "Mji"
+                      }
+                    ],
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                  }
+                ]
+              }
             },
             {
               "linkId": "PR-address-country",
               "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.address.country",
               "type": "string",
-              "text": "Country"
+              "text": "Country",
+              "_text": {
+                "extension": [
+                  {
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "sw"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "Nchi"
+                      }
+                    ],
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                  }
+                ]
+              }
             }
           ]
         },
@@ -198,7 +328,24 @@
           "linkId": "PR-active",
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.active",
           "type": "boolean",
-          "text": "Is Active?"
+          "text": "Is Active?",
+          "_text": {
+            "extension": [
+              {
+                "extension": [
+                  {
+                    "url": "lang",
+                    "valueCode": "sw"
+                  },
+                  {
+                    "url": "content",
+                    "valueString": "Inatumika?"
+                  }
+                ],
+                "url": "http://hl7.org/fhir/StructureDefinition/translation"
+              }
+            ]
+          }
         }
       ]
     }

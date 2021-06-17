@@ -16,27 +16,35 @@
 
 package org.smartregister.fhircore.activity
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.annotation.IdRes
-import androidx.appcompat.app.AppCompatActivity
+import androidx.annotation.VisibleForTesting
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.material.navigation.NavigationView
+import java.util.Locale
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.domain.Language
+import org.smartregister.fhircore.util.Constants
+import org.smartregister.fhircore.util.SharedPreferencesHelper
+import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.BaseViewModel
 import timber.log.Timber
 
 abstract class BaseSimpleActivity :
-  AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+  MultiLanguageBaseActivity(), NavigationView.OnNavigationItemSelectedListener {
   lateinit var viewModel: BaseViewModel
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,8 +73,10 @@ abstract class BaseSimpleActivity :
     setupDrawer()
 
     initClientCountObserver()
+    initLanguageObserver()
 
     loadCounts()
+    loadLanguages()
   }
 
   abstract fun getContentLayout(): Int
@@ -81,11 +91,49 @@ abstract class BaseSimpleActivity :
     when (item.itemId) {
       R.id.menu_item_clients -> {
         startActivity(Intent(baseContext, PatientListActivity::class.java))
+        getDrawerLayout().closeDrawer(GravityCompat.START)
+      }
+      R.id.menu_item_language -> {
+        renderSelectLanguageDialog(this)
       }
     }
 
-    getDrawerLayout().closeDrawer(GravityCompat.START)
     return true
+  }
+
+  @VisibleForTesting
+  fun getLanguageArrayAdapter() =
+    ArrayAdapter(this, android.R.layout.simple_list_item_1, viewModel.languageList)
+
+  @VisibleForTesting fun getAlertDialogBuilder() = AlertDialog.Builder(this@BaseSimpleActivity)
+
+  @VisibleForTesting fun getLanguageDialogTitle() = this.getString(R.string.select_language)
+
+  fun renderSelectLanguageDialog(context: Activity) {
+
+    val adapter: ArrayAdapter<Language> = getLanguageArrayAdapter()
+
+    val builder: AlertDialog.Builder = getAlertDialogBuilder()
+    builder.setTitle(getLanguageDialogTitle())
+    builder.setIcon(R.drawable.outline_language_black_48)
+    builder
+      .setAdapter(adapter) { _, i ->
+        val language = viewModel.languageList[i]
+
+        refreshSelectedLanguage(language, context)
+      }
+      .create()
+      .show()
+  }
+
+  fun refreshSelectedLanguage(language: Language, context: Activity) {
+    setLanguage(language.displayName)
+
+    Utils.setAppLocale(context, language.tag)
+
+    SharedPreferencesHelper.write(Constants.SHARED_PREF_KEY.LANG, language.tag)
+
+    Utils.refreshActivity(context)
   }
 
   protected fun setNavigationViewListener() {
@@ -119,8 +167,28 @@ abstract class BaseSimpleActivity :
     )
   }
 
+  private fun setLanguage(language: String) {
+
+    (getNavigationView().menu.findItem(R.id.menu_item_language).actionView as TextView).apply {
+      text = language
+    }
+  }
+
+  private fun initLanguageObserver() {
+    Timber.d("Observing language livedata")
+
+    viewModel.selectedLanguage.observe(
+      this,
+      { event -> setLanguage(Locale(event).getDisplayName(Locale.ENGLISH)) }
+    )
+  }
+
   // TODO look into ways on how to improve performance for this
   private fun loadCounts() {
     viewModel.loadClientCount()
+  }
+
+  private fun loadLanguages() {
+    viewModel.loadLanguages()
   }
 }

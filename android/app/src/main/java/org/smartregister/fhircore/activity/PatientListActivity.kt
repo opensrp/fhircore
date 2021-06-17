@@ -76,7 +76,10 @@ class PatientListActivity : BaseSimpleActivity() {
     val context = view.context
     context.startActivity(
       Intent(context, QuestionnaireActivity::class.java).apply {
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Client info")
+        putExtra(
+          QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
+          this@PatientListActivity.getString(R.string.client_info)
+        )
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
       }
     )

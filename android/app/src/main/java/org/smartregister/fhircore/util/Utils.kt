@@ -16,16 +16,25 @@
 
 package org.smartregister.fhircore.util
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.content.res.Configuration
+import android.content.res.Resources
+import android.os.Build
+import android.os.LocaleList
 import android.view.MotionEvent
 import android.view.View
 import android.widget.EditText
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.search.Search
+import java.util.Locale
 import org.hl7.fhir.r4.model.Patient
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.joda.time.ReadablePartial
 import org.joda.time.Years
+import timber.log.Timber
 
 object Utils {
 
@@ -62,6 +71,27 @@ object Utils {
     )
   }
 
+  fun setAppLocale(context: Context, languageTag: String?): Configuration? {
+    val res: Resources = context.resources
+    val configuration: Configuration = res.configuration
+    try {
+      val locale = Locale.forLanguageTag(languageTag)
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        configuration.setLocale(locale)
+        val localeList = LocaleList(locale)
+        LocaleList.setDefault(localeList)
+        configuration.setLocales(localeList)
+        context.createConfigurationContext(configuration)
+      } else {
+        configuration.locale = locale
+        res.updateConfiguration(configuration, res.displayMetrics)
+      }
+    } catch (e: Exception) {
+      Timber.e(e)
+    }
+    return configuration
+  }
+
   private fun isDrawableClicked(
     drawablePosition: DrawablePosition,
     event: MotionEvent?,
@@ -77,6 +107,11 @@ object Utils {
         return false
       }
     }
+  }
+
+  fun refreshActivity(activity: Activity) {
+    val intent = Intent(activity, activity.javaClass)
+    activity.startActivity(intent)
   }
 
   enum class DrawablePosition(val position: Int) {

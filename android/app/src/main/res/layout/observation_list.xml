@@ -23,8 +23,8 @@
     android:name="com.google.fhirengine.example.ObservationListFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
     app:layoutManager="LinearLayoutManager"
     tools:context=".activity.PatientListActivity"
     tools:listitem="@layout/observation_list_item" />
