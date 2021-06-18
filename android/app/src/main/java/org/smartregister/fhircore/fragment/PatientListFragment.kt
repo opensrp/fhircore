@@ -209,15 +209,13 @@ class PatientListFragment : Fragment() {
         View.VISIBLE
       else View.GONE
 
-    if (pagination.totalPages() < 2) {
-      this.infoTextView.text = ""
-    } else {
-      this.infoTextView.text =
+    this.infoTextView.text =
+      if (pagination.totalPages() < 2) ""
+      else
         resources.getString(
           R.string.str_page_info,
           pagination.currentPageNumber(),
           pagination.totalPages()
         )
-    }
   }
 }
