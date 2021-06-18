@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.viewmodel
 
-import OAuthResponse
 import android.accounts.AccountAuthenticatorResponse
 import android.accounts.AccountManager
 import android.accounts.AccountManagerCallback
@@ -39,8 +38,8 @@ import com.google.android.material.internal.TextWatcherAdapter
 import okhttp3.ResponseBody
 import org.smartregister.fhircore.BuildConfig
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.auth.account.AccountHelper
 import org.smartregister.fhircore.auth.OAuthResponse
+import org.smartregister.fhircore.auth.account.AccountHelper
 import org.smartregister.fhircore.auth.secure.Credentials
 import org.smartregister.fhircore.auth.secure.SecureConfig
 import org.smartregister.fhircore.model.LoginUser
@@ -50,8 +49,8 @@ import retrofit2.Callback
 import retrofit2.Response
 import timber.log.Timber
 
-class LoginViewModel(application: Application) : AndroidViewModel(application),
-  Callback<OAuthResponse>, AccountManagerCallback<Bundle> {
+class LoginViewModel(application: Application) :
+  AndroidViewModel(application), Callback<OAuthResponse>, AccountManagerCallback<Bundle> {
 
   var loginUser: LoginUser = LoginUser()
   var allowLogin = MutableLiveData(false)
@@ -120,8 +119,8 @@ class LoginViewModel(application: Application) : AndroidViewModel(application),
 
       enableLoginButton(true)
 
-      if(allowLocalLogin()){
-        goHome.value = true //todo
+      if (allowLocalLogin()) {
+        goHome.value = true // todo
       }
 
       return
@@ -136,9 +135,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application),
     // destroy password
     loginUser.password = charArrayOf()
 
-    AccountHelper(baseContext)
-      .getUserInfo()
-      .enqueue(OnUserInfoResponse(baseContext))
+    AccountHelper(baseContext).getUserInfo().enqueue(OnUserInfoResponse(baseContext))
 
     goHome.value = true
   }
@@ -194,15 +191,15 @@ class LoginViewModel(application: Application) : AndroidViewModel(application),
 
     Timber.i("Got token $token")
 
-    if(!token.isNullOrEmpty() && AccountHelper(baseContext).isSessionActive(token)){
+    if (!token.isNullOrEmpty() && AccountHelper(baseContext).isSessionActive(token)) {
       goHome.value = true
     }
 
-    Timber.i("Got resp ${resp.toString()}")
+    Timber.i("Got resp $resp")
   }
 }
 
-private class OnUserInfoResponse (context: Context): Callback<ResponseBody> {
+private class OnUserInfoResponse(context: Context) : Callback<ResponseBody> {
   val baseContext = context
 
   override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {

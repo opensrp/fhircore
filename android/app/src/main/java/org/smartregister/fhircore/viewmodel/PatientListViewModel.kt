@@ -65,15 +65,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     viewModelScope.launch {
       val searchResults: List<Patient> =
         fhirEngine.search {
-<<<<<<< HEAD
           Utils.addBasePatientFilter(this)
 
-=======
-          /*filter(Patient.ADDRESS_CITY) {
-            prefix = ParamPrefixEnum.EQUAL
-            value = "NAIROBI"
-          }*/
->>>>>>> Resolving comments
           apply {
             if (query?.isNotBlank() == true) {
               filter(Patient.FAMILY) {
@@ -102,15 +95,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   private suspend fun count(query: String? = null): Int {
     val searchResults: List<Patient> =
       fhirEngine.search {
-<<<<<<< HEAD
         Utils.addBasePatientFilter(this)
 
-=======
-        /*filter(Patient.ADDRESS_CITY) {
-          prefix = ParamPrefixEnum.EQUAL
-          value = "NAIROBI"
-        }*/
->>>>>>> Resolving comments
         apply {
           if (query?.isNotBlank() == true) {
             filter(Patient.FAMILY) {

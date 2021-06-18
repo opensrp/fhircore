@@ -26,6 +26,6 @@ object AccountConfig {
   const val AUTH_TOKEN_TYPE: String = "ACCESS_TOKEN"
 
   val AUTH_HANDLER_ACTIVITY = LoginActivity::class.java
-  val ACCOUNT_TYPE: String = FhirApplication.getContext().getString(R.string.authenticator_account_type)
-
+  val ACCOUNT_TYPE: String =
+    FhirApplication.getContext().getString(R.string.authenticator_account_type)
 }

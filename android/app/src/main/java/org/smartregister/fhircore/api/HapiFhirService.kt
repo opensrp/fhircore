@@ -63,10 +63,8 @@ interface HapiFhirService {
 
       val oauthInterceptor = OAuthInterceptor(context)
 
-      val client = OkHttpClient.Builder()
-        .addInterceptor(oauthInterceptor)
-        .addInterceptor(logger)
-        .build()
+      val client =
+        OkHttpClient.Builder().addInterceptor(oauthInterceptor).addInterceptor(logger).build()
 
       return Retrofit.Builder()
         .baseUrl(BASE_URL)

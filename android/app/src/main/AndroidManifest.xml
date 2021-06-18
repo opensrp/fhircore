@@ -40,8 +40,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    <activity android:name=".activity.RecordVaccineActivity"></activity>
-    <activity
+        <activity android:name=".activity.RecordVaccineActivity"></activity>
+        <activity
                 android:name="org.smartregister.fhircore.activity.PatientListActivity"
                 android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" >
@@ -66,5 +66,6 @@
             <meta-data android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator" />
         </service>
+
     </application>
 </manifest>

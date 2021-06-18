@@ -24,17 +24,8 @@ import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import io.jsonwebtoken.Claims
-import io.jsonwebtoken.Jws
-import io.jsonwebtoken.Jwt
-import io.jsonwebtoken.JwtBuilder
-import io.jsonwebtoken.JwtParser
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.impl.DefaultJws
-import io.jsonwebtoken.impl.DefaultJwt
-import io.jsonwebtoken.impl.DefaultJwtParser
-import io.jsonwebtoken.impl.crypto.DefaultJwtSignatureValidator
-import io.jsonwebtoken.impl.crypto.JwtSignatureValidator
+import java.util.Date
 import okhttp3.ResponseBody
 import org.smartregister.fhircore.BuildConfig
 import org.smartregister.fhircore.api.OAuthService
@@ -43,7 +34,6 @@ import retrofit2.Call
 import retrofit2.HttpException
 import retrofit2.Response
 import timber.log.Timber
-import java.util.Date
 
 class AccountHelper(context: Context) {
   private val mContext = context
@@ -87,14 +77,15 @@ class AccountHelper(context: Context) {
     return payload
   }
 
-  fun isSessionActive(token: String): Boolean {
-    kotlin.runCatching {
-      var tokenOnly = token.substring(0, token.lastIndexOf('.') + 1);
-      return Jwts.parser().parseClaimsJwt(tokenOnly).body.expiration.after(Date())
-    }
-      .onFailure {
-        Timber.e(it)
+  fun isSessionActive(token: String?): Boolean {
+    if (token.isNullOrEmpty()) return false
+
+    kotlin
+      .runCatching {
+        val tokenOnly = token.substring(0, token.lastIndexOf('.') + 1)
+        return Jwts.parser().parseClaimsJwt(tokenOnly).body.expiration.after(Date())
       }
+      .onFailure { Timber.e(it) }
 
     return false
   }

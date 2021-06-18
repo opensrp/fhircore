@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2021 Ona Systems, Inc
  *
@@ -17,7 +16,6 @@
 
 package org.smartregister.fhircore.auth.secure
 
-import SecureConfig
 import android.content.Context
 import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
@@ -29,9 +27,12 @@ import org.junit.Assert.assertNull
 import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.smartregister.fhircore.robolectric.FhircoreTestRunner
+import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
-@RunWith(RobolectricTestRunner::class)
+@RunWith(FhircoreTestRunner::class)
+@Config(shadows = [FhirApplicationShadow::class])
 class SecureConfigTest {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()

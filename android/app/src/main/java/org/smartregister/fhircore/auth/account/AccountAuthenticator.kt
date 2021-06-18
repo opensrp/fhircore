@@ -25,10 +25,10 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.core.os.bundleOf
+import java.util.Locale
 import org.smartregister.fhircore.auth.OAuthResponse
 import org.smartregister.fhircore.auth.account.AccountConfig.AUTH_HANDLER_ACTIVITY
 import timber.log.Timber
-import java.util.Locale
 
 class AccountAuthenticator(context: Context) : AbstractAccountAuthenticator(context) {
 
