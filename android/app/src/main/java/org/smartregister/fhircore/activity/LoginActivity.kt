@@ -31,7 +31,7 @@ import timber.log.Timber
 class LoginActivity : AppCompatActivity() {
 
   private lateinit var binding: LoginBinding
-  private lateinit var viewModel: LoginViewModel
+  internal lateinit var viewModel: LoginViewModel
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -46,16 +46,19 @@ class LoginActivity : AppCompatActivity() {
   }
 
   private fun startHomeObserver() {
-    viewModel.goHome.observe(this, Observer {
-      Timber.i("GoHome value changed, now shall start home %b", it)
+    viewModel.goHome.observe(
+      this,
+      Observer {
+        Timber.i("GoHome value changed, now shall start home %b", it)
 
-      if(it){
-        val intent = Intent(baseContext, PatientListActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        if (it) {
+          val intent = Intent(baseContext, PatientListActivity::class.java)
+          intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-        startActivity(intent)
-        finish()
+          startActivity(intent)
+          finish()
+        }
       }
-    })
+    )
   }
 }

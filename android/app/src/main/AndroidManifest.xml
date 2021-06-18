@@ -42,11 +42,14 @@
         </activity>
         <activity android:name=".activity.RecordVaccineActivity"></activity>
         <activity
+<<<<<<< HEAD
                 android:name="org.smartregister.fhircore.activity.PatientListActivity"
                 android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" >
         </activity>
         <activity
+=======
+>>>>>>> Rebase with main
                 android:name="org.smartregister.fhircore.activity.PatientListActivity"
                 android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" >

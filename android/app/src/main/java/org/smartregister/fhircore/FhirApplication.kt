@@ -34,7 +34,6 @@ import org.smartregister.fhircore.api.HapiFhirService.Companion.create
 import org.smartregister.fhircore.data.FhirPeriodicSyncWorker
 import org.smartregister.fhircore.data.HapiFhirResourceDataSource
 import org.smartregister.fhircore.util.SharedPreferencesHelper
-
 import timber.log.Timber
 
 class FhirApplication : Application() {
