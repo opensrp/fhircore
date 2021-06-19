@@ -23,6 +23,7 @@ object SharedPreferencesHelper {
 
   private lateinit var prefs: SharedPreferences
 
+  const val LANG = "shared_pref_lang"
   private const val PREFS_NAME = "params"
 
   fun init(context: Context) {
