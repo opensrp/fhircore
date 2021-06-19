@@ -11,8 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client count display in drawer
 
 ### Fixed
+
 - Select initial/default value of Radio Button on client info screen
 - Fixed patient list pagination button position to static on bottom of list
+- Fixed patient list fragment adapter count
 
 ### Changed
 - Reduce font size and spacing on patient list screen
