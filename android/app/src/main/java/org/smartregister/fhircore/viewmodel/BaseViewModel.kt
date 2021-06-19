@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,25 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
+import java.util.Locale
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.R
+import org.smartregister.fhircore.domain.Language
+import org.smartregister.fhircore.util.Constants
+import org.smartregister.fhircore.util.SharedPreferencesHelper
 import org.smartregister.fhircore.util.Utils
 import timber.log.Timber
 
 class BaseViewModel(application: Application, private val fhirEngine: FhirEngine) :
   AndroidViewModel(application) {
   var covaxClientsCount = MutableLiveData(0)
+  var selectedLanguage =
+    MutableLiveData(
+      SharedPreferencesHelper.read(Constants.SHARED_PREF_KEY.LANG, Locale.ENGLISH.toLanguageTag())
+    )
+
+  lateinit var languageList: List<Language>
 
   fun loadClientCount() {
     Timber.d("Loading client counts")
@@ -49,6 +60,22 @@ class BaseViewModel(application: Application, private val fhirEngine: FhirEngine
       covaxClientsCount.value = p.size // TODO use a proper count query after Google devs respond
 
       Timber.d("Loaded %s clients from db", p.size)
+    }
+  }
+
+  fun loadLanguages() {
+    Timber.d("Loading languages")
+
+    viewModelScope.launch {
+      languageList =
+        getApplication<Application>()
+          .applicationContext
+          .resources
+          .getStringArray(R.array.languages)
+          .toList()
+          .map { Language(it, Locale.forLanguageTag(it).displayName) }
+
+      Timber.d("Loaded %s languages from languages.xml resource file", languageList.size)
     }
   }
 

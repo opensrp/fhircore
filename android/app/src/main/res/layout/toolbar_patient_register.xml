@@ -8,7 +8,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="5dp">
+        android:layout_marginStart="5dp">
 
         <ImageButton
             android:id="@+id/btn_drawer_menu"
@@ -21,10 +21,10 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:text="COVAX clients"
+            android:text="@string/covax_client"
             android:layout_weight="5"
             android:gravity="center"
-            android:textSize="23sp"
+            android:textSize="21sp"
             android:textColor="@color/white"
             tools:textColor="#000000"
             android:fontFamily="sans-serif-medium" />
@@ -35,7 +35,7 @@
             android:layout_height="match_parent"
             android:checked="true"
             android:gravity="center_vertical"
-            android:text="Show overdue"
+            android:text="@string/show_overdue"
             android:textColor="@color/white"
             tools:textColor="#000000" />
 
@@ -51,7 +51,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/rounded_white_bg"
-            android:textSize="22sp"
+            android:textSize="17sp"
             android:textColor="#000000"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"

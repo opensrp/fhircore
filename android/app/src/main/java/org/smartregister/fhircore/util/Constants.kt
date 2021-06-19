@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,3 +14,11 @@
  * limitations under the License.
  */
 
+package org.smartregister.fhircore.util
+
+/** Created by ndegwamartin on 10/06/2021. */
+object Constants {
+  object SHARED_PREF_KEY {
+    const val LANG = "shared_pref_lang"
+  }
+}

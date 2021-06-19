@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,11 @@
 
 package org.smartregister.fhircore.util
 
+import android.app.Activity
+import android.content.Intent
+import io.mockk.mockkClass
+import io.mockk.slot
+import io.mockk.verify
 import java.text.SimpleDateFormat
 import java.util.Date
 import org.apache.commons.lang3.time.DateUtils
@@ -41,5 +46,19 @@ class UtilsTest {
     val fourYearsAgo = sdf.format(date)
 
     Assert.assertEquals(4, Utils.getAgeFromDate(fourYearsAgo, null))
+  }
+
+  @Test
+  fun `test refreshActivity invokes startActivity with intent param`() {
+
+    val activity: Activity = mockkClass(type = Activity::class, relaxed = true)
+
+    val slot = slot<Intent>()
+
+    Utils.refreshActivity(activity)
+
+    verify { activity.startActivity(capture(slot)) }
+
+    Assert.assertNotNull(slot.captured)
   }
 }

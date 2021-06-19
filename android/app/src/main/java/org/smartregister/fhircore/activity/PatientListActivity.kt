@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,10 @@ class PatientListActivity : BaseSimpleActivity() {
     val context = view.context
     context.startActivity(
       Intent(context, QuestionnaireActivity::class.java).apply {
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Client info")
+        putExtra(
+          QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
+          this@PatientListActivity.getString(R.string.client_info)
+        )
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
       }
     )
@@ -85,7 +88,7 @@ class PatientListActivity : BaseSimpleActivity() {
   // pager adapter
   private inner class PatientListPagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
     override fun getItemCount(): Int {
-      return 50
+      return 1
     }
 
     override fun createFragment(position: Int): Fragment {

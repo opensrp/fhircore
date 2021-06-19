@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.domain
 
-import android.os.Build
-import org.junit.runner.RunWith
-import org.robolectric.annotation.Config
-import org.smartregister.fhircore.robolectric.FhircoreTestRunner
-
-@RunWith(FhircoreTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.O_MR1])
-abstract class RobolectricTest
+/** Created by ndegwamartin on 15/06/2021. */
+data class Language(val tag: String, val displayName: String) {
+  override fun toString() = displayName
+}

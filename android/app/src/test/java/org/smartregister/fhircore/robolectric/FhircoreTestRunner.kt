@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.internal.bytecode.InstrumentationConfiguration
 import org.robolectric.util.inject.Injector
 
-/** Created by ndegwamartin on 07/06/2021. */
 internal class FhircoreTestRunner : RobolectricTestRunner {
   constructor(testClass: Class<*>?) : super(testClass) {}
   constructor(testClass: Class<*>?, injector: Injector?) : super(testClass, injector) {}

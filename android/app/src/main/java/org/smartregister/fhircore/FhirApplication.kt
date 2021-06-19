@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,13 +33,14 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.api.HapiFhirService.Companion.create
 import org.smartregister.fhircore.data.FhirPeriodicSyncWorker
 import org.smartregister.fhircore.data.HapiFhirResourceDataSource
-import org.smartregister.fhircore.util.SharedPrefrencesHelper
+import org.smartregister.fhircore.util.SharedPreferencesHelper
 import timber.log.Timber
 
 class FhirApplication : Application() {
 
   override fun onCreate() {
     super.onCreate()
+    SharedPreferencesHelper.init(this)
     mContext = this
 
     if (BuildConfig.DEBUG) {
@@ -52,7 +53,7 @@ class FhirApplication : Application() {
   private val mInstance: FhirApplication by lazy { this }
 
   private fun constructFhirEngine(): FhirEngine {
-    SharedPrefrencesHelper.init(this)
+    SharedPreferencesHelper.init(this)
     val parser = FhirContext.forR4().newJsonParser()
     val service = create(parser)
     val params = mutableMapOf("address-city" to "NAIROBI")
