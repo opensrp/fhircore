@@ -30,7 +30,6 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.domain.Language
-import org.smartregister.fhircore.util.Constants
 import org.smartregister.fhircore.util.SharedPreferencesHelper
 import org.smartregister.fhircore.util.Utils
 import timber.log.Timber
@@ -40,7 +39,7 @@ class BaseViewModel(application: Application, private val fhirEngine: FhirEngine
   var covaxClientsCount = MutableLiveData(0)
   var selectedLanguage =
     MutableLiveData(
-      SharedPreferencesHelper.read(Constants.SHARED_PREF_KEY.LANG, Locale.ENGLISH.toLanguageTag())
+      SharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
     )
 
   lateinit var languageList: List<Language>
