@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.adapter.ObservationItemRecyclerViewAdapter
-import org.smartregister.fhircore.util.SharedPrefrencesHelper
+import org.smartregister.fhircore.util.SharedPreferencesHelper
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
@@ -96,7 +96,7 @@ class PatientDetailFragment : Fragment() {
 
   private fun updateVaccineStatus() {
     patitentId?.let {
-      val vaccineRecorded = SharedPrefrencesHelper.read(it, "")
+      val vaccineRecorded = SharedPreferencesHelper.read(it, "")
       vaccineRecorded?.let { it1 ->
         if (it1.isNotEmpty()) {
           val tvVaccineRecorded = rootView.findViewById<TextView>(R.id.vaccination_status)

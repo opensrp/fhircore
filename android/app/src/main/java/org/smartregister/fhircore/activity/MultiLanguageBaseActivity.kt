@@ -16,16 +16,20 @@
 
 package org.smartregister.fhircore.activity
 
-import android.app.Activity
-import org.junit.After
-import org.smartregister.fhircore.RobolectricTest
+import android.content.Context
+import android.content.res.Configuration
+import androidx.appcompat.app.AppCompatActivity
+import java.util.Locale
+import org.smartregister.fhircore.util.SharedPreferencesHelper
+import org.smartregister.fhircore.util.Utils
 
-abstract class ActivityRobolectricTest : RobolectricTest() {
+abstract class MultiLanguageBaseActivity : AppCompatActivity() {
 
-  @After
-  fun testDown() {
-    getActivity().finish()
+  override fun attachBaseContext(base: Context) {
+    val lang: String? =
+      SharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
+    val newConfiguration: Configuration? = Utils.setAppLocale(base, lang)
+    super.attachBaseContext(base)
+    applyOverrideConfiguration(newConfiguration)
   }
-
-  abstract fun getActivity(): Activity
 }

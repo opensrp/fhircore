@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,8 @@ package org.smartregister.fhircore.activity
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
+import android.widget.Button
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.viewModelScope
@@ -41,17 +39,14 @@ import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
-class QuestionnaireActivity : AppCompatActivity() {
+class QuestionnaireActivity : MultiLanguageBaseActivity() {
   private val viewModel: QuestionnaireViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_questionnaire)
 
-    supportActionBar!!.apply {
-      title = intent.getStringExtra(QUESTIONNAIRE_TITLE_KEY)
-      setDisplayHomeAsUpEnabled(true)
-    }
+    supportActionBar!!.hide()
 
     // Only add the fragment once, when the activity is first created.
     if (savedInstanceState == null) {
@@ -61,23 +56,12 @@ class QuestionnaireActivity : AppCompatActivity() {
 
       supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
     }
-  }
 
-  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-    menuInflater.inflate(R.menu.top_bar_menu, menu)
-    return true
-  }
-
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    return when (item.getItemId()) {
-      R.id.action_submit -> {
-        val questionnaireFragment =
-          supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
-            QuestionnaireFragment
-        savePatientResource(questionnaireFragment.getQuestionnaireResponse())
-        true
-      }
-      else -> super.onOptionsItemSelected(item)
+    findViewById<Button>(R.id.btn_save_client_info).setOnClickListener {
+      val questionnaireFragment =
+        supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
+          QuestionnaireFragment
+      savePatientResource(questionnaireFragment.getQuestionnaireResponse())
     }
   }
 

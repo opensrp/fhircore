@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,11 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
-import androidx.appcompat.app.AppCompatActivity
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 
 /** An activity representing a single Patient detail screen. */
-class PatientDetailActivity : AppCompatActivity() {
+class PatientDetailActivity : MultiLanguageBaseActivity() {
   lateinit var fragment: PatientDetailFragment
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,7 +59,10 @@ class PatientDetailActivity : AppCompatActivity() {
     findViewById<Button>(R.id.btn_record_vaccine).setOnClickListener {
       startActivity(
         Intent(this, RecordVaccineActivity::class.java).apply {
-          putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
+          putExtra(
+            QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
+            this@PatientDetailActivity.getString(R.string.record_vaccine)
+          )
           putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
           putExtra(USER_ID, fragment.patitentId)
         }
