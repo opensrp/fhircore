@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.domain
 
-/** Created by ndegwamartin on 15/06/2021. */
 data class Language(val tag: String, val displayName: String) {
   override fun toString() = displayName
 }

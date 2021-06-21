@@ -37,7 +37,6 @@ import java.util.Locale
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.domain.Language
-import org.smartregister.fhircore.util.Constants
 import org.smartregister.fhircore.util.SharedPreferencesHelper
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.BaseViewModel
@@ -131,7 +130,7 @@ abstract class BaseSimpleActivity :
 
     Utils.setAppLocale(context, language.tag)
 
-    SharedPreferencesHelper.write(Constants.SHARED_PREF_KEY.LANG, language.tag)
+    SharedPreferencesHelper.write(SharedPreferencesHelper.LANG, language.tag)
 
     Utils.refreshActivity(context)
   }
