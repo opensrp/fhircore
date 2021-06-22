@@ -23,6 +23,9 @@
     <string name="add_patient">Add Patient</string>
     <string name="menu_sync_resources">Sync Resources</string>
 
+    <string name="authenticator_label" translatable="false">Authenticate FHIR Core</string>
+    <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.app</string>
+
     <string name="menu_clients_list_title">COVAX Clients</string>
     <string name="language">Language</string>
     <string name="empty_client_list_message_title">No Results</string>
@@ -55,4 +58,13 @@
     <string name="last_sync_timestamp">Last 05:30 PM, Mar 3</string>
     <string name="logout_as_user">Log out as Francis</string>
     <string name="registered_date">Registered 20-01-2021</string>
+
+    <string name="login_button_txt">Login</string>
+    <string name="username_input_hint">Enter username</string>
+    <string name="password_input_hint">Enter password</string>
+    <string name="show_password_button_hint">Show password</string>
+    <string name="login_error_message">Invalid username or password</string>
+    <string name="login_call_fail_error_message">Failed to verify credentials from server. Check your internet connection</string>
+    <string name="userinfo_call_fail_error_message">Failed to get user info from server. Check your internet connection</string>
+
 </resources>
