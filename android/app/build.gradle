@@ -52,17 +52,9 @@ android {
     }
     buildTypes {
         debug {
-            buildConfigField("String", 'OAUTH_BASE_URL', '"http://10.0.2.2:8080/auth/realms/fhircore/"')
-            buildConfigField("String", 'OAUTH_CIENT_ID', '"fhircore-client"')
-            buildConfigField("String", 'OAUTH_CLIENT_SECRET', '"74383j43u4y3b3jj"')
-
             testCoverageEnabled true
         }
         release {
-            buildConfigField("String", 'OAUTH_BASE_URL', '"http://10.0.2.2:8080/auth/realms/fhircore/"')
-            buildConfigField("String", 'OAUTH_CIENT_ID', '"fhircore-client"')
-            buildConfigField("String", 'OAUTH_CLIENT_SECRET', '"74383j43u4y3b3jj"')
-
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -206,7 +198,6 @@ dependencies {
     testImplementation deps.atsl.ext_junit
     testImplementation deps.atsl.ext_junit_ktx
     debugImplementation deps.fragment_testing
-
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk
 }
