@@ -4,6 +4,8 @@
     "status": "active",
     "name": "82fefb67-cf0d-4820-8550-26362abd3b83",
     "title": "IRS plan 2021",
+    "experimental": true,
+    "date": "2021-06-14",
     "library": [
         "Library/irs"
     ],
@@ -16,7 +18,6 @@
         "start": "2021-01-01",
         "end": "2021-12-31"
     },
-    "date": "2021-03-02",
     "goal": [
         {
             "id": "spray-all-structures",
