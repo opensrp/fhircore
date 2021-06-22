@@ -4,13 +4,33 @@ apply plugin: 'kotlin-kapt'
 apply plugin: "com.github.kt3k.coveralls"
 apply plugin: 'jacoco'
 apply plugin: 'de.mannodermaus.android-junit5'
+apply plugin: 'kotlin-android-extensions'
 
 jacoco {
     toolVersion = versions.jacoco_tool
 }
 
+Properties props = new Properties()
+
+def arr = ["FHIR_BASE_URL", "OAUTH_BASE_URL", "OAUTH_CIENT_ID", "OAUTH_CLIENT_SECRET", "OAUTH_SCOPE"]
+if (rootProject.file("local.properties").exists()) {
+    props.load(rootProject.file("local.properties").newDataInputStream())
+
+    arr.each { prop ->
+        project.ext.set(prop, props.getProperty(prop, "sample"))
+    }
+} else {
+    println("local.properties does not exist. The following values are required " + arr.join(", "))
+    arr.each { prop ->
+        project.ext.set(prop, "sample_" + prop)
+    }
+}
+
 android {
     compileSdkVersion sdk_versions.compile_sdk
+    dataBinding {
+        enabled true
+    }
     defaultConfig {
         applicationId "org.smartregister.fhircore"
         minSdkVersion sdk_versions.min_sdk
@@ -21,6 +41,14 @@ android {
         // Required when setting minSdkVersion to 20 or lower
         // See https://developer.android.com/studio/write/java8-support
         multiDexEnabled true
+
+        buildConfigField("boolean", 'SKIP_AUTH_CHECK', "false")
+
+        buildConfigField("String", 'FHIR_BASE_URL', "\"${FHIR_BASE_URL}\"")
+        buildConfigField("String", 'OAUTH_BASE_URL', "\"${OAUTH_BASE_URL}\"")
+        buildConfigField("String", 'OAUTH_CIENT_ID', "\"${OAUTH_CIENT_ID}\"")
+        buildConfigField("String", 'OAUTH_CLIENT_SECRET', "\"${OAUTH_CLIENT_SECRET}\"")
+        buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
     }
     buildTypes {
         debug {
@@ -80,6 +108,10 @@ configurations {
 
 dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+    implementation 'androidx.security:security-crypto:1.1.0-alpha03'
+    implementation 'io.jsonwebtoken:jjwt:0.9.1'
+
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
 
