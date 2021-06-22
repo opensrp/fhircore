@@ -47,7 +47,7 @@ class HapiFhirServiceTest {
   }
 
   @Test
-  fun `verify hapi fhir service created`() {
+  fun testHapiFhirServiceIsCreated() {
     Assert.assertNotNull(HapiFhirService.create(parser, context))
   }
 }

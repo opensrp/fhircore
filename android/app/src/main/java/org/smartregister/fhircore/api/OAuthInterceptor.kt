@@ -34,7 +34,7 @@ class OAuthInterceptor(context: Context) : Interceptor {
       val token = SecureConfig(mContext).retrieveSessionToken()
       if (token.isNullOrEmpty()) throw IllegalStateException("No session token found")
 
-      Timber.i("Passing auth token for %s ,,,, %s", request.url.toString(), token)
+      Timber.i("Passing auth token for %s", request.url.toString())
 
       request = request.newBuilder().addHeader("Authorization", "Bearer $token").build()
     }

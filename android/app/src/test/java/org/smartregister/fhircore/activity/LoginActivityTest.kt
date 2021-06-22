@@ -27,31 +27,104 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.auth.secure.Credentials
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
+import org.smartregister.fhircore.auth.secure.SecureConfig
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
 @Config(shadows = [FhirApplicationShadow::class])
 class LoginActivityTest : ActivityRobolectricTest() {
 
+  private lateinit var secureConfig: SecureConfig
   private lateinit var loginActivity: LoginActivity
 
   @Before
   fun setUp() {
     loginActivity =
       Robolectric.buildActivity(LoginActivity::class.java, null).create().resume().get()
+
+    secureConfig = SecureConfig(loginActivity.baseContext)
+
+    loginActivity.viewModel.secureConfig = secureConfig
   }
 
   @Test
-  fun testPatientActivityShouldNotNull() {
+  fun testLoginActivityShouldNotBeNull() {
     Assert.assertNotNull(loginActivity)
   }
 
   @Test
-  fun testPatientCountShouldBeDisabledWithEmptyCredentials() {
+  fun testLoginButtonShouldBeDisabledWithEmptyCredentials() {
     shadowOf(getMainLooper()).idle()
 
-    var loginButton = loginActivity.findViewById<Button>(R.id.login_button)
+    val loginButton = loginActivity.findViewById<Button>(R.id.login_button)
     Assert.assertFalse(loginButton.isEnabled)
+  }
+
+  @Test
+  fun testShouldEnableLoginShouldReturnFalseOnEmptyCredentials() {
+    loginActivity.viewModel.loginUser.password = charArrayOf()
+    loginActivity.viewModel.loginUser.username = ""
+
+    var result = loginActivity.viewModel.shouldEnableLogin()
+    Assert.assertFalse(result)
+
+    loginActivity.viewModel.loginUser.password = charArrayOf('p', 'w')
+    loginActivity.viewModel.loginUser.username = ""
+
+    result = loginActivity.viewModel.shouldEnableLogin()
+    Assert.assertFalse(result)
+
+    loginActivity.viewModel.loginUser.password = charArrayOf()
+    loginActivity.viewModel.loginUser.username = "testuser"
+
+    result = loginActivity.viewModel.shouldEnableLogin()
+    Assert.assertFalse(result)
+  }
+
+  @Test
+  fun testShouldEnableLoginShouldReturnTrueOnNonEmptyCredentials() {
+    loginActivity.viewModel.loginUser.password = charArrayOf('p', 'w')
+    loginActivity.viewModel.loginUser.username = "testuser"
+
+    val result = loginActivity.viewModel.shouldEnableLogin()
+    Assert.assertTrue(result)
+  }
+
+  @Test
+  fun testAllowLocalLoginShouldReturnFalseOnNonExistentCredentials() {
+    val result = loginActivity.viewModel.allowLocalLogin()
+    Assert.assertFalse(result)
+  }
+
+  @Test
+  fun testAllowLocalLoginShouldReturnFalseOnInvalidCredentials() {
+    val savedCreds = Credentials("invaliduser", charArrayOf('x', 'y'), "any token")
+
+    secureConfig.saveCredentials(savedCreds)
+
+    loginActivity.viewModel.loginUser.password = charArrayOf('p', 'w')
+    loginActivity.viewModel.loginUser.username = "testuser"
+
+    val result = loginActivity.viewModel.allowLocalLogin()
+    Assert.assertFalse(result)
+  }
+
+  @Test
+  fun testAllowLocalLoginShouldReturnTrueOnValidCredentials() {
+    shadowOf(getMainLooper()).idle()
+
+    val savedCreds = Credentials("testuser", charArrayOf('p', 'w'), "any token")
+
+    secureConfig.saveCredentials(savedCreds)
+
+    val c = secureConfig.retrieveCredentials()
+
+    loginActivity.viewModel.loginUser.password = charArrayOf('p', 'w')
+    loginActivity.viewModel.loginUser.username = "testuser"
+
+    val result = loginActivity.viewModel.allowLocalLogin()
+    Assert.assertTrue(result)
   }
 
   override fun getActivity(): Activity {

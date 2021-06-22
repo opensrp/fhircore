@@ -52,7 +52,7 @@ class SecureConfigTest {
     )
 
   @Test
-  fun `verify secure preferences credentials save`() {
+  fun testSaveCredentials() {
     val credentials = Credentials("testuser", "testpw".toCharArray(), "my-token")
     val credentialsExpectedStr = Gson().toJson(credentials)
 
@@ -65,7 +65,7 @@ class SecureConfigTest {
   }
 
   @Test
-  fun `verify secure preferences credentials retrieve`() {
+  fun testRetrieveCredentialsTokenShouldReturnCorrectCredentials() {
     val credentials = Credentials("testuser", "testpw".toCharArray(), "my-token")
     val credentialsExpectedStr = Gson().toJson(credentials)
 
@@ -84,7 +84,7 @@ class SecureConfigTest {
   }
 
   @Test
-  fun `verify secure preferences session token retrieve`() {
+  fun testRetrieveSessionTokenShouldReturnCorrectToken() {
     val credentials = Credentials("testuser", "testpw".toCharArray(), "my-token")
 
     secureConfig.saveCredentials(credentials)
@@ -95,7 +95,7 @@ class SecureConfigTest {
   }
 
   @Test
-  fun `verify secure preferences session username retrieve`() {
+  fun testRetrieveSessionUsernameShouldReturnCorrectUsername() {
     val credentials = Credentials("testuser", "testpw".toCharArray(), "my-token")
     val credentialsExpectedStr = Gson().toJson(credentials)
 
@@ -109,7 +109,7 @@ class SecureConfigTest {
   }
 
   @Test
-  fun `verify secure preferences credentials delete`() {
+  fun testDeleteCredentials() {
     val credentials = Credentials("testuser", "testpw".toCharArray(), "my-token")
     val credentialsStr = Gson().toJson(credentials)
 
@@ -119,7 +119,7 @@ class SecureConfigTest {
 
     secureConfig.deleteCredentials()
 
-    var currentVal =
+    val currentVal =
       testSharedPreferences.getString(SecureConfig.KEY_LATEST_CREDENTIALS_PREFERENCE, null)
 
     assertNull(currentVal)

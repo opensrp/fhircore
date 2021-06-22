@@ -68,7 +68,7 @@ class AccountHelperTest {
   }
 
   @Test
-  fun `verify fetch token api`() {
+  fun testFetchTokenShouldSendCorrectData() {
     every { mockOauthService?.fetchToken(capture(captor)) } returns mockk()
 
     accountHelper.fetchToken("testuser", "testpass".toCharArray())
@@ -81,12 +81,12 @@ class AccountHelperTest {
   }
 
   @Test
-  fun `verify refresh token api`() {
-    var mockCall = mockk<Call<OAuthResponse>>()
+  fun testRefreshTokenShouldSendCorrectData() {
+    val mockCall = mockk<Call<OAuthResponse>>()
 
     every { mockOauthService?.fetchToken(capture(captor)) } returns mockCall
 
-    var mockResponse = mockk<Response<OAuthResponse>>()
+    val mockResponse = mockk<Response<OAuthResponse>>()
 
     every { mockCall.execute() } returns mockResponse
 
@@ -104,22 +104,22 @@ class AccountHelperTest {
   }
 
   @Test
-  fun `verify session active with null token returns false`() {
-    var result = accountHelper.isSessionActive(null)
+  fun testIsSessionActiveShouldReturnFalseWithNullToken() {
+    val result = accountHelper.isSessionActive(null)
 
     assertFalse(result)
   }
 
   @Test
-  fun `verify session active with invalid token returns false`() {
-    var result = accountHelper.isSessionActive("my invalid token")
+  fun testIsSessionActiveShouldReturnFalseWithInvalidToken() {
+    val result = accountHelper.isSessionActive("my invalid token")
 
     assertFalse(result)
   }
 
   @Test
-  fun `verify session active with expired token returns false`() {
-    var result =
+  fun testIsSessionActiveShouldReturnFalseWithExpiredToken() {
+    val result =
       accountHelper.isSessionActive(
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
           "eyJpc3MiOiJ0b3B0YWwuY29tIiwiZXhwIjoxNDI2NDIwODAwLCJodHRwOi8vdG9wdGFsLmNvbS9qd3RfY2xhaW1zL2lzX2FkbWluIjp0cnVlLCJjb21wYW55IjoiVG9wdGFsIiwiYXdlc29tZSI6dHJ1ZX0." +
@@ -130,20 +130,20 @@ class AccountHelperTest {
   }
 
   @Test
-  fun `verify add authenticated account`() {
+  fun testAddAuthenticatedAccountShouldAddAccountWithCorrectData() {
     val oauth = OAuthResponse()
     oauth.accessToken = "valid access token"
     oauth.refreshToken = "valid refresh token"
     oauth.expiresIn = 1444444444
     oauth.refreshExpiresIn = 1444444444
 
-    var accountManager = spyk<AccountManager>()
+    val accountManager = spyk<AccountManager>()
 
     every { accountManager.notifyAccountAuthenticated(any()) } returns true
 
     accountHelper.addAuthenticatedAccount(accountManager, Response.success(oauth), "testuser")
 
-    var account = Account("testuser", AccountConfig.ACCOUNT_TYPE)
+    val account = Account("testuser", AccountConfig.ACCOUNT_TYPE)
 
     verify { accountManager.addAccountExplicitly(account, oauth.refreshToken, null) }
 
@@ -155,8 +155,8 @@ class AccountHelperTest {
   }
 
   @Test
-  fun `verify load account do nothing when account is empty`() {
-    var accountManager = spyk<AccountManager>()
+  fun testLoadAccountShouldDoNothingWithNonExistentAccount() {
+    val accountManager = spyk<AccountManager>()
 
     every { accountManager.getAccountsByType(AccountConfig.ACCOUNT_TYPE) } returns arrayOf()
 
@@ -171,8 +171,8 @@ class AccountHelperTest {
   }
 
   @Test
-  fun `verify load account load account when account exists`() {
-    var accountManager = spyk<AccountManager>()
+  fun testLoadAccountShouldLoadAccountWithExistingAccount() {
+    val accountManager = spyk<AccountManager>()
 
     every { accountManager.getAccountsByType(AccountConfig.ACCOUNT_TYPE) } returns
       arrayOf(Account("testuser", AccountConfig.ACCOUNT_TYPE))

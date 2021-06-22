@@ -58,7 +58,7 @@ class LoginViewModel(application: Application) :
   var showPassword = MutableLiveData(false)
   var goHome = MutableLiveData(false)
 
-  private val secureConfig: SecureConfig = SecureConfig(application)
+  internal var secureConfig: SecureConfig = SecureConfig(application)
   private var baseContext: Context = application.baseContext
 
   private var accountManager: AccountManager
@@ -83,7 +83,7 @@ class LoginViewModel(application: Application) :
     }
   }
 
-  private fun shouldEnableLogin(): Boolean {
+  internal fun shouldEnableLogin(): Boolean {
     val username: String = loginUser.username
     val password: CharArray = loginUser.password
 
@@ -153,14 +153,10 @@ class LoginViewModel(application: Application) :
     enableLoginButton(true)
   }
 
-  private fun allowLocalLogin(): Boolean {
-    val creds = secureConfig.retrieveCredentials()
-    if (creds?.username.equals(loginUser.username) &&
-        creds?.password?.concatToString().equals(loginUser.password.concatToString())
-    ) {
-      return true
-    }
-    return false
+  internal fun allowLocalLogin(): Boolean {
+    val creds = secureConfig.retrieveCredentials() ?: return false
+    return (creds.username.contentEquals(loginUser.username) &&
+      creds.password.contentEquals(loginUser.password))
   }
 
   object Converter {
@@ -187,15 +183,11 @@ class LoginViewModel(application: Application) :
       bundle.getParcelable(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE)
     val launch: Intent? = bundle.get(AccountManager.KEY_INTENT) as? Intent
 
-    Timber.i("Got launch ${launch?.data}")
-
-    Timber.i("Got token $token")
+    Timber.i("Got token null or empty ${token.isNullOrEmpty()}")
 
     if (!token.isNullOrEmpty() && AccountHelper(baseContext).isSessionActive(token)) {
       goHome.value = true
     }
-
-    Timber.i("Got resp $resp")
   }
 }
 
@@ -217,7 +209,7 @@ private class OnUserInfoResponse(context: Context) : Callback<ResponseBody> {
 
 private class OnTokenError : Handler.Callback {
   override fun handleMessage(msg: Message): Boolean {
-    Timber.i("Error in getting token in view model ${msg.data}")
+    Timber.i("Error in getting token in view model")
 
     return true
   }

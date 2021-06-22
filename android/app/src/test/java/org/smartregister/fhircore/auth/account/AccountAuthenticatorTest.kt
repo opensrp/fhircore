@@ -22,7 +22,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
-import io.mockk.CapturingSlot
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
@@ -42,8 +41,6 @@ class AccountAuthenticatorTest {
   private lateinit var accountManager: AccountManager
   private val context = ApplicationProvider.getApplicationContext<Context>()
 
-  lateinit var captor: CapturingSlot<Map<String, String>>
-
   @Before
   fun setUp() {
     accountHelper = mockk()
@@ -55,7 +52,7 @@ class AccountAuthenticatorTest {
   }
 
   @Test
-  fun `verify add account`() {
+  fun testAddAccountShouldReturnIntentWithCorrectExtras() {
     val result =
       accountAuthenticator.addAccount(
         mockk(),
@@ -74,7 +71,7 @@ class AccountAuthenticatorTest {
   }
 
   @Test
-  fun `verify get auth token`() {
+  fun testGetAuthTokenShouldReturnBundleWithCorrectAccountData() {
     val oauth = OAuthResponse()
     oauth.accessToken = "valid access token"
     oauth.refreshToken = "valid refresh token"
