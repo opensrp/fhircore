@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PractitionerRole xmlns="http://hl7.org/fhir">
+	<id value="example"/>
+	<meta>
+		<profile value="http://fhir.org/guides/who/anc-cds/StructureDefinition/ancmidwifepractitionerrole"/>
+	</meta>
+	
+	<!-- TODO: identifier -->
+
+	<active value="true"/>
+	<practitioner>
+		<reference value="Practitioner/midwife"/>
+		<display value="Mabel Midwife"/>
+	</practitioner>
+	<!-- TODO: organization -->
+
+	<code>
+		<coding>
+			<system value="http://hl7.org/fhir/uv/cpg/CodeSystem/cpg-common-persona"/>
+			<code value="2222"/>
+			<display value="Midwifery professional"/>
+		</coding>
+    <text value="Midwifery professional"/>
+	</code>
+	
+	<!-- TODO: specialty -->
+	<!-- TODO: location -->
+	<!-- TODO: healthcareService -->
+	<telecom>
+		<system value="phone"/>
+		<value value="(03) 5555 6473"/>
+		<use value="work"/>
+	</telecom>
+	<availableTime>
+		<daysOfWeek value="mon"/>
+		<daysOfWeek value="tue"/>
+		<daysOfWeek value="wed"/>
+		<availableStartTime value="09:00:00"/>
+		<availableEndTime value="16:30:00"/>
+	</availableTime>
+	<availableTime>
+		<daysOfWeek value="thu"/>
+		<daysOfWeek value="fri"/>
+		<availableStartTime value="09:00:00"/>
+		<availableEndTime value="12:00:00"/>
+	</availableTime>
+	<notAvailable>
+		<description value="Mabel will be on extended leave during May 2017"/>
+		<during>
+			<start value="2017-05-01"/>
+			<end value="2017-05-20"/>
+		</during>
+	</notAvailable>
+	<availabilityExceptions value="Mabel is generally unavailable on public holidays and during the Christmas/New Year break"/>
+</PractitionerRole>

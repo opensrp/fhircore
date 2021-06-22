@@ -94,14 +94,14 @@ dependencies {
         exclude group: 'com.sun.activation', module: 'javax.activation'
     }
 
-    implementation (group: 'ca.uhn.hapi.fhir', name: 'org.hl7.fhir.r4', version: '5.3.0'){
-        exclude group:'org.slf4j' ,module:'jcl-over-slf4j'
+    implementation(group: 'ca.uhn.hapi.fhir', name: 'org.hl7.fhir.r4', version: '5.3.0') {
+        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
     }
-    implementation( group: 'ca.uhn.hapi.fhir', name: 'hapi-fhir-base', version: '5.3.0'){
-        exclude group:'org.slf4j' ,module:'jcl-over-slf4j'
+    implementation(group: 'ca.uhn.hapi.fhir', name: 'hapi-fhir-base', version: '5.3.0') {
+        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
     }
-    implementation (group: 'ca.uhn.hapi.fhir', name: 'hapi-fhir-structures-r4', version: '5.3.0'){
-        exclude group:'org.slf4j' ,module:'jcl-over-slf4j'
+    implementation(group: 'ca.uhn.hapi.fhir', name: 'hapi-fhir-structures-r4', version: '5.3.0') {
+        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
     }
 
     implementation deps.appcompat
@@ -125,29 +125,29 @@ dependencies {
     implementation deps.core
     implementation deps.fragment
 
-    implementation(deps.cql_engine.fhir){
+    implementation(deps.cql_engine.fhir) {
         transitive = false
     }
-    implementation(deps.caffeine){
+    implementation(deps.caffeine) {
         transitive = false
     }
-    implementation(deps.guava){
+    implementation(deps.guava) {
         transitive = false
     }
-    implementation(deps.room.ktx){
+    implementation(deps.room.ktx) {
         transitive = false
     }
-    implementation(deps.room.runtime){
+    implementation(deps.room.runtime) {
         transitive = false
     }
-    implementation(deps.json_tools.json_patch){
+    implementation(deps.json_tools.json_patch) {
         transitive = false
     }
 
-    api(deps.cql_engine.core){
+    api(deps.cql_engine.core) {
         transitive = false
     }
-    api (deps.hapi_r4) {
+    api(deps.hapi_r4) {
         transitive = false
     }
 
@@ -167,14 +167,20 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'crea
     getReports().getHtml().setDestination(file("${buildDir}/reports/jacoco/jacocoRootReport/html"))
 
     def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*', 'android*/**/*.*', '**/*$ViewBinder*.*']
-    def debugTree = fileTree(dir: "$project.buildDir/intermediates/javac/debug/classes", excludes: fileFilter)
+    def debugTreeJava = fileTree(dir: "$project.buildDir/intermediates/javac/debug/classes", excludes: fileFilter)
+    def debugTreeKotlin = fileTree(dir: "$project.buildDir/tmp/kotlin-classes/debug", excludes: fileFilter)
     def mainSrc = "$project.projectDir/src/main/java"
 
     sourceDirectories.from(files([mainSrc]))
-    classDirectories.from(files([debugTree]))
+    classDirectories.from(files([debugTreeJava, debugTreeKotlin]))
     executionData.from(fileTree(dir: project.buildDir, includes: [
             'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec'
     ]))
+}
+
+coveralls {
+    sourceDirs = ["$project.projectDir/src/main/java"]
+    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/merged.xml"
 }
 
 tasks.coveralls {

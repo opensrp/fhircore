@@ -48,6 +48,7 @@ class PatientDetailFragment : Fragment() {
   lateinit var viewModel: PatientListViewModel
   val finalDoseNumber = 2
   var doseNumber = 0
+  var initialDose: String = ""
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -107,6 +108,7 @@ class PatientDetailFragment : Fragment() {
     viewModel.viewModelScope.launch {
       immunizations.forEach { immunization ->
         doseNumber = (immunization.protocolApplied[0].doseNumber as PositiveIntType).value
+        initialDose = immunization.vaccineCode.coding.first().code
         if (isFullyVaccinated) {
           return@forEach
         }
