@@ -29,3 +29,13 @@ or export them to your system environment variables:
 export GITHUB_USER=Xxxx
 export GITHUB_PERSONAL_ACCESS_TOKEN=xxxxxx
 ```
+
+You also need keycloak credentials to authenticate FHIR APIs and login. Following properties should be added to ~/local.properties
+
+```
+OAUTH_BASE_URL=https://keycloak-stage.smartregister.org/auth/realms/FHIR_Android/
+OAUTH_CIENT_ID=fhir-core-client
+OAUTH_CLIENT_SECRET=XXXXXXX
+OAUTH_SCOPE=openid
+FHIR_BASE_URL=https://fhir.labs.smartregister.org/fhir/
+```
