@@ -21,15 +21,19 @@ import android.accounts.AccountManager
 import android.accounts.AccountManagerCallback
 import android.accounts.NetworkErrorException
 import android.content.Context
+import android.content.Intent
+import android.content.pm.ResolveInfo
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import io.jsonwebtoken.Jwts
 import java.util.Date
 import okhttp3.ResponseBody
+import org.hl7.fhir.r4.test.utils.TestingUtilities.context
 import org.smartregister.fhircore.BuildConfig
 import org.smartregister.fhircore.api.OAuthService
 import org.smartregister.fhircore.auth.OAuthResponse
+import org.smartregister.fhircore.auth.secure.SecureConfig
 import retrofit2.Call
 import retrofit2.HttpException
 import retrofit2.Response
@@ -135,5 +139,34 @@ class AccountHelper(context: Context) {
       callback,
       errorHandler
     )
+  }
+
+  fun logout() {
+
+    val secureConfig = SecureConfig(mContext)
+    secureConfig.deleteCredentials()
+
+    val logoutIntent = getLogoutUserIntent()
+    mContext.startActivity(logoutIntent)
+
+    val accountManager = AccountManager.get(mContext)
+    val accounts = accountManager.getAccountsByType(AccountConfig.ACCOUNT_TYPE)
+    accounts.forEach { accountManager.clearPassword(it) }
+  }
+
+  fun getLogoutUserIntent(): Intent {
+    var intent = Intent(Intent.ACTION_MAIN)
+    intent.addCategory(Intent.CATEGORY_LAUNCHER)
+    intent.setPackage(mContext.packageName)
+
+    // retrieve the main/launcher activity defined in the manifest and open it
+    val activities: List<ResolveInfo> =
+      mContext.getPackageManager().queryIntentActivities(intent, 0)
+    if (activities.isNotEmpty()) {
+      intent = intent.setClassName(mContext.packageName, activities[0].activityInfo.name)
+      intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    }
+    return intent
   }
 }

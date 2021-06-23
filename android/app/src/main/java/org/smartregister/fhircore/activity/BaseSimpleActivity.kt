@@ -36,6 +36,8 @@ import com.google.android.material.navigation.NavigationView
 import java.util.Locale
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.auth.account.AccountHelper
+import org.smartregister.fhircore.auth.secure.SecureConfig
 import org.smartregister.fhircore.domain.Language
 import org.smartregister.fhircore.util.SharedPreferencesHelper
 import org.smartregister.fhircore.util.Utils
@@ -76,6 +78,7 @@ abstract class BaseSimpleActivity :
 
     loadCounts()
     loadLanguages()
+    setLogoutUsername()
   }
 
   abstract fun getContentLayout(): Int
@@ -94,6 +97,10 @@ abstract class BaseSimpleActivity :
       }
       R.id.menu_item_language -> {
         renderSelectLanguageDialog(this)
+      }
+      R.id.menu_item_logout -> {
+        AccountHelper(applicationContext).logout()
+        getDrawerLayout().closeDrawer(GravityCompat.START)
       }
     }
 
@@ -189,5 +196,20 @@ abstract class BaseSimpleActivity :
 
   private fun loadLanguages() {
     viewModel.loadLanguages()
+  }
+
+  private fun setLogoutUsername() {
+
+    viewModel.username.observe(
+      this,
+      {
+        if (it.isNotEmpty()) {
+          getNavigationView().menu.findItem(R.id.menu_item_logout).title =
+            "${getString(R.string.logout_as_user)} $it"
+        }
+      }
+    )
+    val secureConfig = SecureConfig(this)
+    viewModel.username.value = secureConfig.retrieveSessionUsername()
   }
 }
