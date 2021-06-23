@@ -20,6 +20,7 @@ import android.app.Activity
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.Observer
 import androidx.viewpager2.widget.ViewPager2
 import io.mockk.every
 import io.mockk.mockkClass
@@ -27,11 +28,13 @@ import io.mockk.spyk
 import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.domain.Language
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
@@ -43,7 +46,7 @@ class PatientListActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
     patientListActivity =
-      Robolectric.buildActivity(PatientListActivity::class.java, null).create().resume().get()
+      Robolectric.buildActivity(PatientListActivity::class.java, null).create().get()
   }
 
   @Test
@@ -58,42 +61,80 @@ class PatientListActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testPatientCountShouldBeEmptyWithZeroClients() {
-    patientListActivity.viewModel.covaxClientsCount.value = 0
 
-    val countItem =
-      patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_clients).actionView as
-        TextView
-    Assert.assertEquals("", countItem.text)
+    patientListActivity.viewModel.covaxClientsCount.observe(
+      patientListActivity,
+      {
+        val countItem =
+          patientListActivity
+            .getNavigationView()
+            .menu
+            .findItem(R.id.menu_item_clients)
+            .actionView as
+            TextView
+        Assert.assertEquals("", countItem.text)
+      }
+    )
+
+    patientListActivity.viewModel.covaxClientsCount.value = 0
   }
 
   @Test
   fun testPatientCountShouldNotBeEmptyWithNonZeroClients() {
-    patientListActivity.viewModel.covaxClientsCount.value = 2
 
-    val countItem =
-      patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_clients).actionView as
-        TextView
-    Assert.assertEquals("2", countItem.text)
+    patientListActivity.viewModel.covaxClientsCount.observe(
+      patientListActivity,
+      {
+        val countItem =
+          patientListActivity
+            .getNavigationView()
+            .menu
+            .findItem(R.id.menu_item_clients)
+            .actionView as
+            TextView
+        Assert.assertEquals("2", countItem.text)
+      }
+    )
+
+    patientListActivity.viewModel.covaxClientsCount.value = 2
   }
 
   @Test
   fun `test language displayed on nav drawer is default English`() {
 
-    val languageMenuItem =
-      patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_language).actionView as
-        TextView
-    Assert.assertEquals("English", languageMenuItem.text)
+    patientListActivity.viewModel.selectedLanguage.observe(
+      patientListActivity,
+      Observer {
+        val languageMenuItem =
+          patientListActivity
+            .getNavigationView()
+            .menu
+            .findItem(R.id.menu_item_language)
+            .actionView as
+            TextView
+        Assert.assertEquals("English", languageMenuItem.text)
+      }
+    )
   }
 
   @Test
   fun `test language displayed on Nav Drawer corresponds to View Model default`() {
 
-    patientListActivity.viewModel.selectedLanguage.value = "sw"
+    patientListActivity.viewModel.selectedLanguage.observe(
+      patientListActivity,
+      {
+        val languageMenuItem =
+          patientListActivity
+            .getNavigationView()
+            .menu
+            .findItem(R.id.menu_item_language)
+            .actionView as
+            TextView
+        Assert.assertEquals("Swahili", languageMenuItem.text)
+      }
+    )
 
-    val languageMenuItem =
-      patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_language).actionView as
-        TextView
-    Assert.assertEquals("Swahili", languageMenuItem.text)
+    patientListActivity.viewModel.selectedLanguage.value = "sw"
   }
 
   @Test
@@ -119,17 +160,30 @@ class PatientListActivityTest : ActivityRobolectricTest() {
   @Test
   fun `test refreshSelectedLanguage updates nav with correct language`() {
 
-    var languageMenuItem =
-      patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_language).actionView as
-        TextView
-    Assert.assertEquals("English", languageMenuItem.text)
+    patientListActivity.viewModel.selectedLanguage.observe(
+      patientListActivity,
+      {
+        var languageMenuItem =
+          patientListActivity
+            .getNavigationView()
+            .menu
+            .findItem(R.id.menu_item_language)
+            .actionView as
+            TextView
+        Assert.assertEquals("English", languageMenuItem.text)
 
-    patientListActivity.refreshSelectedLanguage(Language("fr", "French"), patientListActivity)
+        patientListActivity.refreshSelectedLanguage(Language("fr", "French"), patientListActivity)
 
-    languageMenuItem =
-      patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_language).actionView as
-        TextView
-    Assert.assertEquals("French", languageMenuItem.text)
+        languageMenuItem =
+          patientListActivity
+            .getNavigationView()
+            .menu
+            .findItem(R.id.menu_item_language)
+            .actionView as
+            TextView
+        Assert.assertEquals("French", languageMenuItem.text)
+      }
+    )
   }
 
   @Test
@@ -141,5 +195,13 @@ class PatientListActivityTest : ActivityRobolectricTest() {
 
   override fun getActivity(): Activity {
     return patientListActivity
+  }
+
+  companion object {
+    @JvmStatic
+    @BeforeClass
+    fun beforeClass() {
+      FakeKeyStore.setup
+    }
   }
 }
