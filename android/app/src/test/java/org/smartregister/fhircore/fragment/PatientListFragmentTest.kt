@@ -24,8 +24,10 @@ import android.widget.RelativeLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
+import androidx.lifecycle.ViewModelProvider
 import io.mockk.every
 import io.mockk.spyk
+import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
@@ -34,6 +36,7 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.PatientDetailActivity
 import org.smartregister.fhircore.activity.PatientListActivity
@@ -41,6 +44,7 @@ import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.domain.Pagination
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
+import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
 
 /**
  * The PatientListActivity should be removed from this test in favour FragmentScenario once the
@@ -53,11 +57,22 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
   private lateinit var patientListFragment: PatientListFragment
   private lateinit var patientListActivity: PatientListActivity
   private lateinit var fragmentScenario: FragmentScenario<PatientListFragment>
+  private lateinit var patientListViewModel: PatientListViewModel
 
   @Before
   fun setUp() {
     patientListActivity = Robolectric.buildActivity(PatientListActivity::class.java).create().get()
-
+    patientListViewModel =
+      spyk(
+        ViewModelProvider(
+            patientListActivity,
+            PatientListViewModelFactory(
+              patientListActivity.application,
+              FhirApplication.fhirEngine(patientListActivity)
+            )
+          )
+          .get(PatientListViewModel::class.java)
+      )
     fragmentScenario =
       FragmentScenario.Companion.launchInContainer(
         PatientListFragment::class.java,
@@ -70,11 +85,10 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
           }
         }
       )
-    fragmentScenario.onFragment { patientListFragment = it }
-    /*patientListFragment = PatientListFragment()
-    val fragmentTransaction = patientListActivity.supportFragmentManager.beginTransaction()
-    fragmentTransaction.add(patientListFragment, "PatientListFragment")
-    fragmentTransaction.commitAllowingStateLoss()*/
+    fragmentScenario.onFragment {
+      patientListFragment = it
+      patientListFragment.patientListViewModel = patientListViewModel
+    }
   }
 
   @Test
@@ -160,6 +174,19 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
         )
       }
     )
+  }
+
+  @Test
+  fun testVerifySyncResource() {
+
+    val btnSync = getView<View>(R.id.tv_sync)
+    btnSync.performClick()
+
+    every { patientListViewModel.searchResults(pageSize = any()) } returns Unit
+    every { patientListViewModel.syncUpload() } returns Unit
+
+    verify(exactly = 1) { patientListViewModel.searchResults(pageSize = any()) }
+    verify(exactly = 1) { patientListViewModel.syncUpload() }
   }
 
   private fun <T : View?> getView(id: Int): T {

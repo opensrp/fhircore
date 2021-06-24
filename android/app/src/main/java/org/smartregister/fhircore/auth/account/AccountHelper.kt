@@ -141,7 +141,7 @@ class AccountHelper(context: Context) {
     )
   }
 
-  fun logout() {
+  fun logout(accountManager: AccountManager) {
 
     val secureConfig = SecureConfig(mContext)
     secureConfig.deleteCredentials()
@@ -149,7 +149,6 @@ class AccountHelper(context: Context) {
     val logoutIntent = getLogoutUserIntent()
     mContext.startActivity(logoutIntent)
 
-    val accountManager = AccountManager.get(mContext)
     val accounts = accountManager.getAccountsByType(AccountConfig.ACCOUNT_TYPE)
     accounts.forEach { accountManager.clearPassword(it) }
   }

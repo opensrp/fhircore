@@ -17,12 +17,14 @@
 package org.smartregister.fhircore.activity
 
 import android.app.Activity
+import android.view.MenuItem
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
 import androidx.viewpager2.widget.ViewPager2
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.mockkClass
 import io.mockk.spyk
 import io.mockk.verify
@@ -34,7 +36,9 @@ import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.auth.account.AccountHelper
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
+import org.smartregister.fhircore.auth.secure.SecureConfig
 import org.smartregister.fhircore.domain.Language
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
@@ -191,6 +195,42 @@ class PatientListActivityTest : ActivityRobolectricTest() {
     val viewPager = patientListActivity.findViewById<ViewPager2>(R.id.patient_list_pager)
     Assert.assertNotNull(viewPager)
     Assert.assertEquals(1, viewPager?.adapter?.itemCount)
+  }
+
+  @Test
+  fun testOnNavigationItemSelectedShouldVerifyRelativeActions() {
+
+    val accountHelper = mockk<AccountHelper>()
+    patientListActivity.accountHelper = accountHelper
+
+    val menuItem = mockk<MenuItem>()
+
+    every { menuItem.title } returns ""
+    every { menuItem.itemId } returns R.id.menu_item_logout
+    every { accountHelper.logout(any()) } returns Unit
+
+    patientListActivity.onNavigationItemSelected(menuItem)
+
+    verify(exactly = 1) { accountHelper.logout(any()) }
+  }
+
+  @Test
+  fun testSetLogoutUsernameShouldVerify() {
+    val secureConfig = mockk<SecureConfig>()
+
+    every { secureConfig.retrieveSessionUsername() } returns "demo"
+    patientListActivity.secureConfig = secureConfig
+
+    patientListActivity.setLogoutUsername()
+    patientListActivity.viewModel.username.observe(
+      patientListActivity,
+      {
+        Assert.assertEquals(
+          "${patientListActivity.getString(R.string.logout_as_user)} demo",
+          patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_logout).title
+        )
+      }
+    )
   }
 
   override fun getActivity(): Activity {

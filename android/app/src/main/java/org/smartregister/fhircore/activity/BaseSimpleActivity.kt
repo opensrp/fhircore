@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.activity
 
+import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
@@ -47,6 +48,8 @@ import timber.log.Timber
 abstract class BaseSimpleActivity :
   MultiLanguageBaseActivity(), NavigationView.OnNavigationItemSelectedListener {
   lateinit var viewModel: BaseViewModel
+  lateinit var accountHelper: AccountHelper
+  lateinit var secureConfig: SecureConfig
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -69,6 +72,12 @@ abstract class BaseSimpleActivity :
     viewModel =
       ViewModelProvider(this, BaseViewModel.BaseViewModelFactory(application, fhirEngine))
         .get(BaseViewModel::class.java)
+
+    Timber.d("setting account helper")
+    accountHelper = AccountHelper(this)
+
+    Timber.d("setting secure config")
+    secureConfig = SecureConfig(this)
 
     Timber.d("Now setting drawer")
     setupDrawer()
@@ -99,7 +108,7 @@ abstract class BaseSimpleActivity :
         renderSelectLanguageDialog(this)
       }
       R.id.menu_item_logout -> {
-        AccountHelper(applicationContext).logout()
+        accountHelper.logout(AccountManager.get(this))
         getDrawerLayout().closeDrawer(GravityCompat.START)
       }
     }
@@ -198,7 +207,7 @@ abstract class BaseSimpleActivity :
     viewModel.loadLanguages()
   }
 
-  private fun setLogoutUsername() {
+  fun setLogoutUsername() {
 
     viewModel.username.observe(
       this,
@@ -209,7 +218,6 @@ abstract class BaseSimpleActivity :
         }
       }
     )
-    val secureConfig = SecureConfig(this)
     viewModel.username.value = secureConfig.retrieveSessionUsername()
   }
 }

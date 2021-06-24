@@ -32,12 +32,14 @@ import io.mockk.verify
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.BuildConfig
 import org.smartregister.fhircore.api.OAuthService
 import org.smartregister.fhircore.auth.OAuthResponse
+import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.robolectric.FhircoreTestRunner
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import retrofit2.Call
@@ -185,5 +187,27 @@ class AccountHelperTest {
     )
 
     verify(exactly = 1) { accountManager.getAuthToken(any(), any(), any(), true, any(), any()) }
+  }
+
+  @Test
+  fun testLogout() {
+
+    val accountManager = spyk<AccountManager>()
+
+    every { accountManager.getAccountsByType(AccountConfig.ACCOUNT_TYPE) } returns
+      arrayOf(Account("testuser", AccountConfig.ACCOUNT_TYPE))
+
+    every { accountManager.clearPassword(any()) } returns Unit
+
+    accountHelper.logout(accountManager)
+    verify(exactly = 1) { accountManager.clearPassword(any()) }
+  }
+
+  companion object {
+    @JvmStatic
+    @BeforeClass
+    fun beforeClass() {
+      FakeKeyStore.setup
+    }
   }
 }
