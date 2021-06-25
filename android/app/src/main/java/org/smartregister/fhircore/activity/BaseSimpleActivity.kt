@@ -18,6 +18,7 @@ package org.smartregister.fhircore.activity
 
 import android.accounts.AccountManager
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
@@ -27,7 +28,6 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.annotation.IdRes
 import androidx.annotation.VisibleForTesting
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -124,21 +124,25 @@ abstract class BaseSimpleActivity :
 
   @VisibleForTesting fun getLanguageDialogTitle() = this.getString(R.string.select_language)
 
-  fun renderSelectLanguageDialog(context: Activity) {
+  fun renderSelectLanguageDialog(context: Activity): AlertDialog {
 
     val adapter: ArrayAdapter<Language> = getLanguageArrayAdapter()
 
     val builder: AlertDialog.Builder = getAlertDialogBuilder()
     builder.setTitle(getLanguageDialogTitle())
     builder.setIcon(R.drawable.outline_language_black_48)
-    builder
-      .setAdapter(adapter) { _, i ->
-        val language = viewModel.languageList[i]
+    val dialog =
+      builder
+        .setAdapter(adapter) { _, i ->
+          val language = viewModel.languageList[i]
 
-        refreshSelectedLanguage(language, context)
-      }
-      .create()
-      .show()
+          refreshSelectedLanguage(language, context)
+        }
+        .create()
+
+    dialog.show()
+
+    return dialog
   }
 
   fun refreshSelectedLanguage(language: Language, context: Activity) {

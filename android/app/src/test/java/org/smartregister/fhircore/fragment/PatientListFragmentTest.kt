@@ -24,6 +24,7 @@ import android.widget.RelativeLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
+import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.ViewModelProvider
 import io.mockk.every
 import io.mockk.spyk
@@ -63,32 +64,28 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
   fun setUp() {
     patientListActivity = Robolectric.buildActivity(PatientListActivity::class.java).create().get()
     patientListViewModel =
-      spyk(
-        ViewModelProvider(
-            patientListActivity,
-            PatientListViewModelFactory(
-              patientListActivity.application,
-              FhirApplication.fhirEngine(patientListActivity)
-            )
+      ViewModelProvider(
+          patientListActivity,
+          PatientListViewModelFactory(
+            patientListActivity.application,
+            FhirApplication.fhirEngine(patientListActivity)
           )
-          .get(PatientListViewModel::class.java)
-      )
+        )
+        .get(PatientListViewModel::class.java)
+
     fragmentScenario =
-      FragmentScenario.Companion.launchInContainer(
-        PatientListFragment::class.java,
-        null,
-        object : FragmentFactory() {
-          override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
-            val fragment = spyk(PatientListFragment())
-            every { fragment.activity } returns patientListActivity
-            return fragment
+      launchFragmentInContainer(
+        factory =
+          object : FragmentFactory() {
+            override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
+              val fragment = spyk(PatientListFragment())
+              every { fragment.activity } returns patientListActivity
+              return fragment
+            }
           }
-        }
       )
-    fragmentScenario.onFragment {
-      patientListFragment = it
-      patientListFragment.patientListViewModel = patientListViewModel
-    }
+
+    fragmentScenario.onFragment { patientListFragment = it }
   }
 
   @Test
@@ -127,19 +124,18 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
   @Test
   fun testEmptyListMessageWithZeroClients() {
     shadowOf(Looper.getMainLooper()).idle()
-    patientListFragment.patientListViewModel.liveSearchedPaginatedPatients.observe(
-      patientListActivity,
-      {
-        val container = getView<LinearLayout>(R.id.empty_list_message_container)
-        val buttonLayout =
-          getView<Button>(R.id.btn_register_new_patient).layoutParams as RelativeLayout.LayoutParams
 
-        Assert.assertEquals(View.VISIBLE, container.visibility)
-        Assert.assertEquals(
-          R.id.empty_list_message_container,
-          buttonLayout.getRule(RelativeLayout.BELOW)
-        )
-      }
+    patientListFragment.setData(
+      Pair(mutableListOf(), Pagination(totalItems = 1, pageSize = 5, currentPage = 1))
+    )
+    val container = getView<LinearLayout>(R.id.empty_list_message_container)
+    val buttonLayout =
+      getView<Button>(R.id.btn_register_new_patient).layoutParams as RelativeLayout.LayoutParams
+
+    Assert.assertEquals(View.VISIBLE, container.visibility)
+    Assert.assertEquals(
+      R.id.empty_list_message_container,
+      buttonLayout.getRule(RelativeLayout.BELOW)
     )
   }
 
@@ -160,33 +156,36 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
     patientListFragment.patientListViewModel.liveSearchedPaginatedPatients.value =
       Pair(mutableListOf(patient), Pagination(totalItems = 1, pageSize = 5, currentPage = 1))
 
-    patientListFragment.patientListViewModel.liveSearchedPaginatedPatients.observe(
-      patientListActivity,
-      {
-        val container = getView<LinearLayout>(R.id.empty_list_message_container)
-        val buttonLayout =
-          getView<Button>(R.id.btn_register_new_patient).layoutParams as RelativeLayout.LayoutParams
+    patientListFragment.setData(
+      Pair(mutableListOf(patient), Pagination(totalItems = 1, pageSize = 5, currentPage = 1))
+    )
+    val container = getView<LinearLayout>(R.id.empty_list_message_container)
+    val buttonLayout =
+      getView<Button>(R.id.btn_register_new_patient).layoutParams as RelativeLayout.LayoutParams
 
-        Assert.assertEquals(View.INVISIBLE, container.visibility)
-        Assert.assertEquals(
-          RelativeLayout.TRUE,
-          buttonLayout.getRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
-        )
-      }
+    Assert.assertEquals(View.INVISIBLE, container.visibility)
+    Assert.assertEquals(
+      RelativeLayout.TRUE,
+      buttonLayout.getRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
     )
   }
 
   @Test
   fun testVerifySyncResource() {
 
+    val patientListViewModelSpy = spyk(patientListViewModel)
+    patientListFragment.patientListViewModel = patientListViewModelSpy
+
     val btnSync = getView<View>(R.id.tv_sync)
     btnSync.performClick()
 
-    every { patientListViewModel.searchResults(pageSize = any()) } returns Unit
-    every { patientListViewModel.syncUpload() } returns Unit
+    every { patientListViewModelSpy.searchResults(pageSize = any()) } returns Unit
+    every { patientListViewModelSpy.syncUpload() } returns Unit
 
-    verify(exactly = 1) { patientListViewModel.searchResults(pageSize = any()) }
-    verify(exactly = 1) { patientListViewModel.syncUpload() }
+    verify(exactly = 1) { patientListViewModelSpy.searchResults(pageSize = any()) }
+    verify(exactly = 1) { patientListViewModelSpy.syncUpload() }
+
+    patientListFragment.patientListViewModel = patientListViewModel
   }
 
   private fun <T : View?> getView(id: Int): T {

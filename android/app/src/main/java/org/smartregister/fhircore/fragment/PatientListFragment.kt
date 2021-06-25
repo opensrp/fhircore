@@ -60,6 +60,7 @@ class PatientListFragment : Fragment() {
   private lateinit var nextButton: Button
   private lateinit var prevButton: Button
   private lateinit var infoTextView: TextView
+  private lateinit var adapter: PatientItemRecyclerViewAdapter
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -77,7 +78,7 @@ class PatientListFragment : Fragment() {
     nextButton = view.findViewById(R.id.btn_next_page)
     prevButton = view.findViewById(R.id.btn_previous_page)
     infoTextView = view.findViewById(R.id.txt_page_info)
-    val adapter =
+    adapter =
       PatientItemRecyclerViewAdapter(this::onPatientItemClicked, this::onRecordVaccineClicked)
     recyclerView.adapter = adapter
 
@@ -95,22 +96,7 @@ class PatientListFragment : Fragment() {
         )
         .get(PatientListViewModel::class.java)
 
-    patientListViewModel.liveSearchedPaginatedPatients.observe(
-      requireActivity(),
-      {
-        Timber.d("Submitting ${it.first.count()} patient records")
-        val list = ArrayList<Any>(it.first)
-        updatePagination(it.second)
-        adapter.submitList(list)
-        adapter.notifyDataSetChanged()
-
-        if (it.first.count() == 0) {
-          showEmptyListViews()
-        } else {
-          hideEmptyListViews()
-        }
-      }
-    )
+    patientListViewModel.liveSearchedPaginatedPatients.observe(requireActivity(), { setData(it) })
 
     requireActivity()
       .findViewById<EditText>(R.id.edit_text_search)
@@ -131,12 +117,12 @@ class PatientListFragment : Fragment() {
     super.onViewCreated(view, savedInstanceState)
   }
 
-  private fun hideEmptyListViews() {
+  fun hideEmptyListViews() {
     setVisibility(R.id.empty_list_message_container, View.INVISIBLE)
     setRegisterButtonAlignment(RelativeLayout.ALIGN_PARENT_BOTTOM)
   }
 
-  private fun showEmptyListViews() {
+  fun showEmptyListViews() {
     setVisibility(R.id.empty_list_message_container, View.VISIBLE)
     setRegisterButtonAlignment(RelativeLayout.BELOW)
   }
@@ -217,5 +203,19 @@ class PatientListFragment : Fragment() {
           pagination.currentPageNumber(),
           pagination.totalPages()
         )
+  }
+
+  fun setData(data: Pair<List<PatientListViewModel.PatientItem>, Pagination>) {
+    Timber.d("Submitting ${data.first.count()} patient records")
+    val list = ArrayList<Any>(data.first)
+    updatePagination(data.second)
+    adapter.submitList(list)
+    adapter.notifyDataSetChanged()
+
+    if (data.first.count() == 0) {
+      showEmptyListViews()
+    } else {
+      hideEmptyListViews()
+    }
   }
 }

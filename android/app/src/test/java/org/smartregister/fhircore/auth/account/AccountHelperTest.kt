@@ -19,6 +19,7 @@ package org.smartregister.fhircore.auth.account
 import android.accounts.Account
 import android.accounts.AccountManager
 import android.accounts.AccountManagerCallback
+import android.accounts.NetworkErrorException
 import android.content.Context
 import android.os.Handler
 import androidx.test.core.app.ApplicationProvider
@@ -29,6 +30,7 @@ import io.mockk.mockkObject
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import org.junit.Assert
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -70,7 +72,14 @@ class AccountHelperTest {
   }
 
   @Test
+  fun testGetUserInfoShouldReturnNonNull() {
+    every { mockOauthService?.userInfo() } returns mockk()
+    Assert.assertNotNull(accountHelper.getUserInfo())
+  }
+
+  @Test(expected = NetworkErrorException::class)
   fun testFetchTokenShouldSendCorrectData() {
+
     every { mockOauthService?.fetchToken(capture(captor)) } returns mockk()
 
     accountHelper.fetchToken("testuser", "testpass".toCharArray())
@@ -80,6 +89,9 @@ class AccountHelperTest {
     assertTrue(captor.captured.get("grant_type").equals("password"))
     assertTrue(captor.captured.get("username").equals("testuser"))
     assertTrue(captor.captured.get("password").equals("testpass"))
+
+    every { mockOauthService?.fetchToken(any()) } throws NetworkErrorException()
+    accountHelper.fetchToken("testuser", "testpass".toCharArray())
   }
 
   @Test

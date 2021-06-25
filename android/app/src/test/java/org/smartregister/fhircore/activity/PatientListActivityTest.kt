@@ -17,11 +17,13 @@
 package org.smartregister.fhircore.activity
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.Intent
 import android.view.MenuItem
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
+import androidx.test.core.app.ApplicationProvider
 import androidx.viewpager2.widget.ViewPager2
 import io.mockk.every
 import io.mockk.mockk
@@ -33,8 +35,11 @@ import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
+import org.robolectric.shadows.ShadowAlertDialog
+import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.auth.account.AccountHelper
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
@@ -206,12 +211,59 @@ class PatientListActivityTest : ActivityRobolectricTest() {
     val menuItem = mockk<MenuItem>()
 
     every { menuItem.title } returns ""
+
+    every { menuItem.itemId } returns R.id.menu_item_clients
+    patientListActivity.onNavigationItemSelected(menuItem)
+
+    val expectedIntent = Intent(patientListActivity, PatientListActivity::class.java)
+    val actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+
     every { menuItem.itemId } returns R.id.menu_item_logout
     every { accountHelper.logout(any()) } returns Unit
 
     patientListActivity.onNavigationItemSelected(menuItem)
 
     verify(exactly = 1) { accountHelper.logout(any()) }
+  }
+
+  @Test
+  fun testGetLanguageArrayAdapterShouldReturnValidLangList() {
+    patientListActivity.viewModel.languageList = listOf(Language("ur", "Urdu"))
+    val adapter = patientListActivity.getLanguageArrayAdapter()
+
+    Assert.assertEquals(1, adapter.count)
+    Assert.assertEquals("ur", (adapter.getItem(0) as Language).tag)
+    Assert.assertEquals("Urdu", (adapter.getItem(0) as Language).displayName)
+  }
+
+  @Test
+  fun testGetAlertDialogBuilderShouldReturnNotNull() {
+    Assert.assertNotNull(patientListActivity.getAlertDialogBuilder())
+  }
+
+  @Test
+  fun testGetLanguageDialogTitleShouldReturnValidTitle() {
+    Assert.assertEquals("Select Language", patientListActivity.getLanguageDialogTitle())
+  }
+
+  @Test
+  fun testRenderSelectLanguageDialogShouldVerifyRefreshSelectedLanguage() {
+    val patientListActivitySpy = spyk(patientListActivity)
+
+    every { patientListActivitySpy.renderSelectLanguageDialog(any()) } answers
+      {
+        patientListActivity.renderSelectLanguageDialog(patientListActivity)
+      }
+    every { patientListActivitySpy.refreshSelectedLanguage(any(), any()) } answers {}
+
+    val dialog: ShadowAlertDialog =
+      shadowOf(patientListActivitySpy.renderSelectLanguageDialog(patientListActivitySpy)) as
+        ShadowAlertDialog
+    dialog.clickOnItem(0)
+
+    verify(exactly = 0) { patientListActivitySpy.refreshSelectedLanguage(any(), any()) }
   }
 
   @Test
@@ -230,6 +282,19 @@ class PatientListActivityTest : ActivityRobolectricTest() {
           patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_logout).title
         )
       }
+    )
+  }
+
+  @Test
+  fun testPatientClientCountShouldReturnTen() {
+    patientListActivity.viewModel.covaxClientsCount.value = 10
+    val counter =
+      patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_clients).actionView as
+        TextView
+
+    patientListActivity.viewModel.covaxClientsCount.observe(
+      patientListActivity,
+      { Assert.assertEquals("10", counter.text.toString()) }
     )
   }
 

@@ -35,7 +35,6 @@ import org.smartregister.fhircore.api.OAuthService
 import org.smartregister.fhircore.auth.OAuthResponse
 import org.smartregister.fhircore.auth.secure.SecureConfig
 import retrofit2.Call
-import retrofit2.HttpException
 import retrofit2.Response
 import timber.log.Timber
 
@@ -63,8 +62,6 @@ class AccountHelper(context: Context) {
 
     return try {
       OAuthService.create(mContext).fetchToken(data)
-    } catch (e: HttpException) {
-      throw e
     } catch (e: Exception) {
       throw NetworkErrorException(e)
     }
