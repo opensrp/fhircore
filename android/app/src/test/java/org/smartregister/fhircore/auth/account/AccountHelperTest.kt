@@ -30,6 +30,7 @@ import io.mockk.mockkObject
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import okhttp3.ResponseBody
 import org.junit.Assert
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -45,6 +46,7 @@ import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.robolectric.FhircoreTestRunner
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import retrofit2.Call
+import retrofit2.Callback
 import retrofit2.Response
 import timber.log.Timber
 
@@ -205,11 +207,16 @@ class AccountHelperTest {
   fun testLogout() {
 
     val accountManager = spyk<AccountManager>()
+    val response = mockk<Call<ResponseBody>>()
+    val slot = slot<Callback<ResponseBody>>()
 
     every { accountManager.getAccountsByType(AccountConfig.ACCOUNT_TYPE) } returns
       arrayOf(Account("testuser", AccountConfig.ACCOUNT_TYPE))
 
     every { accountManager.clearPassword(any()) } returns Unit
+    every { accountManager.getPassword(any()) } returns ""
+    every { mockOauthService?.logout(any(), any(), any()) } returns response
+    every { response.enqueue(capture(slot)) } answers { slot.captured.onResponse(mockk(), mockk()) }
 
     accountHelper.logout(accountManager)
     verify(exactly = 1) { accountManager.clearPassword(any()) }
