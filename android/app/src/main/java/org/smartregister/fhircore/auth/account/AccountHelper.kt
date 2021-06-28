@@ -35,6 +35,7 @@ import org.smartregister.fhircore.api.OAuthService
 import org.smartregister.fhircore.auth.OAuthResponse
 import org.smartregister.fhircore.auth.secure.SecureConfig
 import retrofit2.Call
+import retrofit2.Callback
 import retrofit2.Response
 import timber.log.Timber
 
@@ -139,15 +140,35 @@ class AccountHelper(context: Context) {
   }
 
   fun logout(accountManager: AccountManager) {
+    val account = accountManager.getAccountsByType(AccountConfig.ACCOUNT_TYPE).firstOrNull()
 
+    val refreshToken = getRefreshToken(accountManager)
+    if (refreshToken != null) {
+      OAuthService.create(mContext)
+        .logout(BuildConfig.OAUTH_CIENT_ID, BuildConfig.OAUTH_CLIENT_SECRET, refreshToken)
+        .enqueue(
+          object : Callback<ResponseBody> {
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+              accountManager.clearPassword(account)
+              cleanup()
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+              cleanup()
+            }
+          }
+        )
+    } else {
+      cleanup()
+    }
+  }
+
+  fun cleanup() {
     val secureConfig = SecureConfig(mContext)
     secureConfig.deleteCredentials()
 
     val logoutIntent = getLogoutUserIntent()
     mContext.startActivity(logoutIntent)
-
-    val accounts = accountManager.getAccountsByType(AccountConfig.ACCOUNT_TYPE)
-    accounts.forEach { accountManager.clearPassword(it) }
   }
 
   fun getLogoutUserIntent(): Intent {
@@ -164,5 +185,10 @@ class AccountHelper(context: Context) {
       intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
     }
     return intent
+  }
+
+  fun getRefreshToken(accountManager: AccountManager): String? {
+    val account = accountManager.getAccountsByType(AccountConfig.ACCOUNT_TYPE).firstOrNull()
+    return accountManager.getPassword(account)
   }
 }
