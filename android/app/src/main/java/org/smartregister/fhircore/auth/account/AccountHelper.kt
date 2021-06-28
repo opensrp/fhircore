@@ -20,6 +20,7 @@ import android.accounts.Account
 import android.accounts.AccountManager
 import android.accounts.AccountManagerCallback
 import android.accounts.NetworkErrorException
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ResolveInfo
@@ -169,6 +170,9 @@ class AccountHelper(context: Context) {
 
     val logoutIntent = getLogoutUserIntent()
     mContext.startActivity(logoutIntent)
+    if (mContext is Activity) {
+      mContext.finish()
+    }
   }
 
   fun getLogoutUserIntent(): Intent {
