@@ -26,6 +26,7 @@ import org.smartregister.fhircore.auth.OAuthResponse
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.Field
 import retrofit2.http.FieldMap
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
@@ -38,6 +39,14 @@ interface OAuthService {
   fun fetchToken(@FieldMap(encoded = false) body: Map<String, String>): Call<OAuthResponse>
 
   @GET("protocol/openid-connect/userinfo") fun userInfo(): Call<ResponseBody>
+
+  @FormUrlEncoded
+  @POST("protocol/openid-connect/logout")
+  fun logout(
+    @Field("client_id") clientId: String,
+    @Field("client_secret") clientSecret: String,
+    @Field("refresh_token") refreshToken: String
+  ): Call<ResponseBody>
 
   companion object {
     fun create(context: Context): OAuthService {
