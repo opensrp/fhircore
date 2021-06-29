@@ -20,18 +20,23 @@ import android.accounts.Account
 import android.accounts.AccountManager
 import android.accounts.AccountManagerCallback
 import android.accounts.NetworkErrorException
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.content.pm.ResolveInfo
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import io.jsonwebtoken.Jwts
 import java.util.Date
 import okhttp3.ResponseBody
+import org.hl7.fhir.r4.test.utils.TestingUtilities.context
 import org.smartregister.fhircore.BuildConfig
 import org.smartregister.fhircore.api.OAuthService
 import org.smartregister.fhircore.auth.OAuthResponse
+import org.smartregister.fhircore.auth.secure.SecureConfig
 import retrofit2.Call
-import retrofit2.HttpException
+import retrofit2.Callback
 import retrofit2.Response
 import timber.log.Timber
 
@@ -59,8 +64,6 @@ class AccountHelper(context: Context) {
 
     return try {
       OAuthService.create(mContext).fetchToken(data)
-    } catch (e: HttpException) {
-      throw e
     } catch (e: Exception) {
       throw NetworkErrorException(e)
     }
@@ -135,5 +138,61 @@ class AccountHelper(context: Context) {
       callback,
       errorHandler
     )
+  }
+
+  fun logout(accountManager: AccountManager) {
+    val account = accountManager.getAccountsByType(AccountConfig.ACCOUNT_TYPE).firstOrNull()
+
+    val refreshToken = getRefreshToken(accountManager)
+    if (refreshToken != null) {
+      OAuthService.create(mContext)
+        .logout(BuildConfig.OAUTH_CIENT_ID, BuildConfig.OAUTH_CLIENT_SECRET, refreshToken)
+        .enqueue(
+          object : Callback<ResponseBody> {
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+              accountManager.clearPassword(account)
+              cleanup()
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+              cleanup()
+            }
+          }
+        )
+    } else {
+      cleanup()
+    }
+  }
+
+  fun cleanup() {
+    val secureConfig = SecureConfig(mContext)
+    secureConfig.deleteCredentials()
+
+    val logoutIntent = getLogoutUserIntent()
+    mContext.startActivity(logoutIntent)
+    if (mContext is Activity) {
+      mContext.finish()
+    }
+  }
+
+  fun getLogoutUserIntent(): Intent {
+    var intent = Intent(Intent.ACTION_MAIN)
+    intent.addCategory(Intent.CATEGORY_LAUNCHER)
+    intent.setPackage(mContext.packageName)
+
+    // retrieve the main/launcher activity defined in the manifest and open it
+    val activities: List<ResolveInfo> =
+      mContext.getPackageManager().queryIntentActivities(intent, 0)
+    if (activities.isNotEmpty()) {
+      intent = intent.setClassName(mContext.packageName, activities[0].activityInfo.name)
+      intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    }
+    return intent
+  }
+
+  fun getRefreshToken(accountManager: AccountManager): String? {
+    val account = accountManager.getAccountsByType(AccountConfig.ACCOUNT_TYPE).firstOrNull()
+    return accountManager.getPassword(account)
   }
 }
