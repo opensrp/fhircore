@@ -38,20 +38,11 @@ G6PD specific features
 1. Image processing engine (IPE)
 2. Results interpretation module (RIM)
 
-### FHIR resources that will be in use
-1. Patient
-2. Related Person
-3. Encounter
-4. Observation
-5. DiagnosticReport
-6. Questionnaire
-7. QuestionnaireResponse
-8. CarePlan
-9. PlanDefinition
-10. ActivityDefinition Type
-11. ValueSets
-12. Location( for jurisdictions and structures)
-13. Tasks
+### FHIR Resource Graph
+
+We plan to structure FHIR resources as shown in the below diagram:
+
+![fhircore fhir resource graph](assets/resource-graph/unified-resource-graph-v01.png)
 
 ### Extended capability to
 1. Execute CQL logic
