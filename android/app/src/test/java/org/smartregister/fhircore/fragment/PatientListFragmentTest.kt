@@ -106,7 +106,7 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
 
     shadowOf(Looper.getMainLooper()).idle()
 
-    patientListFragment.onPatientItemClicked(patientItem)
+    patientListFragment.onPatientItemClicked(PatientListFragment.Intention.VIEW, patientItem)
 
     val shadowActivity = Shadows.shadowOf(patientListActivity)
     val startedActivityIntent = shadowActivity.peekNextStartedActivity()
@@ -180,10 +180,10 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
     btnSync.performClick()
 
     every { patientListViewModelSpy.searchResults(pageSize = any()) } returns Unit
-    every { patientListViewModelSpy.syncUpload() } returns Unit
+    every { patientListViewModelSpy.runSync() } returns Unit
 
     verify(exactly = 1) { patientListViewModelSpy.searchResults(pageSize = any()) }
-    verify(exactly = 1) { patientListViewModelSpy.syncUpload() }
+    verify(exactly = 1) { patientListViewModelSpy.runSync() }
 
     patientListFragment.patientListViewModel = patientListViewModel
   }
