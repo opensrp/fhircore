@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,17 +33,29 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.api.HapiFhirService.Companion.create
 import org.smartregister.fhircore.data.FhirPeriodicSyncWorker
 import org.smartregister.fhircore.data.HapiFhirResourceDataSource
-import org.smartregister.fhircore.util.SharedPrefrencesHelper
+import org.smartregister.fhircore.util.SharedPreferencesHelper
+import timber.log.Timber
 
 class FhirApplication : Application() {
 
+  override fun onCreate() {
+    super.onCreate()
+    SharedPreferencesHelper.init(this)
+    mContext = this
+
+    if (BuildConfig.DEBUG) {
+      Timber.plant(Timber.DebugTree())
+    }
+  }
+
   // only initiate the FhirEngine when used for the first time, not when the app is created
   private val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
+  private val mInstance: FhirApplication by lazy { this }
 
   private fun constructFhirEngine(): FhirEngine {
-    SharedPrefrencesHelper.init(this)
+    SharedPreferencesHelper.init(this)
     val parser = FhirContext.forR4().newJsonParser()
-    val service = create(parser)
+    val service = create(parser, this)
     val syncData: MutableList<SyncData> = ArrayList()
     syncData.add(SyncData(ResourceType.Patient, mutableMapOf("address-city" to "NAIROBI")))
     syncData.add(SyncData(ResourceType.Immunization))
@@ -62,7 +74,12 @@ class FhirApplication : Application() {
   }
 
   companion object {
+
+    private lateinit var mContext: FhirApplication
+
     @JvmStatic
     fun fhirEngine(context: Context) = (context.applicationContext as FhirApplication).fhirEngine
+
+    fun getContext() = mContext
   }
 }

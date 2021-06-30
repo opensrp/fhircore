@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.data.SamplePatients
 import org.smartregister.fhircore.domain.Pagination
+import org.smartregister.fhircore.util.Utils
 
 private const val OBSERVATIONS_JSON_FILENAME = "sample_observations_bundle.json"
 
@@ -77,9 +78,15 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     viewModelScope.launch {
       var searchResults: List<Patient> =
         fhirEngine.search {
-          filter(Patient.ADDRESS_CITY) {
-            prefix = ParamPrefixEnum.EQUAL
-            value = "NAIROBI"
+          Utils.addBasePatientFilter(this)
+
+          apply {
+            if (query?.isNotBlank() == true) {
+              filter(Patient.FAMILY) {
+                prefix = ParamPrefixEnum.EQUAL
+                value = query.trim()
+              }
+            }
           }
 
           sort(Patient.GIVEN, Order.ASCENDING)
@@ -158,10 +165,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   private suspend fun count(query: String? = null): Int {
     val searchResults: List<Patient> =
       fhirEngine.search {
-        filter(Patient.ADDRESS_CITY) {
-          prefix = ParamPrefixEnum.EQUAL
-          value = "NAIROBI"
-        }
+        Utils.addBasePatientFilter(this)
+
         apply {
           if (query?.isNotBlank() == true) {
             filter(Patient.FAMILY) {

@@ -1,0 +1,13 @@
+{
+  "resourceType": "Goal",
+  "id": "mom-pregnancy-goal",
+  "text": {
+    "status": "generated",
+    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>Generated Narrative</b></p><p><b>lifecycleStatus</b>: active</p><p><b>subject</b>: <a href=\"Patient-mom.html\">Eve Everywoman. Generated Summary: id: 1000 (OFFICIAL); active; Eve Everywoman (OFFICIAL); Phone: 555-555-2003; gender: female; birthDate: 1993-05-31</a></p></div>"
+  },
+  "lifecycleStatus": "active",
+  "subject": {
+    "reference": "Patient/mom",
+    "display": "Eve Everywoman"
+  }
+}

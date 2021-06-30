@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.fragment
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -23,7 +24,6 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
@@ -32,6 +32,7 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.adapter.ObservationItemRecyclerViewAdapter
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
@@ -72,10 +73,7 @@ class PatientDetailFragment : Fragment() {
         )
         .get(PatientListViewModel::class.java)
 
-    viewModel.liveSearchPatient.observe(
-      viewLifecycleOwner,
-      Observer<PatientListViewModel.PatientItem> { setupPatientData(it) }
-    )
+    viewModel.liveSearchPatient.observe(viewLifecycleOwner, { setupPatientData(it) })
 
     arguments?.let {
       if (it.containsKey(ARG_ITEM_ID)) {
@@ -92,7 +90,7 @@ class PatientDetailFragment : Fragment() {
 
     viewModel.liveSearchImmunization.observe(
       viewLifecycleOwner,
-      Observer<List<Immunization>> {
+      {
         if (it.isNotEmpty()) {
           updateVaccineStatus(it)
         }
@@ -163,6 +161,19 @@ class PatientDetailFragment : Fragment() {
       activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
       activity?.findViewById<TextView>(R.id.id_patient_number)?.text = "ID: " + patient.logicalId
       patitentId = patient.logicalId
+    }
+  }
+
+  fun editPatient() {
+
+    viewModel.liveSearchPatient.value?.let {
+      startActivity(
+        Intent(requireContext(), QuestionnaireActivity::class.java).apply {
+          putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
+          putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
+          putExtra(Companion.ARG_ITEM_ID, it.logicalId)
+        }
+      )
     }
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,10 @@ package org.smartregister.fhircore.activity
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.drawerlayout.widget.DrawerLayout
@@ -38,17 +35,16 @@ import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.util.Utils.addOnDrawableClickedListener
 
 /** An activity representing a list of Patients. */
-class PatientListActivity : AppCompatActivity() {
+class PatientListActivity : BaseSimpleActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    Log.d("PatientListActivity", "onCreate() called")
-    setContentView(R.layout.activity_patient_list)
-
-    val toolbar = findViewById<Toolbar>(R.id.toolbar)
-    setSupportActionBar(toolbar)
 
     setUpViews()
+  }
+
+  override fun getContentLayout(): Int {
+    return R.layout.activity_patient_list
   }
 
   private fun setUpViews() {
@@ -91,7 +87,10 @@ class PatientListActivity : AppCompatActivity() {
     val context = view.context
     context.startActivity(
       Intent(context, QuestionnaireActivity::class.java).apply {
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
+        putExtra(
+          QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
+          this@PatientListActivity.getString(R.string.client_info)
+        )
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
       }
     )

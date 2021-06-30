@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import ca.uhn.fhir.context.FhirContext
@@ -46,7 +45,7 @@ const val PATIENT_ID = "patient_id"
 const val DOSE_NUMBER = "dose_number"
 const val INITIAL_DOSE = "initial_dose"
 
-class RecordVaccineActivity : AppCompatActivity() {
+class RecordVaccineActivity : MultiLanguageBaseActivity() {
 
   private val viewModel: QuestionnaireViewModel by viewModels()
 
@@ -113,7 +112,7 @@ class RecordVaccineActivity : AppCompatActivity() {
           )
         showVaccineRecordDialog(immunization)
       } catch (e: IndexOutOfBoundsException) {
-        Toast.makeText(this, "Please Select Vaccine", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, R.string.please_select_vaccine, Toast.LENGTH_SHORT).show()
       }
     }
   }
@@ -146,7 +145,8 @@ class RecordVaccineActivity : AppCompatActivity() {
         } else {
           resources.getString(R.string.immunization_next_dose_text, doseNumber + 1, nextVaccineDate)
         }
-      titleText = "${immunization.vaccineCode.text} dose $doseNumber recorded"
+      titleText =
+        this.getString(R.string.ordinal_vaccine_dose_recorded, immunization.vaccineCode.text)
     } else {
       msgText = "Second vaccine dose should be same as first"
       titleText = "Initially  received $initialDose"
@@ -158,8 +158,11 @@ class RecordVaccineActivity : AppCompatActivity() {
     // set message for alert dialog
     builder.setMessage(msgText)
 
+    // set message for alert dialog
+    builder.setMessage(this.getString(R.string.second_dose_due_at, "27-04-2021"))
+
     // performing negative action
-    builder.setNegativeButton("Done") { dialogInterface, _ ->
+    builder.setNegativeButton(R.string.done) { dialogInterface, _ ->
       dialogInterface.dismiss()
       if (isSameAsFirstDose) {
         viewModel.saveResource(immunization)

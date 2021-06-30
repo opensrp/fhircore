@@ -23,3 +23,6 @@ captures/
 # IntelliJ
 *.iml
 .idea
+
+# Gradle Properties
+gradle.properties

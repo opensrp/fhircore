@@ -22,7 +22,8 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:listDivider">@color/white_slightly_opaque</item>
-
+        <item name="questionnaire_theme">@style/Theme.MaterialComponents.Light.DarkActionBar</item>
+        <item name="groupHeaderTextAppearance">@style/TextAppearance.MaterialComponents.Subtitle2</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -33,6 +34,7 @@
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
     <style name="AppCard" parent="Widget.MaterialComponents.CardView">
         <item name="cardElevation">8dp</item>
     </style>
