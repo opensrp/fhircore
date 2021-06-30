@@ -133,10 +133,7 @@ class PatientListFragment : Fragment() {
   }
 
   override fun onResume() {
-    patientListViewModel.searchResults(
-      page = 0,
-      pageSize = pageCount
-    )
+    patientListViewModel.searchResults(page = 0, pageSize = pageCount)
     adapter.notifyDataSetChanged()
     super.onResume()
   }
