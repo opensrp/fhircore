@@ -65,7 +65,7 @@ class RecordVaccineActivity : MultiLanguageBaseActivity() {
       try {
         showVaccineRecordDialog(vaccineSelected.item[0].answer[0].valueCoding.code)
       } catch (e: IndexOutOfBoundsException) {
-        Toast.makeText(this, "Please Select Vaccine", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, R.string.please_select_vaccine, Toast.LENGTH_SHORT).show()
       }
     }
   }
@@ -88,12 +88,13 @@ class RecordVaccineActivity : MultiLanguageBaseActivity() {
 
     val builder = AlertDialog.Builder(this)
     // set title for alert dialog
-    builder.setTitle("$vaccineName 1st dose recorded")
+    builder.setTitle(this.getString(R.string.ordinal_vaccine_dose_recorded, vaccineName))
+
     // set message for alert dialog
-    builder.setMessage("Second dose due at 27-04-2021")
+    builder.setMessage(this.getString(R.string.second_dose_due_at, "27-04-2021"))
 
     // performing negative action
-    builder.setNegativeButton("Done") { dialogInterface, _ ->
+    builder.setNegativeButton(R.string.done) { dialogInterface, _ ->
       dialogInterface.dismiss()
       finish()
     }
