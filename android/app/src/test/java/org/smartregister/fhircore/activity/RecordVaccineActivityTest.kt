@@ -70,7 +70,9 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
     every { answer.valueCoding } returns coding
     every { coding.code } returns "dummy"
 
-    recordVaccineActivity.fragment = questionnaireFragment
+    val fragmentField = recordVaccineActivity.javaClass.getDeclaredField("fragment")
+    fragmentField.isAccessible = true
+    fragmentField.set(recordVaccineActivity, questionnaireFragment)
 
     recordVaccineActivity.findViewById<Button>(R.id.btn_record_vaccine).performClick()
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())

@@ -34,7 +34,7 @@ const val USER_ID = "user_id"
 class RecordVaccineActivity : MultiLanguageBaseActivity() {
 
   private val viewModel: QuestionnaireViewModel by viewModels()
-  lateinit var fragment: QuestionnaireFragment
+  private lateinit var fragment: QuestionnaireFragment
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
