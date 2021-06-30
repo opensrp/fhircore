@@ -119,7 +119,14 @@ class PatientListActivityTest : ActivityRobolectricTest() {
   @Test
   fun testPatientCountShouldBeEmptyWithZeroClients() {
 
-    patientListActivity.setMenuCounter(R.id.menu_item_clients, 0)
+    val method =
+      patientListActivity.javaClass.superclass?.getDeclaredMethod(
+        "setMenuCounter",
+        Int::class.java,
+        Int::class.java
+      )
+    method?.isAccessible = true
+    method?.invoke(patientListActivity, R.id.menu_item_clients, 0)
 
     val countItem =
       patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_clients).actionView as
@@ -130,7 +137,14 @@ class PatientListActivityTest : ActivityRobolectricTest() {
   @Test
   fun testPatientCountShouldNotBeEmptyWithNonZeroClients() {
 
-    patientListActivity.setMenuCounter(R.id.menu_item_clients, 2)
+    val method =
+      patientListActivity.javaClass.superclass?.getDeclaredMethod(
+        "setMenuCounter",
+        Int::class.java,
+        Int::class.java
+      )
+    method?.isAccessible = true
+    method?.invoke(patientListActivity, R.id.menu_item_clients, 2)
 
     val countItem =
       patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_clients).actionView as

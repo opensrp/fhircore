@@ -172,7 +172,7 @@ abstract class BaseSimpleActivity :
     }
   }
 
-  fun setMenuCounter(@IdRes itemId: Int, count: Int) {
+  private fun setMenuCounter(@IdRes itemId: Int, count: Int) {
     val counter = getNavigationView().menu.findItem(itemId).actionView as TextView
     counter.text = if (count > 0) count.toString() else null
   }

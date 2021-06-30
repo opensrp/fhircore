@@ -56,7 +56,6 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
   @Test
   fun testVerifyRecordedVaccineSavedDialogProperty() {
 
-    // val fragmentManager = mockk<FragmentManager>()
     val questionnaireFragment = mockk<QuestionnaireFragment>()
     val questionnaireResponse = mockk<QuestionnaireResponse>()
     val item = mockk<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
