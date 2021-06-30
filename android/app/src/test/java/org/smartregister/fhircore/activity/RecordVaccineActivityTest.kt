@@ -77,7 +77,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
     Assert.assertNotNull(dialog)
     Assert.assertEquals("dummy 1st dose recorded", dialog.title)
-    Assert.assertEquals("Second dose due at 27-04-2021", dialog.message)
+    Assert.assertEquals("Second dose due on 27-04-2021", dialog.message)
   }
 
   override fun getActivity(): Activity {
