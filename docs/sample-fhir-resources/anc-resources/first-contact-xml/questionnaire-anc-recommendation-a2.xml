@@ -1,0 +1,50 @@
+<Questionnaire xmlns="http://hl7.org/fhir">
+    <id value="anc-recommendation-a2"/>
+    <title value="Has Anaemia Questionnaire"/>
+    <status value="active"/>
+    <item>
+        <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-fhirType">
+            <valueString value="Observation"/>
+        </extension>
+        <linkId value="gestational-age-method"/>
+        <text value="What method was used to determine gestational age?"/>
+        <type value="choice"/>
+        <required value="true"/>
+        <answerOption>
+            <valueCoding>
+                <system value="http://fhir.org/guides/who/anc-cds/CodeSystem/anc-codes"/>
+                <code value="UseLMP"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://fhir.org/guides/who/anc-cds/CodeSystem/anc-codes"/>
+                <code value="UseUltrasound"/>
+            </valueCoding>
+        </answerOption>
+        <answerOption>
+            <valueCoding>
+                <system value="http://fhir.org/guides/who/anc-cds/CodeSystem/anc-codes"/>
+                <code value="UseSFH"/>
+            </valueCoding>
+        </answerOption>
+    </item>
+    <item>
+        <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-fhirType">
+            <valueString value="Observation"/>
+        </extension>
+        <linkId value="lmp-date"/>
+        <text value="What was the date of the Patient's last menstrual period?"/>
+        <type value="dateTime"/>
+        <required value="true"/>
+    </item>
+    <item>
+        <extension url="http://hl7.org/fhir/StructureDefinition/questionnaire-fhirType">
+            <valueString value="Observation"/>
+        </extension>
+        <linkId value="hb-value"/>
+        <text value="What is the Patient's Haemoglobin measured from haemoglobinometer (g/dl)?"/>
+        <type value="quantity"/>
+        <required value="true"/>
+    </item>
+</Questionnaire>

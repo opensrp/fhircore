@@ -1,6 +1,6 @@
 [![Android CI with Gradle](https://github.com/OpenSRP/fhircore/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenSRP/fhircore/actions/workflows/ci.yml)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/36e296c5bea343e1ac451d66a2331d11)](https://www.codacy.com/app/OpenSRP/fhircore?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=OpenSRP/fhircore&amp;utm_campaign=Badge_Grade)
-
+[![Coverage Status](https://coveralls.io/repos/github/opensrp/fhircore/badge.svg?branch=main)](https://coveralls.io/github/opensrp/fhircore?branch=main)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/b8c108d9cd4c40aeb379cbcd3c3b2400)](https://www.codacy.com/gh/opensrp/fhircore/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=opensrp/fhircore&amp;utm_campaign=Badge_Grade)
 
 # FHIRcore
 
@@ -21,4 +21,21 @@ Add your token details in this file ~/.gradle/gradle.properties in the format be
 ```
 GITHUB_USER=Xxxx
 GITHUB_PERSONAL_ACCESS_TOKEN=xxxxxx
+```
+
+or export them to your system environment variables:
+
+```
+export GITHUB_USER=Xxxx
+export GITHUB_PERSONAL_ACCESS_TOKEN=xxxxxx
+```
+
+You also need keycloak credentials to authenticate FHIR APIs and login. Following properties should be added to ~/local.properties
+
+```
+OAUTH_BASE_URL=https://keycloak-stage.smartregister.org/auth/realms/FHIR_Android/
+OAUTH_CIENT_ID=fhir-core-client
+OAUTH_CLIENT_SECRET=XXXXXXX
+OAUTH_SCOPE=openid
+FHIR_BASE_URL=https://fhir.labs.smartregister.org/fhir/
 ```

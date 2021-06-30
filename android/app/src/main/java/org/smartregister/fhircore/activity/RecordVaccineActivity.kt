@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import ca.uhn.fhir.context.FhirContext
@@ -46,7 +45,7 @@ const val PATIENT_ID = "patient_id"
 const val DOSE_NUMBER = "dose_number"
 const val INITIAL_DOSE = "initial_dose"
 
-class RecordVaccineActivity : AppCompatActivity() {
+class RecordVaccineActivity : MultiLanguageBaseActivity() {
 
   private val viewModel: QuestionnaireViewModel by viewModels()
 

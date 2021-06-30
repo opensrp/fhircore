@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems Inc
+ * Copyright 2021 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,11 +44,15 @@ class PaginationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     nextButton.visibility = if (pagination.hasNextPage()) View.GONE else View.VISIBLE
     prevButton.visibility = if (pagination.hasPreviousPage()) View.GONE else View.VISIBLE
 
-    this.infoTextView.text =
-      itemView.resources.getString(
-        R.string.str_page_info,
-        pagination.currentPageNumber(),
-        pagination.totalPages()
-      )
+    if (pagination.totalPages() < 2) {
+      this.infoTextView.text = ""
+    } else {
+      this.infoTextView.text =
+        itemView.resources.getString(
+          R.string.str_page_info,
+          pagination.currentPageNumber(),
+          pagination.totalPages()
+        )
+    }
   }
 }
