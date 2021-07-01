@@ -16,12 +16,12 @@
 
 package org.smartregister.fhircore.activity
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import ca.uhn.fhir.context.FhirContext
@@ -48,6 +48,7 @@ const val INITIAL_DOSE = "initial_dose"
 class RecordVaccineActivity : MultiLanguageBaseActivity() {
 
   private val viewModel: QuestionnaireViewModel by viewModels()
+  private lateinit var fragment: QuestionnaireFragment
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -60,7 +61,7 @@ class RecordVaccineActivity : MultiLanguageBaseActivity() {
 
     // Only add the fragment once, when the activity is first created.
     if (savedInstanceState == null) {
-      val fragment = QuestionnaireFragment()
+      fragment = QuestionnaireFragment()
       fragment.arguments =
         bundleOf(QuestionnaireFragment.BUNDLE_KEY_QUESTIONNAIRE to viewModel.questionnaire)
 
@@ -70,12 +71,7 @@ class RecordVaccineActivity : MultiLanguageBaseActivity() {
     }
 
     findViewById<Button>(R.id.btn_record_vaccine).setOnClickListener {
-      val questionnaireFragment =
-        supportFragmentManager.findFragmentByTag(
-          QuestionnaireActivity.QUESTIONNAIRE_FRAGMENT_TAG
-        ) as
-          QuestionnaireFragment
-      val questionnaireResponse = questionnaireFragment.getQuestionnaireResponse()
+      val questionnaireResponse = fragment.getQuestionnaireResponse()
 
       val iParser: IParser = FhirContext.forR4().newJsonParser()
       val questionnaire =
