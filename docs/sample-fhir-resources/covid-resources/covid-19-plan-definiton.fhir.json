@@ -1,208 +1,284 @@
 {
-  "resourceType": "Bundle",
-  "id": "bfaeae8f-166b-41fd-9228-e4f29cd65aa4",
-  "meta": {
-    "lastUpdated": "2021-05-06T08:28:32.439+00:00"
-  },
-  "type": "searchset",
-  "total": 1,
-  "link": [ {
-    "relation": "self",
-    "url": "http://fhir.labs.smartregister.org/fhir/PlanDefinition?_pretty=true"
-  } ],
-  "entry": [ {
-    "fullUrl": "http://fhir.labs.smartregister.org/fhir/PlanDefinition/260",
-    "resource": {
-      "resourceType": "PlanDefinition",
-      "id": "260",
-      "meta": {
-        "versionId": "1",
-        "lastUpdated": "2021-05-05T12:34:24.585+00:00",
-        "source": "#cU6YtFc7rlRVlERh"
-      },
-      "name": "Plan Definition",
-      "title": "Vaccination Plan Definition",
-      "goal": [ {
-        "id": "Moderna",
-        "description":"Moderna",
-        "target": [ {
-          "id": "target1"
-        } ]
-      }, {
-        "id": "Pfizer",
-        "description":"Pfizer",
-        "target": [ {
-          "id": "target2"
-        } ]
-      }, {
-        "id": "AstraZeneca",
-        "description":"AstraZeneca",
-        "target": [ {
-          "id": "target2"
-        } ]
-      }, {
-        "id": "Janseen",
-        "description":"Janseen",
-        "target": [ {
-          "id": "target3"
-        } ]
-      } ],
-      "action": [ {
-        "prefix": "1",
-        "title": "Moderna Vaccine Dose 1",
-        "goalId": [ "Moderna" ],
-        "trigger": [ {
-          "type": "named-event",
-          "name": "event-submission"
-        } ],
-        "condition": [ {
-          "kind": "applicability",
-          "expression": {
-            "description": "Moderna Dose 1",
-            "expression": "$this.item.where(linkId='vaccine_question_linkId').answer.value = 'Moderna'"
-          }
-        } ],
-        "timingPeriod": {
-          "start": "2020-08-25",
-          "end": "2020-09-01"
+    "resourceType": "PlanDefinition",
+    "goal": [
+        {
+            "description": "Moderna Vaccination",
+            "id": "Moderna",
+            "priority": "high-priority",
+            "target": [
+                {
+                    "id": "target1",
+                    "due": "28-02-2021"
+                }
+            ]
+        },
+        {
+            "description": "Pfizer Vaccination",
+            "id": "Pfizer",
+            "priority": "high-priority",
+            "target": [
+                {
+                    "id": "target2",
+                    "due": "28-02-2021"
+                }
+            ]
+        },
+        {
+            "description": "AstraZeneca Vaccination",
+            "id": "AstraZeneca",
+            "priority": "high-priority",
+            "target": [
+                {
+                    "id": "target2",
+                    "due": "28-02-2021"
+                }
+            ]
+        },
+        {
+            "description": "Janseen Vaccination",
+            "id": "Janseen",
+            "priority": "high-priority",
+            "target": [
+                {
+                    "id": "target3",
+                    "due": "28-02-2021"
+                }
+            ]
         }
-      }, {
-        "prefix": "2",
-        "title": "Moderna Vaccine Dose 2",
-        "goalId": [ "Moderna" ],
-        "trigger": [ {
-          "type": "named-event",
-          "name": "event-submission"
-        } ],
-        "condition": [ {
-          "kind": "applicability",
-          "expression": {
-            "description": "Moderna Dose 2",
-            "expression": "$this.item.where(linkId='vaccine_question_linkId').answer.value = 'Moderna' && $this.item.where(linkId='vaccine_dose_1_date').answer.value != ''"
-          }
-        } ],
-        "timingPeriod": {
-          "start": "2020-08-25",
-          "end": "2020-09-01"
+    ],
+    "name": "Plan Definition",
+    "title": "Vaccination Plan Definition",
+    "action": [
+        {
+            "type": "create",
+            "title": "Moderna Vaccine Dose 1",
+            "goalId": [
+                "Moderna"
+            ],
+            "prefix": "1",
+            "trigger": [
+                {
+                    "name": "event-submission",
+                    "type": "named-event"
+                }
+            ],
+            "condition": [
+                {
+                    "kind": "applicability",
+                    "expression": {
+                        "expression": "$this.input.where(linkId='vaccine_question_linkId').answer.value = 'Moderna'",
+                        "description": "Moderna Dose 1"
+                    }
+                }
+            ],
+            "timingPeriod": {
+                "end": "2020-09-01",
+                "start": "2020-08-25"
+            }
+        },
+        {
+            "type": "create",
+            "title": "Moderna Vaccine Dose 2",
+            "goalId": [
+                "Moderna"
+            ],
+            "prefix": "2",
+            "trigger": [
+                {
+                    "name": "event-submission",
+                    "type": "named-event"
+                }
+            ],
+            "condition": [
+                {
+                    "kind": "applicability",
+                    "expression": {
+                        "expression": "$this.input.where(linkId='vaccine_question_linkId').answer.value = 'Moderna' && $this.input.where(linkId='vaccine_dose_1_date').answer.value != ''",
+                        "description": "Moderna Dose 2"
+                    }
+                }
+            ],
+            "timingPeriod": {
+                "end": "2020-09-01",
+                "start": "2020-08-25"
+            }
+        },
+        {
+            "type": "create",
+            "title": "Pfizer Vaccine Dose 1",
+            "goalId": [
+                "Pfizer"
+            ],
+            "prefix": "3",
+            "trigger": [
+                {
+                    "name": "event-submission",
+                    "type": "named-event"
+                }
+            ],
+            "condition": [
+                {
+                    "kind": "applicability",
+                    "expression": {
+                        "expression": "$this.input.where(linkId='vaccine_question_linkId').answer.value = 'Pfizer'",
+                        "description": "Pfizer Dose 1"
+                    }
+                }
+            ],
+            "timingPeriod": {
+                "end": "2020-09-01",
+                "start": "2020-08-25"
+            }
+        },
+        {
+            "type": "create",
+            "title": "Pfizer Vaccine Dose 2",
+            "goalId": [
+                "Pfizer"
+            ],
+            "prefix": "4",
+            "trigger": [
+                {
+                    "name": "event-submission",
+                    "type": "named-event"
+                }
+            ],
+            "condition": [
+                {
+                    "kind": "applicability",
+                    "expression": {
+                        "expression": "$this.input.where(linkId='vaccine_question_linkId').answer.value = 'Pfizer' && $this.input.where(linkId='vaccine_dose_1_date').answer.value != ''",
+                        "description": "Pfizer Dose 2"
+                    }
+                }
+            ],
+            "timingPeriod": {
+                "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+                      "valueExpression": {
+                        "language": "text/cql",
+                        "expression": "toDate($this.input.where(linkId='vaccine_dose_1_date').answer.value) + 2 weeks"
+                      }
+                    }
+                  ]
+            },
+            "dynamicValue": [
+                {
+                    "expression": {
+                        "language": "text/cql",
+                        "e sxpression": "toDate($this.input.where(linkId='vaccine_dose_1_date').answer.value) + 2 weeks"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "create",
+            "title": "AstraZeneca Vaccine Dose 1",
+            "goalId": [
+                "AstraZeneca"
+            ],
+            "prefix": "5",
+            "trigger": [
+                {
+                    "name": "event-submission",
+                    "type": "named-event"
+                }
+            ],
+            "condition": [
+                {
+                    "kind": "applicability",
+                    "expression": {
+                        "expression": "$this.input.where(linkId='vaccine_question_linkId').answer.value = 'AstraZeneca'",
+                        "description": "AstraZeneca Dose 1"
+                    }
+                }
+            ],
+            "timingPeriod": {
+                "end": "2020-09-01",
+                "start": "2020-08-25"
+            }
+        },
+        {
+            "type": "create",
+            "title": "AstraZeneca Vaccine Dose 2",
+            "goalId": [
+                "AstraZeneca"
+            ],
+            "prefix": "6",
+            "trigger": [
+                {
+                    "name": "event-submission",
+                    "type": "named-event"
+                }
+            ],
+            "condition": [
+                {
+                    "kind": "applicability",
+                    "expression": {
+                        "expression": "$this.input.where(linkId='vaccine_question_linkId').answer.value = 'AstraZeneca' && $this.input.where(linkId='vaccine_dose_1_date').answer.value != ''",
+                        "description": "AstraZeneca Dose 2"
+                    }
+                }
+            ],
+            "timingPeriod": {
+                "end": "2020-09-01",
+                "start": "2020-08-25"
+            }
+        },
+        {
+            "type": "create",
+            "title": "Janseen Vaccine Dose 1",
+            "goalId": [
+                "Janseen"
+            ],
+            "prefix": "7",
+            "trigger": [
+                {
+                    "name": "event-submission",
+                    "type": "named-event"
+                }
+            ],
+            "condition": [
+                {
+                    "kind": "applicability",
+                    "expression": {
+                        "expression": "$this.input.where(linkId='vaccine_question_linkId').answer.value = 'Janseen'",
+                        "description": "Janseen Dose 1"
+                    }
+                }
+            ],
+            "timingPeriod": {
+                "end": "2020-09-01",
+                "start": "2020-08-25"
+            }
+        },
+        {
+            "type": "create",
+            "title": "Janseen Vaccine Dose 2",
+            "goalId": [
+                "Janseen"
+            ],
+            "prefix": "8",
+            "trigger": [
+                {
+                    "name": "event-submission",
+                    "type": "named-event"
+                }
+            ],
+            "condition": [
+                {
+                    "kind": "applicability",
+                    "expression": {
+                        "expression": "$this.input.where(linkId='vaccine_question_linkId').answer.value = 'Janseen' && $this.input.where(linkId='vaccine_dose_1_date').answer.value != ''",
+                        "description": "Janseen Dose 2"
+                    }
+                }
+            ],
+            "timingPeriod": {
+                "end": "2020-09-01",
+                "start": "2020-08-25"
+            }
         }
-      }, {
-        "prefix": "3",
-        "title": "Pfizer Vaccine Dose 1",
-        "goalId": [ "Pfizer" ],
-        "trigger": [ {
-          "type": "named-event",
-          "name": "event-submission"
-        } ],
-        "condition": [ {
-          "kind": "applicability",
-          "expression": {
-            "description": "Pfizer Dose 1",
-            "expression": "$this.item.where(linkId='vaccine_question_linkId').answer.value = 'Pfizer'"
-          }
-        } ],
-        "timingPeriod": {
-          "start": "2020-08-25",
-          "end": "2020-09-01"
-        }
-      }, {
-        "prefix": "4",
-        "title": "Pfizer Vaccine Dose 2",
-        "goalId": [ "Pfizer" ],
-        "trigger": [ {
-          "type": "named-event",
-          "name": "event-submission"
-        } ],
-        "condition": [ {
-          "kind": "applicability",
-          "expression": {
-            "description": "Pfizer Dose 2",
-            "expression": "$this.item.where(linkId='vaccine_question_linkId').answer.value = 'Pfizer' && $this.item.where(linkId='vaccine_dose_1_date').answer.value != ''"
-          }
-        } ],
-        "timingPeriod": {
-          "start": "2020-08-25",
-          "end": "2020-09-01"
-        }
-      }, {
-        "prefix": "5",
-        "title": "AstraZeneca Vaccine Dose 1",
-        "goalId": [ "AstraZeneca" ],
-        "trigger": [ {
-          "type": "named-event",
-          "name": "event-submission"
-        } ],
-        "condition": [ {
-          "kind": "applicability",
-          "expression": {
-            "description": "AstraZeneca Dose 1",
-            "expression": "$this.item.where(linkId='vaccine_question_linkId').answer.value = 'AstraZeneca'"
-          }
-        } ],
-        "timingPeriod": {
-          "start": "2020-08-25",
-          "end": "2020-09-01"
-        }
-      }, {
-        "prefix": "6",
-        "title": "AstraZeneca Vaccine Dose 2",
-        "goalId": [ "AstraZeneca" ],
-        "trigger": [ {
-          "type": "named-event",
-          "name": "event-submission"
-        } ],
-        "condition": [ {
-          "kind": "applicability",
-          "expression": {
-            "description": "AstraZeneca Dose 2",
-            "expression": "$this.item.where(linkId='vaccine_question_linkId').answer.value = 'AstraZeneca' && $this.item.where(linkId='vaccine_dose_1_date').answer.value != ''"
-          }
-        } ],
-        "timingPeriod": {
-          "start": "2020-08-25",
-          "end": "2020-09-01"
-        }
-      }, {
-        "prefix": "7",
-        "title": "Janseen Vaccine Dose 1",
-        "goalId": [ "Janseen" ],
-        "trigger": [ {
-          "type": "named-event",
-          "name": "event-submission"
-        } ],
-        "condition": [ {
-          "kind": "applicability",
-          "expression": {
-            "description": "Janseen Dose 1",
-            "expression": "$this.item.where(linkId='vaccine_question_linkId').answer.value = 'Janseen'"
-          }
-        } ],
-        "timingPeriod": {
-          "start": "2020-08-25",
-          "end": "2020-09-01"
-        }
-      }, {
-        "prefix": "8",
-        "title": "Janseen Vaccine Dose 2",
-        "goalId": [ "Janseen" ],
-        "trigger": [ {
-          "type": "named-event",
-          "name": "event-submission"
-        } ],
-        "condition": [ {
-          "kind": "applicability",
-          "expression": {
-            "description": "Janseen Dose 2",
-            "expression": "$this.item.where(linkId='vaccine_question_linkId').answer.value = 'Janseen' && $this.item.where(linkId='vaccine_dose_1_date').answer.value != ''"
-          }
-        } ],
-        "timingPeriod": {
-          "start": "2020-08-25",
-          "end": "2020-09-01"
-        }
-      } ]
-    },
-    "search": {
-      "mode": "match"
-    }
-  } ]
+    ]
 }

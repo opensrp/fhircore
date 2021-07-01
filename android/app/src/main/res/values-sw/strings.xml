@@ -32,4 +32,16 @@
     <string name="last_sync_timestamp">Mara ya mwisho 05:30 PM, Mar 3</string>
     <string name="logout_as_user">Toka kama Francis</string>
     <string name="registered_date">Tarehe ya kusajiliwa 20-01-2021</string>
+    <string name="login_text">Ingia kwenye mfumo</string>
+    <string name="logout_text">Toka kwenye mfumo</string>
+    <string name="username_input_hint">Ingiza jina la mtumiaji</string>
+    <string name="password_input_hint">Ingiza neno la siri</string>
+    <string name="show_password_button_hint">Onyesha neno la siri</string>
+    <string name="login_error_message">Jina la mtumiaji au neno la siri sio sahihi</string>
+    <string name="login_call_fail_error_message">Hitalfu imetokea wakati wa kuingia server. Tafadhali jaribu tena</string>
+    <string name="userinfo_call_fail_error_message">Imeshindwa kupata maelezo ya mtumiaji. Angalia muunganisho wako wa mtandao</string>
+    <string name="done">Imekamilika</string>
+    <string name="second_dose_due_at"> Dozi ya pili inapaswa kutolewa %1$s</string>
+    <string name="ordinal_vaccine_dose_recorded">%1$s Dozi ya kwanza imerekodiwa</string>
+    <string name="please_select_vaccine">Tafadhali Chagua Chanjo</string>
 </resources>
