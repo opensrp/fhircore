@@ -237,7 +237,7 @@ class PatientListFragment : Fragment() {
   }
 
   // Click handler to help display the details about the patients from the list.
-  private fun onPatientItemClicked(
+  public fun onPatientItemClicked(
     intention: Intention,
     patientItem: PatientListViewModel.PatientItem
   ) {

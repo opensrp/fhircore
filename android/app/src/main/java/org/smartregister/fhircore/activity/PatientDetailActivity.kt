@@ -64,7 +64,7 @@ class PatientDetailActivity : MultiLanguageBaseActivity() {
             this@PatientDetailActivity.getString(R.string.record_vaccine)
           )
           putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
-          putExtra(PATIENT_ID, fragment.patitentId)
+          putExtra(PATIENT_ID, fragment.patientId)
           putExtra(DOSE_NUMBER, fragment.doseNumber)
           putExtra(INITIAL_DOSE, fragment.initialDose)
         }
