@@ -86,12 +86,12 @@ class LoginViewModelTest : RobolectricTest() {
     } returns body
     every { body.accessToken } returns "dummy_token"
 
-    val field = viewModel.javaClass.getDeclaredField("accountManager")
+    val field = viewModel.javaClass.getDeclaredField("accountHelper")
     field.isAccessible = true
-    val accountManager = spyk(field.get(viewModel) as AccountManager)
-    field.set(viewModel, accountManager)
+    val accountHelper = spyk(field.get(viewModel) as AccountHelper)
+    field.set(viewModel, accountHelper)
 
-    every { accountManager.notifyAccountAuthenticated(any()) } returns true
+    every { accountHelper.addAuthenticatedAccount(any(), any(), any()) } returns Unit
 
     viewModel.goHome.value = false
     viewModel.onResponse(call, response)
