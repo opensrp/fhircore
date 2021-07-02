@@ -34,7 +34,6 @@ import org.smartregister.fhircore.auth.account.AccountHelper
 import org.smartregister.fhircore.auth.secure.Credentials
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import retrofit2.Call
-import retrofit2.Response
 
 class LoginViewModelTest : RobolectricTest() {
 
@@ -58,47 +57,6 @@ class LoginViewModelTest : RobolectricTest() {
 
     viewModel.credentialsWatcher.afterTextChanged(mockk())
     Assert.assertTrue(viewModel.allowLogin.value!!)
-  }
-
-  @Test
-  fun testOnResponseShouldVerifyInternalCalls() {
-
-    val call = mockk<Call<OAuthResponse>>()
-    val response = mockk<Response<OAuthResponse>>(relaxed = true)
-    val body = mockk<OAuthResponse>(relaxed = true)
-
-    every { response.isSuccessful } returns false
-    every { response.errorBody() } returns mockk()
-
-    setUsernameAndPassword()
-    viewModel.secureConfig.saveCredentials(Credentials("testuser", charArrayOf('a'), "dummy_token"))
-    viewModel.goHome.value = false
-    viewModel.onResponse(call, response)
-
-    Assert.assertTrue(viewModel.loginFailed.value!!)
-    Assert.assertTrue(viewModel.allowLogin.value!!)
-    Assert.assertTrue(viewModel.goHome.value!!)
-
-    every { response.isSuccessful } returns true
-    every {
-      hint(OAuthResponse::class)
-      response.body()
-    } returns body
-    every { body.accessToken } returns "dummy_token"
-
-    val field = viewModel.javaClass.getDeclaredField("accountHelper")
-    field.isAccessible = true
-    val accountHelper = spyk(field.get(viewModel) as AccountHelper)
-    field.set(viewModel, accountHelper)
-
-    every { accountHelper.addAuthenticatedAccount(any(), any(), any()) } returns Unit
-
-    viewModel.goHome.value = false
-    viewModel.onResponse(call, response)
-
-    Assert.assertFalse(viewModel.loginFailed.value!!)
-    Assert.assertEquals(0, viewModel.loginUser.password.size)
-    Assert.assertTrue(viewModel.goHome.value!!)
   }
 
   @Test
