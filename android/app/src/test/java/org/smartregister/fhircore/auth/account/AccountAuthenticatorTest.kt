@@ -25,6 +25,8 @@ import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -93,5 +95,48 @@ class AccountAuthenticatorTest {
     assertEquals("testuser", result.getString(AccountManager.KEY_ACCOUNT_NAME))
     assertEquals(AccountConfig.ACCOUNT_TYPE, result.getString(AccountManager.KEY_ACCOUNT_TYPE))
     assertEquals(oauth.accessToken, result.getString(AccountManager.KEY_AUTHTOKEN))
+  }
+
+  @Test
+  fun testEditPropertiesShouldReturnValidBundle() {
+    assertNotNull(accountAuthenticator.editProperties(mockk(), ""))
+  }
+
+  @Test
+  fun testConfirmCredentialsShouldReturnValidBundle() {
+    assertNotNull(accountAuthenticator.confirmCredentials(mockk(), mockk(), mockk()))
+  }
+
+  @Test
+  fun testGetAuthTokenLabelShouldCovertTextToUpperCase() {
+    assertEquals("DEMO_TYPE", accountAuthenticator.getAuthTokenLabel("demo_type"))
+  }
+
+  @Test
+  fun testUpdateCredentialsVerifyIntentProperties() {
+
+    val account = Account("testuser", AccountConfig.ACCOUNT_TYPE)
+    val bundle =
+      accountAuthenticator.updateCredentials(
+        mockk(),
+        account,
+        AccountConfig.AUTH_TOKEN_TYPE,
+        bundleOf()
+      )
+
+    val intent = bundle.getParcelable(AccountManager.KEY_INTENT) as Intent?
+
+    assertNotNull(intent)
+    assertNotNull(intent?.getParcelableExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE))
+    assertEquals(account.name, intent?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME))
+    assertEquals(account.type, intent?.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE))
+  }
+
+  @Test
+  fun testHasFeaturesShouldReturnValidBundle() {
+    val bundle = accountAuthenticator.hasFeatures(mockk(), mockk(), arrayOf())
+
+    assertNotNull(bundle)
+    assertFalse(bundle.getBoolean(AccountManager.KEY_BOOLEAN_RESULT))
   }
 }
