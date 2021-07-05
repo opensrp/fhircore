@@ -180,10 +180,7 @@ abstract class BaseSimpleActivity :
   private fun initClientCountObserver() {
     Timber.d("Observing client counts livedata")
 
-    viewModel.covaxClientsCount.observe(
-      this,
-      { event -> setMenuCounter(R.id.menu_item_clients, event) }
-    )
+    viewModel.clientsCount.observe(this, { event -> setMenuCounter(R.id.menu_item_clients, event) })
   }
 
   private fun setLanguage(language: String) {

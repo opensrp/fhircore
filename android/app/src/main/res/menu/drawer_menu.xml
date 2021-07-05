@@ -8,7 +8,7 @@
 
         <item
             android:id="@+id/menu_item_clients"
-            android:icon="@drawable/ic_baby_mother_covax"
+            android:icon="@drawable/ic_baby_mother"
             android:title="@string/menu_clients_list_title"
             app:actionLayout="@layout/menu_counter"/>
 

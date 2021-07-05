@@ -331,12 +331,12 @@ class PatientListActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testPatientClientCountShouldReturnTen() {
-    patientListActivity.viewModel.covaxClientsCount.value = 10
+    patientListActivity.viewModel.clientsCount.value = 10
     val counter =
       patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_clients).actionView as
         TextView
 
-    patientListActivity.viewModel.covaxClientsCount.observe(
+    patientListActivity.viewModel.clientsCount.observe(
       patientListActivity,
       { Assert.assertEquals("10", counter.text.toString()) }
     )
