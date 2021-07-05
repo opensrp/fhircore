@@ -18,17 +18,24 @@ package org.smartregister.fhircore.util
 
 import android.app.Activity
 import android.content.Intent
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
+import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.StringFilter
 import io.mockk.mockkClass
 import io.mockk.slot
 import io.mockk.verify
 import java.text.SimpleDateFormat
 import java.util.Date
 import org.apache.commons.lang3.time.DateUtils
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.joda.time.DateTime
 import org.junit.Assert
 import org.junit.Test
+import org.smartregister.fhircore.FhirApplication
+import org.smartregister.fhircore.RobolectricTest
 
-class UtilsTest {
+class UtilsTest : RobolectricTest() {
 
   @Test
   fun `getAgeFromDate calculates correct age when current date is not null`() {
@@ -60,5 +67,28 @@ class UtilsTest {
     verify { activity.startActivity(capture(slot)) }
 
     Assert.assertNotNull(slot.captured)
+  }
+
+  @Test
+  fun testAddBasePatientFilterShouldVerifyFilterParams() {
+    val search = Search(ResourceType.Patient)
+    Utils.addBasePatientFilter(search)
+
+    val field = search.javaClass.getDeclaredField("stringFilters")
+    field.isAccessible = true
+    val filterList = field.get(search) as MutableList<StringFilter>
+
+    Assert.assertEquals(1, filterList.size)
+    Assert.assertEquals(Patient.ADDRESS_CITY, filterList[0].parameter)
+    Assert.assertEquals(ParamPrefixEnum.EQUAL, filterList[0].prefix)
+    Assert.assertEquals("NAIROBI", filterList[0].value)
+  }
+
+  @Test
+  fun testSetAppLocaleShouldReturnUpdatedConfiguration() {
+    val config = Utils.setAppLocale(FhirApplication.getContext(), "sw")
+
+    Assert.assertNotNull(config)
+    Assert.assertEquals("sw", config!!.locales[0].language)
   }
 }
