@@ -210,15 +210,7 @@ abstract class BaseSimpleActivity :
 
   fun setLogoutUsername() {
 
-    viewModel.username.observe(
-      this,
-      {
-        if (it.isNotEmpty()) {
-          getNavigationView().menu.findItem(R.id.menu_item_logout).title =
-            "${getString(R.string.logout_as_user)} $it"
-        }
-      }
-    )
-    viewModel.username.value = secureConfig.retrieveSessionUsername()
+    getNavigationView().menu.findItem(R.id.menu_item_logout).title =
+      "${getString(R.string.logout_as_user)} ${secureConfig.retrieveSessionUsername()}"
   }
 }

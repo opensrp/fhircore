@@ -318,14 +318,9 @@ class PatientListActivityTest : ActivityRobolectricTest() {
     patientListActivity.secureConfig = secureConfig
 
     patientListActivity.setLogoutUsername()
-    patientListActivity.viewModel.username.observe(
-      patientListActivity,
-      {
-        Assert.assertEquals(
-          "${patientListActivity.getString(R.string.logout_as_user)} demo",
-          patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_logout).title
-        )
-      }
+    Assert.assertEquals(
+      "${patientListActivity.getString(R.string.logout_as_user)} demo",
+      patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_logout).title
     )
   }
 
