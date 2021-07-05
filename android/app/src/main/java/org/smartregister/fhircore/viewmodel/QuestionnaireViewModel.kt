@@ -59,7 +59,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
   fun saveBundleResources(bundle: Bundle, resourceId: String? = null) {
     if (!bundle.isEmpty) {
       bundle.entry.forEach { bundleEntry ->
-        if (bundleEntry.hasResource()) {
+        if (resourceId != null && bundleEntry.hasResource()) {
           bundleEntry.resource.id = resourceId
         }
 
@@ -75,24 +75,23 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
         val structureMapId = structureMapUrl?.substringAfterLast("/")
         if (structureMapId != null) {
           structureMap =
-            FhirApplication.fhirEngine(context)
-              .load(StructureMap::class.java, structureMapId)
+            FhirApplication.fhirEngine(context).load(StructureMap::class.java, structureMapId)
         }
-
       }
     }
 
     return structureMap
   }
 
-  fun saveExtractedResources(context: Context, intent: Intent, questionnaireString: String, questionnaireResponse: QuestionnaireResponse) {
+  fun saveExtractedResources(
+    context: Context,
+    intent: Intent,
+    questionnaireString: String,
+    questionnaireResponse: QuestionnaireResponse
+  ) {
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val questionnaire =
-      iParser.parseResource(
-        Questionnaire::class.java,
-        questionnaireString
-      ) as
-              Questionnaire
+      iParser.parseResource(Questionnaire::class.java, questionnaireString) as Questionnaire
 
     val structureMapProvider = { structureMapUrl: String ->
       fetchStructureMap(context, structureMapUrl)
@@ -100,9 +99,10 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     val bundle =
       ResourceMapper.extract(questionnaire, questionnaireResponse, structureMapProvider, context)
 
-    val resourceId = if (intent.hasExtra(PatientDetailFragment.ARG_ITEM_ID)) intent.getStringExtra(
-      PatientDetailFragment.ARG_ITEM_ID
-    ) else null
+    val resourceId =
+      if (intent.hasExtra(PatientDetailFragment.ARG_ITEM_ID))
+        intent.getStringExtra(PatientDetailFragment.ARG_ITEM_ID)
+      else null
 
     saveBundleResources(bundle, resourceId)
   }

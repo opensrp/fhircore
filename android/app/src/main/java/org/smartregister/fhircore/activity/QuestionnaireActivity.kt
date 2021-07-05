@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.activity
 
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.activity.viewModels
@@ -25,20 +23,15 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import com.google.android.fhir.datacapture.mapping.ResourceMapper
-import com.google.android.fhir.datacapture.targetStructureMap
 import kotlinx.android.synthetic.main.activity_patient_detail.view.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
-import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
@@ -71,7 +64,12 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
   }
 
   fun saveExtractedResources(questionnaireResponse: QuestionnaireResponse) {
-    viewModel.saveExtractedResources(this@QuestionnaireActivity,intent, viewModel.questionnaire, questionnaireResponse)
+    viewModel.saveExtractedResources(
+      this@QuestionnaireActivity,
+      intent,
+      viewModel.questionnaire,
+      questionnaireResponse
+    )
     finish()
   }
 

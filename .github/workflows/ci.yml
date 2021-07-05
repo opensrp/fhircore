@@ -33,7 +33,7 @@ jobs:
       run: cd .. && git clone https://github.com/google/android-fhir.git && cd android-fhir && git checkout ek/sdc-structure-map-extraction-implementation
 
     - name: Deploy the latest datacapture
-      run: sed -i 's/data-capture/datacapture/g' datacapture/build.gradle.kts && sed -i 's/0.1.0-alpha02/0.2.6-alpha02/g' datacapture/build.gradle.kts && rm datacapture/src/main/java/org/fhir/ucum/UcumException.kt && ./gradlew :datacapture:publishToMavenLocal && cd ../fhircore-android
+      run: cd ../android-fhir && sed -i 's/data-capture/datacapture/g' datacapture/build.gradle.kts && sed -i 's/0.1.0-alpha02/0.2.6-alpha02/g' datacapture/build.gradle.kts && rm datacapture/src/main/java/org/fhir/ucum/UcumException.kt && ./gradlew :datacapture:publishToMavenLocal && cd ../fhircore
 
     - name: Run unit tests with Gradle
       run: ./gradlew jacocoTestReport --stacktrace
