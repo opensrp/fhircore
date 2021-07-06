@@ -36,13 +36,11 @@ import timber.log.Timber
 
 class BaseViewModel(application: Application, private val fhirEngine: FhirEngine) :
   AndroidViewModel(application) {
-  var covaxClientsCount = MutableLiveData(0)
+  var clientsCount = MutableLiveData(0)
   var selectedLanguage =
     MutableLiveData(
       SharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
     )
-  var username = MutableLiveData("")
-
   lateinit var languageList: List<Language>
 
   fun loadClientCount() {
@@ -57,7 +55,7 @@ class BaseViewModel(application: Application, private val fhirEngine: FhirEngine
           sort(Patient.GIVEN, Order.ASCENDING)
         }
 
-      covaxClientsCount.value = p.size // TODO use a proper count query after Google devs respond
+      clientsCount.value = p.size // TODO use a proper count query after Google devs respond
 
       Timber.d("Loaded %s clients from db", p.size)
     }
