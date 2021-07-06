@@ -20,9 +20,12 @@ import android.app.Activity
 import android.content.Intent
 import android.widget.Button
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
@@ -56,6 +59,8 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
   @Test
   fun testVerifyRecordedVaccineSavedDialogProperty() {
 
+    mockkObject(ResourceMapper)
+
     val questionnaireFragment = mockk<QuestionnaireFragment>()
     val questionnaireResponse = mockk<QuestionnaireResponse>()
     val item = mockk<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
@@ -64,6 +69,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
     val answerItems = listOf(answer)
     val coding = mockk<Coding>()
 
+    every { ResourceMapper.extract(any(), any()) } returns Immunization()
     every { questionnaireFragment.getQuestionnaireResponse() } returns questionnaireResponse
     every { questionnaireResponse.item } returns items
     every { item.answer } returns answerItems

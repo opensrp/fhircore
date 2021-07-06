@@ -45,9 +45,13 @@ class PatientItemViewHolderTest : RobolectricTest() {
   @Test
   fun testVerifyPatientItemData() {
 
-    val itemClickListener = { intention: PatientListFragment.Intention, item: PatientListViewModel.PatientItem -> verifyPatient(item) }
+    val itemClickListener =
+        { intention: PatientListFragment.Intention, item: PatientListViewModel.PatientItem ->
+      verifyPatient(item)
+    }
 
-    val statusObserver = {string: String, observer: Observer<PatientListViewModel.PatientStatus> -> }
+    val statusObserver = { string: String, observer: Observer<PatientListViewModel.PatientStatus> ->
+    }
 
     viewHolder.bindTo(
       PatientListViewModel.PatientItem("1", "Mc Jane", "male", "2000-01-01", "", "1234567", "2"),

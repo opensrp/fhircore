@@ -22,7 +22,9 @@ import android.view.MenuItem
 import android.widget.Button
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.confirmVerified
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
@@ -44,7 +46,7 @@ class PatientDetailActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
     patientDetailActivity =
-      Robolectric.buildActivity(PatientDetailActivity::class.java, null).create().resume().get()
+      Robolectric.buildActivity(PatientDetailActivity::class.java, null).create().get()
   }
 
   @Test
@@ -68,6 +70,14 @@ class PatientDetailActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testVerifyStartedRecordVaccineActivityComponent() {
+    val fragment = spyk(patientDetailActivity.fragment)
+
+    every { fragment.patientId } returns ""
+    every { fragment.doseNumber } returns 0
+    every { fragment.initialDose } returns ""
+
+    patientDetailActivity.fragment = fragment
+
     patientDetailActivity.findViewById<Button>(R.id.btn_record_vaccine).performClick()
 
     val expectedIntent = Intent(patientDetailActivity, RecordVaccineActivity::class.java)

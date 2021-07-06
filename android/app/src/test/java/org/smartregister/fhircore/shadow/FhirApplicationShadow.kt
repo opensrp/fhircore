@@ -16,60 +16,57 @@
 
 package org.smartregister.fhircore.shadow
 
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.DataSource
-import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.OperationOutcome
-import org.hl7.fhir.r4.model.Patient
+import com.google.android.fhir.SyncDownloadContext
+import com.google.android.fhir.db.impl.dao.LocalChangeToken
+import com.google.android.fhir.db.impl.dao.SquashedLocalChange
+import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
 import org.hl7.fhir.r4.model.Resource
 import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
 import org.robolectric.shadows.ShadowApplication
 import org.smartregister.fhircore.FhirApplication
-import org.smartregister.fhircore.data.HapiFhirResourceDataSource
 
 @Implements(FhirApplication::class)
 class FhirApplicationShadow : ShadowApplication() {
-  private val dataSource =
-    object : DataSource {
-      override suspend fun loadData(path: String): Bundle {
-        return Bundle()
-      }
 
-      override suspend fun insert(
-        resourceType: String,
-        resourceId: String,
-        payload: String
-      ): Resource {
-        return Patient()
-      }
+  private val dataMap = mutableMapOf<String, Resource>()
 
-      override suspend fun update(
-        resourceType: String,
-        resourceId: String,
-        payload: String
-      ): OperationOutcome {
-        return OperationOutcome()
-      }
-
-      override suspend fun delete(resourceType: String, resourceId: String): OperationOutcome {
-        return OperationOutcome()
-      }
+  inner class FhirEngineImpl : FhirEngine {
+    override suspend fun count(search: Search): Long {
+      return -1
     }
+
+    override suspend fun <R : Resource> load(clazz: Class<R>, id: String): R {
+      return dataMap[id] as R
+    }
+
+    override suspend fun <R : Resource> remove(clazz: Class<R>, id: String) {
+      dataMap.remove(id)
+    }
+
+    override suspend fun <R : Resource> save(vararg resource: R) {
+      dataMap[resource[0].logicalId] = resource[0]
+    }
+
+    override suspend fun <R : Resource> search(search: Search): List<R> {
+      return mutableListOf()
+    }
+
+    override suspend fun syncDownload(download: suspend (SyncDownloadContext) -> List<Resource>) {}
+
+    override suspend fun syncUpload(
+      upload: suspend (List<SquashedLocalChange>) -> List<LocalChangeToken>
+    ) {}
+
+    override suspend fun <R : Resource> update(resource: R) {
+      dataMap[resource.logicalId] = resource
+    }
+  }
 
   @Implementation
   fun constructFhirEngine(): FhirEngine {
-    val clazz = Class.forName("com.google.android.fhir.FhirServices\$Builder")
-    val constructor = clazz.getDeclaredConstructor(Context::class.java)
-    constructor.isAccessible = true
-    val builder = constructor.newInstance(ApplicationProvider.getApplicationContext())
-    val obj =
-      Class.forName("com.google.android.fhir.FhirServices")
-        .cast(builder.javaClass.getDeclaredMethod("build").invoke(builder))
-    val field = obj?.javaClass?.getDeclaredField("fhirEngine")
-    field?.isAccessible = true
-    return field?.get(obj) as FhirEngine
+    return FhirEngineImpl()
   }
 }

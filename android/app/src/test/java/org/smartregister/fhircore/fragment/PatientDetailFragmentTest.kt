@@ -31,6 +31,7 @@ import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.activity.QuestionnaireActivityTest
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.util.SharedPreferencesHelper
+import org.smartregister.fhircore.viewmodel.PatientListViewModel
 
 @Config(shadows = [FhirApplicationShadow::class])
 class PatientDetailFragmentTest : FragmentRobolectricTest() {
@@ -51,6 +52,8 @@ class PatientDetailFragmentTest : FragmentRobolectricTest() {
 
   @Test
   fun testEditPatientShouldStartQuestionnaireActivity() {
+    patientDetailFragment.viewModel.liveSearchPatient.value =
+      PatientListViewModel.PatientItem("", "", "", "2000-01-01", "", "", "")
     patientDetailFragment.editPatient()
 
     val expectedIntent =
