@@ -23,21 +23,25 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.ResourceNotFoundException
 import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.StringFilterModifier
+import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
-import com.google.android.fhir.sync.SyncConfiguration
-import com.google.android.fhir.sync.SyncData
+import com.google.android.fhir.sync.Sync
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.api.HapiFhirService
+import org.smartregister.fhircore.data.HapiFhirResourceDataSource
 import org.smartregister.fhircore.data.SamplePatients
 import org.smartregister.fhircore.domain.Pagination
 import org.smartregister.fhircore.util.Utils
@@ -76,14 +80,14 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
   fun searchResults(query: String? = null, page: Int = 0, pageSize: Int = 10) {
     viewModelScope.launch {
-      var searchResults: List<Patient> =
+      val searchResults: List<Patient> =
         fhirEngine.search {
           Utils.addBasePatientFilter(this)
 
           apply {
             if (query?.isNotBlank() == true) {
-              filter(Patient.FAMILY) {
-                prefix = ParamPrefixEnum.EQUAL
+              filter(Patient.NAME) {
+                modifier = StringFilterModifier.CONTAINS
                 value = query.trim()
               }
             }
@@ -92,18 +96,10 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
           sort(Patient.GIVEN, Order.ASCENDING)
         }
 
-      searchResults =
-        searchResults.filter { it.nameMatchesFilter(query) || it.idMatchesFilter(query) }
-      var startIndex = page * pageSize
-      startIndex = if (searchResults.size > startIndex) startIndex else 0
-      var endIndex = pageSize + (page * pageSize)
-      endIndex = if (searchResults.size > endIndex) endIndex else searchResults.size
-      searchResults = searchResults.subList(startIndex, endIndex)
-
       liveSearchedPaginatedPatients.value =
         Pair(
           samplePatients.getPatientItems(searchResults),
-          Pagination(totalItems = count(query), pageSize = pageSize, currentPage = page)
+          Pagination(totalItems = count(query).toInt(), pageSize = pageSize, currentPage = page)
         )
     }
   }
@@ -138,17 +134,6 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     return status
   }
 
-  protected fun Patient.nameMatchesFilter(filter: String?): Boolean {
-    return (filter == null ||
-      (!this.name.isEmpty() &&
-        (this.name.first().family.contains(filter, true) ||
-          this.name.first().given?.first()?.asStringValue()?.contains(filter, true) == true)))
-  }
-
-  protected fun Patient.idMatchesFilter(filter: String?): Boolean {
-    return (filter == null || filter.equals(this.idElement.idPart))
-  }
-
   /** Basic search for immunizations */
   fun searchImmunizations(patientId: String? = null) {
     viewModelScope.launch {
@@ -158,28 +143,18 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     }
   }
 
-  /** Returns number of records in database */
-  // TODO This is a wasteful query that will be replaced by implementation of
-  // https://github.com/google/android-fhir/issues/458
-  // https://github.com/opensrp/fhircore/issues/107
-  private suspend fun count(query: String? = null): Int {
-    val searchResults: List<Patient> =
-      fhirEngine.search {
-        Utils.addBasePatientFilter(this)
-
-        apply {
-          if (query?.isNotBlank() == true) {
-            filter(Patient.FAMILY) {
-              prefix = ParamPrefixEnum.EQUAL
-              value = query.trim()
-            }
+  private suspend fun count(query: String? = null): Long {
+    return fhirEngine.count<Patient> {
+      Utils.addBasePatientFilter(this)
+      apply {
+        if (query?.isNotBlank() == true) {
+          filter(Patient.NAME) {
+            modifier = StringFilterModifier.CONTAINS
+            value = query.trim()
           }
         }
-        sort(Patient.GIVEN, Order.ASCENDING)
-        count = 10000
-        from = 0
       }
-    return searchResults.size
+    }
   }
 
   fun getPatientItem(id: String) {
@@ -194,18 +169,21 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
   fun runSync() {
     viewModelScope.launch {
-      fhirEngine.syncUpload()
+      // fhirEngine.syncUpload()
 
       /** Download Immediately from the server */
-      val syncData =
-        listOf(
-          SyncData(
-            resourceType = ResourceType.Patient,
-            params = mapOf("address-city" to "NAIROBI")
+      GlobalScope.launch {
+        Sync.oneTimeSync(
+          fhirEngine,
+          HapiFhirResourceDataSource(
+            HapiFhirService.create(FhirContext.forR4().newJsonParser(), getApplication())
           ),
-          SyncData(resourceType = ResourceType.Immunization)
+          mapOf(
+            ResourceType.Patient to mapOf("address-city" to "NAIROBI"),
+            ResourceType.Immunization to mapOf()
+          )
         )
-      fhirEngine.sync(SyncConfiguration(syncData = syncData))
+      }
     }
   }
 

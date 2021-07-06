@@ -71,7 +71,6 @@ class RecordVaccineActivity : MultiLanguageBaseActivity() {
     }
 
     findViewById<Button>(R.id.btn_record_vaccine).setOnClickListener {
-
       val questionnaireFragment =
         supportFragmentManager.findFragmentByTag(
           QuestionnaireActivity.QUESTIONNAIRE_FRAGMENT_TAG

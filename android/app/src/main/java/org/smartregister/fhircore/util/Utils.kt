@@ -26,8 +26,8 @@ import android.os.LocaleList
 import android.view.MotionEvent
 import android.view.View
 import android.widget.EditText
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.StringFilterModifier
 import java.util.Locale
 import org.hl7.fhir.r4.model.Patient
 import org.joda.time.DateTime
@@ -48,7 +48,7 @@ object Utils {
 
   fun addBasePatientFilter(search: Search) {
     search.filter(Patient.ADDRESS_CITY) {
-      prefix = ParamPrefixEnum.EQUAL
+      modifier = StringFilterModifier.MATCHES_EXACTLY
       value = "NAIROBI"
     }
   }
