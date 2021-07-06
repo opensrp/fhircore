@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.activity
 
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
@@ -37,7 +38,7 @@ import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
-class QuestionnaireActivity : MultiLanguageBaseActivity() {
+class QuestionnaireActivity : MultiLanguageBaseActivity(), View.OnClickListener {
   private val viewModel: QuestionnaireViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,12 +56,7 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
       supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
     }
 
-    findViewById<Button>(R.id.btn_save_client_info).setOnClickListener {
-      val questionnaireFragment =
-        supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
-          QuestionnaireFragment
-      saveExtractedResources(questionnaireFragment.getQuestionnaireResponse())
-    }
+    findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
   }
 
   fun saveExtractedResources(questionnaireResponse: QuestionnaireResponse) {
@@ -187,5 +183,11 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
     const val QUESTIONNAIRE_FILE_PATH_KEY = "questionnaire-file-path-key"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionannire-fragment-tag"
+  }
+
+  override fun onClick(v: View?) {
+    val questionnaireFragment =
+      supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
+    saveExtractedResources(questionnaireFragment.getQuestionnaireResponse())
   }
 }
