@@ -62,24 +62,25 @@ class LoginViewModel(application: Application) :
   private var baseContext: Context = application.baseContext
 
   private var accountManager: AccountManager
+  private var accountHelper: AccountHelper
 
   init {
     Timber.i("Starting auth flow for login")
 
     accountManager = AccountManager.get(application)
+    accountHelper = AccountHelper(baseContext)
 
     if (BuildConfig.DEBUG && BuildConfig.SKIP_AUTH_CHECK) {
       goHome.value = true
-    } else if (AccountHelper(baseContext).isSessionActive(secureConfig.retrieveSessionToken())) {
+    } else if (accountHelper.isSessionActive(secureConfig.retrieveSessionToken())) {
       goHome.value = true
     } else {
-      AccountHelper(baseContext)
-        .loadAccount(
-          accountManager,
-          secureConfig.retrieveSessionUsername(),
-          this,
-          Handler(OnTokenError())
-        )
+      accountHelper.loadAccount(
+        accountManager,
+        secureConfig.retrieveSessionUsername(),
+        this,
+        Handler(OnTokenError())
+      )
     }
   }
 
@@ -106,7 +107,7 @@ class LoginViewModel(application: Application) :
 
     enableLoginButton(false)
 
-    AccountHelper(baseContext).fetchToken(loginUser.username, loginUser.password).enqueue(this)
+    accountHelper.fetchToken(loginUser.username, loginUser.password).enqueue(this)
   }
 
   override fun onResponse(call: Call<OAuthResponse>, response: Response<OAuthResponse>) {
@@ -126,7 +127,7 @@ class LoginViewModel(application: Application) :
       return
     }
 
-    AccountHelper(baseContext).addAuthenticatedAccount(accountManager, response, loginUser.username)
+    accountHelper.addAuthenticatedAccount(accountManager, response, loginUser.username)
 
     val accessToken = response.body()!!.accessToken!!
 
@@ -135,7 +136,7 @@ class LoginViewModel(application: Application) :
     // destroy password
     loginUser.password = charArrayOf()
 
-    AccountHelper(baseContext).getUserInfo().enqueue(OnUserInfoResponse(baseContext))
+    accountHelper.getUserInfo().enqueue(OnUserInfoResponse(baseContext))
 
     goHome.value = true
   }
@@ -185,7 +186,7 @@ class LoginViewModel(application: Application) :
 
     Timber.i("Got token null or empty ${token.isNullOrEmpty()}")
 
-    if (!token.isNullOrEmpty() && AccountHelper(baseContext).isSessionActive(token)) {
+    if (!token.isNullOrEmpty() && accountHelper.isSessionActive(token)) {
       goHome.value = true
     }
   }
