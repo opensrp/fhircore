@@ -18,6 +18,8 @@ package org.smartregister.fhircore.activity
 
 import android.app.Activity
 import android.content.Intent
+import android.widget.Button
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import java.text.SimpleDateFormat
 import kotlinx.coroutines.runBlocking
@@ -30,8 +32,10 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.FhirApplication
+import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
@@ -103,6 +107,17 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       TEST_PATIENT_1.active,
       response.item[0].item[5].answer[0].valueBooleanType.booleanValue()
     )
+  }
+
+  @Test
+  fun testVerifyPatientResourceSaved() {
+    questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).performClick()
+
+    val expectedIntent = Intent(questionnaireActivity, PatientListActivity::class.java)
+    val actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   override fun getActivity(): Activity {

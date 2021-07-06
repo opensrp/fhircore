@@ -21,20 +21,31 @@ import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentFactory
+import androidx.fragment.app.testing.FragmentScenario
+import androidx.fragment.app.testing.launchFragmentInContainer
+import androidx.lifecycle.ViewModelProvider
+import io.mockk.every
+import io.mockk.spyk
+import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.RobolectricTest
 import org.smartregister.fhircore.activity.PatientDetailActivity
 import org.smartregister.fhircore.activity.PatientListActivity
+import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.domain.Pagination
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
+import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
 
 /**
  * The PatientListActivity should be removed from this test in favour FragmentScenario once the
@@ -42,20 +53,39 @@ import org.smartregister.fhircore.viewmodel.PatientListViewModel
  * fragment and activity causing the coupling
  */
 @Config(shadows = [FhirApplicationShadow::class])
-class PatientListFragmentTest : RobolectricTest() {
+class PatientListFragmentTest : FragmentRobolectricTest() {
 
   private lateinit var patientListFragment: PatientListFragment
   private lateinit var patientListActivity: PatientListActivity
+  private lateinit var fragmentScenario: FragmentScenario<PatientListFragment>
+  private lateinit var patientListViewModel: PatientListViewModel
 
   @Before
   fun setUp() {
-    patientListActivity =
-      Robolectric.buildActivity(PatientListActivity::class.java).create().start().resume().get()
+    patientListActivity = Robolectric.buildActivity(PatientListActivity::class.java).create().get()
+    patientListViewModel =
+      ViewModelProvider(
+          patientListActivity,
+          PatientListViewModelFactory(
+            patientListActivity.application,
+            FhirApplication.fhirEngine(patientListActivity)
+          )
+        )
+        .get(PatientListViewModel::class.java)
 
-    patientListFragment = PatientListFragment()
-    val fragmentTransaction = patientListActivity.supportFragmentManager.beginTransaction()
-    fragmentTransaction.add(patientListFragment, "PatientListFragment")
-    fragmentTransaction.commitAllowingStateLoss()
+    fragmentScenario =
+      launchFragmentInContainer(
+        factory =
+          object : FragmentFactory() {
+            override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
+              val fragment = spyk(PatientListFragment())
+              every { fragment.activity } returns patientListActivity
+              return fragment
+            }
+          }
+      )
+
+    fragmentScenario.onFragment { patientListFragment = it }
   }
 
   @Test
@@ -95,6 +125,9 @@ class PatientListFragmentTest : RobolectricTest() {
   fun testEmptyListMessageWithZeroClients() {
     shadowOf(Looper.getMainLooper()).idle()
 
+    patientListFragment.setData(
+      Pair(mutableListOf(), Pagination(totalItems = 1, pageSize = 5, currentPage = 1))
+    )
     val container = getView<LinearLayout>(R.id.empty_list_message_container)
     val buttonLayout =
       getView<Button>(R.id.btn_register_new_patient).layoutParams as RelativeLayout.LayoutParams
@@ -123,6 +156,9 @@ class PatientListFragmentTest : RobolectricTest() {
     patientListFragment.patientListViewModel.liveSearchedPaginatedPatients.value =
       Pair(mutableListOf(patient), Pagination(totalItems = 1, pageSize = 5, currentPage = 1))
 
+    patientListFragment.setData(
+      Pair(mutableListOf(patient), Pagination(totalItems = 1, pageSize = 5, currentPage = 1))
+    )
     val container = getView<LinearLayout>(R.id.empty_list_message_container)
     val buttonLayout =
       getView<Button>(R.id.btn_register_new_patient).layoutParams as RelativeLayout.LayoutParams
@@ -134,7 +170,37 @@ class PatientListFragmentTest : RobolectricTest() {
     )
   }
 
+  @Test
+  fun testVerifySyncResource() {
+
+    val patientListViewModelSpy = spyk(patientListViewModel)
+    patientListFragment.patientListViewModel = patientListViewModelSpy
+
+    val btnSync = getView<View>(R.id.tv_sync)
+    btnSync.performClick()
+
+    every { patientListViewModelSpy.searchResults(pageSize = any()) } returns Unit
+    every { patientListViewModelSpy.syncUpload() } returns Unit
+
+    verify(exactly = 1) { patientListViewModelSpy.searchResults(pageSize = any()) }
+    verify(exactly = 1) { patientListViewModelSpy.syncUpload() }
+
+    patientListFragment.patientListViewModel = patientListViewModel
+  }
+
   private fun <T : View?> getView(id: Int): T {
     return patientListFragment.requireActivity().findViewById<T>(id)
+  }
+
+  override fun getFragmentScenario(): FragmentScenario<out Fragment> {
+    return fragmentScenario
+  }
+
+  companion object {
+    @JvmStatic
+    @BeforeClass
+    fun beforeClass() {
+      FakeKeyStore.setup
+    }
   }
 }

@@ -56,15 +56,20 @@
     <string name="client_info">Client info</string>
     <string name="last_seen_date">Last seen 29-3-2021</string>
     <string name="last_sync_timestamp">Last 05:30 PM, Mar 3</string>
-    <string name="logout_as_user">Log out as Francis</string>
+    <string name="logout_as_user">Log out as </string>
     <string name="registered_date">Registered 20-01-2021</string>
 
-    <string name="login_button_txt">Login</string>
+    <string name="login_text">Login</string>
+    <string name="logout_text">Logout</string>
     <string name="username_input_hint">Enter username</string>
     <string name="password_input_hint">Enter password</string>
     <string name="show_password_button_hint">Show password</string>
     <string name="login_error_message">Invalid username or password</string>
     <string name="login_call_fail_error_message">Failed to verify credentials from server. Check your internet connection</string>
     <string name="userinfo_call_fail_error_message">Failed to get user info from server. Check your internet connection</string>
+    <string name="done">Done</string>
+    <string name="second_dose_due_at"> Second dose due on %1$s</string>
+    <string name="ordinal_vaccine_dose_recorded">%1$s 1st dose recorded</string>
+    <string name="please_select_vaccine">Please Select Vaccine</string>
 
 </resources>

@@ -41,6 +41,7 @@ class BaseViewModel(application: Application, private val fhirEngine: FhirEngine
     MutableLiveData(
       SharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
     )
+  var username = MutableLiveData("")
 
   lateinit var languageList: List<Language>
 

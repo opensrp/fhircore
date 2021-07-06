@@ -16,12 +16,12 @@
 
 package org.smartregister.fhircore.activity
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import com.google.android.fhir.datacapture.QuestionnaireFragment
@@ -34,6 +34,7 @@ const val USER_ID = "user_id"
 class RecordVaccineActivity : MultiLanguageBaseActivity() {
 
   private val viewModel: QuestionnaireViewModel by viewModels()
+  private lateinit var fragment: QuestionnaireFragment
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -46,7 +47,7 @@ class RecordVaccineActivity : MultiLanguageBaseActivity() {
 
     // Only add the fragment once, when the activity is first created.
     if (savedInstanceState == null) {
-      val fragment = QuestionnaireFragment()
+      fragment = QuestionnaireFragment()
       fragment.arguments =
         bundleOf(QuestionnaireFragment.BUNDLE_KEY_QUESTIONNAIRE to viewModel.questionnaire)
 
@@ -56,16 +57,11 @@ class RecordVaccineActivity : MultiLanguageBaseActivity() {
     }
 
     findViewById<Button>(R.id.btn_record_vaccine).setOnClickListener {
-      val questionnaireFragment =
-        supportFragmentManager.findFragmentByTag(
-          QuestionnaireActivity.QUESTIONNAIRE_FRAGMENT_TAG
-        ) as
-          QuestionnaireFragment
-      val vaccineSelected = questionnaireFragment.getQuestionnaireResponse()
+      val vaccineSelected = fragment.getQuestionnaireResponse()
       try {
         showVaccineRecordDialog(vaccineSelected.item[0].answer[0].valueCoding.code)
       } catch (e: IndexOutOfBoundsException) {
-        Toast.makeText(this, "Please Select Vaccine", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, R.string.please_select_vaccine, Toast.LENGTH_SHORT).show()
       }
     }
   }
@@ -88,12 +84,13 @@ class RecordVaccineActivity : MultiLanguageBaseActivity() {
 
     val builder = AlertDialog.Builder(this)
     // set title for alert dialog
-    builder.setTitle("$vaccineName 1st dose recorded")
+    builder.setTitle(this.getString(R.string.ordinal_vaccine_dose_recorded, vaccineName))
+
     // set message for alert dialog
-    builder.setMessage("Second dose due at 27-04-2021")
+    builder.setMessage(this.getString(R.string.second_dose_due_at, "27-04-2021"))
 
     // performing negative action
-    builder.setNegativeButton("Done") { dialogInterface, _ ->
+    builder.setNegativeButton(R.string.done) { dialogInterface, _ ->
       dialogInterface.dismiss()
       finish()
     }

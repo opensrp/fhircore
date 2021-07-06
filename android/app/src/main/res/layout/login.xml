@@ -76,7 +76,7 @@
             android:id="@+id/login_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/login_button_txt"
+            android:text="@string/login_text"
             android:enabled="@{usr.allowLogin}"
             android:background="@{usr.allowLogin ? @color/colorAccent : @color/light_gray}"
             android:textColor="@color/white"
@@ -93,7 +93,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center|center_vertical"
-            android:text="Powerd by" />
+            android:text="" />
 
         <ImageView
             android:id="@+id/imageView"

@@ -16,7 +16,9 @@
 
 package org.smartregister.fhircore.activity
 
+import android.accounts.AccountManager
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
@@ -26,7 +28,6 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.annotation.IdRes
 import androidx.annotation.VisibleForTesting
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -36,6 +37,8 @@ import com.google.android.material.navigation.NavigationView
 import java.util.Locale
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.auth.account.AccountHelper
+import org.smartregister.fhircore.auth.secure.SecureConfig
 import org.smartregister.fhircore.domain.Language
 import org.smartregister.fhircore.util.SharedPreferencesHelper
 import org.smartregister.fhircore.util.Utils
@@ -45,6 +48,8 @@ import timber.log.Timber
 abstract class BaseSimpleActivity :
   MultiLanguageBaseActivity(), NavigationView.OnNavigationItemSelectedListener {
   lateinit var viewModel: BaseViewModel
+  lateinit var accountHelper: AccountHelper
+  lateinit var secureConfig: SecureConfig
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -68,6 +73,12 @@ abstract class BaseSimpleActivity :
       ViewModelProvider(this, BaseViewModel.BaseViewModelFactory(application, fhirEngine))
         .get(BaseViewModel::class.java)
 
+    Timber.d("setting account helper")
+    accountHelper = AccountHelper(this)
+
+    Timber.d("setting secure config")
+    secureConfig = SecureConfig(this)
+
     Timber.d("Now setting drawer")
     setupDrawer()
 
@@ -76,6 +87,7 @@ abstract class BaseSimpleActivity :
 
     loadCounts()
     loadLanguages()
+    setLogoutUsername()
   }
 
   abstract fun getContentLayout(): Int
@@ -95,6 +107,10 @@ abstract class BaseSimpleActivity :
       R.id.menu_item_language -> {
         renderSelectLanguageDialog(this)
       }
+      R.id.menu_item_logout -> {
+        accountHelper.logout(AccountManager.get(this))
+        getDrawerLayout().closeDrawer(GravityCompat.START)
+      }
     }
 
     return true
@@ -108,21 +124,25 @@ abstract class BaseSimpleActivity :
 
   @VisibleForTesting fun getLanguageDialogTitle() = this.getString(R.string.select_language)
 
-  fun renderSelectLanguageDialog(context: Activity) {
+  fun renderSelectLanguageDialog(context: Activity): AlertDialog {
 
     val adapter: ArrayAdapter<Language> = getLanguageArrayAdapter()
 
     val builder: AlertDialog.Builder = getAlertDialogBuilder()
     builder.setTitle(getLanguageDialogTitle())
     builder.setIcon(R.drawable.outline_language_black_48)
-    builder
-      .setAdapter(adapter) { _, i ->
-        val language = viewModel.languageList[i]
+    val dialog =
+      builder
+        .setAdapter(adapter) { _, i ->
+          val language = viewModel.languageList[i]
 
-        refreshSelectedLanguage(language, context)
-      }
-      .create()
-      .show()
+          refreshSelectedLanguage(language, context)
+        }
+        .create()
+
+    dialog.show()
+
+    return dialog
   }
 
   fun refreshSelectedLanguage(language: Language, context: Activity) {
@@ -189,5 +209,19 @@ abstract class BaseSimpleActivity :
 
   private fun loadLanguages() {
     viewModel.loadLanguages()
+  }
+
+  fun setLogoutUsername() {
+
+    viewModel.username.observe(
+      this,
+      {
+        if (it.isNotEmpty()) {
+          getNavigationView().menu.findItem(R.id.menu_item_logout).title =
+            "${getString(R.string.logout_as_user)} $it"
+        }
+      }
+    )
+    viewModel.username.value = secureConfig.retrieveSessionUsername()
   }
 }

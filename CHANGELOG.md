@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Gender input changed to radio selection on client info screen
 - Display message on empty list along with new client register button
 - Client count display in drawer
+- Login and Keycloak authentication for FHIR APIs
+- Added user logout functionality
 
 ### Fixed
 
