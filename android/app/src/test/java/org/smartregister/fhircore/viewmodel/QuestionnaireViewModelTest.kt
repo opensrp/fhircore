@@ -16,24 +16,39 @@
 
 package org.smartregister.fhircore.viewmodel
 
+import android.content.Intent
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.core.app.ApplicationProvider
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
+import com.google.android.fhir.FhirEngine
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
+import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Expression
+import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.RobolectricTest
+import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 03-07-2021. */
@@ -109,7 +124,66 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals(resourceId, resource.captured.id)
   }
 
-  @Test fun fetchStructureMap() {}
+  @Test
+  fun `fetchStructureMap() should call fhirEngine load and parse out the resourceId`() {
+    val structureMap = StructureMap()
+    val structureMapIdSlot = slot<String>()
 
-  @Test fun saveExtractedResources() {}
+    val fhirEngineMock = mockk<FhirEngine>()
+    ReflectionHelpers.setField(
+      FhirApplication.getContext(),
+      "fhirEngine\$delegate",
+      lazy { fhirEngineMock }
+    )
+
+    coEvery { fhirEngineMock.load(any<Class<StructureMap>>(), any()) } returns structureMap
+
+    questionnaireViewModel.fetchStructureMap(
+      ApplicationProvider.getApplicationContext(),
+      "https://someorg.org/StructureMap/678934"
+    )
+
+    coVerify(exactly = 1) {
+      fhirEngineMock.load(any<Class<StructureMap>>(), capture(structureMapIdSlot))
+    }
+
+    Assert.assertEquals("678934", structureMapIdSlot.captured)
+  }
+
+  @Test
+  fun `saveExtractedResources() should call saveBundleResources and pass intent extra resourceId`() {
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val questionnaire = Questionnaire()
+    questionnaire.extension.add(
+      Extension(
+        "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+        Expression().apply {
+          language = "application/x-fhir-query"
+          expression = "Patient"
+        }
+      )
+    )
+    val questionnaireString = iParser.encodeResourceToString(questionnaire)
+    val questionnaireResponse = QuestionnaireResponse()
+    val intent = Intent()
+    val resourceId = "0993ldsfkaljlsnldm"
+    intent.putExtra(PatientDetailFragment.ARG_ITEM_ID, resourceId)
+
+    val resourceIdSlot = slot<String>()
+
+    every { questionnaireViewModel.saveBundleResources(any(), any()) } just runs
+
+    questionnaireViewModel.saveExtractedResources(
+      ApplicationProvider.getApplicationContext(),
+      intent,
+      questionnaireString,
+      questionnaireResponse
+    )
+
+    coVerify(exactly = 1) {
+      questionnaireViewModel.saveBundleResources(any(), capture(resourceIdSlot))
+    }
+
+    Assert.assertEquals(resourceId, resourceIdSlot.captured)
+  }
 }

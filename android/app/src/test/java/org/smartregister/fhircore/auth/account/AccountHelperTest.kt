@@ -33,20 +33,18 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.BuildConfig
+import org.smartregister.fhircore.RobolectricTest
 import org.smartregister.fhircore.api.OAuthService
 import org.smartregister.fhircore.auth.OAuthResponse
-import org.smartregister.fhircore.robolectric.FhircoreTestRunner
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
 
-@RunWith(FhircoreTestRunner::class)
 @Config(shadows = [FhirApplicationShadow::class])
-class AccountHelperTest {
+class AccountHelperTest : RobolectricTest() {
   private var mockOauthService: OAuthService? = null
   private lateinit var accountHelper: AccountHelper
 
