@@ -28,12 +28,10 @@ import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.BooleanType
-import org.hl7.fhir.r4.model.DateType
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
@@ -51,8 +49,18 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
     // Only add the fragment once, when the activity is first created.
     if (savedInstanceState == null) {
       val fragment = QuestionnaireFragment()
-      fragment.arguments =
-        bundleOf(QuestionnaireFragment.BUNDLE_KEY_QUESTIONNAIRE to getQuestionnaire())
+
+      intent.getStringExtra(PatientDetailFragment.ARG_ITEM_ID)?.let {
+        fragment.arguments =
+          bundleOf(
+            QuestionnaireFragment.BUNDLE_KEY_QUESTIONNAIRE to viewModel.questionnaire,
+            QuestionnaireFragment.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE to getQuestionnaireResponse()
+          )
+      }
+        ?: kotlin.run {
+          fragment.arguments =
+            bundleOf(QuestionnaireFragment.BUNDLE_KEY_QUESTIONNAIRE to viewModel.questionnaire)
+        }
 
       supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
     }
@@ -85,7 +93,8 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
     this.startActivity(Intent(this, PatientListActivity::class.java))
   }
 
-  private fun getQuestionnaire(): String {
+  private fun getQuestionnaireResponse(): String {
+    var response = QuestionnaireResponse()
     val questionnaire =
       FhirContext.forR4().newJsonParser().parseResource(viewModel.questionnaire) as Questionnaire
 
@@ -96,80 +105,20 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
       }
 
       patient?.let {
-
-        // set first name
-        questionnaire.find("PR-name-text")?.apply {
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent()
-                .setValue(StringType(it.name[0].given[0].value))
-            )
-        }
-
-        // set family name
-        questionnaire.find("PR-name-family")?.apply {
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent()
-                .setValue(StringType(it.name[0].family))
-            )
-        }
-
-        // set birthdate
-        questionnaire.find("patient-0-birth-date")?.apply {
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent().setValue(DateType(it.birthDate))
-            )
-        }
-
-        // set gender
-        questionnaire.find("patient-0-gender")?.apply {
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent()
-                .setValue(StringType(it.gender.toCode()))
-            )
-        }
-
-        // set telecom
-        questionnaire.find("PR-telecom-value")?.apply {
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent()
-                .setValue(StringType(it.telecom[0].value))
-            )
-        }
-
-        // set city
-        questionnaire.find("PR-address-city")?.apply {
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent()
-                .setValue(StringType(it.address[0].city))
-            )
-        }
-
-        // set country
-        questionnaire.find("PR-address-country")?.apply {
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent()
-                .setValue(StringType(it.address[0].country))
-            )
-        }
-
-        // set is-active
-        questionnaire.find("PR-active")?.apply {
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent().setValue(BooleanType(it.active))
-            )
+        response = ResourceMapper.populate(questionnaire, it)
+        response.find("patient-0-gender")?.apply {
+          if (answer?.singleOrNull()?.value.toString() == "male") {
+            val genderCoding = Coding("", "male", "Male")
+            answer[0].value = genderCoding
+          } else {
+            val genderCoding = Coding("", "female", "Female")
+            answer[0].value = genderCoding
+          }
         }
       }
     }
 
-    return FhirContext.forR4().newJsonParser().encodeResourceToString(questionnaire)
+    return FhirContext.forR4().newJsonParser().encodeResourceToString(response)
   }
 
   private fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {
@@ -193,6 +142,31 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
     }
 
     return result
+  }
+
+  private fun List<QuestionnaireResponse.QuestionnaireResponseItemComponent>.find(
+    linkId: String,
+    default: QuestionnaireResponse.QuestionnaireResponseItemComponent?
+  ): QuestionnaireResponse.QuestionnaireResponseItemComponent? {
+    var result = default
+    run loop@{
+      forEach {
+        if (it.linkId == linkId) {
+          result = it
+          return@loop
+        } else if (it.item.isNotEmpty()) {
+          result = it.item.find(linkId, result)
+        }
+      }
+    }
+
+    return result
+  }
+
+  private fun QuestionnaireResponse.find(
+    linkId: String
+  ): QuestionnaireResponse.QuestionnaireResponseItemComponent? {
+    return item.find(linkId, null)
   }
 
   companion object {

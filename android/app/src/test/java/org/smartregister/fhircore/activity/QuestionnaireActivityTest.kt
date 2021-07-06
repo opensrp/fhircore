@@ -24,6 +24,7 @@ import com.google.android.fhir.datacapture.QuestionnaireFragment
 import java.text.SimpleDateFormat
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
@@ -65,7 +66,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testVerifyPrePopulatedQuestionnaire() {
+  fun testVerifyQuestionnaireResponse() {
     val fragment =
       questionnaireActivity.supportFragmentManager.findFragmentByTag(
         QuestionnaireActivity.QUESTIONNAIRE_FRAGMENT_TAG
@@ -89,7 +90,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     )
     Assert.assertEquals(
       TEST_PATIENT_1.gender.toCode(),
-      response.item[0].item[2].answer[0].value.toString()
+      (response.item[0].item[2].answer[0].value as Coding).code
     )
     Assert.assertEquals(
       TEST_PATIENT_1.telecom[0].value,
