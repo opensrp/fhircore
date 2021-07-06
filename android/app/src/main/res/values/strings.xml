@@ -50,7 +50,7 @@
     <string name="record_vaccine">Record Vaccine</string>
     <string name="no_vaccine_received">No vaccine received</string>
     <string name="view_registration_details">View Registration Details</string>
-    <string name="covax_client">COVAX clients</string>
+    <string name="client">COVAX clients</string>
     <string name="show_overdue">Show overdue</string>
     <string name="record_vaccine_nl">Record\nvaccine</string>
     <string name="client_info">Client info</string>
