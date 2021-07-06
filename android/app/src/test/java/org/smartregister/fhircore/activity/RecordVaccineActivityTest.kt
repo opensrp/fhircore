@@ -46,7 +46,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
       Intent().apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
-        putExtra(USER_ID, "1")
+        putExtra(PATIENT_ID, "1")
       }
 
     recordVaccineActivity =

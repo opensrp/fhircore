@@ -21,6 +21,7 @@ import android.content.Intent
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilter
+import com.google.android.fhir.search.StringFilterModifier
 import io.mockk.mockkClass
 import io.mockk.slot
 import io.mockk.verify
@@ -80,7 +81,7 @@ class UtilsTest : RobolectricTest() {
 
     Assert.assertEquals(1, filterList.size)
     Assert.assertEquals(Patient.ADDRESS_CITY, filterList[0].parameter)
-    Assert.assertEquals(ParamPrefixEnum.EQUAL, filterList[0].prefix)
+    Assert.assertEquals(StringFilterModifier.CONTAINS, filterList[0].modifier)
     Assert.assertEquals("NAIROBI", filterList[0].value)
   }
 
