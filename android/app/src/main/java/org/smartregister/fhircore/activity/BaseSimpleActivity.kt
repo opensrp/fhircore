@@ -202,7 +202,6 @@ abstract class BaseSimpleActivity :
     )
   }
 
-  // TODO look into ways on how to improve performance for this
   private fun loadCounts() {
     viewModel.loadClientCount()
   }

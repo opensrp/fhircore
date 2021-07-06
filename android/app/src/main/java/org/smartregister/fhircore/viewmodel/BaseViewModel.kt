@@ -23,8 +23,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Order
-import com.google.android.fhir.search.search
+import com.google.android.fhir.search.count
 import java.util.Locale
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
@@ -49,17 +48,10 @@ class BaseViewModel(application: Application, private val fhirEngine: FhirEngine
     Timber.d("Loading client counts")
 
     viewModelScope.launch {
-      val p: List<Patient> =
-        fhirEngine.search {
-          Utils.addBasePatientFilter(this)
+      val count = fhirEngine.count<Patient> { Utils.addBasePatientFilter(this) }.toInt()
+      covaxClientsCount.value = count
 
-          apply {}
-          sort(Patient.GIVEN, Order.ASCENDING)
-        }
-
-      covaxClientsCount.value = p.size // TODO use a proper count query after Google devs respond
-
-      Timber.d("Loaded %s clients from db", p.size)
+      Timber.d("Loaded %s clients from db", count)
     }
   }
 

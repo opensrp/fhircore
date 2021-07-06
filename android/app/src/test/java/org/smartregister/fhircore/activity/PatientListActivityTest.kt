@@ -21,9 +21,12 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.view.MenuItem
 import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import io.mockk.every
 import io.mockk.mockk
@@ -45,6 +48,7 @@ import org.smartregister.fhircore.auth.account.AccountHelper
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.auth.secure.SecureConfig
 import org.smartregister.fhircore.domain.Language
+import org.smartregister.fhircore.fragment.PatientListFragment
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
 @Config(shadows = [FhirApplicationShadow::class])
@@ -64,6 +68,50 @@ class PatientListActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testVerifyPatientSearchEditTextDrawables() {
+    val editText = patientListActivity.findViewById<EditText>(R.id.edit_text_search)
+
+    Assert.assertNotNull(editText)
+    Assert.assertNull(editText.compoundDrawables[0])
+
+    editText.setText("")
+    Assert.assertNotNull(editText.compoundDrawables[0])
+
+    editText.setText("demo")
+    Assert.assertNull(editText.compoundDrawables[0])
+    Assert.assertNotNull(editText.compoundDrawables[2])
+  }
+
+  @Test
+  fun testVerifyPatientListPagerAdapterProperties() {
+    val adapter =
+      patientListActivity.findViewById<ViewPager2>(R.id.patient_list_pager).adapter as
+        FragmentStateAdapter
+
+    Assert.assertEquals(1, adapter.itemCount)
+    Assert.assertEquals(
+      PatientListFragment::class.java.simpleName,
+      adapter.createFragment(0).javaClass.simpleName
+    )
+  }
+
+  @Test
+  fun testVerifyAddPatientStartedActivity() {
+    patientListActivity.findViewById<Button>(R.id.btn_register_new_patient).performClick()
+
+    val expectedIntent = Intent(patientListActivity, QuestionnaireActivity::class.java)
+    val actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testGetContentLayoutShouldReturnActivityListLayout() {
+    Assert.assertEquals(R.layout.activity_patient_list, patientListActivity.getContentLayout())
+  }
+
+  @Test
   fun testPatientLayoutShouldNotBeNull() {
     Assert.assertEquals(R.layout.activity_patient_list, patientListActivity.getContentLayout())
   }
@@ -71,41 +119,37 @@ class PatientListActivityTest : ActivityRobolectricTest() {
   @Test
   fun testPatientCountShouldBeEmptyWithZeroClients() {
 
-    patientListActivity.viewModel.covaxClientsCount.observe(
-      patientListActivity,
-      {
-        val countItem =
-          patientListActivity
-            .getNavigationView()
-            .menu
-            .findItem(R.id.menu_item_clients)
-            .actionView as
-            TextView
-        Assert.assertEquals("", countItem.text)
-      }
-    )
+    val method =
+      patientListActivity.javaClass.superclass?.getDeclaredMethod(
+        "setMenuCounter",
+        Int::class.java,
+        Int::class.java
+      )
+    method?.isAccessible = true
+    method?.invoke(patientListActivity, R.id.menu_item_clients, 0)
 
-    patientListActivity.viewModel.covaxClientsCount.value = 0
+    val countItem =
+      patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_clients).actionView as
+        TextView
+    Assert.assertEquals("", countItem.text)
   }
 
   @Test
   fun testPatientCountShouldNotBeEmptyWithNonZeroClients() {
 
-    patientListActivity.viewModel.covaxClientsCount.observe(
-      patientListActivity,
-      {
-        val countItem =
-          patientListActivity
-            .getNavigationView()
-            .menu
-            .findItem(R.id.menu_item_clients)
-            .actionView as
-            TextView
-        Assert.assertEquals("2", countItem.text)
-      }
-    )
+    val method =
+      patientListActivity.javaClass.superclass?.getDeclaredMethod(
+        "setMenuCounter",
+        Int::class.java,
+        Int::class.java
+      )
+    method?.isAccessible = true
+    method?.invoke(patientListActivity, R.id.menu_item_clients, 2)
 
-    patientListActivity.viewModel.covaxClientsCount.value = 2
+    val countItem =
+      patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_clients).actionView as
+        TextView
+    Assert.assertEquals("2", countItem.text)
   }
 
   @Test

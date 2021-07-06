@@ -17,8 +17,10 @@
 package org.smartregister.fhircore.activity
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Looper.getMainLooper
 import android.widget.Button
+import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
@@ -26,6 +28,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.auth.secure.Credentials
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
@@ -125,6 +128,15 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
     val result = loginActivity.viewModel.allowLocalLogin()
     Assert.assertTrue(result)
+  }
+
+  @Test
+  fun testVerifyStartedActivity() {
+    loginActivity.viewModel.goHome.value = true
+    val expectedIntent = Intent(loginActivity, PatientListActivity::class.java)
+    val actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   override fun getActivity(): Activity {
