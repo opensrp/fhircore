@@ -19,11 +19,16 @@ package org.smartregister.fhircore.activity
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.os.SystemClock
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -69,7 +74,11 @@ class PatientListActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testVerifyPatientSearchEditTextDrawables() {
+    val drawerLayout = patientListActivity.findViewById<DrawerLayout>(R.id.drawer_layout)
     val editText = patientListActivity.findViewById<EditText>(R.id.edit_text_search)
+
+    Assert.assertNotNull(drawerLayout)
+    Assert.assertFalse(drawerLayout.isDrawerOpen(GravityCompat.START))
 
     Assert.assertNotNull(editText)
     Assert.assertNull(editText.compoundDrawables[0])
@@ -80,6 +89,21 @@ class PatientListActivityTest : ActivityRobolectricTest() {
     editText.setText("demo")
     Assert.assertNull(editText.compoundDrawables[0])
     Assert.assertNotNull(editText.compoundDrawables[2])
+
+    val motionEvent =
+      MotionEvent.obtain(
+        SystemClock.uptimeMillis(),
+        SystemClock.uptimeMillis() + 100,
+        MotionEvent.ACTION_UP,
+        0f,
+        0f,
+        0
+      )
+    editText.dispatchTouchEvent(motionEvent)
+    Assert.assertTrue(editText.text.isEmpty())
+
+    patientListActivity.findViewById<ImageButton>(R.id.btn_drawer_menu).performClick()
+    Assert.assertTrue(drawerLayout.isDrawerOpen(GravityCompat.START))
   }
 
   @Test

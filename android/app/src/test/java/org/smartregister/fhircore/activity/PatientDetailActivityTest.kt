@@ -18,6 +18,7 @@ package org.smartregister.fhircore.activity
 
 import android.app.Activity
 import android.content.Intent
+import android.view.MenuInflater
 import android.view.MenuItem
 import android.widget.Button
 import androidx.test.core.app.ApplicationProvider
@@ -85,6 +86,25 @@ class PatientDetailActivityTest : ActivityRobolectricTest() {
       shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testOnCreateOptionsMenuShouldReturnTrue() {
+    val spy = spyk(patientDetailActivity)
+    val menuInflater = mockk<MenuInflater>()
+
+    every { spy.menuInflater } returns menuInflater
+    every { menuInflater.inflate(any(), any()) } returns Unit
+
+    Assert.assertTrue(spy.onCreateOptionsMenu(null))
+  }
+
+  @Test
+  fun testOnOptionsItemSelectedShouldReturnFalse() {
+    val menuItem = mockk<MenuItem>()
+
+    every { menuItem.itemId } returns 0
+    Assert.assertFalse(patientDetailActivity.onOptionsItemSelected(menuItem))
   }
 
   override fun getActivity(): Activity {
