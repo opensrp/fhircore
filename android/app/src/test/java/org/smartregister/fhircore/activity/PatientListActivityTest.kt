@@ -94,11 +94,13 @@ class PatientListActivityTest : ActivityRobolectricTest() {
       MotionEvent.obtain(
         SystemClock.uptimeMillis(),
         SystemClock.uptimeMillis() + 100,
-        MotionEvent.ACTION_UP,
+        MotionEvent.ACTION_DOWN,
         0f,
         0f,
         0
       )
+    editText.dispatchTouchEvent(motionEvent)
+    motionEvent.action = MotionEvent.ACTION_UP
     editText.dispatchTouchEvent(motionEvent)
     Assert.assertTrue(editText.text.isEmpty())
 

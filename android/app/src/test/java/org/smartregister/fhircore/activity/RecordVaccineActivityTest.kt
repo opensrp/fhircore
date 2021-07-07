@@ -24,8 +24,13 @@ import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import java.lang.IndexOutOfBoundsException
+import java.util.Date
+import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
@@ -33,9 +38,12 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.shadows.ShadowAlertDialog
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.util.Utils
 
 @Config(shadows = [FhirApplicationShadow::class])
 class RecordVaccineActivityTest : ActivityRobolectricTest() {
@@ -50,6 +58,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
         putExtra(PATIENT_ID, "1")
+        putExtra(INITIAL_DOSE, "dummy")
       }
 
     recordVaccineActivity =
@@ -72,7 +81,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
     every { ResourceMapper.extract(any(), any()) } returns Immunization()
     every { questionnaireFragment.getQuestionnaireResponse() } returns questionnaireResponse
     every { questionnaireResponse.item } returns items
-    every { item.answer } returns answerItems
+    every { item.answer } throws IndexOutOfBoundsException()
     every { answer.valueCoding } returns coding
     every { coding.code } returns "dummy"
 
@@ -81,11 +90,86 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
     fragmentField.set(recordVaccineActivity, questionnaireFragment)
 
     recordVaccineActivity.findViewById<Button>(R.id.btn_record_vaccine).performClick()
+    Assert.assertNull(ShadowAlertDialog.getLatestAlertDialog())
+
+    every { item.answer } returns answerItems
+    recordVaccineActivity.findViewById<Button>(R.id.btn_record_vaccine).performClick()
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    val vaccineDate = DateTimeType.today().toHumanDisplay()
+    val nextVaccineDate = Utils.addDays(vaccineDate, 28)
 
     Assert.assertNotNull(dialog)
     Assert.assertEquals("dummy 1st dose recorded", dialog.title)
-    Assert.assertEquals("Second dose due on 27-04-2021", dialog.message)
+    Assert.assertEquals("Dose 2 due $nextVaccineDate", dialog.message)
+  }
+
+  @Test
+  fun testShowVaccineRecordDialogVerifyAllOptions() {
+
+    val immunization =
+      Immunization().apply {
+        recorded = Date()
+        vaccineCode =
+          CodeableConcept().apply {
+            this.text = "dummy"
+            this.coding = listOf(Coding("", "dummy", "dummy"))
+          }
+        occurrence = DateTimeType.today()
+
+        protocolApplied =
+          listOf(
+            Immunization.ImmunizationProtocolAppliedComponent().apply {
+              doseNumber = PositiveIntType(1)
+            }
+          )
+      }
+
+    val vaccineDate = immunization.occurrenceDateTimeType.toHumanDisplay()
+    val nextVaccineDate = Utils.addDays(vaccineDate, 28)
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      recordVaccineActivity,
+      "showVaccineRecordDialog",
+      ReflectionHelpers.ClassParameter.from(Immunization::class.java, immunization)
+    )
+    val firstDialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    Assert.assertNotNull(firstDialog)
+    Assert.assertEquals("dummy 1st dose recorded", firstDialog.title)
+    Assert.assertEquals("Dose 2 due $nextVaccineDate", firstDialog.message)
+
+    immunization.protocolApplied[0].doseNumber = PositiveIntType(2)
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      recordVaccineActivity,
+      "showVaccineRecordDialog",
+      ReflectionHelpers.ClassParameter.from(Immunization::class.java, immunization)
+    )
+    val secondDialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    Assert.assertNotNull(secondDialog)
+    Assert.assertEquals("dummy 1st dose recorded", secondDialog.title)
+    Assert.assertEquals("Fully vaccinated", secondDialog.message)
+
+    immunization.vaccineCode.coding[0].code = "another_dose"
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      recordVaccineActivity,
+      "showVaccineRecordDialog",
+      ReflectionHelpers.ClassParameter.from(Immunization::class.java, immunization)
+    )
+    val thirdDialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    Assert.assertNotNull(thirdDialog)
+    Assert.assertEquals("Initially  received dummy", thirdDialog.title)
+    Assert.assertEquals("Second vaccine dose should be same as first", thirdDialog.message)
+  }
+
+  @Test
+  fun testOnOptionsItemSelectedShouldReturnExpectedBoolean() {
+    Assert.assertTrue(recordVaccineActivity.onOptionsItemSelected(RoboMenuItem(android.R.id.home)))
+    Assert.assertFalse(recordVaccineActivity.onOptionsItemSelected(RoboMenuItem()))
   }
 
   override fun getActivity(): Activity {

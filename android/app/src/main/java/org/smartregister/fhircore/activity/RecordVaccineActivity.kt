@@ -154,9 +154,6 @@ class RecordVaccineActivity : MultiLanguageBaseActivity() {
     // set message for alert dialog
     builder.setMessage(msgText)
 
-    // set message for alert dialog
-    builder.setMessage(this.getString(R.string.second_dose_due_at, "27-04-2021"))
-
     // performing negative action
     builder.setNegativeButton(R.string.done) { dialogInterface, _ ->
       dialogInterface.dismiss()
