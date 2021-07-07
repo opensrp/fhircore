@@ -17,12 +17,12 @@ if (rootProject.file("local.properties").exists()) {
     props.load(rootProject.file("local.properties").newDataInputStream())
 
     arr.each { prop ->
-        project.ext.set(prop, props.getProperty(prop, "sample"))
+        project.ext.set(prop, props.getProperty(prop, (prop == "FHIR_BASE_URL") ? "https://sample.url/fhir/" : "sample"))
     }
 } else {
     println("local.properties does not exist. The following values are required " + arr.join(", "))
     arr.each { prop ->
-        project.ext.set(prop, "sample_" + prop)
+        project.ext.set(prop, props.getProperty(prop, (prop == "FHIR_BASE_URL") ? "https://sample.url/fhir/" : "sample_" + prop))
     }
 }
 
