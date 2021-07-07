@@ -43,17 +43,13 @@ class PatientItemRecyclerViewAdapter(
     override fun areContentsTheSame(
       oldItem: PatientListViewModel.PatientItem,
       newItem: PatientListViewModel.PatientItem
-    ): Boolean = oldItem.id == newItem.id
+    ): Boolean = oldItem == newItem
   }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PatientItemViewHolder =
     PatientItemViewHolder(
       LayoutInflater.from(parent.context).inflate(R.layout.patient_list_item, parent, false)
     )
-
-  override fun getItemViewType(position: Int): Int {
-    return if (position == (currentList.size - 1)) 1 else 0
-  }
 
   override fun onBindViewHolder(holder: PatientItemViewHolder, position: Int) {
     val item = currentList[position]

@@ -56,6 +56,15 @@ class SamplePatientsTest {
     Assert.assertEquals("28.85 mmol/L", observations[0].value)
   }
 
+  @Test
+  fun testGetPatientsFromStringReturnsListOfSerializedPatients() {
+    val patients = samplePatients.getPatientItems(samplePatientBundle)
+    Assert.assertEquals(2, patients.size)
+    Assert.assertEquals("female", patients[0].gender)
+    Assert.assertEquals("female", patients[0].gender)
+    Assert.assertEquals("4545454", patients[0].phone)
+  }
+
   private fun verifyPatient(patient: Patient, item: PatientListViewModel.PatientItem) {
     Assert.assertEquals(patient.id, item.logicalId)
     Assert.assertEquals(patient.name[0].nameAsSingleString, item.name)
@@ -191,4 +200,97 @@ class SamplePatientsTest {
       }
     """.trimIndent()
   }
+
+  val samplePatientBundle =
+    """
+    {
+      "resourceType": "Bundle",
+      "id": "4cf6362d-99b4-43cb-9b58-88b087656dce",
+      "meta": {
+        "lastUpdated": "2021-07-07T09:13:23.295+00:00"
+      },
+      "type": "searchset",
+      "total": 53,
+      "link": [ {
+        "relation": "self",
+        "url": "http://fhir.labs.smartregister.org/fhir/Patient?_count=2&_format=json&_pretty=true"
+      }, {
+        "relation": "next",
+        "url": "http://fhir.labs.smartregister.org/fhir?_getpages=4cf6362d-99b4-43cb-9b58-88b087656dce&_getpagesoffset=2&_count=2&_format=json&_pretty=true&_bundletype=searchset"
+      } ],
+      "entry": [ {
+        "fullUrl": "http://fhir.labs.smartregister.org/fhir/Patient/Lovelace",
+        "resource": {
+          "resourceType": "Patient",
+          "id": "Lovelace",
+          "meta": {
+            "versionId": "6",
+            "lastUpdated": "2021-06-23T20:05:33.939+00:00",
+            "source": "#ce76474d06ebd145"
+          },
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"hapiHeaderText\">Ada <b>LOVELACE </b></div><table class=\"hapiPropertyTable\"><tbody><tr><td>Address</td><td><span>Nairobi </span><span>Kenya </span></td></tr><tr><td>Date of birth</td><td><span>15 April 2021</span></td></tr></tbody></table></div>"
+          },
+          "active": true,
+          "name": [ {
+            "family": "Lovelace",
+            "given": [ "Ada" ]
+          } ],
+          "telecom": [ {
+            "system": "phone",
+            "value": "4545454"
+          } ],
+          "gender": "female",
+          "birthDate": "2021-04-15",
+          "address": [ {
+            "city": "Nairobi",
+            "country": "Kenya"
+          } ]
+        },
+        "search": {
+          "mode": "match"
+        }
+      }, {
+        "fullUrl": "http://fhir.labs.smartregister.org/fhir/Patient/1",
+        "resource": {
+          "resourceType": "Patient",
+          "id": "1",
+          "meta": {
+            "versionId": "4",
+            "lastUpdated": "2021-03-10T13:27:48.632+00:00",
+            "source": "#14dfbe238f0933a5"
+          },
+          "text": {
+            "status": "generated",
+            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"hapiHeaderText\">John <b>DOE </b></div><table class=\"hapiPropertyTable\"><tbody><tr><td>Address</td><td><span>213,One Pademore </span><br/><span>Nairobi </span><span>Kenya </span></td></tr><tr><td>Date of birth</td><td><span>04 August 1988</span></td></tr></tbody></table></div>"
+          },
+          "name": [ {
+            "use": "official",
+            "family": "Doe",
+            "given": [ "John" ]
+          } ],
+          "telecom": [ {
+            "system": "phone",
+            "value": "+254722123456",
+            "use": "mobile"
+          }, {
+            "system": "email",
+            "value": "jdoe@ona.io"
+          } ],
+          "gender": "male",
+          "birthDate": "1988-08-04",
+          "address": [ {
+            "line": [ "213,One Pademore" ],
+            "city": "Nairobi",
+            "postalCode": "00100",
+            "country": "Kenya"
+          } ]
+        },
+        "search": {
+          "mode": "match"
+        }
+      } ]
+    }
+    """.trimIndent()
 }

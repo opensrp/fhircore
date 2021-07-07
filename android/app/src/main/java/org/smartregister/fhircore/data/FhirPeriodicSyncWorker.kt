@@ -27,7 +27,11 @@ import org.smartregister.fhircore.api.HapiFhirService
 class FhirPeriodicSyncWorker(val appContext: Context, workerParams: WorkerParameters) :
   PeriodicSyncWorker(appContext, workerParams) {
 
-  override fun getSyncData() = mapOf(ResourceType.Patient to mapOf("address-city" to "NAIROBI"))
+  override fun getSyncData() =
+    mapOf(
+      ResourceType.Patient to mapOf("address-city" to "NAIROBI"),
+      ResourceType.Immunization to emptyMap()
+    )
 
   override fun getDataSource() =
     HapiFhirResourceDataSource(
