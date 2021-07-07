@@ -22,12 +22,14 @@ import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
+import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.smartregister.fhircore.RobolectricTest
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 
-class SamplePatientsTest {
+class SamplePatientsTest : RobolectricTest() {
 
   private lateinit var samplePatients: SamplePatients
 
@@ -47,13 +49,28 @@ class SamplePatientsTest {
 
   @Test
   fun testGetObservationItemsShouldReturnNormalizeObservationItemList() {
-    val observations = samplePatients.getObservationItems(getObservationJson())
+
+    val observation = JSONObject(getObservationJson())
+    val observations = samplePatients.getObservationItems(observation.toString())
 
     Assert.assertEquals(1, observations.size)
     Assert.assertEquals("1", observations[0].id)
     Assert.assertEquals("Carbon Dioxide", observations[0].code)
     Assert.assertEquals("2002-07-28T15:08:13-05:00", observations[0].effective)
     Assert.assertEquals("28.85 mmol/L", observations[0].value)
+
+    val resourceObject =
+      observation.getJSONArray("entry").getJSONObject(0).getJSONObject("resource")
+    resourceObject.remove("effectiveDateTime")
+    resourceObject.remove("valueQuantity")
+
+    val updatedObservations = samplePatients.getObservationItems(observation.toString())
+
+    Assert.assertEquals(1, updatedObservations.size)
+    Assert.assertEquals("1", updatedObservations[0].id)
+    Assert.assertEquals("Carbon Dioxide", updatedObservations[0].code)
+    Assert.assertEquals("No effective DateTime", updatedObservations[0].effective)
+    Assert.assertEquals("No ValueQuantity ", updatedObservations[0].value)
   }
 
   @Test
