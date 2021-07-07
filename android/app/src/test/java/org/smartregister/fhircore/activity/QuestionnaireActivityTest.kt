@@ -112,7 +112,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  @Ignore("Fails automated execution but works locally") //TODO Investigate why test fails
+  @Ignore("Fails automated execution but works locally") // TODO Investigate why test fails
   fun testVerifyPatientResourceSaved() {
     questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).performClick()
 
