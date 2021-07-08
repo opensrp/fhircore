@@ -18,6 +18,7 @@ package org.smartregister.fhircore.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
@@ -60,6 +61,11 @@ class LoginActivity : AppCompatActivity() {
           finish()
         }
       }
+    )
+
+    viewModel.loginFailed.observe(
+      this,
+      { binding.spacer.visibility = if (it == true) View.GONE else View.VISIBLE }
     )
   }
 
