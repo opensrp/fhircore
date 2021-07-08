@@ -180,10 +180,7 @@ abstract class BaseSimpleActivity :
   private fun initClientCountObserver() {
     Timber.d("Observing client counts livedata")
 
-    viewModel.covaxClientsCount.observe(
-      this,
-      { event -> setMenuCounter(R.id.menu_item_clients, event) }
-    )
+    viewModel.clientsCount.observe(this, { event -> setMenuCounter(R.id.menu_item_clients, event) })
   }
 
   private fun setLanguage(language: String) {
@@ -213,15 +210,7 @@ abstract class BaseSimpleActivity :
 
   fun setLogoutUsername() {
 
-    viewModel.username.observe(
-      this,
-      {
-        if (it.isNotEmpty()) {
-          getNavigationView().menu.findItem(R.id.menu_item_logout).title =
-            "${getString(R.string.logout_as_user)} $it"
-        }
-      }
-    )
-    viewModel.username.value = secureConfig.retrieveSessionUsername()
+    getNavigationView().menu.findItem(R.id.menu_item_logout).title =
+      "${getString(R.string.logout_as_user)} ${secureConfig.retrieveSessionUsername()}"
   }
 }

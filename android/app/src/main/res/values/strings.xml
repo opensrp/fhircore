@@ -23,6 +23,7 @@
     <string name="add_patient">Add Patient</string>
     <string name="menu_sync_resources">Sync Resources</string>
 
+    <string name="version">Version %s</string>
     <string name="authenticator_label" translatable="false">Authenticate FHIR Core</string>
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.app</string>
 
@@ -50,7 +51,7 @@
     <string name="record_vaccine">Record Vaccine</string>
     <string name="no_vaccine_received">No vaccine received</string>
     <string name="view_registration_details">View Registration Details</string>
-    <string name="covax_client">COVAX clients</string>
+    <string name="client">COVAX clients</string>
     <string name="show_overdue">Show overdue</string>
     <string name="record_vaccine_nl">Record\nvaccine</string>
     <string name="client_info">Client info</string>
