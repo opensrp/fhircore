@@ -29,7 +29,7 @@ class FhirPeriodicSyncWorker(val appContext: Context, workerParams: WorkerParame
 
   override fun getSyncData() =
     mapOf(
-      ResourceType.Patient to mapOf("address-city" to "NAIROBI"),
+      ResourceType.Patient to emptyMap<String, String>(),
       ResourceType.Immunization to emptyMap()
     )
 
