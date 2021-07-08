@@ -29,7 +29,6 @@ import org.smartregister.fhircore.databinding.LoginBinding
 import org.smartregister.fhircore.viewmodel.LoginViewModel
 import timber.log.Timber
 
-
 class LoginActivity : AppCompatActivity() {
 
   private lateinit var binding: LoginBinding
@@ -72,6 +71,5 @@ class LoginActivity : AppCompatActivity() {
     } catch (e: PackageManager.NameNotFoundException) {
       e.printStackTrace()
     }
-
   }
 }
