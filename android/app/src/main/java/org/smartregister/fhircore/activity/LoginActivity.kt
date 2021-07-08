@@ -65,13 +65,7 @@ class LoginActivity : AppCompatActivity() {
 
     viewModel.loginFailed.observe(
       this,
-      {
-        if (it == true) {
-          binding.spacer.visibility = View.GONE
-        } else {
-          binding.spacer.visibility = View.VISIBLE
-        }
-      }
+      { binding.spacer.visibility = if (it == true) View.GONE else View.VISIBLE }
     )
   }
 
