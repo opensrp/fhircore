@@ -18,9 +18,14 @@ package org.smartregister.fhircore.util
 
 import android.app.Activity
 import android.content.Intent
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
+import android.os.Build
+import android.view.MotionEvent
+import android.widget.EditText
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilter
+import com.google.android.fhir.search.StringFilterModifier
+import io.mockk.every
+import io.mockk.mockk
 import io.mockk.mockkClass
 import io.mockk.slot
 import io.mockk.verify
@@ -32,6 +37,8 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.joda.time.DateTime
 import org.junit.Assert
 import org.junit.Test
+import org.robolectric.util.ReflectionHelpers
+import org.robolectric.util.ReflectionHelpers.ClassParameter.from
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.RobolectricTest
 
@@ -80,15 +87,73 @@ class UtilsTest : RobolectricTest() {
 
     Assert.assertEquals(1, filterList.size)
     Assert.assertEquals(Patient.ADDRESS_CITY, filterList[0].parameter)
-    Assert.assertEquals(ParamPrefixEnum.EQUAL, filterList[0].prefix)
+    Assert.assertEquals(StringFilterModifier.CONTAINS, filterList[0].modifier)
     Assert.assertEquals("NAIROBI", filterList[0].value)
   }
 
   @Test
   fun testSetAppLocaleShouldReturnUpdatedConfiguration() {
-    val config = Utils.setAppLocale(FhirApplication.getContext(), "sw")
 
-    Assert.assertNotNull(config)
-    Assert.assertEquals("sw", config!!.locales[0].language)
+    val swConfig = Utils.setAppLocale(FhirApplication.getContext(), "sw")
+
+    Assert.assertNotNull(swConfig)
+    Assert.assertEquals("sw", swConfig!!.locales[0].language)
+
+    ReflectionHelpers.setStaticField(Build.VERSION::class.java, "SDK_INT", 23)
+    val enConfig = Utils.setAppLocale(FhirApplication.getContext(), "en")
+
+    Assert.assertNotNull(enConfig)
+    Assert.assertEquals("en", enConfig!!.locales[0].language)
+
+    val config = Utils.setAppLocale(FhirApplication.getContext(), null)
+    Assert.assertEquals("en", enConfig!!.locales[0].language)
+  }
+
+  @Test
+  fun testisDrawableClickedShouldVerifyScenarios() {
+
+    val motionEvent = mockk<MotionEvent>()
+    every { motionEvent.rawX } returns 0f
+
+    val view =
+      mockk<EditText> {
+        every { compoundDrawables } returns
+          arrayOf(
+            mockk { every { bounds } returns mockk { every { width() } returns 0 } },
+            mockk(),
+            mockk { every { bounds } returns mockk { every { width() } returns 0 } },
+            mockk()
+          )
+        every { right } returns 0
+      }
+
+    val instance = ReflectionHelpers.getStaticField<Utils>(Utils::class.java, "INSTANCE")
+    Assert.assertTrue(
+      ReflectionHelpers.callInstanceMethod(
+        instance,
+        "isDrawableClicked",
+        from(Utils.DrawablePosition::class.java, Utils.DrawablePosition.DRAWABLE_RIGHT),
+        from(MotionEvent::class.java, motionEvent),
+        from(EditText::class.java, view)
+      )
+    )
+    Assert.assertTrue(
+      ReflectionHelpers.callInstanceMethod(
+        instance,
+        "isDrawableClicked",
+        from(Utils.DrawablePosition::class.java, Utils.DrawablePosition.DRAWABLE_LEFT),
+        from(MotionEvent::class.java, motionEvent),
+        from(EditText::class.java, view)
+      )
+    )
+    Assert.assertFalse(
+      ReflectionHelpers.callInstanceMethod(
+        instance,
+        "isDrawableClicked",
+        from(Utils.DrawablePosition::class.java, Utils.DrawablePosition.DRAWABLE_TOP),
+        from(MotionEvent::class.java, motionEvent),
+        from(EditText::class.java, view)
+      )
+    )
   }
 }

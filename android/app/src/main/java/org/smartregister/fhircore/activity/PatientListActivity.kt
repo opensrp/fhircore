@@ -21,7 +21,10 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
+import androidx.core.view.GravityCompat
 import androidx.core.widget.doAfterTextChanged
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -68,6 +71,14 @@ class PatientListActivity : BaseSimpleActivity() {
         )
         editText.addOnDrawableClickedListener(Utils.DrawablePosition.DRAWABLE_RIGHT) { it.clear() }
       }
+    }
+    setUpDrawerContent()
+  }
+
+  private fun setUpDrawerContent() {
+    val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
+    findViewById<ImageButton>(R.id.btn_drawer_menu).setOnClickListener {
+      drawerLayout.openDrawer(GravityCompat.START)
     }
   }
 

@@ -70,9 +70,9 @@ class LoginViewModel(application: Application) :
     accountManager = AccountManager.get(application)
     accountHelper = AccountHelper(baseContext)
 
-    if (BuildConfig.DEBUG && BuildConfig.SKIP_AUTH_CHECK) {
-      goHome.value = true
-    } else if (accountHelper.isSessionActive(secureConfig.retrieveSessionToken())) {
+    if ((BuildConfig.DEBUG && BuildConfig.SKIP_AUTH_CHECK) ||
+        accountHelper.isSessionActive(secureConfig.retrieveSessionToken())
+    ) {
       goHome.value = true
     } else {
       accountHelper.loadAccount(

@@ -26,14 +26,16 @@ import android.os.LocaleList
 import android.view.MotionEvent
 import android.view.View
 import android.widget.EditText
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.StringFilterModifier
 import java.util.Locale
 import org.hl7.fhir.r4.model.Patient
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.joda.time.ReadablePartial
 import org.joda.time.Years
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.DateTimeFormatter
 import timber.log.Timber
 
 object Utils {
@@ -46,7 +48,7 @@ object Utils {
 
   fun addBasePatientFilter(search: Search) {
     search.filter(Patient.ADDRESS_CITY) {
-      prefix = ParamPrefixEnum.EQUAL
+      modifier = StringFilterModifier.CONTAINS
       value = "NAIROBI"
     }
   }
@@ -119,5 +121,11 @@ object Utils {
     DRAWABLE_TOP(1),
     DRAWABLE_RIGHT(2),
     DRAWABLE_BOTTOM(3)
+  }
+
+  fun addDays(initialDate: String, daysToAdd: Int = 0, returnDateFormat: String = "M-d-Y"): String {
+    val fmt: DateTimeFormatter = DateTimeFormat.forPattern(returnDateFormat)
+    val date: DateTime = DateTime.parse(initialDate)
+    return date.plusDays(daysToAdd).toString(fmt)
   }
 }
