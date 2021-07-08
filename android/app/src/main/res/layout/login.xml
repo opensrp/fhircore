@@ -46,10 +46,16 @@
             android:id="@+id/login_error_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="50dp"
             android:text="@string/login_error_message"
             android:textColor="@color/colorError"
             android:visibility="@{usr.loginFailed ? View.VISIBLE : View.GONE}"/>
+
+        <Space
+            android:id="@+id/spacer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="50dp"/>
 
         <EditText
             android:id="@+id/login_username_input"
