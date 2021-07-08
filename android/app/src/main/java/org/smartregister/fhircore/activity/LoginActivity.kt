@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.activity
 
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -65,11 +64,7 @@ class LoginActivity : AppCompatActivity() {
   }
 
   private fun getAppVersion() {
-    try {
-      val versionName = BuildConfig.VERSION_NAME
-      binding.tvAppVersion.text = getString(R.string.version, versionName)
-    } catch (e: PackageManager.NameNotFoundException) {
-      e.printStackTrace()
-    }
+    val versionName = BuildConfig.VERSION_NAME
+    binding.tvAppVersion.text = getString(R.string.version, versionName)
   }
 }
