@@ -17,16 +17,17 @@ if (rootProject.file("local.properties").exists()) {
     props.load(rootProject.file("local.properties").newDataInputStream())
 
     arr.each { prop ->
-        project.ext.set(prop, props.getProperty(prop, "sample"))
+        project.ext.set(prop, props.getProperty(prop, (prop == "FHIR_BASE_URL") ? "https://sample.url/fhir/" : "sample"))
     }
 } else {
     println("local.properties does not exist. The following values are required " + arr.join(", "))
     arr.each { prop ->
-        project.ext.set(prop, "sample_" + prop)
+        project.ext.set(prop, props.getProperty(prop, (prop == "FHIR_BASE_URL") ? "https://sample.url/fhir/" : "sample_" + prop))
     }
 }
 
 android {
+
     compileSdkVersion sdk_versions.compile_sdk
     dataBinding {
         enabled true
@@ -36,7 +37,7 @@ android {
         minSdkVersion sdk_versions.min_sdk
         targetSdkVersion sdk_versions.target_sdk
         versionCode 1
-        versionName "1.0"
+        versionName "0.0.6"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // Required when setting minSdkVersion to 20 or lower
         // See https://developer.android.com/studio/write/java8-support
@@ -124,7 +125,7 @@ dependencies {
         exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
         exclude group: 'com.sun.activation', module: 'javax.activation'
     }
-    implementation('com.google.android.fhir:engine:0.0.2') {
+    implementation('com.google.android.fhir:fhir-engine:0.1.0-alpha02') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'

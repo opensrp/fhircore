@@ -24,12 +24,26 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import java.util.Date
+import java.util.UUID
+import org.apache.commons.lang3.StringUtils
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.PositiveIntType
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.util.SharedPreferencesHelper
+import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
-const val USER_ID = "user_id"
+const val PATIENT_ID = "patient_id"
+const val DOSE_NUMBER = "dose_number"
+const val INITIAL_DOSE = "initial_dose"
 
 class RecordVaccineActivity : MultiLanguageBaseActivity() {
 
@@ -57,9 +71,42 @@ class RecordVaccineActivity : MultiLanguageBaseActivity() {
     }
 
     findViewById<Button>(R.id.btn_record_vaccine).setOnClickListener {
-      val vaccineSelected = fragment.getQuestionnaireResponse()
+      val questionnaireResponse = fragment.getQuestionnaireResponse()
+
+      val iParser: IParser = FhirContext.forR4().newJsonParser()
+      val questionnaire =
+        iParser.parseResource(
+          org.hl7.fhir.r4.model.Questionnaire::class.java,
+          viewModel.questionnaire
+        ) as
+          Questionnaire
+
+      // TODO Replace manual mapping with resource mapper
       try {
-        showVaccineRecordDialog(vaccineSelected.item[0].answer[0].valueCoding.code)
+        val immunization =
+          ResourceMapper.extract(questionnaire, questionnaireResponse) as Immunization
+        immunization.id = UUID.randomUUID().toString().toLowerCase()
+        immunization.recorded = Date()
+        immunization.status = Immunization.ImmunizationStatus.COMPLETED
+        immunization.vaccineCode =
+          CodeableConcept().apply {
+            this.text = questionnaireResponse.item[0].answer[0].valueCoding.code
+            this.coding = listOf(questionnaireResponse.item[0].answer[0].valueCoding)
+          }
+        immunization.occurrence = DateTimeType.today()
+        immunization.patient =
+          Reference().apply { this.reference = "Patient/" + intent?.getStringExtra(PATIENT_ID) }
+
+        immunization.protocolApplied =
+          listOf(
+            Immunization.ImmunizationProtocolAppliedComponent().apply {
+              var currentDoseNumber = intent?.getIntExtra(DOSE_NUMBER, 0)
+              if (currentDoseNumber != null) {
+                this.doseNumber = PositiveIntType(currentDoseNumber + 1)
+              }
+            }
+          )
+        showVaccineRecordDialog(immunization)
       } catch (e: IndexOutOfBoundsException) {
         Toast.makeText(this, R.string.please_select_vaccine, Toast.LENGTH_SHORT).show()
       }
@@ -76,23 +123,44 @@ class RecordVaccineActivity : MultiLanguageBaseActivity() {
     }
   }
 
-  private fun showVaccineRecordDialog(vaccineName: String) {
-    val userId = intent?.getStringExtra(USER_ID)
-    if (userId != null) {
-      SharedPreferencesHelper.write(userId, vaccineName)
-    }
+  private fun showVaccineRecordDialog(immunization: Immunization) {
 
     val builder = AlertDialog.Builder(this)
+    val doseNumber = immunization.protocolApplied.first().doseNumberPositiveIntType.value
+    var msgText = ""
+    var titleText = ""
+    val vaccineDate = immunization.occurrenceDateTimeType.toHumanDisplay()
+    val nextVaccineDate = Utils.addDays(vaccineDate, 28)
+    val currentDose = immunization.vaccineCode.coding.first().code
+    val initialDose = intent?.getStringExtra(INITIAL_DOSE)
+    val isSameAsFirstDose = StringUtils.isEmpty(initialDose) || currentDose.equals(initialDose)
+    if (isSameAsFirstDose) {
+      msgText =
+        if (doseNumber == 2) {
+          resources.getString(R.string.fully_vaccinated)
+        } else {
+          resources.getString(R.string.immunization_next_dose_text, doseNumber + 1, nextVaccineDate)
+        }
+      titleText =
+        this.getString(R.string.ordinal_vaccine_dose_recorded, immunization.vaccineCode.text)
+    } else {
+      msgText = "Second vaccine dose should be same as first"
+      titleText = "Initially  received $initialDose"
+    }
+
     // set title for alert dialog
-    builder.setTitle(this.getString(R.string.ordinal_vaccine_dose_recorded, vaccineName))
+    builder.setTitle(titleText)
 
     // set message for alert dialog
-    builder.setMessage(this.getString(R.string.second_dose_due_at, "27-04-2021"))
+    builder.setMessage(msgText)
 
     // performing negative action
     builder.setNegativeButton(R.string.done) { dialogInterface, _ ->
       dialogInterface.dismiss()
-      finish()
+      if (isSameAsFirstDose) {
+        viewModel.saveResource(immunization)
+        finish()
+      }
     }
     // Create the AlertDialog
     val alertDialog: AlertDialog = builder.create()

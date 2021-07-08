@@ -16,7 +16,9 @@
 
 package org.smartregister.fhircore.fragment
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -28,18 +30,23 @@ import android.widget.EditText
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
+import com.google.mlkit.md.LiveBarcodeScanningFragment
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.activity.PATIENT_ID
 import org.smartregister.fhircore.activity.PatientDetailActivity
 import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.activity.RecordVaccineActivity
-import org.smartregister.fhircore.activity.USER_ID
 import org.smartregister.fhircore.adapter.PatientItemRecyclerViewAdapter
 import org.smartregister.fhircore.domain.Pagination
 import org.smartregister.fhircore.domain.currentPageNumber
@@ -54,13 +61,14 @@ class PatientListFragment : Fragment() {
 
   internal lateinit var patientListViewModel: PatientListViewModel
   private lateinit var fhirEngine: FhirEngine
+  private val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
   private var search: String? = null
-  private val pageCount: Int = 6
+  private val pageCount: Int = 7
+  private lateinit var adapter: PatientItemRecyclerViewAdapter
   private lateinit var paginationView: RelativeLayout
   private lateinit var nextButton: Button
   private lateinit var prevButton: Button
   private lateinit var infoTextView: TextView
-  private lateinit var adapter: PatientItemRecyclerViewAdapter
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -70,16 +78,24 @@ class PatientListFragment : Fragment() {
     return inflater.inflate(R.layout.fragment_patient_list, container, false)
   }
 
+  private fun patientStatusObserver(
+    patientId: String,
+    observer: Observer<PatientListViewModel.PatientStatus>
+  ) {
+    patientListViewModel.fetchPatientStatus(patientId).observe(requireActivity(), observer)
+  }
+
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     fhirEngine = FhirApplication.fhirEngine(requireContext())
 
     val recyclerView = view.findViewById<RecyclerView>(R.id.patient_list)
+    adapter =
+      PatientItemRecyclerViewAdapter(this::onPatientItemClicked, this::patientStatusObserver)
     paginationView = view.findViewById(R.id.rl_pagination)
     nextButton = view.findViewById(R.id.btn_next_page)
     prevButton = view.findViewById(R.id.btn_previous_page)
     infoTextView = view.findViewById(R.id.txt_page_info)
-    adapter =
-      PatientItemRecyclerViewAdapter(this::onPatientItemClicked, this::onRecordVaccineClicked)
+
     recyclerView.adapter = adapter
 
     requireActivity().findViewById<TextView>(R.id.tv_sync).setOnClickListener {
@@ -112,9 +128,69 @@ class PatientListFragment : Fragment() {
           override fun afterTextChanged(s: Editable?) {}
         }
       )
-
-    patientListViewModel.searchResults(page = 0, pageSize = pageCount)
+    setUpBarcodeScanner()
     super.onViewCreated(view, savedInstanceState)
+  }
+
+  override fun onResume() {
+    patientListViewModel.searchResults(page = 0, pageSize = pageCount)
+    adapter.notifyDataSetChanged()
+    super.onResume()
+  }
+
+  private fun setUpBarcodeScanner() {
+    val btnScanBarcode: View = requireActivity().findViewById(R.id.layout_scan_barcode)
+    requireActivity()
+      .supportFragmentManager
+      .setFragmentResultListener(
+        "result",
+        this,
+        { _, result ->
+          val barcode = result.getString("result")!!.trim()
+          patientListViewModel
+            .isPatientExists(barcode)
+            .observe(
+              viewLifecycleOwner,
+              {
+                if (it.isSuccess) {
+                  launchPatientDetailActivity(barcode)
+                } else {
+                  patientListViewModel.clearPatientList()
+                }
+                liveBarcodeScanningFragment.onDestroy()
+              }
+            )
+        }
+      )
+
+    val requestPermissionLauncher = getBarcodePermissionLauncher()
+    btnScanBarcode.setOnClickListener { launchBarcodeReader(requestPermissionLauncher) }
+  }
+
+  private fun getBarcodePermissionLauncher(): ActivityResultLauncher<String> {
+    return registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+      isGranted: Boolean ->
+      if (isGranted) {
+        liveBarcodeScanningFragment.show(requireActivity().supportFragmentManager, "TAG")
+      } else {
+        Toast.makeText(
+            requireContext(),
+            "Camera permissions are needed to launch barcode reader!",
+            Toast.LENGTH_LONG
+          )
+          .show()
+      }
+    }
+  }
+
+  private fun launchBarcodeReader(requestPermissionLauncher: ActivityResultLauncher<String>) {
+    if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) ==
+        PackageManager.PERMISSION_GRANTED
+    ) {
+      liveBarcodeScanningFragment.show(requireActivity().supportFragmentManager, "TAG")
+    } else {
+      requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+    }
   }
 
   fun hideEmptyListViews() {
@@ -152,32 +228,51 @@ class PatientListFragment : Fragment() {
     patientListViewModel.searchResults(search, nextPage, pageCount)
   }
 
-  // Click handler to help display the details about the patients from the list.
-  internal fun onPatientItemClicked(patientItem: PatientListViewModel.PatientItem) {
+  private fun launchPatientDetailActivity(patientLogicalId: String) {
     val intent =
       Intent(requireContext(), PatientDetailActivity::class.java).apply {
-        putExtra(PatientDetailFragment.ARG_ITEM_ID, patientItem.logicalId)
+        putExtra(PatientDetailFragment.ARG_ITEM_ID, patientLogicalId)
       }
     this.startActivity(intent)
   }
 
-  private fun onRecordVaccineClicked(patientItem: PatientListViewModel.PatientItem) {
-    startActivity(
-      Intent(requireContext(), RecordVaccineActivity::class.java).apply {
-        putExtra(
-          QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
-          activity?.getString(R.string.record_vaccine)
+  // Click handler to help display the details about the patients from the list.
+  public fun onPatientItemClicked(
+    intention: Intention,
+    patientItem: PatientListViewModel.PatientItem
+  ) {
+    when (intention) {
+      Intention.RECORD_VACCINE -> {
+        startActivity(
+          Intent(requireContext(), RecordVaccineActivity::class.java).apply {
+            putExtra(
+              QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
+              activity?.getString(R.string.record_vaccine)
+            )
+            putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
+            putExtra(PATIENT_ID, patientItem.logicalId)
+          }
         )
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
-        putExtra(USER_ID, patientItem.logicalId)
       }
-    )
+      Intention.VIEW -> {
+        this.startActivity(
+          Intent(requireContext(), PatientDetailActivity::class.java).apply {
+            putExtra(PatientDetailFragment.ARG_ITEM_ID, patientItem.logicalId)
+          }
+        )
+      }
+    }
   }
 
   private fun syncResources() {
+    patientListViewModel.runSync()
     patientListViewModel.searchResults(pageSize = pageCount)
     Toast.makeText(requireContext(), "Syncing...", Toast.LENGTH_LONG).show()
-    patientListViewModel.syncUpload()
+  }
+
+  enum class Intention {
+    RECORD_VACCINE,
+    VIEW
   }
 
   private fun updatePagination(pagination: Pagination) {
@@ -207,7 +302,7 @@ class PatientListFragment : Fragment() {
 
   fun setData(data: Pair<List<PatientListViewModel.PatientItem>, Pagination>) {
     Timber.d("Submitting ${data.first.count()} patient records")
-    val list = ArrayList<Any>(data.first)
+    val list = ArrayList<PatientListViewModel.PatientItem>(data.first)
     updatePagination(data.second)
     adapter.submitList(list)
     adapter.notifyDataSetChanged()

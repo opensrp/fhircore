@@ -19,12 +19,14 @@ package org.smartregister.fhircore.viewholder
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
+import androidx.lifecycle.Observer
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.RobolectricTest
+import org.smartregister.fhircore.fragment.PatientListFragment
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 
 class PatientItemViewHolderTest : RobolectricTest() {
@@ -43,16 +45,18 @@ class PatientItemViewHolderTest : RobolectricTest() {
   @Test
   fun testVerifyPatientItemData() {
 
-    val itemClickListener = { item: PatientListViewModel.PatientItem -> verifyPatient(item) }
-
-    val recordVaccineClickListener = { item: PatientListViewModel.PatientItem ->
+    val itemClickListener =
+        { intention: PatientListFragment.Intention, item: PatientListViewModel.PatientItem ->
       verifyPatient(item)
+    }
+
+    val statusObserver = { string: String, observer: Observer<PatientListViewModel.PatientStatus> ->
     }
 
     viewHolder.bindTo(
       PatientListViewModel.PatientItem("1", "Mc Jane", "male", "2000-01-01", "", "1234567", "2"),
       itemClickListener,
-      recordVaccineClickListener
+      statusObserver
     )
 
     val tvPatientDemographics = itemView.findViewById<TextView>(R.id.tv_patient_demographics)
