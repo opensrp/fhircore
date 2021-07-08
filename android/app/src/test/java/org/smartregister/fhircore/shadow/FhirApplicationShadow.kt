@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.shadow
 
+import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SyncDownloadContext
 import com.google.android.fhir.db.impl.dao.LocalChangeToken
@@ -39,7 +40,11 @@ class FhirApplicationShadow : ShadowApplication() {
     }
 
     override suspend fun <R : Resource> load(clazz: Class<R>, id: String): R {
-      return dataMap[id] as R
+      if (dataMap.containsKey(id)) {
+        return dataMap[id] as R
+      } else {
+        throw ResourceNotFoundException("")
+      }
     }
 
     override suspend fun <R : Resource> remove(clazz: Class<R>, id: String) {
@@ -47,11 +52,11 @@ class FhirApplicationShadow : ShadowApplication() {
     }
 
     override suspend fun <R : Resource> save(vararg resource: R) {
-      dataMap[resource[0].logicalId] = resource[0]
+      resource.forEach { dataMap[it.logicalId] = it }
     }
 
     override suspend fun <R : Resource> search(search: Search): List<R> {
-      return mutableListOf()
+      return dataMap.toList().map { it.second as R }
     }
 
     override suspend fun syncDownload(download: suspend (SyncDownloadContext) -> List<Resource>) {}
