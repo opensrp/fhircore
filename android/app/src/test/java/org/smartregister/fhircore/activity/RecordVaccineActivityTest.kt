@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.activity
 
 import android.app.Activity
+import android.content.DialogInterface
 import android.content.Intent
 import android.widget.Button
 import com.google.android.fhir.datacapture.QuestionnaireFragment
@@ -133,12 +134,15 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
       "showVaccineRecordDialog",
       ReflectionHelpers.ClassParameter.from(Immunization::class.java, immunization)
     )
-    val firstDialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
 
-    Assert.assertNotNull(firstDialog)
-    Assert.assertEquals("dummy 1st dose recorded", firstDialog.title)
-    Assert.assertEquals("Dose 2 due $nextVaccineDate", firstDialog.message)
+    val shadowAlertDialog = ShadowAlertDialog.getLatestAlertDialog()
+    var dialog = shadowOf(shadowAlertDialog)
 
+    Assert.assertNotNull(dialog)
+    Assert.assertEquals("dummy 1st dose recorded", dialog.title)
+    Assert.assertEquals("Dose 2 due $nextVaccineDate", dialog.message)
+
+    shadowAlertDialog.getButton(DialogInterface.BUTTON_NEGATIVE).performClick()
     immunization.protocolApplied[0].doseNumber = PositiveIntType(2)
 
     ReflectionHelpers.callInstanceMethod<Any>(
@@ -146,11 +150,11 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
       "showVaccineRecordDialog",
       ReflectionHelpers.ClassParameter.from(Immunization::class.java, immunization)
     )
-    val secondDialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+    dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
 
-    Assert.assertNotNull(secondDialog)
-    Assert.assertEquals("dummy 1st dose recorded", secondDialog.title)
-    Assert.assertEquals("Fully vaccinated", secondDialog.message)
+    Assert.assertNotNull(dialog)
+    Assert.assertEquals("dummy 1st dose recorded", dialog.title)
+    Assert.assertEquals("Fully vaccinated", dialog.message)
 
     immunization.vaccineCode.coding[0].code = "another_dose"
 
@@ -159,11 +163,11 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
       "showVaccineRecordDialog",
       ReflectionHelpers.ClassParameter.from(Immunization::class.java, immunization)
     )
-    val thirdDialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+    dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
 
-    Assert.assertNotNull(thirdDialog)
-    Assert.assertEquals("Initially  received dummy", thirdDialog.title)
-    Assert.assertEquals("Second vaccine dose should be same as first", thirdDialog.message)
+    Assert.assertNotNull(dialog)
+    Assert.assertEquals("Initially  received dummy", dialog.title)
+    Assert.assertEquals("Second vaccine dose should be same as first", dialog.message)
   }
 
   @Test
