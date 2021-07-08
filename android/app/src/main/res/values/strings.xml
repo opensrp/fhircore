@@ -23,6 +23,7 @@
     <string name="add_patient">Add Patient</string>
     <string name="menu_sync_resources">Sync Resources</string>
 
+    <string name="version">Version %s</string>
     <string name="authenticator_label" translatable="false">Authenticate FHIR Core</string>
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.app</string>
 
