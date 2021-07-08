@@ -72,11 +72,11 @@ class PatientListViewModelTest : RobolectricTest() {
     val immunizationList =
       listOf(
         Immunization().apply {
-          id = "0"
+          id = "Patient/0"
           recorded = Calendar.getInstance().apply { add(Calendar.DATE, -28) }.time
         },
         Immunization().apply {
-          id = "1"
+          id = "Patient/0"
           recorded = Date()
         }
       )
@@ -89,7 +89,7 @@ class PatientListViewModelTest : RobolectricTest() {
     )
 
     // verify OVERDUE
-    runBlocking { fhirEngine.remove(Immunization::class.java, "1") }
+    runBlocking { fhirEngine.remove(Immunization::class.java, "Patient/0") }
     verifyPatientStatus(
       PatientListViewModel.VaccineStatus.OVERDUE,
       formatter.format(immunizationList[0].recorded)
@@ -103,7 +103,7 @@ class PatientListViewModelTest : RobolectricTest() {
     )
 
     // verify DUE
-    runBlocking { fhirEngine.remove(Immunization::class.java, "0") }
+    runBlocking { fhirEngine.remove(Immunization::class.java, "Patient/0") }
     verifyPatientStatus(PatientListViewModel.VaccineStatus.DUE, "")
   }
 
@@ -148,7 +148,7 @@ class PatientListViewModelTest : RobolectricTest() {
     vaccineStatus: PatientListViewModel.VaccineStatus,
     detail: String
   ) {
-    val status = viewModel.fetchPatientStatus("")
+    val status = viewModel.fetchPatientStatus("0")
 
     Assert.assertEquals(vaccineStatus, status.value?.status)
     Assert.assertEquals(detail, status.value?.details)
