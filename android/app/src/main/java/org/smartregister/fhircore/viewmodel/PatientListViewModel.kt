@@ -103,7 +103,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     }
   }
 
-  private suspend fun getPatientStatus(id: String): PatientStatus {
+  public suspend fun getPatientStatus(id: String): PatientStatus {
     // check database for immunizations
     val cal: Calendar = Calendar.getInstance()
     cal.add(Calendar.DATE, -28)

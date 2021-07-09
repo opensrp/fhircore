@@ -37,7 +37,7 @@ class PatientItemRecyclerViewAdapterTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    adapter = PatientItemRecyclerViewAdapter(mockk(), mockk())
+    adapter = PatientItemRecyclerViewAdapter(mockk())
   }
 
   @Test
@@ -60,9 +60,9 @@ class PatientItemRecyclerViewAdapterTest : RobolectricTest() {
     val viewHolder = spyk(adapter.createViewHolder(viewGroup, 0))
     Assert.assertNotNull(viewHolder)
 
-    every { viewHolder.bindTo(any(), any(), any()) } answers {}
+    every { viewHolder.bindTo(any(), any()) } answers {}
     adapter.bindViewHolder(viewHolder, 0)
-    verify(exactly = 1) { viewHolder.bindTo(any(), any(), any()) }
+    verify(exactly = 1) { viewHolder.bindTo(any(), any()) }
   }
 
   @Test

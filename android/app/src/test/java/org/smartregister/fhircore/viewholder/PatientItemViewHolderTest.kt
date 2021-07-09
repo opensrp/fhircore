@@ -19,7 +19,6 @@ package org.smartregister.fhircore.viewholder
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
-import androidx.lifecycle.Observer
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -50,13 +49,9 @@ class PatientItemViewHolderTest : RobolectricTest() {
       verifyPatient(item)
     }
 
-    val statusObserver = { string: String, observer: Observer<PatientListViewModel.PatientStatus> ->
-    }
-
     viewHolder.bindTo(
       PatientListViewModel.PatientItem("1", "Mc Jane", "male", "2000-01-01", "", "1234567", "2"),
-      itemClickListener,
-      statusObserver
+      itemClickListener
     )
 
     val tvPatientDemographics = itemView.findViewById<TextView>(R.id.tv_patient_demographics)
