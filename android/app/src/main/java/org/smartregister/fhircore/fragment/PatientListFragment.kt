@@ -62,7 +62,7 @@ class PatientListFragment : Fragment() {
   private lateinit var fhirEngine: FhirEngine
   private val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
   private var search: String? = null
-  private var pageCount: Int = 7
+  private val pageCount: Int = 7
   private lateinit var adapter: PatientItemRecyclerViewAdapter
   private lateinit var paginationView: RelativeLayout
   private lateinit var recyclerView: RecyclerView

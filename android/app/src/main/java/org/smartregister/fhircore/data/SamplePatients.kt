@@ -70,9 +70,7 @@ class SamplePatients {
     return patients
   }
 
-  fun getPatientItem(fhirPatient: Patient?): PatientListViewModel.PatientItem? {
-    return if (fhirPatient == null) null else createPatientItem(1, fhirPatient)
-  }
+  fun getPatientItem(fhirPatient: Patient?) = fhirPatient?.let { createPatientItem(1, it) }
 
   /** Creates PatientItem objects with displayable values from the Fhir Patient objects. */
   private fun createPatientItem(position: Int, patient: Patient): PatientListViewModel.PatientItem {

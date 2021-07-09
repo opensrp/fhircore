@@ -50,19 +50,100 @@ class PatientItemViewHolderTest : RobolectricTest() {
     }
 
     viewHolder.bindTo(
-      PatientListViewModel.PatientItem("1", "Mc Jane", "male", "2000-01-01", "", "1234567", "2"),
+      PatientListViewModel.PatientItem(
+        "1",
+        "Mc Jane",
+        "male",
+        "2000-01-01",
+        "",
+        "1234567",
+        "2",
+        PatientListViewModel.PatientStatus(PatientListViewModel.VaccineStatus.VACCINATED, "Details")
+      ),
       itemClickListener
     )
 
     val tvPatientDemographics = itemView.findViewById<TextView>(R.id.tv_patient_demographics)
-    val tvDateLastSeen = itemView.findViewById<TextView>(R.id.date_last_seen)
     val tvRecordVaccine = itemView.findViewById<TextView>(R.id.tv_record_vaccine)
 
-    tvPatientDemographics.performClick()
-    tvDateLastSeen.performClick()
+    itemView.performClick()
     tvRecordVaccine.performClick()
 
     Assert.assertEquals("Jane, Mc, M, 21", tvPatientDemographics.text.toString())
+  }
+
+  @Test
+  fun verifyDataDisplayedOnStatusChanged() {
+    val itemClickListener =
+        { intention: PatientListFragment.Intention, item: PatientListViewModel.PatientItem ->
+      verifyPatient(item)
+    }
+
+    val tvRecordVaccine = itemView.findViewById<TextView>(R.id.tv_record_vaccine)
+
+    // vaccinated
+    viewHolder.bindTo(
+      composeRandomPatientItem(
+        PatientListViewModel.PatientStatus(PatientListViewModel.VaccineStatus.VACCINATED, "Details")
+      ),
+      itemClickListener
+    )
+    itemView.performClick()
+    verifyViewHolderStatus(tvRecordVaccine, R.string.status_vaccinated)
+
+    // overdue
+    viewHolder.bindTo(
+      composeRandomPatientItem(
+        PatientListViewModel.PatientStatus(PatientListViewModel.VaccineStatus.OVERDUE, "Details")
+      ),
+      itemClickListener
+    )
+    itemView.performClick()
+    verifyViewHolderStatus(tvRecordVaccine, R.string.status_overdue)
+
+    // partial
+    viewHolder.bindTo(
+      composeRandomPatientItem(
+        PatientListViewModel.PatientStatus(PatientListViewModel.VaccineStatus.PARTIAL, "Details")
+      ),
+      itemClickListener
+    )
+    itemView.performClick()
+    Assert.assertTrue(
+      tvRecordVaccine
+        .text
+        .toString()
+        .contains(tvRecordVaccine.context.getString(R.string.status_received_vaccine, 1, "Details"))
+    )
+
+    // due
+    viewHolder.bindTo(
+      composeRandomPatientItem(
+        PatientListViewModel.PatientStatus(PatientListViewModel.VaccineStatus.DUE, "Details")
+      ),
+      itemClickListener
+    )
+    itemView.performClick()
+    verifyViewHolderStatus(tvRecordVaccine, R.string.status_record_vaccine)
+  }
+
+  private fun composeRandomPatientItem(status: PatientListViewModel.PatientStatus) =
+    PatientListViewModel.PatientItem(
+      "1",
+      "Mc Jane",
+      "male",
+      "2000-01-01",
+      "",
+      "1234567",
+      "2",
+      status
+    )
+
+  private fun verifyViewHolderStatus(tvRecordVaccine: TextView, resource: Int) {
+    Assert.assertEquals(
+      tvRecordVaccine.context.getString(resource),
+      tvRecordVaccine.text.toString()
+    )
   }
 
   private fun verifyPatient(patientItem: PatientListViewModel.PatientItem) {
