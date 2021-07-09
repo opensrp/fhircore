@@ -98,7 +98,7 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
     if (riskAssessment != null) {
       viewModel.saveResource(riskAssessment)
 
-      var flag =
+      val flag =
         QuestionnaireUtils.extractFlag(questionnaireResponse, questionnaire, riskAssessment)
 
       if (flag != null) {

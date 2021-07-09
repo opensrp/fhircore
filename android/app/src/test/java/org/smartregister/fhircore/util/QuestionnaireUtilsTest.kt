@@ -23,7 +23,6 @@ import ca.uhn.fhir.parser.IParser
 import java.math.BigDecimal
 import java.util.UUID
 import org.hl7.fhir.r4.model.BooleanType
-import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -80,9 +79,7 @@ class QuestionnaireUtilsTest : RobolectricTest() {
     val patient = Patient()
     patient.id = "1122"
 
-    val qItem = questionnaire.item[1].item.single { it.linkId.contentEquals("diabetes_mellitus") }
-    val qrItem =
-      questionnaireResponse.item[1].item.single { it.linkId.contentEquals("diabetes_mellitus") }
+    val qrItem = getQuestionnaireResponseItem("diabetes_mellitus")
     qrItem.addAnswer().value = BooleanType(true)
 
     val result = QuestionnaireUtils.asObs(qrItem, patient, questionnaire)
@@ -111,10 +108,7 @@ class QuestionnaireUtilsTest : RobolectricTest() {
     val patient = Patient()
     patient.id = "1122"
 
-    // diabetes_mellitus
-    questionnaireResponse.item[1].item[0].addAnswer().value = BooleanType(true)
-    // hypertension
-    questionnaireResponse.item[1].item[1].addAnswer().value = BooleanType(true)
+    setResponsesToTrue("diabetes_mellitus", "hypertension")
 
     val result =
       QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
@@ -153,10 +147,7 @@ class QuestionnaireUtilsTest : RobolectricTest() {
     val patient = Patient()
     patient.id = "1122"
 
-    // diabetes_mellitus
-    questionnaireResponse.item[1].item[0].addAnswer().value = BooleanType(true)
-    // hypertension
-    questionnaireResponse.item[1].item[1].addAnswer().value = BooleanType(true)
+    setResponsesToFalse("diabetes_mellitus", "hypertension")
 
     val observations =
       QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
@@ -175,9 +166,8 @@ class QuestionnaireUtilsTest : RobolectricTest() {
     Assert.assertEquals(obs1.subject.reference, risk.subject.reference)
     Assert.assertEquals("Patient/1122", risk.subject.reference)
 
-    Assert.assertEquals(BigDecimal(2), risk.prediction[0].relativeRisk)
-    Assert.assertEquals("Observation/" + obs1.id, risk.basis[0].reference)
-    Assert.assertEquals("Observation/" + obs2.id, risk.basis[1].reference)
+    Assert.assertEquals(BigDecimal(0), risk.prediction[0].relativeRisk)
+    Assert.assertTrue(risk.basis.isEmpty())
 
     Assert.assertEquals("225338004", risk.code.coding[0].code)
     Assert.assertEquals("https://www.snomed.org", risk.code.coding[0].system)
@@ -193,17 +183,7 @@ class QuestionnaireUtilsTest : RobolectricTest() {
     val patient = Patient()
     patient.id = "1122"
 
-    // diabetes_mellitus
-    questionnaireResponse.item[1].item[0].addAnswer().value = BooleanType(true)
-    // hypertension
-    questionnaireResponse.item[1].item[1].addAnswer().value = BooleanType(true)
-    // set at risk
-    questionnaireResponse.item[2].addAnswer().value =
-      Coding().apply {
-        this.code = "870577009"
-        this.system = "https://www.snomed.org"
-        this.display = "High Risk for COVID-19"
-      }
+    setResponsesToTrue("diabetes_mellitus", "hypertension")
 
     val observations =
       QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
@@ -243,17 +223,8 @@ class QuestionnaireUtilsTest : RobolectricTest() {
     val patient = Patient()
     patient.id = "1122"
 
-    // diabetes_mellitus
-    questionnaireResponse.item[1].item[0].addAnswer().value = BooleanType(true)
-    // hypertension
-    questionnaireResponse.item[1].item[1].addAnswer().value = BooleanType(true)
-    // set at risk
-    questionnaireResponse.item[2].addAnswer().value =
-      Coding().apply {
-        this.code = "870577009"
-        this.system = "https://www.snomed.org"
-        this.display = "High Risk for COVID-19"
-      }
+    setResponsesToTrue("diabetes_mellitus", "hypertension")
+
     val observations =
       QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
 
@@ -274,17 +245,7 @@ class QuestionnaireUtilsTest : RobolectricTest() {
     val patient = Patient()
     patient.id = "1122"
 
-    // diabetes_mellitus
-    questionnaireResponse.item[1].item[0].addAnswer().value = BooleanType(true)
-    // hypertension
-    questionnaireResponse.item[1].item[1].addAnswer().value = BooleanType(true)
-    // set at risk
-    questionnaireResponse.item[2].addAnswer().value =
-      Coding().apply {
-        this.code = "870577009"
-        this.system = "https://www.snomed.org"
-        this.display = "High Risk for COVID-19"
-      }
+    setResponsesToTrue("diabetes_mellitus", "hypertension")
 
     val observations =
       QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
@@ -298,5 +259,20 @@ class QuestionnaireUtilsTest : RobolectricTest() {
 
     Assert.assertEquals("http://hl7.org/fhir/StructureDefinition/flag-detail", flagExt.url)
     Assert.assertEquals("at risk", flagExt.value.toString())
+  }
+
+  private fun getQuestionnaireResponseItem(
+    linkId: String
+  ): QuestionnaireResponse.QuestionnaireResponseItemComponent {
+    // comorbidities section is on 2 index
+    return questionnaireResponse.item[2].item.single { it.linkId!!.contentEquals(linkId) }
+  }
+
+  private fun setResponsesToTrue(vararg linkIds: String) {
+    linkIds.forEach { getQuestionnaireResponseItem(it).addAnswer().value = BooleanType(true) }
+  }
+
+  private fun setResponsesToFalse(vararg linkIds: String) {
+    linkIds.forEach { getQuestionnaireResponseItem(it).addAnswer().value = BooleanType(false) }
   }
 }

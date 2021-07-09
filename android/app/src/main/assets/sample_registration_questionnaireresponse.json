@@ -2,6 +2,7 @@
   "resourceType": "QuestionnaireResponse",
   "questionnaire": "Questionnaire/client-registration-sample",
   "item": [
+    {"linkId": "Barcode"},
     {
       "linkId": "PR",
       "item": [
@@ -130,7 +131,16 @@
       ]
     },
     {
-      "linkId": "risk_assessment"
+      "linkId": "risk_assessment",
+      "answer": [
+        {
+          "valueCoding": {
+            "system": "https://www.snomed.org",
+            "code": "870577009",
+            "display": "High Risk for COVID-19"
+          }
+        }
+      ]
     }
   ]
 }

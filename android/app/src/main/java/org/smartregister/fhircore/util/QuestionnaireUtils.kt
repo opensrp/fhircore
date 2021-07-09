@@ -304,7 +304,11 @@ object QuestionnaireUtils {
         val isRiskObs =
           qObs.extension.singleOrNull { ro -> ro.url.contains("RiskAssessment") } != null
 
-        if (isRiskObs && obs.hasValue()) {
+        // todo revisit this when calculate expression is working
+        if (isRiskObs &&
+            ((obs.hasValueBooleanType() && obs.valueBooleanType.booleanValue()) ||
+              (obs.hasValueStringType() && obs.hasValue()))
+        ) {
           riskScore++
 
           risk.addBasis(Reference().apply { this.reference = "Observation/" + obs.id })
@@ -319,7 +323,9 @@ object QuestionnaireUtils {
     risk.occurrence = DateTimeType.now()
     risk.addPrediction().apply {
       this.relativeRisk = riskScore.toBigDecimal()
-      if (qrItem.hasAnswer()) {
+
+      // todo change when calculated expression is working
+      if (qrItem.hasAnswer() && riskScore > 0) {
         this.outcome =
           CodeableConcept().apply {
             this.text = qrItem.answer[0].valueCoding.display
