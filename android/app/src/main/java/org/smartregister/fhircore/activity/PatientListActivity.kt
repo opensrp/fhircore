@@ -80,7 +80,7 @@ class PatientListActivity : BaseSimpleActivity() {
           QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
           this@PatientListActivity.getString(R.string.client_info)
         )
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration-structure-map-extraction.json")
       }
     )
   }
