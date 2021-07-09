@@ -72,12 +72,6 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     return liveObservations
   }
 
-  val liveSearchPatient: MutableLiveData<PatientItem> by lazy { MutableLiveData<PatientItem>() }
-
-  val liveSearchImmunization: MutableLiveData<List<Immunization>> by lazy {
-    MutableLiveData<List<Immunization>>()
-  }
-
   fun searchResults(query: String? = null, page: Int = 0, pageSize: Int = 10) {
     viewModelScope.launch {
       val searchResults: List<Patient> =
@@ -98,17 +92,18 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
           from = (page * pageSize)
         }
 
+      val patients = samplePatients.getPatientItems(searchResults)
+      patients.forEach { it.vaccineStatus = getPatientStatus(it.logicalId) }
+
       liveSearchedPaginatedPatients.value =
         Pair(
-          samplePatients.getPatientItems(searchResults),
+          patients,
           Pagination(totalItems = count(query).toInt(), pageSize = pageSize, currentPage = page)
         )
     }
   }
 
-  fun fetchPatientStatus(id: String): LiveData<PatientStatus> {
-    val status = MutableLiveData<PatientStatus>()
-
+  private suspend fun getPatientStatus(id: String): PatientStatus {
     // check database for immunizations
     val cal: Calendar = Calendar.getInstance()
     cal.add(Calendar.DATE, -28)
@@ -116,33 +111,30 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
     val formatter = SimpleDateFormat("dd-MM-yy", Locale.US)
 
-    viewModelScope.launch {
-      val searchResults: List<Immunization> =
-        fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$id" } }
+    val searchResults: List<Immunization> =
+      fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$id" } }
 
-      val computedStatus =
-        if (searchResults.size == 2) VaccineStatus.VACCINATED
-        else if (searchResults.size == 1 && searchResults[0].recorded.before(overDueStart))
-          VaccineStatus.OVERDUE
-        else if (searchResults.size == 1) VaccineStatus.PARTIAL else VaccineStatus.DUE
+    val computedStatus =
+      if (searchResults.size == 2) VaccineStatus.VACCINATED
+      else if (searchResults.size == 1 && searchResults[0].recorded.before(overDueStart))
+        VaccineStatus.OVERDUE
+      else if (searchResults.size == 1) VaccineStatus.PARTIAL else VaccineStatus.DUE
 
-      status.value =
-        PatientStatus(
-          status = computedStatus,
-          details =
-            if (searchResults.isNotEmpty()) formatter.format(searchResults[0].recorded) else ""
-        )
-    }
-    return status
+    return PatientStatus(
+      status = computedStatus,
+      details = if (searchResults.isNotEmpty()) formatter.format(searchResults[0].recorded) else ""
+    )
   }
 
   /** Basic search for immunizations */
-  fun searchImmunizations(patientId: String? = null) {
+  fun searchImmunizations(patientId: String? = null): LiveData<List<Immunization>> {
+    val liveSearchImmunization: MutableLiveData<List<Immunization>> = MutableLiveData()
     viewModelScope.launch {
       val searchResults: List<Immunization> =
         fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$patientId" } }
       liveSearchImmunization.value = searchResults
     }
+    return liveSearchImmunization
   }
 
   private suspend fun count(query: String? = null): Long {
@@ -159,14 +151,13 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     }
   }
 
-  fun getPatientItem(id: String) {
-    var patientItems: List<PatientItem>? = null
+  fun getPatientItem(id: String): LiveData<PatientItem> {
+    val liveSearchPatient: MutableLiveData<PatientItem> = MutableLiveData()
     viewModelScope.launch {
       val patient = fhirEngine.load(Patient::class.java, id)
-      patientItems = samplePatients.getPatientItems(listOf(patient))
+      liveSearchPatient.value = samplePatients.getPatientItem(patient)
     }
-
-    liveSearchPatient.value = patientItems?.get(0)
+    return liveSearchPatient
   }
 
   fun runSync() {
@@ -224,7 +215,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     val dob: String,
     val html: String,
     val phone: String,
-    val logicalId: String
+    val logicalId: String,
+    var vaccineStatus: PatientStatus? = null
   ) {
     override fun toString(): String = name
   }

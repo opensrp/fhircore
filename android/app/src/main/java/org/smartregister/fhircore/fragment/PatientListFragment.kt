@@ -36,7 +36,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
@@ -63,9 +62,10 @@ class PatientListFragment : Fragment() {
   private lateinit var fhirEngine: FhirEngine
   private val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
   private var search: String? = null
-  private val pageCount: Int = 7
+  private var pageCount: Int = 7
   private lateinit var adapter: PatientItemRecyclerViewAdapter
   private lateinit var paginationView: RelativeLayout
+  private lateinit var recyclerView: RecyclerView
   private lateinit var nextButton: Button
   private lateinit var prevButton: Button
   private lateinit var infoTextView: TextView
@@ -78,19 +78,11 @@ class PatientListFragment : Fragment() {
     return inflater.inflate(R.layout.fragment_patient_list, container, false)
   }
 
-  private fun patientStatusObserver(
-    patientId: String,
-    observer: Observer<PatientListViewModel.PatientStatus>
-  ) {
-    patientListViewModel.fetchPatientStatus(patientId).observe(requireActivity(), observer)
-  }
-
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     fhirEngine = FhirApplication.fhirEngine(requireContext())
 
-    val recyclerView = view.findViewById<RecyclerView>(R.id.patient_list)
-    adapter =
-      PatientItemRecyclerViewAdapter(this::onPatientItemClicked, this::patientStatusObserver)
+    recyclerView = view.findViewById<RecyclerView>(R.id.patient_list)
+    adapter = PatientItemRecyclerViewAdapter(this::onPatientItemClicked)
     paginationView = view.findViewById(R.id.rl_pagination)
     nextButton = view.findViewById(R.id.btn_next_page)
     prevButton = view.findViewById(R.id.btn_previous_page)
@@ -237,10 +229,7 @@ class PatientListFragment : Fragment() {
   }
 
   // Click handler to help display the details about the patients from the list.
-  public fun onPatientItemClicked(
-    intention: Intention,
-    patientItem: PatientListViewModel.PatientItem
-  ) {
+  fun onPatientItemClicked(intention: Intention, patientItem: PatientListViewModel.PatientItem) {
     when (intention) {
       Intention.RECORD_VACCINE -> {
         startActivity(
@@ -305,7 +294,6 @@ class PatientListFragment : Fragment() {
     val list = ArrayList<PatientListViewModel.PatientItem>(data.first)
     updatePagination(data.second)
     adapter.submitList(list)
-    adapter.notifyDataSetChanged()
 
     if (data.first.count() == 0) {
       showEmptyListViews()

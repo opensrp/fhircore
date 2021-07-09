@@ -70,23 +70,21 @@ class PatientDetailFragment : Fragment() {
         )
         .get(PatientListViewModel::class.java)
 
-    viewModel.liveSearchPatient.observe(viewLifecycleOwner, { setupPatientData(it) })
-
     // patient id must be supplied
     patientId = arguments?.getString(ARG_ITEM_ID)!!
-    viewModel.getPatientItem(patientId)
+    viewModel.getPatientItem(patientId).observe(viewLifecycleOwner, { setupPatientData(it) })
 
     // load immunization data
-    viewModel.searchImmunizations(patientId)
-
-    viewModel.liveSearchImmunization.observe(
-      viewLifecycleOwner,
-      {
-        if (it.isNotEmpty()) {
-          updateVaccineStatus(it)
+    viewModel
+      .searchImmunizations(patientId)
+      .observe(
+        viewLifecycleOwner,
+        {
+          if (it.isNotEmpty()) {
+            updateVaccineStatus(it)
+          }
         }
-      }
-    )
+      )
 
     return rootView
   }
@@ -146,8 +144,7 @@ class PatientDetailFragment : Fragment() {
   }
 
   fun editPatient() {
-
-    viewModel.liveSearchPatient.value?.let {
+    viewModel.getPatientItem(patientId).value?.let {
       startActivity(
         Intent(requireContext(), QuestionnaireActivity::class.java).apply {
           putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
