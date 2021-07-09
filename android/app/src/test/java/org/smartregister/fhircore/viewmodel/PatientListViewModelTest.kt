@@ -109,8 +109,7 @@ class PatientListViewModelTest : RobolectricTest() {
 
   @Test
   fun testSearchImmunizationsShoudlReturnEmptyList() {
-    viewModel.searchImmunizations("")
-    Assert.assertTrue(viewModel.liveSearchImmunization.value!!.isEmpty())
+    Assert.assertTrue(viewModel.searchImmunizations("").value!!.isEmpty())
   }
 
   @Test
@@ -148,9 +147,12 @@ class PatientListViewModelTest : RobolectricTest() {
     vaccineStatus: PatientListViewModel.VaccineStatus,
     detail: String
   ) {
-    val status = viewModel.fetchPatientStatus("0")
 
-    Assert.assertEquals(vaccineStatus, status.value?.status)
-    Assert.assertEquals(detail, status.value?.details)
+    runBlocking {
+      val status = viewModel.getPatientStatus("0")
+
+      Assert.assertEquals(vaccineStatus, status.status)
+      Assert.assertEquals(detail, status.details)
+    }
   }
 }

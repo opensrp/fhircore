@@ -20,6 +20,9 @@ import android.content.Intent
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.testing.FragmentScenario
+import androidx.lifecycle.MutableLiveData
+import io.mockk.every
+import io.mockk.spyk
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -58,8 +61,11 @@ class PatientDetailFragmentTest : FragmentRobolectricTest() {
 
   @Test
   fun testEditPatientShouldStartQuestionnaireActivity() {
-    patientDetailFragment.viewModel.liveSearchPatient.value =
-      PatientListViewModel.PatientItem("", "", "", "2000-01-01", "", "", "")
+    patientDetailFragment.viewModel = spyk(patientDetailFragment.viewModel)
+
+    every { patientDetailFragment.viewModel.getPatientItem(any()) } returns
+      MutableLiveData(PatientListViewModel.PatientItem("", "", "", "2000-01-01", "", "", ""))
+
     patientDetailFragment.editPatient()
 
     val expectedIntent =
