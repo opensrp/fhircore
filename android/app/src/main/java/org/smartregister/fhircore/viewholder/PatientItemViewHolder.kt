@@ -19,7 +19,6 @@ package org.smartregister.fhircore.viewholder
 import android.view.View
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientListFragment
@@ -28,25 +27,18 @@ import org.smartregister.fhircore.viewmodel.PatientListViewModel
 
 class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val tvPatientDemographics: TextView = itemView.findViewById(R.id.tv_patient_demographics)
-  private val tvDateLastSeen: TextView = itemView.findViewById(R.id.date_last_seen)
   private val tvRecordVaccine: TextView = itemView.findViewById(R.id.tv_record_vaccine)
   fun bindTo(
     patientItem: PatientListViewModel.PatientItem,
-    onItemClicked: (PatientListFragment.Intention, PatientListViewModel.PatientItem) -> Unit,
-    patientStatusObserver: (String, Observer<PatientListViewModel.PatientStatus>) -> Unit
+    onItemClicked: (PatientListFragment.Intention, PatientListViewModel.PatientItem) -> Unit
   ) {
     setPatientStatus(null, patientItem, this.tvRecordVaccine, onItemClicked)
     this.tvPatientDemographics.text = getPatientDemographics(patientItem)
-    this.tvPatientDemographics.setOnClickListener {
-      onItemClicked(PatientListFragment.Intention.VIEW, patientItem)
-    }
-    this.tvDateLastSeen.setOnClickListener {
+    this.itemView.setOnClickListener {
       onItemClicked(PatientListFragment.Intention.VIEW, patientItem)
     }
 
-    patientStatusObserver(patientItem.logicalId) {
-      setPatientStatus(it, patientItem, this.tvRecordVaccine, onItemClicked)
-    }
+    setPatientStatus(patientItem.vaccineStatus, patientItem, this.tvRecordVaccine, onItemClicked)
   }
 
   private fun setPatientStatus(

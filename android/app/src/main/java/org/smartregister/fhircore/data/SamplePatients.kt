@@ -70,6 +70,8 @@ class SamplePatients {
     return patients
   }
 
+  fun getPatientItem(fhirPatient: Patient?) = fhirPatient?.let { createPatientItem(1, it) }
+
   /** Creates PatientItem objects with displayable values from the Fhir Patient objects. */
   private fun createPatientItem(position: Int, patient: Patient): PatientListViewModel.PatientItem {
     val name = patient.name[0].nameAsSingleString
