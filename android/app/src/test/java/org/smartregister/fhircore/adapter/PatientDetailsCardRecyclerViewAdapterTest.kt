@@ -64,4 +64,27 @@ class PatientDetailsCardRecyclerViewAdapterTest : RobolectricTest() {
     adapter.bindViewHolder(viewHolder, 0)
     verify(exactly = 1) { viewHolder.bindTo(any()) }
   }
+
+  @Test
+  fun testAdapterDiffUtilEquatesDifferentObjectsWithSameId() {
+    val diffCallback = PatientDetailsCardRecyclerViewAdapter.PatientDetailsCardDiffCallback()
+
+    val item = PatientDetailsCard(0, 0, "1", "Patient", "RegistrationDate", "Details")
+
+    // change id only
+    val itemDifferentId = PatientDetailsCard(0, 0, "2", "Patient", "RegistrationDate", "Details")
+    Assert.assertFalse(diffCallback.areContentsTheSame(item, itemDifferentId))
+    Assert.assertFalse(diffCallback.areItemsTheSame(item, itemDifferentId))
+
+    // same id different content
+    val itemWithMatchingId =
+      PatientDetailsCard(0, 0, "1", "Patient", "RegistrationDates", "Details")
+    Assert.assertFalse(diffCallback.areContentsTheSame(item, itemWithMatchingId))
+    Assert.assertTrue(diffCallback.areItemsTheSame(item, itemWithMatchingId))
+
+    // identical items
+    val identical = PatientDetailsCard(0, 0, "1", "Patient", "RegistrationDate", "Details")
+    Assert.assertTrue(diffCallback.areContentsTheSame(item, identical))
+    Assert.assertTrue(diffCallback.areItemsTheSame(item, identical))
+  }
 }

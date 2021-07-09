@@ -21,9 +21,10 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.util.Constants
 import org.smartregister.fhircore.util.Utils
 
-/** * A wrapper class that displays a patients activity history */
+/** * A wrapper class that displays a patient's historical activity */
 data class PatientDetailsCard(
   val groupIndex: Int,
   val index: Int,
@@ -59,7 +60,7 @@ fun Immunization.toDetailsCard(context: Context, index: Int = 0, hasNext: Boolea
       context.getString(
         R.string.immunization_next_dose_text,
         ((this.protocolApplied[0].doseNumber as PositiveIntType).value + 1),
-        Utils.addDays(this.occurrenceDateTimeType.toHumanDisplay(), 28)
+        Utils.addDays(this.occurrenceDateTimeType.toHumanDisplay(), Constants.DAYS_IN_MONTH)
       )
     else context.getString(R.string.fully_vaccinated)
   )

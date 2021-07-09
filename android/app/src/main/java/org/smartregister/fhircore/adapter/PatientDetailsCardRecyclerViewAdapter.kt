@@ -26,9 +26,9 @@ import org.smartregister.fhircore.viewholder.PatientDetailsCardViewHolder
 
 /** UI Controller helper class to display list of observations. */
 class PatientDetailsCardRecyclerViewAdapter :
-  ListAdapter<PatientDetailsCard, PatientDetailsCardViewHolder>(ObservationItemDiffCallback()) {
+  ListAdapter<PatientDetailsCard, PatientDetailsCardViewHolder>(PatientDetailsCardDiffCallback()) {
 
-  class ObservationItemDiffCallback : DiffUtil.ItemCallback<PatientDetailsCard>() {
+  class PatientDetailsCardDiffCallback : DiffUtil.ItemCallback<PatientDetailsCard>() {
     override fun areItemsTheSame(
       oldItem: PatientDetailsCard,
       newItem: PatientDetailsCard

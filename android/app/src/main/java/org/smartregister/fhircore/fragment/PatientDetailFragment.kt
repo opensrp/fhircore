@@ -71,7 +71,7 @@ class PatientDetailFragment : Fragment() {
         )
         .get(PatientListViewModel::class.java)
 
-    // load immunization data
+    // bind profile data
     loadProfile()
 
     return rootView
@@ -96,7 +96,11 @@ class PatientDetailFragment : Fragment() {
     val gender = if (patient?.gender == "male") 'M' else 'F'
     if (patient != null) {
       val patientDetailLabel =
-        patient.name + ", " + gender + ", " + patient.dob.let { it1 -> Utils.getAgeFromDate(it1) }
+        patient.name +
+          ", " +
+          gender +
+          ", " +
+          patient.dob.let { dobString -> Utils.getAgeFromDate(dobString) }
       activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
       activity?.findViewById<TextView>(R.id.id_patient_number)?.text = "ID: " + patient.logicalId
       patientId = patient.logicalId
