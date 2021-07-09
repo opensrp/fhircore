@@ -94,6 +94,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
           }
 
           sort(Patient.GIVEN, Order.ASCENDING)
+          count = pageSize
+          from = (page * pageSize)
         }
 
       liveSearchedPaginatedPatients.value =
