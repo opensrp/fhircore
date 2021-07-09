@@ -29,15 +29,15 @@ import org.junit.Test
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.RobolectricTest
-import org.smartregister.fhircore.viewmodel.PatientListViewModel
+import org.smartregister.fhircore.fragment.PatientDetailsCard
 
-class ObservationItemRecyclerViewAdapterTest : RobolectricTest() {
+class PatientDetailsCardRecyclerViewAdapterTest : RobolectricTest() {
 
-  lateinit var adapter: ObservationItemRecyclerViewAdapter
+  lateinit var adapter: PatientDetailsCardRecyclerViewAdapter
 
   @Before
   fun setUp() {
-    adapter = ObservationItemRecyclerViewAdapter()
+    adapter = PatientDetailsCardRecyclerViewAdapter()
   }
 
   @Test
@@ -46,7 +46,7 @@ class ObservationItemRecyclerViewAdapterTest : RobolectricTest() {
 
     val itemView =
       LayoutInflater.from(FhirApplication.getContext())
-        .inflate(R.layout.observation_list_item, null, false)
+        .inflate(R.layout.patient_details_card_item, null, false)
     val layoutInflater = mockk<LayoutInflater>()
     val viewGroup = mockk<ViewGroup>()
 
@@ -54,7 +54,7 @@ class ObservationItemRecyclerViewAdapterTest : RobolectricTest() {
     every { LayoutInflater.from(any()) } returns layoutInflater
     every { layoutInflater.inflate(any<Int>(), any(), any()) } returns itemView
 
-    val list = listOf(mockk<PatientListViewModel.ObservationItem>())
+    val list = listOf(mockk<PatientDetailsCard>())
     adapter.submitList(list)
 
     val viewHolder = spyk(adapter.createViewHolder(viewGroup, 0))

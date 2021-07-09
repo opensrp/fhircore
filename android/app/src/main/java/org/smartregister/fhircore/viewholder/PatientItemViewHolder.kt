@@ -22,15 +22,17 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientListFragment
+import org.smartregister.fhircore.model.PatientItem
+import org.smartregister.fhircore.model.PatientStatus
+import org.smartregister.fhircore.model.VaccineStatus
 import org.smartregister.fhircore.util.Utils.getAgeFromDate
-import org.smartregister.fhircore.viewmodel.PatientListViewModel
 
 class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val tvPatientDemographics: TextView = itemView.findViewById(R.id.tv_patient_demographics)
   private val tvRecordVaccine: TextView = itemView.findViewById(R.id.tv_record_vaccine)
   fun bindTo(
-    patientItem: PatientListViewModel.PatientItem,
-    onItemClicked: (PatientListFragment.Intention, PatientListViewModel.PatientItem) -> Unit
+    patientItem: PatientItem,
+    onItemClicked: (PatientListFragment.Intention, PatientItem) -> Unit
   ) {
     setPatientStatus(null, patientItem, this.tvRecordVaccine, onItemClicked)
     this.tvPatientDemographics.text = getPatientDemographics(patientItem)
@@ -42,23 +44,23 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
   }
 
   private fun setPatientStatus(
-    patientStatus: PatientListViewModel.PatientStatus?,
-    patientItem: PatientListViewModel.PatientItem,
+    patientStatus: PatientStatus?,
+    patientItem: PatientItem,
     tvRecordVaccine: TextView,
-    onItemClicked: (PatientListFragment.Intention, PatientListViewModel.PatientItem) -> Unit,
+    onItemClicked: (PatientListFragment.Intention, PatientItem) -> Unit,
   ) {
     tvRecordVaccine.text = ""
     val status = patientStatus?.status ?: return
 
     when (status) {
-      PatientListViewModel.VaccineStatus.VACCINATED -> {
+      VaccineStatus.VACCINATED -> {
         tvRecordVaccine.text = tvRecordVaccine.context.getString(R.string.status_vaccinated)
         tvRecordVaccine.setTextColor(
           ContextCompat.getColor(tvRecordVaccine.context, R.color.status_green)
         )
         tvRecordVaccine.setOnClickListener {}
       }
-      PatientListViewModel.VaccineStatus.OVERDUE -> {
+      VaccineStatus.OVERDUE -> {
         tvRecordVaccine.text = tvRecordVaccine.context.getString(R.string.status_overdue)
         tvRecordVaccine.setTextColor(
           ContextCompat.getColor(tvRecordVaccine.context, R.color.status_red)
@@ -67,7 +69,7 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
           onItemClicked(PatientListFragment.Intention.RECORD_VACCINE, patientItem)
         }
       }
-      PatientListViewModel.VaccineStatus.PARTIAL -> {
+      VaccineStatus.PARTIAL -> {
         tvRecordVaccine.text =
           tvRecordVaccine.context.getString(
             R.string.status_received_vaccine,
@@ -81,7 +83,7 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
           onItemClicked(PatientListFragment.Intention.RECORD_VACCINE, patientItem)
         }
       }
-      PatientListViewModel.VaccineStatus.DUE -> {
+      VaccineStatus.DUE -> {
         tvRecordVaccine.text = tvRecordVaccine.context.getString(R.string.status_record_vaccine)
         tvRecordVaccine.setTextColor(
           ContextCompat.getColor(tvRecordVaccine.context, R.color.status_blue)
@@ -93,7 +95,7 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
     }
   }
 
-  private fun getPatientDemographics(patientItem: PatientListViewModel.PatientItem): String {
+  private fun getPatientDemographics(patientItem: PatientItem): String {
     val age = getAgeFromDate(patientItem.dob)
     val names = patientItem.name.split(' ')
     val gender = if (patientItem.gender == "male") 'M' else 'F'

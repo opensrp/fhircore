@@ -22,26 +22,20 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientListFragment
+import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.viewholder.PatientItemViewHolder
-import org.smartregister.fhircore.viewmodel.PatientListViewModel
 
 /** UI Controller helper class to monitor Patient viewmodel and display list of patients. */
 class PatientItemRecyclerViewAdapter(
-  private val onItemClicked:
-    (PatientListFragment.Intention, PatientListViewModel.PatientItem) -> Unit
-) :
-  ListAdapter<PatientListViewModel.PatientItem, PatientItemViewHolder>(PatientItemDiffCallback()) {
+  private val onItemClicked: (PatientListFragment.Intention, PatientItem) -> Unit
+) : ListAdapter<PatientItem, PatientItemViewHolder>(PatientItemDiffCallback()) {
 
-  class PatientItemDiffCallback : DiffUtil.ItemCallback<PatientListViewModel.PatientItem>() {
-    override fun areItemsTheSame(
-      oldItem: PatientListViewModel.PatientItem,
-      newItem: PatientListViewModel.PatientItem
-    ): Boolean = oldItem.id == newItem.id
+  class PatientItemDiffCallback : DiffUtil.ItemCallback<PatientItem>() {
+    override fun areItemsTheSame(oldItem: PatientItem, newItem: PatientItem): Boolean =
+      oldItem.id == newItem.id
 
-    override fun areContentsTheSame(
-      oldItem: PatientListViewModel.PatientItem,
-      newItem: PatientListViewModel.PatientItem
-    ): Boolean = oldItem == newItem
+    override fun areContentsTheSame(oldItem: PatientItem, newItem: PatientItem): Boolean =
+      oldItem == newItem
   }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PatientItemViewHolder =

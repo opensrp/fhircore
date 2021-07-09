@@ -29,7 +29,7 @@ import org.junit.Test
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.RobolectricTest
-import org.smartregister.fhircore.viewmodel.PatientListViewModel
+import org.smartregister.fhircore.model.PatientItem
 
 class PatientItemRecyclerViewAdapterTest : RobolectricTest() {
 
@@ -54,7 +54,7 @@ class PatientItemRecyclerViewAdapterTest : RobolectricTest() {
     every { LayoutInflater.from(any()) } returns layoutInflater
     every { layoutInflater.inflate(any<Int>(), any(), any()) } returns itemView
 
-    val list = listOf(mockk<PatientListViewModel.PatientItem>())
+    val list = listOf(mockk<PatientItem>())
     adapter.submitList(list)
 
     val viewHolder = spyk(adapter.createViewHolder(viewGroup, 0))
@@ -70,7 +70,7 @@ class PatientItemRecyclerViewAdapterTest : RobolectricTest() {
     val diffCallback = PatientItemRecyclerViewAdapter.PatientItemDiffCallback()
 
     val item =
-      PatientListViewModel.PatientItem(
+      PatientItem(
         id = "1",
         name = "name",
         gender = "Male",
@@ -82,7 +82,7 @@ class PatientItemRecyclerViewAdapterTest : RobolectricTest() {
 
     // change id only
     val itemDifferentId =
-      PatientListViewModel.PatientItem(
+      PatientItem(
         id = "2",
         name = "name",
         gender = "Male",
@@ -96,7 +96,7 @@ class PatientItemRecyclerViewAdapterTest : RobolectricTest() {
 
     // same id different content
     val itemWithMatchingId =
-      PatientListViewModel.PatientItem(
+      PatientItem(
         id = "1",
         name = "name1",
         gender = "Male",
@@ -110,7 +110,7 @@ class PatientItemRecyclerViewAdapterTest : RobolectricTest() {
 
     // identical items
     val identical =
-      PatientListViewModel.PatientItem(
+      PatientItem(
         id = "1",
         name = "name",
         gender = "Male",

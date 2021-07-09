@@ -26,7 +26,9 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.RobolectricTest
 import org.smartregister.fhircore.fragment.PatientListFragment
-import org.smartregister.fhircore.viewmodel.PatientListViewModel
+import org.smartregister.fhircore.model.PatientItem
+import org.smartregister.fhircore.model.PatientStatus
+import org.smartregister.fhircore.model.VaccineStatus
 
 class PatientItemViewHolderTest : RobolectricTest() {
 
@@ -44,13 +46,12 @@ class PatientItemViewHolderTest : RobolectricTest() {
   @Test
   fun testVerifyPatientItemData() {
 
-    val itemClickListener =
-        { intention: PatientListFragment.Intention, item: PatientListViewModel.PatientItem ->
+    val itemClickListener = { intention: PatientListFragment.Intention, item: PatientItem ->
       verifyPatient(item)
     }
 
     viewHolder.bindTo(
-      PatientListViewModel.PatientItem(
+      PatientItem(
         "1",
         "Mc Jane",
         "male",
@@ -58,7 +59,7 @@ class PatientItemViewHolderTest : RobolectricTest() {
         "",
         "1234567",
         "2",
-        PatientListViewModel.PatientStatus(PatientListViewModel.VaccineStatus.VACCINATED, "Details")
+        PatientStatus(VaccineStatus.VACCINATED, "Details")
       ),
       itemClickListener
     )
@@ -74,8 +75,7 @@ class PatientItemViewHolderTest : RobolectricTest() {
 
   @Test
   fun verifyDataDisplayedOnStatusChanged() {
-    val itemClickListener =
-        { intention: PatientListFragment.Intention, item: PatientListViewModel.PatientItem ->
+    val itemClickListener = { intention: PatientListFragment.Intention, item: PatientItem ->
       verifyPatient(item)
     }
 
@@ -83,9 +83,7 @@ class PatientItemViewHolderTest : RobolectricTest() {
 
     // vaccinated
     viewHolder.bindTo(
-      composeRandomPatientItem(
-        PatientListViewModel.PatientStatus(PatientListViewModel.VaccineStatus.VACCINATED, "Details")
-      ),
+      composeRandomPatientItem(PatientStatus(VaccineStatus.VACCINATED, "Details")),
       itemClickListener
     )
     itemView.performClick()
@@ -93,9 +91,7 @@ class PatientItemViewHolderTest : RobolectricTest() {
 
     // overdue
     viewHolder.bindTo(
-      composeRandomPatientItem(
-        PatientListViewModel.PatientStatus(PatientListViewModel.VaccineStatus.OVERDUE, "Details")
-      ),
+      composeRandomPatientItem(PatientStatus(VaccineStatus.OVERDUE, "Details")),
       itemClickListener
     )
     itemView.performClick()
@@ -103,9 +99,7 @@ class PatientItemViewHolderTest : RobolectricTest() {
 
     // partial
     viewHolder.bindTo(
-      composeRandomPatientItem(
-        PatientListViewModel.PatientStatus(PatientListViewModel.VaccineStatus.PARTIAL, "Details")
-      ),
+      composeRandomPatientItem(PatientStatus(VaccineStatus.PARTIAL, "Details")),
       itemClickListener
     )
     itemView.performClick()
@@ -118,26 +112,15 @@ class PatientItemViewHolderTest : RobolectricTest() {
 
     // due
     viewHolder.bindTo(
-      composeRandomPatientItem(
-        PatientListViewModel.PatientStatus(PatientListViewModel.VaccineStatus.DUE, "Details")
-      ),
+      composeRandomPatientItem(PatientStatus(VaccineStatus.DUE, "Details")),
       itemClickListener
     )
     itemView.performClick()
     verifyViewHolderStatus(tvRecordVaccine, R.string.status_record_vaccine)
   }
 
-  private fun composeRandomPatientItem(status: PatientListViewModel.PatientStatus) =
-    PatientListViewModel.PatientItem(
-      "1",
-      "Mc Jane",
-      "male",
-      "2000-01-01",
-      "",
-      "1234567",
-      "2",
-      status
-    )
+  private fun composeRandomPatientItem(status: PatientStatus) =
+    PatientItem("1", "Mc Jane", "male", "2000-01-01", "", "1234567", "2", status)
 
   private fun verifyViewHolderStatus(tvRecordVaccine: TextView, resource: Int) {
     Assert.assertEquals(
@@ -146,7 +129,7 @@ class PatientItemViewHolderTest : RobolectricTest() {
     )
   }
 
-  private fun verifyPatient(patientItem: PatientListViewModel.PatientItem) {
+  private fun verifyPatient(patientItem: PatientItem) {
     Assert.assertEquals("1", patientItem.id)
     Assert.assertEquals("Mc Jane", patientItem.name)
     Assert.assertEquals("male", patientItem.gender)

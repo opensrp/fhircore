@@ -30,6 +30,7 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.RobolectricTest
+import org.smartregister.fhircore.model.VaccineStatus
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
 @Config(shadows = [FhirApplicationShadow::class])
@@ -45,11 +46,6 @@ class PatientListViewModelTest : RobolectricTest() {
     appContext = FhirApplication.getContext()
     fhirEngine = FhirApplication.fhirEngine(appContext)
     viewModel = PatientListViewModel(appContext, fhirEngine)
-  }
-
-  @Test
-  fun testGetObservationsShouldReturnEmptyList() {
-    Assert.assertEquals(20, viewModel.getObservations().value?.size)
   }
 
   @Test
@@ -83,33 +79,19 @@ class PatientListViewModelTest : RobolectricTest() {
 
     // verify VACCINATED
     runBlocking { fhirEngine.save(immunizationList[0], immunizationList[1]) }
-    verifyPatientStatus(
-      PatientListViewModel.VaccineStatus.VACCINATED,
-      formatter.format(immunizationList[0].recorded)
-    )
+    verifyPatientStatus(VaccineStatus.VACCINATED, formatter.format(immunizationList[0].recorded))
 
     // verify OVERDUE
     runBlocking { fhirEngine.remove(Immunization::class.java, "Patient/0") }
-    verifyPatientStatus(
-      PatientListViewModel.VaccineStatus.OVERDUE,
-      formatter.format(immunizationList[0].recorded)
-    )
+    verifyPatientStatus(VaccineStatus.OVERDUE, formatter.format(immunizationList[0].recorded))
 
     // verify PARTIAL
     runBlocking { fhirEngine.update(immunizationList[0].apply { recorded = Date() }) }
-    verifyPatientStatus(
-      PatientListViewModel.VaccineStatus.PARTIAL,
-      formatter.format(immunizationList[0].recorded)
-    )
+    verifyPatientStatus(VaccineStatus.PARTIAL, formatter.format(immunizationList[0].recorded))
 
     // verify DUE
     runBlocking { fhirEngine.remove(Immunization::class.java, "Patient/0") }
-    verifyPatientStatus(PatientListViewModel.VaccineStatus.DUE, "")
-  }
-
-  @Test
-  fun testSearchImmunizationsShoudlReturnEmptyList() {
-    Assert.assertTrue(viewModel.searchImmunizations("").value!!.isEmpty())
+    verifyPatientStatus(VaccineStatus.DUE, "")
   }
 
   @Test
@@ -143,10 +125,7 @@ class PatientListViewModelTest : RobolectricTest() {
     Assert.assertEquals(1, pagination?.pageSize)
   }
 
-  private fun verifyPatientStatus(
-    vaccineStatus: PatientListViewModel.VaccineStatus,
-    detail: String
-  ) {
+  private fun verifyPatientStatus(vaccineStatus: VaccineStatus, detail: String) {
 
     runBlocking {
       val status = viewModel.getPatientStatus("0")
