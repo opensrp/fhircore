@@ -36,7 +36,7 @@
 
     <TextView
         android:id="@+id/date_last_seen"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/text_margin"
         android:layout_marginEnd="@dimen/small_text_margin"
@@ -48,6 +48,15 @@
         android:paddingBottom="20dp"
         android:paddingLeft="10dp"
         android:paddingStart="6dp" />
+
+    <TextView
+        android:id="@+id/risk_flag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="At Risk"
+        android:textColor="@color/orange"
+        app:layout_constraintStart_toEndOf="@id/date_last_seen"
+        app:layout_constraintTop_toBottomOf="@id/tv_patient_demographics"/>
 
     <View
         android:layout_width="1dp"

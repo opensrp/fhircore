@@ -77,7 +77,8 @@ class PatientItemRecyclerViewAdapterTest : RobolectricTest() {
         dob = "2021-01-01",
         html = "asd",
         phone = "011",
-        logicalId = "1234"
+        logicalId = "1234",
+        risk = "high risk"
       )
 
     // change id only
@@ -89,7 +90,8 @@ class PatientItemRecyclerViewAdapterTest : RobolectricTest() {
         dob = "2021-01-01",
         html = "asd",
         phone = "011",
-        logicalId = "1234"
+        logicalId = "1234",
+        risk = "high risk"
       )
     Assert.assertFalse(diffCallback.areContentsTheSame(item, itemDifferentId))
     Assert.assertFalse(diffCallback.areItemsTheSame(item, itemDifferentId))
@@ -103,7 +105,8 @@ class PatientItemRecyclerViewAdapterTest : RobolectricTest() {
         dob = "2021-01-01",
         html = "asd",
         phone = "011",
-        logicalId = "1234"
+        logicalId = "1234",
+        risk = "high risk"
       )
     Assert.assertFalse(diffCallback.areContentsTheSame(item, itemWithMatchingId))
     Assert.assertTrue(diffCallback.areItemsTheSame(item, itemWithMatchingId))
@@ -117,7 +120,8 @@ class PatientItemRecyclerViewAdapterTest : RobolectricTest() {
         dob = "2021-01-01",
         html = "asd",
         phone = "011",
-        logicalId = "1234"
+        logicalId = "1234",
+        risk = "high risk"
       )
     Assert.assertTrue(diffCallback.areContentsTheSame(item, identical))
     Assert.assertTrue(diffCallback.areItemsTheSame(item, identical))

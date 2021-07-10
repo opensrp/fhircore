@@ -216,6 +216,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     val html: String,
     val phone: String,
     val logicalId: String,
+    val risk: String,
     var vaccineStatus: PatientStatus? = null
   ) {
     override fun toString(): String = name

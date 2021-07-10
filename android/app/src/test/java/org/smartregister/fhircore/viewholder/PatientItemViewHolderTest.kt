@@ -58,6 +58,7 @@ class PatientItemViewHolderTest : RobolectricTest() {
         "",
         "1234567",
         "2",
+        "high risk",
         PatientListViewModel.PatientStatus(PatientListViewModel.VaccineStatus.VACCINATED, "Details")
       ),
       itemClickListener
@@ -136,6 +137,7 @@ class PatientItemViewHolderTest : RobolectricTest() {
       "",
       "1234567",
       "2",
+      "high risk",
       status
     )
 
@@ -153,5 +155,6 @@ class PatientItemViewHolderTest : RobolectricTest() {
     Assert.assertEquals("", patientItem.html)
     Assert.assertEquals("1234567", patientItem.phone)
     Assert.assertEquals("2", patientItem.logicalId)
+    Assert.assertEquals("high risk", patientItem.risk)
   }
 }

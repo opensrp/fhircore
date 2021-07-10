@@ -83,8 +83,19 @@ class SamplePatients {
     val phone: String =
       if (patient.hasTelecom() && patient.telecom[0].hasValue()) patient.telecom[0].value else ""
     val logicalId: String = patient.logicalId
+    val ext = patient.extension.singleOrNull { it.value.toString().contains("risk") }
+    val risk = ext?.value?.toString() ?: ""
 
-    return PatientListViewModel.PatientItem(patient.id, name, gender, dob, html, phone, logicalId)
+    return PatientListViewModel.PatientItem(
+      patient.id,
+      name,
+      gender,
+      dob,
+      html,
+      phone,
+      logicalId,
+      risk
+    )
   }
 
   /** Returns list of ObservationItem objects based on observations from the json string. */

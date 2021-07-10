@@ -21,6 +21,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.activity.QuestionnaireActivity
@@ -43,6 +45,14 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     }
 
   fun saveResource(resource: Resource) {
+    viewModelScope.launch { FhirApplication.fhirEngine(getApplication()).save(resource) }
+  }
+
+  fun saveObservations(resource: List<Observation>) {
+    resource.stream().forEach { viewModelScope.launch { saveResource(it) } }
+  }
+
+  fun savePatient(resource: Patient) {
     viewModelScope.launch { FhirApplication.fhirEngine(getApplication()).save(resource) }
   }
 }
