@@ -25,7 +25,7 @@ import org.smartregister.fhircore.fragment.PatientListFragment
 import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.model.PatientStatus
 import org.smartregister.fhircore.model.VaccineStatus
-import org.smartregister.fhircore.util.Utils.getAgeFromDate
+import org.smartregister.fhircore.util.Utils.getPatientAgeGender
 
 class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val tvPatientDemographics: TextView = itemView.findViewById(R.id.tv_patient_demographics)
@@ -96,9 +96,8 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
   }
 
   private fun getPatientDemographics(patientItem: PatientItem): String {
-    val age = getAgeFromDate(patientItem.dob)
+    val (age, gender) = getPatientAgeGender(patientItem)
     val names = patientItem.name.split(' ')
-    val gender = if (patientItem.gender == "male") 'M' else 'F'
     return listOf(names[1], names[0], gender, "$age").joinToString()
   }
 }

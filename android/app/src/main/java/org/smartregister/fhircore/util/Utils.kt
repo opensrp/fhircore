@@ -36,6 +36,7 @@ import org.joda.time.ReadablePartial
 import org.joda.time.Years
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
+import org.smartregister.fhircore.model.PatientItem
 import timber.log.Timber
 
 object Utils {
@@ -127,5 +128,12 @@ object Utils {
     val fmt: DateTimeFormatter = DateTimeFormat.forPattern(returnDateFormat)
     val date: DateTime = DateTime.parse(initialDate)
     return date.plusDays(daysToAdd).toString(fmt)
+  }
+
+  data class PatientAgeGender(val age: Int, val genderAbbr: Char)
+  fun getPatientAgeGender(patientItem: PatientItem): PatientAgeGender {
+    val age = getAgeFromDate(patientItem.dob)
+    val gender = if (patientItem.gender == "male") 'M' else 'F'
+    return PatientAgeGender(age, gender)
   }
 }

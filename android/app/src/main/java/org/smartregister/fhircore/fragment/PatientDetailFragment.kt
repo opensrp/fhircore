@@ -92,20 +92,17 @@ class PatientDetailFragment : Fragment() {
     loadProfile()
   }
 
-  private fun setupPatientData(patient: PatientItem?) {
-    val gender = if (patient?.gender == "male") 'M' else 'F'
-    if (patient != null) {
+  private fun setupPatientData(patientItem: PatientItem?) {
+    if (patientItem != null) {
+      val (age, gender) = Utils.getPatientAgeGender(patientItem)
       val patientDetailLabel =
-        patient.name +
-          ", " +
-          gender +
-          ", " +
-          patient.dob.let { dobString -> Utils.getAgeFromDate(dobString) }
+        patientItem.name + ", " + gender + ", " + patientItem.dob.let { dobString -> age }
       activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
-      activity?.findViewById<TextView>(R.id.id_patient_number)?.text = "ID: " + patient.logicalId
-      patientId = patient.logicalId
-      doseNumber = patient.vaccineSummary?.doseNumber
-      initialDose = patient.vaccineSummary?.initialDose
+      activity?.findViewById<TextView>(R.id.id_patient_number)?.text =
+        "ID: " + patientItem.logicalId
+      patientId = patientItem.logicalId
+      doseNumber = patientItem.vaccineSummary?.doseNumber
+      initialDose = patientItem.vaccineSummary?.initialDose
     }
   }
 
