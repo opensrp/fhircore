@@ -100,6 +100,10 @@ class PatientDetailFragment : Fragment() {
       activity?.findViewById<TextView>(R.id.patient_bio_data)?.text = patientDetailLabel
       activity?.findViewById<TextView>(R.id.id_patient_number)?.text =
         "ID: " + patientItem.logicalId
+      activity?.findViewById<TextView>(R.id.risk_flag)?.text = patientItem.risk
+      activity?.findViewById<TextView>(R.id.risk_flag)?.visibility =
+        if (patientItem.risk.isNullOrEmpty()) View.INVISIBLE else View.VISIBLE
+
       patientId = patientItem.logicalId
       doseNumber = patientItem.vaccineSummary?.doseNumber
       initialDose = patientItem.vaccineSummary?.initialDose

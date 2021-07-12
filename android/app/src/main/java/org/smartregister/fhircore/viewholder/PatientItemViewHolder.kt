@@ -30,6 +30,8 @@ import org.smartregister.fhircore.util.Utils.getPatientAgeGender
 class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val tvPatientDemographics: TextView = itemView.findViewById(R.id.tv_patient_demographics)
   private val tvRecordVaccine: TextView = itemView.findViewById(R.id.tv_record_vaccine)
+  private val atRisk: TextView = itemView.findViewById(R.id.risk_flag)
+
   fun bindTo(
     patientItem: PatientItem,
     onItemClicked: (PatientListFragment.Intention, PatientItem) -> Unit
@@ -39,6 +41,8 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
     this.itemView.setOnClickListener {
       onItemClicked(PatientListFragment.Intention.VIEW, patientItem)
     }
+    this.atRisk.text = patientItem.risk
+    this.atRisk.visibility = if (patientItem.risk.isNullOrEmpty()) View.INVISIBLE else View.VISIBLE
 
     setPatientStatus(patientItem.vaccineStatus, patientItem, this.tvRecordVaccine, onItemClicked)
   }

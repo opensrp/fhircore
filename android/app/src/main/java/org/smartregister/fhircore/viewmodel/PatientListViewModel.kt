@@ -238,6 +238,8 @@ fun Patient.toPatientItem(): PatientItem {
   val phone: String =
     if (this.hasTelecom() && this.telecom[0].hasValue()) this.telecom[0].value else ""
   val logicalId: String = this.logicalId
+  val ext = this.extension.singleOrNull { it.value.toString().contains("risk") }
+  val risk = ext?.value?.toString() ?: ""
 
-  return PatientItem(this.logicalId, name, gender, dob, html, phone, logicalId)
+  return PatientItem(this.logicalId, name, gender, dob, html, phone, logicalId, risk)
 }

@@ -25,6 +25,7 @@ data class PatientItem(
   val html: String,
   val phone: String,
   val logicalId: String,
+  val risk: String,
   var vaccineStatus: PatientStatus? = null,
   var vaccineSummary: PatientVaccineSummary? = null
 ) {

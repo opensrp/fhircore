@@ -95,7 +95,16 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
     val id = "49333c33-f50f-4c3e-abd4-7aeb0f160ac2"
     val logicalId = "812983127"
     val patientItem =
-      PatientItem(id, "John Doe", "male", "1985-05-21", "somehtml", "0700 000 000", logicalId)
+      PatientItem(
+        id,
+        "John Doe",
+        "male",
+        "1985-05-21",
+        "somehtml",
+        "0700 000 000",
+        logicalId,
+        "high risk"
+      )
 
     shadowOf(Looper.getMainLooper()).idle()
 
@@ -135,7 +144,16 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
   @Test
   fun testEmptyListMessageWithNonZeroClients() {
     var patient =
-      PatientItem("12", "John Doe", "male", "1985-05-21", "somehtml", "0700 000 000", "test_id")
+      PatientItem(
+        "12",
+        "John Doe",
+        "male",
+        "1985-05-21",
+        "somehtml",
+        "0700 000 000",
+        "test_id",
+        "high risk"
+      )
     shadowOf(Looper.getMainLooper()).idle()
 
     patientListFragment.patientListViewModel.liveSearchedPaginatedPatients.value =
