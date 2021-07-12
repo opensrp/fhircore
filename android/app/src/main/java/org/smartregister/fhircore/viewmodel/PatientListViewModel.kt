@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.viewmodel
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -26,6 +27,7 @@ import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.count
@@ -39,14 +41,18 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.api.HapiFhirService
 import org.smartregister.fhircore.data.HapiFhirResourceDataSource
-import org.smartregister.fhircore.data.SamplePatients
 import org.smartregister.fhircore.domain.Pagination
+import org.smartregister.fhircore.fragment.PatientDetailsCard
+import org.smartregister.fhircore.fragment.toDetailsCard
+import org.smartregister.fhircore.model.PatientItem
+import org.smartregister.fhircore.model.PatientStatus
+import org.smartregister.fhircore.model.PatientVaccineSummary
+import org.smartregister.fhircore.model.VaccineStatus
 import org.smartregister.fhircore.util.Utils
-
-private const val OBSERVATIONS_JSON_FILENAME = "sample_observations_bundle.json"
 
 /**
  * The ViewModel helper class for PatientItemRecyclerViewAdapter, that is responsible for preparing
@@ -55,21 +61,8 @@ private const val OBSERVATIONS_JSON_FILENAME = "sample_observations_bundle.json"
 class PatientListViewModel(application: Application, private val fhirEngine: FhirEngine) :
   AndroidViewModel(application) {
 
-  // Make sample Fhir Patients and Observations available, in case needed for demo.
-  private val jsonStringObservations = getAssetFileAsString(OBSERVATIONS_JSON_FILENAME)
-
-  private val samplePatients = SamplePatients()
-
-  private val observations = samplePatients.getObservationItems(jsonStringObservations)
-  private val liveObservations: MutableLiveData<List<ObservationItem>> =
-    MutableLiveData(observations)
-
   val liveSearchedPaginatedPatients: MutableLiveData<Pair<List<PatientItem>, Pagination>> by lazy {
     MutableLiveData<Pair<List<PatientItem>, Pagination>>()
-  }
-
-  fun getObservations(): LiveData<List<ObservationItem>> {
-    return liveObservations
   }
 
   fun searchResults(query: String? = null, page: Int = 0, pageSize: Int = 10) {
@@ -92,7 +85,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
           from = (page * pageSize)
         }
 
-      val patients = samplePatients.getPatientItems(searchResults)
+      val patients = searchResults.map { it.toPatientItem() }
       patients.forEach { it.vaccineStatus = getPatientStatus(it.logicalId) }
 
       liveSearchedPaginatedPatients.value =
@@ -103,7 +96,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     }
   }
 
-  public suspend fun getPatientStatus(id: String): PatientStatus {
+  suspend fun getPatientStatus(id: String): PatientStatus {
     // check database for immunizations
     val cal: Calendar = Calendar.getInstance()
     cal.add(Calendar.DATE, -28)
@@ -115,7 +108,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
       fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$id" } }
 
     val computedStatus =
-      if (searchResults.size == 2) VaccineStatus.VACCINATED
+      if (searchResults.size >= 2) VaccineStatus.VACCINATED
       else if (searchResults.size == 1 && searchResults[0].recorded.before(overDueStart))
         VaccineStatus.OVERDUE
       else if (searchResults.size == 1) VaccineStatus.PARTIAL else VaccineStatus.DUE
@@ -127,12 +120,23 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   }
 
   /** Basic search for immunizations */
-  fun searchImmunizations(patientId: String? = null): LiveData<List<Immunization>> {
-    val liveSearchImmunization: MutableLiveData<List<Immunization>> = MutableLiveData()
+  fun fetchPatientDetailsCards(
+    context: Context,
+    patientId: String
+  ): LiveData<List<PatientDetailsCard>> {
+    val liveSearchImmunization: MutableLiveData<List<PatientDetailsCard>> = MutableLiveData()
     viewModelScope.launch {
-      val searchResults: List<Immunization> =
+      val result =
+        mutableListOf(fhirEngine.load(Patient::class.java, patientId).toDetailsCard(context))
+
+      val immunizations: List<Immunization> =
         fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$patientId" } }
-      liveSearchImmunization.value = searchResults
+
+      immunizations.forEachIndexed { index, element ->
+        result.add(element.toDetailsCard(context, index, index < 1))
+      }
+
+      liveSearchImmunization.value = result
     }
     return liveSearchImmunization
   }
@@ -154,8 +158,21 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   fun getPatientItem(id: String): LiveData<PatientItem> {
     val liveSearchPatient: MutableLiveData<PatientItem> = MutableLiveData()
     viewModelScope.launch {
-      val patient = fhirEngine.load(Patient::class.java, id)
-      liveSearchPatient.value = samplePatients.getPatientItem(patient)
+      val patient = fhirEngine.load(Patient::class.java, id).toPatientItem()
+
+      val immunizations: List<Immunization> =
+        fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$id" } }
+
+      if (immunizations.isNotEmpty()) {
+        val immunization = immunizations[0]
+        patient.vaccineSummary =
+          PatientVaccineSummary(
+            (immunization.protocolApplied[0].doseNumber as PositiveIntType).value,
+            immunization.vaccineCode.coding.first().code
+          )
+      }
+
+      liveSearchPatient.value = patient
     }
     return liveSearchPatient
   }
@@ -197,49 +214,6 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     liveSearchedPaginatedPatients.value =
       Pair(emptyList(), Pagination(totalItems = 0, pageSize = 1, currentPage = 0))
   }
-
-  private fun getAssetFileAsString(filename: String): String {
-    return this.getApplication<Application>()
-      .applicationContext
-      .assets
-      .open(filename)
-      .bufferedReader()
-      .use { it.readText() }
-  }
-
-  /** The Patient's details for display purposes. */
-  data class PatientItem(
-    val id: String,
-    val name: String,
-    val gender: String,
-    val dob: String,
-    val html: String,
-    val phone: String,
-    val logicalId: String,
-    val risk: String,
-    var vaccineStatus: PatientStatus? = null
-  ) {
-    override fun toString(): String = name
-  }
-
-  data class PatientStatus(val status: VaccineStatus, val details: String)
-
-  enum class VaccineStatus {
-    VACCINATED,
-    PARTIAL,
-    OVERDUE,
-    DUE
-  }
-
-  /** The Observation's details for display purposes. */
-  data class ObservationItem(
-    val id: String,
-    val code: String,
-    val effective: String,
-    val value: String
-  ) {
-    override fun toString(): String = code
-  }
 }
 
 class PatientListViewModelFactory(
@@ -252,4 +226,20 @@ class PatientListViewModelFactory(
     }
     throw IllegalArgumentException("Unknown ViewModel class")
   }
+}
+
+fun Patient.toPatientItem(): PatientItem {
+  val name = this.name[0].nameAsSingleString
+
+  // Show nothing if no values available for gender and date of birth.
+  val gender = if (this.hasGenderElement()) this.genderElement.valueAsString else ""
+  val dob = if (this.hasBirthDateElement()) this.birthDateElement.valueAsString else ""
+  val html: String = if (this.hasText()) this.text.div.valueAsString else ""
+  val phone: String =
+    if (this.hasTelecom() && this.telecom[0].hasValue()) this.telecom[0].value else ""
+  val logicalId: String = this.logicalId
+  val ext = this.extension.singleOrNull { it.value.toString().contains("risk") }
+  val risk = ext?.value?.toString() ?: ""
+
+  return PatientItem(this.logicalId, name, gender, dob, html, phone, logicalId, risk)
 }

@@ -100,7 +100,7 @@ class RecordVaccineActivity : MultiLanguageBaseActivity() {
         immunization.protocolApplied =
           listOf(
             Immunization.ImmunizationProtocolAppliedComponent().apply {
-              var currentDoseNumber = intent?.getIntExtra(DOSE_NUMBER, 0)
+              val currentDoseNumber = intent?.getIntExtra(DOSE_NUMBER, 0)
               if (currentDoseNumber != null) {
                 this.doseNumber = PositiveIntType(currentDoseNumber + 1)
               }
