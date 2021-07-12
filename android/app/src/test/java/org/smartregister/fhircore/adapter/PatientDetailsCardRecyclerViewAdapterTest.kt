@@ -29,15 +29,15 @@ import org.junit.Test
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.RobolectricTest
-import org.smartregister.fhircore.viewmodel.PatientListViewModel
+import org.smartregister.fhircore.fragment.PatientDetailsCard
 
-class ObservationItemRecyclerViewAdapterTest : RobolectricTest() {
+class PatientDetailsCardRecyclerViewAdapterTest : RobolectricTest() {
 
-  lateinit var adapter: ObservationItemRecyclerViewAdapter
+  lateinit var adapter: PatientDetailsCardRecyclerViewAdapter
 
   @Before
   fun setUp() {
-    adapter = ObservationItemRecyclerViewAdapter()
+    adapter = PatientDetailsCardRecyclerViewAdapter()
   }
 
   @Test
@@ -46,7 +46,7 @@ class ObservationItemRecyclerViewAdapterTest : RobolectricTest() {
 
     val itemView =
       LayoutInflater.from(FhirApplication.getContext())
-        .inflate(R.layout.observation_list_item, null, false)
+        .inflate(R.layout.patient_details_card_item, null, false)
     val layoutInflater = mockk<LayoutInflater>()
     val viewGroup = mockk<ViewGroup>()
 
@@ -54,7 +54,7 @@ class ObservationItemRecyclerViewAdapterTest : RobolectricTest() {
     every { LayoutInflater.from(any()) } returns layoutInflater
     every { layoutInflater.inflate(any<Int>(), any(), any()) } returns itemView
 
-    val list = listOf(mockk<PatientListViewModel.ObservationItem>())
+    val list = listOf(mockk<PatientDetailsCard>())
     adapter.submitList(list)
 
     val viewHolder = spyk(adapter.createViewHolder(viewGroup, 0))
@@ -63,5 +63,28 @@ class ObservationItemRecyclerViewAdapterTest : RobolectricTest() {
     every { viewHolder.bindTo(any()) } answers {}
     adapter.bindViewHolder(viewHolder, 0)
     verify(exactly = 1) { viewHolder.bindTo(any()) }
+  }
+
+  @Test
+  fun testAdapterDiffUtilEquatesDifferentObjectsWithSameId() {
+    val diffCallback = PatientDetailsCardRecyclerViewAdapter.PatientDetailsCardDiffCallback()
+
+    val item = PatientDetailsCard(0, 0, "1", "Patient", "RegistrationDate", "Details")
+
+    // change id only
+    val itemDifferentId = PatientDetailsCard(0, 0, "2", "Patient", "RegistrationDate", "Details")
+    Assert.assertFalse(diffCallback.areContentsTheSame(item, itemDifferentId))
+    Assert.assertFalse(diffCallback.areItemsTheSame(item, itemDifferentId))
+
+    // same id different content
+    val itemWithMatchingId =
+      PatientDetailsCard(0, 0, "1", "Patient", "RegistrationDates", "Details")
+    Assert.assertFalse(diffCallback.areContentsTheSame(item, itemWithMatchingId))
+    Assert.assertTrue(diffCallback.areItemsTheSame(item, itemWithMatchingId))
+
+    // identical items
+    val identical = PatientDetailsCard(0, 0, "1", "Patient", "RegistrationDate", "Details")
+    Assert.assertTrue(diffCallback.areContentsTheSame(item, identical))
+    Assert.assertTrue(diffCallback.areItemsTheSame(item, identical))
   }
 }

@@ -43,6 +43,7 @@ import org.smartregister.fhircore.activity.PatientDetailActivity
 import org.smartregister.fhircore.activity.PatientListActivity
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.domain.Pagination
+import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
@@ -94,7 +95,7 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
     val id = "49333c33-f50f-4c3e-abd4-7aeb0f160ac2"
     val logicalId = "812983127"
     val patientItem =
-      PatientListViewModel.PatientItem(
+      PatientItem(
         id,
         "John Doe",
         "male",
@@ -143,7 +144,7 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
   @Test
   fun testEmptyListMessageWithNonZeroClients() {
     var patient =
-      PatientListViewModel.PatientItem(
+      PatientItem(
         "12",
         "John Doe",
         "male",

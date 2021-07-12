@@ -52,6 +52,7 @@ import org.smartregister.fhircore.domain.currentPageNumber
 import org.smartregister.fhircore.domain.hasNextPage
 import org.smartregister.fhircore.domain.hasPreviousPage
 import org.smartregister.fhircore.domain.totalPages
+import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
 import timber.log.Timber
@@ -229,7 +230,7 @@ class PatientListFragment : Fragment() {
   }
 
   // Click handler to help display the details about the patients from the list.
-  fun onPatientItemClicked(intention: Intention, patientItem: PatientListViewModel.PatientItem) {
+  fun onPatientItemClicked(intention: Intention, patientItem: PatientItem) {
     when (intention) {
       Intention.RECORD_VACCINE -> {
         startActivity(
@@ -289,9 +290,9 @@ class PatientListFragment : Fragment() {
         )
   }
 
-  fun setData(data: Pair<List<PatientListViewModel.PatientItem>, Pagination>) {
+  fun setData(data: Pair<List<PatientItem>, Pagination>) {
     Timber.d("Submitting ${data.first.count()} patient records")
-    val list = ArrayList<PatientListViewModel.PatientItem>(data.first)
+    val list = ArrayList<PatientItem>(data.first)
     updatePagination(data.second)
     adapter.submitList(list)
 

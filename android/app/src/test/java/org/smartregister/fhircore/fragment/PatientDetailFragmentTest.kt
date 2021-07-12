@@ -38,9 +38,9 @@ import org.robolectric.annotation.Config
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.activity.QuestionnaireActivityTest
+import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.util.SharedPreferencesHelper
-import org.smartregister.fhircore.viewmodel.PatientListViewModel
 
 @Config(shadows = [FhirApplicationShadow::class])
 class PatientDetailFragmentTest : FragmentRobolectricTest() {
@@ -64,7 +64,7 @@ class PatientDetailFragmentTest : FragmentRobolectricTest() {
     patientDetailFragment.viewModel = spyk(patientDetailFragment.viewModel)
 
     every { patientDetailFragment.viewModel.getPatientItem(any()) } returns
-      MutableLiveData(PatientListViewModel.PatientItem("", "", "", "2000-01-01", "", "", "", "HR"))
+      MutableLiveData(PatientItem("", "", "", "2000-01-01", "", "", "", "HR"))
 
     patientDetailFragment.editPatient()
 

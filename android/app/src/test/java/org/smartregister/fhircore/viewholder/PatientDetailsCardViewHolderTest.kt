@@ -25,26 +25,30 @@ import org.junit.Test
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.RobolectricTest
-import org.smartregister.fhircore.viewmodel.PatientListViewModel
+import org.smartregister.fhircore.fragment.PatientDetailsCard
 
-class ObservationItemViewHolderTest : RobolectricTest() {
+class PatientDetailsCardViewHolderTest : RobolectricTest() {
 
-  private lateinit var viewHolder: ObservationItemViewHolder
+  private lateinit var viewHolder: PatientDetailsCardViewHolder
   private lateinit var itemView: View
 
   @Before
   fun setUp() {
     itemView =
       LayoutInflater.from(FhirApplication.getContext())
-        .inflate(R.layout.observation_list_item, null, false)
-    viewHolder = ObservationItemViewHolder(itemView)
+        .inflate(R.layout.patient_details_card_item, null, false)
+    viewHolder = PatientDetailsCardViewHolder(itemView)
   }
 
   @Test
-  fun testVerifyObservationDetailText() {
-    viewHolder.bindTo(PatientListViewModel.ObservationItem("1", "first", "second", "third"))
-    val observationDetail = itemView.findViewById<TextView>(R.id.observation_detail)
+  fun verifyBindToAppendsDataToView() {
+    val card = PatientDetailsCard(0, 0, "1", "Patient", "RegistrationDate", "Details")
+    viewHolder.bindTo(card)
 
-    Assert.assertEquals("first: third\nEffective: second", observationDetail.text.toString())
+    val cardTitle = itemView.findViewById<TextView>(R.id.card_title)
+    val cardDetails = itemView.findViewById<TextView>(R.id.card_details)
+
+    Assert.assertEquals("RegistrationDate", cardTitle.text.toString())
+    Assert.assertEquals("Details", cardDetails.text.toString())
   }
 }
