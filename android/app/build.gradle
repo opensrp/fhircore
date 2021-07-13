@@ -22,7 +22,7 @@ if (rootProject.file("local.properties").exists()) {
 } else {
     println("local.properties does not exist. The following values are required " + arr.join(", "))
     arr.each { prop ->
-        project.ext.set(prop, props.getProperty(prop, (prop == "FHIR_BASE_URL") ? "https://sample.url/fhir/" : "sample_" + prop))
+        project.ext.set(prop, props.getProperty(prop, (prop.contains("URL")) ? "https://sample.url/fhir/" : "sample_" + prop))
     }
 }
 
