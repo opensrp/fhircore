@@ -30,7 +30,7 @@ jobs:
       working-directory: android
 
     - name: Run unit tests with Gradle
-      run: ./gradlew jacocoTestReport --stacktrace
+      run: ./gradlew jacocoTestReport --stacktrace --info
       working-directory: android
       env:
        FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
