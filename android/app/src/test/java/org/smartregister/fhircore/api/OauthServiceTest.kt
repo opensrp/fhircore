@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.api
 
 import androidx.test.core.app.ApplicationProvider
-import ca.uhn.fhir.context.FhirContext
 import java.lang.reflect.Proxy
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -29,28 +28,24 @@ import org.smartregister.fhircore.RobolectricTest
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class HapiFhirServiceTest : RobolectricTest() {
+class OauthServiceTest : RobolectricTest() {
 
   @Test
-  fun `create() should return HapiFhirService with correct base url, client, interceptors and converter factories`() {
-    val parser = FhirContext.forR4().newJsonParser()
+  fun `create() should create OauthService with correct base url, client, interceptors and converter factoriy`() {
+    val oauthService = OAuthService.create(ApplicationProvider.getApplicationContext())
 
-    val hapiFhirService =
-      HapiFhirService.create(parser, ApplicationProvider.getApplicationContext())
-
-    val retrofit = hapiFhirService.getRetrofitInstance()
-    Assert.assertEquals(BuildConfig.FHIR_BASE_URL, retrofit.baseUrl().toString())
+    val retrofit = oauthService.getRetrofitInstance()
+    Assert.assertEquals(BuildConfig.OAUTH_BASE_URL, retrofit.baseUrl().toString())
 
     val converterFactories = retrofit.converterFactories()
-    Assert.assertTrue(converterFactories.get(1) is FhirConverterFactory)
-    Assert.assertTrue(converterFactories.get(2) is GsonConverterFactory)
+    Assert.assertTrue(converterFactories.get(1) is GsonConverterFactory)
 
     val okHttpClient = retrofit.callFactory() as OkHttpClient
     Assert.assertTrue(okHttpClient.interceptors[0] is OAuthInterceptor)
     Assert.assertTrue(okHttpClient.interceptors[1] is HttpLoggingInterceptor)
   }
 
-  private fun HapiFhirService.getRetrofitInstance(): Retrofit {
-    return ReflectionHelpers.getField<Retrofit>(Proxy.getInvocationHandler(this), "this$0")
+  private fun OAuthService.getRetrofitInstance(): Retrofit {
+    return ReflectionHelpers.getField(Proxy.getInvocationHandler(this), "this$0")
   }
 }
