@@ -19,20 +19,13 @@ package org.smartregister.fhircore
 import android.app.Application
 import android.content.Context
 import androidx.work.Constraints
-import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineBuilder
-import com.google.android.fhir.sync.FhirDataSource
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
-import com.google.android.fhir.sync.SyncConfiguration
-import com.google.android.fhir.sync.SyncData
-import java.util.ArrayList
+import com.google.android.fhir.sync.Sync
 import java.util.concurrent.TimeUnit
-import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.api.HapiFhirService.Companion.create
 import org.smartregister.fhircore.data.FhirPeriodicSyncWorker
-import org.smartregister.fhircore.data.HapiFhirResourceDataSource
 import org.smartregister.fhircore.util.SharedPreferencesHelper
 import timber.log.Timber
 
@@ -54,24 +47,17 @@ class FhirApplication : Application() {
 
   private fun constructFhirEngine(): FhirEngine {
     SharedPreferencesHelper.init(this)
-    val parser = FhirContext.forR4().newJsonParser()
-    val service = create(parser, this)
-    val params = mutableMapOf("address-city" to "NAIROBI")
-    val syncData: MutableList<SyncData> = ArrayList()
-    syncData.add(SyncData(ResourceType.Patient, params))
-    syncData.add(SyncData(ResourceType.StructureMap))
-    val configuration = SyncConfiguration(syncData, false)
-    val periodicSyncConfiguration =
+
+    // Schedule periodic syncing
+    Sync.periodicSync<FhirPeriodicSyncWorker>(
+      this,
       PeriodicSyncConfiguration(
-        syncConfiguration = configuration,
         syncConstraints = Constraints.Builder().build(),
-        periodicSyncWorker = FhirPeriodicSyncWorker::class.java,
-        repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
+        repeat = RepeatInterval(interval = 15, timeUnit = TimeUnit.MINUTES)
       )
-    val dataSource: FhirDataSource = HapiFhirResourceDataSource(service)
-    return FhirEngineBuilder(dataSource, this)
-      .periodicSyncConfiguration(periodicSyncConfiguration)
-      .build()
+    )
+
+    return FhirEngineBuilder(this).build()
   }
 
   companion object {

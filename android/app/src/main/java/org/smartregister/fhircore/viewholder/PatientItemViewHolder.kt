@@ -42,6 +42,6 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
     val age = getAgeFromDate(patientItem.dob)
     val names = patientItem.name.split(' ')
     val gender = if (patientItem.gender == "male") 'M' else 'F'
-    return listOf(names[1], names[0], gender, "$age").joinToString()
+    return listOf(if (names.size > 1) names[1] else "", names[0], gender, "$age").joinToString()
   }
 }

@@ -26,9 +26,12 @@ import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
+import com.google.android.fhir.sync.Sync
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.data.FhirPeriodicSyncWorker
 import org.smartregister.fhircore.data.SamplePatients
 import org.smartregister.fhircore.domain.Pagination
 import org.smartregister.fhircore.util.Utils
@@ -65,13 +68,13 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     viewModelScope.launch {
       val searchResults: List<Patient> =
         fhirEngine.search {
-          Utils.addBasePatientFilter(this)
+          //Utils.addBasePatientFilter(this)
 
           apply {
             if (query?.isNotBlank() == true) {
               filter(Patient.FAMILY) {
-                prefix = ParamPrefixEnum.EQUAL
                 value = query.trim()
+                modifier = StringFilterModifier.CONTAINS
               }
             }
           }
@@ -100,8 +103,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
         apply {
           if (query?.isNotBlank() == true) {
             filter(Patient.FAMILY) {
-              prefix = ParamPrefixEnum.EQUAL
               value = query.trim()
+              modifier = StringFilterModifier.CONTAINS
             }
           }
         }
@@ -123,7 +126,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   }
 
   fun syncUpload() {
-    viewModelScope.launch { fhirEngine.syncUpload() }
+    // TODO: Fix this
+    viewModelScope.launch { Sync.oneTimeSync<FhirPeriodicSyncWorker>(getApplication()) }
   }
 
   private fun getAssetFileAsString(filename: String): String {

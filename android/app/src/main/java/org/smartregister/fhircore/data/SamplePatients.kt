@@ -72,7 +72,7 @@ class SamplePatients {
 
   /** Creates PatientItem objects with displayable values from the Fhir Patient objects. */
   private fun createPatientItem(position: Int, patient: Patient): PatientListViewModel.PatientItem {
-    val name = patient.name[0].nameAsSingleString
+    val name = if (patient.name != null && !patient.name.isEmpty()) patient.name[0].nameAsSingleString else ""
 
     // Show nothing if no values available for gender and date of birth.
     val gender = if (patient.hasGenderElement()) patient.genderElement.valueAsString else ""

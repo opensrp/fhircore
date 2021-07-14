@@ -180,6 +180,12 @@ class PatientListFragment : Fragment() {
     patientListViewModel.syncUpload()
   }
 
+  override fun onResume() {
+    super.onResume()
+
+    syncResources()
+  }
+
   private fun updatePagination(pagination: Pagination) {
     nextButton.setOnClickListener {
       onNavigationClicked(NavigationDirection.NEXT, pagination.currentPage)
