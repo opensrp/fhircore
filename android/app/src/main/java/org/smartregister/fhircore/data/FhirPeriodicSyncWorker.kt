@@ -19,13 +19,13 @@ package org.smartregister.fhircore.data
 import android.content.Context
 import androidx.work.WorkerParameters
 import ca.uhn.fhir.context.FhirContext
-import com.google.android.fhir.sync.PeriodicSyncWorker
+import com.google.android.fhir.sync.FhirSyncWorker
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.api.HapiFhirService
 
 class FhirPeriodicSyncWorker(val appContext: Context, workerParams: WorkerParameters) :
-  PeriodicSyncWorker(appContext, workerParams) {
+  FhirSyncWorker(appContext, workerParams) {
 
   override fun getSyncData() =
     mapOf(
