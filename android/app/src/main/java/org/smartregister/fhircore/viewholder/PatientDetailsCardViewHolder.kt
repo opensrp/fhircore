@@ -21,6 +21,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailsCard
+import org.smartregister.fhircore.util.Utils
 
 class PatientDetailsCardViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val cardTitle: TextView = itemView.findViewById(R.id.card_title)
@@ -32,5 +33,8 @@ class PatientDetailsCardViewHolder(itemView: View) : RecyclerView.ViewHolder(ite
     this.cardDetails.visibility =
       if (patientDetailsCard.details.isBlank()) View.GONE else View.VISIBLE
     this.cardDetails.text = patientDetailsCard.details
+
+    if (patientDetailsCard.details.contains("overdue"))
+      Utils.setTextColor(this.cardDetails, R.color.status_red)
   }
 }
