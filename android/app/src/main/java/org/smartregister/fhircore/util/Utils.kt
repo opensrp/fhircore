@@ -26,8 +26,11 @@ import android.os.LocaleList
 import android.view.MotionEvent
 import android.view.View
 import android.widget.EditText
+import android.widget.TextView
+import androidx.core.content.ContextCompat
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
+import org.hl7.fhir.r4.model.DateTimeType
 import java.util.Locale
 import org.hl7.fhir.r4.model.Patient
 import org.joda.time.DateTime
@@ -38,6 +41,7 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 import org.smartregister.fhircore.model.PatientItem
 import timber.log.Timber
+import java.util.Calendar
 
 object Utils {
 
@@ -128,6 +132,20 @@ object Utils {
     val fmt: DateTimeFormatter = DateTimeFormat.forPattern(returnDateFormat)
     val date: DateTime = DateTime.parse(initialDate)
     return date.plusDays(daysToAdd).toString(fmt)
+  }
+
+  fun hasPastDays(initialDate: DateTimeType, days: Int = 0): Boolean {
+    val copy = initialDate.copy()
+    copy.add(Calendar.DATE, days)
+    return copy.after(DateTimeType.now())
+  }
+
+  fun setBgColor(view: View, color: Int){
+    view.setBackgroundColor(ContextCompat.getColor(view.context, color))
+  }
+
+  fun setTextColor(view: TextView, color: Int){
+    view.setTextColor(ContextCompat.getColor(view.context, color))
   }
 
   data class PatientAgeGender(val age: Int, val genderAbbr: Char)
