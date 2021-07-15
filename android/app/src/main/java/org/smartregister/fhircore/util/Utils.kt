@@ -30,6 +30,8 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
+import java.util.Calendar
+import java.util.Locale
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Patient
 import org.joda.time.DateTime
@@ -40,8 +42,6 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 import org.smartregister.fhircore.model.PatientItem
 import timber.log.Timber
-import java.util.Calendar
-import java.util.Locale
 
 object Utils {
 
