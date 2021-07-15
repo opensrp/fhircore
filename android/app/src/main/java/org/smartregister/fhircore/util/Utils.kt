@@ -48,7 +48,7 @@ object Utils {
   fun getAgeFromDate(dateOfBirth: String, currentDate: ReadablePartial? = null): Int {
     val date: DateTime = DateTime.parse(dateOfBirth)
     val age: Years = Years.yearsBetween(date.toLocalDate(), currentDate ?: LocalDate.now())
-    return age.getYears()
+    return age.years
   }
 
   fun addBasePatientFilter(search: Search) {

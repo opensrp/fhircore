@@ -34,6 +34,7 @@ class PatientDetailsCardViewHolder(itemView: View) : RecyclerView.ViewHolder(ite
       if (patientDetailsCard.details.isBlank()) View.GONE else View.VISIBLE
     this.cardDetails.text = patientDetailsCard.details
 
-    if (patientDetailsCard.details.contains("overdue")) Utils.setTextColor(this.cardDetails, R.color.status_red)
+    if (patientDetailsCard.details.contains("overdue"))
+      Utils.setTextColor(this.cardDetails, R.color.status_red)
   }
 }
