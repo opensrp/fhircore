@@ -31,7 +31,6 @@ import androidx.core.content.ContextCompat
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
 import org.hl7.fhir.r4.model.DateTimeType
-import java.util.Locale
 import org.hl7.fhir.r4.model.Patient
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
@@ -42,6 +41,7 @@ import org.joda.time.format.DateTimeFormatter
 import org.smartregister.fhircore.model.PatientItem
 import timber.log.Timber
 import java.util.Calendar
+import java.util.Locale
 
 object Utils {
 
@@ -140,11 +140,11 @@ object Utils {
     return copy.after(DateTimeType.now())
   }
 
-  fun setBgColor(view: View, color: Int){
+  fun setBgColor(view: View, color: Int) {
     view.setBackgroundColor(ContextCompat.getColor(view.context, color))
   }
 
-  fun setTextColor(view: TextView, color: Int){
+  fun setTextColor(view: TextView, color: Int) {
     view.setTextColor(ContextCompat.getColor(view.context, color))
   }
 

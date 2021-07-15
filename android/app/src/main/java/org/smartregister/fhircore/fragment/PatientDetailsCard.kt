@@ -23,7 +23,6 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.util.Utils
-import java.util.Calendar
 
 private const val DAYS_IN_MONTH: Int = 28
 private const val OVERDUE_DAYS_IN_MONTH: Int = 14
@@ -66,11 +65,11 @@ fun Immunization.toDetailsCard(context: Context, index: Int = 0, hasNext: Boolea
         ((this.protocolApplied[0].doseNumber as PositiveIntType).value + 1),
         Utils.addDays(this.occurrenceDateTimeType.toHumanDisplay(), DAYS_IN_MONTH)
       )
-    }
-    else context.getString(R.string.fully_vaccinated)
+    } else context.getString(R.string.fully_vaccinated)
   )
 
 private fun getDetailsText(previousVaccineDatetime: DateTimeType): Int {
-  val isOverDue = Utils.hasPastDays(previousVaccineDatetime, DAYS_IN_MONTH+ OVERDUE_DAYS_IN_MONTH)
-  return if (isOverDue) R.string.immunization_next_dose_text else R.string.immunization_next_overdue_dose_text
+  val isOverDue = Utils.hasPastDays(previousVaccineDatetime, DAYS_IN_MONTH + OVERDUE_DAYS_IN_MONTH)
+  return if (isOverDue) R.string.immunization_next_dose_text
+  else R.string.immunization_next_overdue_dose_text
 }

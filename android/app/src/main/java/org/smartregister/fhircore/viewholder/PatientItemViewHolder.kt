@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.viewholder
 
-import android.content.Context
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -75,9 +74,7 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
       }
       VaccineStatus.OVERDUE -> {
         tvRecordVaccine.text = tvRecordVaccine.context.getString(R.string.status_overdue)
-        tvRecordVaccine.setTextColor(
-          ContextCompat.getColor(tvRecordVaccine.context, R.color.white)
-        )
+        tvRecordVaccine.setTextColor(ContextCompat.getColor(tvRecordVaccine.context, R.color.white))
         Utils.setBgColor(contVaccineStatus, R.color.status_red)
         imgVaccineStatus.visibility = View.GONE
         tvRecordVaccine.setOnClickListener {
