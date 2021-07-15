@@ -18,7 +18,6 @@ package org.smartregister.fhircore.util
 
 import android.app.Activity
 import android.content.Intent
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilter
 import io.mockk.mockkClass

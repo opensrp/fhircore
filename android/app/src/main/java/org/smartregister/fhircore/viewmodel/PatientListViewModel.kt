@@ -23,7 +23,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
@@ -68,7 +67,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     viewModelScope.launch {
       val searchResults: List<Patient> =
         fhirEngine.search {
-          //Utils.addBasePatientFilter(this)
+          // Utils.addBasePatientFilter(this)
 
           apply {
             if (query?.isNotBlank() == true) {

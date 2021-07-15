@@ -68,7 +68,7 @@ class StructureMapUtils : RobolectricTest() {
     System.out.println(mapString)
 
     // Encode
-    //val targetResource = ResourceFactory.createResource(scu.getTargetType(map).getName())
+    // val targetResource = ResourceFactory.createResource(scu.getTargetType(map).getName())
     val targetResource = Bundle()
 
     val baseElement =
@@ -562,7 +562,7 @@ class StructureMapUtils : RobolectricTest() {
     }
   ]
 }
-  """.trimIndent()
+    """.trimIndent()
 
   private val fhirMapToConvert =
     """
@@ -649,5 +649,5 @@ group ExtractRelatedPerson(source src : QuestionnaireResponse, target bundle : B
         };
     } "rule_erp_14";
 }
-""".trimIndent()
+    """.trimIndent()
 }
