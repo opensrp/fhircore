@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.fragment
 
 import android.content.Context
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
@@ -24,6 +25,7 @@ import org.smartregister.fhircore.R
 import org.smartregister.fhircore.util.Utils
 
 private const val DAYS_IN_MONTH: Int = 28
+private const val OVERDUE_DAYS_IN_MONTH: Int = 14
 
 /** * A wrapper class that displays a patient's historical activity */
 data class PatientDetailsCard(
@@ -57,11 +59,17 @@ fun Immunization.toDetailsCard(context: Context, index: Int = 0, hasNext: Boolea
         this.vaccineCode.text,
         (this.protocolApplied[0].doseNumber as PositiveIntType).value
       ),
-    if (hasNext)
+    if (hasNext) {
       context.getString(
-        R.string.immunization_next_dose_text,
+        getDetailsText(this.occurrenceDateTimeType),
         ((this.protocolApplied[0].doseNumber as PositiveIntType).value + 1),
         Utils.addDays(this.occurrenceDateTimeType.toHumanDisplay(), DAYS_IN_MONTH)
       )
-    else context.getString(R.string.fully_vaccinated)
+    } else context.getString(R.string.fully_vaccinated)
   )
+
+private fun getDetailsText(previousVaccineDatetime: DateTimeType): Int {
+  val isOverDue = Utils.hasPastDays(previousVaccineDatetime, DAYS_IN_MONTH + OVERDUE_DAYS_IN_MONTH)
+  return if (isOverDue) R.string.immunization_next_dose_text
+  else R.string.immunization_next_overdue_dose_text
+}

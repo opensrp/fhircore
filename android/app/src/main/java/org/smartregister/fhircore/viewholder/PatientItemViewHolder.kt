@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.viewholder
 
 import android.view.View
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -25,11 +27,15 @@ import org.smartregister.fhircore.fragment.PatientListFragment
 import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.model.PatientStatus
 import org.smartregister.fhircore.model.VaccineStatus
+import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.util.Utils.getPatientAgeGender
 
 class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val tvPatientDemographics: TextView = itemView.findViewById(R.id.tv_patient_demographics)
   private val tvRecordVaccine: TextView = itemView.findViewById(R.id.tv_record_vaccine)
+  private val contVaccineStatus: LinearLayout = itemView.findViewById(R.id.cont_vaccine_status)
+  private val imgVaccineStatus: ImageView = itemView.findViewById(R.id.img_vaccine_status)
+
   private val atRisk: TextView = itemView.findViewById(R.id.risk_flag)
 
   fun bindTo(
@@ -62,13 +68,15 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
         tvRecordVaccine.setTextColor(
           ContextCompat.getColor(tvRecordVaccine.context, R.color.status_green)
         )
+        Utils.setBgColor(contVaccineStatus, R.color.white)
+        imgVaccineStatus.visibility = View.VISIBLE
         tvRecordVaccine.setOnClickListener {}
       }
       VaccineStatus.OVERDUE -> {
         tvRecordVaccine.text = tvRecordVaccine.context.getString(R.string.status_overdue)
-        tvRecordVaccine.setTextColor(
-          ContextCompat.getColor(tvRecordVaccine.context, R.color.status_red)
-        )
+        tvRecordVaccine.setTextColor(ContextCompat.getColor(tvRecordVaccine.context, R.color.white))
+        Utils.setBgColor(contVaccineStatus, R.color.status_red)
+        imgVaccineStatus.visibility = View.GONE
         tvRecordVaccine.setOnClickListener {
           onItemClicked(PatientListFragment.Intention.RECORD_VACCINE, patientItem)
         }
@@ -83,6 +91,8 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
         tvRecordVaccine.setTextColor(
           ContextCompat.getColor(tvRecordVaccine.context, R.color.status_gray)
         )
+        Utils.setBgColor(contVaccineStatus, R.color.white)
+        imgVaccineStatus.visibility = View.GONE
         tvRecordVaccine.setOnClickListener {
           onItemClicked(PatientListFragment.Intention.RECORD_VACCINE, patientItem)
         }
@@ -92,6 +102,8 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
         tvRecordVaccine.setTextColor(
           ContextCompat.getColor(tvRecordVaccine.context, R.color.status_blue)
         )
+        Utils.setBgColor(contVaccineStatus, R.color.white)
+        imgVaccineStatus.visibility = View.GONE
         tvRecordVaccine.setOnClickListener {
           onItemClicked(PatientListFragment.Intention.RECORD_VACCINE, patientItem)
         }
