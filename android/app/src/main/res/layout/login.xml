@@ -17,10 +17,19 @@
         android:orientation="vertical"
         android:padding="20dp">
 
+        <ProgressBar
+            android:id="@+id/progressIcon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center_horizontal"
+            style="@style/Widget.MaterialComponents.CircularProgressIndicator"
+            android:indeterminate="true"
+            android:visibility="@{usr.showProgressIcon ? View.VISIBLE : View.INVISIBLE}"/>
+
         <Space
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="100dp"/>
+            android:layout_marginBottom="70dp"/>
 
         <TextView
             android:id="@+id/textView2"
