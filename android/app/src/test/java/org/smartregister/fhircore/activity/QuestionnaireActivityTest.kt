@@ -77,6 +77,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     Assert.assertNotNull(fragment)
 
     val response = fragment.getQuestionnaireResponse()
+    Assert.assertEquals(TEST_PATIENT_1.id, response.find("patient-barcode")?.value.toString())
     Assert.assertEquals(
       TEST_PATIENT_1.name[0].given[0].toString(),
       response.find("PR-name-text")?.value.toString()
