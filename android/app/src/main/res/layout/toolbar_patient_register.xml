@@ -87,7 +87,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
-            android:text="SCAN BAR CODE"
+            android:text="@string/scan_bar_code"
             android:textSize="22sp"
             android:gravity="center"
             android:layout_marginLeft="10dp" />

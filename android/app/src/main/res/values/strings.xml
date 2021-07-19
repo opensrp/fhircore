@@ -51,7 +51,6 @@
     <string name="status_vaccinated">Vaccinated</string>
     <string name="status_overdue">Overdue</string>
     <string name="status_received_vaccine">Vaccine %1$d \n%2$s</string>
-    <string name="status_record_vaccine">Record \n Vaccine</string>
     <string name="view_vaccine_certificate">"View vaccine certificate"</string>
     <string name="fully_vaccinated">"Fully vaccinated"</string>
 
@@ -65,7 +64,7 @@
     <string name="view_registration_details">View Registration Details</string>
     <string name="client">COVAX clients</string>
     <string name="show_overdue">Show overdue</string>
-    <string name="record_vaccine_nl">Record\nvaccine</string>
+    <string name="record_vaccine_nl">Record\nVaccine</string>
     <string name="client_info">Client info</string>
     <string name="last_seen_date">Last seen 29-3-2021</string>
     <string name="last_sync_timestamp">Last 05:30 PM, Mar 3</string>
@@ -84,5 +83,9 @@
     <string name="second_dose_due_at"> Second dose due on %1$s</string>
     <string name="ordinal_vaccine_dose_recorded">%1$s 1st dose recorded</string>
     <string name="please_select_vaccine">Please Select Vaccine</string>
+    <string name="scan_bar_code">SCAN BARCODE</string>
+    <string name="at_risk">At Risk</string>
+    <string name="syncing">Syncing&#8230;</string>
+
 
 </resources>
