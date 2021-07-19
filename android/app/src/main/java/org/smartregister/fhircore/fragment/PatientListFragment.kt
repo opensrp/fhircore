@@ -257,7 +257,7 @@ class PatientListFragment : Fragment() {
   private fun syncResources() {
     patientListViewModel.runSync()
     patientListViewModel.searchResults(pageSize = pageCount)
-    Toast.makeText(requireContext(), "Syncing...", Toast.LENGTH_LONG).show()
+    Toast.makeText(requireContext(), R.string.syncing, Toast.LENGTH_LONG).show()
   }
 
   enum class Intention {
