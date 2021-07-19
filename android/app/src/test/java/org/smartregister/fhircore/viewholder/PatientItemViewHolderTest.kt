@@ -117,7 +117,7 @@ class PatientItemViewHolderTest : RobolectricTest() {
       itemClickListener
     )
     itemView.performClick()
-    verifyViewHolderStatus(tvRecordVaccine, R.string.status_record_vaccine)
+    verifyViewHolderStatus(tvRecordVaccine, R.string.record_vaccine_nl)
   }
 
   private fun composeRandomPatientItem(status: PatientStatus) =
