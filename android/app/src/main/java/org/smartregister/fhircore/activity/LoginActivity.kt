@@ -67,6 +67,11 @@ class LoginActivity : AppCompatActivity() {
       this,
       { binding.spacer.visibility = if (it == true) View.GONE else View.VISIBLE }
     )
+
+    viewModel.showProgressIcon.observe(
+      this,
+      { binding.progressIcon.visibility = if (it == true) View.VISIBLE else View.INVISIBLE }
+    )
   }
 
   private fun getAppVersion() {

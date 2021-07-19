@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Login and Keycloak authentication for FHIR APIs
 - Added user logout functionality
 - Vaccine status stylign in list view and details view
+- Show progress bar on login attempt
 
 ### Fixed
 
