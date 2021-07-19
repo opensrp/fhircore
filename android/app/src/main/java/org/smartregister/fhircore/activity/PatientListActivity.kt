@@ -30,6 +30,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.fragment.PatientListFragment
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.util.Utils.addOnDrawableClickedListener
@@ -91,6 +92,19 @@ class PatientListActivity : BaseSimpleActivity() {
           QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
           this@PatientListActivity.getString(R.string.client_info)
         )
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
+      }
+    )
+  }
+
+  fun openRegistrationWithPreAssignedId(id: String) {
+    startActivity(
+      Intent(baseContext, QuestionnaireActivity::class.java).apply {
+        putExtra(
+          QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
+          this@PatientListActivity.getString(R.string.client_info)
+        )
+        putExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID, id)
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
       }
     )

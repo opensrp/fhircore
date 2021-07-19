@@ -122,6 +122,10 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
     val questionnaire =
       FhirContext.forR4().newJsonParser().parseResource(viewModel.questionnaire) as Questionnaire
 
+    intent.getStringExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID)?.let {
+      setBarcode(questionnaire, it, true)
+    }
+
     intent.getStringExtra(PatientDetailFragment.ARG_ITEM_ID)?.let {
       var patient: Patient? = null
       viewModel.viewModelScope.launch {
@@ -129,6 +133,7 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
       }
 
       patient?.let {
+        setBarcode(questionnaire, it.id, true)
 
         // set first name
         questionnaire.find("PR-name-text")?.apply {
@@ -203,6 +208,14 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
     }
 
     return FhirContext.forR4().newJsonParser().encodeResourceToString(questionnaire)
+  }
+
+  private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
+    questionnaire.find("patient-barcode")?.apply {
+      initial =
+        mutableListOf(Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(code)))
+      readOnly = readonly
+    }
   }
 
   private fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {

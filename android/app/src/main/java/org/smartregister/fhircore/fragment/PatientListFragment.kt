@@ -44,6 +44,7 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.PATIENT_ID
 import org.smartregister.fhircore.activity.PatientDetailActivity
+import org.smartregister.fhircore.activity.PatientListActivity
 import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.activity.RecordVaccineActivity
 import org.smartregister.fhircore.adapter.PatientItemRecyclerViewAdapter
@@ -148,7 +149,9 @@ class PatientListFragment : Fragment() {
                 if (it.isSuccess) {
                   launchPatientDetailActivity(barcode)
                 } else {
-                  patientListViewModel.clearPatientList()
+                  (requireActivity() as PatientListActivity).openRegistrationWithPreAssignedId(
+                    barcode
+                  )
                 }
                 liveBarcodeScanningFragment.onDestroy()
               }

@@ -125,5 +125,6 @@ class PatientDetailFragment : Fragment() {
   companion object {
     /** The fragment argument representing the patient item ID that this fragment represents. */
     const val ARG_ITEM_ID = "patient_item_id"
+    const val ARG_PRE_ASSIGNED_ID = "patient_preassigned_id"
   }
 }
