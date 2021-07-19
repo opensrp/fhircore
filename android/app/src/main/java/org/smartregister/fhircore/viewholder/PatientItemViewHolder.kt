@@ -98,7 +98,7 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
         }
       }
       VaccineStatus.DUE -> {
-        tvRecordVaccine.text = tvRecordVaccine.context.getString(R.string.status_record_vaccine)
+        tvRecordVaccine.text = tvRecordVaccine.context.getString(R.string.record_vaccine_nl)
         tvRecordVaccine.setTextColor(
           ContextCompat.getColor(tvRecordVaccine.context, R.color.status_blue)
         )

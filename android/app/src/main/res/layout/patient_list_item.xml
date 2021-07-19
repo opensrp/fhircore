@@ -53,7 +53,7 @@
         android:id="@+id/risk_flag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="At Risk"
+        android:text="@string/at_risk"
         android:textColor="@color/orange"
         app:layout_constraintStart_toEndOf="@id/date_last_seen"
         app:layout_constraintTop_toBottomOf="@id/tv_patient_demographics"/>
