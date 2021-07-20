@@ -53,6 +53,7 @@ import org.smartregister.fhircore.auth.account.AccountHelper
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.auth.secure.SecureConfig
 import org.smartregister.fhircore.domain.Language
+import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.fragment.PatientListFragment
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
@@ -130,6 +131,21 @@ class PatientListActivityTest : ActivityRobolectricTest() {
       shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testVerifyAddPatientWithPreAssignedIdStartedActivity() {
+    patientListActivity.startRegistrationActivity(patientListActivity, "test-id")
+
+    val expectedIntent = Intent(patientListActivity, QuestionnaireActivity::class.java)
+    val actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    Assert.assertEquals(
+      "test-id",
+      actualIntent.getStringExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID)
+    )
   }
 
   @Test
