@@ -69,7 +69,7 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
 
   @Before
   fun setUp() {
-    fhirEngine = mockk<FhirEngine>()
+    fhirEngine = mockk()
 
     patientListActivity = Robolectric.buildActivity(PatientListActivity::class.java).create().get()
     patientListViewModel =

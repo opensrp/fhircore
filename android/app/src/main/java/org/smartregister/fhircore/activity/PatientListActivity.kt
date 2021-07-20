@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.activity
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -86,25 +87,19 @@ class PatientListActivity : BaseSimpleActivity() {
   private fun addPatient(view: View) {
     // TO DO: Open patient registration form
     val context = view.context
+    startRegistrationActivity(context, null)
+  }
+
+  fun startRegistrationActivity(context: Context, preAssignedId: String?) {
     context.startActivity(
       Intent(context, QuestionnaireActivity::class.java).apply {
         putExtra(
           QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
           this@PatientListActivity.getString(R.string.client_info)
         )
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
-      }
-    )
-  }
 
-  fun openRegistrationWithPreAssignedId(id: String) {
-    startActivity(
-      Intent(baseContext, QuestionnaireActivity::class.java).apply {
-        putExtra(
-          QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
-          this@PatientListActivity.getString(R.string.client_info)
-        )
-        putExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID, id)
+        if (!preAssignedId.isNullOrEmpty())
+          putExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID, preAssignedId)
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
       }
     )

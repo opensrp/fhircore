@@ -62,7 +62,7 @@ class PatientListFragment : Fragment() {
 
   internal lateinit var patientListViewModel: PatientListViewModel
   private lateinit var fhirEngine: FhirEngine
-  private val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
+  internal val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
   private var search: String? = null
   private val pageCount: Int = 7
   private lateinit var adapter: PatientItemRecyclerViewAdapter
@@ -149,7 +149,8 @@ class PatientListFragment : Fragment() {
                 if (it.isSuccess) {
                   launchPatientDetailActivity(barcode)
                 } else {
-                  (requireActivity() as PatientListActivity).openRegistrationWithPreAssignedId(
+                  (requireActivity() as PatientListActivity).startRegistrationActivity(
+                    requireContext(),
                     barcode
                   )
                 }
