@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed patient list pagination button position to static on bottom of list
 - Fixed patient list fragment adapter count
 - Fixed bug on search result on patient list
+- Fixed bug on barcode crash
 
 ### Changed
 - Reduce font size and spacing on patient list screen

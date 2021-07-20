@@ -67,6 +67,29 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testActivityShouldSetPreAssignedId() {
+    val intent =
+      Intent().apply {
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
+        putExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID, "test-id")
+      }
+    questionnaireActivity =
+      Robolectric.buildActivity(QuestionnaireActivity::class.java, intent).create().resume().get()
+
+    val fragment =
+      questionnaireActivity.supportFragmentManager.findFragmentByTag(
+        QuestionnaireActivity.QUESTIONNAIRE_FRAGMENT_TAG
+      ) as
+        QuestionnaireFragment
+
+    Assert.assertNotNull(fragment)
+
+    val response = fragment.getQuestionnaireResponse()
+    Assert.assertEquals("test-id", response.find("patient-barcode")?.value.toString())
+  }
+
+  @Test
   fun testVerifyPrePopulatedQuestionnaire() {
     val fragment =
       questionnaireActivity.supportFragmentManager.findFragmentByTag(
@@ -77,6 +100,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     Assert.assertNotNull(fragment)
 
     val response = fragment.getQuestionnaireResponse()
+    Assert.assertEquals(TEST_PATIENT_1.id, response.find("patient-barcode")?.value.toString())
     Assert.assertEquals(
       TEST_PATIENT_1.name[0].given[0].toString(),
       response.find("PR-name-text")?.value.toString()

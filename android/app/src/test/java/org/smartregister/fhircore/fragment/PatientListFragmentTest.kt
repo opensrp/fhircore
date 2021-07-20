@@ -26,10 +26,16 @@ import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.db.ResourceNotFoundException
+import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import org.hl7.fhir.r4.model.Patient
 import org.junit.Assert
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
@@ -37,7 +43,6 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.PatientDetailActivity
 import org.smartregister.fhircore.activity.PatientListActivity
@@ -60,17 +65,17 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
   private lateinit var patientListActivity: PatientListActivity
   private lateinit var fragmentScenario: FragmentScenario<PatientListFragment>
   private lateinit var patientListViewModel: PatientListViewModel
+  private lateinit var fhirEngine: FhirEngine
 
   @Before
   fun setUp() {
+    fhirEngine = mockk()
+
     patientListActivity = Robolectric.buildActivity(PatientListActivity::class.java).create().get()
     patientListViewModel =
       ViewModelProvider(
           patientListActivity,
-          PatientListViewModelFactory(
-            patientListActivity.application,
-            FhirApplication.fhirEngine(patientListActivity)
-          )
+          PatientListViewModelFactory(patientListActivity.application, fhirEngine)
         )
         .get(PatientListViewModel::class.java)
 
@@ -189,6 +194,31 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
     verify(exactly = 1) { patientListViewModelSpy.runSync() }
 
     patientListFragment.patientListViewModel = patientListViewModel
+  }
+
+  @Test
+  fun testPatientIdFound() {
+    val p = Patient()
+    p.id = "test-id-existing"
+
+    coEvery { fhirEngine.load(Patient::class.java, "test-id-existing") } returns p
+
+    val result = patientListViewModel.isPatientExists("test-id-existing")
+
+    result.observe(patientListFragment, { assertTrue(it.isSuccess) })
+  }
+
+  @Test
+  fun testPatientIdNotFound() {
+    val p = Patient()
+    p.id = "test-id-missing"
+
+    coEvery { fhirEngine.load(Patient::class.java, "test-id-missing") } throws
+      ResourceNotFoundException("", "")
+
+    val result = patientListViewModel.isPatientExists("test-id-missing")
+
+    result.observe(patientListFragment, { assertTrue(it.isFailure) })
   }
 
   private fun <T : View?> getView(id: Int): T {

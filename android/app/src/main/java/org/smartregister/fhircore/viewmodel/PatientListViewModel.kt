@@ -25,8 +25,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
