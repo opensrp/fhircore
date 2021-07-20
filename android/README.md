@@ -6,36 +6,33 @@
 
 <img align=center width=400 src="../docs/assets/fhircore.png">
 
-Next generation OpenSRP FHIR native digital health platform powered by the [Google FHIR SDK](https://github.com/google/android-fhir).
-
-
 ## Build instructions
 
-One needs a [GitHub token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token#creating-a-token) to pull packages from https://github.com/orgs/google/packages?repo_name=android-fhir.
+You need a [GitHub token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token#creating-a-token) to pull packages from the [Android FHIR SDK repo](https://github.com/orgs/google/packages?repo_name=android-fhir).
 
-While creating the token, check the read:packages permission.
+When creating the token, select the `read:packages` permission.
 
-Add your token details in this file ~/.gradle/gradle.properties in the format below:
+Add your token details to the file `~/.gradle/gradle.properties` in the format below:
 
 
 ```
-GITHUB_USER=Xxxx
+GITHUB_USER=xxxxxx
 GITHUB_PERSONAL_ACCESS_TOKEN=xxxxxx
 ```
 
-or export them to your system environment variables:
+or export them to your system environment variables with the commands:
 
-```
-export GITHUB_USER=Xxxx
+```sh
+export GITHUB_USER=xxxxxx
 export GITHUB_PERSONAL_ACCESS_TOKEN=xxxxxx
 ```
 
-You also need keycloak credentials to authenticate FHIR APIs and login. Following properties should be added to ~/local.properties
+If you would like to log into remote servers and authenticate against remote FHIR APIs, you will need Keycloak credentials. For this, add the following properties to `~/local.properties`:
 
 ```
 OAUTH_BASE_URL=https://keycloak-stage.smartregister.org/auth/realms/FHIR_Android/
 OAUTH_CIENT_ID=fhir-core-client
-OAUTH_CLIENT_SECRET=XXXXXXX
+OAUTH_CLIENT_SECRET=xxxxxx
 OAUTH_SCOPE=openid
 FHIR_BASE_URL=https://fhir.labs.smartregister.org/fhir/
 ```
