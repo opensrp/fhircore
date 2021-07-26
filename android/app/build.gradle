@@ -5,6 +5,7 @@ apply plugin: "com.github.kt3k.coveralls"
 apply plugin: 'jacoco'
 apply plugin: 'de.mannodermaus.android-junit5'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'org.jetbrains.dokka'
 
 jacoco {
     toolVersion = versions.jacoco_tool
@@ -232,4 +233,21 @@ coveralls {
 
 tasks.coveralls {
     dependsOn 'jacocoTestReport'
+}
+
+dokkaHtml.configure {
+    outputDirectory.set(file("$rootDir/docs"))
+    dokkaSourceSets {
+        named("main") {
+            jdkVersion.set(8)
+            noAndroidSdkLink.set(false)
+            perPackageOption {
+                prefix = matching (".*\\.internal.*")
+                suppress = true
+            }
+            suppressGeneratedFiles.set(true)
+            skipEmptyPackages.set(true)
+            reportUndocumented.set(true)
+        }
+    }
 }
