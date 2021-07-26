@@ -234,3 +234,19 @@ coveralls {
 tasks.coveralls {
     dependsOn 'jacocoTestReport'
 }
+
+dokkaHtml.configure {
+    dokkaSourceSets {
+        named("main") {
+            jdkVersion.set(8)
+            noAndroidSdkLink.set(false)
+            perPackageOption {
+                prefix = matching (".*\\.internal.*")
+                suppress = true
+            }
+            suppressGeneratedFiles.set(true)
+            skipEmptyPackages.set(true)
+            reportUndocumented.set(true)
+        }
+    }
+}
