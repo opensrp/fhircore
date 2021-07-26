@@ -108,7 +108,8 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
         "somehtml",
         "0700 000 000",
         logicalId,
-        "high risk"
+        "high risk",
+        lastSeen = "07-26-2021"
       )
 
     shadowOf(Looper.getMainLooper()).idle()
@@ -157,7 +158,8 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
         "somehtml",
         "0700 000 000",
         "test_id",
-        "high risk"
+        "high risk",
+        lastSeen = "07-26-2021"
       )
     shadowOf(Looper.getMainLooper()).idle()
 

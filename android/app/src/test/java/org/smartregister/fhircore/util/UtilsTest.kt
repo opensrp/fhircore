@@ -29,19 +29,25 @@ import io.mockk.mockk
 import io.mockk.mockkClass
 import io.mockk.slot
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
-import java.util.Date
 import org.apache.commons.lang3.time.DateUtils
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.joda.time.DateTime
 import org.junit.Assert
 import org.junit.Test
+import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.robolectric.util.ReflectionHelpers.ClassParameter.from
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.RobolectricTest
+import org.smartregister.fhircore.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.util.Utils.makeItReadable
+import java.util.*
 
+@Config(shadows = [FhirApplicationShadow::class])
 class UtilsTest : RobolectricTest() {
 
   @Test
@@ -155,5 +161,23 @@ class UtilsTest : RobolectricTest() {
         from(EditText::class.java, view)
       )
     )
+  }
+
+  @Test
+  fun testGetLastSeenShouldReturnExpectedDate() {
+    val immunization = Immunization().apply {
+      id = "Patient/0"
+      recorded = Date()
+    }
+
+    runBlocking {
+      FhirApplication.fhirEngine(FhirApplication.getContext()).save(immunization)
+    }
+
+    Assert.assertEquals(Date().makeItReadable(), Utils.getLastSeen("0", Date()))
+
+    runBlocking {
+      FhirApplication.fhirEngine(FhirApplication.getContext()).remove(Immunization::class.java, "0")
+    }
   }
 }

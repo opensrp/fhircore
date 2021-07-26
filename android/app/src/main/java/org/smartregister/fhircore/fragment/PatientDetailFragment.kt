@@ -21,6 +21,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -84,7 +85,12 @@ class PatientDetailFragment : Fragment() {
     // bind patient details
     viewModel
       .fetchPatientDetailsCards(requireContext(), patientId)
-      .observe(viewLifecycleOwner, { adapter.submitList(it) })
+      .observe(viewLifecycleOwner, {
+        if (it.size < 3) {
+          activity?.findViewById<Button>(R.id.btn_record_vaccine)?.visibility = View.VISIBLE
+        }
+        adapter.submitList(it)
+      })
   }
 
   override fun onResume() {

@@ -30,9 +30,10 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
-import java.util.Calendar
-import java.util.Locale
+import com.google.android.fhir.search.search
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
@@ -40,8 +41,12 @@ import org.joda.time.ReadablePartial
 import org.joda.time.Years
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
+import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.model.PatientItem
+import org.smartregister.fhircore.util.Utils.makeItReadable
 import timber.log.Timber
+import java.text.SimpleDateFormat
+import java.util.*
 
 object Utils {
 
@@ -153,5 +158,28 @@ object Utils {
     val age = getAgeFromDate(patientItem.dob)
     val gender = if (patientItem.gender == "male") 'M' else 'F'
     return PatientAgeGender(age, gender)
+  }
+
+  fun getLastSeen(patientId: String, lastUpdated: Date?): String {
+
+    var lastSeenDate = lastUpdated?.makeItReadable() ?: ""
+
+    var searchResults = listOf<Immunization>()
+    runBlocking {
+      searchResults =
+        FhirApplication.fhirEngine(FhirApplication.getContext()).search {
+          filter(Immunization.PATIENT) { value = "Patient/$patientId" }
+        }
+    }
+
+    if (searchResults.isNotEmpty()) {
+      lastSeenDate = searchResults[searchResults.size.minus(1)].recorded.makeItReadable()
+    }
+
+    return lastSeenDate
+  }
+
+  fun Date.makeItReadable(): String {
+    return SimpleDateFormat("MM-dd-yyyy").format(this)
   }
 }
