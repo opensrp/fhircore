@@ -28,3 +28,6 @@ jobs:
     - name: Document code with dokka
       run: ./gradlew dokkaHtml
       working-directory: android
+      env:
+       FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
+       FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
