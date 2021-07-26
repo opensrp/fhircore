@@ -10,34 +10,35 @@ on:
     branches: [ main ]
 
 jobs:
-  unit_tests:
-
+  unit-tests:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK 11
-      uses: actions/setup-java@v1
-      with:
-        java-version: 11
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2.3.1
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-      working-directory: android
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
 
-    - name: Spotless check
-      run: ./gradlew spotlessCheck
-      working-directory: android
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        working-directory: android
 
-    - name: Run unit tests with Gradle
-      run: ./gradlew jacocoTestReport --stacktrace
-      working-directory: android
-      env:
-       FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
-       FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
+      - name: Spotless check
+        run: ./gradlew spotlessCheck
+        working-directory: android
 
-    - name: Upload code coverage report to coveralls
-      run: ./gradlew coveralls --stacktrace
-      working-directory: android
-      env:
-        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+      - name: Run unit tests with Gradle
+        run: ./gradlew jacocoTestReport --stacktrace
+        working-directory: android
+        env:
+         FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
+         FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
+
+      - name: Upload code coverage report to coveralls
+        run: ./gradlew coveralls --stacktrace
+        working-directory: android
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
