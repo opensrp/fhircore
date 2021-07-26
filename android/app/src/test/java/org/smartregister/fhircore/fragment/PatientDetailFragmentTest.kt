@@ -64,7 +64,9 @@ class PatientDetailFragmentTest : FragmentRobolectricTest() {
     patientDetailFragment.viewModel = spyk(patientDetailFragment.viewModel)
 
     every { patientDetailFragment.viewModel.getPatientItem(any()) } returns
-      MutableLiveData(PatientItem("", "", "", "2000-01-01", "", "", "", "HR", lastSeen = "07-26-2021"))
+      MutableLiveData(
+        PatientItem("", "", "", "2000-01-01", "", "", "", "HR", lastSeen = "07-26-2021")
+      )
 
     patientDetailFragment.editPatient()
 

@@ -122,7 +122,18 @@ class PatientItemViewHolderTest : RobolectricTest() {
   }
 
   private fun composeRandomPatientItem(status: PatientStatus) =
-    PatientItem("1", "Mc Jane", "male", "2000-01-01", "", "1234567", "2", "high risk", status, lastSeen = "07-26-2021")
+    PatientItem(
+      "1",
+      "Mc Jane",
+      "male",
+      "2000-01-01",
+      "",
+      "1234567",
+      "2",
+      "high risk",
+      status,
+      lastSeen = "07-26-2021"
+    )
 
   private fun verifyViewHolderStatus(tvRecordVaccine: TextView, resource: Int) {
     Assert.assertEquals(

@@ -85,12 +85,15 @@ class PatientDetailFragment : Fragment() {
     // bind patient details
     viewModel
       .fetchPatientDetailsCards(requireContext(), patientId)
-      .observe(viewLifecycleOwner, {
-        if (it.size < 3) {
-          activity?.findViewById<Button>(R.id.btn_record_vaccine)?.visibility = View.VISIBLE
+      .observe(
+        viewLifecycleOwner,
+        {
+          if (it.size < 3) {
+            activity?.findViewById<Button>(R.id.btn_record_vaccine)?.visibility = View.VISIBLE
+          }
+          adapter.submitList(it)
         }
-        adapter.submitList(it)
-      })
+      )
   }
 
   override fun onResume() {

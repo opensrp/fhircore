@@ -44,7 +44,8 @@ fun Patient.toDetailsCard(context: Context, index: Int = 0) =
     index = index,
     id = this.id,
     type = this.resourceType.name,
-    title = "${context.getString(R.string.registered_date)} ${this.meta?.lastUpdated?.makeItReadable()}",
+    title =
+      "${context.getString(R.string.registered_date)} ${this.meta?.lastUpdated?.makeItReadable()}",
     context.getString(R.string.view_registration_details)
   )
 
