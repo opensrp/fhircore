@@ -239,6 +239,7 @@ dokkaHtml.configure {
     outputDirectory.set(file("$rootDir/docs"))
     dokkaSourceSets {
         named("main") {
+            moduleName.set("OpenSRP FHIR Core Documentation")
             jdkVersion.set(8)
             noAndroidSdkLink.set(false)
             perPackageOption {
@@ -249,5 +250,11 @@ dokkaHtml.configure {
             skipEmptyPackages.set(true)
             reportUndocumented.set(true)
         }
+
+        pluginsMapConfiguration.set(
+            ["org.jetbrains.dokka.base.DokkaBase": """{
+                "footerMessage": "© ${Year.now().value} Copyright Ona"
+                }"""]
+        )
     }
 }
