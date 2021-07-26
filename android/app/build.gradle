@@ -236,6 +236,7 @@ tasks.coveralls {
 }
 
 dokkaHtml.configure {
+    outputDirectory.set(file("$rootDir/docs"))
     dokkaSourceSets {
         named("main") {
             jdkVersion.set(8)
