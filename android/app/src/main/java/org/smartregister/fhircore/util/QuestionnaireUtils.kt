@@ -255,6 +255,12 @@ object QuestionnaireUtils {
     return questionnaireResponse.item.mapNotNull { itemWithLinkId(it, linkId) }.first()
   }
 
+  fun valueStringWithLinkId(questionnaireResponse: QuestionnaireResponse, linkId: String): String? {
+    val ans =
+      questionnaireResponse.item.mapNotNull { itemWithLinkId(it, linkId) }.first().answerFirstRep
+    return ans.valueStringType.asStringValue()
+  }
+
   private fun doesIntersect(codingList: List<Coding>, other: List<Coding>): Boolean {
     val codes = codingList.map { it.code }
 
