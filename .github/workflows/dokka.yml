@@ -1,7 +1,7 @@
 # This workflow will build a Java project with Gradle
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
 
-name: CI
+name: Docs
 
 on:
   push:
@@ -25,19 +25,6 @@ jobs:
       run: chmod +x gradlew
       working-directory: android
 
-    - name: Spotless check
-      run: ./gradlew spotlessCheck
+    - name: Document code with dokka
+      run: ./gradlew dokkaHtml
       working-directory: android
-
-    - name: Run unit tests with Gradle
-      run: ./gradlew jacocoTestReport --stacktrace
-      working-directory: android
-      env:
-       FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
-       FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
-
-    - name: Upload code coverage report to coveralls
-      run: ./gradlew coveralls --stacktrace
-      working-directory: android
-      env:
-        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
