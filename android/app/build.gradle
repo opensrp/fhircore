@@ -5,6 +5,7 @@ apply plugin: "com.github.kt3k.coveralls"
 apply plugin: 'jacoco'
 apply plugin: 'de.mannodermaus.android-junit5'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'org.jetbrains.dokka'
 
 jacoco {
     toolVersion = versions.jacoco_tool
