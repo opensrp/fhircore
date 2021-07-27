@@ -147,6 +147,8 @@
         android:textAllCaps="true"
         android:textColor="@color/white"
         android:textSize="18sp"
-        android:layout_gravity="bottom|start" />
+        android:layout_gravity="bottom|start"
+        android:visibility="gone"
+        tools:visibility="visible"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

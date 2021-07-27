@@ -43,6 +43,7 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.R
 import org.smartregister.fhircore.api.HapiFhirService
 import org.smartregister.fhircore.data.HapiFhirResourceDataSource
 import org.smartregister.fhircore.domain.Pagination
@@ -134,6 +135,12 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
       immunizations.forEachIndexed { index, element ->
         result.add(element.toDetailsCard(context, index, index < 1))
+      }
+
+      if (immunizations.isEmpty()) {
+        result.add(
+          PatientDetailsCard(-1, -1, "-1", "", context.getString(R.string.no_vaccine_received), "")
+        )
       }
 
       liveSearchImmunization.value = result
@@ -240,6 +247,17 @@ fun Patient.toPatientItem(): PatientItem {
   val logicalId: String = this.logicalId
   val ext = this.extension.singleOrNull { it.value.toString().contains("risk") }
   val risk = ext?.value?.toString() ?: ""
+  val lastSeen = Utils.getLastSeen(logicalId, meta.lastUpdated)
 
-  return PatientItem(this.logicalId, name, gender, dob, html, phone, logicalId, risk)
+  return PatientItem(
+    this.logicalId,
+    name,
+    gender,
+    dob,
+    html,
+    phone,
+    logicalId,
+    risk,
+    lastSeen = lastSeen
+  )
 }
