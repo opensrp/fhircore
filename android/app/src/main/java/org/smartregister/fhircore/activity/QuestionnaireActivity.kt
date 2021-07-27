@@ -79,9 +79,13 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
 
     val patient = ResourceMapper.extract(questionnaire, questionnaireResponse) as Patient
 
-    patient.id =
-      intent.getStringExtra(PatientDetailFragment.ARG_ITEM_ID)
-        ?: UUID.randomUUID().toString().toLowerCase()
+    val barcode =
+      QuestionnaireUtils.valueStringWithLinkId(
+        questionnaireResponse,
+        PatientDetailFragment.ARG_ID_FIELD_KEY
+      )
+
+    patient.id = barcode ?: UUID.randomUUID().toString().toLowerCase()
 
     viewModel.saveResource(patient)
 
