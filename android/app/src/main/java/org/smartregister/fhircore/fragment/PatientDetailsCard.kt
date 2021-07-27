@@ -23,6 +23,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.util.Utils
+import org.smartregister.fhircore.util.Utils.makeItReadable
 
 private const val DAYS_IN_MONTH: Int = 28
 private const val OVERDUE_DAYS_IN_MONTH: Int = 14
@@ -43,7 +44,8 @@ fun Patient.toDetailsCard(context: Context, index: Int = 0) =
     index = index,
     id = this.id,
     type = this.resourceType.name,
-    title = context.getString(R.string.registered_date),
+    title =
+      "${context.getString(R.string.registered_date)} ${this.meta?.lastUpdated?.makeItReadable()}",
     context.getString(R.string.view_registration_details)
   )
 

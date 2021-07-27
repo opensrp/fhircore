@@ -27,7 +27,8 @@ data class PatientItem(
   val logicalId: String,
   val risk: String,
   var vaccineStatus: PatientStatus? = null,
-  var vaccineSummary: PatientVaccineSummary? = null
+  var vaccineSummary: PatientVaccineSummary? = null,
+  val lastSeen: String
 ) {
   override fun toString(): String = name
 }

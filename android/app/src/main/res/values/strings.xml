@@ -69,7 +69,7 @@
     <string name="last_seen_date">Last seen 29-3-2021</string>
     <string name="last_sync_timestamp">Last 05:30 PM, Mar 3</string>
     <string name="logout_as_user">Log out as </string>
-    <string name="registered_date">Registered 20-01-2021</string>
+    <string name="registered_date">Registered </string>
 
     <string name="login_text">Login</string>
     <string name="logout_text">Logout</string>

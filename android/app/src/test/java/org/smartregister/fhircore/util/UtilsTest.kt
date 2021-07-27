@@ -30,18 +30,25 @@ import io.mockk.mockkClass
 import io.mockk.slot
 import io.mockk.verify
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.time.DateUtils
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.joda.time.DateTime
 import org.junit.Assert
 import org.junit.Test
+import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.robolectric.util.ReflectionHelpers.ClassParameter.from
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.RobolectricTest
+import org.smartregister.fhircore.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.util.Utils.makeItReadable
 
+@Config(shadows = [FhirApplicationShadow::class])
 class UtilsTest : RobolectricTest() {
 
   @Test
@@ -155,5 +162,42 @@ class UtilsTest : RobolectricTest() {
         from(EditText::class.java, view)
       )
     )
+  }
+
+  @Test
+  fun testGetLastSeenShouldReturnExpectedDate() {
+
+    val patientId = "0"
+    val patientRegisteredDate = Calendar.getInstance().apply { add(Calendar.DATE, -50) }.time
+    Assert.assertEquals(
+      patientRegisteredDate.makeItReadable(),
+      Utils.getLastSeen(patientId, patientRegisteredDate)
+    )
+
+    val immunization =
+      Immunization().apply {
+        id = "Patient/0"
+        recorded = Calendar.getInstance().apply { add(Calendar.DATE, -18) }.time
+      }
+
+    runBlocking { FhirApplication.fhirEngine(FhirApplication.getContext()).save(immunization) }
+    Assert.assertEquals(
+      immunization.recorded.makeItReadable(),
+      Utils.getLastSeen(patientId, Date())
+    )
+
+    immunization.recorded = Date()
+    runBlocking { FhirApplication.fhirEngine(FhirApplication.getContext()).save(immunization) }
+    Assert.assertEquals(
+      immunization.recorded.makeItReadable(),
+      Utils.getLastSeen(patientId, Date())
+    )
+
+    runBlocking {
+      FhirApplication.fhirEngine(FhirApplication.getContext())
+        .remove(Immunization::class.java, patientId)
+      FhirApplication.fhirEngine(FhirApplication.getContext())
+        .remove(Immunization::class.java, patientId)
+    }
   }
 }

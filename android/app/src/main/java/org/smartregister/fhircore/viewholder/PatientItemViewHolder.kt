@@ -32,6 +32,7 @@ import org.smartregister.fhircore.util.Utils.getPatientAgeGender
 
 class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val tvPatientDemographics: TextView = itemView.findViewById(R.id.tv_patient_demographics)
+  private val tvLastSeen: TextView = itemView.findViewById(R.id.date_last_seen)
   private val tvRecordVaccine: TextView = itemView.findViewById(R.id.tv_record_vaccine)
   private val contVaccineStatus: LinearLayout = itemView.findViewById(R.id.cont_vaccine_status)
   private val imgVaccineStatus: ImageView = itemView.findViewById(R.id.img_vaccine_status)
@@ -44,6 +45,7 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
   ) {
     setPatientStatus(null, patientItem, this.tvRecordVaccine, onItemClicked)
     this.tvPatientDemographics.text = getPatientDemographics(patientItem)
+    this.tvLastSeen.text = patientItem.lastSeen
     this.itemView.setOnClickListener {
       onItemClicked(PatientListFragment.Intention.VIEW, patientItem)
     }
