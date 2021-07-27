@@ -12,6 +12,7 @@ buildscript {
         classpath deps.spotless
         classpath deps.kotlin_coveralls_plugin
         classpath deps.junit5_plugin
+        classpath deps.dokka_plugin
     }
 }
 
