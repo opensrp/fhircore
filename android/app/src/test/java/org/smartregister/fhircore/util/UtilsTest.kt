@@ -30,6 +30,7 @@ import io.mockk.mockkClass
 import io.mockk.slot
 import io.mockk.verify
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.time.DateUtils
@@ -165,18 +166,38 @@ class UtilsTest : RobolectricTest() {
 
   @Test
   fun testGetLastSeenShouldReturnExpectedDate() {
+
+    val patientId = "0"
+    val patientRegisteredDate = Calendar.getInstance().apply { add(Calendar.DATE, -50) }.time
+    Assert.assertEquals(
+      patientRegisteredDate.makeItReadable(),
+      Utils.getLastSeen(patientId, patientRegisteredDate)
+    )
+
     val immunization =
       Immunization().apply {
         id = "Patient/0"
-        recorded = Date()
+        recorded = Calendar.getInstance().apply { add(Calendar.DATE, -18) }.time
       }
 
     runBlocking { FhirApplication.fhirEngine(FhirApplication.getContext()).save(immunization) }
+    Assert.assertEquals(
+      immunization.recorded.makeItReadable(),
+      Utils.getLastSeen(patientId, Date())
+    )
 
-    Assert.assertEquals(Date().makeItReadable(), Utils.getLastSeen("0", Date()))
+    immunization.recorded = Date()
+    runBlocking { FhirApplication.fhirEngine(FhirApplication.getContext()).save(immunization) }
+    Assert.assertEquals(
+      immunization.recorded.makeItReadable(),
+      Utils.getLastSeen(patientId, Date())
+    )
 
     runBlocking {
-      FhirApplication.fhirEngine(FhirApplication.getContext()).remove(Immunization::class.java, "0")
+      FhirApplication.fhirEngine(FhirApplication.getContext())
+        .remove(Immunization::class.java, patientId)
+      FhirApplication.fhirEngine(FhirApplication.getContext())
+        .remove(Immunization::class.java, patientId)
     }
   }
 }
