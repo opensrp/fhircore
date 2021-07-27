@@ -40,6 +40,7 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.util.QuestionnaireUtils
 
 @Config(shadows = [FhirApplicationShadow::class])
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
@@ -87,6 +88,10 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     val response = fragment.getQuestionnaireResponse()
     Assert.assertEquals("test-id", response.find("patient-barcode")?.value.toString())
+
+    val barcode =
+      QuestionnaireUtils.valueStringWithLinkId(response, PatientDetailFragment.ARG_ID_FIELD_KEY)
+    Assert.assertEquals(barcode, response.find("patient-barcode")?.value.toString())
   }
 
   @Test
