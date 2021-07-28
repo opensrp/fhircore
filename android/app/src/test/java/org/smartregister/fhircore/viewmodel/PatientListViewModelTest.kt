@@ -64,6 +64,7 @@ class PatientListViewModelTest : RobolectricTest() {
 
   @Test
   fun testSearchResultsPaginatedPatients() {
+    viewModel.showOverduePatientsOnly.value = true
     viewModel.searchResults("jane")
 
     every { viewModel.liveSearchedPaginatedPatients } answers

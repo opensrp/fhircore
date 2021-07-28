@@ -19,15 +19,18 @@ package org.smartregister.fhircore.fragment
 import android.os.Looper
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.material.switchmaterial.SwitchMaterial
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -35,6 +38,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import org.hl7.fhir.r4.model.Patient
 import org.junit.Assert
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.BeforeClass
@@ -221,6 +225,40 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
     val result = patientListViewModel.isPatientExists("test-id-missing")
 
     result.observe(patientListFragment, { assertTrue(it.isFailure) })
+  }
+
+  @Test
+  fun testSearchResultsPaginatedPatientsShouldReturnEmptyData() {
+
+    val patientListViewModelSpy = spyk(patientListViewModel)
+    patientListFragment.patientListViewModel = patientListViewModelSpy
+
+    patientListViewModelSpy.showOverduePatientsOnly.value = true
+    getView<EditText>(R.id.edit_text_search).setText("unknown")
+
+    every { patientListViewModelSpy.liveSearchedPaginatedPatients } answers
+      {
+        MutableLiveData<Pair<List<PatientItem>, Pagination>>(Pair(listOf(), Pagination(-1, 10, 0)))
+      }
+
+    val patients = patientListViewModelSpy.liveSearchedPaginatedPatients.value?.first
+    val pagination = patientListViewModelSpy.liveSearchedPaginatedPatients.value?.second
+
+    Assert.assertEquals(0, patients?.size)
+    Assert.assertEquals(-1, pagination?.totalItems)
+    Assert.assertEquals(0, pagination?.currentPage)
+    Assert.assertEquals(10, pagination?.pageSize)
+
+    patientListFragment.patientListViewModel = patientListViewModel
+  }
+
+  @Test
+  fun testShowOverduePatientsOnlyShouldReturnTrue() {
+    getView<SwitchMaterial>(R.id.btn_show_overdue_patients).isChecked = true
+    assertTrue(patientListFragment.patientListViewModel.showOverduePatientsOnly.value!!)
+
+    getView<SwitchMaterial>(R.id.btn_show_overdue_patients).isChecked = false
+    assertFalse(patientListFragment.patientListViewModel.showOverduePatientsOnly.value!!)
   }
 
   private fun <T : View?> getView(id: Int): T {
