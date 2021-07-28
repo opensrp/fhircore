@@ -43,10 +43,8 @@ class FhirApplication : Application() {
 
   // only initiate the FhirEngine when used for the first time, not when the app is created
   private val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
-  private val mInstance: FhirApplication by lazy { this }
 
   private fun constructFhirEngine(): FhirEngine {
-    SharedPreferencesHelper.init(this)
     Sync.periodicSync<FhirPeriodicSyncWorker>(
       this,
       PeriodicSyncConfiguration(

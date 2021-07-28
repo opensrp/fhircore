@@ -32,6 +32,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -39,6 +40,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.mlkit.md.LiveBarcodeScanningFragment
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
@@ -58,13 +60,14 @@ import org.smartregister.fhircore.viewmodel.PatientListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
 import timber.log.Timber
 
+const val PAGE_COUNT = 7
+
 class PatientListFragment : Fragment() {
 
   internal lateinit var patientListViewModel: PatientListViewModel
   private lateinit var fhirEngine: FhirEngine
   internal val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
   private var search: String? = null
-  private val pageCount: Int = 7
   private lateinit var adapter: PatientItemRecyclerViewAdapter
   private lateinit var paginationView: RelativeLayout
   private lateinit var recyclerView: RecyclerView
@@ -116,18 +119,44 @@ class PatientListFragment : Fragment() {
 
           override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             search = s?.toString()
-            patientListViewModel.searchResults(s?.toString(), 0, pageCount)
+            patientListViewModel.searchResults(s?.toString(), 0, PAGE_COUNT)
           }
 
           override fun afterTextChanged(s: Editable?) {}
         }
       )
+
+    requireActivity()
+      .findViewById<SwitchMaterial>(R.id.btn_show_overdue_patients)
+      .setOnCheckedChangeListener { button, isChecked ->
+        patientListViewModel.showOverduePatientsOnly.value = isChecked
+      }
+
+    patientListViewModel.showOverduePatientsOnly.observe(
+      requireActivity(),
+      {
+        patientListViewModel.searchResults(
+          requireActivity().findViewById<EditText>(R.id.edit_text_search).text.toString(),
+          0,
+          PAGE_COUNT
+        )
+      }
+    )
+
+    patientListViewModel.loadingListObservable.observe(
+      requireActivity(),
+      {
+        requireActivity().findViewById<ConstraintLayout>(R.id.loader_overlay).visibility =
+          if (it) View.VISIBLE else View.GONE
+      }
+    )
+
     setUpBarcodeScanner()
     super.onViewCreated(view, savedInstanceState)
   }
 
   override fun onResume() {
-    patientListViewModel.searchResults(page = 0, pageSize = pageCount)
+    patientListViewModel.searchResults(page = 0, pageSize = PAGE_COUNT)
     adapter.notifyDataSetChanged()
     super.onResume()
   }
@@ -222,7 +251,7 @@ class PatientListFragment : Fragment() {
   // Click handler to help display the details about the patients from the list.
   private fun onNavigationClicked(direction: NavigationDirection, currentPage: Int) {
     val nextPage = currentPage + if (direction == NavigationDirection.NEXT) 1 else -1
-    patientListViewModel.searchResults(search, nextPage, pageCount)
+    patientListViewModel.searchResults(search, nextPage, PAGE_COUNT)
   }
 
   private fun launchPatientDetailActivity(patientLogicalId: String) {
@@ -260,7 +289,7 @@ class PatientListFragment : Fragment() {
 
   private fun syncResources() {
     patientListViewModel.runSync()
-    patientListViewModel.searchResults(pageSize = pageCount)
+    patientListViewModel.searchResults(pageSize = PAGE_COUNT)
     Toast.makeText(requireContext(), R.string.syncing, Toast.LENGTH_LONG).show()
   }
 

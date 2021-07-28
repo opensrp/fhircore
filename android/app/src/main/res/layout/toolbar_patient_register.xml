@@ -33,7 +33,7 @@
             android:id="@+id/btn_show_overdue_patients"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:checked="true"
+            android:checked="false"
             android:gravity="center_vertical"
             android:text="@string/show_overdue"
             android:textColor="@color/white"
