@@ -37,6 +37,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
@@ -62,12 +63,18 @@ import org.smartregister.fhircore.util.Utils
 class PatientListViewModel(application: Application, private val fhirEngine: FhirEngine) :
   AndroidViewModel(application) {
 
+  var showOverduePatientsOnly = MutableLiveData(false)
+  var loadingListObservable = MutableLiveData(true)
+
   val liveSearchedPaginatedPatients: MutableLiveData<Pair<List<PatientItem>, Pagination>> by lazy {
     MutableLiveData<Pair<List<PatientItem>, Pagination>>()
   }
 
   fun searchResults(query: String? = null, page: Int = 0, pageSize: Int = 10) {
-    viewModelScope.launch {
+    viewModelScope.launch(Dispatchers.IO) {
+      loadingListObservable.postValue(true)
+      var totalCount = count(query).toInt()
+
       val searchResults: List<Patient> =
         fhirEngine.search {
           Utils.addBasePatientFilter(this)
@@ -82,18 +89,22 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
           }
 
           sort(Patient.GIVEN, Order.ASCENDING)
-          count = pageSize
+          count = totalCount
           from = (page * pageSize)
         }
 
-      val patients = searchResults.map { it.toPatientItem() }
+      var patients = searchResults.map { it.toPatientItem() }
       patients.forEach { it.vaccineStatus = getPatientStatus(it.logicalId) }
+      if (showOverduePatientsOnly.value!!) {
+        patients = patients.filter { it.vaccineStatus!!.status == VaccineStatus.OVERDUE }
+      }
+      totalCount = patients.size + (page * pageSize)
+      patients = patients.take(pageSize)
 
-      liveSearchedPaginatedPatients.value =
-        Pair(
-          patients,
-          Pagination(totalItems = count(query).toInt(), pageSize = pageSize, currentPage = page)
-        )
+      loadingListObservable.postValue(false)
+      liveSearchedPaginatedPatients.postValue(
+        Pair(patients, Pagination(totalItems = totalCount, pageSize = pageSize, currentPage = page))
+      )
     }
   }
 

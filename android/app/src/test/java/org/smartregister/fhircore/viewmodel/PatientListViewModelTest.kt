@@ -16,8 +16,11 @@
 
 package org.smartregister.fhircore.viewmodel
 
+import androidx.lifecycle.MutableLiveData
 import ca.uhn.fhir.model.api.TemporalPrecisionEnum
 import com.google.android.fhir.FhirEngine
+import io.mockk.every
+import io.mockk.spyk
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -37,6 +40,8 @@ import org.robolectric.annotation.Config
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.RobolectricTest
+import org.smartregister.fhircore.domain.Pagination
+import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.model.VaccineStatus
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.util.Utils
@@ -54,12 +59,18 @@ class PatientListViewModelTest : RobolectricTest() {
   fun setUp() {
     appContext = FhirApplication.getContext()
     fhirEngine = FhirApplication.fhirEngine(appContext)
-    viewModel = PatientListViewModel(appContext, fhirEngine)
+    viewModel = spyk(PatientListViewModel(appContext, fhirEngine))
   }
 
   @Test
   fun testSearchResultsPaginatedPatients() {
+    viewModel.showOverduePatientsOnly.value = true
     viewModel.searchResults("jane")
+
+    every { viewModel.liveSearchedPaginatedPatients } answers
+      {
+        MutableLiveData<Pair<List<PatientItem>, Pagination>>(Pair(listOf(), Pagination(-1, 10, 0)))
+      }
 
     val patients = viewModel.liveSearchedPaginatedPatients.value?.first
     val pagination = viewModel.liveSearchedPaginatedPatients.value?.second
