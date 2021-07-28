@@ -4,9 +4,9 @@
 
 # OpenSRP FHIR Core
 
-FHIRcore is a Kotlin application for delivering offline-capable, mobile-first healthcare project implementations from local community to national and international scale using FHIR and the WHO Smart Guidelines on Android.
+FHIR Core is a Kotlin application for delivering offline-capable, mobile-first healthcare project implementations from local community to national and international scale using FHIR and the WHO Smart Guidelines on Android.
 
-FHIRcore is architected as a FHIR native digital health platform powered by Google's [Android FHIR SDK](https://github.com/google/android-fhir) and [HAPI FHIR](https://hapifhir.io/). FHIRcore's user experience and module oriented design are based on over a decade of real world experience implementing digital health projects with [OpenSRP](https://smartregister.org/). This repository contains the Android mobile application built to:
+FHIR Core is architected as a FHIR native digital health platform powered by Google's [Android FHIR SDK](https://github.com/google/android-fhir) and [HAPI FHIR](https://hapifhir.io/). FHIR Core's user experience and module oriented design are based on over a decade of real world experience implementing digital health projects with [OpenSRP](https://smartregister.org/). This repository contains the Android mobile application built to:
 
 - load configuration data as FHIR resources,
 - support the WHO Smart Guidelines,
@@ -27,6 +27,6 @@ FHIRcore also interoperates well with:
 ## Getting Started
 This repository contains the folders
 * **[android](android)**: for building the Android application.
-* **[docs](docs)**: a library of documents describing the FHIRcore solution.
+* **[docs](docs)**: a library of documents describing the FHIR Core solution.
 
 We recommend reviewing the [docs](docs) before setting up the Android Studio Project in the [android](android) folder.
