@@ -18,10 +18,8 @@ package org.smartregister.fhircore.fragment
 
 import android.os.Looper
 import android.view.View
-import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.RelativeLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
@@ -141,14 +139,7 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
       Pair(mutableListOf(), Pagination(totalItems = 1, pageSize = 5, currentPage = 1))
     )
     val container = getView<LinearLayout>(R.id.empty_list_message_container)
-    val buttonLayout =
-      getView<Button>(R.id.btn_register_new_patient).layoutParams as RelativeLayout.LayoutParams
-
     Assert.assertEquals(View.VISIBLE, container.visibility)
-    Assert.assertEquals(
-      R.id.empty_list_message_container,
-      buttonLayout.getRule(RelativeLayout.BELOW)
-    )
   }
 
   @Test
@@ -174,14 +165,7 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
       Pair(mutableListOf(patient), Pagination(totalItems = 1, pageSize = 5, currentPage = 1))
     )
     val container = getView<LinearLayout>(R.id.empty_list_message_container)
-    val buttonLayout =
-      getView<Button>(R.id.btn_register_new_patient).layoutParams as RelativeLayout.LayoutParams
-
-    Assert.assertEquals(View.INVISIBLE, container.visibility)
-    Assert.assertEquals(
-      RelativeLayout.TRUE,
-      buttonLayout.getRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
-    )
+    Assert.assertEquals(View.GONE, container.visibility)
   }
 
   @Test
