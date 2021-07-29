@@ -16,33 +16,44 @@
 
 package org.smartregister.fhircore.viewholder
 
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
-import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.RobolectricTest
 import org.smartregister.fhircore.fragment.PatientDetailsCard
 
 class PatientDetailsCardViewHolderTest : RobolectricTest() {
 
-  private lateinit var viewHolder: PatientDetailsCardViewHolder
-  private lateinit var itemView: View
-
-  @Before
-  fun setUp() {
-    itemView =
-      LayoutInflater.from(FhirApplication.getContext())
-        .inflate(R.layout.patient_details_card_item, null, false)
-    viewHolder = PatientDetailsCardViewHolder(itemView)
-  }
-
   @Test
   fun verifyBindToAppendsDataToView() {
     val card = PatientDetailsCard(0, 0, "1", "Patient", "RegistrationDate", "Details")
+
+    val itemView = mockk<View>()
+
+    val tvCardTitle = mockk<TextView>()
+    val tvCardDetail = mockk<TextView>()
+
+    every { tvCardTitle.text = any<String>() } returns Unit
+    every { tvCardDetail.text = any<String>() } returns Unit
+    every { tvCardDetail.visibility = any() } returns Unit
+
+    every { tvCardTitle.text } returns card.title
+    every { tvCardDetail.text } returns card.details
+
+    every {
+      hint(TextView::class)
+      itemView.findViewById<TextView>(R.id.card_title)
+    } returns tvCardTitle
+    every {
+      hint(TextView::class)
+      itemView.findViewById<TextView>(R.id.card_details)
+    } returns tvCardDetail
+
+    val viewHolder = PatientDetailsCardViewHolder(itemView)
     viewHolder.bindTo(card)
 
     val cardTitle = itemView.findViewById<TextView>(R.id.card_title)
