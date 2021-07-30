@@ -16,24 +16,28 @@
 
 package org.smartregister.fhircore.fragment
 
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Looper
 import android.view.View
-import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.RelativeLayout
+import androidx.activity.result.ActivityResultLauncher
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.material.switchmaterial.SwitchMaterial
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.verify
 import org.hl7.fhir.r4.model.Patient
@@ -47,6 +51,8 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.PatientDetailActivity
 import org.smartregister.fhircore.activity.PatientListActivity
@@ -141,14 +147,7 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
       Pair(mutableListOf(), Pagination(totalItems = 1, pageSize = 5, currentPage = 1))
     )
     val container = getView<LinearLayout>(R.id.empty_list_message_container)
-    val buttonLayout =
-      getView<Button>(R.id.btn_register_new_patient).layoutParams as RelativeLayout.LayoutParams
-
     Assert.assertEquals(View.VISIBLE, container.visibility)
-    Assert.assertEquals(
-      R.id.empty_list_message_container,
-      buttonLayout.getRule(RelativeLayout.BELOW)
-    )
   }
 
   @Test
@@ -174,14 +173,7 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
       Pair(mutableListOf(patient), Pagination(totalItems = 1, pageSize = 5, currentPage = 1))
     )
     val container = getView<LinearLayout>(R.id.empty_list_message_container)
-    val buttonLayout =
-      getView<Button>(R.id.btn_register_new_patient).layoutParams as RelativeLayout.LayoutParams
-
-    Assert.assertEquals(View.INVISIBLE, container.visibility)
-    Assert.assertEquals(
-      RelativeLayout.TRUE,
-      buttonLayout.getRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
-    )
+    Assert.assertEquals(View.GONE, container.visibility)
   }
 
   @Test
@@ -259,6 +251,81 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
 
     getView<SwitchMaterial>(R.id.btn_show_overdue_patients).isChecked = false
     assertFalse(patientListFragment.patientListViewModel.showOverduePatientsOnly.value!!)
+  }
+
+  @Test
+  fun testLaunchBarcodeReaderShouldVerifyInternalCalls() {
+    mockkStatic(ContextCompat::class)
+    every { ContextCompat.checkSelfPermission(any(), any()) } returns
+      PackageManager.PERMISSION_GRANTED
+
+    val activityResultLauncher = mockk<ActivityResultLauncher<String>>()
+    every { activityResultLauncher.launch(any()) } returns Unit
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientListFragment,
+      "launchBarcodeReader",
+      ReflectionHelpers.ClassParameter(ActivityResultLauncher::class.java, activityResultLauncher)
+    )
+
+    verify(exactly = 0) { activityResultLauncher.launch(any()) }
+
+    every { ContextCompat.checkSelfPermission(any(), any()) } returns
+      PackageManager.PERMISSION_DENIED
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientListFragment,
+      "launchBarcodeReader",
+      ReflectionHelpers.ClassParameter(ActivityResultLauncher::class.java, activityResultLauncher)
+    )
+
+    verify(exactly = 1) { activityResultLauncher.launch(any()) }
+  }
+
+  @Test
+  fun testOnNavigationClickedPageNo() {
+    val patientListViewModelSpy = spyk(patientListViewModel)
+    patientListFragment.patientListViewModel = patientListViewModelSpy
+
+    every { patientListViewModelSpy.searchResults(any(), any(), any()) } returns Unit
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientListFragment,
+      "onNavigationClicked",
+      ReflectionHelpers.ClassParameter(
+        NavigationDirection::class.java,
+        NavigationDirection.PREVIOUS
+      ),
+      ReflectionHelpers.ClassParameter(Int::class.java, 1)
+    )
+
+    verify(exactly = 1) { patientListViewModelSpy.searchResults(any(), eq(0), any()) }
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientListFragment,
+      "onNavigationClicked",
+      ReflectionHelpers.ClassParameter(NavigationDirection::class.java, NavigationDirection.NEXT),
+      ReflectionHelpers.ClassParameter(Int::class.java, 1)
+    )
+
+    verify(exactly = 1) { patientListViewModelSpy.searchResults(any(), eq(2), any()) }
+
+    patientListFragment.patientListViewModel = patientListViewModel
+  }
+
+  @Test
+  fun testLaunchPatientDetailActivityShouldStartPatientDetailActivity() {
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientListFragment,
+      "launchPatientDetailActivity",
+      ReflectionHelpers.ClassParameter(String::class.java, "0")
+    )
+
+    val expectedIntent = Intent(patientListActivity, PatientDetailActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>())
+        .nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   private fun <T : View?> getView(id: Int): T {

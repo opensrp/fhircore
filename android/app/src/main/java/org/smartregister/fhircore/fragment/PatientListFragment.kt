@@ -73,6 +73,7 @@ class PatientListFragment : Fragment() {
   private lateinit var nextButton: Button
   private lateinit var prevButton: Button
   private lateinit var infoTextView: TextView
+  private var activePageNum = 0
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -155,7 +156,11 @@ class PatientListFragment : Fragment() {
   }
 
   override fun onResume() {
-    patientListViewModel.searchResults(page = 0, pageSize = PAGE_COUNT)
+    patientListViewModel.searchResults(
+      requireActivity().findViewById<EditText>(R.id.edit_text_search).text.toString(),
+      page = activePageNum,
+      pageSize = PAGE_COUNT
+    )
     adapter.notifyDataSetChanged()
     super.onResume()
   }
@@ -219,32 +224,15 @@ class PatientListFragment : Fragment() {
   }
 
   fun hideEmptyListViews() {
-    setVisibility(R.id.empty_list_message_container, View.INVISIBLE)
-    setRegisterButtonAlignment(RelativeLayout.ALIGN_PARENT_BOTTOM)
+    setVisibility(R.id.empty_list_message_container, View.GONE)
   }
 
   fun showEmptyListViews() {
     setVisibility(R.id.empty_list_message_container, View.VISIBLE)
-    setRegisterButtonAlignment(RelativeLayout.BELOW)
   }
 
   private fun setVisibility(id: Int, visibility: Int) {
     requireActivity().findViewById<View>(id).visibility = visibility
-  }
-
-  private fun setRegisterButtonAlignment(alignment: Int) {
-    val button = requireActivity().findViewById<Button>(R.id.btn_register_new_patient)
-    val params = button.layoutParams as RelativeLayout.LayoutParams
-
-    if (alignment == RelativeLayout.BELOW) {
-      params.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
-      params.addRule(RelativeLayout.BELOW, R.id.empty_list_message_container)
-    } else {
-      params.removeRule(RelativeLayout.BELOW)
-      params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE)
-    }
-
-    button.layoutParams = params
   }
 
   // Click handler to help display the details about the patients from the list.
@@ -288,7 +276,7 @@ class PatientListFragment : Fragment() {
 
   private fun syncResources() {
     patientListViewModel.runSync()
-    patientListViewModel.searchResults(pageSize = PAGE_COUNT)
+    patientListViewModel.searchResults(search, page = activePageNum, pageSize = PAGE_COUNT)
     Toast.makeText(requireContext(), R.string.syncing, Toast.LENGTH_LONG).show()
   }
 
@@ -298,6 +286,7 @@ class PatientListFragment : Fragment() {
   }
 
   private fun updatePagination(pagination: Pagination) {
+    activePageNum = pagination.currentPage
     nextButton.setOnClickListener {
       onNavigationClicked(NavigationDirection.NEXT, pagination.currentPage)
     }
