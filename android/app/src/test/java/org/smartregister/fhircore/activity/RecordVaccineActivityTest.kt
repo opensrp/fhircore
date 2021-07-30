@@ -27,6 +27,7 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import java.lang.IndexOutOfBoundsException
 import java.util.Date
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
@@ -71,6 +72,8 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
     mockkObject(ResourceMapper)
 
+    val entryComponent = mockk<Bundle.BundleEntryComponent>()
+    val bundle = mockk<Bundle>()
     val questionnaireFragment = mockk<QuestionnaireFragment>()
     val questionnaireResponse = mockk<QuestionnaireResponse>()
     val item = mockk<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
@@ -79,7 +82,10 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
     val answerItems = listOf(answer)
     val coding = mockk<Coding>()
 
-    every { ResourceMapper.extract(any(), any()) } returns Immunization()
+    every { entryComponent.resource } returns Immunization()
+    every { bundle.entry } returns listOf(entryComponent)
+    every { ResourceMapper.extract(any(), any()) } returns bundle
+
     every { questionnaireFragment.getQuestionnaireResponse() } returns questionnaireResponse
     every { questionnaireResponse.item } returns items
     every { item.answer } throws IndexOutOfBoundsException()

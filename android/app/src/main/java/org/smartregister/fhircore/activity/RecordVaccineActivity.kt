@@ -84,7 +84,8 @@ class RecordVaccineActivity : MultiLanguageBaseActivity() {
       // TODO Replace manual mapping with resource mapper
       try {
         val immunization =
-          ResourceMapper.extract(questionnaire, questionnaireResponse) as Immunization
+          ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as
+            Immunization
         immunization.id = UUID.randomUUID().toString().toLowerCase()
         immunization.recorded = Date()
         immunization.status = Immunization.ImmunizationStatus.COMPLETED
