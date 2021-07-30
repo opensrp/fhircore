@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.fragment
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Looper
 import android.view.View
@@ -29,6 +30,7 @@ import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.material.switchmaterial.SwitchMaterial
@@ -50,6 +52,7 @@ import org.robolectric.Shadows
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.PatientDetailActivity
 import org.smartregister.fhircore.activity.PatientListActivity
@@ -276,6 +279,53 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
     )
 
     verify(exactly = 1) { activityResultLauncher.launch(any()) }
+  }
+
+  @Test
+  fun testOnNavigationClickedPageNo() {
+    val patientListViewModelSpy = spyk(patientListViewModel)
+    patientListFragment.patientListViewModel = patientListViewModelSpy
+
+    every { patientListViewModelSpy.searchResults(any(), any(), any()) } returns Unit
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientListFragment,
+      "onNavigationClicked",
+      ReflectionHelpers.ClassParameter(
+        NavigationDirection::class.java,
+        NavigationDirection.PREVIOUS
+      ),
+      ReflectionHelpers.ClassParameter(Int::class.java, 1)
+    )
+
+    verify(exactly = 1) { patientListViewModelSpy.searchResults(any(), eq(0), any()) }
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientListFragment,
+      "onNavigationClicked",
+      ReflectionHelpers.ClassParameter(NavigationDirection::class.java, NavigationDirection.NEXT),
+      ReflectionHelpers.ClassParameter(Int::class.java, 1)
+    )
+
+    verify(exactly = 1) { patientListViewModelSpy.searchResults(any(), eq(2), any()) }
+
+    patientListFragment.patientListViewModel = patientListViewModel
+  }
+
+  @Test
+  fun testLaunchPatientDetailActivityShouldStartPatientDetailActivity() {
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientListFragment,
+      "launchPatientDetailActivity",
+      ReflectionHelpers.ClassParameter(String::class.java, "0")
+    )
+
+    val expectedIntent = Intent(patientListActivity, PatientDetailActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>())
+        .nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   private fun <T : View?> getView(id: Int): T {
