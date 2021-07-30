@@ -27,6 +27,7 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import java.lang.IndexOutOfBoundsException
 import java.util.Date
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
@@ -79,7 +80,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
     val answerItems = listOf(answer)
     val coding = mockk<Coding>()
 
-    every { ResourceMapper.extract(any(), any()) } returns Immunization()
+    every { ResourceMapper.extract(any(), any()) } returns Bundle()
     every { questionnaireFragment.getQuestionnaireResponse() } returns questionnaireResponse
     every { questionnaireResponse.item } returns items
     every { item.answer } throws IndexOutOfBoundsException()
