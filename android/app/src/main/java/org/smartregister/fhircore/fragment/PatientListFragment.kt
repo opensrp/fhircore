@@ -41,7 +41,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
 import com.google.android.material.switchmaterial.SwitchMaterial
-import com.google.mlkit.md.LiveBarcodeScanningFragment
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.PATIENT_ID
@@ -66,7 +65,7 @@ class PatientListFragment : Fragment() {
 
   internal lateinit var patientListViewModel: PatientListViewModel
   private lateinit var fhirEngine: FhirEngine
-  internal val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
+  //  internal val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
   private var search: String? = null
   private lateinit var adapter: PatientItemRecyclerViewAdapter
   private lateinit var paginationView: RelativeLayout
@@ -188,7 +187,7 @@ class PatientListFragment : Fragment() {
                     barcode
                   )
                 }
-                liveBarcodeScanningFragment.onDestroy()
+                //                liveBarcodeScanningFragment.onDestroy()
               }
             )
         }
@@ -202,7 +201,7 @@ class PatientListFragment : Fragment() {
     return registerForActivityResult(ActivityResultContracts.RequestPermission()) {
       isGranted: Boolean ->
       if (isGranted) {
-        liveBarcodeScanningFragment.show(requireActivity().supportFragmentManager, "TAG")
+        //        liveBarcodeScanningFragment.show(requireActivity().supportFragmentManager, "TAG")
       } else {
         Toast.makeText(
             requireContext(),
@@ -218,7 +217,7 @@ class PatientListFragment : Fragment() {
     if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) ==
         PackageManager.PERMISSION_GRANTED
     ) {
-      liveBarcodeScanningFragment.show(requireActivity().supportFragmentManager, "TAG")
+      //      liveBarcodeScanningFragment.show(requireActivity().supportFragmentManager, "TAG")
     } else {
       requestPermissionLauncher.launch(Manifest.permission.CAMERA)
     }
