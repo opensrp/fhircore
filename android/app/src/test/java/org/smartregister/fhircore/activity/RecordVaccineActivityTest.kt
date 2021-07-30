@@ -19,7 +19,6 @@ package org.smartregister.fhircore.activity
 import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
-import android.os.Looper.getMainLooper
 import android.widget.Button
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
