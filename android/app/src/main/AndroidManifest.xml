@@ -44,22 +44,27 @@
         </activity>
         <activity android:name=".activity.RecordVaccineActivity"></activity>
         <activity
-            android:name="org.smartregister.fhircore.activity.PatientListActivity"
+            android:name="org.smartregister.fhircore.activity.CovaxListActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustPan" >
+        </activity>
+        <activity
+            android:name="org.smartregister.fhircore.activity.AncListActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" >
         </activity>
         <activity
             android:name="org.smartregister.fhircore.activity.PatientDetailActivity"
             android:label=""
-            android:parentActivityName="org.smartregister.fhircore.activity.PatientListActivity"
+            android:parentActivityName="org.smartregister.fhircore.activity.CovaxListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="org.smartregister.fhircore.activity.PatientListActivity" />
+                android:value="org.smartregister.fhircore.activity.CovaxListActivity" />
         </activity>
         <activity
             android:name=".activity.QuestionnaireActivity"
-            android:parentActivityName=".activity.PatientListActivity" />
+            android:parentActivityName=".activity.CovaxListActivity" />
 
         <service android:name=".auth.account.AccountService">
             <intent-filter>

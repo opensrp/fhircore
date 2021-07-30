@@ -39,7 +39,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     val savedState = SavedStateHandle()
-    savedState[QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY] = "patient-registration.json"
+    savedState[QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY] = "patient-registration.json"
     viewModel = QuestionnaireViewModel(FhirApplication.getContext(), savedState)
   }
 

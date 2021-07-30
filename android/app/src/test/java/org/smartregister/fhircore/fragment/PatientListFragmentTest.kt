@@ -55,7 +55,7 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.PatientDetailActivity
-import org.smartregister.fhircore.activity.PatientListActivity
+import org.smartregister.fhircore.activity.CovaxListActivity
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.domain.Pagination
 import org.smartregister.fhircore.model.PatientItem
@@ -72,7 +72,7 @@ import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
 class PatientListFragmentTest : FragmentRobolectricTest() {
 
   private lateinit var patientListFragment: PatientListFragment
-  private lateinit var patientListActivity: PatientListActivity
+  private lateinit var patientListActivity: CovaxListActivity
   private lateinit var fragmentScenario: FragmentScenario<PatientListFragment>
   private lateinit var patientListViewModel: PatientListViewModel
   private lateinit var fhirEngine: FhirEngine
@@ -81,7 +81,7 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
   fun setUp() {
     fhirEngine = mockk()
 
-    patientListActivity = Robolectric.buildActivity(PatientListActivity::class.java).create().get()
+    patientListActivity = Robolectric.buildActivity(CovaxListActivity::class.java).create().get()
     patientListViewModel =
       ViewModelProvider(
           patientListActivity,

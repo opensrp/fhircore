@@ -14,30 +14,30 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.activity
+package org.smartregister.fhircore.activity.core
 
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageButton
-import androidx.core.view.GravityCompat
+import android.widget.TextView
+import androidx.annotation.IdRes
+import androidx.annotation.LayoutRes
+import androidx.annotation.StringRes
+import androidx.appcompat.widget.Toolbar
 import androidx.core.widget.doAfterTextChanged
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.widget.ViewPager2
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.fragment.PatientDetailFragment
-import org.smartregister.fhircore.fragment.PatientListFragment
+import org.smartregister.fhircore.model.BaseRegister
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.util.Utils.addOnDrawableClickedListener
 
-/** An activity representing a list of Patients. */
-class PatientListActivity : BaseSimpleActivity() {
+abstract class BaseRegisterActivity : BaseSimpleActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -45,16 +45,41 @@ class PatientListActivity : BaseSimpleActivity() {
     setUpViews()
   }
 
-  override fun getContentLayout(): Int {
-    return R.layout.activity_patient_list
+  @LayoutRes override fun getContentLayout(): Int {
+    return register().contentLayoutId
   }
 
-  private fun setUpViews() {
-    findViewById<Button>(R.id.btn_register_new_patient).setOnClickListener { addPatient(it) }
+  @IdRes override fun getBarcodeScannerView(): Int? {
+    return register().barcodeScannerViewId
+  }
 
-    findViewById<ViewPager2>(R.id.patient_list_pager).adapter = PatientListPagerAdapter(this)
+  fun setToolbarItemText(@IdRes viewId: Int, toolbar: Toolbar, @StringRes text: Int){
+    toolbar.findViewById<TextView>(viewId).text = getString(text)
+  }
 
-    var editText = findViewById<EditText>(R.id.edit_text_search)
+  abstract fun register(): BaseRegister
+
+  protected fun setUpViews() {
+    setupRegistrationView()
+
+    setupPager()
+
+    setupSearchBox()
+  }
+
+  protected fun setupRegistrationView() {
+    register().newRegistrationView()?.setOnClickListener {
+      startRegistrationActivity(null)
+    }
+  }
+
+  protected fun setupPager() {
+    register().viewPager().adapter = PagerAdapter(this)
+  }
+
+  protected fun setupSearchBox() {
+    var editText = register().searchBox()?:return
+
     editText.doAfterTextChanged {
       if (it!!.isEmpty()) {
         editText.setOnTouchListener(null)
@@ -74,45 +99,32 @@ class PatientListActivity : BaseSimpleActivity() {
         editText.addOnDrawableClickedListener(Utils.DrawablePosition.DRAWABLE_RIGHT) { it.clear() }
       }
     }
-    setUpDrawerContent()
   }
 
-  private fun setUpDrawerContent() {
-    val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
-    findViewById<ImageButton>(R.id.btn_drawer_menu).setOnClickListener {
-      drawerLayout.openDrawer(GravityCompat.START)
-    }
-  }
+  fun startRegistrationActivity(preAssignedId: String?) {
+    val questionnaireId = register().newRegistrationQuestionnaireIdentifier!!
+    val questionnaireTitle =
+      register().newRegistrationQuestionnaireTitle ?: getString(R.string.client_info)
 
-  private fun addPatient(view: View) {
-    // TO DO: Open patient registration form
-    val context = view.context
-    startRegistrationActivity(context, null)
-  }
-
-  fun startRegistrationActivity(context: Context, preAssignedId: String?) {
-    context.startActivity(
-      Intent(context, QuestionnaireActivity::class.java).apply {
-        putExtra(
-          QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
-          this@PatientListActivity.getString(R.string.client_info)
-        )
+    startActivity(
+      Intent(this, QuestionnaireActivity::class.java).apply {
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, questionnaireTitle)
 
         if (!preAssignedId.isNullOrEmpty())
           putExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID, preAssignedId)
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
+
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, questionnaireId)
       }
     )
   }
 
-  // pager adapter
-  private inner class PatientListPagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
+  private inner class PagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
     override fun getItemCount(): Int {
       return 1
     }
 
     override fun createFragment(position: Int): Fragment {
-      return PatientListFragment()
+      return register().listFragment
     }
   }
 }

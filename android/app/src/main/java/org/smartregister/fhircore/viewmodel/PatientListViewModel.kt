@@ -203,13 +203,8 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
       GlobalScope.launch {
         Sync.oneTimeSync(
           fhirEngine,
-          HapiFhirResourceDataSource(
-            HapiFhirService.create(FhirContext.forR4().newJsonParser(), getApplication())
-          ),
-          mapOf(
-            ResourceType.Patient to mapOf("address-city" to "NAIROBI"),
-            ResourceType.Immunization to mapOf()
-          )
+          Utils.buildDatasource(getApplication()),
+          Utils.buildResourceSyncParams()
         )
       }
     }

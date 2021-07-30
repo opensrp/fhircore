@@ -24,7 +24,6 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import java.util.UUID
@@ -68,14 +67,7 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
   }
 
   fun savePatientResource(questionnaireResponse: QuestionnaireResponse) {
-
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
-    val questionnaire =
-      iParser.parseResource(
-        org.hl7.fhir.r4.model.Questionnaire::class.java,
-        viewModel.questionnaire
-      ) as
-        Questionnaire
+    val questionnaire = viewModel.questionnaire
 
     val patient = ResourceMapper.extract(questionnaire, questionnaireResponse) as Patient
 
@@ -119,12 +111,11 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
       }
     }
 
-    this.startActivity(Intent(this, PatientListActivity::class.java))
+    this.startActivity(Intent(this, CovaxListActivity::class.java))
   }
 
   private fun getQuestionnaire(): String {
-    val questionnaire =
-      FhirContext.forR4().newJsonParser().parseResource(viewModel.questionnaire) as Questionnaire
+    val questionnaire = viewModel.questionnaire
 
     intent.getStringExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID)?.let {
       setBarcode(questionnaire, it, true)
@@ -247,7 +238,7 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
 
   companion object {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
-    const val QUESTIONNAIRE_FILE_PATH_KEY = "questionnaire-file-path-key"
+    const val QUESTIONNAIRE_PATH_KEY = "questionnaire-path-key"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
   }
 }

@@ -14,29 +14,40 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.activity
+package org.smartregister.fhircore.activity.core
 
+import android.Manifest
 import android.accounts.AccountManager
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.IdRes
+import androidx.annotation.LayoutRes
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.material.navigation.NavigationView
+import com.google.mlkit.md.LiveBarcodeScanningFragment
 import java.util.Locale
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.activity.AncListActivity
+import org.smartregister.fhircore.activity.MultiLanguageBaseActivity
+import org.smartregister.fhircore.activity.CovaxListActivity
 import org.smartregister.fhircore.auth.account.AccountHelper
 import org.smartregister.fhircore.auth.secure.SecureConfig
 import org.smartregister.fhircore.domain.Language
@@ -50,6 +61,7 @@ abstract class BaseSimpleActivity :
   lateinit var viewModel: BaseViewModel
   lateinit var accountHelper: AccountHelper
   lateinit var secureConfig: SecureConfig
+  val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -82,6 +94,9 @@ abstract class BaseSimpleActivity :
     Timber.d("Now setting drawer")
     setupDrawer()
 
+    Timber.d("Now setting barcode scanner")
+    setUpBarcodeScanner()
+
     initClientCountObserver()
     initLanguageObserver()
 
@@ -90,7 +105,13 @@ abstract class BaseSimpleActivity :
     setLogoutUsername()
   }
 
-  abstract fun getContentLayout(): Int
+  @LayoutRes abstract fun getContentLayout(): Int
+
+  @IdRes abstract fun getBarcodeScannerView(): Int?
+
+  open fun onBarcodeResult(barcode: String) {
+    Timber.i("Read barcode $barcode")
+  }
 
   protected fun getDrawerLayout(): DrawerLayout {
     return findViewById(R.id.drawer_layout)
@@ -100,8 +121,12 @@ abstract class BaseSimpleActivity :
     Timber.i("Selected Navbar item %s", item.title)
 
     when (item.itemId) {
-      R.id.menu_item_clients -> {
-        startActivity(Intent(baseContext, PatientListActivity::class.java))
+      R.id.menu_item_covax_clients -> {
+        startActivity(Intent(baseContext, CovaxListActivity::class.java))
+        getDrawerLayout().closeDrawer(GravityCompat.START)
+      }
+      R.id.menu_item_anc_clients -> {
+        startActivity(Intent(baseContext, AncListActivity::class.java))
         getDrawerLayout().closeDrawer(GravityCompat.START)
       }
       R.id.menu_item_language -> {
@@ -180,7 +205,8 @@ abstract class BaseSimpleActivity :
   private fun initClientCountObserver() {
     Timber.d("Observing client counts livedata")
 
-    viewModel.clientsCount.observe(this, { event -> setMenuCounter(R.id.menu_item_clients, event) })
+    viewModel.clientsCount.observe(this, { event -> setMenuCounter(R.id.menu_item_covax_clients, event) })
+    //todo add ANC client count here when working on ANC feature
   }
 
   private fun setLanguage(language: String) {
@@ -212,4 +238,51 @@ abstract class BaseSimpleActivity :
     getNavigationView().menu.findItem(R.id.menu_item_logout).title =
       "${getString(R.string.logout_as_user)} ${secureConfig.retrieveSessionUsername()}"
   }
+
+  private fun setUpBarcodeScanner() {
+    val btnScanBarcode: View = findViewById(getBarcodeScannerView()!!)
+
+    supportFragmentManager
+      .setFragmentResultListener(
+        "result",
+        this,
+        { key, result ->
+          val barcode = result.getString(key)!!.trim()
+
+          onBarcodeResult(barcode)
+
+          liveBarcodeScanningFragment.onDestroy()
+        }
+      )
+
+    val requestPermissionLauncher = getBarcodePermissionLauncher()
+    btnScanBarcode.setOnClickListener { launchBarcodeReader(requestPermissionLauncher) }
+  }
+
+  private fun getBarcodePermissionLauncher(): ActivityResultLauncher<String> {
+    return registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+        isGranted: Boolean ->
+      if (isGranted) {
+        liveBarcodeScanningFragment.show(supportFragmentManager, "TAG")
+      } else {
+        Toast.makeText(
+          this,
+          "Camera permissions are needed to launch barcode reader!",
+          Toast.LENGTH_LONG
+        )
+          .show()
+      }
+    }
+  }
+
+  private fun launchBarcodeReader(requestPermissionLauncher: ActivityResultLauncher<String>) {
+    if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
+      PackageManager.PERMISSION_GRANTED
+    ) {
+      liveBarcodeScanningFragment.show(this.supportFragmentManager, "TAG")
+    } else {
+      requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+    }
+  }
+
 }

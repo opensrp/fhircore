@@ -74,12 +74,7 @@ class RecordVaccineActivity : MultiLanguageBaseActivity() {
       val questionnaireResponse = fragment.getQuestionnaireResponse()
 
       val iParser: IParser = FhirContext.forR4().newJsonParser()
-      val questionnaire =
-        iParser.parseResource(
-          org.hl7.fhir.r4.model.Questionnaire::class.java,
-          viewModel.questionnaire
-        ) as
-          Questionnaire
+      val questionnaire = viewModel.questionnaire
 
       // TODO Replace manual mapping with resource mapper
       try {
