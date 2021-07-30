@@ -21,6 +21,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.widget.Button
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -69,7 +70,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
   @Test
   fun testVerifyRecordedVaccineSavedDialogProperty() {
 
-    mockkObject(Mapper)
+    mockkObject(ResourceMapper)
 
     val entryComponent = mockk<Bundle.BundleEntryComponent>()
     val bundle = mockk<Bundle>()
@@ -83,7 +84,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
     every { entryComponent.resource } returns Immunization()
     every { bundle.entry } returns listOf(entryComponent)
-    every { Mapper.extract(any(), any()) } returns bundle
+    every { ResourceMapper.extract(any(), any()) } returns bundle
 
     every { questionnaireFragment.getQuestionnaireResponse() } returns questionnaireResponse
     every { questionnaireResponse.item } returns items
