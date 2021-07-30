@@ -143,6 +143,7 @@ dependencies {
     implementation(group: 'ca.uhn.hapi.fhir', name: 'hapi-fhir-structures-r4', version: '5.3.0') {
         exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
     }
+    implementation 'com.google.mlkit:barcode-scanning:16.2.0'
 
     implementation deps.appcompat
     implementation deps.constraint_layout

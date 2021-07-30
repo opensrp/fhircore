@@ -63,7 +63,7 @@ class RecordVaccineActivity : BaseActivity() {
 
     recordVaccine =
       registerForActivityResult(RecordVaccineResult(clientIdentifier)) {
-        handleImmunizationResult(it!!) // todo handle questionnaire failures
+        it?.run { handleImmunizationResult(it) } // todo handle questionnaire failures
       }
 
     supportActionBar!!.apply {
@@ -98,7 +98,7 @@ class RecordVaccineActivity : BaseActivity() {
       questionnaireViewModel.loadQuestionnaire(detailView.vaccineQuestionnaireIdentifier)
 
     covaxListViewModel.getPatientItem(clientIdentifier).observe(this) {
-      val immunization = ResourceMapper.extract(questionnaire, response) as Immunization
+      val immunization = ResourceMapper.extract(questionnaire, response).entry[0].resource as Immunization
       immunization.id = UUID.randomUUID().toString()
       immunization.recorded = Date()
       immunization.status = Immunization.ImmunizationStatus.COMPLETED

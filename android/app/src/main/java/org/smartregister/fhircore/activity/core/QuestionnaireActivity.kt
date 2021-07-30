@@ -108,7 +108,7 @@ class QuestionnaireActivity : BaseActivity() {
   fun savePatientResource(questionnaireResponse: QuestionnaireResponse) {
     val questionnaire = viewModel.questionnaire
 
-    val patient = ResourceMapper.extract(questionnaire, questionnaireResponse) as Patient
+    val patient = ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
 
     patient.id =
       intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY) ?: UUID.randomUUID().toString()

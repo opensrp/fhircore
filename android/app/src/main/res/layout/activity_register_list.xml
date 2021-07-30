@@ -58,8 +58,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_above="@id/btn_register_new_patient"
-            android:layout_below="@id/patient_register_toolbar"
+            android:layout_above="@id/btn_register_new_client"
+            android:layout_below="@id/base_register_toolbar"
             android:layout_centerInParent="true"
             android:gravity="center">
 
@@ -178,7 +178,7 @@
         android:background="#55000000"
         android:clickable="true"
         android:focusable="true"
-        android:visibility="visible"
+        android:visibility="invisible"
         tools:visibility="gone">
 
         <ProgressBar
