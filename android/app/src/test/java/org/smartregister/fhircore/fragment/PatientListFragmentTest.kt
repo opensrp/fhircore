@@ -16,10 +16,13 @@
 
 package org.smartregister.fhircore.fragment
 
+import android.content.pm.PackageManager
 import android.os.Looper
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
+import androidx.activity.result.ActivityResultLauncher
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
@@ -32,6 +35,7 @@ import com.google.android.material.switchmaterial.SwitchMaterial
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.verify
 import org.hl7.fhir.r4.model.Patient
@@ -45,6 +49,7 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.PatientDetailActivity
 import org.smartregister.fhircore.activity.PatientListActivity
@@ -243,6 +248,34 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
 
     getView<SwitchMaterial>(R.id.btn_show_overdue_patients).isChecked = false
     assertFalse(patientListFragment.patientListViewModel.showOverduePatientsOnly.value!!)
+  }
+
+  @Test
+  fun testLaunchBarcodeReaderShouldVerifyInternalCalls() {
+    mockkStatic(ContextCompat::class)
+    every { ContextCompat.checkSelfPermission(any(), any()) } returns
+      PackageManager.PERMISSION_GRANTED
+
+    val activityResultLauncher = mockk<ActivityResultLauncher<String>>()
+    every { activityResultLauncher.launch(any()) } returns Unit
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientListFragment,
+      "launchBarcodeReader",
+      ReflectionHelpers.ClassParameter(ActivityResultLauncher::class.java, activityResultLauncher)
+    )
+
+    verify(exactly = 0) { activityResultLauncher.launch(any()) }
+
+    every { ContextCompat.checkSelfPermission(any(), any()) } returns
+      PackageManager.PERMISSION_DENIED
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientListFragment,
+      "launchBarcodeReader",
+      ReflectionHelpers.ClassParameter(ActivityResultLauncher::class.java, activityResultLauncher)
+    )
+
+    verify(exactly = 1) { activityResultLauncher.launch(any()) }
   }
 
   private fun <T : View?> getView(id: Int): T {
