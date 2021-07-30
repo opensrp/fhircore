@@ -36,9 +36,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.switchmaterial.SwitchMaterial
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.activity.PATIENT_ID
-import org.smartregister.fhircore.activity.PatientDetailActivity
-import org.smartregister.fhircore.activity.QuestionnaireActivity
+import org.smartregister.fhircore.activity.CovaxListActivity
 import org.smartregister.fhircore.activity.RecordVaccineActivity
 import org.smartregister.fhircore.adapter.PatientItemRecyclerViewAdapter
 import org.smartregister.fhircore.domain.Pagination
@@ -46,15 +44,16 @@ import org.smartregister.fhircore.domain.currentPageNumber
 import org.smartregister.fhircore.domain.hasNextPage
 import org.smartregister.fhircore.domain.hasPreviousPage
 import org.smartregister.fhircore.domain.totalPages
+import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.model.PatientItem
-import org.smartregister.fhircore.viewmodel.PatientListViewModel
+import org.smartregister.fhircore.viewmodel.CovaxListViewModel
 import timber.log.Timber
 
 const val PAGE_COUNT = 7
 
-class PatientListFragment(val recordVaccineQuestionnaireId: String) : Fragment() {
+class CovaxListFragment : Fragment() {
 
-  internal val patientListViewModel by activityViewModels<PatientListViewModel>()
+  internal val patientListViewModel by activityViewModels<CovaxListViewModel>()
   private var search: String? = null
   private lateinit var adapter: PatientItemRecyclerViewAdapter
   private lateinit var paginationView: RelativeLayout
@@ -73,7 +72,7 @@ class PatientListFragment(val recordVaccineQuestionnaireId: String) : Fragment()
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    recyclerView = view.findViewById<RecyclerView>(R.id.patient_list)
+    recyclerView = view.findViewById(R.id.patient_list)
     adapter = PatientItemRecyclerViewAdapter(this::onPatientItemClicked)
     paginationView = view.findViewById(R.id.rl_pagination)
     nextButton = view.findViewById(R.id.btn_next_page)
@@ -167,25 +166,22 @@ class PatientListFragment(val recordVaccineQuestionnaireId: String) : Fragment()
   fun onPatientItemClicked(intention: Intention, patientItem: PatientItem) {
     when (intention) {
       Intention.RECORD_VACCINE -> {
-        startActivity(
-          Intent(requireContext(), RecordVaccineActivity::class.java).apply {
-            putExtra(
-              QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
-              activity?.getString(R.string.record_vaccine)
-            )
-            putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, recordVaccineQuestionnaireId)
-            putExtra(PATIENT_ID, patientItem.logicalId)
-          }
-        )
+        launchRecordVaccineActivity(patientItem.logicalId)
       }
       Intention.VIEW -> {
-        this.startActivity(
-          Intent(requireContext(), PatientDetailActivity::class.java).apply {
-            putExtra(PatientDetailFragment.ARG_ITEM_ID, patientItem.logicalId)
-          }
-        )
+        // todo decouple this as well
+        (requireActivity() as CovaxListActivity).launchDetailActivity(patientItem.logicalId)
       }
     }
+  }
+
+  private fun launchRecordVaccineActivity(clientIdentifier: String) {
+    requireActivity()
+      .startActivity(
+        Intent(requireContext(), RecordVaccineActivity::class.java).apply {
+          putExtra(CovaxDetailView.COVAX_ARG_ITEM_ID, clientIdentifier)
+        }
+      )
   }
 
   private fun syncResources() {

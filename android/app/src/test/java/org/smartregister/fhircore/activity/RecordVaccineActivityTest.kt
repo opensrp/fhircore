@@ -44,6 +44,7 @@ import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.util.Utils
 
@@ -58,7 +59,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
     val intent =
       Intent().apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, "record-vaccine.json")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, "sample_record_vaccine.json")
         putExtra(PATIENT_ID, "1")
         putExtra(INITIAL_DOSE, "dummy")
       }

@@ -36,8 +36,8 @@ import org.junit.Test
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.FhirApplication
-import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.activity.QuestionnaireActivityTest
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.util.SharedPreferencesHelper
@@ -45,8 +45,8 @@ import org.smartregister.fhircore.util.SharedPreferencesHelper
 @Config(shadows = [FhirApplicationShadow::class])
 class PatientDetailFragmentTest : FragmentRobolectricTest() {
 
-  private lateinit var patientDetailFragment: PatientDetailFragment
-  private lateinit var fragmentScenario: FragmentScenario<PatientDetailFragment>
+  private lateinit var patientDetailFragment: CovaxDetailFragment
+  private lateinit var fragmentScenario: FragmentScenario<CovaxDetailFragment>
 
   @Before
   fun setUp() {
@@ -54,8 +54,8 @@ class PatientDetailFragmentTest : FragmentRobolectricTest() {
     init()
 
     val bundle =
-      bundleOf(PatientDetailFragment.ARG_ITEM_ID to QuestionnaireActivityTest.TEST_PATIENT_1_ID)
-    fragmentScenario = FragmentScenario.launchInContainer(PatientDetailFragment::class.java, bundle)
+      bundleOf(CovaxDetailFragment.ARG_ITEM_ID to QuestionnaireActivityTest.TEST_PATIENT_1_ID)
+    fragmentScenario = FragmentScenario.launchInContainer(CovaxDetailFragment::class.java, bundle)
     fragmentScenario.onFragment { patientDetailFragment = it }
   }
 

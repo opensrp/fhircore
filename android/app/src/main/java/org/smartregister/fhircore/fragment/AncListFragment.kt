@@ -16,48 +16,8 @@
 
 package org.smartregister.fhircore.fragment
 
-import android.Manifest
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.RelativeLayout
-import android.widget.TextView
-import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
-import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.fhir.FhirEngine
-import com.google.mlkit.md.LiveBarcodeScanningFragment
-import org.smartregister.fhircore.FhirApplication
-import org.smartregister.fhircore.R
-import org.smartregister.fhircore.activity.PATIENT_ID
-import org.smartregister.fhircore.activity.PatientDetailActivity
-import org.smartregister.fhircore.activity.CovaxListActivity
-import org.smartregister.fhircore.activity.QuestionnaireActivity
-import org.smartregister.fhircore.activity.RecordVaccineActivity
-import org.smartregister.fhircore.adapter.PatientItemRecyclerViewAdapter
-import org.smartregister.fhircore.domain.Pagination
-import org.smartregister.fhircore.domain.currentPageNumber
-import org.smartregister.fhircore.domain.hasNextPage
-import org.smartregister.fhircore.domain.hasPreviousPage
-import org.smartregister.fhircore.domain.totalPages
-import org.smartregister.fhircore.model.PatientItem
-import org.smartregister.fhircore.viewmodel.PatientListViewModel
-import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
-import timber.log.Timber
 
 class AncListFragment : Fragment() {
-
+  // todo what to do with ANC list
 }

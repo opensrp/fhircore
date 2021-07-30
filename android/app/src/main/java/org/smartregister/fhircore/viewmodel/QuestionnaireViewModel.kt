@@ -27,7 +27,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.FhirApplication
-import org.smartregister.fhircore.activity.QuestionnaireActivity
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
   AndroidViewModel(application) {
@@ -40,10 +40,8 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
       return loadQuestionnaire(id)
     }
 
-  fun loadQuestionnaire(id: String): Questionnaire{
-    return runBlocking {
-      fhirEngine.load(Questionnaire::class.java, id)
-    }
+  fun loadQuestionnaire(id: String): Questionnaire {
+    return runBlocking { fhirEngine.load(Questionnaire::class.java, id) }
   }
 
   fun saveResource(resource: Resource) {

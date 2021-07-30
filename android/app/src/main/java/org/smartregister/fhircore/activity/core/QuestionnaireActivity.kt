@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.activity
+package org.smartregister.fhircore.activity.core
 
 import android.content.Intent
 import android.os.Bundle
@@ -25,6 +25,7 @@ import androidx.fragment.app.commit
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import java.util.UUID
 import kotlinx.coroutines.launch
@@ -36,24 +37,43 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.util.QuestionnaireUtils
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
-class QuestionnaireActivity : MultiLanguageBaseActivity() {
+/**
+ * Launches Questionnaire with given id. If questionnaire has subjectType = Patient his activity can
+ * handle data persistence for Resources [Patient], [Observation], [RiskAssessment], [Flag]. In
+ * other case must implement ActivityResultLauncher for handling and persistence for result
+ *
+ * Incase you want to do further processing on data after save you can implement
+ * ActivityResultLauncher
+ *
+ * ```
+ * // add class which extends ActivityResultContract for your input and output
+ * class ActivityResultContract: ActivityResultContract<MyInput, MyOutput?>(){...}
+ *
+ * // in your caller activity build ActivityResultLauncher
+ * val recordData = registerForActivityResult(ActivityResultContractImpl()) { output ->
+ *    handleReturnedData(output)
+ * }
+ *
+ * // start activity for result like this
+ * recordData.launch(MyInput())
+ * ```
+ */
+class QuestionnaireActivity : BaseActivity() {
   private val viewModel: QuestionnaireViewModel by viewModels()
+  private val parser = FhirContext.forR4().newJsonParser()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_questionnaire)
 
     supportActionBar!!.hide()
 
     // Only add the fragment once, when the activity is first created.
     if (savedInstanceState == null) {
       val fragment = QuestionnaireFragment()
-      fragment.arguments =
-        bundleOf(QuestionnaireFragment.BUNDLE_KEY_QUESTIONNAIRE to getQuestionnaire())
+      fragment.arguments = bundleOf(BUNDLE_KEY_QUESTIONNAIRE to getQuestionnaire())
 
       supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
     }
@@ -62,8 +82,27 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
       val questionnaireFragment =
         supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
           QuestionnaireFragment
-      savePatientResource(questionnaireFragment.getQuestionnaireResponse())
+
+      val questionnaireResponse = questionnaireFragment.getQuestionnaireResponse()
+
+      if (viewModel.questionnaire.subjectType.first().asStringValue().contentEquals("Patient")) {
+        savePatientResource(questionnaireResponse)
+      } else {
+        // todo do nothing for now. Make questionnaire able to parse Immunization in a generic way
+      }
+
+      val intent = Intent()
+      intent.putExtra(
+        QUESTIONNAIRE_ARG_RESPONSE_KEY,
+        parser.encodeResourceToString(questionnaireResponse)
+      )
+      setResult(RESULT_OK, intent)
+      finish()
     }
+  }
+
+  override fun getContentLayout(): Int {
+    return R.layout.activity_questionnaire
   }
 
   fun savePatientResource(questionnaireResponse: QuestionnaireResponse) {
@@ -71,13 +110,8 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
 
     val patient = ResourceMapper.extract(questionnaire, questionnaireResponse) as Patient
 
-    val barcode =
-      QuestionnaireUtils.valueStringWithLinkId(
-        questionnaireResponse,
-        PatientDetailFragment.ARG_ID_FIELD_KEY
-      )
-
-    patient.id = barcode ?: UUID.randomUUID().toString().toLowerCase()
+    patient.id =
+      intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY) ?: UUID.randomUUID().toString()
 
     viewModel.saveResource(patient)
 
@@ -110,18 +144,18 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
         viewModel.saveResource(patient)
       }
     }
-
-    this.startActivity(Intent(this, CovaxListActivity::class.java))
   }
 
   private fun getQuestionnaire(): String {
     val questionnaire = viewModel.questionnaire
 
-    intent.getStringExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID)?.let {
+    intent.getStringExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID)?.let {
       setBarcode(questionnaire, it, true)
     }
 
-    intent.getStringExtra(PatientDetailFragment.ARG_ITEM_ID)?.let {
+    // todo the data is auto populated by form if proper mapping is done. check it out and remove
+    // all this
+    intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)?.let {
       var patient: Patient? = null
       viewModel.viewModelScope.launch {
         patient = FhirApplication.fhirEngine(applicationContext).load(Patient::class.java, it)
@@ -202,7 +236,7 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
       }
     }
 
-    return FhirContext.forR4().newJsonParser().encodeResourceToString(questionnaire)
+    return parser.encodeResourceToString(questionnaire)
   }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
@@ -240,5 +274,8 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
     const val QUESTIONNAIRE_PATH_KEY = "questionnaire-path-key"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
+    const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
+    const val QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID = "questionnaire_preassigned_item_id"
+    const val QUESTIONNAIRE_ARG_RESPONSE_KEY = "questionnaire_response_item_id"
   }
 }

@@ -49,12 +49,13 @@ import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.shadows.ShadowAlertDialog
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.auth.account.AccountHelper
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.auth.secure.SecureConfig
 import org.smartregister.fhircore.domain.Language
-import org.smartregister.fhircore.fragment.PatientDetailFragment
-import org.smartregister.fhircore.fragment.PatientListFragment
+import org.smartregister.fhircore.fragment.CovaxDetailFragment
+import org.smartregister.fhircore.fragment.CovaxListFragment
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
 @Config(shadows = [FhirApplicationShadow::class])
@@ -117,7 +118,7 @@ class PatientListActivityTest : ActivityRobolectricTest() {
 
     Assert.assertEquals(1, adapter.itemCount)
     Assert.assertEquals(
-      PatientListFragment::class.java.simpleName,
+      CovaxListFragment::class.java.simpleName,
       adapter.createFragment(0).javaClass.simpleName
     )
   }
@@ -144,7 +145,7 @@ class PatientListActivityTest : ActivityRobolectricTest() {
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
     Assert.assertEquals(
       "test-id",
-      actualIntent.getStringExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID)
+      actualIntent.getStringExtra(CovaxDetailFragment.ARG_PRE_ASSIGNED_ID)
     )
   }
 

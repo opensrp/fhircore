@@ -18,73 +18,81 @@ package org.smartregister.fhircore.activity
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.TextView
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.fhir.FhirEngine
 import kotlinx.android.synthetic.main.activity_register_list.base_register_toolbar
-import kotlinx.android.synthetic.main.activity_register_list.btn_register_new_client
-import kotlinx.android.synthetic.main.activity_register_list.list_pager
-import kotlinx.android.synthetic.main.toolbar_base_register.edit_text_search
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.core.BaseRegisterActivity
-import org.smartregister.fhircore.fragment.PatientDetailFragment
-import org.smartregister.fhircore.fragment.PatientListFragment
+import org.smartregister.fhircore.fragment.CovaxListFragment
 import org.smartregister.fhircore.model.BaseRegister
-import org.smartregister.fhircore.viewmodel.PatientListViewModel
+import org.smartregister.fhircore.model.CovaxDetailView
+import org.smartregister.fhircore.util.Utils.loadConfig
+import org.smartregister.fhircore.viewmodel.CovaxListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
-import timber.log.Timber
 
 class CovaxListActivity : BaseRegisterActivity() {
-  lateinit var listViewModel: PatientListViewModel
+  lateinit var listViewModel: CovaxListViewModel
+
+  private lateinit var detailView: CovaxDetailView
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    setToolbarItemText(R.id.tv_clients_list_title, base_register_toolbar, R.string.client_list_title_covax)
+    setToolbarItemText(
+      R.id.tv_clients_list_title,
+      base_register_toolbar,
+      R.string.client_list_title_covax
+    )
+
+    setNavigationHeaderTitle(detailView.registerTitle, R.id.tv_nav_header)
 
     listViewModel =
       ViewModelProvider(
-        this,
-        PatientListViewModelFactory(application, FhirApplication.fhirEngine(baseContext))
-      )
-        .get(PatientListViewModel::class.java)
+          this,
+          PatientListViewModelFactory(application, FhirApplication.fhirEngine(baseContext))
+        )
+        .get(CovaxListViewModel::class.java)
+
+    setupBarcodeScanner()
   }
 
-  override fun register(): BaseRegister {
+  override fun buildRegister(): BaseRegister {
+    detailView =
+      loadConfig(CovaxDetailView.COVAX_DETAIL_VIEW_CONFIG_ID, CovaxDetailView::class.java, this)
+
     return BaseRegister(
       context = this,
       contentLayoutId = R.layout.activity_register_list,
-      listFragment = PatientListFragment("800"),
+      listFragment = CovaxListFragment(),
       viewPagerId = R.id.list_pager,
       newRegistrationViewId = R.id.btn_register_new_client,
-      newRegistrationQuestionnaireIdentifier = "754",
-      newRegistrationQuestionnaireTitle = getString(R.string.add_client),
-      searchBoxId = R.id.edit_text_search,
-      barcodeScannerViewId = R.id.layout_scan_barcode
+      newRegistrationQuestionnaireIdentifier = detailView.registrationQuestionnaireIdentifier,
+      newRegistrationQuestionnaireTitle = detailView.registrationQuestionnaireTitle,
+      searchBoxId = R.id.edit_text_search
     )
   }
 
-  override fun onBarcodeResult(barcode: String) {
-    Timber.i("Read barcode $barcode")
-    listViewModel
-      .isPatientExists(barcode)
-      .observe(
-        this,
-        {
-          if (it.isSuccess) {
-            launchPatientDetailActivity(barcode)
-          } else {
-            startRegistrationActivity(barcode)
+  private fun setupBarcodeScanner() {
+    initBarcodeScanner(R.id.layout_scan_barcode) { barcode, _ ->
+      listViewModel
+        .isPatientExists(barcode)
+        .observe(
+          this,
+          {
+            if (it.isSuccess) {
+              launchDetailActivity(barcode)
+            } else {
+              startRegistrationActivity(barcode)
+            }
           }
-        }
-      )
+        )
+    }
   }
 
-  private fun launchPatientDetailActivity(patientLogicalId: String) {
+  fun launchDetailActivity(patientLogicalId: String) {
     val intent =
-      Intent(this, PatientDetailActivity::class.java).apply {
-        putExtra(PatientDetailFragment.ARG_ITEM_ID, patientLogicalId)
+      Intent(this, CovaxDetailActivity::class.java).apply {
+        putExtra(CovaxDetailView.COVAX_ARG_ITEM_ID, patientLogicalId)
       }
     this.startActivity(intent)
   }

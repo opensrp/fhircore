@@ -54,7 +54,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.activity.PatientDetailActivity
+import org.smartregister.fhircore.activity.CovaxDetailActivity
 import org.smartregister.fhircore.activity.CovaxListActivity
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.domain.Pagination
@@ -71,9 +71,9 @@ import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
 @Config(shadows = [FhirApplicationShadow::class])
 class PatientListFragmentTest : FragmentRobolectricTest() {
 
-  private lateinit var patientListFragment: PatientListFragment
+  private lateinit var patientListFragment: CovaxListFragment
   private lateinit var patientListActivity: CovaxListActivity
-  private lateinit var fragmentScenario: FragmentScenario<PatientListFragment>
+  private lateinit var fragmentScenario: FragmentScenario<CovaxListFragment>
   private lateinit var patientListViewModel: PatientListViewModel
   private lateinit var fhirEngine: FhirEngine
 
@@ -94,7 +94,7 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
         factory =
           object : FragmentFactory() {
             override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
-              val fragment = spyk(PatientListFragment())
+              val fragment = spyk(CovaxListFragment())
               every { fragment.activity } returns patientListActivity
               return fragment
             }
@@ -124,17 +124,17 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
 
     shadowOf(Looper.getMainLooper()).idle()
 
-    patientListFragment.onPatientItemClicked(PatientListFragment.Intention.VIEW, patientItem)
+    patientListFragment.onPatientItemClicked(CovaxListFragment.Intention.VIEW, patientItem)
 
     val shadowActivity = Shadows.shadowOf(patientListActivity)
     val startedActivityIntent = shadowActivity.peekNextStartedActivity()
 
     Assert.assertEquals(
       logicalId,
-      startedActivityIntent.getStringExtra(PatientDetailFragment.ARG_ITEM_ID)
+      startedActivityIntent.getStringExtra(CovaxDetailFragment.ARG_ITEM_ID)
     )
     Assert.assertEquals(
-      PatientDetailActivity::class.java.name,
+      CovaxDetailActivity::class.java.name,
       startedActivityIntent.component?.className
     )
   }

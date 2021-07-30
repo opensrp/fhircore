@@ -21,7 +21,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.fragment.PatientDetailsCard
+import org.smartregister.fhircore.model.PatientDetailsCard
 import org.smartregister.fhircore.viewholder.PatientDetailsCardViewHolder
 
 /** UI Controller helper class to display list of observations. */

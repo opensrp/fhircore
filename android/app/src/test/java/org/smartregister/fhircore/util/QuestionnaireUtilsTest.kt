@@ -47,7 +47,7 @@ class QuestionnaireUtilsTest : RobolectricTest() {
     val iParser: IParser = FhirContext.forR4().newJsonParser()
 
     val qJson =
-      context.assets.open("patient-registration.json").bufferedReader().use { it.readText() }
+      context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
 
     val qrJson =
       context.assets.open("sample_registration_questionnaireresponse.json").bufferedReader().use {

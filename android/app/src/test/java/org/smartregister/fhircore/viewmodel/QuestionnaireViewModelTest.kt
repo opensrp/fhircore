@@ -27,8 +27,8 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.RobolectricTest
-import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.activity.QuestionnaireActivityTest
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
 @Config(shadows = [FhirApplicationShadow::class])
@@ -39,7 +39,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     val savedState = SavedStateHandle()
-    savedState[QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY] = "patient-registration.json"
+    savedState[QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY] = "sample_patient_registration.json"
     viewModel = QuestionnaireViewModel(FhirApplication.getContext(), savedState)
   }
 

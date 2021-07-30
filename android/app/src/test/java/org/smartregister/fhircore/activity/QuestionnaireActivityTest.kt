@@ -38,7 +38,8 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.fragment.PatientDetailFragment
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity
+import org.smartregister.fhircore.fragment.CovaxDetailFragment
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.util.QuestionnaireUtils
 
@@ -55,8 +56,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val intent =
       Intent().apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, "patient-registration.json")
-        putExtra(PatientDetailFragment.ARG_ITEM_ID, TEST_PATIENT_1_ID)
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, "sample_patient_registration.json")
+        putExtra(CovaxDetailFragment.ARG_ITEM_ID, TEST_PATIENT_1_ID)
       }
     questionnaireActivity =
       Robolectric.buildActivity(QuestionnaireActivity::class.java, intent).create().resume().get()
@@ -72,8 +73,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val intent =
       Intent().apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, "patient-registration.json")
-        putExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID, "test-id")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, "sample_patient_registration.json")
+        putExtra(CovaxDetailFragment.ARG_PRE_ASSIGNED_ID, "test-id")
       }
     questionnaireActivity =
       Robolectric.buildActivity(QuestionnaireActivity::class.java, intent).create().resume().get()

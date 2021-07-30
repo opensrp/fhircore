@@ -16,28 +16,23 @@
 
 package org.smartregister.fhircore.activity.core
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import android.widget.EditText
-import android.widget.TextView
-import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
-import androidx.annotation.StringRes
-import androidx.appcompat.widget.Toolbar
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.activity.QuestionnaireActivity
-import org.smartregister.fhircore.fragment.PatientDetailFragment
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_TITLE_KEY
 import org.smartregister.fhircore.model.BaseRegister
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.util.Utils.addOnDrawableClickedListener
 
-abstract class BaseRegisterActivity : BaseSimpleActivity() {
+abstract class BaseRegisterActivity : BaseDrawerActivity() {
+  val register by lazy { buildRegister() }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -45,19 +40,12 @@ abstract class BaseRegisterActivity : BaseSimpleActivity() {
     setUpViews()
   }
 
-  @LayoutRes override fun getContentLayout(): Int {
-    return register().contentLayoutId
+  @LayoutRes
+  override fun getContentLayout(): Int {
+    return register.contentLayoutId
   }
 
-  @IdRes override fun getBarcodeScannerView(): Int? {
-    return register().barcodeScannerViewId
-  }
-
-  fun setToolbarItemText(@IdRes viewId: Int, toolbar: Toolbar, @StringRes text: Int){
-    toolbar.findViewById<TextView>(viewId).text = getString(text)
-  }
-
-  abstract fun register(): BaseRegister
+  abstract fun buildRegister(): BaseRegister
 
   protected fun setUpViews() {
     setupRegistrationView()
@@ -68,17 +56,15 @@ abstract class BaseRegisterActivity : BaseSimpleActivity() {
   }
 
   protected fun setupRegistrationView() {
-    register().newRegistrationView()?.setOnClickListener {
-      startRegistrationActivity(null)
-    }
+    register.newRegistrationView()?.setOnClickListener { startRegistrationActivity(null) }
   }
 
   protected fun setupPager() {
-    register().viewPager().adapter = PagerAdapter(this)
+    register.viewPager().adapter = PagerAdapter(this)
   }
 
   protected fun setupSearchBox() {
-    var editText = register().searchBox()?:return
+    var editText = register.searchBox() ?: return
 
     editText.doAfterTextChanged {
       if (it!!.isEmpty()) {
@@ -102,18 +88,18 @@ abstract class BaseRegisterActivity : BaseSimpleActivity() {
   }
 
   fun startRegistrationActivity(preAssignedId: String?) {
-    val questionnaireId = register().newRegistrationQuestionnaireIdentifier!!
+    val questionnaireId = register.newRegistrationQuestionnaireIdentifier!!
     val questionnaireTitle =
-      register().newRegistrationQuestionnaireTitle ?: getString(R.string.client_info)
+      register.newRegistrationQuestionnaireTitle ?: getString(R.string.client_info)
 
     startActivity(
       Intent(this, QuestionnaireActivity::class.java).apply {
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, questionnaireTitle)
+        putExtra(QUESTIONNAIRE_TITLE_KEY, questionnaireTitle)
 
         if (!preAssignedId.isNullOrEmpty())
-          putExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID, preAssignedId)
+          putExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID, preAssignedId)
 
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, questionnaireId)
+        putExtra(QUESTIONNAIRE_PATH_KEY, questionnaireId)
       }
     )
   }
@@ -124,7 +110,7 @@ abstract class BaseRegisterActivity : BaseSimpleActivity() {
     }
 
     override fun createFragment(position: Int): Fragment {
-      return register().listFragment
+      return register.listFragment
     }
   }
 }

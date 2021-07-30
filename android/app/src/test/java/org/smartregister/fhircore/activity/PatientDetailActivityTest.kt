@@ -36,18 +36,18 @@ import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.fragment.PatientDetailFragment
+import org.smartregister.fhircore.fragment.CovaxDetailFragment
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
 @Config(shadows = [FhirApplicationShadow::class])
 class PatientDetailActivityTest : ActivityRobolectricTest() {
 
-  private lateinit var patientDetailActivity: PatientDetailActivity
+  private lateinit var patientDetailActivity: CovaxDetailActivity
 
   @Before
   fun setUp() {
     patientDetailActivity =
-      Robolectric.buildActivity(PatientDetailActivity::class.java, null).create().get()
+      Robolectric.buildActivity(CovaxDetailActivity::class.java, null).create().get()
   }
 
   @Test
@@ -58,7 +58,7 @@ class PatientDetailActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnOptionsItemSelectedShouldCallEditPatientInfo() {
 
-    val fragment = mockk<PatientDetailFragment>(relaxed = true)
+    val fragment = mockk<CovaxDetailFragment>(relaxed = true)
     patientDetailActivity.fragment = fragment
 
     val menuItem: MenuItem = RoboMenuItem(R.id.patient_profile_edit)
