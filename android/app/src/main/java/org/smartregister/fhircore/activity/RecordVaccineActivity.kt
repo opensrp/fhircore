@@ -36,6 +36,7 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.util.Utils
@@ -84,8 +85,7 @@ class RecordVaccineActivity : MultiLanguageBaseActivity() {
       // TODO Replace manual mapping with resource mapper
       try {
         val immunization =
-          ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as
-            Immunization
+          Mapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Immunization
         immunization.id = UUID.randomUUID().toString().toLowerCase()
         immunization.recorded = Date()
         immunization.status = Immunization.ImmunizationStatus.COMPLETED
@@ -168,5 +168,15 @@ class RecordVaccineActivity : MultiLanguageBaseActivity() {
     // Set other dialog properties
     alertDialog.setCancelable(false)
     alertDialog.show()
+  }
+}
+
+object Mapper {
+  fun extract(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse
+  ): org.hl7.fhir.r4.model.Bundle {
+    return ResourceMapper.extract(questionnaire, questionnaireResponse) as
+      org.hl7.fhir.r4.model.Bundle
   }
 }
