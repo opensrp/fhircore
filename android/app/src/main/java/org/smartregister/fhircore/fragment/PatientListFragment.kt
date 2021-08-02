@@ -135,32 +135,39 @@ class PatientListFragment : Fragment() {
     patientListViewModel.showOverduePatientsOnly.observe(
       requireActivity(),
       {
-        patientListViewModel.searchResults(
-          requireActivity().findViewById<EditText>(R.id.edit_text_search).text.toString(),
-          0,
-          PAGE_COUNT
-        )
+        if (patientListViewModel.loadingListObservable.value!! != -1) {
+          patientListViewModel.searchResults(
+            requireActivity().findViewById<EditText>(R.id.edit_text_search).text.toString(),
+            0,
+            PAGE_COUNT
+          )
+        }
       }
     )
 
     patientListViewModel.loadingListObservable.observe(
       requireActivity(),
       {
-        requireActivity().findViewById<ConstraintLayout>(R.id.loader_overlay).visibility =
-          if (it) View.VISIBLE else View.GONE
+        if (it != -1) {
+          requireActivity().findViewById<ConstraintLayout>(R.id.loader_overlay).visibility =
+            if (it == 1) View.VISIBLE else View.GONE
+        }
       }
     )
 
     setUpBarcodeScanner()
+    syncResources()
     super.onViewCreated(view, savedInstanceState)
   }
 
   override fun onResume() {
-    patientListViewModel.searchResults(
-      requireActivity().findViewById<EditText>(R.id.edit_text_search).text.toString(),
-      page = activePageNum,
-      pageSize = PAGE_COUNT
-    )
+    if (patientListViewModel.loadingListObservable.value!! == 0) {
+      patientListViewModel.searchResults(
+        requireActivity().findViewById<EditText>(R.id.edit_text_search).text.toString(),
+        page = activePageNum,
+        pageSize = PAGE_COUNT
+      )
+    }
     adapter.notifyDataSetChanged()
     super.onResume()
   }
@@ -276,7 +283,6 @@ class PatientListFragment : Fragment() {
 
   private fun syncResources() {
     patientListViewModel.runSync()
-    patientListViewModel.searchResults(search, page = activePageNum, pageSize = PAGE_COUNT)
     Toast.makeText(requireContext(), R.string.syncing, Toast.LENGTH_LONG).show()
   }
 

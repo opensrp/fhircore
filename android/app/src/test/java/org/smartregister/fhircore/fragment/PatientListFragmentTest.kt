@@ -185,10 +185,8 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
     val btnSync = getView<View>(R.id.tv_sync)
     btnSync.performClick()
 
-    every { patientListViewModelSpy.searchResults(pageSize = any()) } returns Unit
     every { patientListViewModelSpy.runSync() } returns Unit
 
-    verify(exactly = 1) { patientListViewModelSpy.searchResults(pageSize = any()) }
     verify(exactly = 1) { patientListViewModelSpy.runSync() }
 
     patientListFragment.patientListViewModel = patientListViewModel
