@@ -101,7 +101,10 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
           }
       )
 
-    fragmentScenario.onFragment { patientListFragment = it }
+    fragmentScenario.onFragment {
+      patientListFragment = it
+      patientListFragment.patientListViewModel.loadingListObservable.value = 1
+    }
   }
 
   @Test
