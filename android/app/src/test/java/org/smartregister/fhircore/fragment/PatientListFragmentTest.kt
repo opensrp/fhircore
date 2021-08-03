@@ -18,16 +18,21 @@ package org.smartregister.fhircore.fragment
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Bundle
 import android.os.Looper
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ApplicationProvider
@@ -38,6 +43,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import org.hl7.fhir.r4.model.Patient
@@ -81,7 +87,8 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
   fun setUp() {
     fhirEngine = mockk()
 
-    patientListActivity = Robolectric.buildActivity(PatientListActivity::class.java).create().get()
+    patientListActivity =
+      spyk(Robolectric.buildActivity(PatientListActivity::class.java).create().get())
     patientListViewModel =
       ViewModelProvider(
           patientListActivity,
@@ -185,10 +192,8 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
     val btnSync = getView<View>(R.id.tv_sync)
     btnSync.performClick()
 
-    every { patientListViewModelSpy.searchResults(pageSize = any()) } returns Unit
     every { patientListViewModelSpy.runSync() } returns Unit
 
-    verify(exactly = 1) { patientListViewModelSpy.searchResults(pageSize = any()) }
     verify(exactly = 1) { patientListViewModelSpy.runSync() }
 
     patientListFragment.patientListViewModel = patientListViewModel
@@ -312,7 +317,7 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
     patientListFragment.patientListViewModel = patientListViewModel
   }
 
-  @Test
+  /*  @Test
   fun testLaunchPatientDetailActivityShouldStartPatientDetailActivity() {
     ReflectionHelpers.callInstanceMethod<Any>(
       patientListFragment,
@@ -326,6 +331,56 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
         .nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }*/
+
+  @Test
+  fun testSetUpBarcodeScannerVerifyCallbackBehaviour() {
+
+    val patientListViewModelSpy = spyk(patientListViewModel)
+    patientListFragment.patientListViewModel = patientListViewModelSpy
+
+    val fragmentManager = mockk<FragmentManager>()
+    val requestKeySlot = slot<String>()
+    val lifecycleOwnerSlot = slot<LifecycleOwner>()
+    val fragmentResultListenerSlot = slot<FragmentResultListener>()
+
+    val bundle = Bundle()
+    bundle.putString("result", "data")
+
+    every { patientListViewModelSpy.isPatientExists(any()) } returns
+      MutableLiveData(Result.success(true))
+    every {
+      fragmentManager.setFragmentResultListener(
+        capture(requestKeySlot),
+        capture(lifecycleOwnerSlot),
+        capture(fragmentResultListenerSlot)
+      )
+    } answers { fragmentResultListenerSlot.captured.onFragmentResult("", bundle) }
+    every { patientListActivity.supportFragmentManager } returns fragmentManager
+    every {
+      patientListFragment.registerForActivityResult(
+        any<ActivityResultContracts.RequestPermission>(),
+        any()
+      )
+    } returns mockk()
+
+    ReflectionHelpers.callInstanceMethod<Any>(patientListFragment, "setUpBarcodeScanner")
+
+    val expectedIntent = Intent(patientListActivity, PatientDetailActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>())
+        .nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+
+    every { patientListViewModelSpy.isPatientExists(any()) } returns
+      MutableLiveData(Result.failure(mockk()))
+    every { patientListActivity.startRegistrationActivity(any(), any()) } returns Unit
+    ReflectionHelpers.callInstanceMethod<Any>(patientListFragment, "setUpBarcodeScanner")
+
+    verify(exactly = 1) { patientListActivity.startRegistrationActivity(any(), any()) }
+
+    patientListFragment.patientListViewModel = patientListViewModel
   }
 
   private fun <T : View?> getView(id: Int): T {

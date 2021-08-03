@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed bug on record vaccine
 - Fixed bug on patient list last seen date
 - Fixed empty patient view layout position
+- Fixed bug on patients not populated on fresh install
 
 ### Changed
 - Reduce font size and spacing on patient list screen
