@@ -25,8 +25,6 @@ import androidx.fragment.app.commit
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import com.google.android.fhir.datacapture.mapping.ResourceMapper
-import java.util.UUID
 import kotlinx.android.synthetic.main.activity_patient_detail.view.*
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.BooleanType
@@ -38,7 +36,6 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
-import org.smartregister.fhircore.util.QuestionnaireUtils
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 class QuestionnaireActivity : MultiLanguageBaseActivity(), View.OnClickListener {

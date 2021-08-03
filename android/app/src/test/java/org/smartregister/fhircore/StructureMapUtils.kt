@@ -67,8 +67,6 @@ class StructureMapUtils : RobolectricTest() {
 
     System.out.println(mapString)
 
-    // Encode
-    // val targetResource = ResourceFactory.createResource(scu.getTargetType(map).getName())
     val targetResource = Bundle()
 
     val baseElement =
