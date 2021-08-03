@@ -60,7 +60,7 @@ import org.smartregister.fhircore.shadow.FhirApplicationShadow
 @Config(shadows = [FhirApplicationShadow::class])
 class QuestionnaireViewModelTest : RobolectricTest() {
 
-  lateinit var questionnaireViewModel: QuestionnaireViewModel
+  private lateinit var questionnaireViewModel: QuestionnaireViewModel
 
   @Before
   fun setUp() {

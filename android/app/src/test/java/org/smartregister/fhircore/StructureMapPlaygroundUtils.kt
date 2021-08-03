@@ -29,8 +29,14 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
+/**
+ * Provides a playground for quickly testing and authoring questionnaire and the respective
+ * StructureMap
+ *
+ * This should be removed at a later point once we have a more clear way of doing this
+ */
 @Config(shadows = [FhirApplicationShadow::class])
-class StructureMapUtils : RobolectricTest() {
+class StructureMapPlaygroundUtils : RobolectricTest() {
 
   @Test
   fun convertFhirMapToJson() {
