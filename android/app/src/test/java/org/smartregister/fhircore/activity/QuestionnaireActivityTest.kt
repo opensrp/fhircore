@@ -20,6 +20,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Looper
 import android.widget.Button
+import androidx.lifecycle.ViewModelLazy
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import io.mockk.every
@@ -42,22 +43,25 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.util.QuestionnaireUtils
+import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 @Config(shadows = [FhirApplicationShadow::class])
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   private lateinit var questionnaireActivity: QuestionnaireActivity
+  private lateinit var intent: Intent
 
   @Before
   fun setUp() {
     init()
 
-    val intent =
+    intent =
       Intent().apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
@@ -65,28 +69,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       }
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
     questionnaireActivity = spyk(controller.create().resume().get())
-
-    /*questionnaireActivity = spyk(objToCopy = ReflectionHelpers.getField(controller, "component"))
-    ReflectionHelpers.setField(controller, "component", questionnaireActivity)
-    val questionnaireActivity_ = spyk(objToCopy = ReflectionHelpers.getField(controller, "_component_"))
-    ReflectionHelpers.setField(questionnaireActivity_, "__target__", questionnaireActivity)
-    ReflectionHelpers.setField(controller, "_component_", questionnaireActivity_)*/
-
-    /*questionnaireActivity = spyk(objToCopy = ReflectionHelpers.getField(controller, "component"))
-    ReflectionHelpers.setField(controller, "component", questionnaireActivity)
-
-    val delegate: AppCompatDelegate =
-      AppCompatDelegate.create(
-        ApplicationProvider.getApplicationContext(),
-        questionnaireActivity,
-        questionnaireActivity
-      )
-    every { questionnaireActivity.delegate } returns delegate
-
-    val questionnaireActivity_ = spyk(objToCopy = ReflectionHelpers.getField(controller, "_component_"))
-    ReflectionHelpers.setField(controller, "_component_", questionnaireActivity_)
-
-    controller.create().resume().get() */
   }
 
   @Test
@@ -179,6 +161,28 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     verify(exactly = 1) { questionnaireActivity.findViewById<Button>(any()) }
     verify(exactly = 1) { questionnaireActivity.finish() }
     verify(exactly = 1) { questionnaireActivity.saveExtractedResources(any()) }
+  }
+
+  @Test
+  fun `saveExtractedResources() should call viewModel#saveExtractedResources`() {
+    val viewModel =
+      spyk(
+        ReflectionHelpers.getField<ViewModelLazy<QuestionnaireViewModel>>(
+            questionnaireActivity,
+            "viewModel\$delegate"
+          )
+          .value
+      )
+    ReflectionHelpers.setField(questionnaireActivity, "viewModel\$delegate", lazy { viewModel })
+
+    val questionnaireResponse = QuestionnaireResponse()
+
+    questionnaireActivity.saveExtractedResources(questionnaireResponse)
+
+    verify(exactly = 1) {
+      viewModel.saveExtractedResources(any(), intent, any(), questionnaireResponse)
+    }
+    verify { questionnaireActivity.finish() }
   }
 
   override fun getActivity(): Activity {

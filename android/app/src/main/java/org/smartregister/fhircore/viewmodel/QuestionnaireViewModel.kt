@@ -53,6 +53,8 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
       return questionnaireJson!!
     }
 
+  var structureMapProvider: ((String) -> StructureMap?)? = null
+
   fun saveResource(resource: Resource) {
     viewModelScope.launch { FhirApplication.fhirEngine(getApplication()).save(resource) }
   }
@@ -94,11 +96,13 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     val questionnaire =
       iParser.parseResource(Questionnaire::class.java, questionnaireString) as Questionnaire
 
-    val structureMapProvider = { structureMapUrl: String ->
-      fetchStructureMap(context, structureMapUrl)
-    }
     val bundle =
-      ResourceMapper.extract(questionnaire, questionnaireResponse, structureMapProvider, context)
+      ResourceMapper.extract(
+        questionnaire,
+        questionnaireResponse,
+        getStructureMapProvider(context),
+        context
+      )
 
     val resourceId =
       if (intent.hasExtra(PatientDetailFragment.ARG_ITEM_ID))
@@ -106,5 +110,16 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
       else null
 
     saveBundleResources(bundle, resourceId)
+  }
+
+  fun getStructureMapProvider(context: Context): ((String) -> StructureMap?) {
+    if (structureMapProvider == null) {
+      structureMapProvider =
+        { structureMapUrl: String ->
+          fetchStructureMap(context, structureMapUrl)
+        }
+    }
+
+    return structureMapProvider!!
   }
 }

@@ -36,7 +36,7 @@ import org.smartregister.fhircore.shadow.FhirApplicationShadow
  * This should be removed at a later point once we have a more clear way of doing this
  */
 @Config(shadows = [FhirApplicationShadow::class])
-class StructureMapPlaygroundUtils : RobolectricTest() {
+class StructureMapTestUtilities : RobolectricTest() {
 
   @Test
   fun convertFhirMapToJson() {

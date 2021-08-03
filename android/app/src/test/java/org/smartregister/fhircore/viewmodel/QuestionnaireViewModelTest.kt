@@ -215,4 +215,26 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertNotNull(patient)
     Assert.assertEquals(sourcePatient.logicalId, patient.logicalId)
   }
+
+  @Test
+  fun `getStructureMapProvider() should return valid provider`() {
+    Assert.assertNull(questionnaireViewModel.structureMapProvider)
+
+    Assert.assertNotNull(
+      questionnaireViewModel.getStructureMapProvider(ApplicationProvider.getApplicationContext())
+    )
+  }
+
+  @Test
+  fun `structureMapProvider should call fetchStructureMap()`() {
+    val resourceUrl = "https://fhir.org/StructureMap/89"
+    val structureMapProvider =
+      questionnaireViewModel.getStructureMapProvider(ApplicationProvider.getApplicationContext())
+
+    every { questionnaireViewModel.fetchStructureMap(any(), any()) } returns StructureMap()
+
+    structureMapProvider.invoke(resourceUrl)
+
+    verify { questionnaireViewModel.fetchStructureMap(any(), resourceUrl) }
+  }
 }
