@@ -22,6 +22,7 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -31,6 +32,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
@@ -41,6 +43,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
+import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -48,6 +51,8 @@ import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.RobolectricTest
+import org.smartregister.fhircore.activity.QuestionnaireActivity
+import org.smartregister.fhircore.activity.QuestionnaireActivityTest
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
@@ -60,8 +65,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     // MockKAnnotations.init(this, relaxUnitFun = true)
+    val savedState = SavedStateHandle()
+    savedState[QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY] = "patient-registration.json"
     questionnaireViewModel =
-      spyk(QuestionnaireViewModel(ApplicationProvider.getApplicationContext(), SavedStateHandle()))
+      spyk(QuestionnaireViewModel(ApplicationProvider.getApplicationContext(), savedState))
   }
 
   @Test
@@ -185,5 +192,27 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
     Assert.assertEquals(resourceId, resourceIdSlot.captured)
+  }
+
+  @Test
+  fun testVerifyQuestionnaireSubjectType() {
+    val jsonObject = JSONObject(questionnaireViewModel.questionnaire)
+
+    Assert.assertEquals("Patient", jsonObject.getJSONArray("subjectType").getString(0))
+    Assert.assertNotNull(questionnaireViewModel.questionnaireJson)
+  }
+
+  @Test
+  fun testVerifySavedResource() {
+    val sourcePatient = QuestionnaireActivityTest.TEST_PATIENT_1
+
+    questionnaireViewModel.saveResource(sourcePatient)
+    val patient = runBlocking {
+      FhirApplication.fhirEngine(FhirApplication.getContext())
+        .load(Patient::class.java, QuestionnaireActivityTest.TEST_PATIENT_1_ID)
+    }
+
+    Assert.assertNotNull(patient)
+    Assert.assertEquals(sourcePatient.logicalId, patient.logicalId)
   }
 }

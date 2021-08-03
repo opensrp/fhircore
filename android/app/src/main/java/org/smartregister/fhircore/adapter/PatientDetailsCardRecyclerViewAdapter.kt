@@ -21,35 +21,32 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.viewholder.ObservationItemViewHolder
-import org.smartregister.fhircore.viewmodel.PatientListViewModel
+import org.smartregister.fhircore.fragment.PatientDetailsCard
+import org.smartregister.fhircore.viewholder.PatientDetailsCardViewHolder
 
 /** UI Controller helper class to display list of observations. */
-class ObservationItemRecyclerViewAdapter :
-  ListAdapter<PatientListViewModel.ObservationItem, ObservationItemViewHolder>(
-    ObservationItemDiffCallback()
-  ) {
+class PatientDetailsCardRecyclerViewAdapter :
+  ListAdapter<PatientDetailsCard, PatientDetailsCardViewHolder>(PatientDetailsCardDiffCallback()) {
 
-  class ObservationItemDiffCallback :
-    DiffUtil.ItemCallback<PatientListViewModel.ObservationItem>() {
+  class PatientDetailsCardDiffCallback : DiffUtil.ItemCallback<PatientDetailsCard>() {
     override fun areItemsTheSame(
-      oldItem: PatientListViewModel.ObservationItem,
-      newItem: PatientListViewModel.ObservationItem
-    ): Boolean = oldItem.id == newItem.id
+      oldItem: PatientDetailsCard,
+      newItem: PatientDetailsCard
+    ): Boolean = oldItem.id == newItem.id && oldItem.type == newItem.type
 
     override fun areContentsTheSame(
-      oldItem: PatientListViewModel.ObservationItem,
-      newItem: PatientListViewModel.ObservationItem
-    ): Boolean = oldItem.id == newItem.id
+      oldItem: PatientDetailsCard,
+      newItem: PatientDetailsCard
+    ): Boolean = oldItem == newItem
   }
 
-  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ObservationItemViewHolder {
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PatientDetailsCardViewHolder {
     val view =
-      LayoutInflater.from(parent.context).inflate(R.layout.observation_list_item, parent, false)
-    return ObservationItemViewHolder(view)
+      LayoutInflater.from(parent.context).inflate(R.layout.patient_details_card_item, parent, false)
+    return PatientDetailsCardViewHolder(view)
   }
 
-  override fun onBindViewHolder(holder: ObservationItemViewHolder, position: Int) {
+  override fun onBindViewHolder(holder: PatientDetailsCardViewHolder, position: Int) {
     val item = currentList[position]
     holder.bindTo(item)
   }

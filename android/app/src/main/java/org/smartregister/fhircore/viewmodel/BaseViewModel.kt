@@ -23,8 +23,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Order
-import com.google.android.fhir.search.search
+import com.google.android.fhir.search.count
 import java.util.Locale
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
@@ -36,30 +35,20 @@ import timber.log.Timber
 
 class BaseViewModel(application: Application, private val fhirEngine: FhirEngine) :
   AndroidViewModel(application) {
-  var covaxClientsCount = MutableLiveData(0)
+  var clientsCount = MutableLiveData(0)
   var selectedLanguage =
     MutableLiveData(
       SharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
     )
-  var username = MutableLiveData("")
-
   lateinit var languageList: List<Language>
 
   fun loadClientCount() {
     Timber.d("Loading client counts")
 
     viewModelScope.launch {
-      val p: List<Patient> =
-        fhirEngine.search {
-          Utils.addBasePatientFilter(this)
-
-          apply {}
-          sort(Patient.GIVEN, Order.ASCENDING)
-        }
-
-      covaxClientsCount.value = p.size // TODO use a proper count query after Google devs respond
-
-      Timber.d("Loaded %s clients from db", p.size)
+      val count = fhirEngine.count<Patient> { Utils.addBasePatientFilter(this) }.toInt()
+      clientsCount.value = count
+      Timber.d("Loaded %s clients from db", count)
     }
   }
 

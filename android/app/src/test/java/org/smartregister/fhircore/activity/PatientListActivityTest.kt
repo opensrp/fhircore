@@ -19,11 +19,16 @@ package org.smartregister.fhircore.activity
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.os.SystemClock
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -48,6 +53,7 @@ import org.smartregister.fhircore.auth.account.AccountHelper
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.auth.secure.SecureConfig
 import org.smartregister.fhircore.domain.Language
+import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.fragment.PatientListFragment
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
@@ -69,7 +75,11 @@ class PatientListActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testVerifyPatientSearchEditTextDrawables() {
+    val drawerLayout = patientListActivity.findViewById<DrawerLayout>(R.id.drawer_layout)
     val editText = patientListActivity.findViewById<EditText>(R.id.edit_text_search)
+
+    Assert.assertNotNull(drawerLayout)
+    Assert.assertFalse(drawerLayout.isDrawerOpen(GravityCompat.START))
 
     Assert.assertNotNull(editText)
     Assert.assertNull(editText.compoundDrawables[0])
@@ -80,6 +90,23 @@ class PatientListActivityTest : ActivityRobolectricTest() {
     editText.setText("demo")
     Assert.assertNull(editText.compoundDrawables[0])
     Assert.assertNotNull(editText.compoundDrawables[2])
+
+    val motionEvent =
+      MotionEvent.obtain(
+        SystemClock.uptimeMillis(),
+        SystemClock.uptimeMillis() + 100,
+        MotionEvent.ACTION_DOWN,
+        0f,
+        0f,
+        0
+      )
+    editText.dispatchTouchEvent(motionEvent)
+    motionEvent.action = MotionEvent.ACTION_UP
+    editText.dispatchTouchEvent(motionEvent)
+    Assert.assertTrue(editText.text.isEmpty())
+
+    patientListActivity.findViewById<ImageButton>(R.id.btn_drawer_menu).performClick()
+    Assert.assertTrue(drawerLayout.isDrawerOpen(GravityCompat.START))
   }
 
   @Test
@@ -104,6 +131,21 @@ class PatientListActivityTest : ActivityRobolectricTest() {
       shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testVerifyAddPatientWithPreAssignedIdStartedActivity() {
+    patientListActivity.startRegistrationActivity(patientListActivity, "test-id")
+
+    val expectedIntent = Intent(patientListActivity, QuestionnaireActivity::class.java)
+    val actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    Assert.assertEquals(
+      "test-id",
+      actualIntent.getStringExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID)
+    )
   }
 
   @Test
@@ -318,25 +360,20 @@ class PatientListActivityTest : ActivityRobolectricTest() {
     patientListActivity.secureConfig = secureConfig
 
     patientListActivity.setLogoutUsername()
-    patientListActivity.viewModel.username.observe(
-      patientListActivity,
-      {
-        Assert.assertEquals(
-          "${patientListActivity.getString(R.string.logout_as_user)} demo",
-          patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_logout).title
-        )
-      }
+    Assert.assertEquals(
+      "${patientListActivity.getString(R.string.logout_as_user)} demo",
+      patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_logout).title
     )
   }
 
   @Test
   fun testPatientClientCountShouldReturnTen() {
-    patientListActivity.viewModel.covaxClientsCount.value = 10
+    patientListActivity.viewModel.clientsCount.value = 10
     val counter =
       patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_clients).actionView as
         TextView
 
-    patientListActivity.viewModel.covaxClientsCount.observe(
+    patientListActivity.viewModel.clientsCount.observe(
       patientListActivity,
       { Assert.assertEquals("10", counter.text.toString()) }
     )

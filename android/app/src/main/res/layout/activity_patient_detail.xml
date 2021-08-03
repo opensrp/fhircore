@@ -85,15 +85,26 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="false"
                     android:layout_alignParentBottom="false"
+                    android:layout_gravity="center_horizontal"
                     android:layout_marginStart="@dimen/text_margin"
                     android:layout_marginEnd="@dimen/text_margin"
-                    android:layout_marginBottom="@dimen/text_margin"
-                    android:layout_gravity="center_horizontal"
-                    app:layout_constraintTop_toBottomOf="@id/patient_bio_data"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textAppearance="?attr/textAppearanceListItem"
                     android:textColor="@color/black"
-                    android:textAppearance="?attr/textAppearanceListItem" />
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/patient_bio_data" />
+
+                <TextView
+                    android:id="@+id/risk_flag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/at_risk"
+                    android:textColor="@color/orange"
+                    app:layout_constraintTop_toBottomOf="@id/id_patient_number"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -136,6 +147,8 @@
         android:textAllCaps="true"
         android:textColor="@color/white"
         android:textSize="18sp"
-        android:layout_gravity="bottom|start" />
+        android:layout_gravity="bottom|start"
+        android:visibility="gone"
+        tools:visibility="visible"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

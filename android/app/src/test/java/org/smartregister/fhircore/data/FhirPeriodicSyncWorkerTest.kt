@@ -20,6 +20,7 @@ import androidx.work.WorkerParameters
 import androidx.work.impl.utils.taskexecutor.WorkManagerTaskExecutor
 import io.mockk.every
 import io.mockk.mockk
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -45,5 +46,20 @@ class FhirPeriodicSyncWorkerTest : RobolectricTest() {
   @Test
   fun testGetFhirEngineShouldReturnNonNullFhirEngine() {
     Assert.assertNotNull(fhirPeriodicSyncWorker.getFhirEngine())
+  }
+
+  @Test
+  fun testGetSyncDataReturnMapOfConfiguredSyncItems() {
+    val data = fhirPeriodicSyncWorker.getSyncData()
+    Assert.assertEquals(data.size, 4)
+    Assert.assertTrue(data.containsKey(ResourceType.Patient))
+    Assert.assertTrue(data.containsKey(ResourceType.Immunization))
+    Assert.assertTrue(data.containsKey(ResourceType.StructureMap))
+    Assert.assertTrue(data.containsKey(ResourceType.RelatedPerson))
+  }
+
+  @Test
+  fun testGetDataSourceReturnsDataSource() {
+    Assert.assertNotNull(fhirPeriodicSyncWorker.getDataSource())
   }
 }

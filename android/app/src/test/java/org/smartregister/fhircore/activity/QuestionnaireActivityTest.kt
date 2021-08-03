@@ -20,6 +20,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Looper
 import android.widget.Button
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import io.mockk.every
 import io.mockk.just
@@ -33,6 +34,7 @@ import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Ignore
@@ -44,6 +46,7 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.util.QuestionnaireUtils
 
 @Config(shadows = [FhirApplicationShadow::class])
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
@@ -92,6 +95,33 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testActivityShouldSetPreAssignedId() {
+    val intent =
+      Intent().apply {
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
+        putExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID, "test-id")
+      }
+    questionnaireActivity =
+      Robolectric.buildActivity(QuestionnaireActivity::class.java, intent).create().resume().get()
+
+    val fragment =
+      questionnaireActivity.supportFragmentManager.findFragmentByTag(
+        QuestionnaireActivity.QUESTIONNAIRE_FRAGMENT_TAG
+      ) as
+        QuestionnaireFragment
+
+    Assert.assertNotNull(fragment)
+
+    val response = fragment.getQuestionnaireResponse()
+    Assert.assertEquals("test-id", response.find("patient-barcode")?.value.toString())
+
+    val barcode =
+      QuestionnaireUtils.valueStringWithLinkId(response, PatientDetailFragment.ARG_ID_FIELD_KEY)
+    Assert.assertEquals(barcode, response.find("patient-barcode")?.value.toString())
+  }
+
+  @Test
   fun testVerifyPrePopulatedQuestionnaire() {
     val fragment =
       questionnaireActivity.supportFragmentManager.findFragmentByTag(
@@ -104,37 +134,38 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     shadowOf(Looper.getMainLooper()).idle()
 
     val response = fragment.getQuestionnaireResponse()
+    Assert.assertEquals(TEST_PATIENT_1.id, response.find("patient-barcode")?.value.toString())
     Assert.assertEquals(
       TEST_PATIENT_1.name[0].given[0].toString(),
-      response.item[0].item[0].item[0].answer[0].value.toString()
+      response.find("PR-name-text")?.value.toString()
     )
     Assert.assertEquals(
       TEST_PATIENT_1.name[0].family,
-      response.item[0].item[0].item[1].answer[0].value.toString()
+      response.find("PR-name-family")?.value.toString()
     )
     Assert.assertEquals(
       TEST_PATIENT_1.birthDate.toString(),
-      response.item[0].item[1].answer[0].valueDateType.value.toString()
+      response.find("patient-0-birth-date")?.valueDateType?.value.toString()
     )
     Assert.assertEquals(
       TEST_PATIENT_1.gender.toCode(),
-      response.item[0].item[2].answer[0].value.toString()
+      response.find("patient-0-gender")?.value.toString()
     )
     Assert.assertEquals(
       TEST_PATIENT_1.telecom[0].value,
-      response.item[0].item[3].item[1].answer[0].value.toString()
+      response.find("PR-telecom-value")?.value.toString()
     )
     Assert.assertEquals(
       TEST_PATIENT_1.address[0].city,
-      response.item[0].item[4].item[0].answer[0].value.toString()
+      response.find("PR-address-city")?.value.toString()
     )
     Assert.assertEquals(
       TEST_PATIENT_1.address[0].country,
-      response.item[0].item[4].item[1].answer[0].value.toString()
+      response.find("PR-address-country")?.value.toString()
     )
     Assert.assertEquals(
       TEST_PATIENT_1.active,
-      response.item[0].item[5].answer[0].valueBooleanType.booleanValue()
+      response.find("PR-active")?.valueBooleanType?.booleanValue()
     )
   }
 
@@ -155,7 +186,34 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   private fun init() {
-    runBlocking { FhirApplication.fhirEngine(FhirApplication.getContext()).save(TEST_PATIENT_1) }
+    runBlocking {
+      FhirApplication.fhirEngine(ApplicationProvider.getApplicationContext()).save(TEST_PATIENT_1)
+    }
+  }
+
+  private fun QuestionnaireResponse.find(
+    linkId: String
+  ): QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent? {
+    return item.find(linkId, null)
+  }
+
+  private fun List<QuestionnaireResponse.QuestionnaireResponseItemComponent>.find(
+    linkId: String,
+    default: QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent?
+  ): QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent? {
+    var result = default
+    run loop@{
+      forEach {
+        if (it.linkId == linkId) {
+          result = if (it.answer.isNotEmpty()) it.answer[0] else default
+          return@loop
+        } else if (it.item.isNotEmpty()) {
+          result = it.item.find(linkId, result)
+        }
+      }
+    }
+
+    return result
   }
 
   companion object {

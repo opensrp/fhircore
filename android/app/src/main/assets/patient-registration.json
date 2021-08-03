@@ -19,6 +19,12 @@
   ],
   "item": [
     {
+      "linkId": "patient-barcode",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
+      "type": "text",
+      "text": "Barcode"
+    },
+    {
       "linkId": "PR",
       "type": "group",
       "text": "Client info",
@@ -348,6 +354,246 @@
           }
         }
       ]
+    },
+    {
+      "type": "group",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+      "required": true,
+      "linkId": "comorbidities",
+      "text": "Do you have any of the following conditions?",
+      "code": [
+        {
+          "system": "https://www.snomed.org",
+          "code": "991381000000107"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ],
+            "text": "Drop down"
+          }
+        }
+      ],
+      "item": [
+        {
+          "type": "boolean",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+          "linkId": "diabetes_mellitus",
+          "text": "Diabetes Mellitus (DM)",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+              "valueBoolean": true
+            }
+          ],
+          "code": [
+            {
+              "system": "https://www.snomed.org",
+              "code": "73211009"
+            }
+          ]
+        },
+        {
+          "type": "boolean",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+          "linkId": "hypertension",
+          "text": "HyperTension (HT)",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+              "valueBoolean": true
+            }
+          ],
+          "code": [
+            {
+              "system": "https://www.snomed.org",
+              "code": "59621000"
+            }
+          ]
+        },
+        {
+          "type": "boolean",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+          "linkId": "ihd",
+          "text": "Ischemic Heart Disease (IHD / CHD / CCF)",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+              "valueBoolean": true
+            }
+          ],
+          "code": [
+            {
+              "system": "https://www.snomed.org",
+              "code": "414545008"
+            }
+          ]
+        },
+        {
+          "type": "boolean",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+          "linkId": "tb",
+          "text": "Tuberculosis (TB)",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+              "valueBoolean": true
+            }
+          ],
+          "code": [
+            {
+              "system": "https://www.snomed.org",
+              "code": "56717001"
+            }
+          ]
+        },
+        {
+          "type": "boolean",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+          "linkId": "copd",
+          "text": "Asthma/COPD",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+              "valueBoolean": true
+            }
+          ],
+          "code": [
+            {
+              "system": "https://www.snomed.org",
+              "code": "195967001"
+            }
+          ]
+        },
+        {
+          "type": "boolean",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+          "linkId": "chronic_kidney_disease",
+          "text": "Chronic Kidney Disease",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+              "valueBoolean": true
+            }
+          ],
+          "code": [
+            {
+              "system": "https://www.snomed.org",
+              "code": "709044004"
+            }
+          ]
+        },
+        {
+          "type": "boolean",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+          "linkId": "cancer",
+          "text": "Cancer",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+              "valueBoolean": true
+            }
+          ],
+          "code": [
+            {
+              "system": "https://www.snomed.org",
+              "code": "363346000"
+            }
+          ]
+        },
+        {
+          "type": "boolean",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+          "linkId": "others",
+          "text": "Others",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+              "valueBoolean": true
+            }
+          ],
+          "code": [
+            {
+              "system": "https://www.snomed.org",
+              "code": "74964007"
+            }
+          ]
+        },
+        {
+          "type": "string",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+          "linkId": "other_comorbidities",
+          "code": [
+            {
+              "system": "https://www.snomed.org",
+              "code": "38651000000103"
+            }
+          ],
+          "text": "If other, specify: ",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+              "valueBoolean": true
+            }
+          ],
+          "enableWhen" : [
+            {
+              "question" : "others",
+              "operator" : "=",
+              "answerBoolean" : true
+            }
+          ],
+          "enableBehavior" : "all"
+        }
+      ]
+    },
+    {
+      "linkId" : "risk_assessment",
+      "definition": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+      "code" : [
+        {
+          "system" : "https://www.snomed.org",
+          "code" : "225338004",
+          "display" : "Risk Assessment"
+        }
+      ],
+      "text" : "Client is at risk for serious illness from COVID-19",
+      "type" : "choice",
+      "extension" : [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/flag-detail",
+          "valueString": "at risk"
+        }
+      ],
+      "initial": [
+        {
+          "valueCoding": {
+            "system" : "https://www.snomed.org",
+            "code" : "870577009",
+            "display" : "High Risk for COVID-19"
+          }
+        }
+      ],
+      "enableWhen" : [
+        {"question" : "others", "operator" : "=", "answerBoolean" : true},
+        {"question" : "cancer", "operator" : "=", "answerBoolean" : true},
+        {"question" : "chronic_kidney_disease", "operator" : "=", "answerBoolean" : true},
+        {"question" : "copd", "operator" : "=", "answerBoolean" : true},
+        {"question" : "tb", "operator" : "=", "answerBoolean" : true},
+        {"question" : "ihd", "operator" : "=", "answerBoolean" : true},
+        {"question" : "hypertension", "operator" : "=", "answerBoolean" : true},
+        {"question" : "diabetes_mellitus", "operator" : "=", "answerBoolean" : true}
+
+      ],
+      "enableBehavior" : "any"
     }
   ]
 }

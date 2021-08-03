@@ -20,18 +20,21 @@ import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.viewmodel.PatientListViewModel
+import org.smartregister.fhircore.fragment.PatientDetailsCard
+import org.smartregister.fhircore.util.Utils
 
-class ObservationItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-  private val observationTextView: TextView = itemView.findViewById(R.id.observation_detail)
+class PatientDetailsCardViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+  private val cardTitle: TextView = itemView.findViewById(R.id.card_title)
+  private val cardDetails: TextView = itemView.findViewById(R.id.card_details)
 
-  fun bindTo(observationItem: PatientListViewModel.ObservationItem) {
-    this.observationTextView.text =
-      itemView.resources.getString(
-        R.string.observation_brief_text,
-        observationItem.code,
-        observationItem.value,
-        observationItem.effective
-      )
+  fun bindTo(patientDetailsCard: PatientDetailsCard) {
+    this.cardTitle.text = patientDetailsCard.title
+
+    this.cardDetails.visibility =
+      if (patientDetailsCard.details.isBlank()) View.GONE else View.VISIBLE
+    this.cardDetails.text = patientDetailsCard.details
+
+    if (patientDetailsCard.details.contains("overdue"))
+      Utils.setTextColor(this.cardDetails, R.color.status_red)
   }
 }

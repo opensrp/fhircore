@@ -15,12 +15,20 @@
  limitations under the License.
 -->
 
-<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <androidx.drawerlayout.widget.DrawerLayout
+        android:id="@+id/drawer_layout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -47,10 +55,13 @@
 
         <LinearLayout
             android:id="@+id/empty_list_message_container"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_centerInParent="true">
+            android:layout_above="@id/btn_register_new_patient"
+            android:layout_below="@id/patient_register_toolbar"
+            android:layout_centerInParent="true"
+            android:gravity="center">
 
             <TextView
                 android:id="@+id/patient_list_empty_message_title"
@@ -133,7 +144,7 @@
                 android:text="@string/sync"
                 android:textColor="@color/white"
                 android:textAllCaps="false"
-                android:drawableStart="@drawable/ic_sync_covax"
+                android:drawableStart="@drawable/ic_sync"
                 android:gravity="center_vertical"
                 android:drawablePadding="10dp"
                 android:textSize="19sp"
@@ -154,5 +165,35 @@
         </LinearLayout>
 
     </com.google.android.material.navigation.NavigationView>
+    </androidx.drawerlayout.widget.DrawerLayout>
 
-</androidx.drawerlayout.widget.DrawerLayout>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/loader_overlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:background="#55000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="visible"
+        tools:visibility="gone">
+
+        <ProgressBar
+            android:id="@+id/loader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:indeterminate="true"
+            android:background="#fff"
+            android:padding="10dp"
+            style="@style/Widget.MaterialComponents.CircularProgressIndicator"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,6 +5,7 @@ apply plugin: "com.github.kt3k.coveralls"
 apply plugin: 'jacoco'
 apply plugin: 'de.mannodermaus.android-junit5'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'org.jetbrains.dokka'
 
 jacoco {
     toolVersion = versions.jacoco_tool
@@ -17,16 +18,17 @@ if (rootProject.file("local.properties").exists()) {
     props.load(rootProject.file("local.properties").newDataInputStream())
 
     arr.each { prop ->
-        project.ext.set(prop, props.getProperty(prop, "sample"))
+        project.ext.set(prop, props.getProperty(prop, (prop == "FHIR_BASE_URL") ? "https://sample.url/fhir/" : "sample"))
     }
 } else {
     println("local.properties does not exist. The following values are required " + arr.join(", "))
     arr.each { prop ->
-        project.ext.set(prop, "sample_" + prop)
+        project.ext.set(prop, props.getProperty(prop, (prop.contains("URL")) ? "https://sample.url/fhir/" : "sample_" + prop))
     }
 }
 
 android {
+
     compileSdkVersion sdk_versions.compile_sdk
     dataBinding {
         enabled true
@@ -36,7 +38,7 @@ android {
         minSdkVersion sdk_versions.min_sdk
         targetSdkVersion sdk_versions.target_sdk
         versionCode 1
-        versionName "1.0"
+        versionName "0.0.7"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // Required when setting minSdkVersion to 20 or lower
         // See https://developer.android.com/studio/write/java8-support
@@ -117,7 +119,7 @@ dependencies {
 
     coreLibraryDesugaring deps.desugar
 
-    implementation('com.google.android.fhir:datacapture:0.1.0-alpha03-r1') {
+    implementation('org.smartregister:data-capture:0.1.0-alpha03-preview-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -232,4 +234,28 @@ coveralls {
 
 tasks.coveralls {
     dependsOn 'jacocoTestReport'
+}
+
+dokkaHtml.configure {
+    outputDirectory.set(file("$rootDir/docs"))
+    dokkaSourceSets {
+        named("main") {
+            moduleName.set("OpenSRP FHIR Core Documentation")
+            jdkVersion.set(8)
+            noAndroidSdkLink.set(false)
+            perPackageOption {
+                prefix = matching (".*\\.internal.*")
+                suppress = true
+            }
+            suppressGeneratedFiles.set(true)
+            skipEmptyPackages.set(true)
+            reportUndocumented.set(true)
+        }
+
+        pluginsMapConfiguration.set(
+            ["org.jetbrains.dokka.base.DokkaBase": """{
+                "footerMessage": "© ${Year.now().value} Copyright Ona"
+                }"""]
+        )
+    }
 }

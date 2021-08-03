@@ -43,17 +43,13 @@ class FhirApplication : Application() {
 
   // only initiate the FhirEngine when used for the first time, not when the app is created
   private val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
-  private val mInstance: FhirApplication by lazy { this }
 
   private fun constructFhirEngine(): FhirEngine {
-    SharedPreferencesHelper.init(this)
-
-    // Schedule periodic syncing
     Sync.periodicSync<FhirPeriodicSyncWorker>(
       this,
       PeriodicSyncConfiguration(
         syncConstraints = Constraints.Builder().build(),
-        repeat = RepeatInterval(interval = 15, timeUnit = TimeUnit.MINUTES)
+        repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
       )
     )
 
@@ -64,7 +60,6 @@ class FhirApplication : Application() {
 
     private lateinit var mContext: FhirApplication
 
-    @JvmStatic
     fun fhirEngine(context: Context) = (context.applicationContext as FhirApplication).fhirEngine
 
     fun getContext() = mContext

@@ -16,17 +16,22 @@
 
 package org.smartregister.fhircore.activity
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
+import androidx.core.view.GravityCompat
 import androidx.core.widget.doAfterTextChanged
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.fragment.PatientListFragment
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.util.Utils.addOnDrawableClickedListener
@@ -69,17 +74,32 @@ class PatientListActivity : BaseSimpleActivity() {
         editText.addOnDrawableClickedListener(Utils.DrawablePosition.DRAWABLE_RIGHT) { it.clear() }
       }
     }
+    setUpDrawerContent()
+  }
+
+  private fun setUpDrawerContent() {
+    val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
+    findViewById<ImageButton>(R.id.btn_drawer_menu).setOnClickListener {
+      drawerLayout.openDrawer(GravityCompat.START)
+    }
   }
 
   private fun addPatient(view: View) {
     // TO DO: Open patient registration form
     val context = view.context
+    startRegistrationActivity(context, null)
+  }
+
+  fun startRegistrationActivity(context: Context, preAssignedId: String?) {
     context.startActivity(
       Intent(context, QuestionnaireActivity::class.java).apply {
         putExtra(
           QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
           this@PatientListActivity.getString(R.string.client_info)
         )
+
+        if (!preAssignedId.isNullOrEmpty())
+          putExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID, preAssignedId)
         putExtra(
           QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY,
           "patient-registration-structure-map-extraction.json"

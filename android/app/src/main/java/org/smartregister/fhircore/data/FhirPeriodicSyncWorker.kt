@@ -19,29 +19,26 @@ package org.smartregister.fhircore.data
 import android.content.Context
 import androidx.work.WorkerParameters
 import ca.uhn.fhir.context.FhirContext
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.DataSource
 import com.google.android.fhir.sync.FhirSyncWorker
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.api.HapiFhirService
 
-class FhirPeriodicSyncWorker(appContext: Context, workerParams: WorkerParameters) :
+class FhirPeriodicSyncWorker(val appContext: Context, workerParams: WorkerParameters) :
   FhirSyncWorker(appContext, workerParams) {
-  override fun getDataSource(): DataSource {
-    return HapiFhirResourceDataSource(
-      HapiFhirService.create(FhirContext.forR4().newJsonParser(), applicationContext)
-    )
-  }
-
-  override fun getFhirEngine(): FhirEngine {
-    return FhirApplication.fhirEngine(applicationContext)
-  }
 
   override fun getSyncData() =
     mapOf(
       ResourceType.Patient to emptyMap<String, String>(),
+      ResourceType.Immunization to emptyMap(),
       ResourceType.StructureMap to mapOf(),
       ResourceType.RelatedPerson to mapOf()
     )
+
+  override fun getDataSource() =
+    HapiFhirResourceDataSource(
+      HapiFhirService.create(FhirContext.forR4().newJsonParser(), appContext)
+    )
+
+  override fun getFhirEngine() = FhirApplication.fhirEngine(applicationContext)
 }

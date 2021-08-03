@@ -26,6 +26,8 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Patient
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Questionnaire
@@ -38,6 +40,7 @@ import org.smartregister.fhircore.fragment.PatientDetailFragment
 
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
   AndroidViewModel(application) {
+
   var questionnaireJson: String? = null
   val questionnaire: String
     get() {

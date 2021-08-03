@@ -25,6 +25,8 @@ import androidx.fragment.app.commit
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import java.util.UUID
 import kotlinx.android.synthetic.main.activity_patient_detail.view.*
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.BooleanType
@@ -36,6 +38,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
+import org.smartregister.fhircore.util.QuestionnaireUtils
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 class QuestionnaireActivity : MultiLanguageBaseActivity(), View.OnClickListener {
@@ -73,6 +76,10 @@ class QuestionnaireActivity : MultiLanguageBaseActivity(), View.OnClickListener 
     val questionnaire =
       FhirContext.forR4().newJsonParser().parseResource(viewModel.questionnaire) as Questionnaire
 
+    intent.getStringExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID)?.let {
+      setBarcode(questionnaire, it, true)
+    }
+
     intent.getStringExtra(PatientDetailFragment.ARG_ITEM_ID)?.let {
       var patient: Patient? = null
       viewModel.viewModelScope.launch {
@@ -80,6 +87,7 @@ class QuestionnaireActivity : MultiLanguageBaseActivity(), View.OnClickListener 
       }
 
       patient?.let {
+        setBarcode(questionnaire, it.id, true)
 
         // set first name
         questionnaire.find("PR-name-text")?.apply {
@@ -156,6 +164,14 @@ class QuestionnaireActivity : MultiLanguageBaseActivity(), View.OnClickListener 
     return FhirContext.forR4().newJsonParser().encodeResourceToString(questionnaire)
   }
 
+  private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
+    questionnaire.find("patient-barcode")?.apply {
+      initial =
+        mutableListOf(Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(code)))
+      readOnly = readonly
+    }
+  }
+
   private fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {
     return item.find(linkId, null)
   }
@@ -182,7 +198,7 @@ class QuestionnaireActivity : MultiLanguageBaseActivity(), View.OnClickListener 
   companion object {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
     const val QUESTIONNAIRE_FILE_PATH_KEY = "questionnaire-file-path-key"
-    const val QUESTIONNAIRE_FRAGMENT_TAG = "questionannire-fragment-tag"
+    const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
   }
 
   override fun onClick(v: View?) {

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="version">Toleo %s</string>
     <string name="title_patient_list">Wateja Wasajiliwa</string>
     <string name="title_patient_detail">Sampuli ya Mgonjwa</string>
     <string name="menu_about">Kuhusu Injini ya FHIR</string>
@@ -16,6 +17,17 @@
     <string name="str_next">Ijayo &gt;&gt;</string>
     <string name="str_previous">&lt;&lt; Iliyopita</string>
     <string name="str_page_info">Ukurasa %1$d of %2$d</string>
+
+    <string name="immunization_brief_text">"Amepokea %1$s dozi %2$d"</string>
+    <string name="immunization_next_dose_text">"Dozi %1$d kuanzia %2$s"</string>
+    <string name="immunization_next_overdue_dose_text">"Dozi %1$d imechelewa %2$s"</string>
+
+    <string name="status_vaccinated">Amechanjwa</string>
+    <string name="status_overdue">Imechelewa</string>
+    <string name="status_received_vaccine">Chanjo %1$d \n%2$s</string>
+    <string name="view_vaccine_certificate">"Angalia cheti cha chanjo"</string>
+    <string name="fully_vaccinated">"Chanjo kamili"</string>
+
     <string name="edit">Hariri</string>
     <string name="select_language">Chagua Lugha</string>
     <string name="register_new_patient">Sajilisha mgonjwa</string>
@@ -23,9 +35,9 @@
     <string name="record_vaccine">Rekodi Chanjo</string>
     <string name="no_vaccine_received">Hakuna chanjo iliyopokelewa</string>
     <string name="view_registration_details">Ona Maelezo ya Usajili</string>
-    <string name="covax_client">Wateja wa COVAX</string>
+    <string name="client">Wateja wa COVAX</string>
     <string name="show_overdue">Onyesha waliochelewa</string>
-    <string name="record_vaccine_nl">Rekodi\nchanjo</string>
+    <string name="record_vaccine_nl">Rekodi\nChanjo</string>
     <string name="client_info">Maelezo ya mteja</string>
     <string name="str_save">Hifadhi</string>
     <string name="last_seen_date">Mara ya mwisho kuonekana 29-3-2021</string>
@@ -44,4 +56,7 @@
     <string name="second_dose_due_at"> Dozi ya pili inapaswa kutolewa %1$s</string>
     <string name="ordinal_vaccine_dose_recorded">%1$s Dozi ya kwanza imerekodiwa</string>
     <string name="please_select_vaccine">Tafadhali Chagua Chanjo</string>
+    <string name="scan_bar_code">SOMA BARCODE</string>
+    <string name="at_risk">Hatarini</string>
+    <string name="syncing">Inasawazisha&#8230;</string>
 </resources>

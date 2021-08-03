@@ -17,25 +17,44 @@
 package org.smartregister.fhircore.viewmodel
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
+import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.Sync
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.data.FhirPeriodicSyncWorker
-import org.smartregister.fhircore.data.SamplePatients
+import org.hl7.fhir.r4.model.PositiveIntType
+import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.R
+import org.smartregister.fhircore.api.HapiFhirService
+import org.smartregister.fhircore.data.HapiFhirResourceDataSource
 import org.smartregister.fhircore.domain.Pagination
+import org.smartregister.fhircore.fragment.PatientDetailsCard
+import org.smartregister.fhircore.fragment.toDetailsCard
+import org.smartregister.fhircore.model.PatientItem
+import org.smartregister.fhircore.model.PatientStatus
+import org.smartregister.fhircore.model.PatientVaccineSummary
+import org.smartregister.fhircore.model.VaccineStatus
 import org.smartregister.fhircore.util.Utils
-
-private const val OBSERVATIONS_JSON_FILENAME = "sample_observations_bundle.json"
 
 /**
  * The ViewModel helper class for PatientItemRecyclerViewAdapter, that is responsible for preparing
@@ -44,121 +63,174 @@ private const val OBSERVATIONS_JSON_FILENAME = "sample_observations_bundle.json"
 class PatientListViewModel(application: Application, private val fhirEngine: FhirEngine) :
   AndroidViewModel(application) {
 
-  // Make sample Fhir Patients and Observations available, in case needed for demo.
-  private val jsonStringObservations = getAssetFileAsString(OBSERVATIONS_JSON_FILENAME)
-
-  private val samplePatients = SamplePatients()
-
-  private val observations = samplePatients.getObservationItems(jsonStringObservations)
-  private val liveObservations: MutableLiveData<List<ObservationItem>> =
-    MutableLiveData(observations)
+  var showOverduePatientsOnly = MutableLiveData(false)
+  var loadingListObservable = MutableLiveData(true)
 
   val liveSearchedPaginatedPatients: MutableLiveData<Pair<List<PatientItem>, Pagination>> by lazy {
     MutableLiveData<Pair<List<PatientItem>, Pagination>>()
   }
 
-  fun getObservations(): LiveData<List<ObservationItem>> {
-    return liveObservations
-  }
-
-  val liveSearchPatient: MutableLiveData<PatientItem> by lazy { MutableLiveData<PatientItem>() }
-
   fun searchResults(query: String? = null, page: Int = 0, pageSize: Int = 10) {
-    viewModelScope.launch {
+    viewModelScope.launch(Dispatchers.IO) {
+      loadingListObservable.postValue(true)
+      var totalCount = count(query).toInt()
+
       val searchResults: List<Patient> =
         fhirEngine.search {
-          // Utils.addBasePatientFilter(this)
+          Utils.addBasePatientFilter(this)
 
           apply {
             if (query?.isNotBlank() == true) {
-              filter(Patient.FAMILY) {
-                value = query.trim()
+              filter(Patient.NAME) {
                 modifier = StringFilterModifier.CONTAINS
+                value = query.trim()
               }
             }
           }
+
           sort(Patient.GIVEN, Order.ASCENDING)
-          count = pageSize
+          count = totalCount
           from = (page * pageSize)
         }
 
-      liveSearchedPaginatedPatients.value =
-        Pair(
-          samplePatients.getPatientItems(searchResults),
-          Pagination(totalItems = count(query), pageSize = pageSize, currentPage = page)
-        )
+      var patients = searchResults.map { it.toPatientItem() }
+      patients.forEach { it.vaccineStatus = getPatientStatus(it.logicalId) }
+      if (showOverduePatientsOnly.value!!) {
+        patients = patients.filter { it.vaccineStatus!!.status == VaccineStatus.OVERDUE }
+      }
+      totalCount = patients.size + (page * pageSize)
+      patients = patients.take(pageSize)
+
+      loadingListObservable.postValue(false)
+      liveSearchedPaginatedPatients.postValue(
+        Pair(patients, Pagination(totalItems = totalCount, pageSize = pageSize, currentPage = page))
+      )
     }
   }
 
-  /** Returns number of records in database */
-  // TODO This is a wasteful query that will be replaced by implementation of
-  // https://github.com/google/android-fhir/issues/458
-  // https://github.com/opensrp/fhircore/issues/107
-  private suspend fun count(query: String? = null): Int {
-    val searchResults: List<Patient> =
-      fhirEngine.search {
-        Utils.addBasePatientFilter(this)
+  suspend fun getPatientStatus(id: String): PatientStatus {
+    // check database for immunizations
+    val cal: Calendar = Calendar.getInstance()
+    cal.add(Calendar.DATE, -28)
+    val overDueStart: Date = cal.time
 
-        apply {
-          if (query?.isNotBlank() == true) {
-            filter(Patient.FAMILY) {
-              value = query.trim()
-              modifier = StringFilterModifier.CONTAINS
-            }
+    val formatter = SimpleDateFormat("dd-MM-yy", Locale.US)
+
+    val searchResults: List<Immunization> =
+      fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$id" } }
+
+    val computedStatus =
+      if (searchResults.size >= 2) VaccineStatus.VACCINATED
+      else if (searchResults.size == 1 && searchResults[0].recorded.before(overDueStart))
+        VaccineStatus.OVERDUE
+      else if (searchResults.size == 1) VaccineStatus.PARTIAL else VaccineStatus.DUE
+
+    return PatientStatus(
+      status = computedStatus,
+      details = if (searchResults.isNotEmpty()) formatter.format(searchResults[0].recorded) else ""
+    )
+  }
+
+  /** Basic search for immunizations */
+  fun fetchPatientDetailsCards(
+    context: Context,
+    patientId: String
+  ): LiveData<List<PatientDetailsCard>> {
+    val liveSearchImmunization: MutableLiveData<List<PatientDetailsCard>> = MutableLiveData()
+    viewModelScope.launch {
+      val result =
+        mutableListOf(fhirEngine.load(Patient::class.java, patientId).toDetailsCard(context))
+
+      val immunizations: List<Immunization> =
+        fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$patientId" } }
+
+      immunizations.forEachIndexed { index, element ->
+        result.add(element.toDetailsCard(context, index, index < 1))
+      }
+
+      if (immunizations.isEmpty()) {
+        result.add(
+          PatientDetailsCard(-1, -1, "-1", "", context.getString(R.string.no_vaccine_received), "")
+        )
+      }
+
+      liveSearchImmunization.value = result
+    }
+    return liveSearchImmunization
+  }
+
+  private suspend fun count(query: String? = null): Long {
+    return fhirEngine.count<Patient> {
+      Utils.addBasePatientFilter(this)
+      apply {
+        if (query?.isNotBlank() == true) {
+          filter(Patient.NAME) {
+            modifier = StringFilterModifier.CONTAINS
+            value = query.trim()
           }
         }
-        sort(Patient.GIVEN, Order.ASCENDING)
-        count = 10000
-        from = 0
       }
-    return searchResults.size
-  }
-
-  fun getPatientItem(id: String) {
-    var patientItems: List<PatientItem>? = null
-    viewModelScope.launch {
-      val patient = fhirEngine.load(Patient::class.java, id)
-      patientItems = samplePatients.getPatientItems(listOf(patient))
     }
-
-    liveSearchPatient.value = patientItems?.get(0)
   }
 
-  fun syncUpload() {
-    // TODO: Fix this
-    viewModelScope.launch { Sync.oneTimeSync<FhirPeriodicSyncWorker>(getApplication()) }
+  fun getPatientItem(id: String): LiveData<PatientItem> {
+    val liveSearchPatient: MutableLiveData<PatientItem> = MutableLiveData()
+    viewModelScope.launch {
+      val patient = fhirEngine.load(Patient::class.java, id).toPatientItem()
+
+      val immunizations: List<Immunization> =
+        fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$id" } }
+
+      if (immunizations.isNotEmpty()) {
+        val immunization = immunizations[0]
+        patient.vaccineSummary =
+          PatientVaccineSummary(
+            (immunization.protocolApplied[0].doseNumber as PositiveIntType).value,
+            immunization.vaccineCode.coding.first().code
+          )
+      }
+
+      liveSearchPatient.value = patient
+    }
+    return liveSearchPatient
   }
 
-  private fun getAssetFileAsString(filename: String): String {
-    return this.getApplication<Application>()
-      .applicationContext
-      .assets
-      .open(filename)
-      .bufferedReader()
-      .use { it.readText() }
+  fun runSync() {
+    viewModelScope.launch {
+      // fhirEngine.syncUpload()
+
+      /** Download Immediately from the server */
+      GlobalScope.launch {
+        Sync.oneTimeSync(
+          fhirEngine,
+          HapiFhirResourceDataSource(
+            HapiFhirService.create(FhirContext.forR4().newJsonParser(), getApplication())
+          ),
+          mapOf(
+            ResourceType.Patient to mapOf("address-city" to "NAIROBI"),
+            ResourceType.Immunization to mapOf()
+          )
+        )
+      }
+    }
   }
 
-  /** The Patient's details for display purposes. */
-  data class PatientItem(
-    val id: String,
-    val name: String,
-    val gender: String,
-    val dob: String,
-    val html: String,
-    val phone: String,
-    val logicalId: String
-  ) {
-    override fun toString(): String = name
+  fun isPatientExists(id: String): LiveData<Result<Boolean>> {
+    val result = MutableLiveData<Result<Boolean>>()
+    viewModelScope.launch {
+      try {
+        fhirEngine.load(Patient::class.java, id)
+        result.value = Result.success(true)
+      } catch (e: ResourceNotFoundException) {
+        result.value = Result.failure(e)
+      }
+    }
+    return result
   }
 
-  /** The Observation's details for display purposes. */
-  data class ObservationItem(
-    val id: String,
-    val code: String,
-    val effective: String,
-    val value: String
-  ) {
-    override fun toString(): String = code
+  fun clearPatientList() {
+    liveSearchedPaginatedPatients.value =
+      Pair(emptyList(), Pagination(totalItems = 0, pageSize = 1, currentPage = 0))
   }
 }
 
@@ -172,4 +244,31 @@ class PatientListViewModelFactory(
     }
     throw IllegalArgumentException("Unknown ViewModel class")
   }
+}
+
+fun Patient.toPatientItem(): PatientItem {
+  val name = this.name[0].nameAsSingleString
+
+  // Show nothing if no values available for gender and date of birth.
+  val gender = if (this.hasGenderElement()) this.genderElement.valueAsString else ""
+  val dob = if (this.hasBirthDateElement()) this.birthDateElement.valueAsString else ""
+  val html: String = if (this.hasText()) this.text.div.valueAsString else ""
+  val phone: String =
+    if (this.hasTelecom() && this.telecom[0].hasValue()) this.telecom[0].value else ""
+  val logicalId: String = this.logicalId
+  val ext = this.extension.singleOrNull { it.value.toString().contains("risk") }
+  val risk = ext?.value?.toString() ?: ""
+  val lastSeen = Utils.getLastSeen(logicalId, meta.lastUpdated)
+
+  return PatientItem(
+    this.logicalId,
+    name,
+    gender,
+    dob,
+    html,
+    phone,
+    logicalId,
+    risk,
+    lastSeen = lastSeen
+  )
 }

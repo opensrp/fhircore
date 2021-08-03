@@ -18,11 +18,12 @@ package org.smartregister.fhircore.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import org.smartregister.fhircore.BR
+import org.smartregister.fhircore.BuildConfig
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.databinding.LoginBinding
 import org.smartregister.fhircore.viewmodel.LoginViewModel
@@ -43,12 +44,13 @@ class LoginActivity : AppCompatActivity() {
     binding.lifecycleOwner = this
 
     startHomeObserver()
+    getAppVersion()
   }
 
   private fun startHomeObserver() {
     viewModel.goHome.observe(
       this,
-      Observer {
+      {
         Timber.i("GoHome value changed, now shall start home %b", it)
 
         if (it) {
@@ -60,5 +62,20 @@ class LoginActivity : AppCompatActivity() {
         }
       }
     )
+
+    viewModel.loginFailed.observe(
+      this,
+      { binding.spacer.visibility = if (it == true) View.GONE else View.VISIBLE }
+    )
+
+    viewModel.showProgressIcon.observe(
+      this,
+      { binding.progressIcon.visibility = if (it == true) View.VISIBLE else View.INVISIBLE }
+    )
+  }
+
+  private fun getAppVersion() {
+    val versionName = BuildConfig.VERSION_NAME
+    binding.tvAppVersion.text = getString(R.string.version, versionName)
   }
 }

@@ -21,7 +21,7 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:text="@string/covax_client"
+            android:text="@string/client"
             android:layout_weight="5"
             android:gravity="center"
             android:textSize="21sp"
@@ -33,7 +33,7 @@
             android:id="@+id/btn_show_overdue_patients"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:checked="true"
+            android:checked="false"
             android:gravity="center_vertical"
             android:text="@string/show_overdue"
             android:textColor="@color/white"
@@ -44,7 +44,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp">
+        android:layout_marginTop="15dp"
+        android:orientation="vertical">
 
         <EditText
             android:id="@+id/edit_text_search"
@@ -60,10 +61,38 @@
             android:drawablePadding="10dp"
             android:hint="@string/search_hint"
             android:textColorHint="#AEAEAE"
-            android:paddingStart="15dp"
-            android:paddingEnd="15dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
             android:drawableTint="#AEAEAE"
             android:fontFamily="sans-serif" />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_white_thicker_stroked_bg"
+            android:gravity="center"
+            android:padding="15dp"
+            android:layout_marginTop="10dp"
+            android:id="@+id/layout_scan_barcode" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableEnd="@drawable/ic_barcode"
+                android:drawableTint="@color/white" />
+
+        <TextView
+            android:id="@+id/btn_scan_barcode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:text="@string/scan_bar_code"
+            android:textSize="22sp"
+            android:gravity="center"
+            android:layout_marginLeft="10dp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
