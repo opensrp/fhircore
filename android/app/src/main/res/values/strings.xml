@@ -86,6 +86,19 @@
     <string name="scan_bar_code">SCAN BARCODE</string>
     <string name="at_risk">At Risk</string>
     <string name="syncing">Syncing&#8230;</string>
-
-
+    <string name="vaccine">Vaccine</string>
+    <string name="provider">Provider</string>
+    <string name="vaccine_certificate">Vaccine Certificate</string>
+    <string name="immune">Immune</string>
+    <string name="not_immune">Not immune</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="other">Other</string>
+    <string name="unknown">Unknown</string>
+    <string name="age">Age %1$s</string>
+    <string name="immunization_given">"%1$s dose: %2$s"</string>
+    <string name="immunization_due">"%1$s dose due %2$s"</string>
+    <string name="immunization_overdue">"%1$s dose overdue %2$s"</string>
+    <string name="show_qr_code">Show QR Code</string>
+    <string name="report_adverse_event">Report Adverse Event</string>
 </resources>
