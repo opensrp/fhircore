@@ -31,10 +31,6 @@ import androidx.core.content.ContextCompat
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Immunization
@@ -47,8 +43,12 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.model.PatientItem
-import org.smartregister.fhircore.util.Utils.makeItReadable
 import timber.log.Timber
+import java.text.SimpleDateFormat
+import java.util.*
+
+const val DAYS_IN_MONTH: Int = 28
+const val OVERDUE_DAYS_IN_MONTH: Int = 14
 
 object Utils {
 
@@ -183,5 +183,12 @@ object Utils {
 
   fun Date.makeItReadable(): String {
     return SimpleDateFormat("MM-dd-yyyy").format(this)
+  }
+
+  fun Int.ordinalOf() = "$this" + if (this % 100 in 11..13) "th" else when (this % 10) {
+    1 -> "st"
+    2 -> "nd"
+    3 -> "rd"
+    else -> "th"
   }
 }
