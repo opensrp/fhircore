@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.fragment
 
 import android.content.Intent
+import android.os.Looper
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.testing.FragmentScenario
@@ -62,6 +63,8 @@ class PatientDetailFragmentTest : FragmentRobolectricTest() {
   @Test
   fun testEditPatientShouldStartQuestionnaireActivity() {
     patientDetailFragment.viewModel = spyk(patientDetailFragment.viewModel)
+
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
 
     every { patientDetailFragment.viewModel.getPatientItem(any()) } returns
       MutableLiveData(

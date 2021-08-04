@@ -100,7 +100,10 @@ class PatientListActivity : BaseSimpleActivity() {
 
         if (!preAssignedId.isNullOrEmpty())
           putExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID, preAssignedId)
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
+        putExtra(
+          QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY,
+          "patient-registration-structure-map-extraction.json"
+        )
       }
     )
   }

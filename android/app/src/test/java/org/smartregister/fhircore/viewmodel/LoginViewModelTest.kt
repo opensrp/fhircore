@@ -60,9 +60,8 @@ class LoginViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnFailureShouldVerifyInternalCalls() {
-
     val call = mockk<Call<OAuthResponse>>()
-    val t = Throwable("")
+    val t = Exception("Some sample message")
 
     setUsernameAndPassword()
     viewModel.secureConfig.saveCredentials(Credentials("testuser", charArrayOf('a'), "dummy_token"))
