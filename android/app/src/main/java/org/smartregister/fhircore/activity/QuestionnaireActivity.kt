@@ -27,19 +27,14 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
-import java.util.UUID
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.BooleanType
-import org.hl7.fhir.r4.model.DateType
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.*
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.util.QuestionnaireUtils
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
+import java.util.*
 
 class QuestionnaireActivity : MultiLanguageBaseActivity() {
   private val viewModel: QuestionnaireViewModel by viewModels()
@@ -249,5 +244,11 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
     const val QUESTIONNAIRE_FILE_PATH_KEY = "questionnaire-file-path-key"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
+
+    fun getExtrasBundle(patientId: String): Bundle = bundleOf(
+      Pair(QUESTIONNAIRE_TITLE_KEY, "Patient registration"),
+      Pair(QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json"),
+      Pair(PatientDetailFragment.ARG_ITEM_ID, patientId)
+    )
   }
 }

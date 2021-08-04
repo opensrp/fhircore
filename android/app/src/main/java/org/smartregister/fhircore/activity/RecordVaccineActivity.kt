@@ -28,18 +28,12 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
-import java.util.Date
-import java.util.UUID
 import org.apache.commons.lang3.StringUtils
-import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.Immunization
-import org.hl7.fhir.r4.model.PositiveIntType
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.*
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
+import java.util.*
 
 const val PATIENT_ID = "patient_id"
 const val DOSE_NUMBER = "dose_number"
@@ -168,5 +162,15 @@ class RecordVaccineActivity : MultiLanguageBaseActivity() {
     // Set other dialog properties
     alertDialog.setCancelable(false)
     alertDialog.show()
+  }
+
+  companion object {
+    fun getExtraBundles (title: String, patientId: String) : Bundle {
+      return bundleOf (
+        Pair(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, title),
+        Pair(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json"),
+        Pair(PATIENT_ID, patientId)
+      )
+    }
   }
 }
