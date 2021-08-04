@@ -61,10 +61,12 @@ class FhirApplicationShadow : ShadowApplication() {
 
     override suspend fun <R : Resource> save(vararg resource: R) {
       resource.forEach {
-        if (dataMap.containsKey(it.id)) {
-          dataMap[it.id]?.add(it)
-        } else {
-          dataMap[it.id] = mutableListOf(it)
+        if (it.id != null) {
+          if (dataMap.containsKey(it.id)) {
+            dataMap[it.id]?.add(it)
+          } else {
+            dataMap[it.id] = mutableListOf(it)
+          }
         }
       }
     }

@@ -191,9 +191,9 @@
                 "display": "Male",
                 "designation": [
                   {
-                  "language": "sw",
-                  "value": "Mwanaume"
-                }]
+                    "language": "sw",
+                    "value": "Mwanaume"
+                  }]
               }
             }
           ]

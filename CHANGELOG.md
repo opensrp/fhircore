@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added user logout functionality
 - Vaccine status stylign in list view and details view
 - Show progress bar on login attempt
+- Add related person to patient registration
+- Integrate StructureMap-based extraction
 
 ### Fixed
 

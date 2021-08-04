@@ -126,6 +126,7 @@ dependencies {
         exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
         exclude group: 'com.sun.activation', module: 'javax.activation'
     }
+
     implementation('com.google.android.fhir:engine:0.1.0-alpha03') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'

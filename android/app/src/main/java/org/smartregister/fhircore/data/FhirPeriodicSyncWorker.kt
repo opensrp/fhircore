@@ -30,7 +30,9 @@ class FhirPeriodicSyncWorker(val appContext: Context, workerParams: WorkerParame
   override fun getSyncData() =
     mapOf(
       ResourceType.Patient to emptyMap<String, String>(),
-      ResourceType.Immunization to emptyMap()
+      ResourceType.Immunization to emptyMap(),
+      ResourceType.StructureMap to mapOf(),
+      ResourceType.RelatedPerson to mapOf()
     )
 
   override fun getDataSource() =
