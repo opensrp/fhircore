@@ -122,11 +122,8 @@ class PatientDetailFragment : Fragment() {
   fun editPatient() {
     viewModel.getPatientItem(patientId).value?.let {
       startActivity(
-        Intent(requireContext(), QuestionnaireActivity::class.java).apply {
-          putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
-          putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
-          putExtra(ARG_ITEM_ID, it.logicalId)
-        }
+        Intent(requireContext(), QuestionnaireActivity::class.java)
+          .putExtras(QuestionnaireActivity.getExtrasBundle(it.logicalId))
       )
     }
   }

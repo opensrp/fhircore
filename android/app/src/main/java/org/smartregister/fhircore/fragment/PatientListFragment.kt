@@ -25,11 +25,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.RelativeLayout
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -43,17 +39,12 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.material.switchmaterial.SwitchMaterial
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.activity.PATIENT_ID
 import org.smartregister.fhircore.activity.PatientDetailActivity
+import org.smartregister.fhircore.activity.PatientDetailsActivity
 import org.smartregister.fhircore.activity.PatientListActivity
-import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.activity.RecordVaccineActivity
 import org.smartregister.fhircore.adapter.PatientItemRecyclerViewAdapter
-import org.smartregister.fhircore.domain.Pagination
-import org.smartregister.fhircore.domain.currentPageNumber
-import org.smartregister.fhircore.domain.hasNextPage
-import org.smartregister.fhircore.domain.hasPreviousPage
-import org.smartregister.fhircore.domain.totalPages
+import org.smartregister.fhircore.domain.*
 import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
@@ -254,20 +245,19 @@ class PatientListFragment : Fragment() {
     when (intention) {
       Intention.RECORD_VACCINE -> {
         startActivity(
-          Intent(requireContext(), RecordVaccineActivity::class.java).apply {
-            putExtra(
-              QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
-              activity?.getString(R.string.record_vaccine)
+          Intent(requireContext(), RecordVaccineActivity::class.java)
+            .putExtras(
+              RecordVaccineActivity.getExtraBundles(
+                title = getString(R.string.record_vaccine),
+                patientId = patientItem.logicalId
+              )
             )
-            putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
-            putExtra(PATIENT_ID, patientItem.logicalId)
-          }
         )
       }
       Intention.VIEW -> {
         this.startActivity(
-          Intent(requireContext(), PatientDetailActivity::class.java).apply {
-            putExtra(PatientDetailFragment.ARG_ITEM_ID, patientItem.logicalId)
+          Intent(requireContext(), PatientDetailsActivity::class.java).apply {
+            putExtra(PatientDetailsFragment.PATIENT_ID, patientItem.logicalId)
           }
         )
       }
