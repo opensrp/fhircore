@@ -60,12 +60,12 @@ import org.smartregister.fhircore.shadow.FhirApplicationShadow
 @Config(shadows = [FhirApplicationShadow::class])
 class PatientListActivityTest : ActivityRobolectricTest() {
 
-  private lateinit var patientListActivity: PatientListActivity
+  private lateinit var patientListActivity: CovaxListActivity
 
   @Before
   fun setUp() {
     patientListActivity =
-      Robolectric.buildActivity(PatientListActivity::class.java, null).create().get()
+      Robolectric.buildActivity(CovaxListActivity::class.java, null).create().get()
   }
 
   @Test
@@ -150,12 +150,12 @@ class PatientListActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testGetContentLayoutShouldReturnActivityListLayout() {
-    Assert.assertEquals(R.layout.activity_patient_list, patientListActivity.getContentLayout())
+    Assert.assertEquals(R.layout.activity_register_list, patientListActivity.getContentLayout())
   }
 
   @Test
   fun testPatientLayoutShouldNotBeNull() {
-    Assert.assertEquals(R.layout.activity_patient_list, patientListActivity.getContentLayout())
+    Assert.assertEquals(R.layout.activity_register_list, patientListActivity.getContentLayout())
   }
 
   @Test
@@ -301,7 +301,7 @@ class PatientListActivityTest : ActivityRobolectricTest() {
     every { menuItem.itemId } returns R.id.menu_item_clients
     patientListActivity.onNavigationItemSelected(menuItem)
 
-    val expectedIntent = Intent(patientListActivity, PatientListActivity::class.java)
+    val expectedIntent = Intent(patientListActivity, CovaxListActivity::class.java)
     val actualIntent =
       shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)

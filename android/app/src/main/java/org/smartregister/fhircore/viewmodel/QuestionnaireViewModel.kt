@@ -28,8 +28,11 @@ import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.FhirApplication
@@ -39,24 +42,24 @@ import org.smartregister.fhircore.fragment.PatientDetailFragment
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
   AndroidViewModel(application) {
 
-  var questionnaireJson: String? = null
-  val questionnaire: String
+  val fhirEngine = FhirApplication.fhirEngine(getApplication())
+
+  val questionnaire: Questionnaire
     get() {
-      if (questionnaireJson == null) {
-        questionnaireJson =
-          getApplication<Application>()
-            .assets
-            .open(state[QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY]!!)
-            .bufferedReader()
-            .use { it.readText() }
-      }
-      return questionnaireJson!!
+      val id: String = state[QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY]!!
+      return loadQuestionnaire(id)
     }
+
+  fun loadQuestionnaire(id: String): Questionnaire{
+    return runBlocking {
+      fhirEngine.load(Questionnaire::class.java, id)
+    }
+  }
 
   var structureMapProvider: ((String) -> StructureMap?)? = null
 
   fun saveResource(resource: Resource) {
-    viewModelScope.launch { FhirApplication.fhirEngine(getApplication()).save(resource) }
+    viewModelScope.launch { fhirEngine.save(resource) }
   }
 
   fun saveBundleResources(bundle: Bundle, resourceId: String? = null) {

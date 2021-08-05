@@ -33,7 +33,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/rl_pagination"
         app:layoutManager="LinearLayoutManager"
-        tools:context=".activity.PatientListActivity"
+        tools:context=".activity.CovaxListActivity"
         tools:listitem="@layout/patient_list_item"
         android:maxHeight="300dp"/>
 

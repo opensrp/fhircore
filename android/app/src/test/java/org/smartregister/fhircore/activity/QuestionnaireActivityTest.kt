@@ -64,7 +64,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     intent =
       Intent().apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, "patient-registration.json")
         putExtra(PatientDetailFragment.ARG_ITEM_ID, TEST_PATIENT_1_ID)
       }
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
@@ -81,7 +81,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val intent =
       Intent().apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, "patient-registration.json")
         putExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID, "test-id")
       }
     questionnaireActivity =

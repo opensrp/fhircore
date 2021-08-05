@@ -70,8 +70,7 @@ class QuestionnaireActivity : MultiLanguageBaseActivity(), View.OnClickListener 
   }
 
   private fun getQuestionnaire(): String {
-    val questionnaire =
-      FhirContext.forR4().newJsonParser().parseResource(viewModel.questionnaire) as Questionnaire
+    val questionnaire = viewModel.questionnaire
 
     intent.getStringExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID)?.let {
       setBarcode(questionnaire, it, true)
@@ -194,7 +193,7 @@ class QuestionnaireActivity : MultiLanguageBaseActivity(), View.OnClickListener 
 
   companion object {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
-    const val QUESTIONNAIRE_FILE_PATH_KEY = "questionnaire-file-path-key"
+    const val QUESTIONNAIRE_PATH_KEY = "questionnaire-path-key"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
   }
 

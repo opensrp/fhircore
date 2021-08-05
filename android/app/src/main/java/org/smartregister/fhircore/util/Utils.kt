@@ -28,6 +28,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
@@ -39,6 +40,7 @@ import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.joda.time.ReadablePartial
@@ -46,8 +48,9 @@ import org.joda.time.Years
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 import org.smartregister.fhircore.FhirApplication
+import org.smartregister.fhircore.api.HapiFhirService
+import org.smartregister.fhircore.data.HapiFhirResourceDataSource
 import org.smartregister.fhircore.model.PatientItem
-import org.smartregister.fhircore.util.Utils.makeItReadable
 import timber.log.Timber
 
 object Utils {
@@ -183,5 +186,19 @@ object Utils {
 
   fun Date.makeItReadable(): String {
     return SimpleDateFormat("MM-dd-yyyy").format(this)
+  }
+
+  fun buildDatasource(appContext: Context): HapiFhirResourceDataSource {
+    return HapiFhirResourceDataSource(
+      HapiFhirService.create(FhirContext.forR4().newJsonParser(), appContext)
+    )
+  }
+
+  fun buildResourceSyncParams(): Map<ResourceType, Map<String, String>> {
+    return mapOf(
+      ResourceType.Patient to emptyMap<String, String>(),
+      ResourceType.Immunization to emptyMap(),
+      ResourceType.Questionnaire to emptyMap()
+    )
   }
 }

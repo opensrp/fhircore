@@ -23,22 +23,14 @@ import com.google.android.fhir.sync.FhirSyncWorker
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.api.HapiFhirService
+import org.smartregister.fhircore.util.Utils
 
 class FhirPeriodicSyncWorker(val appContext: Context, workerParams: WorkerParameters) :
   FhirSyncWorker(appContext, workerParams) {
 
-  override fun getSyncData() =
-    mapOf(
-      ResourceType.Patient to emptyMap<String, String>(),
-      ResourceType.Immunization to emptyMap(),
-      ResourceType.StructureMap to mapOf(),
-      ResourceType.RelatedPerson to mapOf()
-    )
+  override fun getSyncData() = Utils.buildResourceSyncParams()
 
-  override fun getDataSource() =
-    HapiFhirResourceDataSource(
-      HapiFhirService.create(FhirContext.forR4().newJsonParser(), appContext)
-    )
+  override fun getDataSource() = Utils.buildDatasource(appContext)
 
   override fun getFhirEngine() = FhirApplication.fhirEngine(applicationContext)
 }

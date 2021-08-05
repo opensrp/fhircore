@@ -60,14 +60,14 @@ import org.smartregister.fhircore.shadow.FhirApplicationShadow
 @Config(shadows = [FhirApplicationShadow::class])
 class QuestionnaireViewModelTest : RobolectricTest() {
 
-  private lateinit var questionnaireViewModel: QuestionnaireViewModel
+  private lateinit var viewModel: QuestionnaireViewModel
 
   @Before
   fun setUp() {
     // MockKAnnotations.init(this, relaxUnitFun = true)
     val savedState = SavedStateHandle()
     savedState[QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY] = "patient-registration.json"
-    questionnaireViewModel =
+    viewModel =
       spyk(QuestionnaireViewModel(ApplicationProvider.getApplicationContext(), savedState))
   }
 

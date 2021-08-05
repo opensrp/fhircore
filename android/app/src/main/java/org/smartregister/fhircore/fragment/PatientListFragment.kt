@@ -84,8 +84,6 @@ class PatientListFragment : Fragment() {
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    fhirEngine = FhirApplication.fhirEngine(requireContext())
-
     recyclerView = view.findViewById<RecyclerView>(R.id.patient_list)
     adapter = PatientItemRecyclerViewAdapter(this::onPatientItemClicked)
     paginationView = view.findViewById(R.id.rl_pagination)
@@ -101,13 +99,6 @@ class PatientListFragment : Fragment() {
         .closeDrawer(GravityCompat.START)
       syncResources()
     }
-
-    patientListViewModel =
-      ViewModelProvider(
-          this,
-          PatientListViewModelFactory(requireActivity().application, fhirEngine)
-        )
-        .get(PatientListViewModel::class.java)
 
     patientListViewModel.liveSearchedPaginatedPatients.observe(requireActivity(), { setData(it) })
 
@@ -155,7 +146,6 @@ class PatientListFragment : Fragment() {
       }
     )
 
-    setUpBarcodeScanner()
     syncResources()
     super.onViewCreated(view, savedInstanceState)
   }
@@ -170,64 +160,6 @@ class PatientListFragment : Fragment() {
     }
     adapter.notifyDataSetChanged()
     super.onResume()
-  }
-
-  private fun setUpBarcodeScanner() {
-    val btnScanBarcode: View = requireActivity().findViewById(R.id.layout_scan_barcode)
-    requireActivity()
-      .supportFragmentManager
-      .setFragmentResultListener(
-        "result",
-        this,
-        { _, result ->
-          val barcode = result.getString("result")!!.trim()
-          patientListViewModel
-            .isPatientExists(barcode)
-            .observe(
-              viewLifecycleOwner,
-              {
-                if (it.isSuccess) {
-                  launchPatientDetailActivity(barcode)
-                } else {
-                  (requireActivity() as PatientListActivity).startRegistrationActivity(
-                    requireContext(),
-                    barcode
-                  )
-                }
-                //                liveBarcodeScanningFragment.onDestroy()
-              }
-            )
-        }
-      )
-
-    val requestPermissionLauncher = getBarcodePermissionLauncher()
-    btnScanBarcode.setOnClickListener { launchBarcodeReader(requestPermissionLauncher) }
-  }
-
-  private fun getBarcodePermissionLauncher(): ActivityResultLauncher<String> {
-    return registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-      isGranted: Boolean ->
-      if (isGranted) {
-        //        liveBarcodeScanningFragment.show(requireActivity().supportFragmentManager, "TAG")
-      } else {
-        Toast.makeText(
-            requireContext(),
-            "Camera permissions are needed to launch barcode reader!",
-            Toast.LENGTH_LONG
-          )
-          .show()
-      }
-    }
-  }
-
-  private fun launchBarcodeReader(requestPermissionLauncher: ActivityResultLauncher<String>) {
-    if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) ==
-        PackageManager.PERMISSION_GRANTED
-    ) {
-      //      liveBarcodeScanningFragment.show(requireActivity().supportFragmentManager, "TAG")
-    } else {
-      requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-    }
   }
 
   fun hideEmptyListViews() {
@@ -248,14 +180,6 @@ class PatientListFragment : Fragment() {
     patientListViewModel.searchResults(search, nextPage, PAGE_COUNT)
   }
 
-  private fun launchPatientDetailActivity(patientLogicalId: String) {
-    val intent =
-      Intent(requireContext(), PatientDetailActivity::class.java).apply {
-        putExtra(PatientDetailFragment.ARG_ITEM_ID, patientLogicalId)
-      }
-    this.startActivity(intent)
-  }
-
   // Click handler to help display the details about the patients from the list.
   fun onPatientItemClicked(intention: Intention, patientItem: PatientItem) {
     when (intention) {
@@ -266,7 +190,7 @@ class PatientListFragment : Fragment() {
               QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY,
               activity?.getString(R.string.record_vaccine)
             )
-            putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
+            putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, recordVaccineQuestionnaireId)
             putExtra(PATIENT_ID, patientItem.logicalId)
           }
         )

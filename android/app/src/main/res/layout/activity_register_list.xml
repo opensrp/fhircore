@@ -33,10 +33,10 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".activity.PatientListActivity">
+        tools:context=".activity.CovaxListActivity">
 
         <androidx.appcompat.widget.Toolbar
-            android:id="@+id/patient_register_toolbar"
+            android:id="@+id/base_register_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/colorPrimary"
@@ -49,7 +49,7 @@
             app:contentInsetEnd="0dp"
             android:layout_alignParentTop="true">
 
-            <include layout="@layout/toolbar_patient_register" />
+            <include layout="@layout/toolbar_base_register" />
 
         </androidx.appcompat.widget.Toolbar>
 
@@ -64,7 +64,7 @@
             android:gravity="center">
 
             <TextView
-                android:id="@+id/patient_list_empty_message_title"
+                android:id="@+id/list_empty_message_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="18sp"
@@ -72,31 +72,31 @@
                 android:layout_gravity="center"/>
 
             <TextView
-                android:id="@+id/patient_list_empty_message_details"
+                android:id="@+id/list_empty_message_details"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/patient_list_empty_message_title"
+                android:layout_below="@id/list_empty_message_title"
                 android:layout_marginBottom="40dp"
                 android:text="@string/empty_client_list_message_details"
                 android:layout_gravity="center"/>
         </LinearLayout>
 
         <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/patient_list_pager"
+            android:id="@+id/list_pager"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_above="@id/btn_register_new_patient"
-            android:layout_below="@id/patient_register_toolbar"
+            android:layout_above="@id/btn_register_new_client"
+            android:layout_below="@id/base_register_toolbar"
             android:layout_marginBottom="15dp">
 
         </androidx.viewpager2.widget.ViewPager2>
 
         <Button
-            android:id="@+id/btn_register_new_patient"
+            android:id="@+id/btn_register_new_client"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:text="@string/register_new_patient"
+            android:text="@string/register_new_client"
             android:textAllCaps="true"
             android:textColor="@color/white"
             android:background="@drawable/rounded_white_bg"
