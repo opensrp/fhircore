@@ -24,31 +24,25 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.fhir.FhirEngine
-import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.activity.QuestionnaireActivity
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.adapter.PatientDetailsCardRecyclerViewAdapter
+import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.util.Utils
-import org.smartregister.fhircore.viewmodel.PatientListViewModel
-import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
+import org.smartregister.fhircore.viewmodel.CovaxListViewModel
 
 /**
  * A fragment representing a single Patient detail screen. This fragment is contained in a
  * [PatientDetailActivity].
  */
-class PatientDetailFragment : Fragment() {
+class CovaxDetailFragment : Fragment() {
 
+  val viewModel by activityViewModels<CovaxListViewModel>()
   lateinit var patientId: String
-  lateinit var viewModel: PatientListViewModel
-  lateinit var fhirEngine: FhirEngine
   lateinit var adapter: PatientDetailsCardRecyclerViewAdapter
-
-  var doseNumber: Int? = null
-  var initialDose: String? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -56,21 +50,13 @@ class PatientDetailFragment : Fragment() {
     savedInstanceState: Bundle?
   ): View {
     // patient id must be supplied
-    patientId = arguments?.getString(ARG_ITEM_ID)!!
-    fhirEngine = FhirApplication.fhirEngine(requireContext())
+    patientId = arguments?.getString(CovaxDetailView.COVAX_ARG_ITEM_ID)!!
 
     val rootView = inflater.inflate(R.layout.patient_detail, container, false)
     adapter = PatientDetailsCardRecyclerViewAdapter()
 
     val recyclerView: RecyclerView = rootView.findViewById(R.id.observation_list)
     recyclerView.adapter = adapter
-
-    viewModel =
-      ViewModelProvider(
-          this,
-          PatientListViewModelFactory(this.requireActivity().application, fhirEngine)
-        )
-        .get(PatientListViewModel::class.java)
 
     // bind profile data
     loadProfile()
@@ -114,8 +100,6 @@ class PatientDetailFragment : Fragment() {
         if (patientItem.risk.isNullOrEmpty()) View.INVISIBLE else View.VISIBLE
 
       patientId = patientItem.logicalId
-      doseNumber = patientItem.vaccineSummary?.doseNumber
-      initialDose = patientItem.vaccineSummary?.initialDose
     }
   }
 

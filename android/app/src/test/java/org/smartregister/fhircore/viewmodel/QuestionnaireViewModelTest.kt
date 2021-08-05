@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.viewmodel
 
+import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.core.app.ApplicationProvider
@@ -28,6 +29,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
@@ -43,7 +45,6 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
-import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -51,22 +52,39 @@ import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.RobolectricTest
-import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.activity.QuestionnaireActivityTest
-import org.smartregister.fhircore.fragment.PatientDetailFragment
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
+import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.shadow.TestUtils
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 03-07-2021. */
 @Config(shadows = [FhirApplicationShadow::class])
 class QuestionnaireViewModelTest : RobolectricTest() {
 
+  private lateinit var fhirEngine: FhirEngine
+  private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
   private lateinit var questionnaireViewModel: QuestionnaireViewModel
+  private lateinit var context: Context
 
   @Before
   fun setUp() {
-    // MockKAnnotations.init(this, relaxUnitFun = true)
+    context = ApplicationProvider.getApplicationContext()
+
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val qJson =
+      context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
+
+    samplePatientRegisterQuestionnaire = iParser.parseResource(qJson) as Questionnaire
+
+    fhirEngine = spyk(FhirApplication.fhirEngine(context))
+
+    mockkObject(FhirApplication)
+    every { FhirApplication.fhirEngine(any()) } returns fhirEngine
+
     val savedState = SavedStateHandle()
-    savedState[QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY] = "patient-registration.json"
+    savedState[QUESTIONNAIRE_PATH_KEY] = "sample_patient_registration.json"
     questionnaireViewModel =
       spyk(QuestionnaireViewModel(ApplicationProvider.getApplicationContext(), savedState))
   }
@@ -136,14 +154,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val structureMap = StructureMap()
     val structureMapIdSlot = slot<String>()
 
-    val fhirEngineMock = mockk<FhirEngine>()
-    ReflectionHelpers.setField(
-      FhirApplication.getContext(),
-      "fhirEngine\$delegate",
-      lazy { fhirEngineMock }
-    )
-
-    coEvery { fhirEngineMock.load(any<Class<StructureMap>>(), any()) } returns structureMap
+    coEvery { fhirEngine.load(any<Class<StructureMap>>(), any()) } returns structureMap
 
     questionnaireViewModel.fetchStructureMap(
       ApplicationProvider.getApplicationContext(),
@@ -151,7 +162,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
 
     coVerify(exactly = 1) {
-      fhirEngineMock.load(any<Class<StructureMap>>(), capture(structureMapIdSlot))
+      fhirEngine.load(any<Class<StructureMap>>(), capture(structureMapIdSlot))
     }
 
     Assert.assertEquals("678934", structureMapIdSlot.captured)
@@ -159,7 +170,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun `saveExtractedResources() should call saveBundleResources and pass intent extra resourceId`() {
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
     val questionnaire = Questionnaire()
     questionnaire.extension.add(
       Extension(
@@ -173,7 +183,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireResponse = QuestionnaireResponse()
     val intent = Intent()
     val resourceId = "0993ldsfkaljlsnldm"
-    intent.putExtra(PatientDetailFragment.ARG_ITEM_ID, resourceId)
+    intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, resourceId)
 
     val resourceIdSlot = slot<String>()
 
@@ -195,18 +205,22 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testVerifyQuestionnaireSubjectType() {
-    Assert.assertNotNull(questionnaireViewModel.questionnaire)
-    Assert.assertEquals("Patient", questionnaireViewModel.questionnaire.subjectType[0])
+    coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns
+      samplePatientRegisterQuestionnaire
+
+    val questionnaire = questionnaireViewModel.questionnaire
+
+    Assert.assertNotNull(questionnaire)
+    Assert.assertEquals("Patient", questionnaire.subjectType[0].code)
   }
 
   @Test
   fun testVerifySavedResource() {
-    val sourcePatient = QuestionnaireActivityTest.TEST_PATIENT_1
+    val sourcePatient = TestUtils.TEST_PATIENT_1
 
     questionnaireViewModel.saveResource(sourcePatient)
     val patient = runBlocking {
-      FhirApplication.fhirEngine(FhirApplication.getContext())
-        .load(Patient::class.java, QuestionnaireActivityTest.TEST_PATIENT_1_ID)
+      fhirEngine.load(Patient::class.java, sourcePatient.id)
     }
 
     Assert.assertNotNull(patient)

@@ -54,7 +54,7 @@
             android:windowSoftInputMode="adjustPan" >
         </activity>
         <activity
-            android:name="org.smartregister.fhircore.activity.PatientDetailActivity"
+            android:name="org.smartregister.fhircore.activity.CovaxDetailActivity"
             android:label=""
             android:parentActivityName="org.smartregister.fhircore.activity.CovaxListActivity"
             android:theme="@style/AppTheme.NoActionBar">
@@ -63,7 +63,7 @@
                 android:value="org.smartregister.fhircore.activity.CovaxListActivity" />
         </activity>
         <activity
-            android:name=".activity.QuestionnaireActivity"
+            android:name=".activity.core.QuestionnaireActivity"
             android:parentActivityName=".activity.CovaxListActivity" />
 
         <service android:name=".auth.account.AccountService">

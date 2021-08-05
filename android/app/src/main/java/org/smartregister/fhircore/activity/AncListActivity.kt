@@ -18,33 +18,48 @@ package org.smartregister.fhircore.activity
 
 import android.os.Bundle
 import kotlinx.android.synthetic.main.activity_register_list.base_register_toolbar
-import kotlinx.android.synthetic.main.activity_register_list.btn_register_new_client
-import kotlinx.android.synthetic.main.activity_register_list.list_pager
-import kotlinx.android.synthetic.main.toolbar_base_register.edit_text_search
-import kotlinx.android.synthetic.main.toolbar_base_register.tv_clients_list_title
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.core.BaseRegisterActivity
 import org.smartregister.fhircore.fragment.AncListFragment
-import org.smartregister.fhircore.fragment.PatientListFragment
+import org.smartregister.fhircore.model.AncDetailView
 import org.smartregister.fhircore.model.BaseRegister
+import org.smartregister.fhircore.util.Utils
+import timber.log.Timber
 
 class AncListActivity : BaseRegisterActivity() {
+  private lateinit var detailView: AncDetailView
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    setToolbarItemText(R.id.tv_clients_list_title, base_register_toolbar, R.string.client_list_title_anc)
+    setToolbarItemText(
+      R.id.tv_clients_list_title,
+      base_register_toolbar,
+      R.string.client_list_title_anc
+    )
+
+    setNavigationHeaderTitle(detailView.registerTitle, R.id.tv_nav_header)
+
+    // todo viewModel??
+
+    initBarcodeScanner(R.id.layout_scan_barcode) { barcode, _ ->
+      Timber.i("Scanned barcode $barcode for ANC activity")
+      // todo implement the functionality for ANC
+    }
   }
 
-  override fun register(): BaseRegister {
+  override fun buildRegister(): BaseRegister {
+    detailView =
+      Utils.loadConfig(AncDetailView.ANC_DETAIL_VIEW_CONFIG_ID, AncDetailView::class.java, this)
+
     return BaseRegister(
       context = this,
       contentLayoutId = R.layout.activity_register_list,
       listFragment = AncListFragment(),
       viewPagerId = R.id.list_pager,
       newRegistrationViewId = R.id.btn_register_new_client,
-      newRegistrationQuestionnaireIdentifier = "207",
-      newRegistrationQuestionnaireTitle = getString(R.string.add_client),
+      newRegistrationQuestionnaireIdentifier = detailView.registrationQuestionnaireIdentifier,
+      newRegistrationQuestionnaireTitle = detailView.registrationQuestionnaireTitle,
       searchBoxId = R.id.edit_text_search
     )
   }

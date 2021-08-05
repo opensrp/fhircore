@@ -32,6 +32,7 @@ import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
+import com.google.gson.Gson
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -54,11 +55,17 @@ import org.smartregister.fhircore.model.PatientItem
 import timber.log.Timber
 
 object Utils {
+  private val gson = Gson()
 
   fun getAgeFromDate(dateOfBirth: String, currentDate: ReadablePartial? = null): Int {
     val date: DateTime = DateTime.parse(dateOfBirth)
     val age: Years = Years.yearsBetween(date.toLocalDate(), currentDate ?: LocalDate.now())
     return age.years
+  }
+
+  /** Load dynamic config for given key. This would be loaded from FHIR DB later todo */
+  fun <T> loadConfig(config: String, clz: Class<T>, context: Context): T {
+    return gson.fromJson(context.assets.open(config).bufferedReader().use { it.readText() }, clz)
   }
 
   fun addBasePatientFilter(search: Search) {

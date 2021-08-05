@@ -24,7 +24,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
@@ -33,35 +32,32 @@ import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.Sync
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.api.HapiFhirService
-import org.smartregister.fhircore.data.HapiFhirResourceDataSource
 import org.smartregister.fhircore.domain.Pagination
 import org.smartregister.fhircore.fragment.PAGE_COUNT
-import org.smartregister.fhircore.fragment.PatientDetailsCard
-import org.smartregister.fhircore.fragment.toDetailsCard
+import org.smartregister.fhircore.model.PatientDetailsCard
 import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.model.PatientStatus
 import org.smartregister.fhircore.model.PatientVaccineSummary
 import org.smartregister.fhircore.model.VaccineStatus
+import org.smartregister.fhircore.model.toDetailsCard
 import org.smartregister.fhircore.util.Utils
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 /**
  * The ViewModel helper class for PatientItemRecyclerViewAdapter, that is responsible for preparing
  * data for UI.
  */
-class PatientListViewModel(application: Application, private val fhirEngine: FhirEngine) :
+class CovaxListViewModel(application: Application, private val fhirEngine: FhirEngine) :
   AndroidViewModel(application) {
 
   var showOverduePatientsOnly = MutableLiveData(false)
@@ -160,7 +156,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
     return liveSearchImmunization
   }
 
-  private suspend fun count(query: String? = null): Long {
+  private suspend fun count(query: String?): Long {
     return fhirEngine.count<Patient> {
       Utils.addBasePatientFilter(this)
       apply {
@@ -197,15 +193,18 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   }
 
   fun runSync() {
-    /** Download Immediately from the server */
-    GlobalScope.launch(Dispatchers.IO) {
-      loadingListObservable.postValue(1)
-      Sync.oneTimeSync(
-        fhirEngine,
-        Utils.buildDatasource(getApplication()),
-        Utils.buildResourceSyncParams()
-      )
-      searchResults("", 0, PAGE_COUNT)
+    viewModelScope.launch {
+      // fhirEngine.syncUpload()
+
+      /** Download Immediately from the server */
+      GlobalScope.launch {
+        Sync.oneTimeSync(
+          fhirEngine,
+          Utils.buildDatasource(getApplication()),
+          Utils.buildResourceSyncParams()
+        )
+        searchResults("", 0, PAGE_COUNT)
+      }
     }
   }
 
@@ -233,8 +232,8 @@ class PatientListViewModelFactory(
   private val fhirEngine: FhirEngine
 ) : ViewModelProvider.Factory {
   override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-    if (modelClass.isAssignableFrom(PatientListViewModel::class.java)) {
-      return PatientListViewModel(application, fhirEngine) as T
+    if (modelClass.isAssignableFrom(CovaxListViewModel::class.java)) {
+      return CovaxListViewModel(application, fhirEngine) as T
     }
     throw IllegalArgumentException("Unknown ViewModel class")
   }

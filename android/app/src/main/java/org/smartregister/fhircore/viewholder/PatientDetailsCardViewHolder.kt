@@ -20,7 +20,7 @@ import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.fragment.PatientDetailsCard
+import org.smartregister.fhircore.model.PatientDetailsCard
 import org.smartregister.fhircore.util.Utils
 
 class PatientDetailsCardViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
