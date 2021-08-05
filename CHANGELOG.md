@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added user logout functionality
 - Vaccine status stylign in list view and details view
 - Show progress bar on login attempt
+- Add related person to patient registration
+- Integrate StructureMap-based extraction
 
 ### Fixed
 
@@ -24,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed bug on record vaccine
 - Fixed bug on patient list last seen date
 - Fixed empty patient view layout position
+- Fixed bug on patients not populated on fresh install
 
 ### Changed
 - Reduce font size and spacing on patient list screen

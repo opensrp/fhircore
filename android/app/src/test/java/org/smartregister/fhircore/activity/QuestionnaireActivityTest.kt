@@ -18,9 +18,16 @@ package org.smartregister.fhircore.activity
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Looper
 import android.widget.Button
+import androidx.lifecycle.ViewModelLazy
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import io.mockk.every
+import io.mockk.just
+import io.mockk.runs
+import io.mockk.spyk
+import io.mockk.verify
 import java.text.SimpleDateFormat
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
@@ -36,30 +43,32 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.util.QuestionnaireUtils
+import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 @Config(shadows = [FhirApplicationShadow::class])
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   private lateinit var questionnaireActivity: QuestionnaireActivity
+  private lateinit var intent: Intent
 
   @Before
   fun setUp() {
-
     init()
 
-    val intent =
+    intent =
       Intent().apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json")
         putExtra(PatientDetailFragment.ARG_ITEM_ID, TEST_PATIENT_1_ID)
       }
-    questionnaireActivity =
-      Robolectric.buildActivity(QuestionnaireActivity::class.java, intent).create().resume().get()
+    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
+    questionnaireActivity = spyk(controller.create().resume().get())
   }
 
   @Test
@@ -104,6 +113,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     Assert.assertNotNull(fragment)
 
+    shadowOf(Looper.getMainLooper()).idle()
+
     val response = fragment.getQuestionnaireResponse()
     Assert.assertEquals(TEST_PATIENT_1.id, response.find("patient-barcode")?.value.toString())
     Assert.assertEquals(
@@ -140,16 +151,38 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     )
   }
 
+  @Ignore
   @Test
-  @Ignore("Fails automated execution but works locally") // TODO Investigate why test fails
-  fun testVerifyPatientResourceSaved() {
+  fun `save-button click should call savedExtractedResources()`() {
+    every { questionnaireActivity.saveExtractedResources(any()) } just runs
+
     questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).performClick()
 
-    val expectedIntent = Intent(questionnaireActivity, PatientListActivity::class.java)
-    val actualIntent =
-      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+    verify(exactly = 1) { questionnaireActivity.findViewById<Button>(any()) }
+    verify(exactly = 1) { questionnaireActivity.finish() }
+    verify(exactly = 1) { questionnaireActivity.saveExtractedResources(any()) }
+  }
 
-    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  @Test
+  fun `saveExtractedResources() should call viewModel#saveExtractedResources`() {
+    val viewModel =
+      spyk(
+        ReflectionHelpers.getField<ViewModelLazy<QuestionnaireViewModel>>(
+            questionnaireActivity,
+            "viewModel\$delegate"
+          )
+          .value
+      )
+    ReflectionHelpers.setField(questionnaireActivity, "viewModel\$delegate", lazy { viewModel })
+
+    val questionnaireResponse = QuestionnaireResponse()
+
+    questionnaireActivity.saveExtractedResources(questionnaireResponse)
+
+    verify(exactly = 1) {
+      viewModel.saveExtractedResources(any(), intent, any(), questionnaireResponse)
+    }
+    verify { questionnaireActivity.finish() }
   }
 
   override fun getActivity(): Activity {

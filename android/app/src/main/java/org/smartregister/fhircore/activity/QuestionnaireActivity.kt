@@ -16,17 +16,16 @@
 
 package org.smartregister.fhircore.activity
 
-import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import kotlinx.android.synthetic.main.activity_patient_detail.view.*
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.DateType
@@ -37,11 +36,10 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
-import org.smartregister.fhircore.util.QuestionnaireUtils
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 import java.util.*
 
-class QuestionnaireActivity : MultiLanguageBaseActivity() {
+class QuestionnaireActivity : MultiLanguageBaseActivity(), View.OnClickListener {
   private val viewModel: QuestionnaireViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,67 +57,17 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
       supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
     }
 
-    findViewById<Button>(R.id.btn_save_client_info).setOnClickListener {
-      val questionnaireFragment =
-        supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
-          QuestionnaireFragment
-      savePatientResource(questionnaireFragment.getQuestionnaireResponse())
-    }
+    findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
   }
 
-  fun savePatientResource(questionnaireResponse: QuestionnaireResponse) {
-
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
-    val questionnaire =
-      iParser.parseResource(
-        org.hl7.fhir.r4.model.Questionnaire::class.java,
-        viewModel.questionnaire
-      ) as
-        Questionnaire
-
-    val patient = ResourceMapper.extract(questionnaire, questionnaireResponse) as Patient
-
-    val barcode =
-      QuestionnaireUtils.valueStringWithLinkId(
-        questionnaireResponse,
-        PatientDetailFragment.ARG_ID_FIELD_KEY
-      )
-
-    patient.id = barcode ?: UUID.randomUUID().toString().toLowerCase()
-
-    viewModel.saveResource(patient)
-
-    // only one level of nesting per obs group is supported by fhircore for now
-    val observations =
-      QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
-
-    viewModel.saveObservations(observations)
-
-    // only one risk assessment per questionnaire is supported by fhircore for now
-    val riskAssessment =
-      QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)
-
-    if (riskAssessment != null) {
-      viewModel.saveResource(riskAssessment)
-
-      val flag =
-        QuestionnaireUtils.extractFlag(questionnaireResponse, questionnaire, riskAssessment)
-
-      if (flag != null) {
-        viewModel.saveResource(flag)
-
-        // todo remove this when sync is implemented
-        val ext =
-          QuestionnaireUtils.extractFlagExtension(flag, questionnaireResponse, questionnaire)
-        if (ext != null) {
-          patient.addExtension(ext)
-        }
-
-        viewModel.saveResource(patient)
-      }
-    }
-
-    this.startActivity(Intent(this, PatientListActivity::class.java))
+  fun saveExtractedResources(questionnaireResponse: QuestionnaireResponse) {
+    viewModel.saveExtractedResources(
+      this@QuestionnaireActivity,
+      intent,
+      viewModel.questionnaire,
+      questionnaireResponse
+    )
+    finish()
   }
 
   private fun getQuestionnaire(): String {
@@ -255,5 +203,11 @@ class QuestionnaireActivity : MultiLanguageBaseActivity() {
       Pair(QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json"),
       Pair(PatientDetailFragment.ARG_ITEM_ID, patientId)
     )
+  }
+
+  override fun onClick(v: View?) {
+    val questionnaireFragment =
+      supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
+    saveExtractedResources(questionnaireFragment.getQuestionnaireResponse())
   }
 }

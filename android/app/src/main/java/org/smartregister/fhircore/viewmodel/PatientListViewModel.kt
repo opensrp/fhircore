@@ -48,6 +48,7 @@ import org.smartregister.fhircore.R
 import org.smartregister.fhircore.api.HapiFhirService
 import org.smartregister.fhircore.data.HapiFhirResourceDataSource
 import org.smartregister.fhircore.domain.Pagination
+import org.smartregister.fhircore.fragment.PAGE_COUNT
 import org.smartregister.fhircore.fragment.PatientDetailsCard
 import org.smartregister.fhircore.fragment.toDetailsCard
 import org.smartregister.fhircore.model.PatientItem
@@ -64,7 +65,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   AndroidViewModel(application) {
 
   var showOverduePatientsOnly = MutableLiveData(false)
-  var loadingListObservable = MutableLiveData(true)
+  var loadingListObservable = MutableLiveData(-1)
 
   val liveSearchedPaginatedPatients: MutableLiveData<Pair<List<PatientItem>, Pagination>> by lazy {
     MutableLiveData<Pair<List<PatientItem>, Pagination>>()
@@ -72,7 +73,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
 
   fun searchResults(query: String? = null, page: Int = 0, pageSize: Int = 10) {
     viewModelScope.launch(Dispatchers.IO) {
-      loadingListObservable.postValue(true)
+      loadingListObservable.postValue(1)
       var totalCount = count(query).toInt()
 
       val searchResults: List<Patient> =
@@ -101,7 +102,7 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
       totalCount = patients.size + (page * pageSize)
       patients = patients.take(pageSize)
 
-      loadingListObservable.postValue(false)
+      loadingListObservable.postValue(0)
       liveSearchedPaginatedPatients.postValue(
         Pair(patients, Pagination(totalItems = totalCount, pageSize = pageSize, currentPage = page))
       )
@@ -196,22 +197,20 @@ class PatientListViewModel(application: Application, private val fhirEngine: Fhi
   }
 
   fun runSync() {
-    viewModelScope.launch {
-      // fhirEngine.syncUpload()
-
-      /** Download Immediately from the server */
-      GlobalScope.launch {
-        Sync.oneTimeSync(
-          fhirEngine,
-          HapiFhirResourceDataSource(
-            HapiFhirService.create(FhirContext.forR4().newJsonParser(), getApplication())
-          ),
-          mapOf(
-            ResourceType.Patient to mapOf("address-city" to "NAIROBI"),
-            ResourceType.Immunization to mapOf()
-          )
+    /** Download Immediately from the server */
+    GlobalScope.launch(Dispatchers.IO) {
+      loadingListObservable.postValue(1)
+      Sync.oneTimeSync(
+        fhirEngine,
+        HapiFhirResourceDataSource(
+          HapiFhirService.create(FhirContext.forR4().newJsonParser(), getApplication())
+        ),
+        mapOf(
+          ResourceType.Patient to mapOf("address-city" to "NAIROBI"),
+          ResourceType.Immunization to mapOf()
         )
-      }
+      )
+      searchResults("", 0, PAGE_COUNT)
     }
   }
 
