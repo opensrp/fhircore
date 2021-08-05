@@ -25,9 +25,9 @@
         android:title="@string/menu_sync_resources"
         />
     <item
-        android:id="@+id/add_patient"
+        android:id="@+id/add_client"
         app:showAsAction="withText"
         android:icon="@android:drawable/ic_menu_add"
-        android:title="@string/add_patient"
+        android:title="@string/add_client"
         />
 </menu>

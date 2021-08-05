@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.fragment
 
+import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.lifecycle.Lifecycle
@@ -30,4 +31,10 @@ abstract class FragmentRobolectricTest : RobolectricTest() {
   }
 
   abstract fun getFragmentScenario(): FragmentScenario<out Fragment>
+
+  abstract fun getFragment(): Fragment
+
+  fun <T : View?> getView(id: Int): T {
+    return getFragment().requireActivity().findViewById<T>(id)
+  }
 }

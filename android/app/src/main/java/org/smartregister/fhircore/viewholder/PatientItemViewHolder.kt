@@ -23,7 +23,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.fragment.PatientListFragment
+import org.smartregister.fhircore.fragment.CovaxListFragment
 import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.model.PatientStatus
 import org.smartregister.fhircore.model.VaccineStatus
@@ -41,13 +41,13 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
 
   fun bindTo(
     patientItem: PatientItem,
-    onItemClicked: (PatientListFragment.Intention, PatientItem) -> Unit
+    onItemClicked: (CovaxListFragment.Intention, PatientItem) -> Unit
   ) {
     setPatientStatus(null, patientItem, this.tvRecordVaccine, onItemClicked)
     this.tvPatientDemographics.text = getPatientDemographics(patientItem)
     this.tvLastSeen.text = patientItem.lastSeen
     this.itemView.setOnClickListener {
-      onItemClicked(PatientListFragment.Intention.VIEW, patientItem)
+      onItemClicked(CovaxListFragment.Intention.VIEW, patientItem)
     }
     this.atRisk.text = patientItem.risk
     this.atRisk.visibility = if (patientItem.risk.isNullOrEmpty()) View.INVISIBLE else View.VISIBLE
@@ -59,7 +59,7 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
     patientStatus: PatientStatus?,
     patientItem: PatientItem,
     tvRecordVaccine: TextView,
-    onItemClicked: (PatientListFragment.Intention, PatientItem) -> Unit,
+    onItemClicked: (CovaxListFragment.Intention, PatientItem) -> Unit,
   ) {
     tvRecordVaccine.text = ""
     val status = patientStatus?.status ?: return
@@ -80,7 +80,7 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
         Utils.setBgColor(contVaccineStatus, R.color.status_red)
         imgVaccineStatus.visibility = View.GONE
         tvRecordVaccine.setOnClickListener {
-          onItemClicked(PatientListFragment.Intention.RECORD_VACCINE, patientItem)
+          onItemClicked(CovaxListFragment.Intention.RECORD_VACCINE, patientItem)
         }
       }
       VaccineStatus.PARTIAL -> {
@@ -96,7 +96,7 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
         Utils.setBgColor(contVaccineStatus, R.color.white)
         imgVaccineStatus.visibility = View.GONE
         tvRecordVaccine.setOnClickListener {
-          onItemClicked(PatientListFragment.Intention.RECORD_VACCINE, patientItem)
+          onItemClicked(CovaxListFragment.Intention.RECORD_VACCINE, patientItem)
         }
       }
       VaccineStatus.DUE -> {
@@ -107,7 +107,7 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
         Utils.setBgColor(contVaccineStatus, R.color.white)
         imgVaccineStatus.visibility = View.GONE
         tvRecordVaccine.setOnClickListener {
-          onItemClicked(PatientListFragment.Intention.RECORD_VACCINE, patientItem)
+          onItemClicked(CovaxListFragment.Intention.RECORD_VACCINE, patientItem)
         }
       }
     }

@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.activity
+package org.smartregister.fhircore.activity.core
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -25,7 +26,7 @@ import androidx.fragment.app.commit
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import kotlinx.android.synthetic.main.activity_patient_detail.view.*
+import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.DateType
@@ -35,28 +36,51 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
-class QuestionnaireActivity : MultiLanguageBaseActivity(), View.OnClickListener {
-  private val viewModel: QuestionnaireViewModel by viewModels()
+/**
+ * Launches Questionnaire with given id. If questionnaire has subjectType = Patient his activity can
+ * handle data persistence for Resources [Patient], [Observation], [RiskAssessment], [Flag]. In
+ * other case must implement ActivityResultLauncher for handling and persistence for result
+ *
+ * Incase you want to do further processing on data after save you can implement
+ * ActivityResultLauncher
+ *
+ * ```
+ * // add class which extends ActivityResultContract for your input and output
+ * class ActivityResultContract: ActivityResultContract<MyInput, MyOutput?>(){...}
+ *
+ * // in your caller activity build ActivityResultLauncher
+ * val recordData = registerForActivityResult(ActivityResultContractImpl()) { output ->
+ *    handleReturnedData(output)
+ * }
+ *
+ * // start activity for result like this
+ * recordData.launch(MyInput())
+ * ```
+ */
+class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
+  internal val viewModel by viewModels<QuestionnaireViewModel>()
+  private val parser = FhirContext.forR4().newJsonParser()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_questionnaire)
 
     supportActionBar!!.hide()
 
     // Only add the fragment once, when the activity is first created.
     if (savedInstanceState == null) {
       val fragment = QuestionnaireFragment()
-      fragment.arguments =
-        bundleOf(QuestionnaireFragment.BUNDLE_KEY_QUESTIONNAIRE to getQuestionnaire())
+      fragment.arguments = bundleOf(BUNDLE_KEY_QUESTIONNAIRE to getQuestionnaire())
 
       supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
     }
 
     findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
+  }
+
+  override fun getContentLayout(): Int {
+    return R.layout.activity_questionnaire
   }
 
   fun saveExtractedResources(questionnaireResponse: QuestionnaireResponse) {
@@ -66,18 +90,25 @@ class QuestionnaireActivity : MultiLanguageBaseActivity(), View.OnClickListener 
       viewModel.questionnaire,
       questionnaireResponse
     )
+    val intent = Intent()
+    intent.putExtra(
+      QUESTIONNAIRE_ARG_RESPONSE_KEY,
+      parser.encodeResourceToString(questionnaireResponse)
+    )
+    setResult(RESULT_OK, intent)
     finish()
   }
 
   private fun getQuestionnaire(): String {
-    val questionnaire =
-      FhirContext.forR4().newJsonParser().parseResource(viewModel.questionnaire) as Questionnaire
+    val questionnaire = viewModel.questionnaire
 
-    intent.getStringExtra(PatientDetailFragment.ARG_PRE_ASSIGNED_ID)?.let {
+    intent.getStringExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID)?.let {
       setBarcode(questionnaire, it, true)
     }
 
-    intent.getStringExtra(PatientDetailFragment.ARG_ITEM_ID)?.let {
+    // todo the data is auto populated by form if proper mapping is done. check it out and remove
+    // all this
+    intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)?.let {
       var patient: Patient? = null
       viewModel.viewModelScope.launch {
         patient = FhirApplication.fhirEngine(applicationContext).load(Patient::class.java, it)
@@ -158,11 +189,11 @@ class QuestionnaireActivity : MultiLanguageBaseActivity(), View.OnClickListener 
       }
     }
 
-    return FhirContext.forR4().newJsonParser().encodeResourceToString(questionnaire)
+    return parser.encodeResourceToString(questionnaire)
   }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
-    questionnaire.find("patient-barcode")?.apply {
+    questionnaire.find(QUESTIONNAIRE_ARG_BARCODE_KEY)?.apply {
       initial =
         mutableListOf(Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(code)))
       readOnly = readonly
@@ -194,8 +225,12 @@ class QuestionnaireActivity : MultiLanguageBaseActivity(), View.OnClickListener 
 
   companion object {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
-    const val QUESTIONNAIRE_FILE_PATH_KEY = "questionnaire-file-path-key"
+    const val QUESTIONNAIRE_PATH_KEY = "questionnaire-path-key"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
+    const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
+    const val QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID = "questionnaire_preassigned_item_id"
+    const val QUESTIONNAIRE_ARG_RESPONSE_KEY = "questionnaire_response_item_id"
+    const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
   }
 
   override fun onClick(v: View?) {

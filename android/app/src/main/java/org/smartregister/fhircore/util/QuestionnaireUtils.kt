@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.util
 
+import android.content.Context
+import android.content.Intent
+import ca.uhn.fhir.context.FhirContext
 import java.util.UUID
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -28,8 +31,37 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RiskAssessment
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_TITLE_KEY
 
 object QuestionnaireUtils {
+  private val parser = FhirContext.forR4().newJsonParser()
+
+  fun buildQuestionnaireIntent(
+    context: Context,
+    questionnaireTitle: String,
+    questionnaireId: String,
+    patientId: String?,
+    isNewPatient: Boolean
+  ): Intent {
+    return Intent(context, QuestionnaireActivity::class.java).apply {
+      putExtra(QUESTIONNAIRE_TITLE_KEY, questionnaireTitle)
+      putExtra(QUESTIONNAIRE_PATH_KEY, questionnaireId)
+
+      patientId?.let {
+        if (isNewPatient) putExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID, patientId)
+        else putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
+      }
+    }
+  }
+
+  fun asQuestionnaireResponse(questionnaireResponse: String): QuestionnaireResponse {
+    return parser.parseResource(questionnaireResponse) as QuestionnaireResponse
+  }
+
   private fun asQuestionnaireItem(
     item: Questionnaire.QuestionnaireItemComponent,
     linkId: String

@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.model
+package org.smartregister.fhircore.fragment
 
-data class PatientVaccineSummary(val doseNumber: Int, val initialDose: String)
+import androidx.fragment.app.Fragment
+
+class AncListFragment : Fragment() {
+  // todo what to do with ANC list
+}

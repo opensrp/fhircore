@@ -25,7 +25,7 @@ import org.junit.Test
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.RobolectricTest
-import org.smartregister.fhircore.fragment.PatientListFragment
+import org.smartregister.fhircore.fragment.CovaxListFragment
 import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.model.PatientStatus
 import org.smartregister.fhircore.model.VaccineStatus
@@ -46,7 +46,7 @@ class PatientItemViewHolderTest : RobolectricTest() {
   @Test
   fun testVerifyPatientItemData() {
 
-    val itemClickListener = { intention: PatientListFragment.Intention, item: PatientItem ->
+    val itemClickListener = { intention: CovaxListFragment.Intention, item: PatientItem ->
       verifyPatient(item)
     }
 
@@ -77,7 +77,7 @@ class PatientItemViewHolderTest : RobolectricTest() {
 
   @Test
   fun verifyDataDisplayedOnStatusChanged() {
-    val itemClickListener = { intention: PatientListFragment.Intention, item: PatientItem ->
+    val itemClickListener = { intention: CovaxListFragment.Intention, item: PatientItem ->
       verifyPatient(item)
     }
 

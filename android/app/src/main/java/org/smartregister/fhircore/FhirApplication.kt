@@ -60,7 +60,10 @@ class FhirApplication : Application() {
 
     private lateinit var mContext: FhirApplication
 
-    fun fhirEngine(context: Context) = (context.applicationContext as FhirApplication).fhirEngine
+    fun fhirEngine(context: Context) = let {
+      if (context is Application) (context as FhirApplication).fhirEngine
+      else (context.applicationContext as FhirApplication).fhirEngine
+    }
 
     fun getContext() = mContext
   }
