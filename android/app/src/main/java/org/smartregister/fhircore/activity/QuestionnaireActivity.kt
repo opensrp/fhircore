@@ -37,7 +37,6 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.fragment.PatientDetailFragment
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
-import java.util.*
 
 class QuestionnaireActivity : MultiLanguageBaseActivity(), View.OnClickListener {
   private val viewModel: QuestionnaireViewModel by viewModels()
