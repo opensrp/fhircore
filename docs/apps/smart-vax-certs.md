@@ -3,6 +3,8 @@
 
 OpenSRP FHIR Core for Smart Vaccination Certificates for Android implements the Smart Certificates protocol for recording, storing, validation, and generating certificates verifying vaccination status. All the Patient data is eventually going to be mapped as an  **International Patient Summary ([IPS](https://worldhealthorganization.github.io/ddcc/StructureDefinition-Patient-pre-uv-ips.html)) document**, i.e. as an electronic health record extract containing essential healthcare information about a subject of care. As specified in EN 17269 and ISO/DIS 27269, it is designed to support 'unplanned, cross border care', but it is not limited to this. It is intended to be international by providing a generic solutions for global application beyond a particular region or country.
 
+> For information on the codebase, contributing, and sample data see the [code documentation for the FHIR Core application](https://docs.google.com/drawings/d/1Fg2YeealVMRrRY9tls0BHhF01dScqgfaH280O7l_r9U/edit).
+
 ## Building and running the Android application in Android Studio
 
 1. Complete the [build instructions for FHIR Core](https://github.com/opensrp/fhircore/tree/main/android) generic to all FHIR Core applications
