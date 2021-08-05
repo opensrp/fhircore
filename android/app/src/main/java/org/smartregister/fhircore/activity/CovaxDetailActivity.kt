@@ -40,7 +40,6 @@ import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 /** An activity representing a single Patient detail screen. */
 class CovaxDetailActivity : BaseActivity() {
   lateinit var viewModel: CovaxListViewModel
-  private val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
   private lateinit var clientIdentifier: String
   private lateinit var detailView: CovaxDetailView

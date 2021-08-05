@@ -24,7 +24,7 @@ import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.RobolectricTest
-import org.smartregister.fhircore.fragment.PatientDetailsCard
+import org.smartregister.fhircore.model.PatientDetailsCard
 
 class PatientDetailsCardViewHolderTest : RobolectricTest() {
 

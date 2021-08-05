@@ -49,13 +49,12 @@ object QuestionnaireUtils {
   ): Intent {
     return Intent(context, QuestionnaireActivity::class.java).apply {
       putExtra(QUESTIONNAIRE_TITLE_KEY, questionnaireTitle)
+      putExtra(QUESTIONNAIRE_PATH_KEY, questionnaireId)
 
       patientId?.let {
         if (isNewPatient) putExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID, patientId)
         else putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
       }
-
-      if (!patientId.isNullOrEmpty()) putExtra(QUESTIONNAIRE_PATH_KEY, questionnaireId)
     }
   }
 

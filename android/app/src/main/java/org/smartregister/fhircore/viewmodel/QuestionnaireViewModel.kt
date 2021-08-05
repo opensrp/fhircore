@@ -32,7 +32,7 @@ import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
   AndroidViewModel(application) {
 
-  val fhirEngine = FhirApplication.fhirEngine(getApplication())
+  var fhirEngine = FhirApplication.fhirEngine(application)
 
   val questionnaire: Questionnaire
     get() {

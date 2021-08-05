@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.shadow
 
+import android.app.Application
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SyncDownloadContext
 import com.google.android.fhir.db.ResourceNotFoundException

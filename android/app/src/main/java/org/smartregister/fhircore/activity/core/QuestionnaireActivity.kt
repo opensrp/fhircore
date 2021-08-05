@@ -22,6 +22,7 @@ import android.widget.Button
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
@@ -37,6 +38,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.util.QuestionnaireUtils
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
@@ -62,7 +64,7 @@ import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
  * ```
  */
 class QuestionnaireActivity : BaseActivity() {
-  private val viewModel: QuestionnaireViewModel by viewModels()
+  internal val viewModel by viewModels<QuestionnaireViewModel>()
   private val parser = FhirContext.forR4().newJsonParser()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -108,10 +110,16 @@ class QuestionnaireActivity : BaseActivity() {
   fun savePatientResource(questionnaireResponse: QuestionnaireResponse) {
     val questionnaire = viewModel.questionnaire
 
-    val patient = ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
+    val patient =
+      ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
 
-    patient.id =
-      intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY) ?: UUID.randomUUID().toString()
+    val barcode =
+      QuestionnaireUtils.valueStringWithLinkId(
+        questionnaireResponse,
+        CovaxDetailView.COVAX_ARG_BARCODE_KEY
+      )
+
+    patient.id = barcode ?: UUID.randomUUID().toString().toLowerCase()
 
     viewModel.saveResource(patient)
 

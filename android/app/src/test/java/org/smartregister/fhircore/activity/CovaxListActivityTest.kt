@@ -59,25 +59,25 @@ import org.smartregister.fhircore.fragment.CovaxListFragment
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
 @Config(shadows = [FhirApplicationShadow::class])
-class PatientListActivityTest : ActivityRobolectricTest() {
+class CovaxListActivityTest : ActivityRobolectricTest() {
 
-  private lateinit var patientListActivity: CovaxListActivity
+  private lateinit var covaxListActivity: CovaxListActivity
 
   @Before
   fun setUp() {
-    patientListActivity =
+    covaxListActivity =
       Robolectric.buildActivity(CovaxListActivity::class.java, null).create().get()
   }
 
   @Test
   fun testPatientActivityShouldNotNull() {
-    Assert.assertNotNull(patientListActivity)
+    Assert.assertNotNull(covaxListActivity)
   }
 
   @Test
   fun testVerifyPatientSearchEditTextDrawables() {
-    val drawerLayout = patientListActivity.findViewById<DrawerLayout>(R.id.drawer_layout)
-    val editText = patientListActivity.findViewById<EditText>(R.id.edit_text_search)
+    val drawerLayout = covaxListActivity.findViewById<DrawerLayout>(R.id.drawer_layout)
+    val editText = covaxListActivity.findViewById<EditText>(R.id.edit_text_search)
 
     Assert.assertNotNull(drawerLayout)
     Assert.assertFalse(drawerLayout.isDrawerOpen(GravityCompat.START))
@@ -106,14 +106,14 @@ class PatientListActivityTest : ActivityRobolectricTest() {
     editText.dispatchTouchEvent(motionEvent)
     Assert.assertTrue(editText.text.isEmpty())
 
-    patientListActivity.findViewById<ImageButton>(R.id.btn_drawer_menu).performClick()
+    covaxListActivity.findViewById<ImageButton>(R.id.btn_drawer_menu).performClick()
     Assert.assertTrue(drawerLayout.isDrawerOpen(GravityCompat.START))
   }
 
   @Test
   fun testVerifyPatientListPagerAdapterProperties() {
     val adapter =
-      patientListActivity.findViewById<ViewPager2>(R.id.patient_list_pager).adapter as
+      covaxListActivity.findViewById<ViewPager2>(R.id.list_pager).adapter as
         FragmentStateAdapter
 
     Assert.assertEquals(1, adapter.itemCount)
@@ -125,9 +125,9 @@ class PatientListActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testVerifyAddPatientStartedActivity() {
-    patientListActivity.findViewById<Button>(R.id.btn_register_new_patient).performClick()
+    covaxListActivity.findViewById<Button>(R.id.btn_register_new_client).performClick()
 
-    val expectedIntent = Intent(patientListActivity, QuestionnaireActivity::class.java)
+    val expectedIntent = Intent(covaxListActivity, QuestionnaireActivity::class.java)
     val actualIntent =
       shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
 
@@ -136,43 +136,43 @@ class PatientListActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testVerifyAddPatientWithPreAssignedIdStartedActivity() {
-    patientListActivity.startRegistrationActivity(patientListActivity, "test-id")
+    covaxListActivity.startRegistrationActivity("test-id")
 
-    val expectedIntent = Intent(patientListActivity, QuestionnaireActivity::class.java)
+    val expectedIntent = Intent(covaxListActivity, QuestionnaireActivity::class.java)
     val actualIntent =
       shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
     Assert.assertEquals(
       "test-id",
-      actualIntent.getStringExtra(CovaxDetailFragment.ARG_PRE_ASSIGNED_ID)
+      actualIntent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID)
     )
   }
 
   @Test
   fun testGetContentLayoutShouldReturnActivityListLayout() {
-    Assert.assertEquals(R.layout.activity_register_list, patientListActivity.getContentLayout())
+    Assert.assertEquals(R.layout.activity_register_list, covaxListActivity.getContentLayout())
   }
 
   @Test
   fun testPatientLayoutShouldNotBeNull() {
-    Assert.assertEquals(R.layout.activity_register_list, patientListActivity.getContentLayout())
+    Assert.assertEquals(R.layout.activity_register_list, covaxListActivity.getContentLayout())
   }
 
   @Test
   fun testPatientCountShouldBeEmptyWithZeroClients() {
 
     val method =
-      patientListActivity.javaClass.superclass?.getDeclaredMethod(
+      covaxListActivity.javaClass.superclass?.superclass?.getDeclaredMethod(
         "setMenuCounter",
         Int::class.java,
         Int::class.java
       )
     method?.isAccessible = true
-    method?.invoke(patientListActivity, R.id.menu_item_clients, 0)
+    method?.invoke(covaxListActivity, R.id.menu_item_covax_clients, 0)
 
     val countItem =
-      patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_clients).actionView as
+      covaxListActivity.getNavigationView().menu.findItem(R.id.menu_item_covax_clients).actionView as
         TextView
     Assert.assertEquals("", countItem.text)
   }
@@ -181,16 +181,16 @@ class PatientListActivityTest : ActivityRobolectricTest() {
   fun testPatientCountShouldNotBeEmptyWithNonZeroClients() {
 
     val method =
-      patientListActivity.javaClass.superclass?.getDeclaredMethod(
+      covaxListActivity.javaClass.superclass?.superclass?.getDeclaredMethod(
         "setMenuCounter",
         Int::class.java,
         Int::class.java
       )
     method?.isAccessible = true
-    method?.invoke(patientListActivity, R.id.menu_item_clients, 2)
+    method?.invoke(covaxListActivity, R.id.menu_item_covax_clients, 2)
 
     val countItem =
-      patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_clients).actionView as
+      covaxListActivity.getNavigationView().menu.findItem(R.id.menu_item_covax_clients).actionView as
         TextView
     Assert.assertEquals("2", countItem.text)
   }
@@ -198,11 +198,11 @@ class PatientListActivityTest : ActivityRobolectricTest() {
   @Test
   fun `test language displayed on nav drawer is default English`() {
 
-    patientListActivity.viewModel.selectedLanguage.observe(
-      patientListActivity,
+    covaxListActivity.viewModel.selectedLanguage.observe(
+      covaxListActivity,
       Observer {
         val languageMenuItem =
-          patientListActivity
+          covaxListActivity
             .getNavigationView()
             .menu
             .findItem(R.id.menu_item_language)
@@ -216,11 +216,11 @@ class PatientListActivityTest : ActivityRobolectricTest() {
   @Test
   fun `test language displayed on Nav Drawer corresponds to View Model default`() {
 
-    patientListActivity.viewModel.selectedLanguage.observe(
-      patientListActivity,
+    covaxListActivity.viewModel.selectedLanguage.observe(
+      covaxListActivity,
       {
         val languageMenuItem =
-          patientListActivity
+          covaxListActivity
             .getNavigationView()
             .menu
             .findItem(R.id.menu_item_language)
@@ -230,37 +230,37 @@ class PatientListActivityTest : ActivityRobolectricTest() {
       }
     )
 
-    patientListActivity.viewModel.selectedLanguage.value = "sw"
+    covaxListActivity.viewModel.selectedLanguage.value = "sw"
   }
 
   @Test
   fun `test onNavigationItemSelected invokes renderSelectLanguageDialog `() {
 
-    val patientListActivitySpy = spyk(patientListActivity)
+    val covaxListActivitySpy = spyk(covaxListActivity)
 
     val arrayAdapter = mockkClass(ArrayAdapter::class)
     val alertDialogBuilder = mockkClass(type = AlertDialog.Builder::class, relaxed = true)
 
-    every { patientListActivitySpy.getLanguageArrayAdapter() } returns
+    every { covaxListActivitySpy.getLanguageArrayAdapter() } returns
       arrayAdapter as ArrayAdapter<Language>
 
-    every { patientListActivitySpy.getAlertDialogBuilder() } returns alertDialogBuilder
+    every { covaxListActivitySpy.getAlertDialogBuilder() } returns alertDialogBuilder
 
-    every { patientListActivitySpy.getLanguageDialogTitle() } returns ""
+    every { covaxListActivitySpy.getLanguageDialogTitle() } returns ""
 
-    patientListActivitySpy.onNavigationItemSelected(RoboMenuItem(R.id.menu_item_language))
+    covaxListActivitySpy.onNavigationItemSelected(RoboMenuItem(R.id.menu_item_language))
 
-    verify { patientListActivitySpy.renderSelectLanguageDialog(any()) }
+    verify { covaxListActivitySpy.renderSelectLanguageDialog(any()) }
   }
 
   @Test
   fun `test refreshSelectedLanguage updates nav with correct language`() {
 
-    patientListActivity.viewModel.selectedLanguage.observe(
-      patientListActivity,
+    covaxListActivity.viewModel.selectedLanguage.observe(
+      covaxListActivity,
       {
         var languageMenuItem =
-          patientListActivity
+          covaxListActivity
             .getNavigationView()
             .menu
             .findItem(R.id.menu_item_language)
@@ -268,10 +268,10 @@ class PatientListActivityTest : ActivityRobolectricTest() {
             TextView
         Assert.assertEquals("English", languageMenuItem.text)
 
-        patientListActivity.refreshSelectedLanguage(Language("fr", "French"), patientListActivity)
+        covaxListActivity.refreshSelectedLanguage(Language("fr", "French"), covaxListActivity)
 
         languageMenuItem =
-          patientListActivity
+          covaxListActivity
             .getNavigationView()
             .menu
             .findItem(R.id.menu_item_language)
@@ -284,7 +284,7 @@ class PatientListActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun `test patientListFragmentAdapterCount should return one`() {
-    val viewPager = patientListActivity.findViewById<ViewPager2>(R.id.patient_list_pager)
+    val viewPager = covaxListActivity.findViewById<ViewPager2>(R.id.list_pager)
     Assert.assertNotNull(viewPager)
     Assert.assertEquals(1, viewPager?.adapter?.itemCount)
   }
@@ -293,16 +293,16 @@ class PatientListActivityTest : ActivityRobolectricTest() {
   fun testOnNavigationItemSelectedShouldVerifyRelativeActions() {
 
     val accountHelper = mockk<AccountHelper>()
-    patientListActivity.accountHelper = accountHelper
+    covaxListActivity.accountHelper = accountHelper
 
     val menuItem = mockk<MenuItem>()
 
     every { menuItem.title } returns ""
 
-    every { menuItem.itemId } returns R.id.menu_item_clients
-    patientListActivity.onNavigationItemSelected(menuItem)
+    every { menuItem.itemId } returns R.id.menu_item_covax_clients
+    covaxListActivity.onNavigationItemSelected(menuItem)
 
-    val expectedIntent = Intent(patientListActivity, CovaxListActivity::class.java)
+    val expectedIntent = Intent(covaxListActivity, CovaxListActivity::class.java)
     val actualIntent =
       shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
@@ -310,15 +310,15 @@ class PatientListActivityTest : ActivityRobolectricTest() {
     every { menuItem.itemId } returns R.id.menu_item_logout
     every { accountHelper.logout(any()) } returns Unit
 
-    patientListActivity.onNavigationItemSelected(menuItem)
+    covaxListActivity.onNavigationItemSelected(menuItem)
 
     verify(exactly = 1) { accountHelper.logout(any()) }
   }
 
   @Test
   fun testGetLanguageArrayAdapterShouldReturnValidLangList() {
-    patientListActivity.viewModel.languageList = listOf(Language("ur", "Urdu"))
-    val adapter = patientListActivity.getLanguageArrayAdapter()
+    covaxListActivity.viewModel.languageList = listOf(Language("ur", "Urdu"))
+    val adapter = covaxListActivity.getLanguageArrayAdapter()
 
     Assert.assertEquals(1, adapter.count)
     Assert.assertEquals("ur", (adapter.getItem(0) as Language).tag)
@@ -327,30 +327,30 @@ class PatientListActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testGetAlertDialogBuilderShouldReturnNotNull() {
-    Assert.assertNotNull(patientListActivity.getAlertDialogBuilder())
+    Assert.assertNotNull(covaxListActivity.getAlertDialogBuilder())
   }
 
   @Test
   fun testGetLanguageDialogTitleShouldReturnValidTitle() {
-    Assert.assertEquals("Select Language", patientListActivity.getLanguageDialogTitle())
+    Assert.assertEquals("Select Language", covaxListActivity.getLanguageDialogTitle())
   }
 
   @Test
   fun testRenderSelectLanguageDialogShouldVerifyRefreshSelectedLanguage() {
-    val patientListActivitySpy = spyk(patientListActivity)
+    val covaxListActivitySpy = spyk(covaxListActivity)
 
-    every { patientListActivitySpy.renderSelectLanguageDialog(any()) } answers
+    every { covaxListActivitySpy.renderSelectLanguageDialog(any()) } answers
       {
-        patientListActivity.renderSelectLanguageDialog(patientListActivity)
+        covaxListActivity.renderSelectLanguageDialog(covaxListActivity)
       }
-    every { patientListActivitySpy.refreshSelectedLanguage(any(), any()) } answers {}
+    every { covaxListActivitySpy.refreshSelectedLanguage(any(), any()) } answers {}
 
     val dialog: ShadowAlertDialog =
-      shadowOf(patientListActivitySpy.renderSelectLanguageDialog(patientListActivitySpy)) as
+      shadowOf(covaxListActivitySpy.renderSelectLanguageDialog(covaxListActivitySpy)) as
         ShadowAlertDialog
     dialog.clickOnItem(0)
 
-    verify(exactly = 0) { patientListActivitySpy.refreshSelectedLanguage(any(), any()) }
+    verify(exactly = 0) { covaxListActivitySpy.refreshSelectedLanguage(any(), any()) }
   }
 
   @Test
@@ -358,30 +358,30 @@ class PatientListActivityTest : ActivityRobolectricTest() {
     val secureConfig = mockk<SecureConfig>()
 
     every { secureConfig.retrieveSessionUsername() } returns "demo"
-    patientListActivity.secureConfig = secureConfig
+    covaxListActivity.secureConfig = secureConfig
 
-    patientListActivity.setLogoutUsername()
+    covaxListActivity.setLogoutUsername()
     Assert.assertEquals(
-      "${patientListActivity.getString(R.string.logout_as_user)} demo",
-      patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_logout).title
+      "${covaxListActivity.getString(R.string.logout_as_user)} demo",
+      covaxListActivity.getNavigationView().menu.findItem(R.id.menu_item_logout).title
     )
   }
 
   @Test
   fun testPatientClientCountShouldReturnTen() {
-    patientListActivity.viewModel.clientsCount.value = 10
+    covaxListActivity.viewModel.clientsCount.value = 10
     val counter =
-      patientListActivity.getNavigationView().menu.findItem(R.id.menu_item_clients).actionView as
+      covaxListActivity.getNavigationView().menu.findItem(R.id.menu_item_covax_clients).actionView as
         TextView
 
-    patientListActivity.viewModel.clientsCount.observe(
-      patientListActivity,
+    covaxListActivity.viewModel.clientsCount.observe(
+      covaxListActivity,
       { Assert.assertEquals("10", counter.text.toString()) }
     )
   }
 
   override fun getActivity(): Activity {
-    return patientListActivity
+    return covaxListActivity
   }
 
   companion object {

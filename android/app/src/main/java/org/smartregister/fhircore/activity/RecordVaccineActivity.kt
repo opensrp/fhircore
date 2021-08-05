@@ -143,7 +143,7 @@ class RecordVaccineActivity : BaseActivity() {
         this.getString(R.string.ordinal_vaccine_dose_recorded, immunization.vaccineCode.text)
     } else {
       msgText = "Second vaccine dose should be same as first"
-      titleText = "Initially  received $initialDose"
+      titleText = "Initially received $initialDose"
     }
 
     // set title for alert dialog

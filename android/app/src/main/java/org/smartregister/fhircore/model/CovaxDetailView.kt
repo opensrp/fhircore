@@ -30,5 +30,6 @@ data class CovaxDetailView(
     /** The intent argument representing the patient item ID that this detailed item represents. */
     const val COVAX_DETAIL_VIEW_CONFIG_ID = "covax_client_register_config.json"
     const val COVAX_ARG_ITEM_ID = "covax_client_item_id"
+    const val COVAX_ARG_BARCODE_KEY = "patient-barcode"
   }
 }
