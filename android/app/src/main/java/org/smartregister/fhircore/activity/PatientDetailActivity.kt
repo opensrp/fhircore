@@ -70,6 +70,15 @@ class PatientDetailActivity : MultiLanguageBaseActivity() {
         }
       )
     }
+
+    findViewById<Button>(R.id.btn_report_adverse_event).setOnClickListener {
+      startActivity(
+        Intent(this, SelectAdverseEventActivity::class.java).apply {
+          putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "adverse-event.json")
+          putExtra(PATIENT_ID, fragment.patientId)
+        }
+      )
+    }
   }
 
   override fun onCreateOptionsMenu(menu: Menu?): Boolean {

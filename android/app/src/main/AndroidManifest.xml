@@ -33,6 +33,8 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".activity.AdverseEventListActivity"></activity>
+        <activity android:name=".activity.SelectAdverseEventActivity" />
         <activity
             android:name=".activity.LoginActivity"
             android:theme="@style/AppTheme.NoActionBar">

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright 2020 Google LLC
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,8 +34,8 @@
             android:id="@+id/toolbar_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fitsSystemWindows="true"
             android:background="@color/profile_header_background"
+            android:fitsSystemWindows="true"
             app:contentScrim="?attr/colorPrimary"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:toolbarId="@+id/toolbar">
@@ -47,18 +46,18 @@
                 android:layout_height="30dp"
                 android:textColor="@color/black"
                 app:layout_collapseMode="pin"
-                app:theme="@style/ThemeOverlay.AppCompat.Light"
-                app:popupTheme="@style/ThemeOverlay.AppCompat.Light" >
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+                app:theme="@style/ThemeOverlay.AppCompat.Light">
 
             </androidx.appcompat.widget.Toolbar>
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/patient_profile_details"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/patient_profile_details"
-                app:layout_constraintTop_toBottomOf="@id/detail_toolbar"
+                android:layout_marginBottom="30dp"
                 android:minHeight="200dp"
-                android:layout_marginBottom="30dp">
+                app:layout_constraintTop_toBottomOf="@id/detail_toolbar">
 
                 <TextView
                     android:id="@+id/patient_bio_data"
@@ -66,17 +65,17 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
+                    android:layout_gravity="center_horizontal"
                     android:layout_marginStart="@dimen/text_margin"
                     android:layout_marginTop="@dimen/text_margin"
                     android:layout_marginEnd="@dimen/text_margin"
                     android:layout_marginBottom="@dimen/text_margin"
-                    android:layout_gravity="center_horizontal"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:textAppearance="?attr/textAppearanceListItem"
                     android:textColor="@color/black"
-                    android:textAppearance="?attr/textAppearanceListItem" />
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/id_patient_number"
@@ -90,6 +89,7 @@
                     android:layout_marginEnd="@dimen/text_margin"
                     android:ellipsize="end"
                     android:maxLines="1"
+                    android:layout_marginBottom="@dimen/text_margin"
                     android:textAppearance="?attr/textAppearanceListItem"
                     android:textColor="@color/black"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -124,31 +124,62 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|start"
         android:layout_margin="@dimen/fab_margin"
+        android:visibility="gone"
         app:layout_anchor="@+id/patient_detail_container"
         app:layout_anchorGravity="top|end"
-        android:visibility="gone"
         app:srcCompat="@android:drawable/stat_notify_chat" />
 
-    <Button
-        android:id="@+id/btn_record_vaccine"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="15dp"
-        android:layout_marginEnd="15dp"
-        android:layout_marginStart="15dp"
-        android:background="@drawable/rounded_white_bg"
-        android:backgroundTint="@color/colorPrimary"
-        android:drawablePadding="5dp"
-        android:fontFamily="sans-serif-medium"
-        android:padding="10dp"
-        android:paddingHorizontal="10dp"
-        android:paddingEnd="15dp"
-        android:text="@string/record_vaccine"
-        android:textAllCaps="true"
-        android:textColor="@color/white"
-        android:textSize="18sp"
-        android:layout_gravity="bottom|start"
-        android:visibility="gone"
-        tools:visibility="visible"/>
+        android:layout_gravity="bottom|start">
 
+        <Button
+            android:id="@+id/btn_record_vaccine"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="15dp"
+            android:background="@drawable/rounded_white_bg"
+            android:backgroundTint="@color/colorPrimary"
+            android:drawablePadding="5dp"
+            android:fontFamily="sans-serif-medium"
+            android:padding="10dp"
+            android:paddingHorizontal="10dp"
+            android:paddingStart="15dp"
+            android:paddingEnd="15dp"
+            android:text="@string/record_vaccine"
+            android:textAllCaps="true"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toTopOf="@id/btn_report_adverse_event"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_report_adverse_event"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="15dp"
+            android:background="@drawable/rounded_white_bg_red_stroke"
+            android:drawablePadding="5dp"
+            android:fontFamily="sans-serif-medium"
+            android:padding="10dp"
+            android:paddingHorizontal="10dp"
+            android:paddingStart="15dp"
+            android:paddingEnd="15dp"
+            android:text="@string/report_adverse_event"
+            android:textAllCaps="true"
+            android:textColor="@color/colorError"
+            android:textSize="18sp"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -67,9 +67,9 @@ class PatientDetailFragment : Fragment() {
 
     viewModel =
       ViewModelProvider(
-          this,
-          PatientListViewModelFactory(this.requireActivity().application, fhirEngine)
-        )
+        this,
+        PatientListViewModelFactory(this.requireActivity().application, fhirEngine)
+      )
         .get(PatientListViewModel::class.java)
 
     // bind profile data
