@@ -12,6 +12,7 @@ import com.google.android.fhir.datacapture.QuestionnaireFragment
 import org.hl7.fhir.r4.model.Questionnaire
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.activity.core.MultiLanguageBaseActivity
 import org.smartregister.fhircore.util.QuestionnaireUtils
 import org.smartregister.fhircore.viewmodel.AdverseEventViewModel
 import org.smartregister.fhircore.viewmodel.AdverseEventViewModelFactory

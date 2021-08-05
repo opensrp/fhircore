@@ -3,6 +3,7 @@ package org.smartregister.fhircore.activity
 import android.os.Bundle
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.activity.core.MultiLanguageBaseActivity
 import org.smartregister.fhircore.adapter.AdverseEventItemRecyclerViewAdapter
 import org.smartregister.fhircore.model.AdverseEventListItem
 

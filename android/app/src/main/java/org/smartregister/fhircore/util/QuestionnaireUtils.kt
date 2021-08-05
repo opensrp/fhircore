@@ -16,10 +16,14 @@
 
 package org.smartregister.fhircore.util
 
+<<<<<<< HEAD
 import android.content.Context
 import android.content.Intent
 import ca.uhn.fhir.context.FhirContext
 import java.util.UUID
+=======
+import org.hl7.fhir.r4.model.BaseDateTimeType
+>>>>>>> WIP: Adverse reaction after first dose of vaccine, structure map is almost ready
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
@@ -33,11 +37,15 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RiskAssessment
+<<<<<<< HEAD
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_TITLE_KEY
+=======
+import java.util.*
+>>>>>>> WIP: Adverse reaction after first dose of vaccine, structure map is almost ready
 
 object QuestionnaireUtils {
   private val parser = FhirContext.forR4().newJsonParser()
