@@ -196,9 +196,11 @@ object Utils {
 
   fun buildResourceSyncParams(): Map<ResourceType, Map<String, String>> {
     return mapOf(
-      ResourceType.Patient to emptyMap<String, String>(),
+      ResourceType.Patient to emptyMap(),
       ResourceType.Immunization to emptyMap(),
-      ResourceType.Questionnaire to emptyMap()
+      ResourceType.Questionnaire to emptyMap(),
+      ResourceType.StructureMap to mapOf(),
+      ResourceType.RelatedPerson to mapOf()
     )
   }
 }

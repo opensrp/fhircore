@@ -92,13 +92,9 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
   fun saveExtractedResources(
     context: Context,
     intent: Intent,
-    questionnaireString: String,
+    questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ) {
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
-    val questionnaire =
-      iParser.parseResource(Questionnaire::class.java, questionnaireString) as Questionnaire
-
     val bundle =
       ResourceMapper.extract(
         questionnaire,
@@ -106,6 +102,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
         getStructureMapProvider(context),
         context
       )
+
 
     val resourceId =
       if (intent.hasExtra(PatientDetailFragment.ARG_ITEM_ID))

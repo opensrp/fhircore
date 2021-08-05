@@ -118,7 +118,7 @@ class PatientListFragment : Fragment() {
       )
 
     requireActivity()
-      .findViewById<SwitchMaterial>(R.id.btn_show_overdue_patients)
+      .findViewById<SwitchMaterial>(R.id.btn_show_overdue)
       .setOnCheckedChangeListener { button, isChecked ->
         patientListViewModel.showOverduePatientsOnly.value = isChecked
       }

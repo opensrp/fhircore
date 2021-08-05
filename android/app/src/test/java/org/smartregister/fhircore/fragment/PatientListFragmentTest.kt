@@ -250,10 +250,10 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
 
   @Test
   fun testShowOverduePatientsOnlyShouldReturnTrue() {
-    getView<SwitchMaterial>(R.id.btn_show_overdue_patients).isChecked = true
+    getView<SwitchMaterial>(R.id.btn_show_overdue).isChecked = true
     assertTrue(patientListFragment.patientListViewModel.showOverduePatientsOnly.value!!)
 
-    getView<SwitchMaterial>(R.id.btn_show_overdue_patients).isChecked = false
+    getView<SwitchMaterial>(R.id.btn_show_overdue).isChecked = false
     assertFalse(patientListFragment.patientListViewModel.showOverduePatientsOnly.value!!)
   }
 
@@ -374,10 +374,10 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
 
     every { patientListViewModelSpy.isPatientExists(any()) } returns
       MutableLiveData(Result.failure(mockk()))
-    every { patientListActivity.startRegistrationActivity(any(), any()) } returns Unit
+    every { patientListActivity.startRegistrationActivity(any()) } returns Unit
     ReflectionHelpers.callInstanceMethod<Any>(patientListFragment, "setUpBarcodeScanner")
 
-    verify(exactly = 1) { patientListActivity.startRegistrationActivity(any(), any()) }
+    verify(exactly = 1) { patientListActivity.startRegistrationActivity(any()) }
 
     patientListFragment.patientListViewModel = patientListViewModel
   }
