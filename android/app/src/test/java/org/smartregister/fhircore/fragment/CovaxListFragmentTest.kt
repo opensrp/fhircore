@@ -37,7 +37,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.search.Search
 import com.google.android.material.switchmaterial.SwitchMaterial
 import io.mockk.coEvery
 import io.mockk.every
@@ -48,7 +47,6 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

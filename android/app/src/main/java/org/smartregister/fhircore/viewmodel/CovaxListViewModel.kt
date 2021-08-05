@@ -32,6 +32,10 @@ import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.Sync
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -48,10 +52,6 @@ import org.smartregister.fhircore.model.PatientVaccineSummary
 import org.smartregister.fhircore.model.VaccineStatus
 import org.smartregister.fhircore.model.toDetailsCard
 import org.smartregister.fhircore.util.Utils
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 
 /**
  * The ViewModel helper class for PatientItemRecyclerViewAdapter, that is responsible for preparing

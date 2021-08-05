@@ -23,6 +23,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import java.util.UUID
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
@@ -36,7 +37,6 @@ import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE_KEY
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.util.QuestionnaireUtils
-import java.util.UUID
 
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
   AndroidViewModel(application) {
@@ -93,7 +93,8 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
   ) {
     saveParsedResource(questionnaireResponse, questionnaire)
 
-    // todo remove if below to turn below login on, when structure-map has obs and flag and risk-assessment as well
+    // todo remove if below to turn below login on, when structure-map has obs and flag and
+    // risk-assessment as well
     if (context != null) return
 
     val bundle =
@@ -123,15 +124,15 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     return structureMapProvider!!
   }
 
-  fun saveParsedResource(questionnaireResponse: QuestionnaireResponse, questionnaire: Questionnaire) {
+  fun saveParsedResource(
+    questionnaireResponse: QuestionnaireResponse,
+    questionnaire: Questionnaire
+  ) {
     val patient =
-      ResourceMapper.extract(this.questionnaire, questionnaireResponse).entry[0].resource as Patient
+      ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
 
     val barcode =
-      QuestionnaireUtils.valueStringWithLinkId(
-        questionnaireResponse,
-        QUESTIONNAIRE_ARG_BARCODE_KEY
-      )
+      QuestionnaireUtils.valueStringWithLinkId(questionnaireResponse, QUESTIONNAIRE_ARG_BARCODE_KEY)
 
     patient.id = barcode ?: UUID.randomUUID().toString().toLowerCase()
 
@@ -141,14 +142,15 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     val observations =
       QuestionnaireUtils.extractObservations(questionnaireResponse, this.questionnaire, patient)
 
-    observations.forEach{
-      saveResource(it)
-    }
+    observations.forEach { saveResource(it) }
 
     // only one risk assessment per questionnaire is supported by fhircore for now
     val riskAssessment =
-      QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse,
-        this.questionnaire)
+      QuestionnaireUtils.extractRiskAssessment(
+        observations,
+        questionnaireResponse,
+        this.questionnaire
+      )
 
     if (riskAssessment != null) {
       saveResource(riskAssessment)
