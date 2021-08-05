@@ -654,4 +654,46 @@ group ExtractRelatedPerson(source src : QuestionnaireResponse, target bundle : B
     } "rule_erp_14";
 }
     """.trimIndent()
+
+
+  private val fhirStructureMapForAdverseEvents = """
+  map "http://hl7.org/fhir/StructureMap/AdverseReaction" = 'Adverse Reaction of vaccine'
+  
+  uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+  uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+  uses "http://hl7.org/fhir/StructureDefinition/Observation as source
+  uses "http://hl7.org/fhir/StructureDefinition/Immunization as target
+  
+  group AdverseReaction(source src : QuestionnaireResponse, target bundle: Bundle) {
+      src -> bundle.id = uuid() "rule_c";
+      src -> bundle.type = 'collection' "rule_b";
+      src -> bundle.entry as entry, entry.resource = create('Immunization') as immunization then
+          ExtractImmunization(src, bundle, immunization) "rule_i";
+  }
+  
+  group ExtractImmunization(source src: QuestionnaireResponse, target bundle: Bundle, target immunization: Immunization) {
+      src -> immunization.id = uuid() "rule_j";
+      
+      src.item as item where(linkId = 'adverse-event-reaction') -> immunization.reaction = create('BackboneElement') as immunizationReaction then {
+      
+        item.item as inner_item where (linkId = 'adverse-event-date') then {
+          inner_item.answer first as ans then {
+            ans.value as val -> immunizationReaction.date = val "rule_a";
+          };
+        };
+        
+        item.item as reaction_detail_item where (linkId = 'adverse-event-codes') -> bundle.entry as entry, entry.resource = create('Observation') as observation then {
+          reaction_detail_item -> observation.id = uuid() "rule_obs_1";
+          reaction_detail_item -> observation.code = evaluate(reaction_detail_item, ${"$"}this.item.answer.value) "rule_obs_2";
+        };
+
+        observation -> immunizationReaction.detail = create('Reference') as observationReference then {
+         observation.id as theObservationId -> observationReference.reference = theObservationId "rule_obs_3";
+         observation -> observationReference.type = "Observation" "rule_obs_4";
+         } "rule_obs_5";
+      }
+  }
+  
+""".trimIndent()
+
 }

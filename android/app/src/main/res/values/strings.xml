@@ -105,4 +105,5 @@
     <string name="immunization_overdue">"%1$s dose overdue %2$s"</string>
     <string name="show_qr_code">Show QR Code</string>
     <string name="report_adverse_event">Report Adverse Event</string>
+    <string name="view_adverse_event">View adverse event</string>
 </resources>

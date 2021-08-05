@@ -23,8 +23,10 @@ import java.util.UUID
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Flag
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -122,6 +124,47 @@ object QuestionnaireUtils {
     return obs
   }
 
+  fun asObs(
+    qr: QuestionnaireResponse.QuestionnaireResponseItemComponent,
+    subjectId: String
+  ): Observation {
+    val obs = Observation()
+    obs.id = getUniqueId()
+    obs.effective = DateTimeType.now()
+    obs.code = if (qr.hasAnswer()) CodeableConcept().apply { this.addCoding(qr.answer[0].valueCoding) } else null
+    obs.status = Observation.ObservationStatus.FINAL
+    obs.value = if (qr.hasAnswer()) CodeableConcept().apply { this.addCoding(qr.answer[0].valueCoding) } else null
+    obs.subject = Reference().apply { this.reference = "Patient/$subjectId" }
+
+    return obs
+  }
+
+  fun extractObservation(questionnaireResponse: QuestionnaireResponse, questionnaire: Questionnaire, subjectId: String): Observation? {
+
+    val questionnaireItem = itemWithDefinition(questionnaire, "Immunization.reaction").firstOrNull()
+      ?: return null
+    var questionnaireResponseItem = itemWithLinkId(questionnaireResponse, questionnaireItem.linkId)
+    return asObs(questionnaireResponseItem!!.item[1], subjectId)
+  }
+
+  fun extractReaction(questionnaireResponse: QuestionnaireResponse,
+                      questionnaire: Questionnaire, observation: Observation?): Immunization.ImmunizationReactionComponent? {
+    val reaction = Immunization.ImmunizationReactionComponent()
+
+
+    val questionnaireItem = itemWithDefinition(questionnaire, "Immunization.reaction").firstOrNull()
+      ?: return null
+    var questionnaireResponseItem = itemWithLinkId(questionnaireResponse, questionnaireItem.linkId)
+
+
+    reaction.apply {
+      this.dateElement = DateTimeType((questionnaireResponseItem!!.item[2].answer[0].value as DateType).valueAsString)
+      this.detail = Reference().apply { this.reference = "Observation/${observation?.id}" }
+    }
+
+    return reaction
+  }
+
   // todo revisit this logic when ResourceMapper is stable
   fun extractObservations(
     questionnaireResponse: QuestionnaireResponse,
@@ -195,7 +238,7 @@ object QuestionnaireUtils {
   ): Flag? {
     // no risk then no flag
     if (riskAssessment.prediction[0].relativeRisk.equals(0) ||
-        !riskAssessment.prediction[0].hasOutcome()
+      !riskAssessment.prediction[0].hasOutcome()
     ) {
       return null
     }
@@ -343,8 +386,8 @@ object QuestionnaireUtils {
 
         // todo revisit this when calculate expression is working
         if (isRiskObs &&
-            ((obs.hasValueBooleanType() && obs.valueBooleanType.booleanValue()) ||
-              (obs.hasValueStringType() && obs.hasValue()))
+          ((obs.hasValueBooleanType() && obs.valueBooleanType.booleanValue()) ||
+            (obs.hasValueStringType() && obs.hasValue()))
         ) {
           riskScore++
 
