@@ -289,8 +289,12 @@ object QuestionnaireUtils {
 
   fun valueStringWithLinkId(questionnaireResponse: QuestionnaireResponse, linkId: String): String? {
     val ans =
-      questionnaireResponse.item.mapNotNull { itemWithLinkId(it, linkId) }.first().answerFirstRep
-    return ans.valueStringType.asStringValue()
+      questionnaireResponse
+        .item
+        .mapNotNull { itemWithLinkId(it, linkId) }
+        .firstOrNull()
+        ?.answerFirstRep
+    return ans?.valueStringType?.asStringValue()
   }
 
   private fun doesIntersect(codingList: List<Coding>, other: List<Coding>): Boolean {

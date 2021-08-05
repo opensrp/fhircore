@@ -95,6 +95,7 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
       QUESTIONNAIRE_ARG_RESPONSE_KEY,
       parser.encodeResourceToString(questionnaireResponse)
     )
+    intent.putExtra(QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR, "true")
     setResult(RESULT_OK, intent)
     finish()
   }
@@ -231,6 +232,7 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
     const val QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID = "questionnaire_preassigned_item_id"
     const val QUESTIONNAIRE_ARG_RESPONSE_KEY = "questionnaire_response_item_id"
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
+    const val QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR = "bypass-sdk-extractor"
   }
 
   override fun onClick(v: View?) {

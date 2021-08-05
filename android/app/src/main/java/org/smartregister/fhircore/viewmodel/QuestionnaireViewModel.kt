@@ -35,6 +35,7 @@ import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE_KEY
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.util.QuestionnaireUtils
 
@@ -95,7 +96,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
 
     // todo remove if below to turn below login on, when structure-map has obs and flag and
     // risk-assessment as well
-    if (context != null) return
+    if (intent.hasExtra(QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR)) return
 
     val bundle =
       ResourceMapper.extract(
@@ -140,30 +141,26 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
 
     // only one level of nesting per obs group is supported by fhircore for now
     val observations =
-      QuestionnaireUtils.extractObservations(questionnaireResponse, this.questionnaire, patient)
+      QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
 
     observations.forEach { saveResource(it) }
 
     // only one risk assessment per questionnaire is supported by fhircore for now
     val riskAssessment =
-      QuestionnaireUtils.extractRiskAssessment(
-        observations,
-        questionnaireResponse,
-        this.questionnaire
-      )
+      QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)
 
     if (riskAssessment != null) {
       saveResource(riskAssessment)
 
       val flag =
-        QuestionnaireUtils.extractFlag(questionnaireResponse, this.questionnaire, riskAssessment)
+        QuestionnaireUtils.extractFlag(questionnaireResponse, questionnaire, riskAssessment)
 
       if (flag != null) {
         saveResource(flag)
 
         // todo remove this when sync is implemented
         val ext =
-          QuestionnaireUtils.extractFlagExtension(flag, questionnaireResponse, this.questionnaire)
+          QuestionnaireUtils.extractFlagExtension(flag, questionnaireResponse, questionnaire)
         if (ext != null) {
           patient.addExtension(ext)
         }
