@@ -19,61 +19,56 @@ import org.smartregister.fhircore.CoroutineTestRule
 @ExperimentalCoroutinesApi
 class PatientDetailsViewModelTest {
 
-    private lateinit var fhirEngine: FhirEngine
+  private lateinit var fhirEngine: FhirEngine
 
-    private lateinit var patientDetailsViewModel: PatientDetailsViewModel
+  private lateinit var patientDetailsViewModel: PatientDetailsViewModel
 
-    private val patientId = "samplePatientId"
+  private val patientId = "samplePatientId"
 
-    @get:Rule
-    var coroutinesTestRule = CoroutineTestRule()
+  @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
-    @get:Rule
-    var instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-    @Before
-    fun setUp() {
-        fhirEngine = mockk(relaxed = true)
-        patientDetailsViewModel = spyk(
-            PatientDetailsViewModel(
-                dispatcher = coroutinesTestRule.testDispatcherProvider,
-                fhirEngine = fhirEngine,
-                patientId = patientId
-            )
+  @Before
+  fun setUp() {
+    fhirEngine = mockk(relaxed = true)
+    patientDetailsViewModel =
+      spyk(
+        PatientDetailsViewModel(
+          dispatcher = coroutinesTestRule.testDispatcherProvider,
+          fhirEngine = fhirEngine,
+          patientId = patientId
         )
+      )
+  }
+
+  @Test
+  fun fetchDemographics() {
+    coroutinesTestRule.runBlockingTest {
+      val patient = spyk<Patient>().apply { idElement.id = patientId }
+      coEvery { fhirEngine.load(Patient::class.java, patientId) } returns patient
+      patientDetailsViewModel.fetchDemographics()
+      Assert.assertNotNull(patientDetailsViewModel.patientDemographics.value)
+      Assert.assertNotNull(patientDetailsViewModel.patientDemographics.value!!.idElement)
+      Assert.assertEquals(
+        patientDetailsViewModel.patientDemographics.value?.idElement!!.id,
+        patientId
+      )
     }
+  }
 
-    @Test
-    fun fetchDemographics() {
-        coroutinesTestRule.runBlockingTest {
-            val patient = spyk<Patient>().apply { idElement.id = patientId }
-            coEvery { fhirEngine.load(Patient::class.java, patientId) } returns patient
-            patientDetailsViewModel.fetchDemographics()
-            Assert.assertNotNull(patientDetailsViewModel.patientDemographics.value)
-            Assert.assertNotNull(patientDetailsViewModel.patientDemographics.value!!.idElement)
-            Assert.assertEquals(
-                patientDetailsViewModel.patientDemographics.value?.idElement!!.id,
-                patientId
-            )
-        }
+  @Test
+  fun fetchImmunizations() {
+    coroutinesTestRule.runBlockingTest {
+      val immunizations = listOf(mockk<Immunization>())
+
+      coEvery<List<Immunization>> {
+        fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$patientId" } }
+      } returns immunizations
+
+      patientDetailsViewModel.fetchImmunizations()
+      Assert.assertNotNull(patientDetailsViewModel.patientImmunizations.value)
+      Assert.assertEquals(patientDetailsViewModel.patientImmunizations.value?.size, 1)
     }
-
-    @Test
-    fun fetchImmunizations() {
-        coroutinesTestRule.runBlockingTest {
-            val immunizations = listOf(mockk<Immunization>())
-
-            coEvery<List<Immunization>> {
-                fhirEngine.search {
-                    filter(Immunization.PATIENT) {
-                        value = "Patient/$patientId"
-                    }
-                }
-            } returns immunizations
-
-            patientDetailsViewModel.fetchImmunizations()
-            Assert.assertNotNull(patientDetailsViewModel.patientImmunizations.value)
-            Assert.assertEquals(patientDetailsViewModel.patientImmunizations.value?.size, 1)
-        }
-    }
+  }
 }

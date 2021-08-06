@@ -20,45 +20,45 @@ import org.smartregister.fhircore.shadow.FhirApplicationShadow
 @Config(shadows = [FhirApplicationShadow::class])
 class PatientDetailsActivityTest : ActivityRobolectricTest() {
 
-    private lateinit var patientDetailsActivity: PatientDetailsActivity
+  private lateinit var patientDetailsActivity: PatientDetailsActivity
 
-    private lateinit var patientDetailsActivitySpy: PatientDetailsActivity
+  private lateinit var patientDetailsActivitySpy: PatientDetailsActivity
 
-    @Before
-    fun setUp() {
-        patientDetailsActivity =
-            Robolectric.buildActivity(PatientDetailsActivity::class.java, null).create().get()
-        patientDetailsActivitySpy = spyk(objToCopy = patientDetailsActivity)
-    }
+  @Before
+  fun setUp() {
+    patientDetailsActivity =
+      Robolectric.buildActivity(PatientDetailsActivity::class.java, null).create().get()
+    patientDetailsActivitySpy = spyk(objToCopy = patientDetailsActivity)
+  }
 
-    @Test
-    @DisplayName("Should start patient details activity")
-    fun testPatientActivityShouldNotNull() {
-        Assert.assertNotNull(patientDetailsActivity)
-    }
+  @Test
+  @DisplayName("Should start patient details activity")
+  fun testPatientActivityShouldNotNull() {
+    Assert.assertNotNull(patientDetailsActivity)
+  }
 
-    @Test
-    @DisplayName("Should inflate menu and return true")
-    fun testThatMenuIsCreated() {
+  @Test
+  @DisplayName("Should inflate menu and return true")
+  fun testThatMenuIsCreated() {
 
-        val menuInflater = mockk<MenuInflater>()
+    val menuInflater = mockk<MenuInflater>()
 
-        every { patientDetailsActivitySpy.menuInflater } returns menuInflater
-        every { menuInflater.inflate(any(), any()) } returns Unit
+    every { patientDetailsActivitySpy.menuInflater } returns menuInflater
+    every { menuInflater.inflate(any(), any()) } returns Unit
 
-        Assert.assertTrue(patientDetailsActivitySpy.onCreateOptionsMenu(null))
-    }
+    Assert.assertTrue(patientDetailsActivitySpy.onCreateOptionsMenu(null))
+  }
 
-    @Test
-    @DisplayName("Should start QuestionnaireActivity when menu edit is selected")
-    fun testThatMenuItemListenerWorks() {
-        val menuItem = mockk<MenuItem>(relaxed = true)
-        every { menuItem.itemId } returns R.id.patient_profile_edit
-        every { patientDetailsActivitySpy.startActivity(any()) } just runs
-        Assert.assertTrue(patientDetailsActivitySpy.onOptionsItemSelected(menuItem))
-    }
+  @Test
+  @DisplayName("Should start QuestionnaireActivity when menu edit is selected")
+  fun testThatMenuItemListenerWorks() {
+    val menuItem = mockk<MenuItem>(relaxed = true)
+    every { menuItem.itemId } returns R.id.patient_profile_edit
+    every { patientDetailsActivitySpy.startActivity(any()) } just runs
+    Assert.assertTrue(patientDetailsActivitySpy.onOptionsItemSelected(menuItem))
+  }
 
-    override fun getActivity(): Activity {
-        return patientDetailsActivity
-    }
+  override fun getActivity(): Activity {
+    return patientDetailsActivity
+  }
 }

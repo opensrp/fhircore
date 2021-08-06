@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.adapter
 
-import android.annotation.SuppressLint
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -30,67 +29,61 @@ import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.model.ImmunizationItem
 
-/**
- * Subclass of [ListAdapter] used to display vaccine doses for the patient
- */
+/** Subclass of [ListAdapter] used to display vaccine doses for the patient */
 class PatientImmunizationsAdapter :
-    ListAdapter<ImmunizationItem, PatientImmunizationsAdapter.PatientImmunizationsViewHolder>(
-        ImmunizationItemDiffCallback
+  ListAdapter<ImmunizationItem, PatientImmunizationsAdapter.PatientImmunizationsViewHolder>(
+    ImmunizationItemDiffCallback
+  ) {
+
+  inner class PatientImmunizationsViewHolder(private val containerView: View) :
+    RecyclerView.ViewHolder(containerView) {
+    fun bindTo(immunizationItem: ImmunizationItem) {
+      with(immunizationItem) {
+        containerView.tag = this
+        containerView.findViewById<TextView>(R.id.vaccineNameTextView).text = vaccine
+        val vaccineDosesLayout = containerView.findViewById<LinearLayout>(R.id.vaccineDosesLayout)
+        addVaccineDoseViews(vaccineDosesLayout, doses)
+      }
+    }
+
+    private fun addVaccineDoseViews(
+      vaccineDosesLayout: LinearLayout,
+      doses: List<Pair<String, Int>>,
     ) {
+      vaccineDosesLayout.removeAllViews()
+      doses.forEach { dose ->
+        val (vaccineName, vaccineColorCode) = dose
+        val doseTextView =
+          TextView(vaccineDosesLayout.context).apply {
+            setTextColor(ContextCompat.getColor(vaccineDosesLayout.context, vaccineColorCode))
+            setPadding(0, 0, 0, 16)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
 
-    inner class PatientImmunizationsViewHolder(private val containerView: View) :
-        RecyclerView.ViewHolder(containerView) {
-        fun bindTo(immunizationItem: ImmunizationItem) {
-            with(immunizationItem) {
-                containerView.tag = this
-                containerView.findViewById<TextView>(R.id.vaccineNameTextView).text = vaccine
-                val vaccineDosesLayout =
-                    containerView.findViewById<LinearLayout>(R.id.vaccineDosesLayout)
-                addVaccineDoseViews(vaccineDosesLayout, doses)
-            }
-        }
-
-        private fun addVaccineDoseViews(
-            vaccineDosesLayout: LinearLayout, doses: List<Pair<String, Int>>,
-        ) {
-            vaccineDosesLayout.removeAllViews()
-            doses.forEach { dose ->
-                val (vaccineName, vaccineColorCode) = dose
-                val doseTextView = TextView(vaccineDosesLayout.context).apply {
-                    setTextColor(
-                        ContextCompat.getColor(
-                            vaccineDosesLayout.context,
-                            vaccineColorCode
-                        )
-                    )
-                    setPadding(0, 0, 0, 16)
-                    setTextSize(TypedValue.COMPLEX_UNIT_SP,18f);
-
-                    text = vaccineName
-                }
-                vaccineDosesLayout.addView(doseTextView)
-            }
-        }
+            text = vaccineName
+          }
+        vaccineDosesLayout.addView(doseTextView)
+      }
     }
+  }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int)
-            : PatientImmunizationsViewHolder {
-        val containerView = LayoutInflater.from(parent.context)
-            .inflate(R.layout.immunization_list_item, parent, false)
-        return PatientImmunizationsViewHolder(containerView)
-    }
+  override fun onCreateViewHolder(
+    parent: ViewGroup,
+    viewType: Int
+  ): PatientImmunizationsViewHolder {
+    val containerView =
+      LayoutInflater.from(parent.context).inflate(R.layout.immunization_list_item, parent, false)
+    return PatientImmunizationsViewHolder(containerView)
+  }
 
-    override fun onBindViewHolder(holder: PatientImmunizationsViewHolder, position: Int) {
-        holder.bindTo(getItem(position))
-    }
+  override fun onBindViewHolder(holder: PatientImmunizationsViewHolder, position: Int) {
+    holder.bindTo(getItem(position))
+  }
 
-    object ImmunizationItemDiffCallback : DiffUtil.ItemCallback<ImmunizationItem>() {
-        override fun areItemsTheSame(
-            oldItem: ImmunizationItem, newItem: ImmunizationItem
-        ) = oldItem.vaccine == newItem.vaccine
+  object ImmunizationItemDiffCallback : DiffUtil.ItemCallback<ImmunizationItem>() {
+    override fun areItemsTheSame(oldItem: ImmunizationItem, newItem: ImmunizationItem) =
+      oldItem.vaccine == newItem.vaccine
 
-        override fun areContentsTheSame(
-            oldItem: ImmunizationItem, newItem: ImmunizationItem
-        ) = oldItem == newItem
-    }
+    override fun areContentsTheSame(oldItem: ImmunizationItem, newItem: ImmunizationItem) =
+      oldItem == newItem
+  }
 }
