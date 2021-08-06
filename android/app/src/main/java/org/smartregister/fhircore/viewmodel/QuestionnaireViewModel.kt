@@ -107,9 +107,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
       )
 
     val resourceId = // todo WRONG assignment
-      if (intent.hasExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY))
         intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
-      else null
 
     saveBundleResources(bundle, resourceId)
   }

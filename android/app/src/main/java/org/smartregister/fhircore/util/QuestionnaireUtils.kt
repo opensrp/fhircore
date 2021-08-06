@@ -173,7 +173,7 @@ object QuestionnaireUtils {
     return flaggable.firstOrNull {
       val qrItem = itemWithLinkId(questionnaireResponse, it.linkId)
 
-      doesIntersect(selectedFlagCode.coding, qrItem.answer.map { ans -> ans.valueCoding })
+      doesIntersect(selectedFlagCode.coding, qrItem!!.answer.map { ans -> ans.valueCoding })
     }
   }
 
@@ -283,17 +283,12 @@ object QuestionnaireUtils {
   private fun itemWithLinkId(
     questionnaireResponse: QuestionnaireResponse,
     linkId: String
-  ): QuestionnaireResponse.QuestionnaireResponseItemComponent {
-    return questionnaireResponse.item.mapNotNull { itemWithLinkId(it, linkId) }.first()
+  ): QuestionnaireResponse.QuestionnaireResponseItemComponent? {
+    return questionnaireResponse.item.mapNotNull { itemWithLinkId(it, linkId) }.firstOrNull()
   }
 
   fun valueStringWithLinkId(questionnaireResponse: QuestionnaireResponse, linkId: String): String? {
-    val ans =
-      questionnaireResponse
-        .item
-        .mapNotNull { itemWithLinkId(it, linkId) }
-        .firstOrNull()
-        ?.answerFirstRep
+    val ans = itemWithLinkId(questionnaireResponse, linkId)?.answerFirstRep
     return ans?.valueStringType?.asStringValue()
   }
 
@@ -359,7 +354,7 @@ object QuestionnaireUtils {
     }
 
     risk.status = RiskAssessment.RiskAssessmentStatus.FINAL
-    risk.code = asCodeableConcept(qrItem.linkId, questionnaire)
+    risk.code = asCodeableConcept(qrItem!!.linkId, questionnaire)
     risk.id = getUniqueId()
     risk.subject = observations[0].subject
     risk.occurrence = DateTimeType.now()

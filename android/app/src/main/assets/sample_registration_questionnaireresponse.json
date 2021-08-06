@@ -2,7 +2,7 @@
   "resourceType": "QuestionnaireResponse",
   "questionnaire": "Questionnaire/client-registration-sample",
   "item": [
-    {"linkId": "Barcode"},
+    {"linkId": "patient-barcode"},
     {
       "linkId": "PR",
       "item": [
