@@ -197,11 +197,12 @@ class QuestionnaireActivity : MultiLanguageBaseActivity(), View.OnClickListener 
     const val QUESTIONNAIRE_FILE_PATH_KEY = "questionnaire-file-path-key"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
 
-    fun getExtrasBundle(patientId: String): Bundle = bundleOf(
-      Pair(QUESTIONNAIRE_TITLE_KEY, "Patient registration"),
-      Pair(QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json"),
-      Pair(PatientDetailFragment.ARG_ITEM_ID, patientId)
-    )
+    fun getExtrasBundle(patientId: String): Bundle =
+      bundleOf(
+        Pair(QUESTIONNAIRE_TITLE_KEY, "Patient registration"),
+        Pair(QUESTIONNAIRE_FILE_PATH_KEY, "patient-registration.json"),
+        Pair(PatientDetailFragment.ARG_ITEM_ID, patientId)
+      )
   }
 
   override fun onClick(v: View?) {
