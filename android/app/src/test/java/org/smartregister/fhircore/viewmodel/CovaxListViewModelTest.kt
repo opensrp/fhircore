@@ -48,9 +48,9 @@ import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.util.Utils.makeItReadable
 
 @Config(shadows = [FhirApplicationShadow::class])
-class PatientListViewModelTest : RobolectricTest() {
+class CovaxListViewModelTest : RobolectricTest() {
 
-  private lateinit var viewModel: PatientListViewModel
+  private lateinit var viewModel: CovaxListViewModel
 
   private lateinit var appContext: FhirApplication
   private lateinit var fhirEngine: FhirEngine
@@ -59,7 +59,7 @@ class PatientListViewModelTest : RobolectricTest() {
   fun setUp() {
     appContext = FhirApplication.getContext()
     fhirEngine = FhirApplication.fhirEngine(appContext)
-    viewModel = spyk(PatientListViewModel(appContext, fhirEngine))
+    viewModel = spyk(CovaxListViewModel(appContext, fhirEngine))
   }
 
   @Test

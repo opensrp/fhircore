@@ -16,23 +16,21 @@
 
 package org.smartregister.fhircore.model
 
-/** The Patient's details for display purposes. */
-data class PatientItem(
-  val id: String,
-  val name: String,
-  val gender: String,
-  val dob: String,
-  val html: String,
-  val phone: String,
-  val logicalId: String,
-  val risk: String,
-  var vaccineStatus: PatientStatus? = null,
-  var vaccineSummary: PatientVaccineSummary? = null,
-  val lastSeen: String
-) {
-  override fun toString(): String = name
+import java.io.Serializable
+
+data class AncDetailView(
+  val registerTitle: String,
+  val registrationQuestionnaireIdentifier: String,
+  val registrationQuestionnaireTitle: String,
+  val pregnancyLogQuestionnaireIdentifier: String,
+  val pregnancyLogQuestionnaireTitle: String,
+  val deliveryLogQuestionnaireIdentifier: String,
+  val deliveryLogQuestionnaireTitle: String,
+) : Serializable {
+
+  companion object {
+    /** The intent argument representing the patient item ID that this detailed item represents. */
+    const val ANC_DETAIL_VIEW_CONFIG_ID = "anc_client_register_config.json"
+    const val ANC_ARG_ITEM_ID = "anc_client_item_id"
+  }
 }
-
-data class PatientStatus(val status: VaccineStatus, val details: String)
-
-data class PatientVaccineSummary(val doseNumber: Int, val initialDose: String)

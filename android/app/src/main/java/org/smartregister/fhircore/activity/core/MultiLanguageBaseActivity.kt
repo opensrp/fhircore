@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.activity
+package org.smartregister.fhircore.activity.core
 
 import android.content.Context
 import android.content.res.Configuration
@@ -23,7 +23,8 @@ import java.util.Locale
 import org.smartregister.fhircore.util.SharedPreferencesHelper
 import org.smartregister.fhircore.util.Utils
 
-abstract class MultiLanguageBaseActivity : AppCompatActivity() {
+// todo can we move to BaseActivity to
+open class MultiLanguageBaseActivity : AppCompatActivity() {
 
   override fun attachBaseContext(base: Context) {
     val lang: String? =
