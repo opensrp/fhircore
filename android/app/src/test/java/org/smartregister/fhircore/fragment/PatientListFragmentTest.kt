@@ -54,13 +54,13 @@ import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.Shadows
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.PatientDetailActivity
+import org.smartregister.fhircore.activity.PatientDetailsActivity
 import org.smartregister.fhircore.activity.PatientListActivity
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.domain.Pagination
@@ -133,15 +133,15 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
 
     patientListFragment.onPatientItemClicked(PatientListFragment.Intention.VIEW, patientItem)
 
-    val shadowActivity = Shadows.shadowOf(patientListActivity)
+    val shadowActivity = shadowOf(patientListActivity)
     val startedActivityIntent = shadowActivity.peekNextStartedActivity()
 
     Assert.assertEquals(
       logicalId,
-      startedActivityIntent.getStringExtra(PatientDetailFragment.ARG_ITEM_ID)
+      startedActivityIntent.getStringExtra(PatientDetailsFragment.PATIENT_ID)
     )
     Assert.assertEquals(
-      PatientDetailActivity::class.java.name,
+      PatientDetailsActivity::class.java.name,
       startedActivityIntent.component?.className
     )
   }
@@ -368,8 +368,7 @@ class PatientListFragmentTest : FragmentRobolectricTest() {
 
     val expectedIntent = Intent(patientListActivity, PatientDetailActivity::class.java)
     val actualIntent =
-      Shadows.shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>())
-        .nextStartedActivity
+      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
 
