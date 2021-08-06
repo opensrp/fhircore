@@ -25,7 +25,11 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.RelativeLayout
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -44,7 +48,11 @@ import org.smartregister.fhircore.activity.PatientDetailsActivity
 import org.smartregister.fhircore.activity.PatientListActivity
 import org.smartregister.fhircore.activity.RecordVaccineActivity
 import org.smartregister.fhircore.adapter.PatientItemRecyclerViewAdapter
-import org.smartregister.fhircore.domain.*
+import org.smartregister.fhircore.domain.Pagination
+import org.smartregister.fhircore.domain.currentPageNumber
+import org.smartregister.fhircore.domain.hasNextPage
+import org.smartregister.fhircore.domain.hasPreviousPage
+import org.smartregister.fhircore.domain.totalPages
 import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.viewmodel.PatientListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory

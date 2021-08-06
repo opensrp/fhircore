@@ -17,7 +17,13 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.RecordVaccineActivity
 import org.smartregister.fhircore.adapter.PatientImmunizationsAdapter
-import org.smartregister.fhircore.util.*
+import org.smartregister.fhircore.util.createFactory
+import org.smartregister.fhircore.util.extractAge
+import org.smartregister.fhircore.util.extractGender
+import org.smartregister.fhircore.util.extractName
+import org.smartregister.fhircore.util.hide
+import org.smartregister.fhircore.util.show
+import org.smartregister.fhircore.util.toImmunizationItems
 import org.smartregister.fhircore.viewmodel.PatientDetailsViewModel
 
 class PatientDetailsFragment private constructor() : Fragment() {
