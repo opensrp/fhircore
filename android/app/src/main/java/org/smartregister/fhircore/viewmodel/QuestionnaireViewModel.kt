@@ -107,7 +107,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
       )
 
     val resourceId = // todo WRONG assignment
-        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
+      intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
 
     saveBundleResources(bundle, resourceId)
   }
