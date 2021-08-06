@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.activity
 
 import android.os.Bundle
+import androidx.annotation.VisibleForTesting
 import kotlinx.android.synthetic.main.activity_register_list.base_register_toolbar
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.core.BaseRegisterActivity
@@ -27,7 +28,7 @@ import org.smartregister.fhircore.util.Utils
 import timber.log.Timber
 
 class AncListActivity : BaseRegisterActivity() {
-  private lateinit var detailView: AncDetailView
+  @VisibleForTesting private lateinit var detailView: AncDetailView
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)

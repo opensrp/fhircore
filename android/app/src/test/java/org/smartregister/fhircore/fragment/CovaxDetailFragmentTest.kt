@@ -19,42 +19,30 @@ package org.smartregister.fhircore.fragment
 import android.content.Context
 import android.content.Intent
 import android.view.View
+import android.widget.TextView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
-import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.spyk
-import java.util.Date
-import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.PositiveIntType
 import org.junit.Assert.assertEquals
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.CovaxDetailActivity
-import org.smartregister.fhircore.activity.QuestionnaireActivityTest
-import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.model.CovaxDetailView
-import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
-import org.smartregister.fhircore.util.SharedPreferencesHelper
+import org.smartregister.fhircore.shadow.TestUtils
 
 @Config(shadows = [FhirApplicationShadow::class])
 class CovaxDetailFragmentTest : FragmentRobolectricTest() {
@@ -65,32 +53,26 @@ class CovaxDetailFragmentTest : FragmentRobolectricTest() {
   private lateinit var covaxDetailFragment: CovaxDetailFragment
   private lateinit var fragmentScenario: FragmentScenario<CovaxDetailFragment>
 
-  private val PATIENT_ID = "123456"
+  private val patient = TestUtils.TEST_PATIENT_1
 
   @Before
   fun setUp() {
     context = ApplicationProvider.getApplicationContext()
 
-    init()
-
-    val bundle = bundleOf(CovaxDetailView.COVAX_ARG_ITEM_ID to PATIENT_ID)
-    val intent = Intent().putExtras(bundle)
-
     fhirEngine = spyk()
-    coEvery { fhirEngine.load(Patient::class.java, PATIENT_ID) } returns Patient()
+    coEvery { fhirEngine.load(Patient::class.java, patient.id) } returns patient
+    coEvery { fhirEngine.search<Patient>(any()) } returns listOf()
 
     mockkObject(FhirApplication)
     every { FhirApplication.fhirEngine(any()) } returns fhirEngine
 
+    val bundle = bundleOf(CovaxDetailView.COVAX_ARG_ITEM_ID to patient.id)
+    val intent = Intent().putExtras(bundle)
+
     covaxDetailActivity =
       Robolectric.buildActivity(CovaxDetailActivity::class.java, intent).create().get()
 
-    val viewModel = spyk(covaxDetailFragment.viewModel)
-
-    every { viewModel.getPatientItem(any()) } returns
-      MutableLiveData(
-        PatientItem("", "", "", "2000-01-01", "", "", "", "HR", lastSeen = "07-26-2021")
-      )
+    val viewModel = spyk(covaxDetailActivity.viewModel)
 
     fragmentScenario =
       launchFragmentInContainer(
@@ -110,56 +92,16 @@ class CovaxDetailFragmentTest : FragmentRobolectricTest() {
   }
 
   @Test
-  @Ignore
-  fun testEditPatientShouldStartQuestionnaireActivity() {
-    val viewModel = spyk(covaxDetailFragment.viewModel)
-
-    every { viewModel.getPatientItem(any()) } returns
-      MutableLiveData(
-        PatientItem("", "", "", "2000-01-01", "", "", "", "HR", lastSeen = "07-26-2021")
-      )
-
-    // covaxDetailFragment.editPatient() //todo ????????????????????????????
-
-    val expectedIntent =
-      Intent(covaxDetailFragment.requireContext(), QuestionnaireActivity::class.java)
-    val actual = Shadows.shadowOf(FhirApplication.getContext()).nextStartedActivity
-    assertEquals(expectedIntent.component, actual.component)
+  fun testEditPatientShouldLoadProfile() {
+    assertEquals(View.INVISIBLE, getView<TextView>(R.id.risk_flag).visibility)
+    assertEquals("ID: " + patient.id, getView<TextView>(R.id.id_patient_number).text)
   }
 
   @Test
-  @Ignore
   fun testFragmentShouldHaveRecordVaccineEnabled() {
     val btnRecordVaccine = getView<View>(R.id.btn_record_vaccine)
     assertEquals(View.VISIBLE, btnRecordVaccine.visibility)
   }
-
-  private fun init() {
-    SharedPreferencesHelper.init(FhirApplication.getContext())
-    runBlocking {
-      FhirApplication.fhirEngine(FhirApplication.getContext())
-        .save(QuestionnaireActivityTest.TEST_PATIENT_1, getImmunization())
-    }
-  }
-
-  private fun getImmunization() =
-    Immunization().apply {
-      id = "Patient/${QuestionnaireActivityTest.TEST_PATIENT_1_ID}"
-      recorded = Date()
-      vaccineCode =
-        CodeableConcept().apply {
-          this.text = "dummy"
-          this.coding = listOf(Coding("", "dummy", "dummy"))
-        }
-      occurrence = DateTimeType.today()
-
-      protocolApplied =
-        listOf(
-          Immunization.ImmunizationProtocolAppliedComponent().apply {
-            doseNumber = PositiveIntType(1)
-          }
-        )
-    }
 
   override fun getFragment(): Fragment {
     return covaxDetailFragment

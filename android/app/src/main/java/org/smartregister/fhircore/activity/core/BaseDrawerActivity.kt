@@ -166,11 +166,15 @@ abstract class BaseDrawerActivity :
   }
 
   fun setNavigationHeaderTitle(title: String, @IdRes textViewId: Int) {
-    getNavigationView().getHeaderView(0)?.findViewById<TextView>(textViewId)?.text = title
+    getNavigationHeaderTitleView(textViewId)?.text = title
   }
 
   fun getNavigationView(): NavigationView {
     return findViewById<View>(R.id.nav_view) as NavigationView
+  }
+
+  fun getNavigationHeaderTitleView(@IdRes textViewId: Int): TextView? {
+    return getNavigationView().getHeaderView(0)?.findViewById(textViewId)
   }
 
   protected fun setupDrawer() {

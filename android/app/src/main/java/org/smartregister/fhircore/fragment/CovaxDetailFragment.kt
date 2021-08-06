@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.fragment
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -27,7 +26,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.adapter.PatientDetailsCardRecyclerViewAdapter
 import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.model.PatientItem
@@ -101,24 +99,5 @@ class CovaxDetailFragment : Fragment() {
 
       patientId = patientItem.logicalId
     }
-  }
-
-  fun editPatient() {
-    viewModel.getPatientItem(patientId).value?.let {
-      startActivity(
-        Intent(requireContext(), QuestionnaireActivity::class.java).apply {
-          putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
-          putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, "patient-registration.json")
-          putExtra(ARG_ITEM_ID, it.logicalId)
-        }
-      )
-    }
-  }
-
-  companion object {
-    /** The fragment argument representing the patient item ID that this fragment represents. */
-    const val ARG_ITEM_ID = "patient_item_id"
-    const val ARG_PRE_ASSIGNED_ID = "patient_preassigned_id"
-    const val ARG_ID_FIELD_KEY = "patient-barcode"
   }
 }
