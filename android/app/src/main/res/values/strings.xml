@@ -20,14 +20,16 @@
     <string name="title_patient_detail">SamplePatient Detail</string>
     <string name="menu_about">About Fhir Engine</string>
     <string name="menu_load_resource">Load CQL Resources &amp; Patients</string>
-    <string name="add_patient">Add Patient</string>
+    <string name="add_client">Add Client</string>
     <string name="menu_sync_resources">Sync Resources</string>
 
     <string name="version">Version %s</string>
     <string name="authenticator_label" translatable="false">Authenticate FHIR Core</string>
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.app</string>
 
-    <string name="menu_clients_list_title">COVAX Clients</string>
+    <string name="menu_covax_clients_list_title">COVAX Clients</string>
+    <string name="menu_anc_clients_list_title">ANC Clients</string>
+
     <string name="language">Language</string>
     <string name="empty_client_list_message_title">No Results</string>
     <string name="empty_client_list_message_details">Sorry, we could not find client with given name or ID</string>
@@ -57,12 +59,14 @@
     <string name="edit">Edit</string>
     <string name="str_save">Save</string>
     <string name="select_language">Select Language</string>
-    <string name="register_new_patient">Register new client</string>
+    <string name="register_new_client">Register new client</string>
     <string name="sync">Sync</string>
     <string name="record_vaccine">Record Vaccine</string>
     <string name="no_vaccine_received">No vaccine received</string>
     <string name="view_registration_details">View Registration Details</string>
-    <string name="client">COVAX clients</string>
+    <string name="client_list_title_covax">COVAX clients</string>
+    <string name="client_list_title_anc">ANC clients</string>
+
     <string name="show_overdue">Show overdue</string>
     <string name="record_vaccine_nl">Record\nVaccine</string>
     <string name="client_info">Client info</string>

@@ -62,8 +62,8 @@ class LoginViewModel(application: Application) :
   internal var secureConfig: SecureConfig = SecureConfig(application)
   private var baseContext: Context = application.baseContext
 
-  private var accountManager: AccountManager
-  private var accountHelper: AccountHelper
+  internal var accountManager: AccountManager
+  internal var accountHelper: AccountHelper
 
   init {
     Timber.i("Starting auth flow for login")

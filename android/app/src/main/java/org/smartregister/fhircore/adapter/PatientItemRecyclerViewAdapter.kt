@@ -21,13 +21,13 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.fragment.PatientListFragment
+import org.smartregister.fhircore.fragment.CovaxListFragment
 import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.viewholder.PatientItemViewHolder
 
 /** UI Controller helper class to monitor Patient viewmodel and display list of patients. */
 class PatientItemRecyclerViewAdapter(
-  private val onItemClicked: (PatientListFragment.Intention, PatientItem) -> Unit
+  private val onItemClicked: (CovaxListFragment.Intention, PatientItem) -> Unit
 ) : ListAdapter<PatientItem, PatientItemViewHolder>(PatientItemDiffCallback()) {
 
   class PatientItemDiffCallback : DiffUtil.ItemCallback<PatientItem>() {

@@ -17,6 +17,9 @@
 package org.smartregister.fhircore.activity
 
 import android.app.Activity
+import android.view.View
+import androidx.annotation.IdRes
+import androidx.annotation.StringRes
 import org.junit.After
 import org.smartregister.fhircore.RobolectricTest
 
@@ -28,4 +31,12 @@ abstract class ActivityRobolectricTest : RobolectricTest() {
   }
 
   abstract fun getActivity(): Activity
+
+  fun getString(@StringRes id: Int): String {
+    return getActivity().getString(id)
+  }
+
+  fun <T : View> findViewById(@IdRes id: Int): T {
+    return getActivity().findViewById(id)
+  }
 }

@@ -16,4 +16,19 @@
 
 package org.smartregister.fhircore.model
 
-data class PatientStatus(val status: VaccineStatus, val details: String)
+import java.io.Serializable
+
+data class CovaxDetailView(
+  val registerTitle: String,
+  val registrationQuestionnaireIdentifier: String,
+  val registrationQuestionnaireTitle: String,
+  val vaccineQuestionnaireIdentifier: String,
+  val vaccineQuestionnaireTitle: String,
+) : Serializable {
+
+  companion object {
+    /** The intent argument representing the patient item ID that this detailed item represents. */
+    const val COVAX_DETAIL_VIEW_CONFIG_ID = "covax_client_register_config.json"
+    const val COVAX_ARG_ITEM_ID = "covax_client_item_id"
+  }
+}
