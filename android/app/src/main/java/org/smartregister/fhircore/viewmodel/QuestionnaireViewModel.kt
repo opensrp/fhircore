@@ -92,11 +92,13 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ) {
-    saveParsedResource(questionnaireResponse, questionnaire)
 
     // todo remove if below to turn below login on, when structure-map has obs and flag and
     // risk-assessment as well
-    if (intent.hasExtra(QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR)) return
+    if (intent.hasExtra(QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR)) {
+      saveParsedResource(questionnaireResponse, questionnaire)
+      return
+    }
 
     val bundle =
       ResourceMapper.extract(
@@ -127,6 +129,8 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     questionnaireResponse: QuestionnaireResponse,
     questionnaire: Questionnaire
   ) {
+    if (!questionnaire.hasSubjectType("Patient")) return
+
     val patient =
       ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
 

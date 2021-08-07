@@ -156,7 +156,7 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
     return liveSearchImmunization
   }
 
-  private suspend fun count(query: String?): Long {
+  suspend fun count(query: String?): Long {
     return fhirEngine.count<Patient> {
       Utils.addBasePatientFilter(this)
       apply {
@@ -192,7 +192,9 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
     return liveSearchPatient
   }
 
-  fun runSync() {
+  fun runSync(showLoader: Boolean) {
+    if (showLoader) loadingListObservable.postValue(1)
+
     viewModelScope.launch {
       // fhirEngine.syncUpload()
 
@@ -204,6 +206,8 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
           Utils.buildResourceSyncParams()
         )
         searchResults("", 0, PAGE_COUNT)
+
+        if (showLoader) loadingListObservable.postValue(0)
       }
     }
   }

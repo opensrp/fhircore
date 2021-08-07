@@ -25,6 +25,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import java.lang.IndexOutOfBoundsException
 import java.util.Date
 import org.hl7.fhir.r4.model.Bundle
@@ -123,6 +124,8 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
     Assert.assertNotNull(dialog)
     Assert.assertEquals("dummy 1st dose recorded", dialog.title)
     Assert.assertEquals("Dose 2 due $nextVaccineDate", dialog.message)
+
+    unmockkObject(ResourceMapper)
   }
 
   @Test
