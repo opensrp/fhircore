@@ -47,7 +47,7 @@ class PatientDetailsFragment private constructor() : Fragment() {
 
   private lateinit var fhirEngine: FhirEngine
 
-  private lateinit var patientDetailsViewModel: PatientDetailsViewModel
+  lateinit var patientDetailsViewModel: PatientDetailsViewModel
 
   private val patientImmunizationsAdapter = PatientImmunizationsAdapter()
 

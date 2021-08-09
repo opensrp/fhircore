@@ -20,8 +20,8 @@ import android.content.Context
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.domain.Gender
 
 fun Patient.extractName(): String {
   if (!hasName()) return ""
@@ -32,11 +32,12 @@ fun Patient.extractName(): String {
 }
 
 fun Patient.extractGender(context: Context) =
-  when (Gender.valueOf(this.gender.name)) {
-    Gender.MALE -> context.getString(R.string.male)
-    Gender.FEMALE -> context.getString(R.string.female)
-    Gender.OTHER -> context.getString(R.string.other)
-    Gender.UNKNOWN -> context.getString(R.string.unknown)
+  when (AdministrativeGender.valueOf(this.gender.name)) {
+    AdministrativeGender.MALE -> context.getString(R.string.male)
+    AdministrativeGender.FEMALE -> context.getString(R.string.female)
+    AdministrativeGender.OTHER -> context.getString(R.string.other)
+    AdministrativeGender.UNKNOWN -> context.getString(R.string.unknown)
+    AdministrativeGender.NULL -> ""
   }
 
 fun Patient.extractAge(): String {

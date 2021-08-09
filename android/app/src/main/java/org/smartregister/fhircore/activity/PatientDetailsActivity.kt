@@ -20,16 +20,16 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
-import kotlinx.android.synthetic.main.activity_patient_details.*
+import kotlinx.android.synthetic.main.activity_patient_details.patientDetailsToolbar
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.activity.core.MultiLanguageBaseActivity
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.fragment.PatientDetailsFragment
 import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.util.Utils
 
-class PatientDetailsActivity : AppCompatActivity() {
+class PatientDetailsActivity : MultiLanguageBaseActivity() {
 
   private lateinit var patientId: String
 
