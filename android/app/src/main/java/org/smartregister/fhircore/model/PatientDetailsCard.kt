@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.fragment
+package org.smartregister.fhircore.model
 
 import android.content.Context
 import org.hl7.fhir.r4.model.DateTimeType

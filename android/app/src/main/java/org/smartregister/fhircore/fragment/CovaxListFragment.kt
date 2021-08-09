@@ -16,9 +16,7 @@
 
 package org.smartregister.fhircore.fragment
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -30,22 +28,16 @@ import android.widget.EditText
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.fhir.FhirEngine
 import com.google.android.material.switchmaterial.SwitchMaterial
-import org.smartregister.fhircore.FhirApplication
+import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.activity.PatientDetailActivity
-import org.smartregister.fhircore.activity.PatientDetailsActivity
-import org.smartregister.fhircore.activity.PatientListActivity
+import org.smartregister.fhircore.activity.CovaxListActivity
 import org.smartregister.fhircore.activity.RecordVaccineActivity
 import org.smartregister.fhircore.adapter.PatientItemRecyclerViewAdapter
 import org.smartregister.fhircore.domain.Pagination
@@ -53,18 +45,16 @@ import org.smartregister.fhircore.domain.currentPageNumber
 import org.smartregister.fhircore.domain.hasNextPage
 import org.smartregister.fhircore.domain.hasPreviousPage
 import org.smartregister.fhircore.domain.totalPages
+import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.model.PatientItem
-import org.smartregister.fhircore.viewmodel.PatientListViewModel
-import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
+import org.smartregister.fhircore.viewmodel.CovaxListViewModel
 import timber.log.Timber
 
 const val PAGE_COUNT = 7
 
-class PatientListFragment : Fragment() {
+class CovaxListFragment : Fragment() {
 
-  internal lateinit var patientListViewModel: PatientListViewModel
-  private lateinit var fhirEngine: FhirEngine
-  //  internal val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
+  internal val patientListViewModel by activityViewModels<CovaxListViewModel>()
   private var search: String? = null
   private lateinit var adapter: PatientItemRecyclerViewAdapter
   private lateinit var paginationView: RelativeLayout
@@ -83,9 +73,7 @@ class PatientListFragment : Fragment() {
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    fhirEngine = FhirApplication.fhirEngine(requireContext())
-
-    recyclerView = view.findViewById<RecyclerView>(R.id.patient_list)
+    recyclerView = view.findViewById(R.id.patient_list)
     adapter = PatientItemRecyclerViewAdapter(this::onPatientItemClicked)
     paginationView = view.findViewById(R.id.rl_pagination)
     nextButton = view.findViewById(R.id.btn_next_page)
@@ -100,13 +88,6 @@ class PatientListFragment : Fragment() {
         .closeDrawer(GravityCompat.START)
       syncResources()
     }
-
-    patientListViewModel =
-      ViewModelProvider(
-          this,
-          PatientListViewModelFactory(requireActivity().application, fhirEngine)
-        )
-        .get(PatientListViewModel::class.java)
 
     patientListViewModel.liveSearchedPaginatedPatients.observe(requireActivity(), { setData(it) })
 
@@ -126,7 +107,7 @@ class PatientListFragment : Fragment() {
       )
 
     requireActivity()
-      .findViewById<SwitchMaterial>(R.id.btn_show_overdue_patients)
+      .findViewById<SwitchMaterial>(R.id.btn_show_overdue)
       .setOnCheckedChangeListener { button, isChecked ->
         patientListViewModel.showOverduePatientsOnly.value = isChecked
       }
@@ -154,8 +135,7 @@ class PatientListFragment : Fragment() {
       }
     )
 
-    setUpBarcodeScanner()
-    syncResources()
+    loadData()
     super.onViewCreated(view, savedInstanceState)
   }
 
@@ -169,64 +149,6 @@ class PatientListFragment : Fragment() {
     }
     adapter.notifyDataSetChanged()
     super.onResume()
-  }
-
-  private fun setUpBarcodeScanner() {
-    val btnScanBarcode: View = requireActivity().findViewById(R.id.layout_scan_barcode)
-    requireActivity()
-      .supportFragmentManager
-      .setFragmentResultListener(
-        "result",
-        this,
-        { _, result ->
-          val barcode = result.getString("result")!!.trim()
-          patientListViewModel
-            .isPatientExists(barcode)
-            .observe(
-              viewLifecycleOwner,
-              {
-                if (it.isSuccess) {
-                  launchPatientDetailActivity(barcode)
-                } else {
-                  (requireActivity() as PatientListActivity).startRegistrationActivity(
-                    requireContext(),
-                    barcode
-                  )
-                }
-                //                liveBarcodeScanningFragment.onDestroy()
-              }
-            )
-        }
-      )
-
-    val requestPermissionLauncher = getBarcodePermissionLauncher()
-    btnScanBarcode.setOnClickListener { launchBarcodeReader(requestPermissionLauncher) }
-  }
-
-  private fun getBarcodePermissionLauncher(): ActivityResultLauncher<String> {
-    return registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-      isGranted: Boolean ->
-      if (isGranted) {
-        //        liveBarcodeScanningFragment.show(requireActivity().supportFragmentManager, "TAG")
-      } else {
-        Toast.makeText(
-            requireContext(),
-            "Camera permissions are needed to launch barcode reader!",
-            Toast.LENGTH_LONG
-          )
-          .show()
-      }
-    }
-  }
-
-  private fun launchBarcodeReader(requestPermissionLauncher: ActivityResultLauncher<String>) {
-    if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) ==
-        PackageManager.PERMISSION_GRANTED
-    ) {
-      //      liveBarcodeScanningFragment.show(requireActivity().supportFragmentManager, "TAG")
-    } else {
-      requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-    }
   }
 
   fun hideEmptyListViews() {
@@ -247,40 +169,38 @@ class PatientListFragment : Fragment() {
     patientListViewModel.searchResults(search, nextPage, PAGE_COUNT)
   }
 
-  private fun launchPatientDetailActivity(patientLogicalId: String) {
-    val intent =
-      Intent(requireContext(), PatientDetailActivity::class.java).apply {
-        putExtra(PatientDetailFragment.ARG_ITEM_ID, patientLogicalId)
-      }
-    this.startActivity(intent)
-  }
-
   // Click handler to help display the details about the patients from the list.
   fun onPatientItemClicked(intention: Intention, patientItem: PatientItem) {
     when (intention) {
       Intention.RECORD_VACCINE -> {
-        startActivity(
-          Intent(requireContext(), RecordVaccineActivity::class.java)
-            .putExtras(
-              RecordVaccineActivity.getExtraBundles(
-                title = getString(R.string.record_vaccine),
-                patientId = patientItem.logicalId
-              )
-            )
-        )
+        launchRecordVaccineActivity(patientItem.logicalId)
       }
       Intention.VIEW -> {
-        this.startActivity(
-          Intent(requireContext(), PatientDetailsActivity::class.java).apply {
-            putExtra(PatientDetailsFragment.PATIENT_ID, patientItem.logicalId)
-          }
-        )
+        // todo decouple this as well
+        (requireActivity() as CovaxListActivity).launchDetailActivity(patientItem.logicalId)
       }
     }
   }
 
+  private fun launchRecordVaccineActivity(clientIdentifier: String) {
+    requireActivity()
+      .startActivity(
+        Intent(requireContext(), RecordVaccineActivity::class.java).apply {
+          putExtra(CovaxDetailView.COVAX_ARG_ITEM_ID, clientIdentifier)
+        }
+      )
+  }
+
+  internal fun loadData() {
+    runBlocking {
+      if (patientListViewModel.count("") == 0L) {
+        patientListViewModel.runSync(true)
+      } else patientListViewModel.searchResults("")
+    }
+  }
+
   private fun syncResources() {
-    patientListViewModel.runSync()
+    patientListViewModel.runSync(false)
     Toast.makeText(requireContext(), R.string.syncing, Toast.LENGTH_LONG).show()
   }
 

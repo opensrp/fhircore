@@ -16,39 +16,30 @@
 
 package org.smartregister.fhircore.fragment
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.fhir.FhirEngine
-import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.activity.QuestionnaireActivity
 import org.smartregister.fhircore.adapter.PatientDetailsCardRecyclerViewAdapter
+import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.util.Utils
-import org.smartregister.fhircore.viewmodel.PatientListViewModel
-import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
+import org.smartregister.fhircore.viewmodel.CovaxListViewModel
 
 /**
  * A fragment representing a single Patient detail screen. This fragment is contained in a
  * [PatientDetailActivity].
  */
-class PatientDetailFragment : Fragment() {
+class CovaxDetailFragment : Fragment() {
 
+  val viewModel by activityViewModels<CovaxListViewModel>()
   lateinit var patientId: String
-  lateinit var viewModel: PatientListViewModel
-  lateinit var fhirEngine: FhirEngine
   lateinit var adapter: PatientDetailsCardRecyclerViewAdapter
-
-  var doseNumber: Int? = null
-  var initialDose: String? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -56,8 +47,7 @@ class PatientDetailFragment : Fragment() {
     savedInstanceState: Bundle?
   ): View {
     // patient id must be supplied
-    patientId = arguments?.getString(ARG_ITEM_ID)!!
-    fhirEngine = FhirApplication.fhirEngine(requireContext())
+    patientId = arguments?.getString(CovaxDetailView.COVAX_ARG_ITEM_ID)!!
 
     val rootView = inflater.inflate(R.layout.patient_detail, container, false)
     adapter = PatientDetailsCardRecyclerViewAdapter()
@@ -65,20 +55,13 @@ class PatientDetailFragment : Fragment() {
     val recyclerView: RecyclerView = rootView.findViewById(R.id.observation_list)
     recyclerView.adapter = adapter
 
-    viewModel =
-      ViewModelProvider(
-          this,
-          PatientListViewModelFactory(this.requireActivity().application, fhirEngine)
-        )
-        .get(PatientListViewModel::class.java)
-
     // bind profile data
     loadProfile()
 
     return rootView
   }
 
-  private fun loadProfile() {
+  fun loadProfile() {
     // bind patient summary
     viewModel.getPatientItem(patientId).observe(viewLifecycleOwner, { setupPatientData(it) })
 
@@ -89,11 +72,16 @@ class PatientDetailFragment : Fragment() {
         viewLifecycleOwner,
         {
           if (it.size < 3) {
-            activity?.findViewById<Button>(R.id.btn_record_vaccine)?.visibility = View.VISIBLE
-          }
+            setVisibility(R.id.btn_record_vaccine, View.VISIBLE)
+          } else setVisibility(R.id.btn_record_vaccine, View.INVISIBLE)
+
           adapter.submitList(it)
         }
       )
+  }
+
+  private fun setVisibility(id: Int, visibility: Int) {
+    requireActivity().findViewById<View>(id).visibility = visibility
   }
 
   override fun onResume() {
@@ -114,24 +102,6 @@ class PatientDetailFragment : Fragment() {
         if (patientItem.risk.isNullOrEmpty()) View.INVISIBLE else View.VISIBLE
 
       patientId = patientItem.logicalId
-      doseNumber = patientItem.vaccineSummary?.doseNumber
-      initialDose = patientItem.vaccineSummary?.initialDose
     }
-  }
-
-  fun editPatient() {
-    viewModel.getPatientItem(patientId).value?.let {
-      startActivity(
-        Intent(requireContext(), QuestionnaireActivity::class.java)
-          .putExtras(QuestionnaireActivity.getExtrasBundle(it.logicalId))
-      )
-    }
-  }
-
-  companion object {
-    /** The fragment argument representing the patient item ID that this fragment represents. */
-    const val ARG_ITEM_ID = "patient_item_id"
-    const val ARG_PRE_ASSIGNED_ID = "patient_preassigned_id"
-    const val ARG_ID_FIELD_KEY = "patient-barcode"
   }
 }

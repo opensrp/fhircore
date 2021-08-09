@@ -21,16 +21,16 @@
         <activity
             android:name=".activity.PatientDetailsActivity"
             android:label=""
-            android:parentActivityName=".activity.PatientListActivity"
+            android:parentActivityName=".activity.CovaxListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="org.smartregister.fhircore.activity.PatientListActivity" />
+                android:value="org.smartregister.fhircore.activity.CovaxListActivity" />
         </activity>
         <activity
             android:name=".activity.LoginActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -39,21 +39,25 @@
         </activity>
         <activity android:name=".activity.RecordVaccineActivity" />
         <activity
-            android:name=".activity.PatientListActivity"
+            android:name="org.smartregister.fhircore.activity.CovaxListActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name=".activity.PatientDetailActivity"
+            android:name="org.smartregister.fhircore.activity.AncListActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name="org.smartregister.fhircore.activity.CovaxDetailActivity"
             android:label=""
-            android:parentActivityName=".activity.PatientListActivity"
+            android:parentActivityName="org.smartregister.fhircore.activity.CovaxListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="org.smartregister.fhircore.activity.PatientListActivity" />
+                android:value="org.smartregister.fhircore.activity.CovaxListActivity" />
         </activity>
         <activity
-            android:name=".activity.QuestionnaireActivity"
-            android:parentActivityName=".activity.PatientListActivity" />
+            android:name=".activity.core.QuestionnaireActivity"
+            android:parentActivityName=".activity.CovaxListActivity" />
 
         <service android:name=".auth.account.AccountService">
             <intent-filter>
@@ -65,5 +69,4 @@
                 android:resource="@xml/authenticator" />
         </service>
     </application>
-
 </manifest>

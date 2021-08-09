@@ -29,11 +29,19 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RiskAssessment
-import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.RobolectricTest
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_TITLE_KEY
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
 @Config(shadows = [FhirApplicationShadow::class])
@@ -47,7 +55,7 @@ class QuestionnaireUtilsTest : RobolectricTest() {
     val iParser: IParser = FhirContext.forR4().newJsonParser()
 
     val qJson =
-      context.assets.open("patient-registration.json").bufferedReader().use { it.readText() }
+      context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
 
     val qrJson =
       context.assets.open("sample_registration_questionnaireresponse.json").bufferedReader().use {
@@ -59,19 +67,46 @@ class QuestionnaireUtilsTest : RobolectricTest() {
   }
 
   @Test
+  fun testBuildQuestionnaireIntent_shouldReturnIntentWithExtrasWithPatientId() {
+    val result =
+      QuestionnaireUtils.buildQuestionnaireIntent(context, "My Q title", "my-q-id", "12345", false)
+
+    assertEquals(QuestionnaireActivity::class.java.name, result.component!!.className)
+
+    assertEquals("My Q title", result.getStringExtra(QUESTIONNAIRE_TITLE_KEY))
+    assertEquals("my-q-id", result.getStringExtra(QUESTIONNAIRE_PATH_KEY))
+
+    // should set patient-arg key and not the pre-assigned-key which is for new patients
+    assertEquals("12345", result.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY))
+    assertNull(result.getStringExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID))
+  }
+
+  @Test
+  fun testBuildQuestionnaireIntent_shouldReturnIntentWithExtrasWithNewPatient() {
+    val result =
+      QuestionnaireUtils.buildQuestionnaireIntent(context, "My Q title", "my-q-id", "12345", true)
+
+    assertEquals(QuestionnaireActivity::class.java.name, result.component!!.className)
+
+    assertEquals("My Q title", result.getStringExtra(QUESTIONNAIRE_TITLE_KEY))
+    assertEquals("my-q-id", result.getStringExtra(QUESTIONNAIRE_PATH_KEY))
+
+    // should set patient-arg key and not the pre-assigned-key which is for new patients
+    assertEquals("12345", result.getStringExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID))
+    assertNull(result.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY))
+  }
+
+  @Test
   fun testAsCodeableConcept_shouldReturnCorrectTextAndCodeSystemMapping() {
     val result = QuestionnaireUtils.asCodeableConcept("diabetes_mellitus", questionnaire)
 
-    Assert.assertEquals("Diabetes Mellitus (DM)", result.text)
+    assertEquals("Diabetes Mellitus (DM)", result.text)
 
-    Assert.assertEquals("73211009", result.coding[0].code)
-    Assert.assertEquals("https://www.snomed.org", result.coding[0].system)
+    assertEquals("73211009", result.coding[0].code)
+    assertEquals("https://www.snomed.org", result.coding[0].system)
 
-    Assert.assertEquals("diabetes_mellitus", result.coding[1].code)
-    Assert.assertEquals(
-      "http://hl7.org/fhir/StructureDefinition/Observation",
-      result.coding[1].system
-    )
+    assertEquals("diabetes_mellitus", result.coding[1].code)
+    assertEquals("http://hl7.org/fhir/StructureDefinition/Observation", result.coding[1].system)
   }
 
   @Test
@@ -84,23 +119,23 @@ class QuestionnaireUtilsTest : RobolectricTest() {
 
     val result = QuestionnaireUtils.asObs(qrItem, patient, questionnaire)
 
-    Assert.assertEquals("Diabetes Mellitus (DM)", result.code.text)
+    assertEquals("Diabetes Mellitus (DM)", result.code.text)
 
-    Assert.assertTrue(UUID.fromString(result.id).toString().isNotEmpty())
-    Assert.assertTrue(result.effectiveDateTimeType.isToday)
-    Assert.assertTrue(result.valueBooleanType.booleanValue())
+    assertTrue(UUID.fromString(result.id).toString().isNotEmpty())
+    assertTrue(result.effectiveDateTimeType.isToday)
+    assertTrue(result.valueBooleanType.booleanValue())
 
-    Assert.assertEquals("73211009", result.code.coding[0].code)
-    Assert.assertEquals("https://www.snomed.org", result.code.coding[0].system)
+    assertEquals("73211009", result.code.coding[0].code)
+    assertEquals("https://www.snomed.org", result.code.coding[0].system)
 
-    Assert.assertEquals("diabetes_mellitus", result.code.coding[1].code)
-    Assert.assertEquals(
+    assertEquals("diabetes_mellitus", result.code.coding[1].code)
+    assertEquals(
       "http://hl7.org/fhir/StructureDefinition/Observation",
       result.code.coding[1].system
     )
 
-    Assert.assertEquals(Observation.ObservationStatus.FINAL, result.status)
-    Assert.assertEquals("Patient/" + patient.id, result.subject.reference)
+    assertEquals(Observation.ObservationStatus.FINAL, result.status)
+    assertEquals("Patient/" + patient.id, result.subject.reference)
   }
 
   @Test
@@ -116,30 +151,30 @@ class QuestionnaireUtilsTest : RobolectricTest() {
     // obs1 with diabetes
     val obs1 = result[0]
 
-    Assert.assertTrue(obs1.effectiveDateTimeType.isToday)
-    Assert.assertTrue(obs1.valueBooleanType.booleanValue())
+    assertTrue(obs1.effectiveDateTimeType.isToday)
+    assertTrue(obs1.valueBooleanType.booleanValue())
 
-    Assert.assertEquals("73211009", obs1.code.coding[0].code)
-    Assert.assertEquals("diabetes_mellitus", obs1.code.coding[1].code)
-    Assert.assertEquals("Patient/" + patient.id, obs1.subject.reference)
+    assertEquals("73211009", obs1.code.coding[0].code)
+    assertEquals("diabetes_mellitus", obs1.code.coding[1].code)
+    assertEquals("Patient/" + patient.id, obs1.subject.reference)
 
     // obs2 with hypertension
     val obs2 = result[1]
 
-    Assert.assertTrue(obs2.effectiveDateTimeType.isToday)
-    Assert.assertTrue(obs2.valueBooleanType.booleanValue())
+    assertTrue(obs2.effectiveDateTimeType.isToday)
+    assertTrue(obs2.valueBooleanType.booleanValue())
 
-    Assert.assertEquals("59621000", obs2.code.coding[0].code)
-    Assert.assertEquals("hypertension", obs2.code.coding[1].code)
-    Assert.assertEquals("Patient/" + patient.id, obs2.subject.reference)
+    assertEquals("59621000", obs2.code.coding[0].code)
+    assertEquals("hypertension", obs2.code.coding[1].code)
+    assertEquals("Patient/" + patient.id, obs2.subject.reference)
 
     // one group obs with hasMembers
     val main = result[2]
-    Assert.assertEquals("Do you have any of the following conditions?", main.code.text)
-    Assert.assertEquals("991381000000107", main.code.coding[0].code)
-    Assert.assertEquals("https://www.snomed.org", main.code.coding[0].system)
-    Assert.assertEquals("Observation/" + obs1.id, main.hasMember[0].reference)
-    Assert.assertEquals("Observation/" + obs2.id, main.hasMember[1].reference)
+    assertEquals("Do you have any of the following conditions?", main.code.text)
+    assertEquals("991381000000107", main.code.coding[0].code)
+    assertEquals("https://www.snomed.org", main.code.coding[0].system)
+    assertEquals("Observation/" + obs1.id, main.hasMember[0].reference)
+    assertEquals("Observation/" + obs2.id, main.hasMember[1].reference)
   }
 
   @Test
@@ -157,25 +192,25 @@ class QuestionnaireUtilsTest : RobolectricTest() {
 
     // obs1 with diabetes
     val obs1 = observations[0]
-    Assert.assertEquals("diabetes_mellitus", obs1.code.coding[1].code)
+    assertEquals("diabetes_mellitus", obs1.code.coding[1].code)
 
     // obs2 with hypertension
     val obs2 = observations[1]
-    Assert.assertEquals("hypertension", obs2.code.coding[1].code)
+    assertEquals("hypertension", obs2.code.coding[1].code)
 
-    Assert.assertEquals(obs1.subject.reference, risk.subject.reference)
-    Assert.assertEquals("Patient/1122", risk.subject.reference)
+    assertEquals(obs1.subject.reference, risk.subject.reference)
+    assertEquals("Patient/1122", risk.subject.reference)
 
-    Assert.assertEquals(BigDecimal(0), risk.prediction[0].relativeRisk)
-    Assert.assertTrue(risk.basis.isEmpty())
+    assertEquals(BigDecimal(0), risk.prediction[0].relativeRisk)
+    assertTrue(risk.basis.isEmpty())
 
-    Assert.assertEquals("225338004", risk.code.coding[0].code)
-    Assert.assertEquals("https://www.snomed.org", risk.code.coding[0].system)
+    assertEquals("225338004", risk.code.coding[0].code)
+    assertEquals("https://www.snomed.org", risk.code.coding[0].system)
 
-    Assert.assertTrue(risk.occurrence.dateTimeValue().isToday)
-    Assert.assertEquals(RiskAssessment.RiskAssessmentStatus.FINAL, risk.status)
+    assertTrue(risk.occurrence.dateTimeValue().isToday)
+    assertEquals(RiskAssessment.RiskAssessmentStatus.FINAL, risk.status)
 
-    Assert.assertFalse(risk.prediction[0].hasOutcome())
+    assertFalse(risk.prediction[0].hasOutcome())
   }
 
   @Test
@@ -193,29 +228,29 @@ class QuestionnaireUtilsTest : RobolectricTest() {
 
     // obs1 with diabetes
     val obs1 = observations[0]
-    Assert.assertEquals("diabetes_mellitus", obs1.code.coding[1].code)
+    assertEquals("diabetes_mellitus", obs1.code.coding[1].code)
 
     // obs2 with hypertension
     val obs2 = observations[1]
-    Assert.assertEquals("hypertension", obs2.code.coding[1].code)
+    assertEquals("hypertension", obs2.code.coding[1].code)
 
-    Assert.assertEquals(obs1.subject.reference, risk.subject.reference)
-    Assert.assertEquals("Patient/1122", risk.subject.reference)
+    assertEquals(obs1.subject.reference, risk.subject.reference)
+    assertEquals("Patient/1122", risk.subject.reference)
 
-    Assert.assertEquals(BigDecimal(2), risk.prediction[0].relativeRisk)
-    Assert.assertEquals("Observation/" + obs1.id, risk.basis[0].reference)
-    Assert.assertEquals("Observation/" + obs2.id, risk.basis[1].reference)
+    assertEquals(BigDecimal(2), risk.prediction[0].relativeRisk)
+    assertEquals("Observation/" + obs1.id, risk.basis[0].reference)
+    assertEquals("Observation/" + obs2.id, risk.basis[1].reference)
 
-    Assert.assertEquals("225338004", risk.code.coding[0].code)
-    Assert.assertEquals("https://www.snomed.org", risk.code.coding[0].system)
+    assertEquals("225338004", risk.code.coding[0].code)
+    assertEquals("https://www.snomed.org", risk.code.coding[0].system)
 
-    Assert.assertTrue(risk.occurrence.dateTimeValue().isToday)
-    Assert.assertEquals(RiskAssessment.RiskAssessmentStatus.FINAL, risk.status)
+    assertTrue(risk.occurrence.dateTimeValue().isToday)
+    assertEquals(RiskAssessment.RiskAssessmentStatus.FINAL, risk.status)
 
-    Assert.assertEquals("High Risk for COVID-19", risk.prediction[0].outcome.text)
+    assertEquals("High Risk for COVID-19", risk.prediction[0].outcome.text)
 
-    Assert.assertEquals("870577009", risk.prediction[0].outcome.coding[0].code)
-    Assert.assertEquals("https://www.snomed.org", risk.prediction[0].outcome.coding[0].system)
+    assertEquals("870577009", risk.prediction[0].outcome.coding[0].code)
+    assertEquals("https://www.snomed.org", risk.prediction[0].outcome.coding[0].system)
   }
 
   @Test
@@ -233,11 +268,11 @@ class QuestionnaireUtilsTest : RobolectricTest() {
 
     val flag = QuestionnaireUtils.extractFlag(questionnaireResponse, questionnaire, risk)!!
 
-    Assert.assertEquals(risk.subject.reference, flag.subject.reference)
-    Assert.assertEquals(Flag.FlagStatus.ACTIVE, flag.status)
+    assertEquals(risk.subject.reference, flag.subject.reference)
+    assertEquals(Flag.FlagStatus.ACTIVE, flag.status)
 
-    Assert.assertEquals("870577009", flag.code.coding[0].code)
-    Assert.assertEquals("https://www.snomed.org", flag.code.coding[0].system)
+    assertEquals("870577009", flag.code.coding[0].code)
+    assertEquals("https://www.snomed.org", flag.code.coding[0].system)
   }
 
   @Test
@@ -257,8 +292,8 @@ class QuestionnaireUtilsTest : RobolectricTest() {
     val flagExt =
       QuestionnaireUtils.extractFlagExtension(flag, questionnaireResponse, questionnaire)!!
 
-    Assert.assertEquals("http://hl7.org/fhir/StructureDefinition/flag-detail", flagExt.url)
-    Assert.assertEquals("at risk", flagExt.value.toString())
+    assertEquals("http://hl7.org/fhir/StructureDefinition/flag-detail", flagExt.url)
+    assertEquals("at risk", flagExt.value.toString())
   }
 
   private fun getQuestionnaireResponseItem(

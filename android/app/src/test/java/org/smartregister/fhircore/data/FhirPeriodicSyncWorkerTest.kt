@@ -51,7 +51,7 @@ class FhirPeriodicSyncWorkerTest : RobolectricTest() {
   @Test
   fun testGetSyncDataReturnMapOfConfiguredSyncItems() {
     val data = fhirPeriodicSyncWorker.getSyncData()
-    Assert.assertEquals(data.size, 4)
+    Assert.assertEquals(data.size, 5)
     Assert.assertTrue(data.containsKey(ResourceType.Patient))
     Assert.assertTrue(data.containsKey(ResourceType.Immunization))
     Assert.assertTrue(data.containsKey(ResourceType.StructureMap))

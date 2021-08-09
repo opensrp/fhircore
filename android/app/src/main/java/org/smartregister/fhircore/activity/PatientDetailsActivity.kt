@@ -24,11 +24,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import kotlinx.android.synthetic.main.activity_patient_details.*
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.fragment.PatientDetailsFragment
+import org.smartregister.fhircore.model.CovaxDetailView
+import org.smartregister.fhircore.util.Utils
 
 class PatientDetailsActivity : AppCompatActivity() {
 
   private lateinit var patientId: String
+
+  private lateinit var detailView: CovaxDetailView
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -36,13 +41,18 @@ class PatientDetailsActivity : AppCompatActivity() {
     setSupportActionBar(patientDetailsToolbar)
 
     if (savedInstanceState == null) {
-      patientId = intent.extras?.getString(PatientDetailsFragment.PATIENT_ID) ?: ""
+      detailView =
+        Utils.loadConfig(
+          CovaxDetailView.COVAX_DETAIL_VIEW_CONFIG_ID, CovaxDetailView::class.java, this
+        )
+
+      patientId = intent.extras?.getString(CovaxDetailView.COVAX_ARG_ITEM_ID) ?: ""
       supportFragmentManager
         .beginTransaction()
         .replace(
           R.id.container,
           PatientDetailsFragment.newInstance(
-            bundleOf(Pair(PatientDetailsFragment.PATIENT_ID, patientId))
+            bundleOf(Pair(CovaxDetailView.COVAX_ARG_ITEM_ID, patientId))
           )
         )
         .commitNow()
@@ -58,7 +68,7 @@ class PatientDetailsActivity : AppCompatActivity() {
     if (item.itemId == R.id.patient_profile_edit) {
       startActivity(
         Intent(this, QuestionnaireActivity::class.java)
-          .putExtras(QuestionnaireActivity.getExtrasBundle(patientId))
+          .putExtras(QuestionnaireActivity.getExtrasBundle(patientId, detailView))
       )
       return true
     }

@@ -33,6 +33,7 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.RecordVaccineActivity
 import org.smartregister.fhircore.adapter.PatientImmunizationsAdapter
+import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.util.createFactory
 import org.smartregister.fhircore.util.extractAge
 import org.smartregister.fhircore.util.extractGender
@@ -58,7 +59,7 @@ class PatientDetailsFragment private constructor() : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    val patientId = arguments?.getString(PATIENT_ID) ?: ""
+    val patientId = arguments?.getString(CovaxDetailView.COVAX_ARG_ITEM_ID) ?: ""
 
     setupViews(patientId)
 
@@ -100,7 +101,6 @@ class PatientDetailsFragment private constructor() : Fragment() {
         Intent(requireContext(), RecordVaccineActivity::class.java)
           .putExtras(
             RecordVaccineActivity.getExtraBundles(
-              title = getString(R.string.record_vaccine),
               patientId = patientId
             )
           )
@@ -167,7 +167,5 @@ class PatientDetailsFragment private constructor() : Fragment() {
   companion object {
     fun newInstance(bundle: Bundle = Bundle()) =
       PatientDetailsFragment().apply { arguments = bundle }
-
-    const val PATIENT_ID = "patientId"
   }
 }
