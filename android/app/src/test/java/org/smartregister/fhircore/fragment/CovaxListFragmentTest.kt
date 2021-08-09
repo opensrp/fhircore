@@ -60,7 +60,6 @@ import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.activity.CovaxDetailActivity
 import org.smartregister.fhircore.activity.CovaxListActivity
 import org.smartregister.fhircore.activity.PatientDetailsActivity
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
@@ -392,7 +391,8 @@ class CovaxListFragmentTest : FragmentRobolectricTest() {
 
     ReflectionHelpers.callInstanceMethod<Any>(covaxListFragment, "setUpBarcodeScanner")
 
-    val expectedIntent = Intent(covaxListFragment.requireContext(), CovaxDetailActivity::class.java)
+    val expectedIntent =
+      Intent(covaxListFragment.requireContext(), PatientDetailsFragment::class.java)
     val actualIntent =
       shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
 
