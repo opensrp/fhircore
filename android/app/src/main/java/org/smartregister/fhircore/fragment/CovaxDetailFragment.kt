@@ -20,7 +20,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -62,7 +61,7 @@ class CovaxDetailFragment : Fragment() {
     return rootView
   }
 
-  private fun loadProfile() {
+  fun loadProfile() {
     // bind patient summary
     viewModel.getPatientItem(patientId).observe(viewLifecycleOwner, { setupPatientData(it) })
 
@@ -73,11 +72,16 @@ class CovaxDetailFragment : Fragment() {
         viewLifecycleOwner,
         {
           if (it.size < 3) {
-            activity?.findViewById<Button>(R.id.btn_record_vaccine)?.visibility = View.VISIBLE
-          }
+            setVisibility(R.id.btn_record_vaccine, View.VISIBLE)
+          } else setVisibility(R.id.btn_record_vaccine, View.INVISIBLE)
+
           adapter.submitList(it)
         }
       )
+  }
+
+  private fun setVisibility(id: Int, visibility: Int) {
+    requireActivity().findViewById<View>(id).visibility = visibility
   }
 
   override fun onResume() {

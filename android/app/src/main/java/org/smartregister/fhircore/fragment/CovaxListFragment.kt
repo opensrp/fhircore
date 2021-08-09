@@ -35,6 +35,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.switchmaterial.SwitchMaterial
+import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.CovaxListActivity
 import org.smartregister.fhircore.activity.RecordVaccineActivity
@@ -134,7 +135,7 @@ class CovaxListFragment : Fragment() {
       }
     )
 
-    syncResources()
+    loadData()
     super.onViewCreated(view, savedInstanceState)
   }
 
@@ -190,8 +191,16 @@ class CovaxListFragment : Fragment() {
       )
   }
 
+  internal fun loadData() {
+    runBlocking {
+      if (patientListViewModel.count("") == 0L) {
+        patientListViewModel.runSync(true)
+      } else patientListViewModel.searchResults("")
+    }
+  }
+
   private fun syncResources() {
-    patientListViewModel.runSync()
+    patientListViewModel.runSync(false)
     Toast.makeText(requireContext(), R.string.syncing, Toast.LENGTH_LONG).show()
   }
 

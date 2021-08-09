@@ -31,6 +31,7 @@ import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
+import io.mockk.verifyOrder
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -47,6 +48,7 @@ import org.smartregister.fhircore.FhirApplication.Companion.fhirEngine
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE_KEY
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.shadow.TestUtils
 import org.smartregister.fhircore.util.QuestionnaireUtils
@@ -185,8 +187,51 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  @Ignore("Overridden the structure map parsing for now")
   fun `saveExtractedResources() should call viewModel#saveExtractedResources`() {
+    val viewModel = spyViewModel()
+
+    // questionnaire and response must map
+    viewModel.questionnaire.item.clear()
+    viewModel.questionnaire.addItem().linkId = "test_field_i"
+
+    val questionnaireResponse = QuestionnaireResponse()
+    questionnaireResponse.addItem().linkId = "test_field_i"
+
+    // todo app temporarily bypass it so enable
+    questionnaireActivity.intent.removeExtra(QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR)
+
+    questionnaireActivity.saveExtractedResources(questionnaireResponse)
+
+    verify(exactly = 1) {
+      viewModel.saveExtractedResources(any(), intent, any(), questionnaireResponse)
+    }
+    verify(exactly = 1) { viewModel.saveBundleResources(any(), any()) }
+    verify { questionnaireActivity.finish() }
+  }
+
+  @Test
+  fun `saveExtractedResources() should call viewModel#saveParsedResource`() {
+    val viewModel = spyViewModel()
+
+    // questionnaire and response must map
+    viewModel.questionnaire.item.clear()
+    viewModel.questionnaire.addItem().linkId = "test_field_i"
+    viewModel.questionnaire.addSubjectType("Patient")
+
+    val questionnaireResponse = QuestionnaireResponse()
+    questionnaireResponse.addItem().linkId = "test_field_i"
+
+    questionnaireActivity.saveExtractedResources(questionnaireResponse)
+
+    verifyOrder {
+      viewModel.saveExtractedResources(any(), intent, any(), questionnaireResponse)
+      viewModel.saveParsedResource(any(), any())
+    }
+    verify(inverse = true) { viewModel.saveBundleResources(any()) }
+    verify { questionnaireActivity.finish() }
+  }
+
+  private fun spyViewModel(): QuestionnaireViewModel {
     val viewModel =
       spyk(
         ReflectionHelpers.getField<ViewModelLazy<QuestionnaireViewModel>>(
@@ -196,15 +241,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
           .value
       )
     ReflectionHelpers.setField(questionnaireActivity, "viewModel\$delegate", lazy { viewModel })
-
-    val questionnaireResponse = QuestionnaireResponse()
-
-    questionnaireActivity.saveExtractedResources(questionnaireResponse)
-
-    verify(exactly = 1) {
-      viewModel.saveExtractedResources(any(), intent, any(), questionnaireResponse)
-    }
-    verify { questionnaireActivity.finish() }
+    return viewModel
   }
 
   override fun getActivity(): Activity {

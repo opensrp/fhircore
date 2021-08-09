@@ -25,6 +25,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
+import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
@@ -41,12 +42,15 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.CovaxDetailActivity
 import org.smartregister.fhircore.model.CovaxDetailView
+import org.smartregister.fhircore.model.PatientDetailsCard
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.shadow.TestUtils
+import org.smartregister.fhircore.viewmodel.CovaxListViewModel
 
 @Config(shadows = [FhirApplicationShadow::class])
 class CovaxDetailFragmentTest : FragmentRobolectricTest() {
 
+  private lateinit var viewModel: CovaxListViewModel
   private lateinit var fhirEngine: FhirEngine
   private lateinit var context: Context
   private lateinit var covaxDetailActivity: CovaxDetailActivity
@@ -72,7 +76,7 @@ class CovaxDetailFragmentTest : FragmentRobolectricTest() {
     covaxDetailActivity =
       Robolectric.buildActivity(CovaxDetailActivity::class.java, intent).create().get()
 
-    val viewModel = spyk(covaxDetailActivity.viewModel)
+    viewModel = spyk(covaxDetailActivity.viewModel)
 
     fragmentScenario =
       launchFragmentInContainer(
@@ -92,15 +96,43 @@ class CovaxDetailFragmentTest : FragmentRobolectricTest() {
   }
 
   @Test
-  fun testEditPatientShouldLoadProfile() {
+  fun testFragmentShouldLoadProfile() {
     assertEquals(View.INVISIBLE, getView<TextView>(R.id.risk_flag).visibility)
     assertEquals("ID: " + patient.id, getView<TextView>(R.id.id_patient_number).text)
   }
 
   @Test
-  fun testFragmentShouldHaveRecordVaccineEnabled() {
+  fun testFragmentShouldHaveRecordVaccineEnabledWithDueDose() {
+    coEvery { viewModel.fetchPatientDetailsCards(any(), any()) } returns
+      MutableLiveData(
+        listOf(buildPatientDetailsCard("registration"), buildPatientDetailsCard("vaccine dose 1"))
+      )
+
+    covaxDetailFragment.loadProfile()
+
     val btnRecordVaccine = getView<View>(R.id.btn_record_vaccine)
     assertEquals(View.VISIBLE, btnRecordVaccine.visibility)
+  }
+
+  @Test
+  fun testFragmentShouldHaveRecordVaccineHiddenWith2Doses() {
+    coEvery { viewModel.fetchPatientDetailsCards(any(), any()) } returns
+      MutableLiveData(
+        listOf(
+          buildPatientDetailsCard("registration"),
+          buildPatientDetailsCard("vaccine dose 1"),
+          buildPatientDetailsCard("vaccine dose 2")
+        )
+      )
+
+    covaxDetailFragment.loadProfile()
+
+    val btnRecordVaccine = getView<View>(R.id.btn_record_vaccine)
+    assertEquals(View.INVISIBLE, btnRecordVaccine.visibility)
+  }
+
+  private fun buildPatientDetailsCard(id: String): PatientDetailsCard {
+    return PatientDetailsCard(1, 1, id, "", "", "")
   }
 
   override fun getFragment(): Fragment {
