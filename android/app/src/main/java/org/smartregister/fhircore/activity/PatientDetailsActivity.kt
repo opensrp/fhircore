@@ -43,7 +43,9 @@ class PatientDetailsActivity : AppCompatActivity() {
     if (savedInstanceState == null) {
       detailView =
         Utils.loadConfig(
-          CovaxDetailView.COVAX_DETAIL_VIEW_CONFIG_ID, CovaxDetailView::class.java, this
+          CovaxDetailView.COVAX_DETAIL_VIEW_CONFIG_ID,
+          CovaxDetailView::class.java,
+          this
         )
 
       patientId = intent.extras?.getString(CovaxDetailView.COVAX_ARG_ITEM_ID) ?: ""

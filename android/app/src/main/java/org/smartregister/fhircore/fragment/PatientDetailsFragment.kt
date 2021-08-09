@@ -99,11 +99,7 @@ class PatientDetailsFragment private constructor() : Fragment() {
     recordVaccineButton.setOnClickListener {
       startActivity(
         Intent(requireContext(), RecordVaccineActivity::class.java)
-          .putExtras(
-            RecordVaccineActivity.getExtraBundles(
-              patientId = patientId
-            )
-          )
+          .putExtras(RecordVaccineActivity.getExtraBundles(patientId = patientId))
       )
     }
   }

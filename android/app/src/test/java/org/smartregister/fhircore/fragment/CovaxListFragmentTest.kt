@@ -62,6 +62,7 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.CovaxDetailActivity
 import org.smartregister.fhircore.activity.CovaxListActivity
+import org.smartregister.fhircore.activity.PatientDetailsActivity
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.domain.Pagination
 import org.smartregister.fhircore.model.CovaxDetailView
@@ -143,7 +144,7 @@ class CovaxListFragmentTest : FragmentRobolectricTest() {
       startedActivityIntent.getStringExtra(CovaxDetailView.COVAX_ARG_ITEM_ID)
     )
     Assert.assertEquals(
-      CovaxDetailActivity::class.java.name,
+      PatientDetailsActivity::class.java.name,
       startedActivityIntent.component?.className
     )
   }
@@ -351,7 +352,7 @@ class CovaxListFragmentTest : FragmentRobolectricTest() {
       )
     covaxListFragment.onPatientItemClicked(CovaxListFragment.Intention.VIEW, patientItem)
 
-    val expectedIntent = Intent(covaxListActivity, CovaxDetailActivity::class.java)
+    val expectedIntent = Intent(covaxListActivity, PatientDetailsActivity::class.java)
     val actualIntent =
       shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
 

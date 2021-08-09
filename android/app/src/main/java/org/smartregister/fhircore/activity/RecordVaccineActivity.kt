@@ -171,9 +171,7 @@ class RecordVaccineActivity : BaseActivity() {
 
   companion object {
     fun getExtraBundles(patientId: String): Bundle {
-      return bundleOf(
-        Pair(CovaxDetailView.COVAX_ARG_ITEM_ID, patientId)
-      )
+      return bundleOf(Pair(CovaxDetailView.COVAX_ARG_ITEM_ID, patientId))
     }
   }
 }
