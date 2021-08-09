@@ -89,12 +89,14 @@ class CovaxListFragmentTest : FragmentRobolectricTest() {
     fhirEngine = spyk()
     // to suppress loadCount in BaseViewModel
     coEvery { fhirEngine.count(any()) } returns 2
+    coEvery { fhirEngine.search<Patient>(any()) } returns listOf()
 
     mockkObject(FhirApplication)
     every { FhirApplication.fhirEngine(any()) } returns fhirEngine
 
     covaxListActivity = Robolectric.buildActivity(CovaxListActivity::class.java).create().get()
     patientListViewModel = spyk(covaxListActivity.listViewModel)
+    covaxListActivity.listViewModel = patientListViewModel
 
     fragmentScenario =
       launchFragmentInContainer(
@@ -192,10 +194,35 @@ class CovaxListFragmentTest : FragmentRobolectricTest() {
     btnSync.performClick()
 
     every { patientListViewModel.searchResults(pageSize = any()) } returns Unit
-    every { patientListViewModel.runSync() } returns Unit
+    every { patientListViewModel.runSync(false) } returns Unit
 
     // one is from oncreate
-    verify(exactly = 2) { patientListViewModel.runSync() }
+    verify(exactly = 1) { patientListViewModel.runSync(false) }
+  }
+
+  @Test
+  fun testLoadDataCallSyncOnZeroClient() {
+    coEvery { patientListViewModel.count(any()) } returns 0
+    every { patientListViewModel.searchResults(any(), any(), any()) } returns Unit
+    every { patientListViewModel.runSync(any()) } returns Unit
+
+    covaxListFragment.loadData()
+
+    verify(exactly = 1) { patientListViewModel.runSync(true) }
+    verify(exactly = 1) { patientListViewModel.searchResults(any(), any(), any()) }
+  }
+
+  @Test
+  fun testLoadDataCallSearchResultsOnNonZeroClient() {
+    coEvery { patientListViewModel.count(any()) } returns 3
+
+    every { patientListViewModel.searchResults(any(), any(), any()) } returns Unit
+    every { patientListViewModel.runSync(any()) } returns Unit
+
+    covaxListFragment.loadData()
+
+    verify(exactly = 2) { patientListViewModel.searchResults(any(), any(), any()) }
+    verify(inverse = true) { patientListViewModel.runSync(any()) }
   }
 
   @Test
