@@ -54,6 +54,9 @@ import org.smartregister.fhircore.data.HapiFhirResourceDataSource
 import org.smartregister.fhircore.model.PatientItem
 import timber.log.Timber
 
+const val DAYS_IN_MONTH: Int = 28
+const val OVERDUE_DAYS_IN_MONTH: Int = 14
+
 object Utils {
   private val gson = Gson()
 
@@ -194,6 +197,17 @@ object Utils {
   fun Date.makeItReadable(): String {
     return SimpleDateFormat("MM-dd-yyyy").format(this)
   }
+
+  fun Int.ordinalOf() =
+    "$this" +
+      if (this % 100 in 11..13) "th"
+      else
+        when (this % 10) {
+          1 -> "st"
+          2 -> "nd"
+          3 -> "rd"
+          else -> "th"
+        }
 
   fun buildDatasource(appContext: Context): HapiFhirResourceDataSource {
     return HapiFhirResourceDataSource(

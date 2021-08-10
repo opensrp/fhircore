@@ -90,7 +90,7 @@ abstract class BaseDrawerActivity :
   @LayoutRes abstract override fun getContentLayout(): Int
 
   override fun toolBarId(): Int? {
-    return R.id.toolbar
+    return R.id.base_register_toolbar
   }
 
   protected fun getDrawerLayout(): DrawerLayout {

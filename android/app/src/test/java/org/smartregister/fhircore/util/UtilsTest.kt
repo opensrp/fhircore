@@ -47,6 +47,7 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.RobolectricTest
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.util.Utils.makeItReadable
+import org.smartregister.fhircore.util.Utils.ordinalOf
 
 @Config(shadows = [FhirApplicationShadow::class])
 class UtilsTest : RobolectricTest() {
@@ -199,5 +200,18 @@ class UtilsTest : RobolectricTest() {
       FhirApplication.fhirEngine(FhirApplication.getContext())
         .remove(Immunization::class.java, patientId)
     }
+  }
+
+  @Test
+  fun testIntOrdinalConversion() {
+    Assert.assertEquals("1st", 1.ordinalOf())
+    Assert.assertEquals("2nd", 2.ordinalOf())
+    Assert.assertEquals("3rd", 3.ordinalOf())
+    Assert.assertEquals("4th", 4.ordinalOf())
+    Assert.assertEquals("13th", 13.ordinalOf())
+    Assert.assertEquals("22nd", 22.ordinalOf())
+    Assert.assertEquals("23rd", 23.ordinalOf())
+    Assert.assertEquals("11th", 11.ordinalOf())
+    Assert.assertEquals("20th", 20.ordinalOf())
   }
 }

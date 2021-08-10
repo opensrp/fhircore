@@ -18,7 +18,7 @@
 <resources>
     <color name="colorError">#DD0000</color>
     <color name="colorPrimary">#005084</color>
-    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorPrimaryDark">#003D66</color>
     <color name="colorPrimaryLight">#006EB8</color>
     <color name="colorAccent">#0283DA</color>
     <color name="white">#FFFFFF</color>
@@ -35,4 +35,7 @@
     <color name="status_gray">#9e9b9b</color>
     <color name="status_blue">#3c418c</color>
     <color name="status_red">#b80d10</color>
+    <color name="immune">#38B500</color>
+    <color name="not_immune">#E8B600</color>
+    <color name="separator_color">#efefef</color>
 </resources>

@@ -55,14 +55,13 @@ import org.junit.BeforeClass
 import org.junit.Ignore
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.Shadows
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.activity.CovaxDetailActivity
 import org.smartregister.fhircore.activity.CovaxListActivity
+import org.smartregister.fhircore.activity.PatientDetailsActivity
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.domain.Pagination
 import org.smartregister.fhircore.model.CovaxDetailView
@@ -136,7 +135,7 @@ class CovaxListFragmentTest : FragmentRobolectricTest() {
 
     covaxListFragment.onPatientItemClicked(CovaxListFragment.Intention.VIEW, patientItem)
 
-    val shadowActivity = Shadows.shadowOf(covaxListActivity)
+    val shadowActivity = shadowOf(covaxListActivity)
     val startedActivityIntent = shadowActivity.peekNextStartedActivity()
 
     Assert.assertEquals(
@@ -144,7 +143,7 @@ class CovaxListFragmentTest : FragmentRobolectricTest() {
       startedActivityIntent.getStringExtra(CovaxDetailView.COVAX_ARG_ITEM_ID)
     )
     Assert.assertEquals(
-      CovaxDetailActivity::class.java.name,
+      PatientDetailsActivity::class.java.name,
       startedActivityIntent.component?.className
     )
   }
@@ -352,10 +351,9 @@ class CovaxListFragmentTest : FragmentRobolectricTest() {
       )
     covaxListFragment.onPatientItemClicked(CovaxListFragment.Intention.VIEW, patientItem)
 
-    val expectedIntent = Intent(covaxListActivity, CovaxDetailActivity::class.java)
+    val expectedIntent = Intent(covaxListActivity, PatientDetailsActivity::class.java)
     val actualIntent =
-      Shadows.shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>())
-        .nextStartedActivity
+      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
@@ -393,10 +391,10 @@ class CovaxListFragmentTest : FragmentRobolectricTest() {
 
     ReflectionHelpers.callInstanceMethod<Any>(covaxListFragment, "setUpBarcodeScanner")
 
-    val expectedIntent = Intent(covaxListFragment.requireContext(), CovaxDetailActivity::class.java)
+    val expectedIntent =
+      Intent(covaxListFragment.requireContext(), PatientDetailsFragment::class.java)
     val actualIntent =
-      Shadows.shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>())
-        .nextStartedActivity
+      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
 

@@ -20,6 +20,7 @@ import android.app.AlertDialog
 import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
+import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import java.util.Date
@@ -166,5 +167,11 @@ class RecordVaccineActivity : BaseActivity() {
     // Set other dialog properties
     alertDialog.setCancelable(false)
     alertDialog.show()
+  }
+
+  companion object {
+    fun getExtraBundles(patientId: String): Bundle {
+      return bundleOf(Pair(CovaxDetailView.COVAX_ARG_ITEM_ID, patientId))
+    }
   }
 }
