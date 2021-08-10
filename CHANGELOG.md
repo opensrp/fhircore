@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client count display in drawer
 - Login and Keycloak authentication for FHIR APIs
 - Added user logout functionality
+- Vaccine status stylign in list view and details view
+- Show progress bar on login attempt
+- Add related person to patient registration
+- Integrate StructureMap-based extraction
+- ANC register
+- Load Questionnaire from DB
 
 ### Fixed
 
@@ -18,6 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed patient list pagination button position to static on bottom of list
 - Fixed patient list fragment adapter count
 - Fixed bug on search result on patient list
+- Fixed bug on barcode crash
+- Fixed bug on record vaccine
+- Fixed bug on patient list last seen date
+- Fixed empty patient view layout position
+- Fixed bug on patients not populated on fresh install
+- Fixed the sync process did not let loader open on list patients unless sync is completed
 
 ### Changed
 - Reduce font size and spacing on patient list screen
@@ -30,4 +42,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Build barcode scanner
 - Track patient vaccine status
 - Display immunization info on the Patient Profile 
+- Enable patient overdue toggle filter
 

@@ -18,14 +18,16 @@ package org.smartregister.fhircore.data
 
 import android.content.Context
 import androidx.work.WorkerParameters
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.PeriodicSyncWorker
+import com.google.android.fhir.sync.FhirSyncWorker
 import org.smartregister.fhircore.FhirApplication
+import org.smartregister.fhircore.util.Utils
 
-class FhirPeriodicSyncWorker(appContext: Context, workerParams: WorkerParameters) :
-  PeriodicSyncWorker(appContext, workerParams) {
+class FhirPeriodicSyncWorker(val appContext: Context, workerParams: WorkerParameters) :
+  FhirSyncWorker(appContext, workerParams) {
 
-  override fun getFhirEngine(): FhirEngine {
-    return FhirApplication.fhirEngine(applicationContext)
-  }
+  override fun getSyncData() = Utils.buildResourceSyncParams()
+
+  override fun getDataSource() = Utils.buildDatasource(appContext)
+
+  override fun getFhirEngine() = FhirApplication.fhirEngine(applicationContext)
 }

@@ -55,7 +55,7 @@ interface HapiFhirService {
   suspend fun deleteResource(@Path("type") type: String, @Path("id") id: String): OperationOutcome
 
   companion object {
-    private const val BASE_URL: String = "${BuildConfig.FHIR_BASE_URL}"
+    private const val BASE_URL: String = BuildConfig.FHIR_BASE_URL
 
     fun create(parser: IParser, context: Context): HapiFhirService {
       val logger = HttpLoggingInterceptor()

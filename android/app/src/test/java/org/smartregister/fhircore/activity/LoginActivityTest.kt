@@ -19,7 +19,9 @@ package org.smartregister.fhircore.activity
 import android.app.Activity
 import android.content.Intent
 import android.os.Looper.getMainLooper
+import android.view.View
 import android.widget.Button
+import android.widget.ProgressBar
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert
 import org.junit.Before
@@ -133,10 +135,22 @@ class LoginActivityTest : ActivityRobolectricTest() {
   @Test
   fun testVerifyStartedActivity() {
     loginActivity.viewModel.goHome.value = true
-    val expectedIntent = Intent(loginActivity, PatientListActivity::class.java)
+    val expectedIntent = Intent(loginActivity, CovaxListActivity::class.java)
     val actualIntent =
       shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testVerifyProgressBarVisibilityWhenShowInProgressIconUpdate() {
+    val showProgressIcon = loginActivity.findViewById<ProgressBar>(R.id.progressIcon)
+    Assert.assertEquals(View.INVISIBLE, showProgressIcon.visibility)
+
+    loginActivity.viewModel.showProgressIcon.value = true
+    Assert.assertEquals(View.VISIBLE, showProgressIcon.visibility)
+
+    loginActivity.viewModel.showProgressIcon.value = false
+    Assert.assertEquals(View.INVISIBLE, showProgressIcon.visibility)
   }
 
   override fun getActivity(): Activity {

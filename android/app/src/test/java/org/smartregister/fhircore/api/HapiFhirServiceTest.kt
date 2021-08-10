@@ -16,38 +16,41 @@
 
 package org.smartregister.fhircore.api
 
-import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkObject
+import java.lang.reflect.Proxy
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.annotation.Config
-import org.smartregister.fhircore.robolectric.FhircoreTestRunner
-import org.smartregister.fhircore.shadow.FhirApplicationShadow
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.BuildConfig
+import org.smartregister.fhircore.RobolectricTest
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
-@RunWith(FhircoreTestRunner::class)
-@Config(shadows = [FhirApplicationShadow::class])
-class HapiFhirServiceTest {
-  private var mockService: HapiFhirService? = null
-  private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val parser = FhirContext.forR4().newJsonParser()
-
-  @Before
-  fun setUp() {
-    mockService = mockk()
-
-    mockkObject(HapiFhirService)
-
-    every { HapiFhirService.create(parser, context) } returns mockService!!
-  }
+class HapiFhirServiceTest : RobolectricTest() {
 
   @Test
-  fun testHapiFhirServiceIsCreated() {
-    Assert.assertNotNull(HapiFhirService.create(parser, context))
+  fun `create() should return HapiFhirService with correct base url, client, interceptors and converter factories`() {
+    val parser = FhirContext.forR4().newJsonParser()
+
+    val hapiFhirService =
+      HapiFhirService.create(parser, ApplicationProvider.getApplicationContext())
+
+    val retrofit = hapiFhirService.getRetrofitInstance()
+    Assert.assertEquals(BuildConfig.FHIR_BASE_URL, retrofit.baseUrl().toString())
+
+    val converterFactories = retrofit.converterFactories()
+    Assert.assertTrue(converterFactories.get(1) is FhirConverterFactory)
+    Assert.assertTrue(converterFactories.get(2) is GsonConverterFactory)
+
+    val okHttpClient = retrofit.callFactory() as OkHttpClient
+    Assert.assertTrue(okHttpClient.interceptors[0] is OAuthInterceptor)
+    Assert.assertTrue(okHttpClient.interceptors[1] is HttpLoggingInterceptor)
+  }
+
+  private fun HapiFhirService.getRetrofitInstance(): Retrofit {
+    return ReflectionHelpers.getField<Retrofit>(Proxy.getInvocationHandler(this), "this$0")
   }
 }

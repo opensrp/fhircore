@@ -57,12 +57,13 @@ class LoginViewModel(application: Application) :
   var loginFailed = MutableLiveData(false)
   var showPassword = MutableLiveData(false)
   var goHome = MutableLiveData(false)
+  var showProgressIcon = MutableLiveData(false)
 
   internal var secureConfig: SecureConfig = SecureConfig(application)
   private var baseContext: Context = application.baseContext
 
-  private var accountManager: AccountManager
-  private var accountHelper: AccountHelper
+  internal var accountManager: AccountManager
+  internal var accountHelper: AccountHelper
 
   init {
     Timber.i("Starting auth flow for login")
@@ -70,9 +71,9 @@ class LoginViewModel(application: Application) :
     accountManager = AccountManager.get(application)
     accountHelper = AccountHelper(baseContext)
 
-    if (BuildConfig.DEBUG && BuildConfig.SKIP_AUTH_CHECK) {
-      goHome.value = true
-    } else if (accountHelper.isSessionActive(secureConfig.retrieveSessionToken())) {
+    if ((BuildConfig.DEBUG && BuildConfig.SKIP_AUTH_CHECK) ||
+        accountHelper.isSessionActive(secureConfig.retrieveSessionToken())
+    ) {
       goHome.value = true
     } else {
       accountHelper.loadAccount(
@@ -104,7 +105,7 @@ class LoginViewModel(application: Application) :
 
   fun remoteLogin(view: View) {
     Timber.i("Logging in for ${loginUser.username} ")
-
+    showProgressIcon.value = true
     enableLoginButton(false)
 
     accountHelper.fetchToken(loginUser.username, loginUser.password).enqueue(this)
@@ -114,6 +115,7 @@ class LoginViewModel(application: Application) :
     Timber.i("Got login response ${response.isSuccessful}")
 
     loginFailed.value = !response.isSuccessful
+    showProgressIcon.value = false
 
     if (!response.isSuccessful) {
       Timber.i("Error in fetching credentials %s", response.errorBody())
@@ -136,14 +138,14 @@ class LoginViewModel(application: Application) :
     // destroy password
     loginUser.password = charArrayOf()
 
-    accountHelper.getUserInfo().enqueue(OnUserInfoResponse(baseContext))
+    accountHelper.getUserInfo().enqueue(OnUserInfoResponse(this, baseContext))
 
     goHome.value = true
   }
 
   override fun onFailure(call: Call<OAuthResponse>, t: Throwable) {
     Timber.e(javaClass.name, t.stackTraceToString())
-
+    showProgressIcon.value = false
     Toast.makeText(baseContext, R.string.login_call_fail_error_message, Toast.LENGTH_LONG).show()
 
     if (allowLocalLogin()) {
@@ -192,12 +194,13 @@ class LoginViewModel(application: Application) :
   }
 }
 
-private class OnUserInfoResponse(context: Context) : Callback<ResponseBody> {
+private class OnUserInfoResponse(val viewModel: LoginViewModel, context: Context) :
+  Callback<ResponseBody> {
   val baseContext = context
 
   override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
     Timber.e(t)
-
+    viewModel.showProgressIcon.value = false
     Toast.makeText(baseContext, R.string.userinfo_call_fail_error_message, Toast.LENGTH_LONG).show()
   }
 

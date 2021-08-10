@@ -21,19 +21,23 @@ import android.accounts.AccountManagerFuture
 import android.os.Bundle
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
+import io.mockk.mockkObject
 import io.mockk.spyk
+import io.mockk.unmockkObject
+import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.RobolectricTest
+import org.smartregister.fhircore.api.OAuthService
 import org.smartregister.fhircore.auth.OAuthResponse
 import org.smartregister.fhircore.auth.account.AccountHelper
 import org.smartregister.fhircore.auth.secure.Credentials
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import retrofit2.Call
+import retrofit2.Response
 
 class LoginViewModelTest : RobolectricTest() {
 
@@ -61,13 +65,8 @@ class LoginViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnFailureShouldVerifyInternalCalls() {
-
-    mockkStatic(Throwable::stackTraceToString)
-
     val call = mockk<Call<OAuthResponse>>()
-    val t = mockk<Throwable>()
-
-    every { t.stackTraceToString() } returns ""
+    val t = Exception("Some sample message")
 
     setUsernameAndPassword()
     viewModel.secureConfig.saveCredentials(Credentials("testuser", charArrayOf('a'), "dummy_token"))
@@ -81,6 +80,41 @@ class LoginViewModelTest : RobolectricTest() {
     viewModel.onFailure(call, t)
 
     Assert.assertTrue(viewModel.allowLogin.value!!)
+  }
+
+  @Test
+  fun testRemoteLoginShouldVerifyInternalCalls() {
+    val accountManagerSpy = spyk(viewModel.accountManager)
+    val secureConfigSpy = spyk(viewModel.secureConfig)
+    val accountHelperSpy = spyk(viewModel.accountHelper)
+
+    viewModel.accountHelper = accountHelperSpy
+    viewModel.accountManager = accountManagerSpy
+    viewModel.secureConfig = secureConfigSpy
+
+    mockkObject(OAuthService)
+
+    val responseCall = mockk<Call<OAuthResponse>>()
+    val response =
+      Response.success(
+        OAuthResponse(accessToken = "829382938", refreshToken = "32893239", expiresIn = 600)
+      )
+
+    every { responseCall.execute() } returns response
+    every { responseCall.enqueue(any()) } answers { viewModel.onResponse(responseCall, response) }
+    every { OAuthService.create(any()).fetchToken(any()) } returns responseCall
+    every { OAuthService.create(any()).userInfo().enqueue(any()) } returns mockk()
+    every { accountManagerSpy.notifyAccountAuthenticated(any()) } returns true
+
+    setUsernameAndPassword()
+    viewModel.remoteLogin(mockk())
+
+    verify(exactly = 1) { accountHelperSpy.fetchToken(any(), any()) }
+    verify(exactly = 1) { accountHelperSpy.addAuthenticatedAccount(any(), any(), any()) }
+    verify(exactly = 1) { secureConfigSpy.saveCredentials(any()) }
+    verify(exactly = 1) { accountHelperSpy.getUserInfo() }
+
+    unmockkObject(OAuthService)
   }
 
   @Test

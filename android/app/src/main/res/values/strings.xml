@@ -20,14 +20,16 @@
     <string name="title_patient_detail">SamplePatient Detail</string>
     <string name="menu_about">About Fhir Engine</string>
     <string name="menu_load_resource">Load CQL Resources &amp; Patients</string>
-    <string name="add_patient">Add Patient</string>
+    <string name="add_client">Add Client</string>
     <string name="menu_sync_resources">Sync Resources</string>
 
     <string name="version">Version %s</string>
     <string name="authenticator_label" translatable="false">Authenticate FHIR Core</string>
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.app</string>
 
-    <string name="menu_clients_list_title">COVAX Clients</string>
+    <string name="menu_covax_clients_list_title">COVAX Clients</string>
+    <string name="menu_anc_clients_list_title">ANC Clients</string>
+
     <string name="language">Language</string>
     <string name="empty_client_list_message_title">No Results</string>
     <string name="empty_client_list_message_details">Sorry, we could not find client with given name or ID</string>
@@ -43,22 +45,35 @@
     <string name="str_next">Next &gt;&gt;</string>
     <string name="str_previous">&lt;&lt; Previous</string>
     <string name="str_page_info">Page %1$d of %2$d</string>
+
+    <string name="immunization_brief_text">"Received %1$s dose %2$d"</string>
+    <string name="immunization_next_dose_text">"Dose %1$d due %2$s"</string>
+    <string name="immunization_next_overdue_dose_text">"Dose %1$d overdue %2$s"</string>
+
+    <string name="status_vaccinated">Vaccinated</string>
+    <string name="status_overdue">Overdue</string>
+    <string name="status_received_vaccine">Vaccine %1$d \n%2$s</string>
+    <string name="view_vaccine_certificate">"View vaccine certificate"</string>
+    <string name="fully_vaccinated">"Fully vaccinated"</string>
+
     <string name="edit">Edit</string>
     <string name="str_save">Save</string>
     <string name="select_language">Select Language</string>
-    <string name="register_new_patient">Register new client</string>
+    <string name="register_new_client">Register new client</string>
     <string name="sync">Sync</string>
     <string name="record_vaccine">Record Vaccine</string>
     <string name="no_vaccine_received">No vaccine received</string>
     <string name="view_registration_details">View Registration Details</string>
-    <string name="client">COVAX clients</string>
+    <string name="client_list_title_covax">COVAX clients</string>
+    <string name="client_list_title_anc">ANC clients</string>
+
     <string name="show_overdue">Show overdue</string>
-    <string name="record_vaccine_nl">Record\nvaccine</string>
+    <string name="record_vaccine_nl">Record\nVaccine</string>
     <string name="client_info">Client info</string>
     <string name="last_seen_date">Last seen 29-3-2021</string>
     <string name="last_sync_timestamp">Last 05:30 PM, Mar 3</string>
     <string name="logout_as_user">Log out as </string>
-    <string name="registered_date">Registered 20-01-2021</string>
+    <string name="registered_date">Registered </string>
 
     <string name="login_text">Login</string>
     <string name="logout_text">Logout</string>
@@ -72,5 +87,9 @@
     <string name="second_dose_due_at"> Second dose due on %1$s</string>
     <string name="ordinal_vaccine_dose_recorded">%1$s 1st dose recorded</string>
     <string name="please_select_vaccine">Please Select Vaccine</string>
+    <string name="scan_bar_code">SCAN BARCODE</string>
+    <string name="at_risk">At Risk</string>
+    <string name="syncing">Syncing&#8230;</string>
+
 
 </resources>

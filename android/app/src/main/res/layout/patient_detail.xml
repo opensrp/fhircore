@@ -31,8 +31,6 @@
         android:layout_marginTop="10dp"
         android:padding="16dp">
         <androidx.appcompat.widget.LinearLayoutCompat
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:paddingStart="16dp"
@@ -46,7 +44,16 @@
         android:layout_height="wrap_content"
         android:layout_marginVertical="10dp">
 
-        <include layout="@layout/observation_list_item" />
+        <androidx.recyclerview.widget.RecyclerView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/observation_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            app:layoutManager="LinearLayoutManager"
+            tools:context=".activity.CovaxListActivity"
+            tools:listitem="@layout/patient_details_card_item" />
 
     </androidx.core.widget.NestedScrollView>
 </androidx.appcompat.widget.LinearLayoutCompat>

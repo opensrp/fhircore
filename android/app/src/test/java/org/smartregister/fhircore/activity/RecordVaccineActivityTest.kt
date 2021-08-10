@@ -17,12 +17,25 @@
 package org.smartregister.fhircore.activity
 
 import android.app.Activity
+import android.content.DialogInterface
 import android.content.Intent
-import android.widget.Button
-import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import java.lang.IndexOutOfBoundsException
+import java.util.Date
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.PositiveIntType
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
@@ -31,8 +44,16 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowAlertDialog
-import org.smartregister.fhircore.R
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.FhirApplication
+import org.smartregister.fhircore.model.CovaxDetailView
+import org.smartregister.fhircore.model.PatientItem
+import org.smartregister.fhircore.model.PatientStatus
+import org.smartregister.fhircore.model.PatientVaccineSummary
+import org.smartregister.fhircore.model.VaccineStatus
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.shadow.TestUtils
+import org.smartregister.fhircore.util.Utils
 
 @Config(shadows = [FhirApplicationShadow::class])
 class RecordVaccineActivityTest : ActivityRobolectricTest() {
@@ -41,12 +62,19 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   @Before
   fun setUp() {
+    val fhirEngine: FhirEngine = mockk()
+    coEvery { fhirEngine.load(Patient::class.java, "test_patient_id") } returns
+      TestUtils.TEST_PATIENT_1
+    coEvery { fhirEngine.search<Immunization>(any()) } returns listOf()
+    coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns Questionnaire()
+
+    mockkObject(FhirApplication)
+    every { FhirApplication.fhirEngine(any()) } returns fhirEngine
 
     val intent =
       Intent().apply {
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Record Vaccine")
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_FILE_PATH_KEY, "record-vaccine.json")
-        putExtra(USER_ID, "1")
+        putExtra(CovaxDetailView.COVAX_DETAIL_VIEW_CONFIG_ID, "covax_client_register_config.json")
+        putExtra(CovaxDetailView.COVAX_ARG_ITEM_ID, "test_patient_id")
       }
 
     recordVaccineActivity =
@@ -56,7 +84,10 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
   @Test
   fun testVerifyRecordedVaccineSavedDialogProperty() {
 
-    val questionnaireFragment = mockk<QuestionnaireFragment>()
+    mockkObject(ResourceMapper)
+
+    val entryComponent = mockk<Bundle.BundleEntryComponent>()
+    val bundle = mockk<Bundle>()
     val questionnaireResponse = mockk<QuestionnaireResponse>()
     val item = mockk<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
     val answer = mockk<QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent>()
@@ -64,22 +95,129 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
     val answerItems = listOf(answer)
     val coding = mockk<Coding>()
 
-    every { questionnaireFragment.getQuestionnaireResponse() } returns questionnaireResponse
+    every { entryComponent.resource } returns Immunization()
+    every { bundle.entry } returns listOf(entryComponent)
+    every { ResourceMapper.extract(any(), any()) } returns bundle
+
     every { questionnaireResponse.item } returns items
-    every { item.answer } returns answerItems
+    every { item.answer } throws IndexOutOfBoundsException()
     every { answer.valueCoding } returns coding
-    every { coding.code } returns "dummy"
+    every { coding.code } answers { "dummy" }
+    every { item.answer } returns answerItems
 
-    val fragmentField = recordVaccineActivity.javaClass.getDeclaredField("fragment")
-    fragmentField.isAccessible = true
-    fragmentField.set(recordVaccineActivity, questionnaireFragment)
+    Assert.assertNull(ShadowAlertDialog.getLatestAlertDialog())
 
-    recordVaccineActivity.findViewById<Button>(R.id.btn_record_vaccine).performClick()
+    ReflectionHelpers.callInstanceMethod<Any>(
+      recordVaccineActivity,
+      "handleImmunizationResult",
+      ReflectionHelpers.ClassParameter.from(
+        QuestionnaireResponse::class.java,
+        questionnaireResponse
+      ),
+    )
+
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    val vaccineDate = DateTimeType.today().toHumanDisplay()
+    val nextVaccineDate = Utils.addDays(vaccineDate, 28)
 
     Assert.assertNotNull(dialog)
     Assert.assertEquals("dummy 1st dose recorded", dialog.title)
-    Assert.assertEquals("Second dose due on 27-04-2021", dialog.message)
+    Assert.assertEquals("Dose 2 due $nextVaccineDate", dialog.message)
+
+    unmockkObject(ResourceMapper)
+  }
+
+  @Test
+  fun testShowVaccineRecordDialogVerifyAllOptions() {
+    var patientItem = patientItemOf(1, "vaccineA", VaccineStatus.DUE)
+
+    val immunization =
+      Immunization().apply {
+        recorded = Date()
+        vaccineCode =
+          CodeableConcept().apply {
+            this.text = "vaccineA"
+            this.coding = listOf(Coding("", "vaccineA", "vaccineA"))
+          }
+        occurrence = DateTimeType.today()
+
+        protocolApplied =
+          listOf(
+            Immunization.ImmunizationProtocolAppliedComponent().apply {
+              doseNumber = PositiveIntType(1)
+            }
+          )
+      }
+
+    val vaccineDate = immunization.occurrenceDateTimeType.toHumanDisplay()
+    val nextVaccineDate = Utils.addDays(vaccineDate, 28)
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      recordVaccineActivity,
+      "showVaccineRecordDialog",
+      ReflectionHelpers.ClassParameter.from(Immunization::class.java, immunization),
+      ReflectionHelpers.ClassParameter.from(PatientItem::class.java, patientItem)
+    )
+
+    val shadowAlertDialog = ShadowAlertDialog.getLatestAlertDialog()
+    var dialog = shadowOf(shadowAlertDialog)
+
+    Assert.assertNotNull(dialog)
+    Assert.assertEquals("vaccineA 1st dose recorded", dialog.title)
+    Assert.assertEquals("Dose 2 due $nextVaccineDate", dialog.message)
+
+    shadowAlertDialog.getButton(DialogInterface.BUTTON_NEGATIVE).performClick()
+    immunization.protocolApplied[0].doseNumber = PositiveIntType(2)
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      recordVaccineActivity,
+      "showVaccineRecordDialog",
+      ReflectionHelpers.ClassParameter.from(Immunization::class.java, immunization),
+      ReflectionHelpers.ClassParameter.from(PatientItem::class.java, patientItem)
+    )
+    dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    Assert.assertNotNull(dialog)
+    Assert.assertEquals("vaccineA 1st dose recorded", dialog.title)
+    Assert.assertEquals("Fully vaccinated", dialog.message)
+
+    immunization.vaccineCode.coding[0].code = "another_dose"
+    patientItem = patientItemOf(1, "someother_vaccine", VaccineStatus.DUE)
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      recordVaccineActivity,
+      "showVaccineRecordDialog",
+      ReflectionHelpers.ClassParameter.from(Immunization::class.java, immunization),
+      ReflectionHelpers.ClassParameter.from(PatientItem::class.java, patientItem)
+    )
+    dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    Assert.assertNotNull(dialog)
+    Assert.assertEquals("Initially received someother_vaccine", dialog.title)
+    Assert.assertEquals("Second vaccine dose should be same as first", dialog.message)
+  }
+
+  private fun patientItemOf(
+    doseNumber: Int,
+    initialDose: String,
+    status: VaccineStatus
+  ): PatientItem {
+    val patientVaccineSummary = PatientVaccineSummary(doseNumber, initialDose)
+    val patientStatus = PatientStatus(status, "none")
+    return PatientItem(
+      "",
+      "",
+      "",
+      "2000-01-01",
+      "",
+      "",
+      "",
+      "HR",
+      patientStatus,
+      patientVaccineSummary,
+      lastSeen = "07-26-2021"
+    )
   }
 
   override fun getActivity(): Activity {

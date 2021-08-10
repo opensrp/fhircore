@@ -2,7 +2,7 @@
 
 ![sdk architecture](assets/sdk-arch.png)
 
-### The Android  FHIR SDK will comprise of the following key modules
+### The Android  FHIR SDK is comprised of the following key modules
 1. Data Access API - Set of APIs for performing CRUD operations on FHIR resources in the SQLite DB
 2. Search API - On-device fluent search API allows application to compose complex search queries to filter FHIR resources and build lists
 3. Smart Guidelines/ Protocols API(?) - Building blocks for deploying implementation guides (IGs) including Smart Guidelines
@@ -140,5 +140,5 @@ Task generation on CQF-Ruler as alternative of extending plan evaluator
 
 
 
-[a]1. How will CQL be used to invoke these operations
+1. How will CQL be used to invoke these operations
 2. Which CQL lib, CQF ruler, in-app vs server-side?

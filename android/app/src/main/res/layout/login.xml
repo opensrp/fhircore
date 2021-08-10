@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
         <import type="android.view.View"/>
@@ -17,10 +18,19 @@
         android:orientation="vertical"
         android:padding="20dp">
 
+        <ProgressBar
+            android:id="@+id/progressIcon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center_horizontal"
+            style="@style/Widget.MaterialComponents.CircularProgressIndicator"
+            android:indeterminate="true"
+            tools:visibility="visible"/>
+
         <Space
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="100dp"/>
+            android:layout_marginBottom="70dp"/>
 
         <TextView
             android:id="@+id/textView2"
@@ -46,10 +56,16 @@
             android:id="@+id/login_error_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="50dp"
             android:text="@string/login_error_message"
             android:textColor="@color/colorError"
             android:visibility="@{usr.loginFailed ? View.VISIBLE : View.GONE}"/>
+
+        <Space
+            android:id="@+id/spacer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="50dp"/>
 
         <EditText
             android:id="@+id/login_username_input"

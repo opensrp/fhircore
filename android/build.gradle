@@ -12,18 +12,21 @@ buildscript {
         classpath deps.spotless
         classpath deps.kotlin_coveralls_plugin
         classpath deps.junit5_plugin
+        classpath deps.dokka_plugin
     }
 }
 
 allprojects {
     repositories {
+        mavenLocal()
         google()
         jcenter()
         mavenCentral()
-        mavenLocal()
+
         maven {
             url 'https://oss.sonatype.org/content/repositories/snapshots'
         }
+
         maven {
             name = "AndroidLibForArtifactory"
             url = uri("https://maven.pkg.github.com/google/android-fhir")

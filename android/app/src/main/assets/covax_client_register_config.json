@@ -1,0 +1,8 @@
+{
+  "registerTitle": "COVAX",
+  "registrationQuestionnaireIdentifier": "754",
+  "registrationQuestionnaireTitle": "Add Patient",
+
+  "vaccineQuestionnaireIdentifier": "800",
+  "vaccineQuestionnaireTitle": "Record Vaccine"
+}
