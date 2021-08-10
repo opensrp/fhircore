@@ -21,9 +21,13 @@ import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import java.util.Date
 import java.util.UUID
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.DateTimeType
@@ -98,27 +102,30 @@ class RecordVaccineActivity : BaseActivity() {
       questionnaireViewModel.loadQuestionnaire(detailView.vaccineQuestionnaireIdentifier)
 
     covaxListViewModel.getPatientItem(clientIdentifier).observe(this) {
-      val immunization =
-        ResourceMapper.extract(questionnaire, response).entry[0].resource as Immunization
-      immunization.id = UUID.randomUUID().toString()
-      immunization.recorded = Date()
-      immunization.status = Immunization.ImmunizationStatus.COMPLETED
-      immunization.vaccineCode =
-        CodeableConcept().apply {
-          this.text = response.item[0].answer[0].valueCoding.code
-          this.coding = listOf(response.item[0].answer[0].valueCoding)
-        }
-      immunization.occurrence = DateTimeType.today()
-      immunization.patient = Reference().apply { this.reference = "Patient/$clientIdentifier" }
-
-      immunization.protocolApplied =
-        listOf(
-          Immunization.ImmunizationProtocolAppliedComponent().apply {
-            val currentDoseNumber = it.vaccineSummary?.doseNumber ?: 0
-            this.doseNumber = PositiveIntType(currentDoseNumber + 1)
+      covaxListViewModel.viewModelScope.launch {
+        val immunization =
+          ResourceMapper.extract(questionnaire, response).entry[0].resource as Immunization
+        immunization.id = UUID.randomUUID().toString()
+        immunization.recorded = Date()
+        immunization.status = Immunization.ImmunizationStatus.COMPLETED
+        immunization.vaccineCode =
+          CodeableConcept().apply {
+            this.text = response.item[0].answer[0].valueCoding.code
+            this.coding = listOf(response.item[0].answer[0].valueCoding)
           }
-        )
-      showVaccineRecordDialog(immunization, it)
+        immunization.occurrence = DateTimeType.today()
+        immunization.patient = Reference().apply { this.reference = "Patient/$clientIdentifier" }
+
+        immunization.protocolApplied =
+          listOf(
+            Immunization.ImmunizationProtocolAppliedComponent().apply {
+              val currentDoseNumber = it.vaccineSummary?.doseNumber ?: 0
+              this.doseNumber = PositiveIntType(currentDoseNumber + 1)
+            }
+          )
+
+        GlobalScope.launch(Dispatchers.Main) { showVaccineRecordDialog(immunization, it) }
+      }
     }
   }
 
