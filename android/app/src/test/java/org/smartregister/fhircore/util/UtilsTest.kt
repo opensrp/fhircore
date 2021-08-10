@@ -34,8 +34,10 @@ import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.time.DateUtils
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.ResourceType
 import org.joda.time.DateTime
 import org.junit.Assert
@@ -170,31 +172,35 @@ class UtilsTest : RobolectricTest() {
 
     val patientId = "0"
     val patientRegisteredDate = Calendar.getInstance().apply { add(Calendar.DATE, -50) }.time
-    Assert.assertEquals(
-      patientRegisteredDate.makeItReadable(),
-      Utils.getLastSeen(patientId, patientRegisteredDate)
-    )
-
+    runBlocking {
+      Assert.assertEquals(
+        patientRegisteredDate.makeItReadable(),
+        Utils.getLastSeen(patientId, patientRegisteredDate)
+      )
+    }
     val immunization =
       Immunization().apply {
         id = "Patient/0"
-        recorded = Calendar.getInstance().apply { add(Calendar.DATE, -18) }.time
+        occurrence = DateTimeType("2021-07-30")
+        protocolApplied =
+          listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(1)))
       }
 
-    runBlocking { FhirApplication.fhirEngine(FhirApplication.getContext()).save(immunization) }
-    Assert.assertEquals(
-      immunization.recorded.makeItReadable(),
-      Utils.getLastSeen(patientId, Date())
-    )
-
-    immunization.recorded = Date()
-    runBlocking { FhirApplication.fhirEngine(FhirApplication.getContext()).save(immunization) }
-    Assert.assertEquals(
-      immunization.recorded.makeItReadable(),
-      Utils.getLastSeen(patientId, Date())
-    )
-
     runBlocking {
+      FhirApplication.fhirEngine(FhirApplication.getContext()).save(immunization)
+      Assert.assertEquals(
+        immunization.occurrenceDateTimeType.toHumanDisplay(),
+        Utils.getLastSeen(patientId, Date())
+      )
+    }
+
+    immunization.occurrence = DateTimeType("2021-07-30")
+    runBlocking {
+      FhirApplication.fhirEngine(FhirApplication.getContext()).save(immunization)
+      Assert.assertEquals(
+        immunization.occurrenceDateTimeType.toHumanDisplay(),
+        Utils.getLastSeen(patientId, Date())
+      )
       FhirApplication.fhirEngine(FhirApplication.getContext())
         .remove(Immunization::class.java, patientId)
       FhirApplication.fhirEngine(FhirApplication.getContext())
