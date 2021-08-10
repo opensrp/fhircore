@@ -200,6 +200,8 @@ dependencies {
     testImplementation deps.robolectric
     testImplementation deps.atsl.ext_junit
     testImplementation deps.atsl.ext_junit_ktx
+    testImplementation deps.coroutines.test
+    testImplementation deps.androidx.core_test
     debugImplementation deps.fragment_testing
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk

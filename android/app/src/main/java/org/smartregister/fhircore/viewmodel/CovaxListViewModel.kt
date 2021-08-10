@@ -258,14 +258,14 @@ fun Patient.toPatientItem(): PatientItem {
   val lastSeen = Utils.getLastSeen(logicalId, meta.lastUpdated)
 
   return PatientItem(
-    this.logicalId,
-    name,
-    gender,
-    dob,
-    html,
-    phone,
-    logicalId,
-    risk,
+    id = this.logicalId,
+    name = name,
+    gender = gender,
+    dob = dob,
+    html = html,
+    phone = phone,
+    logicalId = logicalId,
+    risk = risk,
     lastSeen = lastSeen
   )
 }
