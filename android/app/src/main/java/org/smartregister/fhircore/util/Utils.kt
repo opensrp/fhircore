@@ -37,7 +37,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
@@ -58,7 +57,10 @@ const val DAYS_IN_MONTH: Int = 28
 const val OVERDUE_DAYS_IN_MONTH: Int = 14
 
 object Utils {
+
   private val gson = Gson()
+
+  private var simpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault())
 
   fun getAgeFromDate(dateOfBirth: String, currentDate: ReadablePartial? = null): Int {
     val date: DateTime = DateTime.parse(dateOfBirth)
@@ -175,28 +177,21 @@ object Utils {
     return PatientAgeGender(age, gender)
   }
 
-  fun getLastSeen(patientId: String, lastUpdated: Date?): String {
+  suspend fun getLastSeen(patientId: String, lastUpdated: Date?): String {
 
-    var lastSeenDate = lastUpdated?.makeItReadable() ?: ""
+    val searchResults: List<Immunization> =
+      FhirApplication.fhirEngine(FhirApplication.getContext()).search {
+        filter(Immunization.PATIENT) { value = "Patient/$patientId" }
+      }
 
-    var searchResults = listOf<Immunization>()
-    runBlocking {
-      searchResults =
-        FhirApplication.fhirEngine(FhirApplication.getContext()).search {
-          filter(Immunization.PATIENT) { value = "Patient/$patientId" }
-        }
-    }
-
-    if (searchResults.isNotEmpty()) {
-      lastSeenDate = searchResults[searchResults.size.minus(1)].recorded.makeItReadable()
-    }
-
-    return lastSeenDate
+    return searchResults
+      .maxByOrNull { it.protocolApplied.first().doseNumberPositiveIntType.value }
+      ?.occurrenceDateTimeType
+      ?.toHumanDisplay()
+      ?: lastUpdated?.makeItReadable() ?: ""
   }
 
-  fun Date.makeItReadable(): String {
-    return SimpleDateFormat("MM-dd-yyyy").format(this)
-  }
+  fun Date.makeItReadable(): String = simpleDateFormat.format(this)
 
   fun Int.ordinalOf() =
     "$this" +
