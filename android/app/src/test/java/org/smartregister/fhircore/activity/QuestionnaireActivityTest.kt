@@ -69,7 +69,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     intent =
       Intent().apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, "Questionnaire/754/_history/2")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, "Questionnaire/754")
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, TEST_PATIENT_1_ID)
       }
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
@@ -83,13 +83,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testActivityShouldSetPreAssignedId() {
-    val fragment =
-      questionnaireActivity.supportFragmentManager.findFragmentByTag(
-        QuestionnaireActivity.QUESTIONNAIRE_FRAGMENT_TAG
-      ) as
-        QuestionnaireFragment
-
-    Assert.assertNotNull(fragment)
 
     val response =
       ReflectionHelpers.callInstanceMethod<QuestionnaireResponse>(
@@ -104,13 +97,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testVerifyPrePopulatedQuestionnaire() {
-    val fragment =
-      questionnaireActivity.supportFragmentManager.findFragmentByTag(
-        QuestionnaireActivity.QUESTIONNAIRE_FRAGMENT_TAG
-      ) as
-        QuestionnaireFragment
-
-    Assert.assertNotNull(fragment)
 
     val response =
       ReflectionHelpers.callInstanceMethod<QuestionnaireResponse>(
