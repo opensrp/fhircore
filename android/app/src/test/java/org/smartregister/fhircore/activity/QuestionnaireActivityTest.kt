@@ -21,13 +21,16 @@ import android.content.Intent
 import android.widget.Button
 import androidx.lifecycle.ViewModelLazy
 import androidx.test.core.app.ApplicationProvider
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
+import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
 import io.mockk.verifyOrder
-import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
@@ -38,7 +41,6 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.FhirApplication
-import org.smartregister.fhircore.FhirApplication.Companion.fhirEngine
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE_KEY
@@ -60,15 +62,22 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     val samplePatientRegisterQuestionnaire =
       TestUtils.loadQuestionnaire(context, REGISTER_QUESTIONNAIRE_ID)
-    runBlocking {
-      fhirEngine(context).save(samplePatientRegisterQuestionnaire)
-      fhirEngine(context).save(TEST_PATIENT_1)
-    }
+
+    val fhirEngine = spyk(FhirApplication.fhirEngine(context))
+
+    mockkObject(FhirApplication)
+    every { FhirApplication.fhirEngine(any()) } returns fhirEngine
+
+    // val fhirEngine: FhirEngine = mockk()
+    coEvery { fhirEngine.load(Questionnaire::class.java, REGISTER_QUESTIONNAIRE_ID) } returns
+      samplePatientRegisterQuestionnaire
+    coEvery { fhirEngine.load(Patient::class.java, TEST_PATIENT_1_ID) } returns TEST_PATIENT_1
+    coEvery { fhirEngine.save(any()) } answers {}
 
     intent =
       Intent().apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, "Questionnaire/754")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, REGISTER_QUESTIONNAIRE_ID)
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, TEST_PATIENT_1_ID)
       }
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
