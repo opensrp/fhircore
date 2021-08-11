@@ -21,7 +21,6 @@ import android.content.Intent
 import android.widget.Button
 import androidx.lifecycle.ViewModelLazy
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.datacapture.QuestionnaireFragment
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
