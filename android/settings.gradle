@@ -1,4 +1,5 @@
 rootProject.name = "fhircore-android"
-include ':engine'
+include ':anc'
 include ':eir'
+include ':engine'
 
