@@ -91,7 +91,11 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     Assert.assertNotNull(fragment)
 
-    val response = fragment.getQuestionnaireResponse()
+    val response =
+      ReflectionHelpers.callInstanceMethod<QuestionnaireResponse>(
+        questionnaireActivity,
+        "getQuestionnaireResponse"
+      )
     // Assert.assertEquals("test-id", response.find("patient-barcode")?.value.toString())
 
     val barcode = QuestionnaireUtils.valueStringWithLinkId(response, QUESTIONNAIRE_ARG_BARCODE_KEY)
@@ -110,7 +114,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     val response =
       ReflectionHelpers.callInstanceMethod<QuestionnaireResponse>(
-        fragment,
+        questionnaireActivity,
         "getQuestionnaireResponse"
       )
     // Assert.assertEquals(TEST_PATIENT_1.id, response.find("patient-barcode")?.value.toString())
