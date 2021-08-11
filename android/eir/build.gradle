@@ -34,7 +34,7 @@ android {
         enabled true
     }
     defaultConfig {
-        applicationId "org.smartregister.fhircore"
+        applicationId "org.smartregister.fhircore.eir"
         minSdkVersion sdk_versions.min_sdk
         targetSdkVersion sdk_versions.target_sdk
         versionCode 1

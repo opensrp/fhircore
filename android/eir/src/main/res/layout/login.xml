@@ -6,10 +6,10 @@
     <data>
         <import type="android.view.View"/>
         <import type="android.text.InputType"/>
-        <import type="org.smartregister.fhircore.viewmodel.LoginViewModel.Converter"/>
+        <import type="org.smartregister.fhircore.eir.viewmodel.LoginViewModel.Converter"/>
         <variable
             name="usr"
-            type="org.smartregister.fhircore.viewmodel.LoginViewModel" />
+            type="org.smartregister.fhircore.eir.viewmodel.LoginViewModel" />
     </data>
 
     <LinearLayout
