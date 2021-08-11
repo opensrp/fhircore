@@ -75,11 +75,13 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
         fragment.arguments =
           bundleOf(
             BUNDLE_KEY_QUESTIONNAIRE to getQuestionnaire(),
-            BUNDLE_KEY_QUESTIONNAIRE_RESPONSE to parser.encodeResourceToString(getQuestionnaireResponse())
+            BUNDLE_KEY_QUESTIONNAIRE_RESPONSE to
+              parser.encodeResourceToString(getQuestionnaireResponse())
           )
-      } ?: kotlin.run {
-        fragment.arguments = bundleOf(BUNDLE_KEY_QUESTIONNAIRE to getQuestionnaire())
       }
+        ?: kotlin.run {
+          fragment.arguments = bundleOf(BUNDLE_KEY_QUESTIONNAIRE to getQuestionnaire())
+        }
 
       supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
     }
@@ -132,9 +134,7 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
       }
 
       patient.let {
-        questionnaireResponse = runBlocking {
-          ResourceMapper.populate(questionnaire, patient)
-        }
+        questionnaireResponse = runBlocking { ResourceMapper.populate(questionnaire, patient) }
       }
     }
 
