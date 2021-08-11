@@ -36,9 +36,11 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
@@ -90,7 +92,7 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
           from = (page * pageSize)
         }
 
-      var patients = searchResults.map { it.toPatientItem() }
+      var patients = searchResults.map { it.toPatientItem(viewModelScope) }
       patients.forEach { it.vaccineStatus = getPatientStatus(it.logicalId) }
       if (showOverduePatientsOnly.value!!) {
         patients = patients.filter { it.vaccineStatus!!.status == VaccineStatus.OVERDUE }
@@ -173,7 +175,7 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
   fun getPatientItem(id: String): LiveData<PatientItem> {
     val liveSearchPatient: MutableLiveData<PatientItem> = MutableLiveData()
     viewModelScope.launch {
-      val patient = fhirEngine.load(Patient::class.java, id).toPatientItem()
+      val patient = fhirEngine.load(Patient::class.java, id).toPatientItem(viewModelScope)
 
       val immunizations: List<Immunization> =
         fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$id" } }
@@ -243,7 +245,7 @@ class PatientListViewModelFactory(
   }
 }
 
-fun Patient.toPatientItem(): PatientItem {
+suspend fun Patient.toPatientItem(viewModelScope: CoroutineScope): PatientItem {
   val name = this.name[0].nameAsSingleString
 
   // Show nothing if no values available for gender and date of birth.
@@ -255,17 +257,19 @@ fun Patient.toPatientItem(): PatientItem {
   val logicalId: String = this.logicalId
   val ext = this.extension.singleOrNull { it.value.toString().contains("risk") }
   val risk = ext?.value?.toString() ?: ""
-  val lastSeen = Utils.getLastSeen(logicalId, meta.lastUpdated)
 
-  return PatientItem(
-    this.logicalId,
-    name,
-    gender,
-    dob,
-    html,
-    phone,
-    logicalId,
-    risk,
-    lastSeen = lastSeen
-  )
+  return withContext(viewModelScope.coroutineContext) {
+    val lastSeen = Utils.getLastSeen(logicalId, meta.lastUpdated)
+    PatientItem(
+      id = logicalId,
+      name = name,
+      gender = gender,
+      dob = dob,
+      html = html,
+      phone = phone,
+      logicalId = logicalId,
+      risk = risk,
+      lastSeen = lastSeen
+    )
+  }
 }

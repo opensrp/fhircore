@@ -35,6 +35,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 /**
@@ -180,6 +181,13 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
     const val QUESTIONNAIRE_ARG_RESPONSE_KEY = "questionnaire_response_item_id"
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR = "bypass-sdk-extractor"
+
+    fun getExtrasBundle(clientIdentifier: String, detailView: CovaxDetailView) =
+      bundleOf(
+        Pair(QUESTIONNAIRE_TITLE_KEY, detailView.registrationQuestionnaireTitle),
+        Pair(QUESTIONNAIRE_PATH_KEY, detailView.registrationQuestionnaireIdentifier),
+        Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier)
+      )
   }
 
   override fun onClick(v: View?) {

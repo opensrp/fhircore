@@ -91,7 +91,7 @@ class CovaxListActivity : BaseRegisterActivity() {
 
   fun launchDetailActivity(patientLogicalId: String) {
     val intent =
-      Intent(this, CovaxDetailActivity::class.java).apply {
+      Intent(this, PatientDetailsActivity::class.java).apply {
         putExtra(CovaxDetailView.COVAX_ARG_ITEM_ID, patientLogicalId)
       }
     this.startActivity(intent)
