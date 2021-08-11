@@ -1,3 +1,4 @@
-include ':eir'
 rootProject.name = "fhircore-android"
+include ':engine'
+include ':eir'
 

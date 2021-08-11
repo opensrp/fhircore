@@ -109,6 +109,7 @@ configurations {
 }
 
 dependencies {
+    implementation(project(":engine"))
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     implementation 'androidx.security:security-crypto:1.1.0-alpha03'
@@ -246,7 +247,7 @@ dokkaHtml.configure {
             jdkVersion.set(8)
             noAndroidSdkLink.set(false)
             perPackageOption {
-                prefix = matching (".*\\.internal.*")
+                prefix = matching(".*\\.internal.*")
                 suppress = true
             }
             suppressGeneratedFiles.set(true)
@@ -255,7 +256,7 @@ dokkaHtml.configure {
         }
 
         pluginsMapConfiguration.set(
-            ["org.jetbrains.dokka.base.DokkaBase": """{
+                ["org.jetbrains.dokka.base.DokkaBase": """{
                 "footerMessage": "© ${Year.now().value} Copyright Ona"
                 }"""]
         )

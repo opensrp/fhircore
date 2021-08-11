@@ -8,7 +8,7 @@ buildscript {
     }
     dependencies {
         classpath deps.android_gradle_plugin
-        classpath deps.kotlin.plugin
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.21"
         classpath deps.spotless
         classpath deps.kotlin_coveralls_plugin
         classpath deps.junit5_plugin
