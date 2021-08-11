@@ -295,7 +295,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     every { questionnaireViewModel.fetchStructureMap(any(), any()) } returns StructureMap()
 
-    structureMapProvider.invoke(resourceUrl)
+    runBlocking {  structureMapProvider.invoke(resourceUrl) }
 
     verify { questionnaireViewModel.fetchStructureMap(any(), resourceUrl) }
   }

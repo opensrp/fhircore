@@ -74,7 +74,7 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
         fragment.arguments =
           bundleOf(
             BUNDLE_KEY_QUESTIONNAIRE to getQuestionnaire(),
-            BUNDLE_KEY_QUESTIONNAIRE_RESPONSE to getQuestionnaireResponse()
+            BUNDLE_KEY_QUESTIONNAIRE_RESPONSE to parser.encodeResourceToString(getQuestionnaireResponse())
           )
       } ?: kotlin.run {
         fragment.arguments = bundleOf(BUNDLE_KEY_QUESTIONNAIRE to getQuestionnaire())
@@ -116,7 +116,7 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
     return parser.encodeResourceToString(questionnaire)
   }
 
-  private fun getQuestionnaireResponse(): String {
+  private fun getQuestionnaireResponse(): QuestionnaireResponse {
     val questionnaire = viewModel.questionnaire
 
     intent.getStringExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID)?.let {
@@ -137,7 +137,7 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
       }
     }
 
-    return parser.encodeResourceToString(questionnaireResponse)
+    return questionnaireResponse
   }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
