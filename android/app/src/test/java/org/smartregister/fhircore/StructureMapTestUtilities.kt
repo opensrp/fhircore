@@ -102,6 +102,12 @@ class StructureMapTestUtilities : RobolectricTest() {
         ],
         "item": [
           {
+            "linkId": "patient-barcode",
+            "definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
+            "text": "Barcode",
+            "type": "text"
+          },
+          {
             "linkId": "PR",
             "type": "group",
             "text": "Client Info",
@@ -412,6 +418,216 @@ class StructureMapTestUtilities : RobolectricTest() {
                 "type": "text"
               }
             ]
+          },
+          {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                "valueCodeableConcept": {
+                  "coding": [
+                    {
+                      "system": "http://hl7.org/fhir/questionnaire-item-control",
+                      "code": "check-box"
+                    }
+                  ]
+                }
+              }
+            ],
+            "linkId": "comorbidities",
+            "code": [
+              {
+                "system": "https://www.snomed.org",
+                "code": "991381000000107"
+              }
+            ],
+            "text": "Do you have any of the following conditions?",
+            "type": "choice",
+            "repeats": true,
+            "required": true,
+            "answerOption": [
+              {
+                "valueCoding": {
+                  "display": "Diabetes Mellitus (DM)",
+                  "system": "https://www.snomed.org",
+                  "code": "73211009"
+                }
+              },
+              {
+                "valueCoding": {
+                  "display": "HyperTension (HT)",
+                  "system": "https://www.snomed.org",
+                  "code": "59621000"
+                }
+              },
+              {
+                "valueCoding": {
+                  "display": "Ischemic Heart Disease (IHD / CHD / CCF)",
+                  "system": "https://www.snomed.org",
+                  "code": "414545008"
+                }
+              },
+              {
+                "valueCoding": {
+                  "display": "Tuberculosis (TB)",
+                  "system": "https://www.snomed.org",
+                  "code": "56717001"
+                }
+              },
+              {
+                "valueCoding": {
+                  "display": "Asthma/COPD",
+                  "system": "https://www.snomed.org",
+                  "code": "195967001"
+                }
+              },
+              {
+                "valueCoding": {
+                  "display": "Chronic Kidney Disease",
+                  "system": "https://www.snomed.org",
+                  "code": "709044004"
+                }
+              },
+              {
+                "valueCoding": {
+                  "display": "Cancer",
+                  "system": "https://www.snomed.org",
+                  "code": "363346000"
+                }
+              },
+              {
+                "valueCoding": {
+                  "display": "Others",
+                  "system": "https://www.snomed.org",
+                  "code": "74964007"
+                }
+              }
+            ]
+          },
+          {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+                "valueBoolean": true
+              }
+            ],
+            "linkId": "other_comorbidities",
+            "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+            "code": [
+              {
+                "system": "https://www.snomed.org",
+                "code": "38651000000103"
+              }
+            ],
+            "text": "If other, specify: ",
+            "type": "string",
+            "enableWhen": [
+              {
+                "question": "comorbidities",
+                "operator": "=",
+                "answerCoding": {
+                  "display": "Others",
+                  "system": "https://www.snomed.org",
+                  "code": "74964007"
+                }
+              }
+            ],
+            "enableBehavior": "all"
+          },
+          {
+            "linkId": "risk_assessment",
+            "code": [
+              {
+                "system": "https://www.snomed.org",
+                "code": "225338004",
+                "display": "Risk Assessment"
+              }
+            ],
+            "text": "Client is at risk for serious illness from COVID-19",
+            "type": "choice",
+            "enableWhen": [
+              {
+                "question": "comorbidities",
+                "operator": "=",
+                "answerCoding": {
+                  "display": "Others",
+                  "system": "https://www.snomed.org",
+                  "code": "74964007"
+                }
+              },
+              {
+                "question": "comorbidities",
+                "operator": "=",
+                "answerCoding": {
+                  "display": "Cancer",
+                  "system": "https://www.snomed.org",
+                  "code": "363346000"
+                }
+              },
+              {
+                "question": "comorbidities",
+                "operator": "=",
+                "answerCoding": {
+                  "display": "Chronic Kidney Disease",
+                  "system": "https://www.snomed.org",
+                  "code": "709044004"
+                }
+              },
+              {
+                "question": "comorbidities",
+                "operator": "=",
+                "answerCoding": {
+                  "display": "Asthma/COPD",
+                  "system": "https://www.snomed.org",
+                  "code": "195967001"
+                }
+              },
+              {
+                "question": "comorbidities",
+                "operator": "=",
+                "answerCoding": {
+                  "display": "Tuberculosis (TB)",
+                  "system": "https://www.snomed.org",
+                  "code": "56717001"
+                }
+              },
+              {
+                "question": "comorbidities",
+                "operator": "=",
+                "answerCoding": {
+                  "display": "Ischemic Heart Disease (IHD / CHD / CCF)",
+                  "system": "https://www.snomed.org",
+                  "code": "414545008"
+                }
+              },
+              {
+                "question": "comorbidities",
+                "operator": "=",
+                "answerCoding": {
+                  "display": "HyperTension (HT)",
+                  "system": "https://www.snomed.org",
+                  "code": "59621000"
+                }
+              },
+              {
+                "question": "comorbidities",
+                "operator": "=",
+                "answerCoding": {
+                  "display": "Diabetes Mellitus (DM)",
+                  "system": "https://www.snomed.org",
+                  "code": "73211009"
+                }
+              }
+            ],
+            "enableBehavior": "any",
+            "initial": [
+              {
+                "valueCoding": {
+                  "system": "https://www.snomed.org",
+                  "code": "870577009",
+                  "display": "High Risk for COVID-19"
+                }
+              }
+            ]
           }
         ]
       }
@@ -563,6 +779,42 @@ class StructureMapTestUtilities : RobolectricTest() {
           ]
         }
       ]
+    },
+    {
+    "linkId": "comorbidities",
+    "answer": [
+    {
+    "valueCoding": {
+            "display": "Cancer",
+            "system": "https://www.snomed.org",
+            "code": "363346000"
+          }
+
+    },
+    {
+    "valueCoding": {
+            "display": "Others",
+            "system": "https://www.snomed.org",
+            "code": "74964007"
+          }
+    }
+    ]
+    },
+    {
+    "linkId": "other_comorbidities",
+    "answer": [
+    {
+    "valueString": "This is another comorbidity"
+    }
+    ]
+    }, 
+    {
+    "linkId": "patient-barcode",
+    "answer": [
+    {
+    "valueString": "sdfasd"
+    }
+    ]
     }
   ]
 }
@@ -575,17 +827,21 @@ class StructureMapTestUtilities : RobolectricTest() {
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
 uses "http://hl7.org/fhir/StructureDefinition/Patient" as target
+uses "http://hl7.org/fhir/StructureDefinition/Observation" as target
 uses "http://hl7.org/fhir/StructureDefinition/Patient" as source
 
 group PatientRegistration(source src : QuestionnaireResponse, target bundle: Bundle) {
     src -> bundle.id = uuid() "rule_c";
     src -> bundle.type = 'collection' "rule_b";
     src -> bundle.entry as entry, entry.resource = create('Patient') as patient then
-        ExtractPatient(src, patient), ExtractRelatedPerson(src, bundle, patient) "rule_i";
+        ExtractPatient(src, patient), ExtractRelatedPerson(src, bundle, patient), ExtractObservations(src, bundle, patient), ExtractRiskAssessmentObservation(src, bundle, patient) "rule_i";
 }
 
 group ExtractPatient(source src : QuestionnaireResponse, target patient : Patient) {
-    src -> patient.id = uuid() "rule_j";
+	src.item as patientBarcodeItem where(linkId = 'patient-barcode') then {
+		patientBarcodeItem.answer as patientBarcode where patientBarcode.empty().not() -> patient.id = patientBarcode.value "rule_j1";
+		patientBarcodeItem.answer as patientBarcode where patientBarcode.empty() -> patient.id = uuid() "rule_j2";
+	};
 
     src.item as item where(linkId = 'PR') then {
        item.item as inner_item where (linkId = 'patient-0-birth-date') then {
@@ -652,6 +908,32 @@ group ExtractRelatedPerson(source src : QuestionnaireResponse, target bundle : B
             } "rule_erp_13a";
         };
     } "rule_erp_14";
+}
+
+group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bundle, source patientId : Patient) {
+    src.item as item where(linkId = 'comorbidities') then {
+    	item.answer as itemAns -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+	    	src -> obs.id = uuid() "rule_eo1";
+	    	src -> obs.effective = evaluate(patientId, now()) "rule_eo2";
+	    	src -> obs.subject = reference(patientId) "rule_eo3";
+	    	src -> obs.code = cc("https://www.snomed.org", "991381000000107") "rule_eo4";
+	    	src -> obs.status = "final" "rule_eo5";
+	    	itemAns.value as itemValue -> obs.value = itemValue "rule_eo6";
+    	} "rule_e08";
+	} "rule_eo7";
+}
+
+
+group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, target bundle : Bundle, source patientId : Patient) {
+    src -> bundle.entry as entry, entry.resource = create('RiskAssessment') as riskAm then {
+        src.item as item where(linkId = 'other_comorbidities') then {
+        	src -> riskAm.id = uuid() "rule_erao_1";
+        	src -> riskAm.code = cc("https://www.snomed.org", "991381000000107") "rule_erao_2";
+        	src -> riskAm.status = "final" "rule_erao_3";
+        	src -> riskAm.subject = reference(patientId) "rule_erao_4";
+        	src -> riskAm.occurrence = evaluate(patientId, now()) "rule_erao_5";
+        } "rule_erao_6";
+    } "rule_erao_7";
 }
     """.trimIndent()
 }
