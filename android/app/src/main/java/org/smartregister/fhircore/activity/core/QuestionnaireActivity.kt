@@ -32,7 +32,6 @@ import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.model.CovaxDetailView
@@ -74,13 +73,14 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
       intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)?.let {
         fragment.arguments =
           bundleOf(
-            BUNDLE_KEY_QUESTIONNAIRE to getQuestionnaire(),
+            BUNDLE_KEY_QUESTIONNAIRE to parser.encodeResourceToString(getQuestionnaire()),
             BUNDLE_KEY_QUESTIONNAIRE_RESPONSE to
               parser.encodeResourceToString(getQuestionnaireResponse())
           )
       }
         ?: kotlin.run {
-          fragment.arguments = bundleOf(BUNDLE_KEY_QUESTIONNAIRE to getQuestionnaire())
+          fragment.arguments =
+            bundleOf(BUNDLE_KEY_QUESTIONNAIRE to parser.encodeResourceToString(getQuestionnaire()))
         }
 
       supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
@@ -114,18 +114,17 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
     finish()
   }
 
-  private fun getQuestionnaire(): String {
+  private fun getQuestionnaire(): Questionnaire {
     val questionnaire = viewModel.questionnaire
-    return parser.encodeResourceToString(questionnaire)
+    // TODO: Handle Pre Assigned Id Dynamically
+    /*intent.getStringExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID)?.let {
+      setBarcode(questionnaire, it, true)
+    }*/
+    return questionnaire
   }
 
   private fun getQuestionnaireResponse(): QuestionnaireResponse {
     val questionnaire = viewModel.questionnaire
-
-    intent.getStringExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID)?.let {
-      setBarcode(questionnaire, it, true)
-    }
-
     var questionnaireResponse = QuestionnaireResponse()
 
     intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)?.let {
@@ -141,7 +140,7 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
     return questionnaireResponse
   }
 
-  private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
+  /*private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
     questionnaire.find(QUESTIONNAIRE_ARG_BARCODE_KEY)?.apply {
       initial =
         mutableListOf(Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(code)))
@@ -170,7 +169,7 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
     }
 
     return result
-  }
+  }*/
 
   companion object {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
