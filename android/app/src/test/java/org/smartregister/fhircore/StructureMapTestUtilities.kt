@@ -834,7 +834,7 @@ group PatientRegistration(source src : QuestionnaireResponse, target bundle: Bun
     src -> bundle.id = uuid() "rule_c";
     src -> bundle.type = 'collection' "rule_b";
     src -> bundle.entry as entry, entry.resource = create('Patient') as patient then
-        ExtractPatient(src, patient), ExtractRelatedPerson(src, bundle, patient), ExtractObservations(src, bundle, patient), ExtractRiskAssessmentObservation(src, bundle, patient) "rule_i";
+        ExtractPatient(src, patient), ExtractRelatedPerson(src, bundle, patient), ExtractObservations(src, bundle, patient), ExtractRiskAssessmentObservation(src, bundle, bundle, patient) "rule_i";
 }
 
 group ExtractPatient(source src : QuestionnaireResponse, target patient : Patient) {
@@ -878,9 +878,7 @@ group ExtractPatient(source src : QuestionnaireResponse, target patient : Patien
     };
 }
 
-
-
-group ExtractRelatedPerson(source src : QuestionnaireResponse, target bundle : Bundle, source patientId : Patient) {
+group ExtractRelatedPerson(source src : QuestionnaireResponse, target bundle : Bundle, source patient : Patient) {
     src -> bundle.entry as entry, entry.resource = create('RelatedPerson') as relatedPerson then {
         src.item as item where(linkId = 'RP') then {
             src -> relatedPerson.name = create('HumanName') as relatedPersonName then {
@@ -907,8 +905,8 @@ group ExtractRelatedPerson(source src : QuestionnaireResponse, target bundle : B
             } "rule_erp_10a";
 
             src -> relatedPerson.id = uuid() "rule_erp_11";
-            patientId -> relatedPerson.patient = create('Reference') as patientReference then {
-                patientId.id as thePatientId  -> patientReference.reference = thePatientId "rule_erp_12";
+            patient -> relatedPerson.patient = create('Reference') as patientReference then {
+                patient.id as thePatientId  -> patientReference.reference = thePatientId "rule_erp_12";
                 src -> patientReference.type = "Patient" "rule_erp_13";
             } "rule_erp_13a";
         };
@@ -943,16 +941,21 @@ group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bu
 }
 
 
-group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, target bundle : Bundle, source patientId : Patient) {
-    src -> bundle.entry as entry, entry.resource = create('RiskAssessment') as riskAm then {
-        src.item as item where(linkId = 'other_comorbidities') then {
-        	src -> riskAm.id = uuid() "rule_erao_1";
-        	src -> riskAm.code = cc("https://www.snomed.org", "991381000000107") "rule_erao_2";
-        	src -> riskAm.status = "final" "rule_erao_3";
-        	src -> riskAm.subject = reference(patientId) "rule_erao_4";
-        	src -> riskAm.occurrence = evaluate(patientId, now()) "rule_erao_5";
+group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, source bundleEn : Bundle, target bundle : Bundle, source patient : Patient) {
+    src.item as item where(linkId = 'comorbidities' and answer.count() > 0) -> bundle.entry as entry, entry.resource = create('RiskAssessment') as riskAm then {
+        src -> riskAm.id = uuid() "rule_erao_1";
+        src -> riskAm.code = cc("https://www.snomed.org", "38651000000103") "rule_erao_2";
+        src -> riskAm.status = "final" "rule_erao_3";
+        src -> riskAm.subject = reference(patient) "rule_erao_4";
+        src -> riskAm.occurrence = evaluate(patient, now()) "rule_erao_5";
+        src -> riskAm.prediction = create('RiskAssessment_Prediction') as riskPrediction then {
+          src -> riskPrediction.relativeRisk = evaluate(bundle, ${"$"}this.entry.where(resource.is(Observation) and resource.code.coding[0].code = '991381000000107').count()) "rule_erao_6_1";
+          src -> riskPrediction.outcome = cc("https://www.snomed.org", "38651000000103") "rule_erao_6_2";
         } "rule_erao_6";
-    } "rule_erao_7";
+        bundleEn.entry as resourceEntry where(resource.is(Observation) and resource.code.coding[0].code = '991381000000107') then {
+          resourceEntry.resource as rs -> riskAm.basis = reference(rs) "rule_erao_7_1"; 
+        } "rule_erao_7";
+    } "rule_erao_8";
 }
     """.trimIndent()
 }
