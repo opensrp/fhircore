@@ -40,19 +40,22 @@ class PatientDetailsActivity : BaseActivity() {
 
     if (savedInstanceState == null) {
       detailView =
-          Utils.loadConfig(
-              PatientDetailsFormConfig.COVAX_DETAIL_VIEW_CONFIG_ID,
-              PatientDetailsFormConfig::class.java,
-              this)
+        Utils.loadConfig(
+          PatientDetailsFormConfig.COVAX_DETAIL_VIEW_CONFIG_ID,
+          PatientDetailsFormConfig::class.java,
+          this
+        )
 
       patientId = intent.extras?.getString(PatientDetailsFormConfig.COVAX_ARG_ITEM_ID) ?: ""
       supportFragmentManager
-          .beginTransaction()
-          .replace(
-              R.id.container,
-              PatientDetailsFragment.newInstance(
-                  bundleOf(Pair(PatientDetailsFormConfig.COVAX_ARG_ITEM_ID, patientId))))
-          .commitNow()
+        .beginTransaction()
+        .replace(
+          R.id.container,
+          PatientDetailsFragment.newInstance(
+            bundleOf(Pair(PatientDetailsFormConfig.COVAX_ARG_ITEM_ID, patientId))
+          )
+        )
+        .commitNow()
     }
   }
 
@@ -64,8 +67,9 @@ class PatientDetailsActivity : BaseActivity() {
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     if (item.itemId == R.id.patient_profile_edit) {
       startActivity(
-          Intent(this, QuestionnaireActivity::class.java)
-              .putExtras(QuestionnaireActivity.getExtrasBundle(patientId, detailView)))
+        Intent(this, QuestionnaireActivity::class.java)
+          .putExtras(QuestionnaireActivity.getExtrasBundle(patientId, detailView))
+      )
       return true
     }
     return super.onOptionsItemSelected(item)

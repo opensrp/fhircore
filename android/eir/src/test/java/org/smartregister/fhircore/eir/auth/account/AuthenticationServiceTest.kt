@@ -40,11 +40,11 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.BuildConfig
 import org.smartregister.fhircore.eir.RobolectricTest
-import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.eir.auth.secure.FakeKeyStore
+import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.data.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
-import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response

@@ -26,7 +26,11 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
+import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.MalformedJwtException
+import io.jsonwebtoken.UnsupportedJwtException
 import java.util.Date
 import okhttp3.ResponseBody
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -41,15 +45,18 @@ import timber.log.Timber
 abstract class AuthenticationService(open val context: Context) {
 
   fun getUserInfo(): Call<ResponseBody> =
-      OAuthService.create(context, getApplicationConfigurations()).userInfo()
+    OAuthService.create(context, getApplicationConfigurations()).userInfo()
 
   fun refreshToken(refreshToken: String): OAuthResponse? {
     val data = buildOAuthPayload(REFRESH_TOKEN)
     data[REFRESH_TOKEN] = refreshToken
-    return OAuthService.create(context, getApplicationConfigurations())
-        .fetchToken(data)
-        .execute()
-        .body()
+    val oAuthService = OAuthService.create(context, getApplicationConfigurations())
+    return try {
+      oAuthService.fetchToken(data).execute().body()
+    } catch (exception: Exception) {
+      Timber.e("Failed to refresh token, refresh token may have expired", exception)
+      return null
+    }
   }
 
   @Throws(NetworkErrorException::class)
@@ -75,20 +82,25 @@ abstract class AuthenticationService(open val context: Context) {
 
   fun isSessionActive(token: String?): Boolean {
     if (token.isNullOrEmpty()) return false
-    kotlin
-        .runCatching {
-          val tokenOnly = token.substring(0, token.lastIndexOf('.') + 1)
-          return Jwts.parser().parseClaimsJwt(tokenOnly).body.expiration.after(Date())
-        }
-        .onFailure { Timber.e(it) }
-
-    return false
+    return try {
+      val tokenOnly = token.substring(0, token.lastIndexOf('.') + 1)
+      Jwts.parser().parseClaimsJwt(tokenOnly).body.expiration.after(Date())
+    } catch (expiredJwtException: ExpiredJwtException) {
+      Timber.w("Refresh/Access token expired", expiredJwtException)
+      false
+    } catch (unsupportedJwtException: UnsupportedJwtException) {
+      Timber.w("JWT format not recognized", unsupportedJwtException)
+      false
+    } catch (malformedJwtException: MalformedJwtException) {
+      Timber.w(malformedJwtException)
+      false
+    }
   }
 
   fun addAuthenticatedAccount(
-      accountManager: AccountManager,
-      successResponse: Response<OAuthResponse>,
-      username: String
+    accountManager: AccountManager,
+    successResponse: Response<OAuthResponse>,
+    username: String
   ) {
     Timber.i("Adding authenticated account %s", username)
 
@@ -107,10 +119,10 @@ abstract class AuthenticationService(open val context: Context) {
   }
 
   fun loadAccount(
-      accountManager: AccountManager,
-      username: String?,
-      callback: AccountManagerCallback<Bundle>,
-      errorHandler: Handler
+    accountManager: AccountManager,
+    username: String?,
+    callback: AccountManagerCallback<Bundle>,
+    errorHandler: Handler = Handler(Looper.getMainLooper(), DefaultErrorHandler)
   ) {
     val accounts = accountManager.getAccountsByType(getAccountType())
 
@@ -127,21 +139,19 @@ abstract class AuthenticationService(open val context: Context) {
     val refreshToken = getRefreshToken(accountManager)
     if (refreshToken != null) {
       OAuthService.create(context, getApplicationConfigurations())
-          .logout(clientId(), clientSecret(), refreshToken)
-          .enqueue(
-              object : Callback<ResponseBody> {
-                override fun onResponse(
-                    call: Call<ResponseBody>,
-                    response: Response<ResponseBody>
-                ) {
-                  accountManager.clearPassword(account)
-                  cleanup()
-                }
+        .logout(clientId(), clientSecret(), refreshToken)
+        .enqueue(
+          object : Callback<ResponseBody> {
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+              accountManager.clearPassword(account)
+              cleanup()
+            }
 
-                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                  cleanup()
-                }
-              })
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+              cleanup()
+            }
+          }
+        )
     } else {
       cleanup()
     }
@@ -167,6 +177,8 @@ abstract class AuthenticationService(open val context: Context) {
     val account = accountManager.getAccountsByType(getAccountType()).firstOrNull()
     return accountManager.getPassword(account)
   }
+
+  abstract fun skipLogin(): Boolean
 
   abstract fun getLoginActivityClass(): Class<*>
 

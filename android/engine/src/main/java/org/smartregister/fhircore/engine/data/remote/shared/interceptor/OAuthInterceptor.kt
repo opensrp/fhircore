@@ -25,20 +25,14 @@ class OAuthInterceptor(val context: Context) : Interceptor {
 
   override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
     Timber.i("Intercepted request for auth headers if needed")
-
     var request = chain.request()
-
     val segments = mutableListOf("protocol", "openid-connect", "token")
-
     if (!request.url.pathSegments.containsAll(segments)) {
       val token = SecureSharedPreference(context).retrieveSessionToken()
       if (token.isNullOrEmpty()) throw IllegalStateException("No session token found")
-
       Timber.i("Passing auth token for %s", request.url.toString())
-
       request = request.newBuilder().addHeader("Authorization", "Bearer $token").build()
     }
-
     return chain.proceed(request)
   }
 }

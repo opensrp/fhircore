@@ -39,58 +39,65 @@ class CovaxListActivity : BaseRegisterActivity() {
     super.onCreate(savedInstanceState)
 
     setToolbarItemText(
-        R.id.tv_clients_list_title, base_register_toolbar, R.string.client_list_title_covax)
+      R.id.tv_clients_list_title,
+      base_register_toolbar,
+      R.string.client_list_title_covax
+    )
 
     setNavigationHeaderTitle(detailView.registerTitle, R.id.tv_nav_header)
 
     listViewModel =
-        ViewModelProvider(
-                this,
-                PatientListViewModelFactory(application, EirApplication.fhirEngine(baseContext)))
-            .get(CovaxListViewModel::class.java)
+      ViewModelProvider(
+          this,
+          PatientListViewModelFactory(application, EirApplication.fhirEngine(baseContext))
+        )
+        .get(CovaxListViewModel::class.java)
 
     setupBarcodeScanner()
   }
 
   override fun buildRegister(): BaseRegister {
     detailView =
-        loadConfig(
-            PatientDetailsFormConfig.COVAX_DETAIL_VIEW_CONFIG_ID,
-            PatientDetailsFormConfig::class.java,
-            this)
+      loadConfig(
+        PatientDetailsFormConfig.COVAX_DETAIL_VIEW_CONFIG_ID,
+        PatientDetailsFormConfig::class.java,
+        this
+      )
 
     return BaseRegister(
-        context = this,
-        contentLayoutId = R.layout.activity_register_list,
-        listFragment = CovaxListFragment(),
-        viewPagerId = R.id.list_pager,
-        newRegistrationViewId = R.id.btn_register_new_client,
-        newRegistrationQuestionnaireIdentifier = detailView.registrationQuestionnaireIdentifier,
-        newRegistrationQuestionnaireTitle = detailView.registrationQuestionnaireTitle,
-        searchBoxId = R.id.edit_text_search)
+      context = this,
+      contentLayoutId = R.layout.activity_register_list,
+      listFragment = CovaxListFragment(),
+      viewPagerId = R.id.list_pager,
+      newRegistrationViewId = R.id.btn_register_new_client,
+      newRegistrationQuestionnaireIdentifier = detailView.registrationQuestionnaireIdentifier,
+      newRegistrationQuestionnaireTitle = detailView.registrationQuestionnaireTitle,
+      searchBoxId = R.id.edit_text_search
+    )
   }
 
   private fun setupBarcodeScanner() {
     initBarcodeScanner(R.id.layout_scan_barcode) { barcode, _ ->
       listViewModel
-          .isPatientExists(barcode)
-          .observe(
-              this,
-              {
-                if (it.isSuccess) {
-                  launchDetailActivity(barcode)
-                } else {
-                  startRegistrationActivity(barcode)
-                }
-              })
+        .isPatientExists(barcode)
+        .observe(
+          this,
+          {
+            if (it.isSuccess) {
+              launchDetailActivity(barcode)
+            } else {
+              startRegistrationActivity(barcode)
+            }
+          }
+        )
     }
   }
 
   fun launchDetailActivity(patientLogicalId: String) {
     val intent =
-        Intent(this, PatientDetailsActivity::class.java).apply {
-          putExtra(PatientDetailsFormConfig.COVAX_ARG_ITEM_ID, patientLogicalId)
-        }
+      Intent(this, PatientDetailsActivity::class.java).apply {
+        putExtra(PatientDetailsFormConfig.COVAX_ARG_ITEM_ID, patientLogicalId)
+      }
     this.startActivity(intent)
   }
 }

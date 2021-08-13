@@ -1,22 +1,24 @@
 package org.smartregister.fhircore.engine.configuration.view
 
 import android.content.Context
+import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.Configuration
 
 @Serializable
+@Stable
 data class RegisterViewConfiguration(
-    var appTitle: String,
-    var filterText: String,
-    var searchBarHint: String,
-    var newClientButtonText: String,
-    var showSearchBar: Boolean = true,
-    var showFilter: Boolean = true,
-    var switchLanguages: Boolean = true,
-    var showScanQRCode: Boolean = true,
-    var showNewClientButton: Boolean = true,
-    var sideMenuOptions: List<String> = listOf()
+  var appTitle: String,
+  var filterText: String,
+  var searchBarHint: String,
+  var newClientButtonText: String,
+  var showSearchBar: Boolean = true,
+  var showFilter: Boolean = true,
+  var switchLanguages: Boolean = true,
+  var showScanQRCode: Boolean = true,
+  var showNewClientButton: Boolean = true,
+  var sideMenuOptions: List<String> = listOf()
 ) : Configuration
 
 /**
@@ -34,27 +36,29 @@ data class RegisterViewConfiguration(
  * @param showNewClientButton Hides or shows the button for register new client
  * @param sideMenuOptions Sets menu items for the drawer
  */
+@Stable
 fun Context.registerViewConfigurationOf(
-    appTitle: String = this.getString(R.string.default_app_title),
-    filterText: String = this.getString(R.string.show_overdue),
-    searchBarHint: String = this.getString(R.string.search_hint),
-    newClientButtonText: String = this.getString(R.string.register_new_client),
-    showSearchBar: Boolean = true,
-    showFilter: Boolean = true,
-    switchLanguages: Boolean = true,
-    showScanQRCode: Boolean = true,
-    showNewClientButton: Boolean = true,
-    sideMenuOptions: List<String> = listOf()
+  appTitle: String = this.getString(R.string.default_app_title),
+  filterText: String = this.getString(R.string.show_overdue),
+  searchBarHint: String = this.getString(R.string.search_hint),
+  newClientButtonText: String = this.getString(R.string.register_new_client),
+  showSearchBar: Boolean = true,
+  showFilter: Boolean = true,
+  switchLanguages: Boolean = true,
+  showScanQRCode: Boolean = true,
+  showNewClientButton: Boolean = true,
+  sideMenuOptions: List<String> = listOf()
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
-      appTitle = appTitle,
-      filterText = filterText,
-      searchBarHint = searchBarHint,
-      newClientButtonText = newClientButtonText,
-      showSearchBar = showSearchBar,
-      showFilter = showFilter,
-      switchLanguages = switchLanguages,
-      showScanQRCode = showScanQRCode,
-      showNewClientButton = showNewClientButton,
-      sideMenuOptions = sideMenuOptions)
+    appTitle = appTitle,
+    filterText = filterText,
+    searchBarHint = searchBarHint,
+    newClientButtonText = newClientButtonText,
+    showSearchBar = showSearchBar,
+    showFilter = showFilter,
+    switchLanguages = switchLanguages,
+    showScanQRCode = showScanQRCode,
+    showNewClientButton = showNewClientButton,
+    sideMenuOptions = sideMenuOptions
+  )
 }

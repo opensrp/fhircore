@@ -32,8 +32,8 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import java.util.Locale
 import org.smartregister.fhircore.eir.util.QuestionnaireUtils.buildQuestionnaireIntent
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.eir.util.Utils
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
 /**
@@ -49,7 +49,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
   override fun attachBaseContext(base: Context) {
     val lang: String? =
-        SharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
+      SharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
     val newConfiguration: Configuration? = Utils.setAppLocale(base, lang)
     super.attachBaseContext(base)
     applyOverrideConfiguration(newConfiguration)
@@ -61,14 +61,14 @@ abstract class BaseActivity : AppCompatActivity() {
   }
 
   fun startQuestionnaire(
-      questionnaireTitle: String,
-      questionnaireId: String,
-      patientId: String?,
-      isNewPatient: Boolean
+    questionnaireTitle: String,
+    questionnaireId: String,
+    patientId: String?,
+    isNewPatient: Boolean
   ) {
     startActivity(
-        buildQuestionnaireIntent(
-            this, questionnaireTitle, questionnaireId, patientId, isNewPatient))
+      buildQuestionnaireIntent(this, questionnaireTitle, questionnaireId, patientId, isNewPatient)
+    )
   }
 
   /**
@@ -87,8 +87,8 @@ abstract class BaseActivity : AppCompatActivity() {
    * @param onBarcodeResult the lambda that would be triggered on successful barcode scanning
    */
   fun initBarcodeScanner(
-      @IdRes vararg barcodeScannerViewId: Int,
-      onBarcodeResult: (barcode: String, view: View) -> Unit
+    @IdRes vararg barcodeScannerViewId: Int,
+    onBarcodeResult: (barcode: String, view: View) -> Unit
   ) {
     this.onBarcodeResult = onBarcodeResult
 
@@ -108,34 +108,39 @@ abstract class BaseActivity : AppCompatActivity() {
 
   private fun barcodeFragmentListener(view: View) {
     supportFragmentManager.setFragmentResultListener(
-        "result",
-        this,
-        { key, result ->
-          val barcode = result.getString(key)!!.trim()
-          Timber.i("Received barcode $barcode initiated by view id ${view.id}")
+      "result",
+      this,
+      { key, result ->
+        val barcode = result.getString(key)!!.trim()
+        Timber.i("Received barcode $barcode initiated by view id ${view.id}")
 
-          onBarcodeResult(barcode, view)
+        onBarcodeResult(barcode, view)
 
-          // liveBarcodeScanningFragment.onDestroy()
-        })
+        // liveBarcodeScanningFragment.onDestroy()
+      }
+    )
   }
 
   private fun getBarcodePermissionLauncher(): ActivityResultLauncher<String> {
     return registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-        isGranted: Boolean ->
+      isGranted: Boolean ->
       if (isGranted) {
         // liveBarcodeScanningFragment.show(supportFragmentManager, "TAG")
       } else {
         Toast.makeText(
-                this, "Camera permissions are needed to launch barcode reader!", Toast.LENGTH_LONG)
-            .show()
+            this,
+            "Camera permissions are needed to launch barcode reader!",
+            Toast.LENGTH_LONG
+          )
+          .show()
       }
     }
   }
 
   private fun launchBarcodeReader(requestPermissionLauncher: ActivityResultLauncher<String>) {
     if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
-        PackageManager.PERMISSION_GRANTED) {
+        PackageManager.PERMISSION_GRANTED
+    ) {
       // liveBarcodeScanningFragment.show(this.supportFragmentManager, "TAG")
     } else {
       requestPermissionLauncher.launch(Manifest.permission.CAMERA)

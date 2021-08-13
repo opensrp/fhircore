@@ -29,41 +29,45 @@ import org.smartregister.fhircore.eir.util.Utils.makeItReadable
 
 /** * A wrapper class that displays a patient's historical activity */
 data class PatientDetailsCard(
-    val groupIndex: Int,
-    val index: Int,
-    val id: String,
-    val type: String,
-    val title: String,
-    val details: String
+  val groupIndex: Int,
+  val index: Int,
+  val id: String,
+  val type: String,
+  val title: String,
+  val details: String
 )
 
 fun Patient.toDetailsCard(context: Context, index: Int = 0) =
-    PatientDetailsCard(
-        groupIndex = 0,
-        index = index,
-        id = this.id,
-        type = this.resourceType.name,
-        title =
-            "${context.getString(R.string.registered_date)} ${this.meta?.lastUpdated?.makeItReadable()}",
-        context.getString(R.string.view_registration_details))
+  PatientDetailsCard(
+    groupIndex = 0,
+    index = index,
+    id = this.id,
+    type = this.resourceType.name,
+    title =
+      "${context.getString(R.string.registered_date)} ${this.meta?.lastUpdated?.makeItReadable()}",
+    context.getString(R.string.view_registration_details)
+  )
 
 fun Immunization.toDetailsCard(context: Context, index: Int = 0, hasNext: Boolean = false) =
-    PatientDetailsCard(
-        groupIndex = 1,
-        index = index,
-        id = this.id,
-        type = this.resourceType.name,
-        title =
-            context.getString(
-                R.string.immunization_brief_text,
-                this.vaccineCode.text,
-                (this.protocolApplied[0].doseNumber as PositiveIntType).value),
-        if (hasNext) {
-          context.getString(
-              getDetailsText(this.occurrenceDateTimeType),
-              ((this.protocolApplied[0].doseNumber as PositiveIntType).value + 1),
-              Utils.addDays(this.occurrenceDateTimeType.toHumanDisplay(), DAYS_IN_MONTH))
-        } else context.getString(R.string.fully_vaccinated))
+  PatientDetailsCard(
+    groupIndex = 1,
+    index = index,
+    id = this.id,
+    type = this.resourceType.name,
+    title =
+      context.getString(
+        R.string.immunization_brief_text,
+        this.vaccineCode.text,
+        (this.protocolApplied[0].doseNumber as PositiveIntType).value
+      ),
+    if (hasNext) {
+      context.getString(
+        getDetailsText(this.occurrenceDateTimeType),
+        ((this.protocolApplied[0].doseNumber as PositiveIntType).value + 1),
+        Utils.addDays(this.occurrenceDateTimeType.toHumanDisplay(), DAYS_IN_MONTH)
+      )
+    } else context.getString(R.string.fully_vaccinated)
+  )
 
 private fun getDetailsText(previousVaccineDatetime: DateTimeType): Int {
   val isOverDue = Utils.hasPastDays(previousVaccineDatetime, DAYS_IN_MONTH + OVERDUE_DAYS_IN_MONTH)

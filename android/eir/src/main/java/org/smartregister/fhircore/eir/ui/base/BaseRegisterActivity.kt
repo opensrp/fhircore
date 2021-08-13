@@ -60,10 +60,18 @@ abstract class BaseRegisterActivity : BaseDrawerActivity() {
       if (it!!.isEmpty()) {
         editText.setOnTouchListener(null)
         editText.setCompoundDrawablesWithIntrinsicBounds(
-            getDrawable(R.drawable.ic_search), null, null, null)
+          getDrawable(R.drawable.ic_search),
+          null,
+          null,
+          null
+        )
       } else {
         editText.setCompoundDrawablesWithIntrinsicBounds(
-            null, null, getDrawable(R.drawable.ic_cancel), null)
+          null,
+          null,
+          getDrawable(R.drawable.ic_cancel),
+          null
+        )
         editText.addOnDrawableClickedListener(Utils.DrawablePosition.DRAWABLE_RIGHT) { it.clear() }
       }
     }
@@ -72,7 +80,7 @@ abstract class BaseRegisterActivity : BaseDrawerActivity() {
   fun startRegistrationActivity(preAssignedId: String?) {
     val questionnaireId = register.newRegistrationQuestionnaireIdentifier!!
     val questionnaireTitle =
-        register.newRegistrationQuestionnaireTitle ?: getString(R.string.client_info)
+      register.newRegistrationQuestionnaireTitle ?: getString(R.string.client_info)
 
     startQuestionnaire(questionnaireTitle, questionnaireId, preAssignedId, true)
   }

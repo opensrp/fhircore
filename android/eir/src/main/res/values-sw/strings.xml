@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="version">Toleo %s</string>
+    <string name="app_version">Toleo %s</string>
     <string name="title_patient_list">Wateja Wasajiliwa</string>
     <string name="title_patient_detail">Sampuli ya Mgonjwa</string>
     <string name="menu_about">Kuhusu Injini ya FHIR</string>

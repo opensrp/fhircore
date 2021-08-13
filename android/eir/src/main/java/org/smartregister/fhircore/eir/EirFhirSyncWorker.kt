@@ -26,7 +26,8 @@ class EirFhirSyncWorker(private val appContext: Context, workerParams: WorkerPar
 
   override fun getSyncData() = Utils.buildResourceSyncParams()
 
-  override fun getDataSource() = Utils.buildDatasource(appContext, EirApplication.getContext().eirConfigurations())
+  override fun getDataSource() =
+    Utils.buildDatasource(appContext, EirApplication.getContext().eirConfigurations())
 
   override fun getFhirEngine() = EirApplication.fhirEngine(applicationContext)
 }

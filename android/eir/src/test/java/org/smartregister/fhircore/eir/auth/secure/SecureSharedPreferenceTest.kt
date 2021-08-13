@@ -28,8 +28,8 @@ import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.RobolectricTest
-import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
 @Config(shadows = [FhirApplicationShadow::class])

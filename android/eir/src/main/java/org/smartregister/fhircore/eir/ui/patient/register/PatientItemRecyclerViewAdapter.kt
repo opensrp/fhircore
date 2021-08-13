@@ -25,20 +25,21 @@ import org.smartregister.fhircore.eir.ui.base.model.PatientItem
 
 /** UI Controller helper class to monitor Patient viewmodel and display list of patients. */
 class PatientItemRecyclerViewAdapter(
-    private val onItemClicked: (CovaxListFragment.Intention, PatientItem) -> Unit
+  private val onItemClicked: (CovaxListFragment.Intention, PatientItem) -> Unit
 ) : ListAdapter<PatientItem, PatientItemViewHolder>(PatientItemDiffCallback()) {
 
   class PatientItemDiffCallback : DiffUtil.ItemCallback<PatientItem>() {
     override fun areItemsTheSame(oldItem: PatientItem, newItem: PatientItem): Boolean =
-        oldItem.id == newItem.id
+      oldItem.id == newItem.id
 
     override fun areContentsTheSame(oldItem: PatientItem, newItem: PatientItem): Boolean =
-        oldItem == newItem
+      oldItem == newItem
   }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PatientItemViewHolder =
-      PatientItemViewHolder(
-          LayoutInflater.from(parent.context).inflate(R.layout.patient_list_item, parent, false))
+    PatientItemViewHolder(
+      LayoutInflater.from(parent.context).inflate(R.layout.patient_list_item, parent, false)
+    )
 
   override fun onBindViewHolder(holder: PatientItemViewHolder, position: Int) {
     val item = currentList[position]

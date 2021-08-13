@@ -29,8 +29,8 @@ import org.junit.BeforeClass
 import org.junit.Test
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.RobolectricTest
-import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.eir.auth.secure.FakeKeyStore
+import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.data.remote.shared.interceptor.OAuthInterceptor
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 

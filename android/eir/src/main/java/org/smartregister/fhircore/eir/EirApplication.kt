@@ -40,11 +40,13 @@ class EirApplication : Application(), ConfigurableApplication {
     SharedPreferencesHelper.init(this)
     eirApplication = this
     configureApplication(
-        applicationConfigurationOf(
-            oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL,
-            fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL,
-            clientId = BuildConfig.OAUTH_CIENT_ID,
-            clientSecret = BuildConfig.OAUTH_CLIENT_SECRET))
+      applicationConfigurationOf(
+        oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL,
+        fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL,
+        clientId = BuildConfig.OAUTH_CIENT_ID,
+        clientSecret = BuildConfig.OAUTH_CLIENT_SECRET
+      )
+    )
 
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
@@ -56,10 +58,12 @@ class EirApplication : Application(), ConfigurableApplication {
 
   private fun constructFhirEngine(): FhirEngine {
     Sync.periodicSync<EirFhirSyncWorker>(
-        this,
-        PeriodicSyncConfiguration(
-            syncConstraints = Constraints.Builder().build(),
-            repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)))
+      this,
+      PeriodicSyncConfiguration(
+        syncConstraints = Constraints.Builder().build(),
+        repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
+      )
+    )
 
     return FhirEngineBuilder(this).build()
   }

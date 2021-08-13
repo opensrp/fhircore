@@ -39,8 +39,8 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
   private val atRisk: TextView = itemView.findViewById(R.id.risk_flag)
 
   fun bindTo(
-      patientItem: PatientItem,
-      onItemClicked: (CovaxListFragment.Intention, PatientItem) -> Unit
+    patientItem: PatientItem,
+    onItemClicked: (CovaxListFragment.Intention, PatientItem) -> Unit
   ) {
     setPatientStatus(null, patientItem, this.tvRecordVaccine, onItemClicked)
     this.tvPatientDemographics.text = patientItem.getPatientDemographics()
@@ -55,10 +55,10 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
   }
 
   private fun setPatientStatus(
-      patientStatus: PatientStatus?,
-      patientItem: PatientItem,
-      tvRecordVaccine: TextView,
-      onItemClicked: (CovaxListFragment.Intention, PatientItem) -> Unit,
+    patientStatus: PatientStatus?,
+    patientItem: PatientItem,
+    tvRecordVaccine: TextView,
+    onItemClicked: (CovaxListFragment.Intention, PatientItem) -> Unit,
   ) {
     tvRecordVaccine.text = ""
     val status = patientStatus?.status ?: return
@@ -67,7 +67,8 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
       VaccineStatus.VACCINATED -> {
         tvRecordVaccine.text = tvRecordVaccine.context.getString(R.string.status_vaccinated)
         tvRecordVaccine.setTextColor(
-            ContextCompat.getColor(tvRecordVaccine.context, R.color.status_green))
+          ContextCompat.getColor(tvRecordVaccine.context, R.color.status_green)
+        )
         contVaccineStatus.setBgColor(R.color.white)
         imgVaccineStatus.visibility = View.VISIBLE
         tvRecordVaccine.setOnClickListener {}
@@ -83,10 +84,14 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
       }
       VaccineStatus.PARTIAL -> {
         tvRecordVaccine.text =
-            tvRecordVaccine.context.getString(
-                R.string.status_received_vaccine, 1, patientStatus.details)
+          tvRecordVaccine.context.getString(
+            R.string.status_received_vaccine,
+            1,
+            patientStatus.details
+          )
         tvRecordVaccine.setTextColor(
-            ContextCompat.getColor(tvRecordVaccine.context, R.color.status_gray))
+          ContextCompat.getColor(tvRecordVaccine.context, R.color.status_gray)
+        )
         contVaccineStatus.setBgColor(R.color.white)
         imgVaccineStatus.visibility = View.GONE
         tvRecordVaccine.setOnClickListener {
@@ -96,7 +101,8 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
       VaccineStatus.DUE -> {
         tvRecordVaccine.text = tvRecordVaccine.context.getString(R.string.record_vaccine_nl)
         tvRecordVaccine.setTextColor(
-            ContextCompat.getColor(tvRecordVaccine.context, R.color.status_blue))
+          ContextCompat.getColor(tvRecordVaccine.context, R.color.status_blue)
+        )
         contVaccineStatus.setBgColor(R.color.white)
         imgVaccineStatus.visibility = View.GONE
         tvRecordVaccine.setOnClickListener {

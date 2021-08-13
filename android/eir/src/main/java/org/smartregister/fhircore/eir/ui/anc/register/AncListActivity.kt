@@ -33,7 +33,10 @@ class AncListActivity : BaseRegisterActivity() {
     super.onCreate(savedInstanceState)
 
     setToolbarItemText(
-        R.id.tv_clients_list_title, base_register_toolbar, R.string.client_list_title_anc)
+      R.id.tv_clients_list_title,
+      base_register_toolbar,
+      R.string.client_list_title_anc
+    )
 
     setNavigationHeaderTitle(detailFormConfig.registerTitle, R.id.tv_nav_header)
 
@@ -47,18 +50,21 @@ class AncListActivity : BaseRegisterActivity() {
 
   override fun buildRegister(): BaseRegister {
     detailFormConfig =
-        Utils.loadConfig(
-            AncDetailFormConfig.ANC_DETAIL_VIEW_CONFIG_ID, AncDetailFormConfig::class.java, this)
+      Utils.loadConfig(
+        AncDetailFormConfig.ANC_DETAIL_VIEW_CONFIG_ID,
+        AncDetailFormConfig::class.java,
+        this
+      )
 
     return BaseRegister(
-        context = this,
-        contentLayoutId = R.layout.activity_register_list,
-        listFragment = AncListFragment(),
-        viewPagerId = R.id.list_pager,
-        newRegistrationViewId = R.id.btn_register_new_client,
-        newRegistrationQuestionnaireIdentifier =
-            detailFormConfig.registrationQuestionnaireIdentifier,
-        newRegistrationQuestionnaireTitle = detailFormConfig.registrationQuestionnaireTitle,
-        searchBoxId = R.id.edit_text_search)
+      context = this,
+      contentLayoutId = R.layout.activity_register_list,
+      listFragment = AncListFragment(),
+      viewPagerId = R.id.list_pager,
+      newRegistrationViewId = R.id.btn_register_new_client,
+      newRegistrationQuestionnaireIdentifier = detailFormConfig.registrationQuestionnaireIdentifier,
+      newRegistrationQuestionnaireTitle = detailFormConfig.registrationQuestionnaireTitle,
+      searchBoxId = R.id.edit_text_search
+    )
   }
 }

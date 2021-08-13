@@ -85,11 +85,17 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
 
   fun saveExtractedResources(questionnaireResponse: QuestionnaireResponse) {
     viewModel.saveExtractedResources(
-        this@QuestionnaireActivity, intent, viewModel.questionnaire, questionnaireResponse)
+      this@QuestionnaireActivity,
+      intent,
+      viewModel.questionnaire,
+      questionnaireResponse
+    )
 
     val intent = Intent()
     intent.putExtra(
-        QUESTIONNAIRE_ARG_RESPONSE_KEY, parser.encodeResourceToString(questionnaireResponse))
+      QUESTIONNAIRE_ARG_RESPONSE_KEY,
+      parser.encodeResourceToString(questionnaireResponse)
+    )
 
     setResult(RESULT_OK, intent)
     finish()
@@ -116,65 +122,71 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
         // set first name
         questionnaire.find("PR-name-text")?.apply {
           initial =
-              mutableListOf(
-                  Questionnaire.QuestionnaireItemInitialComponent()
-                      .setValue(StringType(it.name[0].given[0].value)))
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.name[0].given[0].value))
+            )
         }
 
         // set family name
         questionnaire.find("PR-name-family")?.apply {
           initial =
-              mutableListOf(
-                  Questionnaire.QuestionnaireItemInitialComponent()
-                      .setValue(StringType(it.name[0].family)))
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.name[0].family))
+            )
         }
 
         // set birthdate
         questionnaire.find("patient-0-birth-date")?.apply {
           initial =
-              mutableListOf(
-                  Questionnaire.QuestionnaireItemInitialComponent()
-                      .setValue(DateType(it.birthDate)))
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent().setValue(DateType(it.birthDate))
+            )
         }
 
         // set gender
         questionnaire.find("patient-0-gender")?.apply {
           initial =
-              mutableListOf(
-                  Questionnaire.QuestionnaireItemInitialComponent()
-                      .setValue(StringType(it.gender.toCode())))
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.gender.toCode()))
+            )
         }
 
         // set telecom
         questionnaire.find("PR-telecom-value")?.apply {
           initial =
-              mutableListOf(
-                  Questionnaire.QuestionnaireItemInitialComponent()
-                      .setValue(StringType(it.telecom[0].value)))
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.telecom[0].value))
+            )
         }
 
         // set city
         questionnaire.find("PR-address-city")?.apply {
           initial =
-              mutableListOf(
-                  Questionnaire.QuestionnaireItemInitialComponent()
-                      .setValue(StringType(it.address[0].city)))
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.address[0].city))
+            )
         }
 
         // set country
         questionnaire.find("PR-address-country")?.apply {
           initial =
-              mutableListOf(
-                  Questionnaire.QuestionnaireItemInitialComponent()
-                      .setValue(StringType(it.address[0].country)))
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent()
+                .setValue(StringType(it.address[0].country))
+            )
         }
 
         // set is-active
         questionnaire.find("PR-active")?.apply {
           initial =
-              mutableListOf(
-                  Questionnaire.QuestionnaireItemInitialComponent()
-                      .setValue(BooleanType(it.active)))
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent().setValue(BooleanType(it.active))
+            )
         }
       }
     }
@@ -185,8 +197,7 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
   private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
     questionnaire.find(QUESTIONNAIRE_ARG_BARCODE_KEY)?.apply {
       initial =
-          mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(code)))
+        mutableListOf(Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(code)))
       readOnly = readonly
     }
   }
@@ -196,8 +207,8 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
   }
 
   private fun List<Questionnaire.QuestionnaireItemComponent>.find(
-      linkId: String,
-      default: Questionnaire.QuestionnaireItemComponent?
+    linkId: String,
+    default: Questionnaire.QuestionnaireItemComponent?
   ): Questionnaire.QuestionnaireItemComponent? {
     var result = default
     run loop@{
@@ -225,16 +236,16 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
     const val QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR = "bypass-sdk-extractor"
 
     fun getExtrasBundle(clientIdentifier: String, detailView: PatientDetailsFormConfig) =
-        bundleOf(
-            Pair(QUESTIONNAIRE_TITLE_KEY, detailView.registrationQuestionnaireTitle),
-            Pair(QUESTIONNAIRE_PATH_KEY, detailView.registrationQuestionnaireIdentifier),
-            Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier))
+      bundleOf(
+        Pair(QUESTIONNAIRE_TITLE_KEY, detailView.registrationQuestionnaireTitle),
+        Pair(QUESTIONNAIRE_PATH_KEY, detailView.registrationQuestionnaireIdentifier),
+        Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier)
+      )
   }
 
   override fun onClick(v: View?) {
     val questionnaireFragment =
-        supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
-            QuestionnaireFragment
+      supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
     saveExtractedResources(questionnaireFragment.getQuestionnaireResponse())
   }
 }

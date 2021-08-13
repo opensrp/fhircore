@@ -29,17 +29,17 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.ui.base.model.Language
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.eir.util.Utils
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
 class BaseViewModel(application: Application, private val fhirEngine: FhirEngine) :
-    AndroidViewModel(application) {
+  AndroidViewModel(application) {
   var clientsCount = MutableLiveData(0)
   var selectedLanguage =
-      MutableLiveData(
-          SharedPreferencesHelper.read(
-              SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag()))
+    MutableLiveData(
+      SharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
+    )
   lateinit var languageList: List<Language>
 
   fun loadClientCount() {
@@ -57,20 +57,20 @@ class BaseViewModel(application: Application, private val fhirEngine: FhirEngine
 
     viewModelScope.launch {
       languageList =
-          getApplication<Application>()
-              .applicationContext
-              .resources
-              .getStringArray(R.array.languages)
-              .toList()
-              .map { Language(it, Locale.forLanguageTag(it).displayName) }
+        getApplication<Application>()
+          .applicationContext
+          .resources
+          .getStringArray(R.array.languages)
+          .toList()
+          .map { Language(it, Locale.forLanguageTag(it).displayName) }
 
       Timber.d("Loaded %s languages from languages.xml resource file", languageList.size)
     }
   }
 
   class BaseViewModelFactory(
-      private val mApplication: Application,
-      private val fhirEngine: FhirEngine
+    private val mApplication: Application,
+    private val fhirEngine: FhirEngine
   ) : ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
       return BaseViewModel(mApplication, fhirEngine) as T

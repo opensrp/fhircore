@@ -21,16 +21,19 @@ import org.smartregister.fhircore.eir.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 
 class EirAuthenticationService(override val context: Context) : AuthenticationService(context) {
+  private val eirConfigurations = EirApplication.getContext().eirConfigurations()
+
+  override fun skipLogin() = BuildConfig.DEBUG && BuildConfig.SKIP_AUTH_CHECK
 
   override fun getLoginActivityClass() = LoginActivity::class.java
 
   override fun getAccountType() = context.getString(R.string.authenticator_account_type)
 
-  override fun clientSecret() = BuildConfig.OAUTH_CLIENT_SECRET
+  override fun clientSecret() = eirConfigurations.clientSecret
 
-  override fun clientId() = BuildConfig.OAUTH_CIENT_ID
+  override fun clientId() = eirConfigurations.clientId
 
-  override fun providerScope() = BuildConfig.OAUTH_SCOPE
+  override fun providerScope() = eirConfigurations.scope
 
-  override fun getApplicationConfigurations() = EirApplication.getContext().eirConfigurations()
+  override fun getApplicationConfigurations() = eirConfigurations
 }

@@ -58,9 +58,9 @@ class CovaxListFragment : Fragment() {
   private var activePageNum = 0
 
   override fun onCreateView(
-      inflater: LayoutInflater,
-      container: ViewGroup?,
-      savedInstanceState: Bundle?
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?
   ): View? {
     return inflater.inflate(R.layout.fragment_patient_list, container, false)
   }
@@ -77,57 +77,56 @@ class CovaxListFragment : Fragment() {
 
     requireActivity().findViewById<TextView>(R.id.tv_sync).setOnClickListener {
       requireActivity()
-          .findViewById<DrawerLayout>(R.id.drawer_layout)
-          .closeDrawer(GravityCompat.START)
+        .findViewById<DrawerLayout>(R.id.drawer_layout)
+        .closeDrawer(GravityCompat.START)
       syncResources()
     }
 
     patientListViewModel.liveSearchedPaginatedPatients.observe(requireActivity(), { setData(it) })
 
     requireActivity()
-        .findViewById<EditText>(R.id.edit_text_search)
-        .addTextChangedListener(
-            object : TextWatcher {
-              override fun beforeTextChanged(
-                  s: CharSequence?,
-                  start: Int,
-                  count: Int,
-                  after: Int
-              ) {}
+      .findViewById<EditText>(R.id.edit_text_search)
+      .addTextChangedListener(
+        object : TextWatcher {
+          override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
-              override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                search = s?.toString()
-                patientListViewModel.searchResults(s?.toString(), 0, PAGE_COUNT)
-              }
+          override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            search = s?.toString()
+            patientListViewModel.searchResults(s?.toString(), 0, PAGE_COUNT)
+          }
 
-              override fun afterTextChanged(s: Editable?) {}
-            })
+          override fun afterTextChanged(s: Editable?) {}
+        }
+      )
 
     requireActivity()
-        .findViewById<SwitchMaterial>(R.id.btn_show_overdue)
-        .setOnCheckedChangeListener { button, isChecked ->
-          patientListViewModel.showOverduePatientsOnly.value = isChecked
-        }
+      .findViewById<SwitchMaterial>(R.id.btn_show_overdue)
+      .setOnCheckedChangeListener { button, isChecked ->
+        patientListViewModel.showOverduePatientsOnly.value = isChecked
+      }
 
     patientListViewModel.showOverduePatientsOnly.observe(
-        requireActivity(),
-        {
-          if (patientListViewModel.loadingListObservable.value!! != -1) {
-            patientListViewModel.searchResults(
-                requireActivity().findViewById<EditText>(R.id.edit_text_search).text.toString(),
-                0,
-                PAGE_COUNT)
-          }
-        })
+      requireActivity(),
+      {
+        if (patientListViewModel.loadingListObservable.value!! != -1) {
+          patientListViewModel.searchResults(
+            requireActivity().findViewById<EditText>(R.id.edit_text_search).text.toString(),
+            0,
+            PAGE_COUNT
+          )
+        }
+      }
+    )
 
     patientListViewModel.loadingListObservable.observe(
-        requireActivity(),
-        {
-          if (it != -1) {
-            requireActivity().findViewById<ConstraintLayout>(R.id.loader_overlay).visibility =
-                if (it == 1) View.VISIBLE else View.GONE
-          }
-        })
+      requireActivity(),
+      {
+        if (it != -1) {
+          requireActivity().findViewById<ConstraintLayout>(R.id.loader_overlay).visibility =
+            if (it == 1) View.VISIBLE else View.GONE
+        }
+      }
+    )
 
     loadData()
     super.onViewCreated(view, savedInstanceState)
@@ -136,9 +135,10 @@ class CovaxListFragment : Fragment() {
   override fun onResume() {
     if (patientListViewModel.loadingListObservable.value!! == 0) {
       patientListViewModel.searchResults(
-          requireActivity().findViewById<EditText>(R.id.edit_text_search).text.toString(),
-          page = activePageNum,
-          pageSize = PAGE_COUNT)
+        requireActivity().findViewById<EditText>(R.id.edit_text_search).text.toString(),
+        page = activePageNum,
+        pageSize = PAGE_COUNT
+      )
     }
     adapter.notifyDataSetChanged()
     super.onResume()
@@ -177,10 +177,11 @@ class CovaxListFragment : Fragment() {
 
   private fun launchRecordVaccineActivity(clientIdentifier: String) {
     requireActivity()
-        .startActivity(
-            Intent(requireContext(), RecordVaccineActivity::class.java).apply {
-              putExtra(PatientDetailsFormConfig.COVAX_ARG_ITEM_ID, clientIdentifier)
-            })
+      .startActivity(
+        Intent(requireContext(), RecordVaccineActivity::class.java).apply {
+          putExtra(PatientDetailsFormConfig.COVAX_ARG_ITEM_ID, clientIdentifier)
+        }
+      )
   }
 
   internal fun loadData() {
@@ -208,15 +209,18 @@ class CovaxListFragment : Fragment() {
     nextButton.visibility = if (pagination.hasNextPage()) View.GONE else View.VISIBLE
     prevButton.visibility = if (pagination.hasPreviousPage()) View.GONE else View.VISIBLE
     paginationView.visibility =
-        if (nextButton.visibility == View.VISIBLE || prevButton.visibility == View.VISIBLE)
-            View.VISIBLE
-        else View.GONE
+      if (nextButton.visibility == View.VISIBLE || prevButton.visibility == View.VISIBLE)
+        View.VISIBLE
+      else View.GONE
 
     this.infoTextView.text =
-        if (pagination.totalPages() < 2) ""
-        else
-            resources.getString(
-                R.string.str_page_info, pagination.currentPageNumber(), pagination.totalPages())
+      if (pagination.totalPages() < 2) ""
+      else
+        resources.getString(
+          R.string.str_page_info,
+          pagination.currentPageNumber(),
+          pagination.totalPages()
+        )
   }
 
   fun setData(data: Pair<List<PatientItem>, Pagination>) {

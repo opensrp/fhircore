@@ -63,7 +63,9 @@ object Utils {
   /** Load dynamic config for given key. This would be loaded from FHIR DB later todo */
   fun <T> loadConfig(config: String, configClass: Class<T>, context: Context): T {
     return gson.fromJson(
-        context.assets.open(config).bufferedReader().use { it.readText() }, configClass)
+      context.assets.open(config).bufferedReader().use { it.readText() },
+      configClass
+    )
   }
 
   fun addBasePatientFilter(search: Search) {
@@ -121,45 +123,50 @@ object Utils {
   suspend fun getLastSeen(patientId: String, lastUpdated: Date?): String {
 
     val searchResults: List<Immunization> =
-        EirApplication.fhirEngine(EirApplication.getContext()).search {
-          filter(Immunization.PATIENT) { value = "Patient/$patientId" }
-        }
+      EirApplication.fhirEngine(EirApplication.getContext()).search {
+        filter(Immunization.PATIENT) { value = "Patient/$patientId" }
+      }
 
     return searchResults
-        .maxByOrNull { it.protocolApplied.first().doseNumberPositiveIntType.value }
-        ?.occurrenceDateTimeType
-        ?.toHumanDisplay()
-        ?: lastUpdated?.makeItReadable() ?: ""
+      .maxByOrNull { it.protocolApplied.first().doseNumberPositiveIntType.value }
+      ?.occurrenceDateTimeType
+      ?.toHumanDisplay()
+      ?: lastUpdated?.makeItReadable() ?: ""
   }
 
   fun Date.makeItReadable(): String = simpleDateFormat.format(this)
 
   fun Int.ordinalOf() =
-      "$this" +
-          if (this % 100 in 11..13) "th"
-          else
-              when (this % 10) {
-                1 -> "st"
-                2 -> "nd"
-                3 -> "rd"
-                else -> "th"
-              }
+    "$this" +
+      if (this % 100 in 11..13) "th"
+      else
+        when (this % 10) {
+          1 -> "st"
+          2 -> "nd"
+          3 -> "rd"
+          else -> "th"
+        }
 
   fun buildDatasource(
-      appContext: Context,
-      applicationConfiguration: ApplicationConfiguration
+    appContext: Context,
+    applicationConfiguration: ApplicationConfiguration
   ): FhirResourceDataSource {
     return FhirResourceDataSource(
-        FhirResourceService.create(
-            FhirContext.forR4().newJsonParser(), appContext, applicationConfiguration))
+      FhirResourceService.create(
+        FhirContext.forR4().newJsonParser(),
+        appContext,
+        applicationConfiguration
+      )
+    )
   }
 
   fun buildResourceSyncParams(): Map<ResourceType, Map<String, String>> {
     return mapOf(
-        ResourceType.Patient to emptyMap(),
-        ResourceType.Immunization to emptyMap(),
-        ResourceType.Questionnaire to emptyMap(),
-        ResourceType.StructureMap to mapOf(),
-        ResourceType.RelatedPerson to mapOf())
+      ResourceType.Patient to emptyMap(),
+      ResourceType.Immunization to emptyMap(),
+      ResourceType.Questionnaire to emptyMap(),
+      ResourceType.StructureMap to mapOf(),
+      ResourceType.RelatedPerson to mapOf()
+    )
   }
 }

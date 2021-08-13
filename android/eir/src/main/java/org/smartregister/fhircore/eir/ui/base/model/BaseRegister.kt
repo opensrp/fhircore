@@ -25,14 +25,14 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 
 data class BaseRegister(
-    val context: Activity,
-    @LayoutRes val contentLayoutId: Int,
-    val listFragment: Fragment,
-    @IdRes val viewPagerId: Int,
-    @IdRes var newRegistrationViewId: Int? = null,
-    var newRegistrationQuestionnaireIdentifier: String? = null,
-    var newRegistrationQuestionnaireTitle: String? = null,
-    @IdRes var searchBoxId: Int? = null,
+  val context: Activity,
+  @LayoutRes val contentLayoutId: Int,
+  val listFragment: Fragment,
+  @IdRes val viewPagerId: Int,
+  @IdRes var newRegistrationViewId: Int? = null,
+  var newRegistrationQuestionnaireIdentifier: String? = null,
+  var newRegistrationQuestionnaireTitle: String? = null,
+  @IdRes var searchBoxId: Int? = null,
 ) {
   fun viewPager(): ViewPager2 {
     return context.findViewById(viewPagerId)

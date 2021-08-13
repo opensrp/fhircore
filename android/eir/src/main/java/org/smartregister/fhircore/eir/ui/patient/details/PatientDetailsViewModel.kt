@@ -28,9 +28,9 @@ import org.smartregister.fhircore.eir.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.eir.util.DispatcherProvider
 
 class PatientDetailsViewModel(
-    var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
-    val fhirEngine: FhirEngine,
-    val patientId: String
+  var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
+  val fhirEngine: FhirEngine,
+  val patientId: String
 ) : ViewModel() {
 
   val patientDemographics = MutableLiveData<Patient>()
@@ -39,18 +39,18 @@ class PatientDetailsViewModel(
 
   fun fetchDemographics() {
     if (patientId.isNotEmpty())
-        viewModelScope.launch(dispatcher.io()) {
-          val patient = fhirEngine.load(Patient::class.java, patientId)
-          patientDemographics.postValue(patient)
-        }
+      viewModelScope.launch(dispatcher.io()) {
+        val patient = fhirEngine.load(Patient::class.java, patientId)
+        patientDemographics.postValue(patient)
+      }
   }
 
   fun fetchImmunizations() {
     if (patientId.isNotEmpty())
-        viewModelScope.launch(dispatcher.io()) {
-          val immunizations: List<Immunization> =
-              fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$patientId" } }
-          patientImmunizations.postValue(immunizations)
-        }
+      viewModelScope.launch(dispatcher.io()) {
+        val immunizations: List<Immunization> =
+          fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$patientId" } }
+        patientImmunizations.postValue(immunizations)
+      }
   }
 }

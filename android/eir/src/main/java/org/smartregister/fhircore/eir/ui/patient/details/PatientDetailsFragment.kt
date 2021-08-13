@@ -58,9 +58,9 @@ class PatientDetailsFragment private constructor() : Fragment() {
   private val patientImmunizationsAdapter = PatientImmunizationsAdapter()
 
   override fun onCreateView(
-      inflater: LayoutInflater,
-      container: ViewGroup?,
-      savedInstanceState: Bundle?
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?
   ): View = inflater.inflate(R.layout.fragment_patient_details, container, false)
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -72,16 +72,20 @@ class PatientDetailsFragment private constructor() : Fragment() {
     fhirEngine = EirApplication.fhirEngine(requireContext())
 
     patientDetailsViewModel =
-        ViewModelProvider(
-            this,
-            PatientDetailsViewModel(fhirEngine = fhirEngine, patientId = patientId)
-                .createFactory())[PatientDetailsViewModel::class.java]
+      ViewModelProvider(
+        this,
+        PatientDetailsViewModel(fhirEngine = fhirEngine, patientId = patientId).createFactory()
+      )[PatientDetailsViewModel::class.java]
 
     patientDetailsViewModel.patientDemographics.observe(
-        viewLifecycleOwner, this::handlePatientDemographics)
+      viewLifecycleOwner,
+      this::handlePatientDemographics
+    )
 
     patientDetailsViewModel.patientImmunizations.observe(
-        viewLifecycleOwner, this::handleImmunizations)
+      viewLifecycleOwner,
+      this::handleImmunizations
+    )
   }
 
   override fun onResume() {
@@ -100,8 +104,9 @@ class PatientDetailsFragment private constructor() : Fragment() {
 
     recordVaccineButton.setOnClickListener {
       startActivity(
-          Intent(requireContext(), RecordVaccineActivity::class.java)
-              .putExtras(RecordVaccineActivity.getExtraBundles(patientId = patientId)))
+        Intent(requireContext(), RecordVaccineActivity::class.java)
+          .putExtras(RecordVaccineActivity.getExtraBundles(patientId = patientId))
+      )
     }
   }
 
@@ -149,19 +154,20 @@ class PatientDetailsFragment private constructor() : Fragment() {
 
   private fun toggleImmunizationStatus(fullyImmunized: Boolean = false) {
     immuneStatusImageView.background =
-        if (fullyImmunized) ContextCompat.getDrawable(requireContext(), R.drawable.ic_check)
-        else ContextCompat.getDrawable(requireContext(), R.drawable.ic_close)
+      if (fullyImmunized) ContextCompat.getDrawable(requireContext(), R.drawable.ic_check)
+      else ContextCompat.getDrawable(requireContext(), R.drawable.ic_close)
 
     immuneTextView.apply {
       text = if (fullyImmunized) getString(R.string.immune) else getString(R.string.not_immune)
       setTextColor(
-          if (fullyImmunized) ContextCompat.getColor(requireContext(), R.color.immune)
-          else ContextCompat.getColor(requireContext(), R.color.not_immune))
+        if (fullyImmunized) ContextCompat.getColor(requireContext(), R.color.immune)
+        else ContextCompat.getColor(requireContext(), R.color.not_immune)
+      )
     }
   }
 
   companion object {
     fun newInstance(bundle: Bundle = Bundle()) =
-        PatientDetailsFragment().apply { arguments = bundle }
+      PatientDetailsFragment().apply { arguments = bundle }
   }
 }

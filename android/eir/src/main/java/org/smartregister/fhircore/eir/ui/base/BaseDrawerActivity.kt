@@ -36,16 +36,16 @@ import java.util.Locale
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.EirAuthenticationService
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.eir.ui.base.model.Language
 import org.smartregister.fhircore.eir.ui.base.viewmodel.BaseViewModel
+import org.smartregister.fhircore.eir.util.Utils
+import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.eir.util.Utils
 import timber.log.Timber
 
 abstract class BaseDrawerActivity :
-    BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
+  BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
   lateinit var viewModel: BaseViewModel
   lateinit var authenticationService: AuthenticationService
   lateinit var secureSharedPreference: SecureSharedPreference
@@ -58,8 +58,8 @@ abstract class BaseDrawerActivity :
     val fhirEngine: FhirEngine = EirApplication.fhirEngine(this)
 
     viewModel =
-        ViewModelProvider(this, BaseViewModel.BaseViewModelFactory(application, fhirEngine))
-            .get(BaseViewModel::class.java)
+      ViewModelProvider(this, BaseViewModel.BaseViewModelFactory(application, fhirEngine))
+        .get(BaseViewModel::class.java)
 
     authenticationService = EirAuthenticationService(this)
 
@@ -105,7 +105,7 @@ abstract class BaseDrawerActivity :
 
   @VisibleForTesting
   fun getLanguageArrayAdapter() =
-      ArrayAdapter(this, android.R.layout.simple_list_item_1, viewModel.languageList)
+    ArrayAdapter(this, android.R.layout.simple_list_item_1, viewModel.languageList)
 
   @VisibleForTesting fun getAlertDialogBuilder() = AlertDialog.Builder(this@BaseDrawerActivity)
 
@@ -119,13 +119,13 @@ abstract class BaseDrawerActivity :
     builder.setTitle(getLanguageDialogTitle())
     builder.setIcon(R.drawable.outline_language_black_48)
     val dialog =
-        builder
-            .setAdapter(adapter) { _, i ->
-              val language = viewModel.languageList[i]
+      builder
+        .setAdapter(adapter) { _, i ->
+          val language = viewModel.languageList[i]
 
-              refreshSelectedLanguage(language, context)
-            }
-            .create()
+          refreshSelectedLanguage(language, context)
+        }
+        .create()
 
     dialog.show()
 
@@ -193,7 +193,9 @@ abstract class BaseDrawerActivity :
     Timber.d("Observing language livedata")
 
     viewModel.selectedLanguage.observe(
-        this, { event -> setLanguage(Locale(event).getDisplayName(Locale.ENGLISH)) })
+      this,
+      { event -> setLanguage(Locale(event).getDisplayName(Locale.ENGLISH)) }
+    )
   }
 
   private fun loadCounts() {
@@ -207,6 +209,6 @@ abstract class BaseDrawerActivity :
   fun setLogoutUsername() {
 
     getNavigationView().menu.findItem(R.id.menu_item_logout).title =
-        "${getString(R.string.logout_as_user)} ${secureSharedPreference.retrieveSessionUsername()}"
+      "${getString(R.string.logout_as_user)} ${secureSharedPreference.retrieveSessionUsername()}"
   }
 }

@@ -20,17 +20,17 @@ import org.smartregister.fhircore.eir.util.Utils
 
 /** The Patient's details for display purposes. */
 data class PatientItem(
-    val id: String,
-    val name: String,
-    val gender: String,
-    val dob: String,
-    val html: String,
-    val phone: String,
-    val logicalId: String,
-    val risk: String,
-    var vaccineStatus: PatientStatus? = null,
-    var vaccineSummary: PatientVaccineSummary? = null,
-    val lastSeen: String
+  val id: String,
+  val name: String,
+  val gender: String,
+  val dob: String,
+  val html: String,
+  val phone: String,
+  val logicalId: String,
+  val risk: String,
+  var vaccineStatus: PatientStatus? = null,
+  var vaccineSummary: PatientVaccineSummary? = null,
+  val lastSeen: String
 ) {
   override fun toString(): String = name
 }

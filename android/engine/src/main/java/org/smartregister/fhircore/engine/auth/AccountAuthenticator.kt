@@ -43,16 +43,15 @@ class AccountAuthenticator(val context: Context, var authenticationService: Auth
   ): Bundle {
     Timber.i("Adding account of type $accountType with auth token of type $authTokenType")
 
-    val intent = Intent(context, authenticationService.getLoginActivityClass())
+    val intent =
+      Intent(context, authenticationService.getLoginActivityClass()).apply {
+        putExtra(AccountManager.KEY_ACCOUNT_TYPE, authenticationService.getAccountType())
+        putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
+        putExtra(AuthenticationService.AUTH_TOKEN_TYPE, authTokenType)
+        putExtra(AuthenticationService.IS_NEW_ACCOUNT, true)
+      }
 
-    intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, authenticationService.getAccountType())
-    intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
-    intent.putExtra(AuthenticationService.AUTH_TOKEN_TYPE, authTokenType)
-    intent.putExtra(AuthenticationService.IS_NEW_ACCOUNT, true)
-
-    val bundle = Bundle()
-    bundle.putParcelable(AccountManager.KEY_INTENT, intent)
-    return bundle
+    return Bundle().apply { putParcelable(AccountManager.KEY_INTENT, intent) }
   }
 
   override fun getAuthToken(
@@ -64,41 +63,43 @@ class AccountAuthenticator(val context: Context, var authenticationService: Auth
     var accessToken = accountManager.peekAuthToken(account, authTokenType)
     var tokenResponse: OAuthResponse
 
-    Timber.i("GetAuthToken for %s: AccessToken (%b)", account.name, accessToken?.isNotBlank())
+    Timber.i("Access token for user ${account.name} available:${accessToken?.isNotBlank()}")
 
-    // if no access token try getting one with refresh token
+    // Use saved refresh token to try to get new access token. Logout user otherwise
     if (accessToken.isNullOrEmpty()) {
-      val refreshToken = accountManager.getPassword(account)
+      val savedRefreshToken = accountManager.getPassword(account)
 
-      Timber.i("GetAuthToken: Refresh Token (%b)", refreshToken?.isNotBlank())
+      Timber.i("Saved refresh token is available: ${savedRefreshToken?.isNotBlank()}")
 
-      if (!refreshToken.isNullOrEmpty()) {
+      if (!savedRefreshToken.isNullOrEmpty()) {
         runCatching {
-          tokenResponse = authenticationService.refreshToken(refreshToken)!!
+          authenticationService.refreshToken(savedRefreshToken)?.let { newTokenResponse ->
+            tokenResponse = newTokenResponse
+            accessToken = tokenResponse.accessToken
+            with(accountManager) {
+              setPassword(account, savedRefreshToken)
+              setAuthToken(account, authTokenType, accessToken)
 
-          accessToken = tokenResponse.accessToken
-
-          accountManager.setPassword(account, refreshToken)
-          accountManager.setAuthToken(account, authTokenType, accessToken)
-
-          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            accountManager.notifyAccountAuthenticated(account)
+              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                notifyAccountAuthenticated(account)
+              }
+            }
           }
         }
           .onFailure {
-            Timber.e("Error refreshing token")
-            Timber.e(it.stackTraceToString())
+            Timber.e("Refresh token expired before it was used", it.stackTraceToString())
+            return updateCredentials(response, account, authTokenType, options)
           }
           .onSuccess { Timber.i("Got new accessToken") }
       }
     }
 
     if (!accessToken.isNullOrEmpty()) {
-      val result = Bundle()
-      result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name)
-      result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type)
-      result.putString(AccountManager.KEY_AUTHTOKEN, accessToken)
-      return result
+      return bundleOf(
+        Pair(AccountManager.KEY_ACCOUNT_NAME, account.name),
+        Pair(AccountManager.KEY_ACCOUNT_TYPE, account.type),
+        Pair(AccountManager.KEY_AUTHTOKEN, accessToken)
+      )
     }
 
     // failed to validate any token. now update credentials using auth activity
@@ -132,14 +133,14 @@ class AccountAuthenticator(val context: Context, var authenticationService: Auth
   ): Bundle {
     Timber.i("Updating credentials for ${account.name} from auth activity")
 
-    val intent = Intent(context, authenticationService.getLoginActivityClass())
-    intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
-    intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, account.type)
-    intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, account.name)
-
-    val bundle = Bundle()
-    bundle.putParcelable(AccountManager.KEY_INTENT, intent)
-    return bundle
+    val intent =
+      Intent(context, authenticationService.getLoginActivityClass()).apply {
+        putExtra(AccountManager.KEY_ACCOUNT_TYPE, account.type)
+        putExtra(AccountManager.KEY_ACCOUNT_NAME, account.name)
+        putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
+        putExtra(AuthenticationService.AUTH_TOKEN_TYPE, authTokenType)
+      }
+    return Bundle().apply { putParcelable(AccountManager.KEY_INTENT, intent) }
   }
 
   override fun hasFeatures(

@@ -31,10 +31,10 @@ import org.junit.Before
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.RobolectricTest
+import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.data.model.response.OAuthResponse
-import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
 
 @Config(shadows = [FhirApplicationShadow::class])
 class AccountAuthenticatorTest : RobolectricTest() {

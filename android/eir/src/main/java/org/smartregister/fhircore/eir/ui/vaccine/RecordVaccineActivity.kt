@@ -55,15 +55,16 @@ class RecordVaccineActivity : BaseActivity() {
 
     clientIdentifier = intent.getStringExtra(PatientDetailsFormConfig.COVAX_ARG_ITEM_ID)!!
     detailView =
-        Utils.loadConfig(
-            PatientDetailsFormConfig.COVAX_DETAIL_VIEW_CONFIG_ID,
-            PatientDetailsFormConfig::class.java,
-            this)
+      Utils.loadConfig(
+        PatientDetailsFormConfig.COVAX_DETAIL_VIEW_CONFIG_ID,
+        PatientDetailsFormConfig::class.java,
+        this
+      )
 
     recordVaccine =
-        registerForActivityResult(RecordVaccineResult(clientIdentifier)) {
-          it?.run { handleImmunizationResult(it) } // todo handle questionnaire failures
-        }
+      registerForActivityResult(RecordVaccineResult(clientIdentifier)) {
+        it?.run { handleImmunizationResult(it) } // todo handle questionnaire failures
+      }
 
     supportActionBar!!.apply {
       title = detailView.vaccineQuestionnaireTitle
@@ -71,45 +72,48 @@ class RecordVaccineActivity : BaseActivity() {
     }
 
     covaxListViewModel =
-        ViewModelProvider(
-                this, PatientListViewModelFactory(application, EirApplication.fhirEngine(this)))
-            .get(CovaxListViewModel::class.java)
+      ViewModelProvider(
+          this,
+          PatientListViewModelFactory(application, EirApplication.fhirEngine(this))
+        )
+        .get(CovaxListViewModel::class.java)
 
     recordVaccine()
   }
 
   private fun recordVaccine() {
     covaxListViewModel
-        .getPatientItem(clientIdentifier)
-        .observe(this, { recordVaccine.launch(detailView) })
+      .getPatientItem(clientIdentifier)
+      .observe(this, { recordVaccine.launch(detailView) })
   }
 
   private fun handleImmunizationResult(response: QuestionnaireResponse) {
     // TODO Replace manual mapping with resource mapper and simplify
 
     val questionnaire =
-        questionnaireViewModel.loadQuestionnaire(detailView.vaccineQuestionnaireIdentifier)
+      questionnaireViewModel.loadQuestionnaire(detailView.vaccineQuestionnaireIdentifier)
 
     covaxListViewModel.getPatientItem(clientIdentifier).observe(this) {
       val immunization =
-          ResourceMapper.extract(questionnaire, response).entry[0].resource as Immunization
+        ResourceMapper.extract(questionnaire, response).entry[0].resource as Immunization
       immunization.id = UUID.randomUUID().toString()
       immunization.recorded = Date()
       immunization.status = Immunization.ImmunizationStatus.COMPLETED
       immunization.vaccineCode =
-          CodeableConcept().apply {
-            this.text = response.item[0].answer[0].valueCoding.code
-            this.coding = listOf(response.item[0].answer[0].valueCoding)
-          }
+        CodeableConcept().apply {
+          this.text = response.item[0].answer[0].valueCoding.code
+          this.coding = listOf(response.item[0].answer[0].valueCoding)
+        }
       immunization.occurrence = DateTimeType.today()
       immunization.patient = Reference().apply { this.reference = "Patient/$clientIdentifier" }
 
       immunization.protocolApplied =
-          listOf(
-              Immunization.ImmunizationProtocolAppliedComponent().apply {
-                val currentDoseNumber = it.vaccineSummary?.doseNumber ?: 0
-                this.doseNumber = PositiveIntType(currentDoseNumber + 1)
-              })
+        listOf(
+          Immunization.ImmunizationProtocolAppliedComponent().apply {
+            val currentDoseNumber = it.vaccineSummary?.doseNumber ?: 0
+            this.doseNumber = PositiveIntType(currentDoseNumber + 1)
+          }
+        )
       showVaccineRecordDialog(immunization, it)
     }
   }
@@ -127,14 +131,13 @@ class RecordVaccineActivity : BaseActivity() {
     val isSameAsFirstDose = StringUtils.isEmpty(initialDose) || currentDose.equals(initialDose)
     if (isSameAsFirstDose) {
       msgText =
-          if (doseNumber == 2) {
-            resources.getString(R.string.fully_vaccinated)
-          } else {
-            resources.getString(
-                R.string.immunization_next_dose_text, doseNumber + 1, nextVaccineDate)
-          }
+        if (doseNumber == 2) {
+          resources.getString(R.string.fully_vaccinated)
+        } else {
+          resources.getString(R.string.immunization_next_dose_text, doseNumber + 1, nextVaccineDate)
+        }
       titleText =
-          this.getString(R.string.ordinal_vaccine_dose_recorded, immunization.vaccineCode.text)
+        this.getString(R.string.ordinal_vaccine_dose_recorded, immunization.vaccineCode.text)
     } else {
       msgText = "Second vaccine dose should be same as first"
       titleText = "Initially received $initialDose"

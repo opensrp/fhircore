@@ -19,11 +19,11 @@ package org.smartregister.fhircore.eir.ui.patient.details
 import java.io.Serializable
 
 data class PatientDetailsFormConfig(
-    val registerTitle: String,
-    val registrationQuestionnaireIdentifier: String,
-    val registrationQuestionnaireTitle: String,
-    val vaccineQuestionnaireIdentifier: String,
-    val vaccineQuestionnaireTitle: String,
+  val registerTitle: String,
+  val registrationQuestionnaireIdentifier: String,
+  val registrationQuestionnaireTitle: String,
+  val vaccineQuestionnaireIdentifier: String,
+  val vaccineQuestionnaireTitle: String,
 ) : Serializable {
 
   companion object {

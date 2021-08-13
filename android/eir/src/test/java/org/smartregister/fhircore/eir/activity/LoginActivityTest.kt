@@ -32,11 +32,11 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.eir.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.eir.ui.login.LoginActivity
 import org.smartregister.fhircore.eir.ui.patient.register.CovaxListActivity
+import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
 @Config(shadows = [FhirApplicationShadow::class])

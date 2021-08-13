@@ -26,14 +26,15 @@ import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Com
 import org.smartregister.fhircore.eir.util.QuestionnaireUtils
 
 class RecordVaccineResult(private val patientId: String) :
-    ActivityResultContract<PatientDetailsFormConfig, QuestionnaireResponse?>() {
+  ActivityResultContract<PatientDetailsFormConfig, QuestionnaireResponse?>() {
   override fun createIntent(context: Context, input: PatientDetailsFormConfig): Intent {
     return QuestionnaireUtils.buildQuestionnaireIntent(
-        context,
-        input.vaccineQuestionnaireTitle,
-        input.vaccineQuestionnaireIdentifier,
-        patientId,
-        false)
+      context,
+      input.vaccineQuestionnaireTitle,
+      input.vaccineQuestionnaireIdentifier,
+      patientId,
+      false
+    )
   }
 
   override fun parseResult(resultCode: Int, intent: Intent?): QuestionnaireResponse? {

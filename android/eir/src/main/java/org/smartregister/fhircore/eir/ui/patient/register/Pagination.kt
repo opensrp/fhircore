@@ -28,8 +28,8 @@ fun Pagination.currentPageNumber(): Int {
 
 fun Pagination.totalPages(): Int {
   return this.totalItems / this.pageSize +
-      (if (this.totalItems % this.pageSize > 0) 1 else 0) +
-      if (this.totalItems == 0) 1 else 0
+    (if (this.totalItems % this.pageSize > 0) 1 else 0) +
+    if (this.totalItems == 0) 1 else 0
 }
 
 fun Pagination.hasPreviousPage(): Boolean {

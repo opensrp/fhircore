@@ -36,7 +36,6 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.eir.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.eir.ui.anc.AncDetailFormConfig
@@ -47,6 +46,7 @@ import org.smartregister.fhircore.eir.ui.base.model.BaseRegister
 import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.eir.util.Utils
+import org.smartregister.fhircore.engine.auth.AuthenticationService
 
 @Config(shadows = [FhirApplicationShadow::class])
 class AncListActivityTest : ActivityRobolectricTest() {

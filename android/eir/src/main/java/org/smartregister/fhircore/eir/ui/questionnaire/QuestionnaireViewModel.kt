@@ -23,6 +23,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import java.util.Locale
 import java.util.UUID
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -39,7 +40,7 @@ import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Com
 import org.smartregister.fhircore.eir.util.QuestionnaireUtils
 
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
-    AndroidViewModel(application) {
+  AndroidViewModel(application) {
 
   var structureMapProvider: ((String) -> StructureMap?)? = null
   var fhirEngine = EirApplication.fhirEngine(application)
@@ -77,7 +78,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
         val structureMapId = structureMapUrl?.substringAfterLast("/")
         if (structureMapId != null) {
           structureMap =
-              EirApplication.fhirEngine(context).load(StructureMap::class.java, structureMapId)
+            EirApplication.fhirEngine(context).load(StructureMap::class.java, structureMapId)
         }
       }
     }
@@ -86,10 +87,10 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
   }
 
   fun saveExtractedResources(
-      context: Context,
-      intent: Intent,
-      questionnaire: Questionnaire,
-      questionnaireResponse: QuestionnaireResponse
+    context: Context,
+    intent: Intent,
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse
   ) {
 
     // todo remove if below to turn below login on, when structure-map has obs and flag and
@@ -100,11 +101,15 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     }
 
     val bundle =
-        ResourceMapper.extract(
-            questionnaire, questionnaireResponse, getStructureMapProvider(context), context)
+      ResourceMapper.extract(
+        questionnaire,
+        questionnaireResponse,
+        getStructureMapProvider(context),
+        context
+      )
 
     val resourceId = // todo WRONG assignment
-        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
+      intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
 
     saveBundleResources(bundle, resourceId)
   }
@@ -112,53 +117,52 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
   fun getStructureMapProvider(context: Context): ((String) -> StructureMap?) {
     if (structureMapProvider == null) {
       structureMapProvider =
-          { structureMapUrl: String ->
-            fetchStructureMap(context, structureMapUrl)
-          }
+        { structureMapUrl: String ->
+          fetchStructureMap(context, structureMapUrl)
+        }
     }
 
     return structureMapProvider!!
   }
 
   fun saveParsedResource(
-      questionnaireResponse: QuestionnaireResponse,
-      questionnaire: Questionnaire
+    questionnaireResponse: QuestionnaireResponse,
+    questionnaire: Questionnaire
   ) {
     if (!questionnaire.hasSubjectType("Patient")) return
 
     val patient =
-        ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
+      ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
 
     val barcode =
-        QuestionnaireUtils.valueStringWithLinkId(
-            questionnaireResponse, QUESTIONNAIRE_ARG_BARCODE_KEY)
+      QuestionnaireUtils.valueStringWithLinkId(questionnaireResponse, QUESTIONNAIRE_ARG_BARCODE_KEY)
 
-    patient.id = barcode ?: UUID.randomUUID().toString().toLowerCase()
+    patient.id = barcode ?: UUID.randomUUID().toString().lowercase(Locale.getDefault())
 
     saveResource(patient)
 
     // only one level of nesting per obs group is supported by fhircore for now
     val observations =
-        QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
+      QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
 
     observations.forEach { saveResource(it) }
 
     // only one risk assessment per questionnaire is supported by fhircore for now
     val riskAssessment =
-        QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)
+      QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)
 
     if (riskAssessment != null) {
       saveResource(riskAssessment)
 
       val flag =
-          QuestionnaireUtils.extractFlag(questionnaireResponse, questionnaire, riskAssessment)
+        QuestionnaireUtils.extractFlag(questionnaireResponse, questionnaire, riskAssessment)
 
       if (flag != null) {
         saveResource(flag)
 
         // todo remove this when sync is implemented
         val ext =
-            QuestionnaireUtils.extractFlagExtension(flag, questionnaireResponse, questionnaire)
+          QuestionnaireUtils.extractFlagExtension(flag, questionnaireResponse, questionnaire)
         if (ext != null) {
           patient.addExtension(ext)
         }

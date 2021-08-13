@@ -43,7 +43,7 @@ class LoginActivity : AppCompatActivity() {
     loginActivityBinding.apply {
       this.setVariable(BR.loginViewModel, viewModel)
       this.lifecycleOwner = this@LoginActivity
-      this.tvAppVersion.text = getString(R.string.version, BuildConfig.VERSION_NAME)
+      this.tvAppVersion.text = getString(R.string.app_version, BuildConfig.VERSION_NAME)
     }
 
     startHomeObserver()
@@ -51,24 +51,31 @@ class LoginActivity : AppCompatActivity() {
 
   private fun startHomeObserver() {
     viewModel.goHome.observe(
-        this,
-        {
-          Timber.i("GoHome value changed, now shall start home %b", it)
+      this,
+      {
+        Timber.i("GoHome value changed, now shall start home %b", it)
 
-          if (it) {
-            val intent = Intent(baseContext, PatientRegisterActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        if (it) {
+          val intent = Intent(baseContext, PatientRegisterActivity::class.java)
+          intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-            startActivity(intent)
-            finish()
-          }
-        })
+          startActivity(intent)
+          finish()
+        }
+      }
+    )
 
     viewModel.loginFailed.observe(
-        this, { loginActivityBinding.spacer.visibility = if (it == true) View.GONE else View.VISIBLE })
+      this,
+      { loginActivityBinding.spacer.visibility = if (it == true) View.GONE else View.VISIBLE }
+    )
 
     viewModel.showProgressIcon.observe(
-        this,
-        { loginActivityBinding.progressIcon.visibility = if (it == true) View.VISIBLE else View.INVISIBLE })
+      this,
+      {
+        loginActivityBinding.progressIcon.visibility =
+          if (it == true) View.VISIBLE else View.INVISIBLE
+      }
+    )
   }
 }

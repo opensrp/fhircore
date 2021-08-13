@@ -36,10 +36,10 @@ import okhttp3.ResponseBody
 import org.smartregister.fhircore.eir.BuildConfig
 import org.smartregister.fhircore.eir.EirAuthenticationService
 import org.smartregister.fhircore.eir.R
+import org.smartregister.fhircore.eir.ui.base.model.LoginUser
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.data.model.response.OAuthResponse
-import org.smartregister.fhircore.eir.ui.base.model.LoginUser
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import retrofit2.Call
@@ -48,7 +48,7 @@ import retrofit2.Response
 import timber.log.Timber
 
 class LoginViewModel(application: Application) :
-    AndroidViewModel(application), Callback<OAuthResponse>, AccountManagerCallback<Bundle> {
+  AndroidViewModel(application), Callback<OAuthResponse>, AccountManagerCallback<Bundle> {
 
   var loginUser = LoginUser()
   var allowLogin = MutableLiveData(false)
@@ -68,31 +68,33 @@ class LoginViewModel(application: Application) :
     authenticationService = EirAuthenticationService(application.applicationContext)
 
     if ((BuildConfig.DEBUG && BuildConfig.SKIP_AUTH_CHECK) ||
-        authenticationService.isSessionActive(secureSharedPreference.retrieveSessionToken())) {
+        authenticationService.isSessionActive(secureSharedPreference.retrieveSessionToken())
+    ) {
       goHome.value = true
     } else {
       authenticationService.loadAccount(
-          accountManager,
-          secureSharedPreference.retrieveSessionUsername(),
-          this,
-          Handler(OnTokenError()))
+        accountManager,
+        secureSharedPreference.retrieveSessionUsername(),
+        this,
+        Handler(OnTokenError())
+      )
     }
   }
 
   var credentialsWatcher: TextWatcher =
-      object : TextWatcherAdapter() {
-        override fun afterTextChanged(editable: Editable) {
-          allowLogin.value = loginUser.username.isNotEmpty() && loginUser.password.isNotEmpty()
-        }
+    object : TextWatcherAdapter() {
+      override fun afterTextChanged(editable: Editable) {
+        allowLogin.value = loginUser.username.isNotEmpty() && loginUser.password.isNotEmpty()
       }
+    }
 
   fun remoteLogin(view: View) {
     Timber.i("Logging in for ${loginUser.username} ")
     showProgressIcon.value = true
     allowLogin.value = false
     authenticationService
-        .fetchToken(loginUser.username, loginUser.password.toCharArray())
-        .enqueue(this)
+      .fetchToken(loginUser.username, loginUser.password.toCharArray())
+      .enqueue(this)
   }
 
   override fun onResponse(call: Call<OAuthResponse>, response: Response<OAuthResponse>) {
@@ -114,7 +116,7 @@ class LoginViewModel(application: Application) :
     val accessToken = response.body()!!.accessToken!!
 
     secureSharedPreference.saveCredentials(
-        AuthCredentials(loginUser.username, loginUser.password, accessToken)
+      AuthCredentials(loginUser.username, loginUser.password, accessToken)
     )
 
     authenticationService.getUserInfo().enqueue(OnUserInfoResponse(this, getApplication()))
@@ -125,7 +127,7 @@ class LoginViewModel(application: Application) :
     Timber.e(javaClass.name, throwable.stackTraceToString())
     showProgressIcon.value = false
     Toast.makeText(getApplication(), R.string.login_call_fail_error_message, Toast.LENGTH_LONG)
-        .show()
+      .show()
 
     if (allowLocalLogin()) {
       goHome.value = true
@@ -138,7 +140,7 @@ class LoginViewModel(application: Application) :
   internal fun allowLocalLogin(): Boolean {
     val creds = secureSharedPreference.retrieveCredentials() ?: return false
     return (creds.username.contentEquals(loginUser.username) &&
-        creds.password.contentEquals(loginUser.password))
+      creds.password.contentEquals(loginUser.password))
   }
 
   override fun run(future: AccountManagerFuture<Bundle>?) {
@@ -157,7 +159,7 @@ class LoginViewModel(application: Application) :
 }
 
 private class OnUserInfoResponse(val viewModel: LoginViewModel, context: Context) :
-    Callback<ResponseBody> {
+  Callback<ResponseBody> {
   val baseContext = context
 
   override fun onFailure(call: Call<ResponseBody>?, throwable: Throwable) {

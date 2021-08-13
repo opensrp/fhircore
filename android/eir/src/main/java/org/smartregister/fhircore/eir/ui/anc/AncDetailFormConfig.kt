@@ -19,13 +19,13 @@ package org.smartregister.fhircore.eir.ui.anc
 import java.io.Serializable
 
 data class AncDetailFormConfig(
-    val registerTitle: String,
-    val registrationQuestionnaireIdentifier: String,
-    val registrationQuestionnaireTitle: String,
-    val pregnancyLogQuestionnaireIdentifier: String,
-    val pregnancyLogQuestionnaireTitle: String,
-    val deliveryLogQuestionnaireIdentifier: String,
-    val deliveryLogQuestionnaireTitle: String,
+  val registerTitle: String,
+  val registrationQuestionnaireIdentifier: String,
+  val registrationQuestionnaireTitle: String,
+  val pregnancyLogQuestionnaireIdentifier: String,
+  val pregnancyLogQuestionnaireTitle: String,
+  val deliveryLogQuestionnaireIdentifier: String,
+  val deliveryLogQuestionnaireTitle: String,
 ) : Serializable {
 
   companion object {

@@ -23,7 +23,7 @@
     <string name="add_client">Add Client</string>
     <string name="menu_sync_resources">Sync Resources</string>
 
-    <string name="version">Version %s</string>
+    <string name="app_version">Version %s</string>
     <string name="authenticator_label" translatable="false">Authenticate FHIR Core</string>
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.eir</string>
 
@@ -73,15 +73,12 @@
 
     <string name="registered_date">Registered </string>
 
-    <string name="login_text">Login</string>
+
     <string name="logout_text">Logout</string>
-    <string name="username_input_hint">Enter username</string>
-    <string name="password_input_hint">Enter password</string>
+
     <string name="show_password_button_hint">Show password</string>
     <string name="login_error_message">Invalid username or password</string>
-    <string name="login_call_fail_error_message">Failed to verify credentials from server. Check your internet connection</string>
-    <string name="userinfo_call_fail_error_message">Failed to get user info from server. Check your internet connection</string>
-    <string name="done">Done</string>
+   <string name="done">Done</string>
     <string name="second_dose_due_at"> Second dose due on %1$s</string>
     <string name="ordinal_vaccine_dose_recorded">%1$s 1st dose recorded</string>
     <string name="please_select_vaccine">Please Select Vaccine</string>

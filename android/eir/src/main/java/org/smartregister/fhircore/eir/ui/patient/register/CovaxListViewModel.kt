@@ -61,7 +61,7 @@ import org.smartregister.fhircore.eir.util.Utils
  * data for UI.
  */
 class CovaxListViewModel(application: Application, private val fhirEngine: FhirEngine) :
-    AndroidViewModel(application) {
+  AndroidViewModel(application) {
 
   var showOverduePatientsOnly = MutableLiveData(false)
   var loadingListObservable = MutableLiveData(-1)
@@ -76,22 +76,22 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
       var totalCount = count(query).toInt()
 
       val searchResults: List<Patient> =
-          fhirEngine.search {
-            Utils.addBasePatientFilter(this)
+        fhirEngine.search {
+          Utils.addBasePatientFilter(this)
 
-            apply {
-              if (query?.isNotBlank() == true) {
-                filter(Patient.NAME) {
-                  modifier = StringFilterModifier.CONTAINS
-                  value = query.trim()
-                }
+          apply {
+            if (query?.isNotBlank() == true) {
+              filter(Patient.NAME) {
+                modifier = StringFilterModifier.CONTAINS
+                value = query.trim()
               }
             }
-
-            sort(Patient.GIVEN, Order.ASCENDING)
-            count = totalCount
-            from = (page * pageSize)
           }
+
+          sort(Patient.GIVEN, Order.ASCENDING)
+          count = totalCount
+          from = (page * pageSize)
+        }
 
       var patients = searchResults.map { it.toPatientItem(viewModelScope) }
       patients.forEach { it.vaccineStatus = getPatientStatus(it.logicalId) }
@@ -103,9 +103,8 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
 
       loadingListObservable.postValue(0)
       liveSearchedPaginatedPatients.postValue(
-          Pair(
-              patients,
-              Pagination(totalItems = totalCount, pageSize = pageSize, currentPage = page)))
+        Pair(patients, Pagination(totalItems = totalCount, pageSize = pageSize, currentPage = page))
+      )
     }
   }
 
@@ -118,32 +117,32 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
     val formatter = SimpleDateFormat("dd-MM-yy", Locale.US)
 
     val searchResults: List<Immunization> =
-        fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$id" } }
+      fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$id" } }
 
     val computedStatus =
-        if (searchResults.size >= 2) VaccineStatus.VACCINATED
-        else if (searchResults.size == 1 && searchResults[0].recorded.before(overDueStart))
-            VaccineStatus.OVERDUE
-        else if (searchResults.size == 1) VaccineStatus.PARTIAL else VaccineStatus.DUE
+      if (searchResults.size >= 2) VaccineStatus.VACCINATED
+      else if (searchResults.size == 1 && searchResults[0].recorded.before(overDueStart))
+        VaccineStatus.OVERDUE
+      else if (searchResults.size == 1) VaccineStatus.PARTIAL else VaccineStatus.DUE
 
     return PatientStatus(
-        status = computedStatus,
-        details =
-            if (searchResults.isNotEmpty()) formatter.format(searchResults[0].recorded) else "")
+      status = computedStatus,
+      details = if (searchResults.isNotEmpty()) formatter.format(searchResults[0].recorded) else ""
+    )
   }
 
   /** Basic search for immunizations */
   fun fetchPatientDetailsCards(
-      context: Context,
-      patientId: String
+    context: Context,
+    patientId: String
   ): LiveData<List<PatientDetailsCard>> {
     val liveSearchImmunization: MutableLiveData<List<PatientDetailsCard>> = MutableLiveData()
     viewModelScope.launch {
       val result =
-          mutableListOf(fhirEngine.load(Patient::class.java, patientId).toDetailsCard(context))
+        mutableListOf(fhirEngine.load(Patient::class.java, patientId).toDetailsCard(context))
 
       val immunizations: List<Immunization> =
-          fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$patientId" } }
+        fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$patientId" } }
 
       immunizations.forEachIndexed { index, element ->
         result.add(element.toDetailsCard(context, index, index < 1))
@@ -151,8 +150,8 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
 
       if (immunizations.isEmpty()) {
         result.add(
-            PatientDetailsCard(
-                -1, -1, "-1", "", context.getString(R.string.no_vaccine_received), ""))
+          PatientDetailsCard(-1, -1, "-1", "", context.getString(R.string.no_vaccine_received), "")
+        )
       }
 
       liveSearchImmunization.value = result
@@ -180,14 +179,15 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
       val patient = fhirEngine.load(Patient::class.java, id).toPatientItem(viewModelScope)
 
       val immunizations: List<Immunization> =
-          fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$id" } }
+        fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$id" } }
 
       if (immunizations.isNotEmpty()) {
         val immunization = immunizations[0]
         patient.vaccineSummary =
-            PatientVaccineSummary(
-                (immunization.protocolApplied[0].doseNumber as PositiveIntType).value,
-                immunization.vaccineCode.coding.first().code)
+          PatientVaccineSummary(
+            (immunization.protocolApplied[0].doseNumber as PositiveIntType).value,
+            immunization.vaccineCode.coding.first().code
+          )
       }
 
       liveSearchPatient.value = patient
@@ -204,10 +204,10 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
       /** Download Immediately from the server */
       GlobalScope.launch {
         Sync.oneTimeSync(
-            fhirEngine,
-            Utils.buildDatasource(
-                getApplication(), EirApplication.getContext().eirConfigurations()),
-            Utils.buildResourceSyncParams())
+          fhirEngine,
+          Utils.buildDatasource(getApplication(), EirApplication.getContext().eirConfigurations()),
+          Utils.buildResourceSyncParams()
+        )
         searchResults("", 0, PAGE_COUNT)
 
         if (showLoader) loadingListObservable.postValue(0)
@@ -230,13 +230,13 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
 
   fun clearPatientList() {
     liveSearchedPaginatedPatients.value =
-        Pair(emptyList(), Pagination(totalItems = 0, pageSize = 1, currentPage = 0))
+      Pair(emptyList(), Pagination(totalItems = 0, pageSize = 1, currentPage = 0))
   }
 }
 
 class PatientListViewModelFactory(
-    private val application: Application,
-    private val fhirEngine: FhirEngine
+  private val application: Application,
+  private val fhirEngine: FhirEngine
 ) : ViewModelProvider.Factory {
   override fun <T : ViewModel?> create(modelClass: Class<T>): T {
     if (modelClass.isAssignableFrom(CovaxListViewModel::class.java)) {
@@ -254,7 +254,7 @@ suspend fun Patient.toPatientItem(viewModelScope: CoroutineScope): PatientItem {
   val dob = if (this.hasBirthDateElement()) this.birthDateElement.valueAsString else ""
   val html: String = if (this.hasText()) this.text.div.valueAsString else ""
   val phone: String =
-      if (this.hasTelecom() && this.telecom[0].hasValue()) this.telecom[0].value else ""
+    if (this.hasTelecom() && this.telecom[0].hasValue()) this.telecom[0].value else ""
   val logicalId: String = this.logicalId
   val ext = this.extension.singleOrNull { it.value.toString().contains("risk") }
   val risk = ext?.value?.toString() ?: ""
@@ -262,14 +262,15 @@ suspend fun Patient.toPatientItem(viewModelScope: CoroutineScope): PatientItem {
   return withContext(viewModelScope.coroutineContext) {
     val lastSeen = Utils.getLastSeen(logicalId, meta.lastUpdated)
     PatientItem(
-        id = logicalId,
-        name = name,
-        gender = gender,
-        dob = dob,
-        html = html,
-        phone = phone,
-        logicalId = logicalId,
-        risk = risk,
-        lastSeen = lastSeen)
+      id = logicalId,
+      name = name,
+      gender = gender,
+      dob = dob,
+      html = html,
+      phone = phone,
+      logicalId = logicalId,
+      risk = risk,
+      lastSeen = lastSeen
+    )
   }
 }
