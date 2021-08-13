@@ -1,0 +1,13 @@
+<resources>
+    <string name="sync">Sync</string>
+    <string name="last_sync_timestamp">Last 05:30 PM, Mar 3</string>
+    <string name="language">Language</string>
+    <string name="logout_as_user">Log out as </string>
+    <string name="show_overdue">Show overdue</string>
+    <string name="search_hint">Search name or ID</string>
+    <string name="scan_bar_code">SCAN BARCODE</string>
+    <string name="empty_client_list_message_title">No Results</string>
+    <string name="empty_client_list_message_details">Sorry, we could not find client with given name or ID</string>
+    <string name="register_new_client">Register new client</string>
+    <string name="default_app_title" translatable="false">Fhir App</string>
+</resources>

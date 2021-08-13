@@ -58,15 +58,17 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.eir.FhirApplication
+import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.activity.CovaxListActivity
-import org.smartregister.fhircore.eir.activity.PatientDetailsActivity
 import org.smartregister.fhircore.eir.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.eir.domain.Pagination
-import org.smartregister.fhircore.eir.model.CovaxDetailView
 import org.smartregister.fhircore.eir.model.PatientItem
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
+import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsFormConfig
+import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsFragment
+import org.smartregister.fhircore.eir.ui.patient.register.CovaxListActivity
+import org.smartregister.fhircore.eir.ui.patient.register.NavigationDirection
 import org.smartregister.fhircore.eir.viewmodel.CovaxListViewModel
 
 /**
@@ -90,8 +92,8 @@ class CovaxListFragmentTest : FragmentRobolectricTest() {
     coEvery { fhirEngine.count(any()) } returns 2
     coEvery { fhirEngine.search<Patient>(any()) } returns listOf()
 
-    mockkObject(FhirApplication)
-    every { FhirApplication.fhirEngine(any()) } returns fhirEngine
+    mockkObject(EirApplication)
+    every { EirApplication.fhirEngine(any()) } returns fhirEngine
 
     covaxListActivity = Robolectric.buildActivity(CovaxListActivity::class.java).create().get()
     patientListViewModel = spyk(covaxListActivity.listViewModel)
@@ -140,7 +142,7 @@ class CovaxListFragmentTest : FragmentRobolectricTest() {
 
     Assert.assertEquals(
       logicalId,
-      startedActivityIntent.getStringExtra(CovaxDetailView.COVAX_ARG_ITEM_ID)
+      startedActivityIntent.getStringExtra(PatientDetailsFormConfig.COVAX_ARG_ITEM_ID)
     )
     Assert.assertEquals(
       PatientDetailsActivity::class.java.name,
@@ -353,7 +355,7 @@ class CovaxListFragmentTest : FragmentRobolectricTest() {
 
     val expectedIntent = Intent(covaxListActivity, PatientDetailsActivity::class.java)
     val actualIntent =
-      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+      shadowOf(ApplicationProvider.getApplicationContext<EirApplication>()).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
@@ -394,7 +396,7 @@ class CovaxListFragmentTest : FragmentRobolectricTest() {
     val expectedIntent =
       Intent(covaxListFragment.requireContext(), PatientDetailsFragment::class.java)
     val actualIntent =
-      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+      shadowOf(ApplicationProvider.getApplicationContext<EirApplication>()).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
 

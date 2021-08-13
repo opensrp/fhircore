@@ -22,13 +22,14 @@ import android.widget.TextView
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.smartregister.fhircore.eir.FhirApplication
+import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.RobolectricTest
 import org.smartregister.fhircore.eir.fragment.CovaxListFragment
 import org.smartregister.fhircore.eir.model.PatientItem
 import org.smartregister.fhircore.eir.model.PatientStatus
-import org.smartregister.fhircore.eir.model.VaccineStatus
+import org.smartregister.fhircore.eir.ui.base.model.VaccineStatus
+import org.smartregister.fhircore.eir.ui.patient.register.PatientItemViewHolder
 
 class PatientItemViewHolderTest : RobolectricTest() {
 
@@ -38,7 +39,7 @@ class PatientItemViewHolderTest : RobolectricTest() {
   @Before
   fun setUp() {
     itemView =
-      LayoutInflater.from(FhirApplication.getContext())
+      LayoutInflater.from(EirApplication.getContext())
         .inflate(R.layout.patient_list_item, null, false)
     viewHolder = PatientItemViewHolder(itemView)
   }

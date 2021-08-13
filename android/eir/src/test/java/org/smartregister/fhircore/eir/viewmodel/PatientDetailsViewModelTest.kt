@@ -31,6 +31,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.eir.CoroutineTestRule
+import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsViewModel
 
 @ExperimentalCoroutinesApi
 class PatientDetailsViewModelTest {

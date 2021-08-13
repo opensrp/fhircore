@@ -32,6 +32,7 @@ import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 
 @Config(shadows = [FhirApplicationShadow::class])
 class PatientDetailsActivityTest : ActivityRobolectricTest() {

@@ -25,11 +25,13 @@ import org.junit.Before
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.RobolectricTest
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_RESPONSE_KEY
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_TITLE_KEY
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsFormConfig
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_RESPONSE_KEY
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_TITLE_KEY
+import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineResult
 import org.smartregister.fhircore.eir.util.QuestionnaireUtils.valueStringWithLinkId
 import org.smartregister.fhircore.eir.util.Utils
 
@@ -37,14 +39,18 @@ import org.smartregister.fhircore.eir.util.Utils
 class RecordVaccineResultTest : RobolectricTest() {
   private lateinit var context: Context
   private lateinit var activityResultContract: RecordVaccineResult
-  private lateinit var detailView: CovaxDetailView
+  private lateinit var detailView: PatientDetailsFormConfig
 
   @Before
   fun setUp() {
     context = ApplicationProvider.getApplicationContext()
     activityResultContract = RecordVaccineResult("test-patient-id")
     detailView =
-      Utils.loadConfig("covax_client_register_config.json", CovaxDetailView::class.java, context)
+      Utils.loadConfig(
+        "covax_client_register_config.json",
+        PatientDetailsFormConfig::class.java,
+        context
+      )
   }
 
   @Test

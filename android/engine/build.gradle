@@ -1,11 +1,15 @@
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
+    id 'kotlin-kapt'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.5.21'
 }
 
 android {
     compileSdkVersion 30
-
+    dataBinding {
+        enabled true
+    }
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 30
@@ -26,6 +30,12 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    buildFeatures {
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.0.1'
+    }
 }
 
 dependencies {
@@ -33,6 +43,66 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.6.0'
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.3.1'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1'
+    implementation 'io.jsonwebtoken:jjwt:0.9.1'
+    implementation 'androidx.security:security-crypto:1.1.0-alpha03'
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.0.0'
+
+    //Configure Jetpack Compose
+    def composeVersion = "1.0.1"
+    api("androidx.compose.ui:ui:$composeVersion")
+    // Tooling support (Previews, etc.)
+    api("androidx.compose.ui:ui-tooling:$composeVersion")
+    // Foundation (Border, Background, Box, Image, Scroll, shapes, animations, etc.)
+    api("androidx.compose.foundation:foundation:$composeVersion")
+    // Material Design
+    api("androidx.compose.material:material:$composeVersion")
+    // Material design icons
+    api("androidx.compose.material:material-icons-core:$composeVersion")
+    api("androidx.compose.material:material-icons-extended:$composeVersion")
+    // Integration with observables
+    api("androidx.compose.runtime:runtime-livedata:$composeVersion")
+    //Pagination
+    api("androidx.paging:paging-compose:1.0.0-alpha12")
+
+    api('org.smartregister:data-capture:0.1.0-alpha03-preview-SNAPSHOT') {
+        transitive = true
+        exclude group: 'org.hamcrest', module: 'hamcrest-core'
+        exclude group: 'javax.xml.bind', module: 'jaxb-api'
+        exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
+        exclude group: 'com.sun.activation', module: 'javax.activation'
+    }
+
+    api('com.google.android.fhir:engine:0.1.0-alpha03') {
+        transitive = true
+        exclude group: 'org.hamcrest', module: 'hamcrest-core'
+        exclude group: 'javax.xml.bind', module: 'jaxb-api'
+        exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
+        exclude group: 'com.sun.activation', module: 'javax.activation'
+    }
+
+    def hapiFhirVersion = "5.4.2"
+    api("ca.uhn.hapi.fhir:org.hl7.fhir.r4:$hapiFhirVersion") {
+        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
+    }
+    api("ca.uhn.hapi.fhir:hapi-fhir-base:$hapiFhirVersion") {
+        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
+    }
+    api("ca.uhn.hapi.fhir:hapi-fhir-structures-r4:$hapiFhirVersion") {
+        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
+    }
+
+    api 'com.google.code.gson:gson:2.8.7'
+    api 'com.jakewharton.timber:timber:5.0.0'
+
+    def retrofitVersion = '2.9.0'
+    api "com.squareup.retrofit2:retrofit:$retrofitVersion"
+    api "com.squareup.retrofit2:converter-gson:$retrofitVersion"
+    api "com.squareup.retrofit2:retrofit-mock:$retrofitVersion"
+
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'

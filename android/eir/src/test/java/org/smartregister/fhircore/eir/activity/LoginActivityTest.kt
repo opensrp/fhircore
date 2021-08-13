@@ -30,17 +30,19 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.eir.FhirApplication
+import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.auth.secure.Credentials
+import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.eir.auth.secure.FakeKeyStore
-import org.smartregister.fhircore.eir.auth.secure.SecureConfig
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.eir.ui.login.LoginActivity
+import org.smartregister.fhircore.eir.ui.patient.register.CovaxListActivity
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
 @Config(shadows = [FhirApplicationShadow::class])
 class LoginActivityTest : ActivityRobolectricTest() {
 
-  private lateinit var secureConfig: SecureConfig
+  private lateinit var secureSharedPreference: SecureSharedPreference
   private lateinit var loginActivity: LoginActivity
 
   @Before
@@ -48,9 +50,9 @@ class LoginActivityTest : ActivityRobolectricTest() {
     loginActivity =
       Robolectric.buildActivity(LoginActivity::class.java, null).create().resume().get()
 
-    secureConfig = SecureConfig(loginActivity.baseContext)
+    secureSharedPreference = SecureSharedPreference(loginActivity.baseContext)
 
-    loginActivity.viewModel.secureConfig = secureConfig
+    loginActivity.viewModel.secureSharedPreference = secureSharedPreference
   }
 
   @Test
@@ -104,9 +106,9 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testAllowLocalLoginShouldReturnFalseOnInvalidCredentials() {
-    val savedCreds = Credentials("invaliduser", charArrayOf('x', 'y'), "any token")
+    val savedCreds = AuthCredentials("invaliduser", charArrayOf('x', 'y'), "any token")
 
-    secureConfig.saveCredentials(savedCreds)
+    secureSharedPreference.saveCredentials(savedCreds)
 
     loginActivity.viewModel.loginUser.password = charArrayOf('p', 'w')
     loginActivity.viewModel.loginUser.username = "testuser"
@@ -119,11 +121,11 @@ class LoginActivityTest : ActivityRobolectricTest() {
   fun testAllowLocalLoginShouldReturnTrueOnValidCredentials() {
     shadowOf(getMainLooper()).idle()
 
-    val savedCreds = Credentials("testuser", charArrayOf('p', 'w'), "any token")
+    val savedCreds = AuthCredentials("testuser", charArrayOf('p', 'w'), "any token")
 
-    secureConfig.saveCredentials(savedCreds)
+    secureSharedPreference.saveCredentials(savedCreds)
 
-    val c = secureConfig.retrieveCredentials()
+    val c = secureSharedPreference.retrieveCredentials()
 
     loginActivity.viewModel.loginUser.password = charArrayOf('p', 'w')
     loginActivity.viewModel.loginUser.username = "testuser"
@@ -137,7 +139,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
     loginActivity.viewModel.goHome.value = true
     val expectedIntent = Intent(loginActivity, CovaxListActivity::class.java)
     val actualIntent =
-      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+      shadowOf(ApplicationProvider.getApplicationContext<EirApplication>()).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 

@@ -23,11 +23,6 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
 import android.os.LocaleList
-import android.view.MotionEvent
-import android.view.View
-import android.widget.EditText
-import android.widget.TextView
-import androidx.core.content.ContextCompat
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
@@ -47,18 +42,15 @@ import org.joda.time.ReadablePartial
 import org.joda.time.Years
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
-import org.smartregister.fhircore.eir.FhirApplication
-import org.smartregister.fhircore.eir.api.HapiFhirService
-import org.smartregister.fhircore.eir.data.HapiFhirResourceDataSource
-import org.smartregister.fhircore.eir.model.PatientItem
+import org.smartregister.fhircore.eir.EirApplication
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import timber.log.Timber
-
-const val DAYS_IN_MONTH: Int = 28
-const val OVERDUE_DAYS_IN_MONTH: Int = 14
 
 object Utils {
 
-  private val gson = Gson()
+  val gson = Gson()
 
   private var simpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault())
 
@@ -69,8 +61,9 @@ object Utils {
   }
 
   /** Load dynamic config for given key. This would be loaded from FHIR DB later todo */
-  fun <T> loadConfig(config: String, clz: Class<T>, context: Context): T {
-    return gson.fromJson(context.assets.open(config).bufferedReader().use { it.readText() }, clz)
+  fun <T> loadConfig(config: String, configClass: Class<T>, context: Context): T {
+    return gson.fromJson(
+        context.assets.open(config).bufferedReader().use { it.readText() }, configClass)
   }
 
   fun addBasePatientFilter(search: Search) {
@@ -78,26 +71,6 @@ object Utils {
       modifier = StringFilterModifier.CONTAINS
       value = "NAIROBI"
     }
-  }
-
-  fun EditText.addOnDrawableClickedListener(
-    drawablePosition: DrawablePosition,
-    onClicked: () -> Unit
-  ) {
-    this.setOnTouchListener(
-      object : View.OnTouchListener {
-
-        override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-          if (event!!.action == MotionEvent.ACTION_UP &&
-              isDrawableClicked(drawablePosition, event, v as EditText)
-          ) {
-            onClicked()
-            return true
-          }
-          return false
-        }
-      }
-    )
   }
 
   fun setAppLocale(context: Context, languageTag: String?): Configuration? {
@@ -119,23 +92,6 @@ object Utils {
       Timber.e(e)
     }
     return configuration
-  }
-
-  private fun isDrawableClicked(
-    drawablePosition: DrawablePosition,
-    event: MotionEvent?,
-    view: EditText
-  ): Boolean {
-    return when (drawablePosition) {
-      DrawablePosition.DRAWABLE_RIGHT ->
-        event!!.rawX >=
-          (view.right - view.compoundDrawables[drawablePosition.position].bounds.width())
-      DrawablePosition.DRAWABLE_LEFT ->
-        event!!.rawX <= (view.compoundDrawables[drawablePosition.position].bounds.width())
-      else -> {
-        return false
-      }
-    }
   }
 
   fun refreshActivity(activity: Activity) {
@@ -162,61 +118,48 @@ object Utils {
     return copy.after(DateTimeType.now())
   }
 
-  fun setBgColor(view: View, color: Int) {
-    view.setBackgroundColor(ContextCompat.getColor(view.context, color))
-  }
-
-  fun setTextColor(view: TextView, color: Int) {
-    view.setTextColor(ContextCompat.getColor(view.context, color))
-  }
-
-  data class PatientAgeGender(val age: Int, val genderAbbr: Char)
-  fun getPatientAgeGender(patientItem: PatientItem): PatientAgeGender {
-    val age = getAgeFromDate(patientItem.dob)
-    val gender = if (patientItem.gender == "male") 'M' else 'F'
-    return PatientAgeGender(age, gender)
-  }
-
   suspend fun getLastSeen(patientId: String, lastUpdated: Date?): String {
 
     val searchResults: List<Immunization> =
-      FhirApplication.fhirEngine(FhirApplication.getContext()).search {
-        filter(Immunization.PATIENT) { value = "Patient/$patientId" }
-      }
+        EirApplication.fhirEngine(EirApplication.getContext()).search {
+          filter(Immunization.PATIENT) { value = "Patient/$patientId" }
+        }
 
     return searchResults
-      .maxByOrNull { it.protocolApplied.first().doseNumberPositiveIntType.value }
-      ?.occurrenceDateTimeType
-      ?.toHumanDisplay()
-      ?: lastUpdated?.makeItReadable() ?: ""
+        .maxByOrNull { it.protocolApplied.first().doseNumberPositiveIntType.value }
+        ?.occurrenceDateTimeType
+        ?.toHumanDisplay()
+        ?: lastUpdated?.makeItReadable() ?: ""
   }
 
   fun Date.makeItReadable(): String = simpleDateFormat.format(this)
 
   fun Int.ordinalOf() =
-    "$this" +
-      if (this % 100 in 11..13) "th"
-      else
-        when (this % 10) {
-          1 -> "st"
-          2 -> "nd"
-          3 -> "rd"
-          else -> "th"
-        }
+      "$this" +
+          if (this % 100 in 11..13) "th"
+          else
+              when (this % 10) {
+                1 -> "st"
+                2 -> "nd"
+                3 -> "rd"
+                else -> "th"
+              }
 
-  fun buildDatasource(appContext: Context): HapiFhirResourceDataSource {
-    return HapiFhirResourceDataSource(
-      HapiFhirService.create(FhirContext.forR4().newJsonParser(), appContext)
-    )
+  fun buildDatasource(
+      appContext: Context,
+      applicationConfiguration: ApplicationConfiguration
+  ): FhirResourceDataSource {
+    return FhirResourceDataSource(
+        FhirResourceService.create(
+            FhirContext.forR4().newJsonParser(), appContext, applicationConfiguration))
   }
 
   fun buildResourceSyncParams(): Map<ResourceType, Map<String, String>> {
     return mapOf(
-      ResourceType.Patient to emptyMap(),
-      ResourceType.Immunization to emptyMap(),
-      ResourceType.Questionnaire to emptyMap(),
-      ResourceType.StructureMap to mapOf(),
-      ResourceType.RelatedPerson to mapOf()
-    )
+        ResourceType.Patient to emptyMap(),
+        ResourceType.Immunization to emptyMap(),
+        ResourceType.Questionnaire to emptyMap(),
+        ResourceType.StructureMap to mapOf(),
+        ResourceType.RelatedPerson to mapOf())
   }
 }

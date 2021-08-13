@@ -99,6 +99,12 @@ android {
             }
         }
     }
+    buildFeatures {
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.0.1'
+    }
 }
 
 configurations {
@@ -112,39 +118,7 @@ dependencies {
     implementation(project(":engine"))
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
-    implementation 'androidx.security:security-crypto:1.1.0-alpha03'
-    implementation 'io.jsonwebtoken:jjwt:0.9.1'
-
-    androidTestImplementation deps.atsl.ext_junit
-    androidTestImplementation deps.atsl.espresso
-
     coreLibraryDesugaring deps.desugar
-
-    implementation('org.smartregister:data-capture:0.1.0-alpha03-preview-SNAPSHOT') {
-        transitive = true
-        exclude group: 'org.hamcrest', module: 'hamcrest-core'
-        exclude group: 'javax.xml.bind', module: 'jaxb-api'
-        exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
-        exclude group: 'com.sun.activation', module: 'javax.activation'
-    }
-
-    implementation('com.google.android.fhir:engine:0.1.0-alpha03') {
-        transitive = true
-        exclude group: 'org.hamcrest', module: 'hamcrest-core'
-        exclude group: 'javax.xml.bind', module: 'jaxb-api'
-        exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
-        exclude group: 'com.sun.activation', module: 'javax.activation'
-    }
-
-    implementation(group: 'ca.uhn.hapi.fhir', name: 'org.hl7.fhir.r4', version: '5.3.0') {
-        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
-    }
-    implementation(group: 'ca.uhn.hapi.fhir', name: 'hapi-fhir-base', version: '5.3.0') {
-        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
-    }
-    implementation(group: 'ca.uhn.hapi.fhir', name: 'hapi-fhir-structures-r4', version: '5.3.0') {
-        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
-    }
 
     implementation deps.appcompat
     implementation deps.constraint_layout
@@ -156,13 +130,8 @@ dependencies {
     implementation deps.lifecycle.runtime
     implementation deps.lifecycle.viewmodel
     implementation deps.material
-    implementation deps.okhttp_logging_interceptor
     implementation deps.recyclerview
-    implementation deps.retrofit.core
-    implementation deps.retrofit.gson
-    implementation deps.retrofit.mock
     implementation deps.work.runtime
-    implementation deps.timber
 
     implementation deps.core
     implementation deps.fragment
@@ -206,6 +175,9 @@ dependencies {
     debugImplementation deps.fragment_testing
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk
+
+    androidTestImplementation deps.atsl.ext_junit
+    androidTestImplementation deps.atsl.espresso
 }
 
 task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'createDebugCoverageReport']) {

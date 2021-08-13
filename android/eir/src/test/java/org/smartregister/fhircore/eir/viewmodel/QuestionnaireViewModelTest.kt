@@ -53,12 +53,13 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.eir.FhirApplication
+import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.RobolectricTest
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireViewModel
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 03-07-2021. */
 @Config(shadows = [FhirApplicationShadow::class])
@@ -87,10 +88,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireResponse = iParser.parseResource(qrJson) as QuestionnaireResponse
 
-    fhirEngine = spyk(FhirApplication.fhirEngine(context))
+    fhirEngine = spyk(EirApplication.fhirEngine(context))
 
-    mockkObject(FhirApplication)
-    every { FhirApplication.fhirEngine(any()) } returns fhirEngine
+    mockkObject(EirApplication)
+    every { EirApplication.fhirEngine(any()) } returns fhirEngine
 
     val savedState = SavedStateHandle()
     savedState[QUESTIONNAIRE_PATH_KEY] = "sample_patient_registration.json"

@@ -47,15 +47,16 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.shadows.ShadowAlertDialog
-import org.smartregister.fhircore.eir.FhirApplication
+import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity
-import org.smartregister.fhircore.eir.auth.account.AccountHelper
+import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.eir.auth.secure.FakeKeyStore
-import org.smartregister.fhircore.eir.auth.secure.SecureConfig
-import org.smartregister.fhircore.eir.domain.Language
 import org.smartregister.fhircore.eir.fragment.CovaxListFragment
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.eir.ui.base.model.Language
+import org.smartregister.fhircore.eir.ui.patient.register.CovaxListActivity
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
 @Config(shadows = [FhirApplicationShadow::class])
 class CovaxListActivityTest : ActivityRobolectricTest() {
@@ -127,7 +128,7 @@ class CovaxListActivityTest : ActivityRobolectricTest() {
 
     val expectedIntent = Intent(covaxListActivity, QuestionnaireActivity::class.java)
     val actualIntent =
-      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+      shadowOf(ApplicationProvider.getApplicationContext<EirApplication>()).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
@@ -138,7 +139,7 @@ class CovaxListActivityTest : ActivityRobolectricTest() {
 
     val expectedIntent = Intent(covaxListActivity, QuestionnaireActivity::class.java)
     val actualIntent =
-      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+      shadowOf(ApplicationProvider.getApplicationContext<EirApplication>()).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
     Assert.assertEquals(
@@ -282,8 +283,8 @@ class CovaxListActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnNavigationItemSelectedShouldVerifyRelativeActions() {
 
-    val accountHelper = mockk<AccountHelper>()
-    covaxListActivity.accountHelper = accountHelper
+    val accountHelper = mockk<AuthenticationService>()
+    covaxListActivity.authenticationService = accountHelper
 
     val menuItem = mockk<MenuItem>()
 
@@ -294,7 +295,7 @@ class CovaxListActivityTest : ActivityRobolectricTest() {
 
     val expectedIntent = Intent(covaxListActivity, CovaxListActivity::class.java)
     val actualIntent =
-      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+      shadowOf(ApplicationProvider.getApplicationContext<EirApplication>()).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
 
     every { menuItem.itemId } returns R.id.menu_item_logout
@@ -345,10 +346,10 @@ class CovaxListActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testSetLogoutUsernameShouldVerify() {
-    val secureConfig = mockk<SecureConfig>()
+    val secureConfig = mockk<SecureSharedPreference>()
 
     every { secureConfig.retrieveSessionUsername() } returns "demo"
-    covaxListActivity.secureConfig = secureConfig
+    covaxListActivity.secureSharedPreference = secureConfig
 
     covaxListActivity.setLogoutUsername()
     Assert.assertEquals(

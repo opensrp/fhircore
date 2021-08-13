@@ -45,7 +45,7 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.robolectric.util.ReflectionHelpers.ClassParameter.from
-import org.smartregister.fhircore.eir.FhirApplication
+import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.eir.util.Utils.makeItReadable
@@ -104,18 +104,18 @@ class UtilsTest : RobolectricTest() {
   @Test
   fun testSetAppLocaleShouldReturnUpdatedConfiguration() {
 
-    val swConfig = Utils.setAppLocale(FhirApplication.getContext(), "sw")
+    val swConfig = Utils.setAppLocale(EirApplication.getContext(), "sw")
 
     Assert.assertNotNull(swConfig)
     Assert.assertEquals("sw", swConfig!!.locales[0].language)
 
     ReflectionHelpers.setStaticField(Build.VERSION::class.java, "SDK_INT", 23)
-    val enConfig = Utils.setAppLocale(FhirApplication.getContext(), "en")
+    val enConfig = Utils.setAppLocale(EirApplication.getContext(), "en")
 
     Assert.assertNotNull(enConfig)
     Assert.assertEquals("en", enConfig!!.locales[0].language)
 
-    val config = Utils.setAppLocale(FhirApplication.getContext(), null)
+    val config = Utils.setAppLocale(EirApplication.getContext(), null)
     Assert.assertEquals("en", enConfig!!.locales[0].language)
   }
 
@@ -187,7 +187,7 @@ class UtilsTest : RobolectricTest() {
       }
 
     runBlocking {
-      FhirApplication.fhirEngine(FhirApplication.getContext()).save(immunization)
+      EirApplication.fhirEngine(EirApplication.getContext()).save(immunization)
       Assert.assertEquals(
         immunization.occurrenceDateTimeType.toHumanDisplay(),
         Utils.getLastSeen(patientId, Date())
@@ -196,14 +196,14 @@ class UtilsTest : RobolectricTest() {
 
     immunization.occurrence = DateTimeType("2021-07-30")
     runBlocking {
-      FhirApplication.fhirEngine(FhirApplication.getContext()).save(immunization)
+      EirApplication.fhirEngine(EirApplication.getContext()).save(immunization)
       Assert.assertEquals(
         immunization.occurrenceDateTimeType.toHumanDisplay(),
         Utils.getLastSeen(patientId, Date())
       )
-      FhirApplication.fhirEngine(FhirApplication.getContext())
+      EirApplication.fhirEngine(EirApplication.getContext())
         .remove(Immunization::class.java, patientId)
-      FhirApplication.fhirEngine(FhirApplication.getContext())
+      EirApplication.fhirEngine(EirApplication.getContext())
         .remove(Immunization::class.java, patientId)
     }
   }

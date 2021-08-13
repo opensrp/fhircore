@@ -27,9 +27,9 @@ import org.hl7.fhir.r4.model.Resource
 import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
 import org.robolectric.shadows.ShadowApplication
-import org.smartregister.fhircore.eir.FhirApplication
+import org.smartregister.fhircore.eir.EirApplication
 
-@Implements(FhirApplication::class)
+@Implements(EirApplication::class)
 class FhirApplicationShadow : ShadowApplication() {
 
   private val dataMap = mutableMapOf<String, MutableList<Resource>>()

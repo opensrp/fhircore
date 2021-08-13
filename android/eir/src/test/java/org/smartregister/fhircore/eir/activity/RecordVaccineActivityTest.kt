@@ -45,14 +45,15 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.eir.FhirApplication
-import org.smartregister.fhircore.eir.model.CovaxDetailView
+import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.model.PatientItem
 import org.smartregister.fhircore.eir.model.PatientStatus
 import org.smartregister.fhircore.eir.model.PatientVaccineSummary
-import org.smartregister.fhircore.eir.model.VaccineStatus
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
+import org.smartregister.fhircore.eir.ui.base.model.VaccineStatus
+import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsFormConfig
+import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
 import org.smartregister.fhircore.eir.util.Utils
 
 @Config(shadows = [FhirApplicationShadow::class])
@@ -68,13 +69,16 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
     coEvery { fhirEngine.search<Immunization>(any()) } returns listOf()
     coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns Questionnaire()
 
-    mockkObject(FhirApplication)
-    every { FhirApplication.fhirEngine(any()) } returns fhirEngine
+    mockkObject(EirApplication)
+    every { EirApplication.fhirEngine(any()) } returns fhirEngine
 
     val intent =
       Intent().apply {
-        putExtra(CovaxDetailView.COVAX_DETAIL_VIEW_CONFIG_ID, "covax_client_register_config.json")
-        putExtra(CovaxDetailView.COVAX_ARG_ITEM_ID, "test_patient_id")
+        putExtra(
+          PatientDetailsFormConfig.COVAX_DETAIL_VIEW_CONFIG_ID,
+          "covax_client_register_config.json"
+        )
+        putExtra(PatientDetailsFormConfig.COVAX_ARG_ITEM_ID, "test_patient_id")
       }
 
     recordVaccineActivity =

@@ -21,11 +21,10 @@
     <color name="colorPrimaryDark">#003D66</color>
     <color name="colorPrimaryLight">#006EB8</color>
     <color name="colorAccent">#0283DA</color>
-    <color name="white">#FFFFFF</color>
+
     <color name="orange">#FFA500</color>
     <color name="light_gray">#d3d3d3</color>
-    <color name="white_slightly_opaque">#38ffffff</color>
-    <color name="drawer_menu_bg_color">#2C2C2C</color>
+
     <color name="profile_header_background">#ECF1F7</color>
     <color name="black">#000000</color>
     <color name="light">#E9E9E9</color>

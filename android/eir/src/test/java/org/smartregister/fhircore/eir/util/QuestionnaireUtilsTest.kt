@@ -37,12 +37,12 @@ import org.junit.Before
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.RobolectricTest
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_TITLE_KEY
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_TITLE_KEY
 
 @Config(shadows = [FhirApplicationShadow::class])
 class QuestionnaireUtilsTest : RobolectricTest() {

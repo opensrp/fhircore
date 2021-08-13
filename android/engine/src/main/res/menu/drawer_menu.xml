@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <group
+        android:id="@+id/grp_clients"
+        android:checkableBehavior="single">
+    </group>
+
+    <group
+        android:id="@+id/grp_logout"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/menu_item_language"
+            android:icon="@drawable/ic_outline_language_white"
+            android:title="@string/language"
+            app:actionLayout="@layout/drawer_menu_language_layout" />
+        <item
+            android:id="@+id/menu_item_logout"
+            android:icon="@drawable/ic_logout_white"
+            android:title="@string/logout_as_user" />
+
+    </group>
+
+    <!--    hack to add an extra divider at bottom of menu-->
+    <group
+        android:id="@+id/grp_empty"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/blank"
+            android:title="" />
+    </group>
+
+</menu>

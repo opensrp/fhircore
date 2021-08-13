@@ -31,11 +31,11 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RiskAssessment
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_TITLE_KEY
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_TITLE_KEY
 
 object QuestionnaireUtils {
   private val parser = FhirContext.forR4().newJsonParser()

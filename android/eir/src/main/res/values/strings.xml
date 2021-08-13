@@ -30,15 +30,13 @@
     <string name="menu_covax_clients_list_title">COVAX Clients</string>
     <string name="menu_anc_clients_list_title">ANC Clients</string>
 
-    <string name="language">Language</string>
-    <string name="empty_client_list_message_title">No Results</string>
-    <string name="empty_client_list_message_details">Sorry, we could not find client with given name or ID</string>
+
 
     <!-- For display observations in brief, for a patient -->
     <string name="observation_brief_text" translatable="false">%1$s: %2$s\nEffective: %3$s</string>
 
     <string name="submit_button_text">Submit</string>
-    <string name="search_hint">Search name or ID</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
@@ -59,20 +57,20 @@
     <string name="edit">Edit</string>
     <string name="str_save">Save</string>
     <string name="select_language">Select Language</string>
-    <string name="register_new_client">Register new client</string>
-    <string name="sync">Sync</string>
+
+
     <string name="record_vaccine">Record Vaccine</string>
     <string name="no_vaccine_received">No vaccine received</string>
     <string name="view_registration_details">View Registration Details</string>
     <string name="client_list_title_covax">COVAX clients</string>
     <string name="client_list_title_anc">ANC clients</string>
 
-    <string name="show_overdue">Show overdue</string>
+
     <string name="record_vaccine_nl">Record\nVaccine</string>
     <string name="client_info">Client info</string>
     <string name="last_seen_date">Last seen 29-3-2021</string>
-    <string name="last_sync_timestamp">Last 05:30 PM, Mar 3</string>
-    <string name="logout_as_user">Log out as </string>
+
+
     <string name="registered_date">Registered </string>
 
     <string name="login_text">Login</string>
@@ -87,7 +85,7 @@
     <string name="second_dose_due_at"> Second dose due on %1$s</string>
     <string name="ordinal_vaccine_dose_recorded">%1$s 1st dose recorded</string>
     <string name="please_select_vaccine">Please Select Vaccine</string>
-    <string name="scan_bar_code">SCAN BARCODE</string>
+
     <string name="at_risk">At Risk</string>
     <string name="syncing">Syncing&#8230;</string>
     <string name="vaccine">Vaccine</string>
@@ -105,4 +103,5 @@
     <string name="immunization_overdue">"%1$s dose overdue %2$s"</string>
     <string name="show_qr_code">Show QR Code</string>
     <string name="report_adverse_event">Report Adverse Event</string>
+    <string name="covax_app" translatable="false">Covax</string>
 </resources>

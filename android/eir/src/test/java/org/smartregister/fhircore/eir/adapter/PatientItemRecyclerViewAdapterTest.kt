@@ -26,10 +26,11 @@ import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.smartregister.fhircore.eir.FhirApplication
+import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.RobolectricTest
 import org.smartregister.fhircore.eir.model.PatientItem
+import org.smartregister.fhircore.eir.ui.patient.register.PatientItemRecyclerViewAdapter
 
 class PatientItemRecyclerViewAdapterTest : RobolectricTest() {
 
@@ -45,12 +46,12 @@ class PatientItemRecyclerViewAdapterTest : RobolectricTest() {
     mockkStatic(LayoutInflater::from)
 
     val itemView =
-      LayoutInflater.from(FhirApplication.getContext())
+      LayoutInflater.from(EirApplication.getContext())
         .inflate(R.layout.patient_list_item, null, false)
     val layoutInflater = mockk<LayoutInflater>()
     val viewGroup = mockk<ViewGroup>()
 
-    every { viewGroup.context } returns FhirApplication.getContext()
+    every { viewGroup.context } returns EirApplication.getContext()
     every { LayoutInflater.from(any()) } returns layoutInflater
     every { layoutInflater.inflate(any<Int>(), any(), any()) } returns itemView
 

@@ -39,10 +39,4 @@
         <item name="cardElevation">8dp</item>
     </style>
 
-    <style name="menu_text_style" parent="@android:style/TextAppearance.DeviceDefault.Widget.ActionBar.Menu">
-        <item name="android:textSize">20sp</item>
-        <item name="android:textAllCaps">false</item>
-        <item name="fontFamily">sans-serif-light</item>
-    </style>
-
 </resources>

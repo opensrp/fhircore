@@ -37,13 +37,13 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.eir.FhirApplication
+import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.RobolectricTest
 import org.smartregister.fhircore.eir.domain.Pagination
 import org.smartregister.fhircore.eir.model.PatientItem
-import org.smartregister.fhircore.eir.model.VaccineStatus
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.eir.ui.base.model.VaccineStatus
 import org.smartregister.fhircore.eir.util.Utils
 import org.smartregister.fhircore.eir.util.Utils.makeItReadable
 
@@ -52,13 +52,13 @@ class CovaxListViewModelTest : RobolectricTest() {
 
   private lateinit var viewModel: CovaxListViewModel
 
-  private lateinit var appContext: FhirApplication
+  private lateinit var appContext: EirApplication
   private lateinit var fhirEngine: FhirEngine
 
   @Before
   fun setUp() {
-    appContext = FhirApplication.getContext()
-    fhirEngine = FhirApplication.fhirEngine(appContext)
+    appContext = EirApplication.getContext()
+    fhirEngine = EirApplication.fhirEngine(appContext)
     viewModel = spyk(CovaxListViewModel(appContext, fhirEngine))
   }
 

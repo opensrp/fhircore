@@ -34,17 +34,18 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.eir.FhirApplication
+import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
-import org.smartregister.fhircore.eir.auth.account.AccountHelper
+import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.eir.auth.secure.FakeKeyStore
-import org.smartregister.fhircore.eir.fragment.AncListFragment
-import org.smartregister.fhircore.eir.model.AncDetailView
-import org.smartregister.fhircore.eir.model.AncDetailView.Companion.ANC_DETAIL_VIEW_CONFIG_ID
-import org.smartregister.fhircore.eir.model.BaseRegister
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.eir.ui.anc.AncDetailFormConfig
+import org.smartregister.fhircore.eir.ui.anc.AncDetailFormConfig.Companion.ANC_DETAIL_VIEW_CONFIG_ID
+import org.smartregister.fhircore.eir.ui.anc.register.AncListActivity
+import org.smartregister.fhircore.eir.ui.anc.register.AncListFragment
+import org.smartregister.fhircore.eir.ui.base.model.BaseRegister
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.eir.util.Utils
 
 @Config(shadows = [FhirApplicationShadow::class])
@@ -52,16 +53,16 @@ class AncListActivityTest : ActivityRobolectricTest() {
 
   private lateinit var ancListActivity: AncListActivity
   private lateinit var register: BaseRegister
-  private lateinit var detailView: AncDetailView
+  private lateinit var detailFormConfig: AncDetailFormConfig
 
   @Before
   fun setUp() {
     ancListActivity = Robolectric.buildActivity(AncListActivity::class.java, null).create().get()
     register = ancListActivity.register
-    detailView =
+    detailFormConfig =
       Utils.loadConfig(
         ANC_DETAIL_VIEW_CONFIG_ID,
-        AncDetailView::class.java,
+        AncDetailFormConfig::class.java,
         ApplicationProvider.getApplicationContext()
       )
   }
@@ -88,11 +89,11 @@ class AncListActivityTest : ActivityRobolectricTest() {
     Assert.assertEquals(R.layout.activity_register_list, register.contentLayoutId)
     Assert.assertTrue(register.listFragment is AncListFragment)
     Assert.assertEquals(
-      detailView.registrationQuestionnaireIdentifier,
+      detailFormConfig.registrationQuestionnaireIdentifier,
       register.newRegistrationQuestionnaireIdentifier
     )
     Assert.assertEquals(
-      detailView.registrationQuestionnaireTitle,
+      detailFormConfig.registrationQuestionnaireTitle,
       register.newRegistrationQuestionnaireTitle
     )
     Assert.assertEquals(R.id.btn_register_new_client, register.newRegistrationViewId)
@@ -103,7 +104,7 @@ class AncListActivityTest : ActivityRobolectricTest() {
     Assert.assertEquals(findViewById(R.id.btn_register_new_client), register.newRegistrationView())
 
     val ancNavBarTitleView = ancListActivity.getNavigationHeaderTitleView(R.id.tv_nav_header)
-    Assert.assertEquals(detailView.registerTitle, ancNavBarTitleView!!.text)
+    Assert.assertEquals(detailFormConfig.registerTitle, ancNavBarTitleView!!.text)
 
     val toolbarTextView =
       findViewById<Toolbar>(R.id.base_register_toolbar)
@@ -117,7 +118,7 @@ class AncListActivityTest : ActivityRobolectricTest() {
 
     val expectedIntent = Intent(ancListActivity, QuestionnaireActivity::class.java)
     val actualIntent =
-      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+      shadowOf(ApplicationProvider.getApplicationContext<EirApplication>()).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
     Assert.assertEquals(
@@ -132,7 +133,7 @@ class AncListActivityTest : ActivityRobolectricTest() {
 
     val expectedIntent = Intent(ancListActivity, QuestionnaireActivity::class.java)
     val actualIntent =
-      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+      shadowOf(ApplicationProvider.getApplicationContext<EirApplication>()).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
     Assert.assertEquals(
@@ -195,8 +196,8 @@ class AncListActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnNavigationItemSelectedShouldVerifyRelativeActions() {
-    val accountHelper = mockk<AccountHelper>()
-    ancListActivity.accountHelper = accountHelper
+    val accountHelper = mockk<AuthenticationService>()
+    ancListActivity.authenticationService = accountHelper
 
     val menuItem = mockk<MenuItem>()
 
@@ -207,7 +208,7 @@ class AncListActivityTest : ActivityRobolectricTest() {
 
     val expectedIntent = Intent(ancListActivity, AncListActivity::class.java)
     val actualIntent =
-      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+      shadowOf(ApplicationProvider.getApplicationContext<EirApplication>()).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 

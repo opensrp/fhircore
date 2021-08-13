@@ -29,13 +29,13 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
-import org.smartregister.fhircore.eir.FhirApplication
+import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.RobolectricTest
-import org.smartregister.fhircore.eir.api.OAuthService
-import org.smartregister.fhircore.eir.auth.OAuthResponse
-import org.smartregister.fhircore.eir.auth.account.AccountHelper
-import org.smartregister.fhircore.eir.auth.secure.Credentials
+import org.smartregister.fhircore.engine.auth.AuthCredentials
+import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.eir.auth.secure.FakeKeyStore
+import org.smartregister.fhircore.engine.data.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import retrofit2.Call
 import retrofit2.Response
 
@@ -45,7 +45,7 @@ class LoginViewModelTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    viewModel = LoginViewModel(FhirApplication.getContext())
+    viewModel = LoginViewModel(EirApplication.getContext())
   }
 
   @Test
@@ -69,7 +69,9 @@ class LoginViewModelTest : RobolectricTest() {
     val t = Exception("Some sample message")
 
     setUsernameAndPassword()
-    viewModel.secureConfig.saveCredentials(Credentials("testuser", charArrayOf('a'), "dummy_token"))
+    viewModel.secureConfig.saveCredentials(
+      AuthCredentials("testuser", charArrayOf('a'), "dummy_token")
+    )
     viewModel.goHome.value = false
     viewModel.allowLogin.value = false
     viewModel.onFailure(call, t)
@@ -86,9 +88,9 @@ class LoginViewModelTest : RobolectricTest() {
   fun testRemoteLoginShouldVerifyInternalCalls() {
     val accountManagerSpy = spyk(viewModel.accountManager)
     val secureConfigSpy = spyk(viewModel.secureConfig)
-    val accountHelperSpy = spyk(viewModel.accountHelper)
+    val accountHelperSpy = spyk(viewModel.authenticationService)
 
-    viewModel.accountHelper = accountHelperSpy
+    viewModel.authenticationService = accountHelperSpy
     viewModel.accountManager = accountManagerSpy
     viewModel.secureConfig = secureConfigSpy
 
@@ -127,7 +129,7 @@ class LoginViewModelTest : RobolectricTest() {
 
     val field = viewModel.javaClass.getDeclaredField("accountHelper")
     field.isAccessible = true
-    val accountHelper = spyk(field.get(viewModel) as AccountHelper)
+    val accountHelper = spyk(field.get(viewModel) as AuthenticationService)
     field.set(viewModel, accountHelper)
 
     every { accountHelper.isSessionActive(any()) } returns true

@@ -49,9 +49,10 @@ import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.CoroutineTestRule
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.activity.PatientDetailsActivity
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
-import org.smartregister.fhircore.eir.viewmodel.PatientDetailsViewModel
+import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
+import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsFragment
+import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsViewModel
 
 @ExperimentalCoroutinesApi
 @Config(shadows = [FhirApplicationShadow::class])

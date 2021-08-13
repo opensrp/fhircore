@@ -43,20 +43,21 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.eir.FhirApplication
-import org.smartregister.fhircore.eir.FhirApplication.Companion.fhirEngine
+import org.smartregister.fhircore.eir.EirApplication
+import org.smartregister.fhircore.eir.EirApplication.Companion.fhirEngine
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE_KEY
-import org.smartregister.fhircore.eir.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
+import org.smartregister.fhircore.eir.ui.patient.register.CovaxListActivity
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE_KEY
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireViewModel
 import org.smartregister.fhircore.eir.util.QuestionnaireUtils
-import org.smartregister.fhircore.eir.viewmodel.QuestionnaireViewModel
 
 @Config(shadows = [FhirApplicationShadow::class])
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
-  private lateinit var context: FhirApplication
+  private lateinit var context: EirApplication
   private lateinit var questionnaireActivity: QuestionnaireActivity
   private lateinit var intent: Intent
 
@@ -73,7 +74,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     coEvery { fhirEngine.load(Patient::class.java, TEST_PATIENT_1_ID) } returns TEST_PATIENT_1
     coEvery { fhirEngine.save<Patient>(any()) } answers {}
 
-    mockkObject(FhirApplication)
+    mockkObject(EirApplication)
     every { fhirEngine(any()) } returns fhirEngine
 
     intent =

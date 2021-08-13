@@ -21,9 +21,10 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.eir.FhirApplication
+import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @Config(shadows = [FhirApplicationShadow::class])
 class SharedPreferencesHelperTest : RobolectricTest() {
@@ -34,8 +35,8 @@ class SharedPreferencesHelperTest : RobolectricTest() {
   }
 
   private fun init() {
-    SharedPreferencesHelper.init(FhirApplication.getContext())
-    runBlocking { FhirApplication.fhirEngine(FhirApplication.getContext()) }
+    SharedPreferencesHelper.init(EirApplication.getContext())
+    runBlocking { EirApplication.fhirEngine(EirApplication.getContext()) }
   }
 
   @Test fun initShouldCreatePrefs() {}

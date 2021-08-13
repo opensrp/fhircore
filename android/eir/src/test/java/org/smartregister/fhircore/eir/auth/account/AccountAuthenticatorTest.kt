@@ -31,23 +31,25 @@ import org.junit.Before
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.RobolectricTest
-import org.smartregister.fhircore.eir.auth.OAuthResponse
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.auth.AuthenticationService
+import org.smartregister.fhircore.engine.data.model.response.OAuthResponse
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
 
 @Config(shadows = [FhirApplicationShadow::class])
 class AccountAuthenticatorTest : RobolectricTest() {
   private lateinit var accountAuthenticator: AccountAuthenticator
-  private lateinit var accountHelper: AccountHelper
+  private lateinit var authenticationService: AuthenticationService
   private lateinit var accountManager: AccountManager
   private val context = ApplicationProvider.getApplicationContext<Context>()
 
   @Before
   fun setUp() {
-    accountHelper = mockk()
+    authenticationService = mockk()
     accountManager = mockk()
 
     accountAuthenticator = AccountAuthenticator(context)
-    accountAuthenticator.accountHelper = accountHelper
+    accountAuthenticator.authenticationService = authenticationService
     accountAuthenticator.accountManager = accountManager
   }
 
@@ -80,7 +82,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     every { accountManager.peekAuthToken(any(), any()) } returns null
     every { accountManager.getPassword(any()) } returns "some refresh token"
-    every { accountHelper.refreshToken("some refresh token") } returns oauth
+    every { authenticationService.refreshToken("some refresh token") } returns oauth
 
     val result =
       accountAuthenticator.getAuthToken(
