@@ -918,7 +918,10 @@ group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bu
 	    	src -> obs.subject = reference(patientId) "rule_eo3";
 	    	src -> obs.code = cc("https://www.snomed.org", "991381000000107") "rule_eo4";
 	    	src -> obs.status = "final" "rule_eo5";
-	    	itemAns.value as itemValue -> obs.value = itemValue "rule_eo6";
+	    	itemAns.value as itemValue -> obs.value = create('CodeableConcept') as codeableConcept then {
+              itemValue.display as itemValueText -> codeableConcept.text = itemValueText "rule_eo6_1";
+              itemValue -> codeableConcept.coding = itemValue "rule_eo6_2";
+            } "rule_eo6";
     	} "rule_e08";
 	} "rule_eo7";
 }
