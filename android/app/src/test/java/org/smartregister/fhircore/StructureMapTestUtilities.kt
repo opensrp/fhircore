@@ -839,8 +839,13 @@ group PatientRegistration(source src : QuestionnaireResponse, target bundle: Bun
 
 group ExtractPatient(source src : QuestionnaireResponse, target patient : Patient) {
 	src.item as patientBarcodeItem where(linkId = 'patient-barcode') then {
-		patientBarcodeItem.answer as patientBarcode where patientBarcode.empty().not() -> patient.id = patientBarcode.value "rule_j1";
-		patientBarcodeItem.answer as patientBarcode where patientBarcode.empty() -> patient.id = uuid() "rule_j2";
+		patientBarcodeItem where (patientBarcodeItem.answer.count() > 0) then {
+          patientBarcodeItem.answer as patientBarcode where (patientBarcode.empty().not()) -> patient.id = create('id') as patientId then {
+            src -> patientId.value = evaluate(patientBarcode, ${"$"}this.value) "rule_j1_1";
+          } "rule_j1_2";
+          patientBarcodeItem.answer as patientBarcode where (patientBarcode.empty()) -> patient.id = uuid() "rule_j1_3";
+        } "rule_j1";
+        patientBarcodeItem where (patientBarcodeItem.answer.count() = 0) -> patient.id = uuid() "rule_j2";
 	};
 
     src.item as item where(linkId = 'PR') then {
