@@ -915,17 +915,28 @@ group ExtractRelatedPerson(source src : QuestionnaireResponse, target bundle : B
     } "rule_erp_14";
 }
 
-group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bundle, source patientId : Patient) {
+group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bundle, source patient : Patient) {
     src.item as item where(linkId = 'comorbidities') then {
     	item.answer as itemAns -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
 	    	src -> obs.id = uuid() "rule_eo1";
-	    	src -> obs.effective = evaluate(patientId, now()) "rule_eo2";
-	    	src -> obs.subject = reference(patientId) "rule_eo3";
+	    	src -> obs.effective = evaluate(patient, now()) "rule_eo2";
+	    	src -> obs.subject = reference(patient) "rule_eo3";
 	    	src -> obs.code = cc("https://www.snomed.org", "991381000000107") "rule_eo4";
 	    	src -> obs.status = "final" "rule_eo5";
 	    	itemAns.value as itemValue -> obs.value = create('CodeableConcept') as codeableConcept then {
               itemValue.display as itemValueText -> codeableConcept.text = itemValueText "rule_eo6_1";
               itemValue -> codeableConcept.coding = itemValue "rule_eo6_2";
+              
+              itemValue where(itemValue.code = '74964007') -> bundle.entry as entry, entry.resource = create('Observation') as obs2 then {
+                src.item as otherComorbItem where(linkId = 'other_comorbidities' and answer.count() > 0 and answer[0].empty().not()) then {
+                  src -> obs2.id = uuid() "rule_eo6_3_1_1";
+                  src -> obs2.effective = evaluate(patient, now()) "rule_eo6_3_1_2";
+                  src -> obs2.subject = reference(patient) "rule_eo6_3_1_3";
+                  src -> obs2.code = cc("https://www.snomed.org", "38651000000103") "rule_eo6_3_1_4";
+                  src -> obs2.status = "final" "rule_eo6_3_1_5";
+                  src -> obs2.value = evaluate(otherComorbItem , ${"$"}this.answer[0].value) "rule_eo6_3_1_5";
+                } "rule_eo6_3_1";
+              } "rule_eo6_3";
             } "rule_eo6";
     	} "rule_e08";
 	} "rule_eo7";
