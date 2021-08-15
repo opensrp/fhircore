@@ -18,8 +18,6 @@ abstract class BaseLoginActivity :
 
   private lateinit var loginViewModel: LoginViewModel
 
-  abstract val authenticationService: AuthenticationService
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     application.assertIsConfigurable()
@@ -29,7 +27,7 @@ abstract class BaseLoginActivity :
         this,
         LoginViewModel(
             application = application,
-            authenticationService = authenticationService,
+            authenticationService = (application as ConfigurableApplication).authenticationService,
             loginViewConfiguration = loginViewConfigurationOf()
           )
           .createFactory()

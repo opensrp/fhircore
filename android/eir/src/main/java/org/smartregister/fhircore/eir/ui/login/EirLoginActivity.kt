@@ -19,17 +19,12 @@ package org.smartregister.fhircore.eir.ui.login
 import android.content.Intent
 import android.os.Bundle
 import org.smartregister.fhircore.eir.BuildConfig
-import org.smartregister.fhircore.eir.EirAuthenticationService
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.ui.patient.register.PatientRegisterActivity
-import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
 
 class EirLoginActivity : BaseLoginActivity() {
-
-  override val authenticationService: AuthenticationService
-    get() = EirAuthenticationService(this)
 
   override fun navigateToHome() {
     val intent = Intent(this, PatientRegisterActivity::class.java)

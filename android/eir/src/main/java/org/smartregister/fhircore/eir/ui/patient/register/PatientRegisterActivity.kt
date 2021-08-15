@@ -26,6 +26,7 @@ import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.util.extension.showToast
 
 class PatientRegisterActivity : BaseRegisterActivity() {
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     configureViews(registerViewConfigurationOf().apply { appTitle = getString(R.string.covax_app) })
