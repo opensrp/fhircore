@@ -27,8 +27,6 @@ import org.smartregister.fhircore.eir.ui.base.model.BaseRegister
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsFormConfig
 import org.smartregister.fhircore.eir.util.Utils.loadConfig
-import org.smartregister.fhircore.eir.viewmodel.CovaxListViewModel
-import org.smartregister.fhircore.eir.viewmodel.PatientListViewModelFactory
 
 class CovaxListActivity : BaseRegisterActivity() {
   lateinit var listViewModel: CovaxListViewModel

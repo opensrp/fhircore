@@ -2,6 +2,7 @@ package org.smartregister.fhircore.engine.configuration.view
 
 import android.view.View
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 
 /**
  * [ConfigurableView] interface provides the contract for configuring UI elements. A subclass of
@@ -30,4 +31,10 @@ interface ConfigurableView<T : Configuration> {
    * be overridden by the subclasses
    */
   fun setupConfigurableViews(viewConfiguration: RegisterViewConfiguration)
+
+  /**
+   * Return application instance for the Activity as [ConfigurableApplication]. App will crash with
+   * an error if application does not implement the configurable interface
+   */
+  fun configurableApplication(): ConfigurableApplication
 }

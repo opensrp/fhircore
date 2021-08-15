@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.eir.ui.patient.register
 
 import android.os.Bundle
+import android.view.MenuItem
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
@@ -26,4 +27,10 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     super.onCreate(savedInstanceState)
     configureViews(registerViewConfigurationOf().apply { appTitle = getString(R.string.covax_app) })
   }
+
+  override fun onSideMenuOptionSelected(item: MenuItem): Boolean {
+    return true
+  }
+
+  override fun registerClient() {}
 }

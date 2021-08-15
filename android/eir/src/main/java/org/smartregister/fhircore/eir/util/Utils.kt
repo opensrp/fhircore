@@ -35,7 +35,6 @@ import java.util.Locale
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.ResourceType
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.joda.time.ReadablePartial
@@ -157,16 +156,6 @@ object Utils {
         appContext,
         applicationConfiguration
       )
-    )
-  }
-
-  fun buildResourceSyncParams(): Map<ResourceType, Map<String, String>> {
-    return mapOf(
-      ResourceType.Patient to emptyMap(),
-      ResourceType.Immunization to emptyMap(),
-      ResourceType.Questionnaire to emptyMap(),
-      ResourceType.StructureMap to mapOf(),
-      ResourceType.RelatedPerson to mapOf()
     )
   }
 }

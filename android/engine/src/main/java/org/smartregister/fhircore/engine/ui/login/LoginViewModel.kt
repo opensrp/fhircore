@@ -9,15 +9,19 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.auth.AuthenticationService
+import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.data.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
-import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.showToast
 import retrofit2.Call
@@ -28,9 +32,8 @@ class LoginViewModel(
   application: Application,
   val authenticationService: AuthenticationService,
   loginViewConfiguration: LoginViewConfiguration,
+  private val dispatcher: DispatcherProvider = DefaultDispatcherProvider
 ) : AndroidViewModel(application), AccountManagerCallback<Bundle> {
-
-  private val secureSharedPreference: SecureSharedPreference = SecureSharedPreference(application)
 
   private val accountManager = AccountManager.get(application)
 
@@ -52,6 +55,9 @@ class LoginViewModel(
   private val userInfoResponseCallback: ResponseCallback<ResponseBody> by lazy {
     object : ResponseCallback<ResponseBody>(responseBodyHandler) {}
   }
+
+  private val secureSharedPreference =
+    (application as ConfigurableApplication).secureSharedPreference
 
   val oauthResponseHandler =
     object : ResponseHandler<OAuthResponse> {
@@ -110,16 +116,18 @@ class LoginViewModel(
     get() = _loginViewConfiguration
 
   fun loginUser() {
-    if (authenticationService.skipLogin() ||
-        authenticationService.isSessionActive(secureSharedPreference.retrieveSessionToken())
-    ) {
-      _navigateToHome.value = true
-    } else {
-      authenticationService.loadAccount(
-        accountManager,
-        secureSharedPreference.retrieveSessionUsername(),
-        this
-      )
+    viewModelScope.launch(dispatcher.io()) {
+      if (authenticationService.skipLogin() ||
+          authenticationService.isSessionActive(secureSharedPreference.retrieveSessionToken())
+      ) {
+        _navigateToHome.postValue(true)
+      } else {
+        authenticationService.loadAccount(
+          accountManager,
+          secureSharedPreference.retrieveSessionUsername(),
+          this@LoginViewModel
+        )
+      }
     }
   }
 

@@ -122,8 +122,6 @@ dependencies {
 
     implementation deps.appcompat
     implementation deps.constraint_layout
-    implementation deps.coroutines.android
-    implementation deps.coroutines.core
     implementation deps.kotlin.stdlib
     implementation deps.lifecycle.extensions
     implementation deps.lifecycle.livedata_ktx

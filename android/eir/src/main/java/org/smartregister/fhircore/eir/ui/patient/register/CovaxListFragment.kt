@@ -40,7 +40,6 @@ import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.ui.base.model.PatientItem
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsFormConfig
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
-import org.smartregister.fhircore.eir.viewmodel.CovaxListViewModel
 import timber.log.Timber
 
 const val PAGE_COUNT = 7

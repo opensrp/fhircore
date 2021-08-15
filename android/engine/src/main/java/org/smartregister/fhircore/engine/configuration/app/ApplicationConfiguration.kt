@@ -4,11 +4,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ApplicationConfiguration(
-    var oauthServerBaseUrl: String,
-    var fhirServerBaseUrl: String,
-    var clientId: String = "",
-    var clientSecret: String = "",
-    var scope: String = "openid"
+  var oauthServerBaseUrl: String,
+  var fhirServerBaseUrl: String,
+  var clientId: String = "",
+  var clientSecret: String = "",
+  var scope: String = "openid",
+  var languages: List<String> = listOf("en")
 )
 
 /**
@@ -22,17 +23,21 @@ data class ApplicationConfiguration(
  * @param clientSecret Sets the client secret issued to the client during the registration process
  * on keycloak
  * @param scope Sets the scope of the access request. It may have multiple space delimited values
+ * @param languages Sets the languages for the app
  */
 fun applicationConfigurationOf(
-    oauthServerBaseUrl: String,
-    fhirServerBaseUrl: String = "",
-    clientId: String,
-    clientSecret: String,
-    scope: String = "openid"
+  oauthServerBaseUrl: String = "",
+  fhirServerBaseUrl: String = "",
+  clientId: String = "",
+  clientSecret: String = "",
+  scope: String = "openid",
+  languages: List<String> = listOf("en")
 ): ApplicationConfiguration =
-    ApplicationConfiguration(
-        oauthServerBaseUrl = oauthServerBaseUrl,
-        fhirServerBaseUrl = fhirServerBaseUrl,
-        clientId = clientId,
-        clientSecret = clientSecret,
-        scope = scope)
+  ApplicationConfiguration(
+    oauthServerBaseUrl = oauthServerBaseUrl,
+    fhirServerBaseUrl = fhirServerBaseUrl,
+    clientId = clientId,
+    clientSecret = clientSecret,
+    scope = scope,
+    languages = languages
+  )

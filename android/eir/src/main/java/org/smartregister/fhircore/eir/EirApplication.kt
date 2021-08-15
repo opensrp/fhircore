@@ -25,15 +25,33 @@ import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.Sync
 import java.util.concurrent.TimeUnit
+import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
 class EirApplication : Application(), ConfigurableApplication {
 
   override lateinit var applicationConfiguration: ApplicationConfiguration
+
+  override val authenticationService: AuthenticationService
+    get() = EirAuthenticationService(applicationContext)
+
+  override val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
+
+  override val resourceSyncParams: Map<ResourceType, Map<String, String>>
+    get() =
+      mapOf(
+        ResourceType.Patient to emptyMap(),
+        ResourceType.Immunization to emptyMap(),
+        ResourceType.Questionnaire to emptyMap(),
+        ResourceType.StructureMap to mapOf(),
+        ResourceType.RelatedPerson to mapOf()
+      )
 
   override fun onCreate() {
     super.onCreate()
@@ -53,9 +71,6 @@ class EirApplication : Application(), ConfigurableApplication {
     }
   }
 
-  // only initiate the FhirEngine when used for the first time, not when the app is created
-  private val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
-
   private fun constructFhirEngine(): FhirEngine {
     Sync.periodicSync<EirFhirSyncWorker>(
       this,
@@ -68,8 +83,6 @@ class EirApplication : Application(), ConfigurableApplication {
     return FhirEngineBuilder(this).build()
   }
 
-  fun eirConfigurations() = this.applicationConfiguration
-
   companion object {
 
     private lateinit var eirApplication: EirApplication
@@ -78,6 +91,9 @@ class EirApplication : Application(), ConfigurableApplication {
 
     fun getContext() = eirApplication
   }
+
+  override val secureSharedPreference: SecureSharedPreference
+    get() = SecureSharedPreference(applicationContext)
 
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
     this.applicationConfiguration = applicationConfiguration

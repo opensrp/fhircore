@@ -24,8 +24,8 @@ import com.google.android.fhir.search.search
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.eir.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.eir.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class PatientDetailsViewModel(
   var dispatcher: DispatcherProvider = DefaultDispatcherProvider,

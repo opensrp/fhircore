@@ -3,9 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <group
-        android:id="@+id/grp_clients"
-        android:checkableBehavior="single">
-    </group>
+        android:id="@+id/menu_items_group"
+        android:checkableBehavior="single"></group>
 
     <group
         android:id="@+id/grp_logout"

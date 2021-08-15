@@ -24,10 +24,10 @@ import org.smartregister.fhircore.eir.util.Utils
 class EirFhirSyncWorker(private val appContext: Context, workerParams: WorkerParameters) :
   FhirSyncWorker(appContext, workerParams) {
 
-  override fun getSyncData() = Utils.buildResourceSyncParams()
+  override fun getSyncData() = EirApplication.getContext().resourceSyncParams
 
   override fun getDataSource() =
-    Utils.buildDatasource(appContext, EirApplication.getContext().eirConfigurations())
+    Utils.buildDatasource(appContext, EirApplication.getContext().applicationConfiguration)
 
   override fun getFhirEngine() = EirApplication.fhirEngine(applicationContext)
 }

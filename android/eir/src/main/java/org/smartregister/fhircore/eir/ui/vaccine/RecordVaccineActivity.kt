@@ -37,10 +37,10 @@ import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.ui.base.BaseActivity
 import org.smartregister.fhircore.eir.ui.base.model.PatientItem
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsFormConfig
+import org.smartregister.fhircore.eir.ui.patient.register.CovaxListViewModel
+import org.smartregister.fhircore.eir.ui.patient.register.PatientListViewModelFactory
 import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireViewModel
 import org.smartregister.fhircore.eir.util.Utils
-import org.smartregister.fhircore.eir.viewmodel.CovaxListViewModel
-import org.smartregister.fhircore.eir.viewmodel.PatientListViewModelFactory
 
 class RecordVaccineActivity : BaseActivity() {
 

@@ -18,7 +18,6 @@ data class RegisterViewConfiguration(
   var switchLanguages: Boolean = true,
   var showScanQRCode: Boolean = true,
   var showNewClientButton: Boolean = true,
-  var sideMenuOptions: List<String> = listOf()
 ) : Configuration
 
 /**
@@ -34,7 +33,6 @@ data class RegisterViewConfiguration(
  * @param switchLanguages Hides or shows the language picker menu option
  * @param showScanQRCode Hides or shows the scan QR code button
  * @param showNewClientButton Hides or shows the button for register new client
- * @param sideMenuOptions Sets menu items for the drawer
  */
 @Stable
 fun Context.registerViewConfigurationOf(
@@ -47,7 +45,7 @@ fun Context.registerViewConfigurationOf(
   switchLanguages: Boolean = true,
   showScanQRCode: Boolean = true,
   showNewClientButton: Boolean = true,
-  sideMenuOptions: List<String> = listOf()
+  languages: List<String> = listOf("en")
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
     appTitle = appTitle,
@@ -59,6 +57,5 @@ fun Context.registerViewConfigurationOf(
     switchLanguages = switchLanguages,
     showScanQRCode = showScanQRCode,
     showNewClientButton = showNewClientButton,
-    sideMenuOptions = sideMenuOptions
   )
 }

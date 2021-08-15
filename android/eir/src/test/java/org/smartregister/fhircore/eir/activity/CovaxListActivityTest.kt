@@ -52,10 +52,10 @@ import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.eir.fragment.CovaxListFragment
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
-import org.smartregister.fhircore.eir.ui.base.model.Language
 import org.smartregister.fhircore.eir.ui.patient.register.CovaxListActivity
 import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.auth.AuthenticationService
+import org.smartregister.fhircore.engine.ui.model.Language
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
 @Config(shadows = [FhirApplicationShadow::class])

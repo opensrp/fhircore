@@ -18,5 +18,8 @@
     <string name="password_input_hint">Enter password</string>
     <string name="login_call_fail_error_message">Failed to verify credentials from server. Check your internet connection</string>
     <string name="userinfo_call_fail_error_message">Failed to get user info from server. Check your internet connection</string>
-
+    <string name="select_language">Select Language</string>
+    <string name="logout_user">Log out as %1$s</string>
+    <string name="sync_completed">Sync complete</string>
+    <string name="syncing">Syncing&#8230;</string>
 </resources>

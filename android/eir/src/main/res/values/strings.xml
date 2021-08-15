@@ -56,8 +56,6 @@
 
     <string name="edit">Edit</string>
     <string name="str_save">Save</string>
-    <string name="select_language">Select Language</string>
-
 
     <string name="record_vaccine">Record Vaccine</string>
     <string name="no_vaccine_received">No vaccine received</string>
@@ -84,7 +82,6 @@
     <string name="please_select_vaccine">Please Select Vaccine</string>
 
     <string name="at_risk">At Risk</string>
-    <string name="syncing">Syncing&#8230;</string>
     <string name="vaccine">Vaccine</string>
     <string name="provider">Provider</string>
     <string name="vaccine_certificate">Vaccine Certificate</string>

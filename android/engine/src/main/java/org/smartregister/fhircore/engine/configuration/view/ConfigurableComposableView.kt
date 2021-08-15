@@ -1,6 +1,7 @@
 package org.smartregister.fhircore.engine.configuration.view
 
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 
 /**
  * [ConfigurableComposableView] interface provides the contract for configuring Composable views A
@@ -15,4 +16,10 @@ interface ConfigurableComposableView<T : Configuration> {
    * default configurations of their base classes implementing this method to provide their own.
    */
   fun configureViews(viewConfiguration: T)
+
+  /**
+   * Return application instance for the Activity as [ConfigurableApplication]. App will crash with
+   * an error if application does not implement the configurable interface
+   */
+  fun configurableApplication(): ConfigurableApplication
 }

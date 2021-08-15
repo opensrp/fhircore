@@ -14,16 +14,8 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.eir.util
+package org.smartregister.fhircore.engine.ui.model
 
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-
-interface DispatcherProvider {
-  fun main(): CoroutineDispatcher = Dispatchers.Main
-  fun default(): CoroutineDispatcher = Dispatchers.Default
-  fun io(): CoroutineDispatcher = Dispatchers.IO
-  fun unconfined(): CoroutineDispatcher = Dispatchers.Unconfined
+data class Language(val tag: String, val displayName: String) {
+  override fun toString() = displayName
 }
-
-object DefaultDispatcherProvider : DispatcherProvider

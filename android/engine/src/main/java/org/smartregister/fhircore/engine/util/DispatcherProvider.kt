@@ -14,8 +14,16 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.eir.ui.base.model
+package org.smartregister.fhircore.engine.util
 
-data class Language(val tag: String, val displayName: String) {
-  override fun toString() = displayName
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+
+interface DispatcherProvider {
+  fun main(): CoroutineDispatcher = Dispatchers.Main
+  fun default(): CoroutineDispatcher = Dispatchers.Default
+  fun io(): CoroutineDispatcher = Dispatchers.IO
+  fun unconfined(): CoroutineDispatcher = Dispatchers.Unconfined
 }
+
+object DefaultDispatcherProvider : DispatcherProvider

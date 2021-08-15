@@ -68,8 +68,8 @@ import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsFormConfig
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsFragment
 import org.smartregister.fhircore.eir.ui.patient.register.CovaxListActivity
+import org.smartregister.fhircore.eir.ui.patient.register.CovaxListViewModel
 import org.smartregister.fhircore.eir.ui.patient.register.NavigationDirection
-import org.smartregister.fhircore.eir.viewmodel.CovaxListViewModel
 
 /**
  * The covaxListActivity should be removed from this test in favour FragmentScenario once the

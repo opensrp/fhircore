@@ -28,9 +28,8 @@ import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
 
 class EirLoginActivity : BaseLoginActivity() {
 
-  override fun getAuthenticationServiceImpl(): AuthenticationService {
-    return EirAuthenticationService(this)
-  }
+  override val authenticationService: AuthenticationService
+    get() = EirAuthenticationService(this)
 
   override fun navigateToHome() {
     val intent = Intent(this, PatientRegisterActivity::class.java)

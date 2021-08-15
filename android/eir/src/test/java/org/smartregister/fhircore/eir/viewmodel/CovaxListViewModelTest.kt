@@ -44,6 +44,7 @@ import org.smartregister.fhircore.eir.domain.Pagination
 import org.smartregister.fhircore.eir.model.PatientItem
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.eir.ui.base.model.VaccineStatus
+import org.smartregister.fhircore.eir.ui.patient.register.CovaxListViewModel
 import org.smartregister.fhircore.eir.util.Utils
 import org.smartregister.fhircore.eir.util.Utils.makeItReadable
 

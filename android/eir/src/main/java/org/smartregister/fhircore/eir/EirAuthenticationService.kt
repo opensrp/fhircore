@@ -17,15 +17,15 @@
 package org.smartregister.fhircore.eir
 
 import android.content.Context
-import org.smartregister.fhircore.eir.ui.login.LoginActivity
+import org.smartregister.fhircore.eir.ui.login.EirLoginActivity
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 
 class EirAuthenticationService(override val context: Context) : AuthenticationService(context) {
-  private val eirConfigurations = EirApplication.getContext().eirConfigurations()
+  private val eirConfigurations = EirApplication.getContext().applicationConfiguration
 
   override fun skipLogin() = BuildConfig.DEBUG && BuildConfig.SKIP_AUTH_CHECK
 
-  override fun getLoginActivityClass() = LoginActivity::class.java
+  override fun getLoginActivityClass() = EirLoginActivity::class.java
 
   override fun getAccountType() = context.getString(R.string.authenticator_account_type)
 

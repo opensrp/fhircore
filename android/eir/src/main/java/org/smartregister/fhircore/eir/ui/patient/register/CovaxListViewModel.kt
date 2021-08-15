@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.eir.viewmodel
+package org.smartregister.fhircore.eir.ui.patient.register
 
 import android.app.Application
 import android.content.Context
@@ -38,7 +38,6 @@ import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Immunization
@@ -52,9 +51,8 @@ import org.smartregister.fhircore.eir.ui.base.model.PatientStatus
 import org.smartregister.fhircore.eir.ui.base.model.PatientVaccineSummary
 import org.smartregister.fhircore.eir.ui.base.model.VaccineStatus
 import org.smartregister.fhircore.eir.ui.base.model.toDetailsCard
-import org.smartregister.fhircore.eir.ui.patient.register.PAGE_COUNT
-import org.smartregister.fhircore.eir.ui.patient.register.Pagination
 import org.smartregister.fhircore.eir.util.Utils
+import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 
 /**
  * The ViewModel helper class for PatientItemRecyclerViewAdapter, that is responsible for preparing
@@ -202,16 +200,17 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
       // fhirEngine.syncUpload()
 
       /** Download Immediately from the server */
-      GlobalScope.launch {
-        Sync.oneTimeSync(
-          fhirEngine,
-          Utils.buildDatasource(getApplication(), EirApplication.getContext().eirConfigurations()),
-          Utils.buildResourceSyncParams()
-        )
-        searchResults("", 0, PAGE_COUNT)
+      Sync.oneTimeSync(
+        fhirEngine,
+        Utils.buildDatasource(
+          getApplication(),
+          EirApplication.getContext().applicationConfiguration
+        ),
+        (getApplication<Application>() as ConfigurableApplication).resourceSyncParams
+      )
+      searchResults("", 0, PAGE_COUNT)
 
-        if (showLoader) loadingListObservable.postValue(0)
-      }
+      if (showLoader) loadingListObservable.postValue(0)
     }
   }
 

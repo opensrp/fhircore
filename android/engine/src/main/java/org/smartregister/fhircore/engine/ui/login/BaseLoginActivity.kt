@@ -5,10 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
 import org.smartregister.fhircore.engine.auth.AuthenticationService
+import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.viewmodel.createFactory
 
 abstract class BaseLoginActivity :
@@ -16,12 +18,11 @@ abstract class BaseLoginActivity :
 
   private lateinit var loginViewModel: LoginViewModel
 
-  protected lateinit var authenticationService: AuthenticationService
+  abstract val authenticationService: AuthenticationService
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
-    authenticationService = getAuthenticationServiceImpl()
+    application.assertIsConfigurable()
 
     loginViewModel =
       ViewModelProvider(
@@ -46,7 +47,9 @@ abstract class BaseLoginActivity :
     loginViewModel.updateViewConfigurations(viewConfiguration)
   }
 
-  abstract fun getAuthenticationServiceImpl(): AuthenticationService
-
   abstract fun navigateToHome()
+
+  override fun configurableApplication(): ConfigurableApplication {
+    return application as ConfigurableApplication
+  }
 }

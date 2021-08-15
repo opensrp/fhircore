@@ -28,8 +28,8 @@ import java.util.Locale
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.ui.base.model.Language
 import org.smartregister.fhircore.eir.util.Utils
+import org.smartregister.fhircore.engine.ui.model.Language
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 

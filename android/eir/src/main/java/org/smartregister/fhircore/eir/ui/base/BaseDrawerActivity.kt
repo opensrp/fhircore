@@ -36,10 +36,10 @@ import java.util.Locale
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.EirAuthenticationService
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.ui.base.model.Language
 import org.smartregister.fhircore.eir.ui.base.viewmodel.BaseViewModel
 import org.smartregister.fhircore.eir.util.Utils
 import org.smartregister.fhircore.engine.auth.AuthenticationService
+import org.smartregister.fhircore.engine.ui.model.Language
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
