@@ -22,7 +22,7 @@ import timber.log.Timber
  * providing [registerViewConfiguration] variable which is a [MutableLiveData] that can be observed
  * on when UI configuration changes.
  */
-class BaseRegisterViewModel(
+class RegisterViewModel(
   application: Application,
   private val applicationConfiguration: ApplicationConfiguration,
   registerViewConfiguration: RegisterViewConfiguration,

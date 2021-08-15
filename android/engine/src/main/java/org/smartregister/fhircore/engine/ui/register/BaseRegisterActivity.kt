@@ -4,12 +4,14 @@ import android.accounts.AccountManager
 import android.app.Activity
 import android.app.AlertDialog
 import android.os.Bundle
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
@@ -24,6 +26,7 @@ import org.smartregister.fhircore.engine.configuration.view.registerViewConfigur
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
 import org.smartregister.fhircore.engine.ui.model.Language
+import org.smartregister.fhircore.engine.ui.model.SideMenuOption
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.refresh
@@ -37,7 +40,7 @@ abstract class BaseRegisterActivity :
   NavigationView.OnNavigationItemSelectedListener,
   ConfigurableView<RegisterViewConfiguration> {
 
-  private lateinit var baseRegisterViewModel: BaseRegisterViewModel
+  private lateinit var registerViewModel: RegisterViewModel
 
   private lateinit var registerActivityBinding: BaseRegisterActivityBinding
 
@@ -45,24 +48,30 @@ abstract class BaseRegisterActivity :
 
   override val configurableViews: Map<String, View> = mutableMapOf()
 
+  private var mainRegisterSideMenuOption: SideMenuOption? = null
+
+  private var selectedMenuOption: SideMenuOption? = null
+
+  private lateinit var sideMenuOptionMap: Map<Int, SideMenuOption>
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     application.assertIsConfigurable()
 
-    baseRegisterViewModel =
+    registerViewModel =
       ViewModelProvider(
         this,
-        BaseRegisterViewModel(
+        RegisterViewModel(
             application = application,
             applicationConfiguration = configurableApplication().applicationConfiguration,
             registerViewConfiguration = registerViewConfigurationOf(),
           )
           .createFactory()
-      )[BaseRegisterViewModel::class.java]
+      )[RegisterViewModel::class.java]
 
-    baseRegisterViewModel.registerViewConfiguration.observe(this, this::setupConfigurableViews)
+    registerViewModel.registerViewConfiguration.observe(this, this::setupConfigurableViews)
 
-    baseRegisterViewModel.run {
+    registerViewModel.run {
       loadLanguages()
       selectedLanguage.observe(
         this@BaseRegisterActivity,
@@ -76,7 +85,7 @@ abstract class BaseRegisterActivity :
 
     registerActivityBinding = DataBindingUtil.setContentView(this, R.layout.base_register_activity)
     registerActivityBinding.apply {
-      this.setVariable(BR.registerViewModel, baseRegisterViewModel)
+      this.setVariable(BR.registerViewModel, registerViewModel)
       this.lifecycleOwner = this@BaseRegisterActivity
     }
 
@@ -87,6 +96,7 @@ abstract class BaseRegisterActivity :
   }
 
   private fun setUpViews() {
+    setupSideMenu()
     with(registerActivityBinding) {
       toolbarLayout.btnDrawerMenu.setOnClickListener { manipulateDrawer(open = true) }
       btnRegisterNewClient.setOnClickListener { registerClient() }
@@ -103,8 +113,38 @@ abstract class BaseRegisterActivity :
     registerActivityBinding.tvSync.setOnClickListener {
       showToast(getString(R.string.syncing))
       manipulateDrawer(open = false)
-      baseRegisterViewModel.syncData()
+      registerViewModel.syncData()
     }
+  }
+
+  private fun setupSideMenu() {
+    sideMenuOptionMap = sideMenuOptions().associateBy { it.itemId }
+    if (sideMenuOptionMap.size == 1) selectedMenuOption = sideMenuOptionMap.values.elementAt(0)
+    val menu = registerActivityBinding.navView.menu
+
+    sideMenuOptions().forEach {
+      menu.add(R.id.menu_group_clients, it.itemId, Menu.NONE, it.titleResource).apply {
+        icon = it.iconResource
+        actionView = layoutInflater.inflate(R.layout.drawable_menu_item_layout, null, false)
+      }
+      if (it.opensMainRegister) {
+        mainRegisterSideMenuOption = sideMenuOptionMap[it.itemId]
+        selectedMenuOption = mainRegisterSideMenuOption
+      }
+    }
+
+    // Add language and logout menu items
+    menu.add(R.id.menu_group_app_actions, R.id.menu_item_language, 0, R.string.language).apply {
+      icon =
+        ContextCompat.getDrawable(this@BaseRegisterActivity, R.drawable.ic_outline_language_white)
+      actionView = layoutInflater.inflate(R.layout.drawer_menu_language_layout, null, false)
+    }
+    menu.add(R.id.menu_group_app_actions, R.id.menu_item_logout, 1, R.string.logout_as_user).apply {
+      icon = ContextCompat.getDrawable(this@BaseRegisterActivity, R.drawable.ic_logout_white)
+    }
+    menu.add(R.id.menu_group_empty, MENU_GROUP_EMPTY, 2, "") // Hack to add last menu divider
+
+    updateRegisterTitle()
   }
 
   private fun manipulateDrawer(open: Boolean = false) {
@@ -115,7 +155,7 @@ abstract class BaseRegisterActivity :
   }
 
   override fun configureViews(viewConfiguration: RegisterViewConfiguration) {
-    baseRegisterViewModel.updateViewConfigurations(viewConfiguration)
+    registerViewModel.updateViewConfigurations(viewConfiguration)
   }
 
   override fun setupConfigurableViews(viewConfiguration: RegisterViewConfiguration) {
@@ -138,17 +178,31 @@ abstract class BaseRegisterActivity :
     }
   }
 
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    return onSideMenuOptionSelected(item)
-  }
-
   override fun onNavigationItemSelected(item: MenuItem): Boolean {
+    selectedMenuOption = sideMenuOptionMap[item.itemId]
+    updateRegisterTitle()
+
     when (item.itemId) {
+      mainRegisterSideMenuOption?.itemId -> {
+        registerActivityBinding.listPager.currentItem = 0
+        manipulateDrawer(open = false)
+      }
       R.id.menu_item_language -> renderSelectLanguageDialog(this)
-      R.id.menu_item_logout ->
+      R.id.menu_item_logout -> {
         configurableApplication().authenticationService.logout(AccountManager.get(this))
+        manipulateDrawer(open = false)
+      }
+      else -> {
+        manipulateDrawer(open = false)
+        return onSideMenuOptionSelected(item)
+      }
     }
     return true
+  }
+
+  private fun updateRegisterTitle() {
+    registerActivityBinding.toolbarLayout.tvClientsListTitle.text =
+      selectedMenuOption?.titleResource?.let { getString(it) }
   }
 
   private fun renderSelectLanguageDialog(context: Activity): AlertDialog {
@@ -161,7 +215,7 @@ abstract class BaseRegisterActivity :
     val dialog =
       builder
         .setAdapter(adapter) { _, index ->
-          val language = baseRegisterViewModel.languages[index]
+          val language = registerViewModel.languages[index]
           refreshSelectedLanguage(language, context)
         }
         .create()
@@ -171,7 +225,7 @@ abstract class BaseRegisterActivity :
 
   @VisibleForTesting
   fun getLanguageArrayAdapter() =
-    ArrayAdapter(this, android.R.layout.simple_list_item_1, baseRegisterViewModel.languages)
+    ArrayAdapter(this, android.R.layout.simple_list_item_1, registerViewModel.languages)
 
   @VisibleForTesting fun getAlertDialogBuilder() = AlertDialog.Builder(this)
 
@@ -189,9 +243,11 @@ abstract class BaseRegisterActivity :
       .text = language.displayName
   }
 
+  abstract fun sideMenuOptions(): List<SideMenuOption>
+
   /**
    * Abstract method to be implemented by the subclass to provide actions for the menu [item]
-   * options
+   * options. Refer to the selected menu item using the view tag that was set by [sideMenuOptions]
    */
   abstract fun onSideMenuOptionSelected(item: MenuItem): Boolean
 
@@ -202,5 +258,8 @@ abstract class BaseRegisterActivity :
 
   override fun configurableApplication(): ConfigurableApplication {
     return application as ConfigurableApplication
+  }
+  companion object {
+    const val MENU_GROUP_EMPTY = 1111
   }
 }

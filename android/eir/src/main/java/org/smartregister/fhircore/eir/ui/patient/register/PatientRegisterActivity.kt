@@ -18,8 +18,10 @@ package org.smartregister.fhircore.eir.ui.patient.register
 
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.core.content.ContextCompat
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
+import org.smartregister.fhircore.engine.ui.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 
 class PatientRegisterActivity : BaseRegisterActivity() {
@@ -28,9 +30,21 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     configureViews(registerViewConfigurationOf().apply { appTitle = getString(R.string.covax_app) })
   }
 
-  override fun onSideMenuOptionSelected(item: MenuItem): Boolean {
-    return true
-  }
+  override fun sideMenuOptions(): List<SideMenuOption> =
+    listOf(
+      SideMenuOption(
+        itemId = COVAX_MENU_OPTION,
+        titleResource = R.string.client_list_title_covax,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
+        opensMainRegister = false
+      )
+    )
+
+  override fun onSideMenuOptionSelected(item: MenuItem) = true
 
   override fun registerClient() {}
+
+  companion object {
+    const val COVAX_MENU_OPTION = 1000
+  }
 }
