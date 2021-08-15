@@ -22,4 +22,5 @@
     <string name="logout_user">Log out as %1$s</string>
     <string name="sync_completed">Sync complete</string>
     <string name="syncing">Syncing&#8230;</string>
+    <string name="sync_failed">Sync failed. Check internet connection or try again later.</string>
 </resources>

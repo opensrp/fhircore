@@ -82,6 +82,7 @@ abstract class BaseRegisterActivity :
         this@BaseRegisterActivity,
         {
           if (it) showToast(getString(R.string.sync_completed))
+          else showToast(getString(R.string.sync_failed))
           updateEntityCounts()
         }
       )
