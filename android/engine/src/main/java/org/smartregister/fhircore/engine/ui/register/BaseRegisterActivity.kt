@@ -15,8 +15,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.google.android.material.navigation.NavigationView
 import java.util.Locale
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.BR
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
@@ -63,7 +65,6 @@ abstract class BaseRegisterActivity :
         this,
         RegisterViewModel(
             application = application,
-            applicationConfiguration = configurableApplication().applicationConfiguration,
             registerViewConfiguration = registerViewConfigurationOf(),
           )
           .createFactory()
@@ -77,9 +78,12 @@ abstract class BaseRegisterActivity :
         this@BaseRegisterActivity,
         { updateLanguage(Language(it, Locale.forLanguageTag(it).displayName)) }
       )
-      dataSynced.observe(
+      syncComplete.observe(
         this@BaseRegisterActivity,
-        { if (it) showToast(getString(R.string.sync_completed)) }
+        {
+          if (it) showToast(getString(R.string.sync_completed))
+          updateEntityCounts()
+        }
       )
     }
 
@@ -145,6 +149,8 @@ abstract class BaseRegisterActivity :
     menu.add(R.id.menu_group_empty, MENU_GROUP_EMPTY, 2, "") // Hack to add last menu divider
 
     updateRegisterTitle()
+
+    updateEntityCounts()
   }
 
   private fun manipulateDrawer(open: Boolean = false) {
@@ -256,10 +262,30 @@ abstract class BaseRegisterActivity :
    */
   abstract fun registerClient()
 
+  /**
+   * Implement [customEntityCount] to count other resource types other than Patient resource. Use
+   * the class type of the entity specified in [sideMenuOption]. This is useful for complex count
+   * queries
+   */
+  protected open fun customEntityCount(sideMenuOption: SideMenuOption): Long = 0
+
   override fun configurableApplication(): ConfigurableApplication {
     return application as ConfigurableApplication
   }
+
   companion object {
     const val MENU_GROUP_EMPTY = 1111
+  }
+
+  private fun updateEntityCounts() {
+    sideMenuOptions().forEach { menuOption ->
+      registerViewModel.viewModelScope.launch(registerViewModel.dispatcher.main()) {
+        var count = registerViewModel.performCount(menuOption)
+        if (count == -1L) count = customEntityCount(menuOption)
+        val counter =
+          registerActivityBinding.navView.menu.findItem(menuOption.itemId).actionView as TextView
+        counter.text = if (count > 0) count.toString() else null
+      }
+    }
   }
 }

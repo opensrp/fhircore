@@ -23,6 +23,7 @@ import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
+import org.smartregister.fhircore.engine.util.extension.showToast
 
 class PatientRegisterActivity : BaseRegisterActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,9 +41,16 @@ class PatientRegisterActivity : BaseRegisterActivity() {
       )
     )
 
-  override fun onSideMenuOptionSelected(item: MenuItem) = true
+  override fun onSideMenuOptionSelected(item: MenuItem): Boolean {
+    showToast("Clicked ${item.title}")
+    return true
+  }
 
   override fun registerClient() {}
+
+  override fun customEntityCount(sideMenuOption: SideMenuOption): Long {
+    return 0
+  }
 
   companion object {
     const val COVAX_MENU_OPTION = 1000
