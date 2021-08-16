@@ -77,9 +77,6 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
     }
 
     findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
-
-    // todo bypass the structure map
-    intent.putExtra(QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR, "true")
   }
 
   override fun getContentLayout(): Int {
@@ -236,7 +233,6 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
     const val QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID = "questionnaire_preassigned_item_id"
     const val QUESTIONNAIRE_ARG_RESPONSE_KEY = "questionnaire_response_item_id"
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
-    const val QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR = "bypass-sdk-extractor"
   }
 
   override fun onClick(v: View?) {
