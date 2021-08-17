@@ -54,6 +54,7 @@ import org.smartregister.fhircore.model.PatientVaccineSummary
 import org.smartregister.fhircore.model.VaccineStatus
 import org.smartregister.fhircore.model.toDetailsCard
 import org.smartregister.fhircore.util.Utils
+import org.smartregister.fhircore.util.Utils.addWHOIdentifierFilter
 
 /**
  * The ViewModel helper class for PatientItemRecyclerViewAdapter, that is responsible for preparing
@@ -74,23 +75,7 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
       loadingListObservable.postValue(1)
       var totalCount = count(query).toInt()
 
-      val searchResults: List<Patient> =
-        fhirEngine.search {
-          Utils.addBasePatientFilter(this)
-
-          apply {
-            if (query?.isNotBlank() == true) {
-              filter(Patient.NAME) {
-                modifier = StringFilterModifier.CONTAINS
-                value = query.trim()
-              }
-            }
-          }
-
-          sort(Patient.GIVEN, Order.ASCENDING)
-          count = totalCount
-          from = (page * pageSize)
-        }
+      val searchResults: List<Patient> = performRegisterSearch(query, totalCount, page, pageSize)
 
       var patients = searchResults.map { it.toPatientItem(viewModelScope) }
       patients.forEach { it.vaccineStatus = getPatientStatus(it.logicalId) }
@@ -105,6 +90,43 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
         Pair(patients, Pagination(totalItems = totalCount, pageSize = pageSize, currentPage = page))
       )
     }
+  }
+
+  private suspend fun performRegisterSearch(
+    query: String?,
+    totalCount: Int,
+    page: Int,
+    pageSize: Int
+  ): List<Patient> {
+    val nameSearchResults: List<Patient> =
+      fhirEngine.search {
+        Utils.addBasePatientFilter(this)
+
+        apply {
+          if (query?.isNotBlank() == true) {
+            filter(Patient.NAME) {
+              modifier = StringFilterModifier.CONTAINS
+              value = query.trim()
+            }
+          }
+        }
+
+        sort(Patient.GIVEN, Order.ASCENDING)
+        count = totalCount
+        from = (page * pageSize)
+      }
+
+    val identifierSearchResults: List<Patient> =
+      fhirEngine.search {
+        Utils.addBasePatientFilter(this)
+        addWHOIdentifierFilter(query)
+
+        sort(Patient.GIVEN, Order.ASCENDING)
+        count = totalCount
+        from = (page * pageSize)
+      }
+
+    return nameSearchResults + identifierSearchResults
   }
 
   suspend fun getPatientStatus(id: String): PatientStatus {
@@ -159,17 +181,25 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
   }
 
   suspend fun count(query: String?): Long {
-    return fhirEngine.count<Patient> {
-      Utils.addBasePatientFilter(this)
-      apply {
-        if (query?.isNotBlank() == true) {
-          filter(Patient.NAME) {
-            modifier = StringFilterModifier.CONTAINS
-            value = query.trim()
+    val nameSearchResultsCount =
+      fhirEngine.count<Patient> {
+        Utils.addBasePatientFilter(this)
+        apply {
+          if (query?.isNotBlank() == true) {
+            filter(Patient.NAME) {
+              modifier = StringFilterModifier.CONTAINS
+              value = query.trim()
+            }
           }
         }
       }
-    }
+    val identifierSearchResultsCount =
+      fhirEngine.count<Patient> {
+        Utils.addBasePatientFilter(this)
+        addWHOIdentifierFilter(query)
+      }
+
+    return nameSearchResultsCount + identifierSearchResultsCount
   }
 
   fun getPatientItem(id: String): LiveData<PatientItem> {
