@@ -28,12 +28,16 @@ import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import com.google.android.fhir.logicalId
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.activity.PatientDetailsActivity
 import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
@@ -104,22 +108,34 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
       questionnaireResponse
     )
 
-    val intent = Intent()
-    intent.putExtra(
-      QUESTIONNAIRE_ARG_RESPONSE_KEY,
-      parser.encodeResourceToString(questionnaireResponse)
-    )
+    val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
+    if (patientId != null && intent.getStringExtra(QUESTIONNAIRE_TITLE_KEY) == "Add Patient") {
+      val intent =
+        Intent(this, PatientDetailsActivity::class.java).apply {
+          putExtra(CovaxDetailView.COVAX_ARG_ITEM_ID, patientId)
+          flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+      finish()
+      this.startActivity(intent)
+    }
+    else {
+      val intent = Intent()
+      intent.putExtra(
+        QUESTIONNAIRE_ARG_RESPONSE_KEY,
+        parser.encodeResourceToString(questionnaireResponse)
+      )
 
-    setResult(RESULT_OK, intent)
-    finish()
+      setResult(RESULT_OK, intent)
+      finish()
+    }
   }
 
   private fun getQuestionnaire(): Questionnaire {
     val questionnaire = viewModel.questionnaire
     // TODO: Handle Pre Assigned Id Dynamically
-    /*intent.getStringExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID)?.let {
+    intent.getStringExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID)?.let {
       setBarcode(questionnaire, it, true)
-    }*/
+    }
     return questionnaire
   }
 
@@ -132,6 +148,11 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
         FhirApplication.fhirEngine(applicationContext).load(Patient::class.java, it)
       }
 
+      // TODO added temporary
+      patient.identifier = mutableListOf(Identifier().apply {
+        value = patient.logicalId
+      })
+
       patient.let {
         questionnaireResponse = runBlocking { ResourceMapper.populate(questionnaire, patient) }
       }
@@ -140,7 +161,7 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
     return questionnaireResponse
   }
 
-  /*private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
+  private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
     questionnaire.find(QUESTIONNAIRE_ARG_BARCODE_KEY)?.apply {
       initial =
         mutableListOf(Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(code)))
@@ -169,7 +190,7 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
     }
 
     return result
-  }*/
+  }
 
   companion object {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
@@ -185,7 +206,8 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
       bundleOf(
         Pair(QUESTIONNAIRE_TITLE_KEY, detailView.registrationQuestionnaireTitle),
         Pair(QUESTIONNAIRE_PATH_KEY, detailView.registrationQuestionnaireIdentifier),
-        Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier)
+        Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
+        Pair(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID, clientIdentifier)
       )
   }
 

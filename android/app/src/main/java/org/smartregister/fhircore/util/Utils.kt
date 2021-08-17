@@ -76,7 +76,7 @@ object Utils {
   fun addBasePatientFilter(search: Search) {
     search.filter(Patient.ADDRESS_CITY) {
       modifier = StringFilterModifier.CONTAINS
-      value = "NAIROBI"
+      value = "Rome"
     }
   }
 

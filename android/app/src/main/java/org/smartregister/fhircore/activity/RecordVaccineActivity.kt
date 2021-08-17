@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.activity
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
@@ -166,7 +167,17 @@ class RecordVaccineActivity : BaseActivity() {
       dialogInterface.dismiss()
       if (isSameAsFirstDose) {
         questionnaireViewModel.saveResource(immunization)
-        finish()
+        if (intent.hasExtra("from_home")) {
+          finish()
+        } else {
+          val intent =
+            Intent(this, PatientDetailsActivity::class.java).apply {
+              putExtra(CovaxDetailView.COVAX_ARG_ITEM_ID, patientItem.logicalId)
+              flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+          finish()
+          startActivity(intent)
+        }
       } else recordVaccine() // todo optimize flow... questionnaire should validate in itself
     }
     // Create the AlertDialog

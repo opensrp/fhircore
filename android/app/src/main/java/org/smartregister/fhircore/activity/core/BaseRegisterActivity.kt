@@ -88,7 +88,7 @@ abstract class BaseRegisterActivity : BaseDrawerActivity() {
     val questionnaireTitle =
       register.newRegistrationQuestionnaireTitle ?: getString(R.string.client_info)
 
-    startQuestionnaire(questionnaireTitle, questionnaireId, preAssignedId, true)
+    startQuestionnaire(questionnaireTitle, questionnaireId, preAssignedId)
   }
 
   private inner class PagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {

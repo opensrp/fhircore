@@ -187,6 +187,7 @@ class CovaxListFragment : Fragment() {
       .startActivity(
         Intent(requireContext(), RecordVaccineActivity::class.java).apply {
           putExtra(CovaxDetailView.COVAX_ARG_ITEM_ID, clientIdentifier)
+          putExtra("from_home", true)
         }
       )
   }

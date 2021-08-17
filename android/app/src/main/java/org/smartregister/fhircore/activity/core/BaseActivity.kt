@@ -89,11 +89,10 @@ abstract class BaseActivity : AppCompatActivity() {
   fun startQuestionnaire(
     questionnaireTitle: String,
     questionnaireId: String,
-    patientId: String?,
-    isNewPatient: Boolean
+    patientId: String?
   ) {
     startActivity(
-      buildQuestionnaireIntent(this, questionnaireTitle, questionnaireId, patientId, isNewPatient)
+      buildQuestionnaireIntent(this, questionnaireTitle, questionnaireId, patientId)
     )
   }
 
