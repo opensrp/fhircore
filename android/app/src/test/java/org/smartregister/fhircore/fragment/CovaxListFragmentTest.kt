@@ -21,8 +21,11 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Looper
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -62,8 +65,11 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.CovaxListActivity
 import org.smartregister.fhircore.activity.PatientDetailsActivity
+import org.smartregister.fhircore.activity.RecordVaccineActivity
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.domain.Pagination
+import org.smartregister.fhircore.domain.currentPageNumber
+import org.smartregister.fhircore.domain.totalPages
 import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
@@ -146,6 +152,16 @@ class CovaxListFragmentTest : FragmentRobolectricTest() {
       PatientDetailsActivity::class.java.name,
       startedActivityIntent.component?.className
     )
+
+    covaxListFragment.onPatientItemClicked(CovaxListFragment.Intention.RECORD_VACCINE, patientItem)
+
+    val expectedIntent = Intent(covaxListActivity, RecordVaccineActivity::class.java)
+    val actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+
+    Assert.assertEquals(logicalId, actualIntent.getStringExtra(CovaxDetailView.COVAX_ARG_ITEM_ID))
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test
@@ -403,6 +419,45 @@ class CovaxListFragmentTest : FragmentRobolectricTest() {
     ReflectionHelpers.callInstanceMethod<Any>(covaxListFragment, "setUpBarcodeScanner")
 
     verify(exactly = 1) { covaxListActivity.startRegistrationActivity(any()) }
+  }
+
+  @Test
+  fun testUpdatePaginationShouldVerifyAllBehaviours() {
+
+    callUpdatePaginationMethod(Pagination(10, 10, 0))
+    Assert.assertEquals(
+      View.GONE,
+      ReflectionHelpers.getField<RelativeLayout>(covaxListFragment, "paginationView").visibility
+    )
+
+    val pagination = Pagination(30, 10, 2)
+    callUpdatePaginationMethod(pagination)
+
+    Assert.assertEquals(
+      covaxListFragment.resources.getString(
+        R.string.str_page_info,
+        pagination.currentPageNumber(),
+        pagination.totalPages()
+      ),
+      ReflectionHelpers.getField<TextView>(covaxListFragment, "infoTextView").text.toString()
+    )
+
+    val nextButton = ReflectionHelpers.getField<Button>(covaxListFragment, "nextButton")
+    val prevButton = ReflectionHelpers.getField<Button>(covaxListFragment, "prevButton")
+
+    nextButton.performClick()
+    verify(exactly = 1) { patientListViewModel.searchResults(any(), eq(3), any()) }
+
+    prevButton.performClick()
+    verify(exactly = 1) { patientListViewModel.searchResults(any(), eq(1), any()) }
+  }
+
+  private fun callUpdatePaginationMethod(pagination: Pagination) {
+    ReflectionHelpers.callInstanceMethod<Any>(
+      covaxListFragment,
+      "updatePagination",
+      ReflectionHelpers.ClassParameter(Pagination::class.java, pagination)
+    )
   }
 
   override fun getFragmentScenario(): FragmentScenario<out Fragment> {
