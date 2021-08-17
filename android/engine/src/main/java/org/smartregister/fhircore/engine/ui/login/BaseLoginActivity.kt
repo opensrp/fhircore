@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
-import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration

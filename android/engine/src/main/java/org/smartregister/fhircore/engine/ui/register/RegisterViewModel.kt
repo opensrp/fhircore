@@ -14,6 +14,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplicati
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.model.Language
 import org.smartregister.fhircore.engine.ui.model.SideMenuOption
+import org.smartregister.fhircore.engine.ui.model.SyncStatus
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -37,7 +38,7 @@ class RegisterViewModel(
 
   lateinit var languages: List<Language>
 
-  val syncComplete = MutableLiveData(false)
+  val syncStatus = MutableLiveData(SyncStatus.NOT_SYNCING)
 
   var selectedLanguage =
     MutableLiveData(
@@ -58,10 +59,10 @@ class RegisterViewModel(
     viewModelScope.launch(dispatcher.io()) {
       try {
         getApplication<Application>().syncData(applicationConfiguration)
-        syncComplete.postValue(true)
+        syncStatus.postValue(SyncStatus.COMPLETE)
       } catch (exception: Exception) {
         Timber.e("Error syncing data", exception)
-        syncComplete.postValue(false)
+        syncStatus.postValue(SyncStatus.FAILED)
       }
     }
 

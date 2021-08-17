@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.eir.ui.base.model
 
 import org.smartregister.fhircore.eir.util.Utils
+import org.smartregister.fhircore.engine.data.local.repository.model.PatientVaccineStatus
 
 /** The Patient's details for display purposes. */
 data class PatientItem(
@@ -28,7 +29,7 @@ data class PatientItem(
   val phone: String,
   val logicalId: String,
   val risk: String,
-  var vaccineStatus: PatientStatus? = null,
+  var vaccineStatus: PatientVaccineStatus? = null,
   var vaccineSummary: PatientVaccineSummary? = null,
   val lastSeen: String
 ) {
@@ -48,7 +49,5 @@ fun PatientItem.getPatientAgeGender(): PatientAgeGender {
 }
 
 data class PatientAgeGender(val age: Int, val genderAbbr: Char)
-
-data class PatientStatus(val status: VaccineStatus, val details: String)
 
 data class PatientVaccineSummary(val doseNumber: Int, val initialDose: String)

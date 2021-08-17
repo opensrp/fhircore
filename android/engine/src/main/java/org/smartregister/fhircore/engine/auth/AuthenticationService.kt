@@ -34,8 +34,8 @@ import io.jsonwebtoken.UnsupportedJwtException
 import java.util.Date
 import okhttp3.ResponseBody
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.data.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
+import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import retrofit2.Call
 import retrofit2.Callback

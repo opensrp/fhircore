@@ -34,8 +34,8 @@ import org.smartregister.fhircore.eir.RobolectricTest
 import org.smartregister.fhircore.eir.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.auth.AuthenticationService
-import org.smartregister.fhircore.engine.data.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
+import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import retrofit2.Call
 import retrofit2.Response
 

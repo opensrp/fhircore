@@ -62,7 +62,8 @@ class EirApplication : Application(), ConfigurableApplication {
         oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL,
         fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL,
         clientId = BuildConfig.OAUTH_CIENT_ID,
-        clientSecret = BuildConfig.OAUTH_CLIENT_SECRET
+        clientSecret = BuildConfig.OAUTH_CLIENT_SECRET,
+        languages = listOf("en", "sw")
       )
     )
 

@@ -47,12 +47,12 @@ import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.ui.base.model.PatientDetailsCard
 import org.smartregister.fhircore.eir.ui.base.model.PatientItem
-import org.smartregister.fhircore.eir.ui.base.model.PatientStatus
 import org.smartregister.fhircore.eir.ui.base.model.PatientVaccineSummary
-import org.smartregister.fhircore.eir.ui.base.model.VaccineStatus
 import org.smartregister.fhircore.eir.ui.base.model.toDetailsCard
 import org.smartregister.fhircore.eir.util.Utils
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.data.local.repository.model.PatientVaccineStatus
+import org.smartregister.fhircore.engine.data.local.repository.model.VaccineStatus
 
 /**
  * The ViewModel helper class for PatientItemRecyclerViewAdapter, that is responsible for preparing
@@ -106,7 +106,7 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
     }
   }
 
-  suspend fun getPatientStatus(id: String): PatientStatus {
+  suspend fun getPatientStatus(id: String): PatientVaccineStatus {
     // check database for immunizations
     val cal: Calendar = Calendar.getInstance()
     cal.add(Calendar.DATE, -28)
@@ -123,9 +123,9 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
         VaccineStatus.OVERDUE
       else if (searchResults.size == 1) VaccineStatus.PARTIAL else VaccineStatus.DUE
 
-    return PatientStatus(
+    return PatientVaccineStatus(
       status = computedStatus,
-      details = if (searchResults.isNotEmpty()) formatter.format(searchResults[0].recorded) else ""
+      date = if (searchResults.isNotEmpty()) formatter.format(searchResults[0].recorded) else ""
     )
   }
 

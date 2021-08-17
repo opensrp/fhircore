@@ -15,7 +15,7 @@
 -->
 
 <resources>
-    <string name="app_name" translatable="false">FHIR Engine EIR</string>
+    <string name="app_name" translatable="false">FHIR EIR</string>
     <string name="title_patient_list">Registered Patients</string>
     <string name="title_patient_detail">SamplePatient Detail</string>
     <string name="menu_about">About Fhir Engine</string>
@@ -29,7 +29,6 @@
 
     <string name="menu_covax_clients_list_title">COVAX Clients</string>
     <string name="menu_anc_clients_list_title">ANC Clients</string>
-
 
 
     <!-- For display observations in brief, for a patient -->
@@ -48,11 +47,9 @@
     <string name="immunization_next_dose_text">"Dose %1$d due %2$s"</string>
     <string name="immunization_next_overdue_dose_text">"Dose %1$d overdue %2$s"</string>
 
-    <string name="status_vaccinated">Vaccinated</string>
-    <string name="status_overdue">Overdue</string>
-    <string name="status_received_vaccine">Vaccine %1$d \n%2$s</string>
+
     <string name="view_vaccine_certificate">"View vaccine certificate"</string>
-    <string name="fully_vaccinated">"Fully vaccinated"</string>
+
 
     <string name="edit">Edit</string>
     <string name="str_save">Save</string>
@@ -62,21 +59,13 @@
     <string name="view_registration_details">View Registration Details</string>
     <string name="client_list_title_covax">COVAX clients</string>
     <string name="client_list_title_anc">ANC clients</string>
-
-
-    <string name="record_vaccine_nl">Record\nVaccine</string>
     <string name="client_info">Client info</string>
     <string name="last_seen_date">Last seen 29-3-2021</string>
-
-
     <string name="registered_date">Registered </string>
-
-
     <string name="logout_text">Logout</string>
-
     <string name="show_password_button_hint">Show password</string>
     <string name="login_error_message">Invalid username or password</string>
-   <string name="done">Done</string>
+    <string name="done">Done</string>
     <string name="second_dose_due_at"> Second dose due on %1$s</string>
     <string name="ordinal_vaccine_dose_recorded">%1$s 1st dose recorded</string>
     <string name="please_select_vaccine">Please Select Vaccine</string>
@@ -98,4 +87,5 @@
     <string name="show_qr_code">Show QR Code</string>
     <string name="report_adverse_event">Report Adverse Event</string>
     <string name="covax_app" translatable="false">Covax</string>
+    <string name="check">Tick</string>
 </resources>

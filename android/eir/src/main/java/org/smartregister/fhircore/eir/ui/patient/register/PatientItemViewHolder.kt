@@ -24,10 +24,10 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.ui.base.model.PatientItem
-import org.smartregister.fhircore.eir.ui.base.model.PatientStatus
-import org.smartregister.fhircore.eir.ui.base.model.VaccineStatus
 import org.smartregister.fhircore.eir.ui.base.model.getPatientDemographics
 import org.smartregister.fhircore.eir.util.extension.view.setBgColor
+import org.smartregister.fhircore.engine.data.local.repository.model.PatientVaccineStatus
+import org.smartregister.fhircore.engine.data.local.repository.model.VaccineStatus
 
 class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val tvPatientDemographics: TextView = itemView.findViewById(R.id.tv_patient_demographics)
@@ -55,7 +55,7 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
   }
 
   private fun setPatientStatus(
-    patientStatus: PatientStatus?,
+    patientStatus: PatientVaccineStatus?,
     patientItem: PatientItem,
     tvRecordVaccine: TextView,
     onItemClicked: (CovaxListFragment.Intention, PatientItem) -> Unit,
@@ -84,11 +84,7 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
       }
       VaccineStatus.PARTIAL -> {
         tvRecordVaccine.text =
-          tvRecordVaccine.context.getString(
-            R.string.status_received_vaccine,
-            1,
-            patientStatus.details
-          )
+          tvRecordVaccine.context.getString(R.string.status_received_vaccine, 1, patientStatus.date)
         tvRecordVaccine.setTextColor(
           ContextCompat.getColor(tvRecordVaccine.context, R.color.status_gray)
         )
@@ -109,6 +105,7 @@ class PatientItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
           onItemClicked(CovaxListFragment.Intention.RECORD_VACCINE, patientItem)
         }
       }
+      else -> return
     }
   }
 }

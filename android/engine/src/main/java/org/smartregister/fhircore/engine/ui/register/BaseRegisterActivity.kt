@@ -14,8 +14,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.FhirEngine
 import com.google.android.material.navigation.NavigationView
 import java.util.Locale
 import kotlinx.coroutines.launch
@@ -29,6 +31,7 @@ import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
 import org.smartregister.fhircore.engine.ui.model.Language
 import org.smartregister.fhircore.engine.ui.model.SideMenuOption
+import org.smartregister.fhircore.engine.ui.model.SyncStatus
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.refresh
@@ -56,6 +59,10 @@ abstract class BaseRegisterActivity :
 
   private lateinit var sideMenuOptionMap: Map<Int, SideMenuOption>
 
+  private lateinit var registerPagerAdapter: RegisterPagerAdapter
+
+  protected lateinit var fhirEngine: FhirEngine
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     application.assertIsConfigurable()
@@ -78,12 +85,17 @@ abstract class BaseRegisterActivity :
         this@BaseRegisterActivity,
         { updateLanguage(Language(it, Locale.forLanguageTag(it).displayName)) }
       )
-      syncComplete.observe(
+      syncStatus.observe(
         this@BaseRegisterActivity,
         {
-          if (it) showToast(getString(R.string.sync_completed))
-          else showToast(getString(R.string.sync_failed))
-          updateEntityCounts()
+          when (it) {
+            SyncStatus.COMPLETE -> {
+              showToast(getString(R.string.sync_completed))
+              updateEntityCounts()
+            }
+            SyncStatus.FAILED -> showToast(getString(R.string.sync_failed))
+            else -> return@observe
+          }
         }
       )
     }
@@ -96,6 +108,8 @@ abstract class BaseRegisterActivity :
 
     drawerMenuHeaderBinding =
       DataBindingUtil.bind(registerActivityBinding.navView.getHeaderView(0))!!
+
+    fhirEngine = (application as ConfigurableApplication).fhirEngine
 
     setUpViews()
   }
@@ -120,6 +134,10 @@ abstract class BaseRegisterActivity :
       manipulateDrawer(open = false)
       registerViewModel.syncData()
     }
+
+    // Setup view pager
+    registerPagerAdapter = RegisterPagerAdapter(this, supportedFragments = supportedFragments())
+    registerActivityBinding.listPager.adapter = registerPagerAdapter
   }
 
   private fun setupSideMenu() {
@@ -262,6 +280,13 @@ abstract class BaseRegisterActivity :
    * Abstract method to be implemented by the subclass to provide action for registering new client
    */
   abstract fun registerClient()
+
+  /**
+   * Implement this method to provide the view pager with a list of [Fragment]. App will throw an
+   * exception if you attempt to use [BaseRegisterActivity] without at least one subclass of
+   * [BaseRegisterFragment]
+   */
+  abstract fun supportedFragments(): List<Fragment>
 
   /**
    * Implement [customEntityCount] to count other resource types other than Patient resource. Use

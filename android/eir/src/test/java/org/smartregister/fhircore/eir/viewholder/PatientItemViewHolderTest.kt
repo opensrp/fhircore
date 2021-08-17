@@ -28,8 +28,8 @@ import org.smartregister.fhircore.eir.RobolectricTest
 import org.smartregister.fhircore.eir.fragment.CovaxListFragment
 import org.smartregister.fhircore.eir.model.PatientItem
 import org.smartregister.fhircore.eir.model.PatientStatus
-import org.smartregister.fhircore.eir.ui.base.model.VaccineStatus
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemViewHolder
+import org.smartregister.fhircore.engine.data.local.repository.model.VaccineStatus
 
 class PatientItemViewHolderTest : RobolectricTest() {
 

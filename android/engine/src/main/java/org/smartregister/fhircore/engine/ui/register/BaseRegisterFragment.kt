@@ -1,31 +1,26 @@
 package org.smartregister.fhircore.engine.ui.register
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
+import org.smartregister.fhircore.engine.util.extension.ListenerIntent
 
-class BaseRegisterFragment : Fragment() {
+abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
 
-  companion object {
-    fun newInstance() = BaseRegisterFragment()
-  }
+  abstract val paginatedDataSource: PaginatedDataSource<I, O>
 
-  private lateinit var viewModel: RegisterViewModel
+  abstract val registerDataViewModel: BaseRegisterDataViewModel<I, O>
 
-  override fun onCreateView(
-    inflater: LayoutInflater,
-    container: ViewGroup?,
-    savedInstanceState: Bundle?
-  ): View {
-    return inflater.inflate(R.layout.base_register_fragment, container, false)
-  }
+  /**
+   * Implement functionality to navigate to details view when an item with [uniqueIdentifier] is
+   * clicked
+   */
+  abstract fun navigateToDetails(uniqueIdentifier: String)
 
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    super.onViewCreated(view, savedInstanceState)
-    viewModel = ViewModelProvider(this).get(RegisterViewModel::class.java)
-  }
+  /**
+   * Implement click listener for list row. [listenerIntent] describe the intention of the current
+   * click e.g. OPEN_PROFILE, EXIT etc so you can differentiate different click actions performed on
+   * the UI elements e.g clicking a button to record vaccine or patient name to open their profile .
+   * [data] of type [O] is also passed when item is clicked.
+   */
+  abstract fun onItemClicked(listenerIntent: ListenerIntent, data: O)
 }

@@ -21,7 +21,7 @@ import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.data.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.shared.interceptor.OAuthInterceptor
 import retrofit2.Call
 import retrofit2.Retrofit

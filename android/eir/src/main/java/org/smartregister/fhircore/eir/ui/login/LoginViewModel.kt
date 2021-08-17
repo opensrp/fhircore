@@ -39,7 +39,7 @@ import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.ui.base.model.LoginUser
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.auth.AuthenticationService
-import org.smartregister.fhircore.engine.data.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import retrofit2.Call

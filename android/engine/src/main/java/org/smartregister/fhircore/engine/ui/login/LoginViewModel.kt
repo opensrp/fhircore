@@ -17,7 +17,7 @@ import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
-import org.smartregister.fhircore.engine.data.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider

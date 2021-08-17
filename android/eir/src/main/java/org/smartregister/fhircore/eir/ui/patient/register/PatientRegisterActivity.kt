@@ -19,13 +19,17 @@ package org.smartregister.fhircore.eir.ui.patient.register
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
+import org.smartregister.fhircore.engine.data.local.repository.patient.PatientPaginatedDataSource
 import org.smartregister.fhircore.engine.ui.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.util.extension.showToast
 
 class PatientRegisterActivity : BaseRegisterActivity() {
+
+  private val patientItemMapper = PatientItemMapper
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -49,8 +53,12 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   override fun registerClient() {}
 
-  override fun customEntityCount(sideMenuOption: SideMenuOption): Long {
-    return 0
+  override fun supportedFragments(): List<Fragment> {
+    val patientRegisterFragment =
+      PatientRegisterFragment().apply {
+        paginatedDataSource = PatientPaginatedDataSource(fhirEngine, patientItemMapper)
+      }
+    return listOf(patientRegisterFragment)
   }
 
   companion object {

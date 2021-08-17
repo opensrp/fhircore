@@ -23,4 +23,11 @@
     <string name="sync_completed">Sync complete</string>
     <string name="syncing">Syncing&#8230;</string>
     <string name="sync_failed">Sync failed. Check internet connection or try again later.</string>
+    <string name="try_again">Try again</string>
+    <string name="status_vaccinated">Vaccinated</string>
+    <string name="status_overdue">Overdue</string>
+    <string name="status_received_vaccine">Vaccine %1$d \n%2$s</string>
+    <string name="fully_vaccinated">"Fully vaccinated"</string>
+    <string name="record_vaccine_nl">Record\nVaccine</string>
+    <string name="date_last_seen">Last seen %1$s</string>
 </resources>

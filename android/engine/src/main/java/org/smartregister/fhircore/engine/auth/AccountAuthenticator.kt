@@ -26,7 +26,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import java.util.Locale
-import org.smartregister.fhircore.engine.data.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import timber.log.Timber
 
 class AccountAuthenticator(val context: Context, var authenticationService: AuthenticationService) :

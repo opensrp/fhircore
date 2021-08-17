@@ -43,10 +43,10 @@ import org.smartregister.fhircore.eir.RobolectricTest
 import org.smartregister.fhircore.eir.domain.Pagination
 import org.smartregister.fhircore.eir.model.PatientItem
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
-import org.smartregister.fhircore.eir.ui.base.model.VaccineStatus
 import org.smartregister.fhircore.eir.ui.patient.register.CovaxListViewModel
 import org.smartregister.fhircore.eir.util.Utils
 import org.smartregister.fhircore.eir.util.Utils.makeItReadable
+import org.smartregister.fhircore.engine.data.local.repository.model.VaccineStatus
 
 @Config(shadows = [FhirApplicationShadow::class])
 class CovaxListViewModelTest : RobolectricTest() {
@@ -252,7 +252,7 @@ class CovaxListViewModelTest : RobolectricTest() {
       val status = viewModel.getPatientStatus("0")
 
       Assert.assertEquals(vaccineStatus, status.status)
-      Assert.assertEquals(detail, status.details)
+      Assert.assertEquals(detail, status.date)
     }
   }
 }

@@ -47,33 +47,6 @@
 
                 </androidx.appcompat.widget.Toolbar>
 
-                <LinearLayout
-                    android:id="@+id/empty_list_message_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_above="@id/btn_register_new_client"
-                    android:layout_below="@id/base_register_toolbar"
-                    android:layout_centerInParent="true"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/list_empty_message_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="@string/empty_client_list_message_title"
-                        android:textSize="18sp" />
-
-                    <TextView
-                        android:id="@+id/list_empty_message_details"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginBottom="40dp"
-                        android:text="@string/empty_client_list_message_details" />
-                </LinearLayout>
-
                 <androidx.viewpager2.widget.ViewPager2
                     android:id="@+id/list_pager"
                     android:layout_width="match_parent"

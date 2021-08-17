@@ -26,7 +26,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
-import java.lang.IndexOutOfBoundsException
 import java.util.Date
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -51,10 +50,10 @@ import org.smartregister.fhircore.eir.model.PatientStatus
 import org.smartregister.fhircore.eir.model.PatientVaccineSummary
 import org.smartregister.fhircore.eir.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
-import org.smartregister.fhircore.eir.ui.base.model.VaccineStatus
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsFormConfig
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
 import org.smartregister.fhircore.eir.util.Utils
+import org.smartregister.fhircore.engine.data.local.repository.model.VaccineStatus
 
 @Config(shadows = [FhirApplicationShadow::class])
 class RecordVaccineActivityTest : ActivityRobolectricTest() {

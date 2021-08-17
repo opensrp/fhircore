@@ -40,10 +40,10 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
+import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper.extractAge
+import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper.extractGender
+import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper.extractName
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
-import org.smartregister.fhircore.eir.util.extension.resource.extractAge
-import org.smartregister.fhircore.eir.util.extension.resource.extractGender
-import org.smartregister.fhircore.eir.util.extension.resource.extractName
 import org.smartregister.fhircore.eir.util.extension.resource.toImmunizationItems
 import org.smartregister.fhircore.eir.util.extension.view.hide
 import org.smartregister.fhircore.eir.util.extension.view.show

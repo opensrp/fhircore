@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.model.response
+package org.smartregister.fhircore.engine.data.remote.model.response
 
 import com.google.gson.annotations.SerializedName
 
