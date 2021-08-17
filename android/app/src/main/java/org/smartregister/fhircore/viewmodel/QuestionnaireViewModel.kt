@@ -24,7 +24,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.utilities.SimpleWorkerContextProvider
-import java.io.PrintWriter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Base
@@ -34,9 +33,9 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.FhirApplication
-import org.smartregister.fhircore.TransformSupportServices
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
+import org.smartregister.fhircore.helper.TransformSupportServices
 
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
   AndroidViewModel(application) {
@@ -97,8 +96,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
       val contextR4 = SimpleWorkerContextProvider.loadSimpleWorkerContext(getApplication())
 
       val outputs: MutableList<Base> = ArrayList()
-      val transformSupportServices =
-        TransformSupportServices(outputs, PrintWriter(System.out), contextR4)
+      val transformSupportServices = TransformSupportServices(outputs, contextR4)
 
       bundle =
         ResourceMapper.extract(

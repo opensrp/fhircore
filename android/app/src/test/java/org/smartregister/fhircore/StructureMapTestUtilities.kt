@@ -18,7 +18,6 @@ package org.smartregister.fhircore
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
-import java.io.PrintWriter
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
@@ -29,6 +28,7 @@ import org.hl7.fhir.utilities.npm.ToolsVersion
 import org.intellij.lang.annotations.Language
 import org.junit.Test
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.helper.TransformSupportServices
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
 /**
@@ -68,8 +68,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     contextR4.isCanRunWithoutTerminology = true
 
     val outputs: MutableList<Base> = ArrayList()
-    val transformSupportServices =
-      TransformSupportServices(outputs, PrintWriter(System.out), contextR4)
+    val transformSupportServices = TransformSupportServices(outputs, contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(fhirMapToConvert, "PatientRegistration")
