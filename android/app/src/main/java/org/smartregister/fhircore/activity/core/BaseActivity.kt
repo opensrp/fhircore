@@ -32,6 +32,7 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
+import com.google.android.fhir.datacapture.views.barcode.mlkit.md.LiveBarcodeScanningFragment
 import java.util.Locale
 import org.smartregister.fhircore.util.QuestionnaireUtils.buildQuestionnaireIntent
 import org.smartregister.fhircore.util.SharedPreferencesHelper
@@ -45,8 +46,7 @@ import timber.log.Timber
  * - barcode scanner (optional) - call [initBarcodeScanner]
  */
 abstract class BaseActivity : AppCompatActivity() {
-  // todo enable all private val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment()
-  // }
+  private val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
   private lateinit var onBarcodeResult: (barcode: String, view: View) -> Unit?
 
   override fun attachBaseContext(base: Context) {
@@ -142,7 +142,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
         onBarcodeResult(barcode, view)
 
-        // liveBarcodeScanningFragment.onDestroy()
+        liveBarcodeScanningFragment.onDestroy()
       }
     )
   }
@@ -151,7 +151,7 @@ abstract class BaseActivity : AppCompatActivity() {
     return registerForActivityResult(ActivityResultContracts.RequestPermission()) {
       isGranted: Boolean ->
       if (isGranted) {
-        // liveBarcodeScanningFragment.show(supportFragmentManager, "TAG")
+        liveBarcodeScanningFragment.show(supportFragmentManager, "TAG")
       } else {
         Toast.makeText(
             this,
@@ -167,7 +167,7 @@ abstract class BaseActivity : AppCompatActivity() {
     if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
         PackageManager.PERMISSION_GRANTED
     ) {
-      // liveBarcodeScanningFragment.show(this.supportFragmentManager, "TAG")
+      liveBarcodeScanningFragment.show(this.supportFragmentManager, "TAG")
     } else {
       requestPermissionLauncher.launch(Manifest.permission.CAMERA)
     }
