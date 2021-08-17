@@ -111,8 +111,8 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
           context
         )
 
-      val resourceId = // todo WRONG assignment
-        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
+      // todo Assign Encounter , Observation etc their separate Ids with reference to Patient Id
+      val resourceId = intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
 
       saveBundleResources(bundle, resourceId)
     }
