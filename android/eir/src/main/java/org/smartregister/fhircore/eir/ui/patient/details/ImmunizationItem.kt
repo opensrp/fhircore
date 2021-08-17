@@ -20,9 +20,10 @@ import android.content.Context
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.util.DAYS_IN_MONTH
-import org.smartregister.fhircore.eir.util.OVERDUE_DAYS_IN_MONTH
 import org.smartregister.fhircore.engine.util.DateUtils
+
+const val DAYS_IN_MONTH: Int = 28
+const val OVERDUE_DAYS_IN_MONTH: Int = 14
 
 data class ImmunizationItem(val vaccine: String, val doses: List<Pair<String, Int>>)
 
