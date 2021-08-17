@@ -56,6 +56,7 @@ import timber.log.Timber
 
 const val DAYS_IN_MONTH: Int = 28
 const val OVERDUE_DAYS_IN_MONTH: Int = 14
+const val WHO_IDENTIFIER_SYSTEM = "http://who.int/ddcc/hcid"
 
 object Utils {
 
@@ -87,7 +88,7 @@ object Utils {
         Patient.IDENTIFIER,
         Identifier().apply {
           value = query
-          system = "http://who.int/ddcc/hcid"
+          system = WHO_IDENTIFIER_SYSTEM
         }
       )
     }
