@@ -66,8 +66,8 @@ class QuestionnaireActivity : AppCompatActivity(), View.OnClickListener {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
-    supportActionBar!!.hide()
+    setContentView(R.layout.activity_questionnaire)
+    supportActionBar?.hide()
 
     // Only add the fragment once, when the activity is first created.
     if (savedInstanceState == null) {
@@ -77,7 +77,9 @@ class QuestionnaireActivity : AppCompatActivity(), View.OnClickListener {
       supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
     }
 
-    findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
+    val saveButton = findViewById<Button>(R.id.btn_save_client_info)
+
+    saveButton.setOnClickListener(this)
 
     // todo bypass the structure map
     intent.putExtra(QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR, "true")
@@ -113,7 +115,7 @@ class QuestionnaireActivity : AppCompatActivity(), View.OnClickListener {
     intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)?.let {
       var patient: Patient? = null
       viewModel.viewModelScope.launch {
-        patient = EirApplication.fhirEngine(applicationContext).load(Patient::class.java, it)
+        patient = EirApplication.getContext().fhirEngine.load(Patient::class.java, it)
       }
 
       patient?.let {

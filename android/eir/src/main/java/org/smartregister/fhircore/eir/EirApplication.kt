@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.eir
 
 import android.app.Application
-import android.content.Context
 import androidx.work.Constraints
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineBuilder
@@ -87,8 +86,6 @@ class EirApplication : Application(), ConfigurableApplication {
   companion object {
 
     private lateinit var eirApplication: EirApplication
-
-    fun fhirEngine(context: Context) = (context.applicationContext as EirApplication).fhirEngine
 
     fun getContext() = eirApplication
   }

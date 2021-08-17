@@ -69,7 +69,7 @@ class PatientDetailsFragment private constructor() : Fragment() {
 
     setupViews(patientId)
 
-    fhirEngine = EirApplication.fhirEngine(requireContext())
+    fhirEngine = EirApplication.getContext().fhirEngine
 
     patientDetailsViewModel =
       ViewModelProvider(

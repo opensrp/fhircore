@@ -42,7 +42,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
   AndroidViewModel(application) {
 
   var structureMapProvider: ((String) -> StructureMap?)? = null
-  var fhirEngine = EirApplication.fhirEngine(application)
+  var fhirEngine = EirApplication.getContext().fhirEngine
 
   val questionnaire: Questionnaire
     get() {
@@ -77,7 +77,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
         val structureMapId = structureMapUrl?.substringAfterLast("/")
         if (structureMapId != null) {
           structureMap =
-            EirApplication.fhirEngine(context).load(StructureMap::class.java, structureMapId)
+            EirApplication.getContext().fhirEngine.load(StructureMap::class.java, structureMapId)
         }
       }
     }

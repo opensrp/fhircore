@@ -30,5 +30,5 @@ class EirFhirSyncWorker(appContext: Context, workerParams: WorkerParameters) :
     EirApplication.getContext()
       .buildDatasource(EirApplication.getContext().applicationConfiguration)
 
-  override fun getFhirEngine() = EirApplication.fhirEngine(applicationContext)
+  override fun getFhirEngine() = EirApplication.getContext().fhirEngine
 }
