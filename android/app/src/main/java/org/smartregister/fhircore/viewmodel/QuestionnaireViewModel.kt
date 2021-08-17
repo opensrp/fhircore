@@ -42,7 +42,7 @@ import org.smartregister.fhircore.util.QuestionnaireUtils
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
   AndroidViewModel(application) {
 
-  var structureMapProvider: ((String) -> StructureMap?)? = null
+  var structureMapProvider: (suspend (String) -> StructureMap?)? = null
   var fhirEngine = FhirApplication.fhirEngine(application)
 
   val questionnaire: Questionnaire
@@ -100,21 +100,25 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
       return
     }
 
-    val bundle =
-      ResourceMapper.extract(
-        questionnaire,
-        questionnaireResponse,
-        getStructureMapProvider(context),
-        context
-      )
+    var bundle: Bundle
 
-    val resourceId = // todo WRONG assignment
-      intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
+    viewModelScope.launch {
+      bundle =
+        ResourceMapper.extract(
+          questionnaire,
+          questionnaireResponse,
+          getStructureMapProvider(context),
+          context
+        )
 
-    saveBundleResources(bundle, resourceId)
+      // todo Assign Encounter , Observation etc their separate Ids with reference to Patient Id
+      val resourceId = intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
+
+      saveBundleResources(bundle, resourceId)
+    }
   }
 
-  fun getStructureMapProvider(context: Context): ((String) -> StructureMap?) {
+  fun getStructureMapProvider(context: Context): (suspend (String) -> StructureMap?) {
     if (structureMapProvider == null) {
       structureMapProvider =
         { structureMapUrl: String ->
@@ -131,43 +135,48 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
   ) {
     if (!questionnaire.hasSubjectType("Patient")) return
 
-    val patient =
-      ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
+    viewModelScope.launch {
+      val patient =
+        ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
 
-    val barcode =
-      QuestionnaireUtils.valueStringWithLinkId(questionnaireResponse, QUESTIONNAIRE_ARG_BARCODE_KEY)
+      val barcode =
+        QuestionnaireUtils.valueStringWithLinkId(
+          questionnaireResponse,
+          QUESTIONNAIRE_ARG_BARCODE_KEY
+        )
 
-    patient.id = barcode ?: UUID.randomUUID().toString().toLowerCase()
+      patient.id = barcode ?: UUID.randomUUID().toString().toLowerCase()
 
-    saveResource(patient)
+      saveResource(patient)
 
-    // only one level of nesting per obs group is supported by fhircore for now
-    val observations =
-      QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
+      // only one level of nesting per obs group is supported by fhircore for now
+      val observations =
+        QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
 
-    observations.forEach { saveResource(it) }
+      observations.forEach { saveResource(it) }
 
-    // only one risk assessment per questionnaire is supported by fhircore for now
-    val riskAssessment =
-      QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)
+      // only one risk assessment per questionnaire is supported by fhircore for now
+      val riskAssessment =
+        QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)
 
-    if (riskAssessment != null) {
-      saveResource(riskAssessment)
+      if (riskAssessment != null) {
+        saveResource(riskAssessment)
 
-      val flag =
-        QuestionnaireUtils.extractFlag(questionnaireResponse, questionnaire, riskAssessment)
+        val flag =
+          QuestionnaireUtils.extractFlag(questionnaireResponse, questionnaire, riskAssessment)
 
-      if (flag != null) {
-        saveResource(flag)
+        if (flag != null) {
+          saveResource(flag)
 
-        // todo remove this when sync is implemented
-        val ext =
-          QuestionnaireUtils.extractFlagExtension(flag, questionnaireResponse, questionnaire)
-        if (ext != null) {
-          patient.addExtension(ext)
+          // todo remove this when sync is implemented
+          val ext =
+            QuestionnaireUtils.extractFlagExtension(flag, questionnaireResponse, questionnaire)
+          if (ext != null) {
+            patient.addExtension(ext)
+          }
+
+          saveResource(patient)
         }
-
-        saveResource(patient)
       }
     }
   }
