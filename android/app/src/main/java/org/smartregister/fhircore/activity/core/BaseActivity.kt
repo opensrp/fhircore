@@ -18,6 +18,7 @@ package org.smartregister.fhircore.activity.core
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Bundle
@@ -92,7 +93,14 @@ abstract class BaseActivity : AppCompatActivity() {
     patientId: String?
   ) {
     startActivity(
-      buildQuestionnaireIntent(this, questionnaireTitle, questionnaireId, patientId)
+      Intent(this, QuestionnaireActivity::class.java).apply {
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, questionnaireTitle)
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY, questionnaireId)
+
+        patientId?.let {
+          putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID, patientId)
+        }
+      }
     )
   }
 
