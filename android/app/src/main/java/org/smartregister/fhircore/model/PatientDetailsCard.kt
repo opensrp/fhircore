@@ -22,11 +22,10 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.util.DAYS_IN_MONTH
+import org.smartregister.fhircore.util.OVERDUE_DAYS_IN_MONTH
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.util.Utils.makeItReadable
-
-private const val DAYS_IN_MONTH: Int = 28
-private const val OVERDUE_DAYS_IN_MONTH: Int = 14
 
 /** * A wrapper class that displays a patient's historical activity */
 data class PatientDetailsCard(

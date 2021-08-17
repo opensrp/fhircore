@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
-package counterfeit.java.awt
+package org.smartregister.fhircore.util
 
-class Image
+import android.view.View
+
+fun View.show() {
+  this.visibility = View.VISIBLE
+}
+
+fun View.hide() {
+  this.visibility = View.GONE
+}
