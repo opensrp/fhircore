@@ -19,6 +19,7 @@ package org.smartregister.fhircore.activity
 import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
+import android.os.Looper.getMainLooper
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import io.mockk.coEvery
@@ -97,7 +98,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
     every { entryComponent.resource } returns Immunization()
     every { bundle.entry } returns listOf(entryComponent)
-    every { ResourceMapper.extract(any(), any()) } returns bundle
+    coEvery { ResourceMapper.extract(any(), any()) } returns bundle
 
     every { questionnaireResponse.item } returns items
     every { item.answer } throws IndexOutOfBoundsException()
@@ -116,6 +117,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
       ),
     )
 
+    shadowOf(getMainLooper()).idle()
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
 
     val vaccineDate = DateTimeType.today().toHumanDisplay()

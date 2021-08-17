@@ -22,6 +22,7 @@ import android.content.Intent
 import android.os.SystemClock
 import android.view.MenuItem
 import android.view.MotionEvent
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -29,6 +30,7 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -36,6 +38,7 @@ import androidx.viewpager2.widget.ViewPager2
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkClass
+import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import org.junit.Assert
@@ -47,6 +50,7 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.shadows.ShadowAlertDialog
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity
@@ -55,17 +59,22 @@ import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.auth.secure.SecureConfig
 import org.smartregister.fhircore.domain.Language
 import org.smartregister.fhircore.fragment.CovaxListFragment
+import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.viewmodel.CovaxListViewModel
 
 @Config(shadows = [FhirApplicationShadow::class])
 class CovaxListActivityTest : ActivityRobolectricTest() {
 
   private lateinit var covaxListActivity: CovaxListActivity
+  private lateinit var covaxListViewModel: CovaxListViewModel
 
   @Before
   fun setUp() {
     covaxListActivity =
       Robolectric.buildActivity(CovaxListActivity::class.java, null).create().get()
+    covaxListViewModel = mockk()
+    covaxListActivity.listViewModel = covaxListViewModel
   }
 
   @Test
@@ -372,6 +381,40 @@ class CovaxListActivityTest : ActivityRobolectricTest() {
       covaxListActivity,
       { Assert.assertEquals("10", counter.text.toString()) }
     )
+  }
+
+  @Test
+  fun testSetupBarcodeScannerVerifyCallback() {
+
+    val barcode = "Lovelace"
+    val observer = slot<Observer<Result<Boolean>>>()
+
+    val resultLiveData = mockk<MutableLiveData<Result<Boolean>>>()
+    every { resultLiveData.observe(any(), capture(observer)) } returns Unit
+    every { covaxListViewModel.isPatientExists(any()) } returns resultLiveData
+
+    ReflectionHelpers.callInstanceMethod<Any>(covaxListActivity, "setupBarcodeScanner")
+    val barcodeResult =
+      ReflectionHelpers.getField<(barcode: String, view: View) -> Unit>(
+        covaxListActivity,
+        "onBarcodeResult"
+      )
+    barcodeResult(barcode, mockk())
+    observer.captured.onChanged(Result.success(true))
+
+    var expectedIntent = Intent(covaxListActivity, PatientDetailsActivity::class.java)
+    var actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+
+    Assert.assertEquals(barcode, actualIntent.getStringExtra(CovaxDetailView.COVAX_ARG_ITEM_ID))
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+
+    observer.captured.onChanged(Result.failure(mockk()))
+    expectedIntent = Intent(covaxListActivity, QuestionnaireActivity::class.java)
+    actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   override fun getActivity(): Activity {
