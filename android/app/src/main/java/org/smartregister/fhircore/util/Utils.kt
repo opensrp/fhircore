@@ -38,6 +38,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
@@ -55,6 +56,7 @@ import timber.log.Timber
 
 const val DAYS_IN_MONTH: Int = 28
 const val OVERDUE_DAYS_IN_MONTH: Int = 14
+const val WHO_IDENTIFIER_SYSTEM = "http://who.int/ddcc/hcid"
 
 object Utils {
 
@@ -77,6 +79,18 @@ object Utils {
     search.filter(Patient.ADDRESS_CITY) {
       modifier = StringFilterModifier.CONTAINS
       value = "NAIROBI"
+    }
+  }
+
+  fun Search.addWHOIdentifierFilter(query: String?) {
+    if (query?.isNotBlank() == true) {
+      filter(
+        Patient.IDENTIFIER,
+        Identifier().apply {
+          value = query
+          system = WHO_IDENTIFIER_SYSTEM
+        }
+      )
     }
   }
 
