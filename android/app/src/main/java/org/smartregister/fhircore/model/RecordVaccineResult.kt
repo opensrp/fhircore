@@ -31,8 +31,7 @@ class RecordVaccineResult(private val patientId: String) :
       context,
       input.vaccineQuestionnaireTitle,
       input.vaccineQuestionnaireIdentifier,
-      patientId,
-      false
+      patientId
     )
   }
 

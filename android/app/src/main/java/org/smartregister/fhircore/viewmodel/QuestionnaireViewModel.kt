@@ -27,6 +27,7 @@ import java.util.UUID
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -146,6 +147,13 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
         )
 
       patient.id = barcode ?: UUID.randomUUID().toString().toLowerCase()
+
+      // TODO added temporary need to fix the questionnaire
+      patient.identifier = mutableListOf(Identifier().apply {
+        value = barcode
+        use = Identifier.IdentifierUse.OFFICIAL
+        system = "WHO-HCID"
+      })
 
       saveResource(patient)
 

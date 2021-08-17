@@ -44,16 +44,15 @@ object QuestionnaireUtils {
     context: Context,
     questionnaireTitle: String,
     questionnaireId: String,
-    patientId: String?,
-    isNewPatient: Boolean
+    patientId: String?
   ): Intent {
     return Intent(context, QuestionnaireActivity::class.java).apply {
       putExtra(QUESTIONNAIRE_TITLE_KEY, questionnaireTitle)
       putExtra(QUESTIONNAIRE_PATH_KEY, questionnaireId)
 
       patientId?.let {
-        if (isNewPatient) putExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID, patientId)
-        else putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
+        putExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID, patientId)
+        putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
       }
     }
   }
