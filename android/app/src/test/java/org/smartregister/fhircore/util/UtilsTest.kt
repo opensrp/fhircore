@@ -24,6 +24,7 @@ import android.widget.EditText
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilter
 import com.google.android.fhir.search.StringFilterModifier
+import com.google.android.fhir.search.TokenFilter
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkClass
@@ -48,6 +49,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter.from
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.RobolectricTest
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.util.Utils.addWHOIdentifierFilter
 import org.smartregister.fhircore.util.Utils.makeItReadable
 import org.smartregister.fhircore.util.Utils.ordinalOf
 
@@ -206,6 +208,18 @@ class UtilsTest : RobolectricTest() {
       FhirApplication.fhirEngine(FhirApplication.getContext())
         .remove(Immunization::class.java, patientId)
     }
+  }
+
+  @Test
+  fun `Search#addWHOIdentifierFilter() should add a TokenFilter with WHO system url`() {
+    val search = Search(type = ResourceType.Patient)
+    var tokenFilters = ReflectionHelpers.getField<MutableList<TokenFilter>>(search, "tokenFilters")
+    Assert.assertEquals(0, tokenFilters.size)
+
+    search.addWHOIdentifierFilter("908")
+    tokenFilters = ReflectionHelpers.getField(search, "tokenFilters")
+    Assert.assertEquals(WHO_IDENTIFIER_SYSTEM, tokenFilters[0].uri)
+    Assert.assertEquals("908", tokenFilters[0].code)
   }
 
   @Test
