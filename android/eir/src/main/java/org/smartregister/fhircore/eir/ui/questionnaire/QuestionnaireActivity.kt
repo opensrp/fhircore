@@ -21,6 +21,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.viewModelScope
@@ -36,15 +37,14 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.ui.base.BaseActivity
-import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsFormConfig
+import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 
 /**
  * Launches Questionnaire with given id. If questionnaire has subjectType = Patient his activity can
- * handle data persistence for Resources [Patient], [Observation], [RiskAssessment], [Flag]. In
- * other case must implement ActivityResultLauncher for handling and persistence for result
+ * handle data persistence for Resources [Patient], In other case must implement
+ * ActivityResultLauncher for handling and persistence for result
  *
- * Incase you want to do further processing on data after save you can implement
+ * In case you want to do further processing on data after save you can implement
  * ActivityResultLauncher
  *
  * ```
@@ -60,8 +60,8 @@ import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsFormConfi
  * recordData.launch(MyInput())
  * ```
  */
-class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
-  internal val viewModel by viewModels<QuestionnaireViewModel>()
+class QuestionnaireActivity : AppCompatActivity(), View.OnClickListener {
+  private val viewModel by viewModels<QuestionnaireViewModel>()
   private val parser = FhirContext.forR4().newJsonParser()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -235,7 +235,7 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR = "bypass-sdk-extractor"
 
-    fun getExtrasBundle(clientIdentifier: String, detailView: PatientDetailsFormConfig) =
+    fun getExtrasBundle(clientIdentifier: String, detailView: QuestionnaireFormConfig) =
       bundleOf(
         Pair(QUESTIONNAIRE_TITLE_KEY, detailView.registrationQuestionnaireTitle),
         Pair(QUESTIONNAIRE_PATH_KEY, detailView.registrationQuestionnaireIdentifier),

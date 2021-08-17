@@ -8,7 +8,6 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
 import android.os.LocaleList
-import android.view.View
 import android.widget.Toast
 import java.util.Locale
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
@@ -39,9 +38,6 @@ fun Context.setAppLocale(languageTag: String): Configuration? {
   }
   return configuration
 }
-
-fun View.toggleVisibility(show: Boolean) =
-  if (show) this.visibility = View.VISIBLE else this.visibility = View.GONE
 
 fun Application.assertIsConfigurable() {
   if (this !is ConfigurableApplication)

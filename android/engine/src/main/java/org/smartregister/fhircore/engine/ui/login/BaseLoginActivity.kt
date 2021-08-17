@@ -10,7 +10,7 @@ import org.smartregister.fhircore.engine.configuration.view.LoginViewConfigurati
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
-import org.smartregister.fhircore.engine.util.extension.viewmodel.createFactory
+import org.smartregister.fhircore.engine.util.extension.createFactory
 
 abstract class BaseLoginActivity :
   ComponentActivity(), ConfigurableComposableView<LoginViewConfiguration> {

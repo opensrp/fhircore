@@ -18,7 +18,7 @@ package org.smartregister.fhircore.engine.ui.base
 
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
-import org.smartregister.fhircore.engine.util.extension.ListenerIntent
+import org.smartregister.fhircore.engine.util.ListenerIntent
 
 /**
  * This subclass of [RecyclerView.ViewHolder] provides implementation on how to bind [Data] to the

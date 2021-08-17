@@ -24,3 +24,11 @@ suspend fun Application.syncData(applicationConfiguration: ApplicationConfigurat
     resourceSyncParams = resourceSyncParams
   )
 }
+
+fun Application.buildDatasource(
+  applicationConfiguration: ApplicationConfiguration
+): FhirResourceDataSource {
+  return FhirResourceDataSource(
+    FhirResourceService.create(FhirContext.forR4().newJsonParser(), this, applicationConfiguration)
+  )
+}

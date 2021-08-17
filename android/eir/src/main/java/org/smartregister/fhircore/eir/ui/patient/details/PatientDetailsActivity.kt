@@ -20,18 +20,19 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import kotlinx.android.synthetic.main.activity_patient_details.patientDetailsToolbar
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.ui.base.BaseActivity
+import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.eir.util.Utils
+import org.smartregister.fhircore.engine.util.FormConfigUtil
 
-class PatientDetailsActivity : BaseActivity() {
+class PatientDetailsActivity : AppCompatActivity() {
 
   private lateinit var patientId: String
 
-  private lateinit var detailView: PatientDetailsFormConfig
+  private lateinit var detailView: QuestionnaireFormConfig
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -40,19 +41,15 @@ class PatientDetailsActivity : BaseActivity() {
 
     if (savedInstanceState == null) {
       detailView =
-        Utils.loadConfig(
-          PatientDetailsFormConfig.COVAX_DETAIL_VIEW_CONFIG_ID,
-          PatientDetailsFormConfig::class.java,
-          this
-        )
+        FormConfigUtil.loadConfig(QuestionnaireFormConfig.COVAX_DETAIL_VIEW_CONFIG_ID, this)
 
-      patientId = intent.extras?.getString(PatientDetailsFormConfig.COVAX_ARG_ITEM_ID) ?: ""
+      patientId = intent.extras?.getString(QuestionnaireFormConfig.COVAX_ARG_ITEM_ID) ?: ""
       supportFragmentManager
         .beginTransaction()
         .replace(
           R.id.container,
           PatientDetailsFragment.newInstance(
-            bundleOf(Pair(PatientDetailsFormConfig.COVAX_ARG_ITEM_ID, patientId))
+            bundleOf(Pair(QuestionnaireFormConfig.COVAX_ARG_ITEM_ID, patientId))
           )
         )
         .commitNow()

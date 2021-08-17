@@ -21,13 +21,13 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsFormConfig
+import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_RESPONSE_KEY
-import org.smartregister.fhircore.eir.util.QuestionnaireUtils
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireUtils
 
 class RecordVaccineResult(private val patientId: String) :
-  ActivityResultContract<PatientDetailsFormConfig, QuestionnaireResponse?>() {
-  override fun createIntent(context: Context, input: PatientDetailsFormConfig): Intent {
+  ActivityResultContract<QuestionnaireFormConfig, QuestionnaireResponse?>() {
+  override fun createIntent(context: Context, input: QuestionnaireFormConfig): Intent {
     return QuestionnaireUtils.buildQuestionnaireIntent(
       context,
       input.vaccineQuestionnaireTitle,

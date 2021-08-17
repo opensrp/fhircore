@@ -17,14 +17,14 @@
         <activity
             android:name=".ui.patient.details.PatientDetailsActivity"
             android:label=""
-            android:parentActivityName=".ui.patient.register.CovaxListActivity"
+            android:parentActivityName=".ui.patient.register.PatientRegisterActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.patient.register.CovaxListActivity" />
+                android:value=".ui.patient.register.PatientRegisterActivity" />
         </activity>
         <activity
-            android:name=".ui.login.EirLoginActivity"
+            android:name=".ui.login.LoginActivity"
             android:exported="true"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -35,19 +35,13 @@
         </activity>
         <activity android:name=".ui.vaccine.RecordVaccineActivity" />
         <activity
-            android:name=".ui.patient.register.CovaxListActivity"
+            android:name=".ui.patient.register.PatientRegisterActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
-        <activity
-            android:name=".ui.anc.register.AncListActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustPan" />
+
         <activity
             android:name=".ui.questionnaire.QuestionnaireActivity"
-            android:parentActivityName=".ui.patient.register.CovaxListActivity" />
-        <activity
-            android:name=".ui.patient.register.PatientRegisterActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:parentActivityName=".ui.patient.register.PatientRegisterActivity" />
 
         <service android:name=".EirAuthAndroidService">
             <intent-filter>

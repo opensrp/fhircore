@@ -25,15 +25,15 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
-import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsFormConfig
+import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.eir.ui.patient.register.components.PatientRow
 import org.smartregister.fhircore.engine.data.local.repository.model.PatientItem
 import org.smartregister.fhircore.engine.data.local.repository.patient.PatientPaginatedDataSource
 import org.smartregister.fhircore.engine.ui.components.PaginatedList
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
-import org.smartregister.fhircore.engine.util.extension.ListenerIntent
-import org.smartregister.fhircore.engine.util.extension.viewmodel.createFactory
+import org.smartregister.fhircore.engine.util.ListenerIntent
+import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class PatientRegisterFragment :
   ComposeRegisterFragment<Pair<Patient, List<Immunization>>, PatientItem>() {
@@ -59,7 +59,7 @@ class PatientRegisterFragment :
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
       Intent(requireActivity(), PatientDetailsActivity::class.java).apply {
-        putExtra(PatientDetailsFormConfig.COVAX_ARG_ITEM_ID, uniqueIdentifier)
+        putExtra(QuestionnaireFormConfig.COVAX_ARG_ITEM_ID, uniqueIdentifier)
       }
     )
   }

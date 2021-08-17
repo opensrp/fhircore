@@ -27,7 +27,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.ui.base.model.ImmunizationItem
 
 /** Subclass of [ListAdapter] used to display vaccine doses for the patient */
 class PatientImmunizationsAdapter :

@@ -15,7 +15,8 @@ import org.smartregister.fhircore.engine.data.local.repository.model.PatientItem
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-class PatientRepository(
+class PatientRepository
+private constructor(
   override val fhirEngine: FhirEngine,
   override val domainMapper: DomainMapper<Pair<Patient, List<Immunization>>, PatientItem>,
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
@@ -47,15 +48,19 @@ class PatientRepository(
       // Fetch immunization data for patient
       val patientImmunizations = mutableListOf<Pair<Patient, List<Immunization>>>()
       patients.forEach {
-        val immunizations: List<Immunization> =
-          fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/${it.logicalId}" } }
+        val immunizations: List<Immunization> = getPatientImmunizations(it.logicalId)
         patientImmunizations.add(Pair(it, immunizations))
       }
       patientImmunizations.map { domainMapper.mapToDomainModel(it) }
     }
   }
 
-  suspend fun count(
+  suspend fun getPatientImmunizations(logicalId: String): List<Immunization> =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/${logicalId}" } }
+    }
+
+  suspend fun countAll(
     query: String = "",
     secondaryFilterCallbacks: Array<out (String, Search) -> Unit>
   ): Int {
@@ -69,5 +74,21 @@ class PatientRepository(
         }
       }
       .toInt()
+  }
+
+  companion object {
+    @Volatile private var instance: PatientRepository? = null
+
+    fun getInstance(
+      fhirEngine: FhirEngine,
+      domainMapper: DomainMapper<Pair<Patient, List<Immunization>>, PatientItem>,
+      dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+    ): PatientRepository =
+      instance
+        ?: synchronized(this) {
+          PatientRepository(fhirEngine = fhirEngine, domainMapper, dispatcherProvider).also {
+            instance = it
+          }
+        }
   }
 }

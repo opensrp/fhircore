@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.eir
+package org.smartregister.fhircore.engine.util
 
 import android.content.Context
-import androidx.work.WorkerParameters
-import com.google.android.fhir.sync.FhirSyncWorker
-import org.smartregister.fhircore.engine.util.extension.buildDatasource
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 
-class EirFhirSyncWorker(appContext: Context, workerParams: WorkerParameters) :
-  FhirSyncWorker(appContext, workerParams) {
+object FormConfigUtil {
 
-  override fun getSyncData() = EirApplication.getContext().resourceSyncParams
-
-  override fun getDataSource() =
-    EirApplication.getContext()
-      .buildDatasource(EirApplication.getContext().applicationConfiguration)
-
-  override fun getFhirEngine() = EirApplication.fhirEngine(applicationContext)
+  /** Load configs from asset directory */
+  inline fun <reified T> loadConfig(config: String, context: Context): T =
+    context.assets.open(config).bufferedReader().use { it.readText() }.decodeJson()
 }

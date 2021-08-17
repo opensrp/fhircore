@@ -10,7 +10,7 @@ import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
 import org.smartregister.fhircore.engine.data.local.repository.model.PatientItem
 
 class PatientPaginatedDataSource(val fhirEngine: FhirEngine, domainMapper: DomainMapper<Pair<Patient, List<Immunization>>, PatientItem>) :
-  PaginatedDataSource<Pair<Patient, List<Immunization>>, PatientItem>(PatientRepository(fhirEngine, domainMapper)) {
+  PaginatedDataSource<Pair<Patient, List<Immunization>>, PatientItem>(PatientRepository.getInstance(fhirEngine, domainMapper)) {
 
   private var query: String = ""
 

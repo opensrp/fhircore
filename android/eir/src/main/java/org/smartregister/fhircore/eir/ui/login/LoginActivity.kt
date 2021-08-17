@@ -18,64 +18,28 @@ package org.smartregister.fhircore.eir.ui.login
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
-import org.smartregister.fhircore.eir.BR
 import org.smartregister.fhircore.eir.BuildConfig
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.databinding.LoginActivityBinding
 import org.smartregister.fhircore.eir.ui.patient.register.PatientRegisterActivity
-import timber.log.Timber
+import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
+import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : BaseLoginActivity() {
 
-  private lateinit var loginActivityBinding: LoginActivityBinding
-
-  internal lateinit var viewModel: LoginViewModel
+  override fun navigateToHome() {
+    val intent = Intent(this, PatientRegisterActivity::class.java)
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    startActivity(intent)
+    finish()
+  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    viewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
-
-    loginActivityBinding = DataBindingUtil.setContentView(this, R.layout.login_activity)
-    loginActivityBinding.apply {
-      this.setVariable(BR.loginViewModel, viewModel)
-      this.lifecycleOwner = this@LoginActivity
-      this.tvAppVersion.text = getString(R.string.app_version, BuildConfig.VERSION_NAME)
-    }
-
-    startHomeObserver()
-  }
-
-  private fun startHomeObserver() {
-    viewModel.goHome.observe(
-      this,
-      {
-        Timber.i("GoHome value changed, now shall start home %b", it)
-
-        if (it) {
-          val intent = Intent(baseContext, PatientRegisterActivity::class.java)
-          intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-          startActivity(intent)
-          finish()
-        }
-      }
-    )
-
-    viewModel.loginFailed.observe(
-      this,
-      { loginActivityBinding.spacer.visibility = if (it == true) View.GONE else View.VISIBLE }
-    )
-
-    viewModel.showProgressIcon.observe(
-      this,
-      {
-        loginActivityBinding.progressIcon.visibility =
-          if (it == true) View.VISIBLE else View.INVISIBLE
-      }
+    configureViews(
+      loginViewConfigurationOf(
+        applicationName = getString(R.string.covax_app),
+        applicationVersion = BuildConfig.VERSION_NAME
+      )
     )
   }
 }

@@ -40,14 +40,14 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
+import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper.extractAge
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper.extractGender
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper.extractName
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
-import org.smartregister.fhircore.eir.util.extension.resource.toImmunizationItems
-import org.smartregister.fhircore.eir.util.extension.view.hide
-import org.smartregister.fhircore.eir.util.extension.view.show
-import org.smartregister.fhircore.engine.util.extension.viewmodel.createFactory
+import org.smartregister.fhircore.engine.util.extension.createFactory
+import org.smartregister.fhircore.engine.util.extension.hide
+import org.smartregister.fhircore.engine.util.extension.show
 
 class PatientDetailsFragment private constructor() : Fragment() {
 
@@ -65,7 +65,7 @@ class PatientDetailsFragment private constructor() : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    val patientId = arguments?.getString(PatientDetailsFormConfig.COVAX_ARG_ITEM_ID) ?: ""
+    val patientId = arguments?.getString(QuestionnaireFormConfig.COVAX_ARG_ITEM_ID) ?: ""
 
     setupViews(patientId)
 

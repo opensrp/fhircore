@@ -38,7 +38,7 @@ import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.toggleVisibility
-import org.smartregister.fhircore.engine.util.extension.viewmodel.createFactory
+import org.smartregister.fhircore.engine.util.extension.createFactory
 
 abstract class BaseRegisterActivity :
   AppCompatActivity(),
