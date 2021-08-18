@@ -5,6 +5,7 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
+import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 
 abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
@@ -36,5 +37,25 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
         "You can only use BaseRegisterFragment in BaseRegisterActivity context"
       ))
     }
+
+    registerViewModel.filterValue.observe(
+      viewLifecycleOwner,
+      {
+        val (registerFilterType, value) = it
+        registerDataViewModel.filterRegisterData(
+          registerFilterType = registerFilterType,
+          filterValue = value,
+          registerFilter = this::performFilter
+        )
+      }
+    )
   }
+
+  /**
+   * Generic function to perform any filtering of type [registerFilterType] on the [data]. Returns
+   * true when the [value] is is matched on the data. See [RegisterFilterType] for applicable filter
+   * types, you can always update the enum to support more custom filters. The filter will be
+   * applied to the paginated data
+   */
+  abstract fun performFilter(registerFilterType: RegisterFilterType, data: O, value: Any): Boolean
 }

@@ -1,6 +1,7 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.annotation.SuppressLint
+import android.graphics.drawable.Drawable
 import android.view.MotionEvent
 import android.view.View
 import android.widget.EditText
@@ -17,10 +18,6 @@ fun View.hide() {
 fun View.toggleVisibility(show: Boolean) =
   if (show) this.visibility = View.VISIBLE else this.visibility = View.GONE
 
-fun View.setBgColor(color: Int) {
-  this.setBackgroundColor(ContextCompat.getColor(this.context, color))
-}
-
 enum class DrawablePosition(val position: Int) {
   DRAWABLE_LEFT(0),
   DRAWABLE_TOP(1),
@@ -35,9 +32,10 @@ fun EditText.addOnDrawableClickedListener(
 ) {
   this.setOnTouchListener(
     object : View.OnTouchListener {
-      override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-        if (event!!.action == MotionEvent.ACTION_UP &&
-            (v as EditText).isDrawableClicked(drawablePosition, event)
+      override fun onTouch(view: View, motionEvent: MotionEvent?): Boolean {
+        if (motionEvent == null) return false
+        if (motionEvent.action == MotionEvent.ACTION_UP &&
+            (view as EditText).isDrawableClicked(drawablePosition, motionEvent)
         ) {
           onClicked()
           return true
@@ -48,18 +46,20 @@ fun EditText.addOnDrawableClickedListener(
   )
 }
 
-private fun EditText.isDrawableClicked(
+private fun EditText?.isDrawableClicked(
   drawablePosition: DrawablePosition,
-  event: MotionEvent?,
+  motionEvent: MotionEvent?,
 ): Boolean {
+  if (motionEvent == null || this == null) return false
   return when (drawablePosition) {
     DrawablePosition.DRAWABLE_RIGHT ->
-      event!!.rawX >=
+      motionEvent.rawX >=
         (this.right - this.compoundDrawables[drawablePosition.position].bounds.width())
     DrawablePosition.DRAWABLE_LEFT ->
-      event!!.rawX <= (this.compoundDrawables[drawablePosition.position].bounds.width())
-    else -> {
-      return false
-    }
+      motionEvent.rawX <= (this.compoundDrawables[drawablePosition.position].bounds.width())
+    DrawablePosition.DRAWABLE_TOP, DrawablePosition.DRAWABLE_BOTTOM -> return false
   }
 }
+
+fun View.getDrawable(drawableResourceId: Int): Drawable? =
+  ContextCompat.getDrawable(context, drawableResourceId)

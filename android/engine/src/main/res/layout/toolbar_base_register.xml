@@ -68,6 +68,8 @@
                 android:textColor="#000000"
                 android:textColorHint="#AEAEAE"
                 android:textSize="17sp"
+                android:maxLines="1"
+                android:singleLine="true"
                 app:drawableTint="@color/grey_drawable_color" />
 
 

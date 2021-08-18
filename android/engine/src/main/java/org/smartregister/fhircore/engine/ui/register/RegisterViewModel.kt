@@ -13,6 +13,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.model.Language
+import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.SyncStatus
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -31,6 +32,10 @@ class RegisterViewModel(
   registerViewConfiguration: RegisterViewConfiguration,
   val dispatcher: DispatcherProvider = DefaultDispatcherProvider
 ) : AndroidViewModel(application) {
+
+  private val _filterValue = MutableLiveData<Pair<RegisterFilterType, Any>>()
+  val filterValue
+    get() = _filterValue
 
   private val applicationConfiguration =
     (getApplication<Application>() as ConfigurableApplication).applicationConfiguration
@@ -79,5 +84,9 @@ class RegisterViewModel(
         .toLong()
     }
     return -1
+  }
+
+  fun updateFilterValue(registerFilterType: RegisterFilterType, newValue: Any) {
+    _filterValue.value = Pair(registerFilterType, newValue)
   }
 }

@@ -29,9 +29,11 @@ import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.eir.ui.patient.register.components.PatientRow
 import org.smartregister.fhircore.engine.data.local.repository.patient.PatientPaginatedDataSource
 import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientItem
+import org.smartregister.fhircore.engine.data.local.repository.patient.model.VaccineStatus
 import org.smartregister.fhircore.engine.ui.components.PaginatedList
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
+import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
@@ -80,5 +82,19 @@ class PatientRegisterFragment :
 
   override fun onItemClicked(listenerIntent: ListenerIntent, data: PatientItem) {
     // Overridden
+  }
+
+  override fun performFilter(
+    registerFilterType: RegisterFilterType,
+    data: PatientItem,
+    value: Any
+  ): Boolean {
+    return when (registerFilterType) {
+      RegisterFilterType.SEARCH_FILTER -> {
+        if (value is String && value.isEmpty()) return true
+        else data.demographics.contains(value.toString(), ignoreCase = true)
+      }
+      RegisterFilterType.OVERDUE_FILTER -> data.vaccineStatus.status == VaccineStatus.OVERDUE
+    }
   }
 }

@@ -1,9 +1,12 @@
 package org.smartregister.fhircore.engine.ui.register
 
 import android.accounts.AccountManager
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -30,15 +33,16 @@ import org.smartregister.fhircore.engine.configuration.view.registerViewConfigur
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
 import org.smartregister.fhircore.engine.ui.register.model.Language
+import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.SyncStatus
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
+import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.toggleVisibility
-import org.smartregister.fhircore.engine.util.extension.createFactory
 
 abstract class BaseRegisterActivity :
   AppCompatActivity(),
@@ -138,6 +142,41 @@ abstract class BaseRegisterActivity :
     // Setup view pager
     registerPagerAdapter = RegisterPagerAdapter(this, supportedFragments = supportedFragments())
     registerActivityBinding.listPager.adapter = registerPagerAdapter
+
+    setupSearchView()
+  }
+
+  @SuppressLint("ClickableViewAccessibility")
+  private fun setupSearchView() {
+    with(registerActivityBinding.toolbarLayout) {
+      editTextSearch.run {
+        //Todo add button in the form of an icon to clear the search text
+        addTextChangedListener(
+          object : TextWatcher {
+            override fun beforeTextChanged(
+              charSequence: CharSequence?,
+              start: Int,
+              count: Int,
+              after: Int
+            ) {}
+
+            override fun onTextChanged(
+              charSequence: CharSequence?,
+              start: Int,
+              before: Int,
+              count: Int
+            ) {
+              registerViewModel.updateFilterValue(
+                RegisterFilterType.SEARCH_FILTER,
+                charSequence.toString()
+              )
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+          }
+        )
+      }
+    }
   }
 
   private fun setupSideMenu() {
