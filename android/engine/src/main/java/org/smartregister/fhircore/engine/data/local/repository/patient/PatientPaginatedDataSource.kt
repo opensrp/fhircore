@@ -15,7 +15,7 @@ class PatientPaginatedDataSource(val fhirEngine: FhirEngine, domainMapper: Domai
   private var query: String = ""
 
   override suspend fun loadData(pageNumber: Int): List<PatientItem> {
-    return fhirRepository.loadData(
+    return registerRepository.loadData(
       pageNumber = pageNumber,
       query = query,
       primaryFilterCallback = { search: Search -> search.filter(Patient.ACTIVE, true) },

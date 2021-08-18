@@ -20,14 +20,25 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.eir.R
+import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
+import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireUtils.buildQuestionnaireIntent
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.data.local.repository.patient.PatientPaginatedDataSource
 import org.smartregister.fhircore.engine.ui.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
-import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.FormConfigUtil
 
 class PatientRegisterActivity : BaseRegisterActivity() {
+
+  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+
+  private lateinit var questionnaireFormConfig: QuestionnaireFormConfig
 
   private val patientItemMapper = PatientItemMapper
 
@@ -47,11 +58,35 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     )
 
   override fun onSideMenuOptionSelected(item: MenuItem): Boolean {
-    showToast("Clicked ${item.title}")
     return true
   }
 
-  override fun registerClient() {}
+  override fun registerClient() {
+    lifecycleScope.launch {
+      questionnaireFormConfig =
+        withContext(dispatcherProvider.io()) {
+          FormConfigUtil.loadConfig(
+            QuestionnaireFormConfig.COVAX_DETAIL_VIEW_CONFIG_ID,
+            this@PatientRegisterActivity
+          )
+        }
+
+      with(questionnaireFormConfig) {
+        val questionnaireId = registrationQuestionnaireIdentifier
+        val questionnaireTitle = registrationQuestionnaireTitle
+
+        startActivity(
+          buildQuestionnaireIntent(
+            context = this@PatientRegisterActivity,
+            questionnaireTitle = questionnaireTitle,
+            questionnaireId = questionnaireId,
+            patientId = null,
+            isNewPatient = true
+          )
+        )
+      }
+    }
+  }
 
   override fun supportedFragments(): List<Fragment> {
     val patientRegisterFragment =

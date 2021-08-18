@@ -4,11 +4,11 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
 
 /**
- * Implement [FhirRepository] to query for FHIR resources of type [I]. The result should then be
+ * Implement [RegisterRepository] to query for FHIR resources of type [I]. The result should then be
  * transformed to [O] using the provided [domainMapper]. Queries are submitted through [FhirEngine]
  * search API
  */
-interface FhirRepository<I : Any, O> {
+interface RegisterRepository<I : Any, O> {
   val domainMapper: DomainMapper<I, O>
   val defaultPageSize: Int
   val fhirEngine: FhirEngine

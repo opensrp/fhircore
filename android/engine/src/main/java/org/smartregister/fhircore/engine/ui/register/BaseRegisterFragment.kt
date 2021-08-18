@@ -1,6 +1,9 @@
 package org.smartregister.fhircore.engine.ui.register
 
+import android.os.Bundle
+import android.view.View
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
 import org.smartregister.fhircore.engine.util.ListenerIntent
 
@@ -9,6 +12,8 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
   abstract val paginatedDataSource: PaginatedDataSource<I, O>
 
   abstract val registerDataViewModel: BaseRegisterDataViewModel<I, O>
+
+  protected val registerViewModel by activityViewModels<RegisterViewModel>()
 
   /**
    * Implement functionality to navigate to details view when an item with [uniqueIdentifier] is
@@ -23,4 +28,13 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
    * [data] of type [O] is also passed when item is clicked.
    */
   abstract fun onItemClicked(listenerIntent: ListenerIntent, data: O)
+
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    super.onViewCreated(view, savedInstanceState)
+    if (requireActivity() !is BaseRegisterActivity) {
+      throw (IllegalAccessException(
+        "You can only use BaseRegisterFragment in BaseRegisterActivity context"
+      ))
+    }
+  }
 }

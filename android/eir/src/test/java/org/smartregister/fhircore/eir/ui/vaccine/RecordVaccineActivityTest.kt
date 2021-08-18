@@ -122,8 +122,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
       every { entryComponent.resource } returns Immunization()
       every { bundle.entry } returns listOf(entryComponent)
-      every { ResourceMapper.extract(any(), any()) } returns bundle
-
+      coEvery { ResourceMapper.extract(any(), any()) } returns bundle
       every { questionnaireResponse.item } returns items
       every { item.answer } throws IndexOutOfBoundsException()
       every { answer.valueCoding } returns coding

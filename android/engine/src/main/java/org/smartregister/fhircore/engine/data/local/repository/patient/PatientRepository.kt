@@ -10,7 +10,7 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
-import org.smartregister.fhircore.engine.data.domain.util.FhirRepository
+import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.data.local.repository.model.PatientItem
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -19,7 +19,7 @@ class PatientRepository(
   override val fhirEngine: FhirEngine,
   override val domainMapper: DomainMapper<Pair<Patient, List<Immunization>>, PatientItem>,
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
-) : FhirRepository<Pair<Patient, List<Immunization>>, PatientItem> {
+) : RegisterRepository<Pair<Patient, List<Immunization>>, PatientItem> {
 
   override val defaultPageSize: Int
     get() = 50

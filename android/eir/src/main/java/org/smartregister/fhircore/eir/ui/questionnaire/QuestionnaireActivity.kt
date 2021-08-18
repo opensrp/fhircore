@@ -24,27 +24,25 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
-import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
-import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.BooleanType
-import org.hl7.fhir.r4.model.DateType
+import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 
 /**
  * Launches Questionnaire with given id. If questionnaire has subjectType = Patient his activity can
- * handle data persistence for Resources [Patient], In other case must implement
- * ActivityResultLauncher for handling and persistence for result
+ * handle data persistence for Resources [Patient], [Observation], [RiskAssessment], [Flag]. In
+ * other case must implement ActivityResultLauncher for handling and persistence for result
  *
- * In case you want to do further processing on data after save you can implement
+ * Incase you want to do further processing on data after save you can implement
  * ActivityResultLauncher
  *
  * ```
@@ -61,7 +59,7 @@ import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
  * ```
  */
 class QuestionnaireActivity : AppCompatActivity(), View.OnClickListener {
-  private val viewModel by viewModels<QuestionnaireViewModel>()
+  internal val viewModel by viewModels<QuestionnaireViewModel>()
   private val parser = FhirContext.forR4().newJsonParser()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,14 +70,23 @@ class QuestionnaireActivity : AppCompatActivity(), View.OnClickListener {
     // Only add the fragment once, when the activity is first created.
     if (savedInstanceState == null) {
       val fragment = QuestionnaireFragment()
-      fragment.arguments = bundleOf(BUNDLE_KEY_QUESTIONNAIRE to getQuestionnaire())
+      intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)?.let {
+        fragment.arguments =
+          bundleOf(
+            BUNDLE_KEY_QUESTIONNAIRE to parser.encodeResourceToString(getQuestionnaire()),
+            BUNDLE_KEY_QUESTIONNAIRE_RESPONSE to
+                    parser.encodeResourceToString(getQuestionnaireResponse())
+          )
+      }
+        ?: kotlin.run {
+          fragment.arguments =
+            bundleOf(BUNDLE_KEY_QUESTIONNAIRE to parser.encodeResourceToString(getQuestionnaire()))
+        }
 
       supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
     }
 
-    val saveButton = findViewById<Button>(R.id.btn_save_client_info)
-
-    saveButton.setOnClickListener(this)
+    findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
 
     // todo bypass the structure map
     intent.putExtra(QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR, "true")
@@ -103,129 +110,32 @@ class QuestionnaireActivity : AppCompatActivity(), View.OnClickListener {
     finish()
   }
 
-  private fun getQuestionnaire(): String {
+  private fun getQuestionnaire(): Questionnaire {
     val questionnaire = viewModel.questionnaire
-
-    intent.getStringExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID)?.let {
+    // TODO: Handle Pre Assigned Id Dynamically
+    /*intent.getStringExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID)?.let {
       setBarcode(questionnaire, it, true)
-    }
+    }*/
+    return questionnaire
+  }
 
-    // todo the data is auto populated by form if proper mapping is done. check it out and remove
-    // all this
+  private fun getQuestionnaireResponse(): QuestionnaireResponse {
+    val questionnaire = viewModel.questionnaire
+    var questionnaireResponse = QuestionnaireResponse()
+
     intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)?.let {
-      var patient: Patient? = null
-      viewModel.viewModelScope.launch {
-        patient = EirApplication.getContext().fhirEngine.load(Patient::class.java, it)
+      val patient = runBlocking {
+        EirApplication.getContext().fhirEngine.load(Patient::class.java, it)
       }
 
-      patient?.let {
-        setBarcode(questionnaire, it.id, true)
-
-        // set first name
-        questionnaire.find("PR-name-text")?.apply {
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent()
-                .setValue(StringType(it.name[0].given[0].value))
-            )
-        }
-
-        // set family name
-        questionnaire.find("PR-name-family")?.apply {
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent()
-                .setValue(StringType(it.name[0].family))
-            )
-        }
-
-        // set birthdate
-        questionnaire.find("patient-0-birth-date")?.apply {
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent().setValue(DateType(it.birthDate))
-            )
-        }
-
-        // set gender
-        questionnaire.find("patient-0-gender")?.apply {
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent()
-                .setValue(StringType(it.gender.toCode()))
-            )
-        }
-
-        // set telecom
-        questionnaire.find("PR-telecom-value")?.apply {
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent()
-                .setValue(StringType(it.telecom[0].value))
-            )
-        }
-
-        // set city
-        questionnaire.find("PR-address-city")?.apply {
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent()
-                .setValue(StringType(it.address[0].city))
-            )
-        }
-
-        // set country
-        questionnaire.find("PR-address-country")?.apply {
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent()
-                .setValue(StringType(it.address[0].country))
-            )
-        }
-
-        // set is-active
-        questionnaire.find("PR-active")?.apply {
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent().setValue(BooleanType(it.active))
-            )
-        }
+      patient.let {
+        questionnaireResponse = runBlocking { ResourceMapper.populate(questionnaire, patient) }
       }
     }
 
-    return parser.encodeResourceToString(questionnaire)
+    return questionnaireResponse
   }
 
-  private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
-    questionnaire.find(QUESTIONNAIRE_ARG_BARCODE_KEY)?.apply {
-      initial =
-        mutableListOf(Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(code)))
-      readOnly = readonly
-    }
-  }
-
-  private fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {
-    return item.find(linkId, null)
-  }
-
-  private fun List<Questionnaire.QuestionnaireItemComponent>.find(
-    linkId: String,
-    default: Questionnaire.QuestionnaireItemComponent?
-  ): Questionnaire.QuestionnaireItemComponent? {
-    var result = default
-    run loop@{
-      forEach {
-        if (it.linkId == linkId) {
-          result = it
-          return@loop
-        } else if (it.item.isNotEmpty()) {
-          result = it.item.find(linkId, result)
-        }
-      }
-    }
-
-    return result
-  }
 
   companion object {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
@@ -237,10 +147,10 @@ class QuestionnaireActivity : AppCompatActivity(), View.OnClickListener {
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR = "bypass-sdk-extractor"
 
-    fun getExtrasBundle(clientIdentifier: String, detailView: QuestionnaireFormConfig) =
+    fun getExtrasBundle(clientIdentifier: String, questionnaireFormConfig: QuestionnaireFormConfig) =
       bundleOf(
-        Pair(QUESTIONNAIRE_TITLE_KEY, detailView.registrationQuestionnaireTitle),
-        Pair(QUESTIONNAIRE_PATH_KEY, detailView.registrationQuestionnaireIdentifier),
+        Pair(QUESTIONNAIRE_TITLE_KEY, questionnaireFormConfig.registrationQuestionnaireTitle),
+        Pair(QUESTIONNAIRE_PATH_KEY, questionnaireFormConfig.registrationQuestionnaireIdentifier),
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier)
       )
   }

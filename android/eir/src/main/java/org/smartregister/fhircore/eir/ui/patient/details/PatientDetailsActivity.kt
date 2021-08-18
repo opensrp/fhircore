@@ -32,7 +32,7 @@ class PatientDetailsActivity : AppCompatActivity() {
 
   private lateinit var patientId: String
 
-  private lateinit var detailView: QuestionnaireFormConfig
+  private lateinit var questionnaireFormConfig: QuestionnaireFormConfig
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -40,7 +40,7 @@ class PatientDetailsActivity : AppCompatActivity() {
     setSupportActionBar(patientDetailsToolbar)
 
     if (savedInstanceState == null) {
-      detailView =
+      questionnaireFormConfig =
         FormConfigUtil.loadConfig(QuestionnaireFormConfig.COVAX_DETAIL_VIEW_CONFIG_ID, this)
 
       patientId = intent.extras?.getString(QuestionnaireFormConfig.COVAX_ARG_ITEM_ID) ?: ""
@@ -65,7 +65,7 @@ class PatientDetailsActivity : AppCompatActivity() {
     if (item.itemId == R.id.patient_profile_edit) {
       startActivity(
         Intent(this, QuestionnaireActivity::class.java)
-          .putExtras(QuestionnaireActivity.getExtrasBundle(patientId, detailView))
+          .putExtras(QuestionnaireActivity.getExtrasBundle(patientId, questionnaireFormConfig))
       )
       return true
     }

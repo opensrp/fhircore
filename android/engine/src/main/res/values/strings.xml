@@ -30,4 +30,5 @@
     <string name="fully_vaccinated">"Fully vaccinated"</string>
     <string name="record_vaccine_nl">Record\nVaccine</string>
     <string name="date_last_seen">Last seen %1$s</string>
+    <string name="str_save">Save</string>
 </resources>
