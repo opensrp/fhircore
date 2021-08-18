@@ -40,10 +40,15 @@ object PatientItemMapper : DomainMapper<Pair<Patient, List<Immunization>>, Patie
 
   override fun mapToDomainModel(dto: Pair<Patient, List<Immunization>>): PatientItem {
     val (patient, immunizations) = dto
+    val name = patient.extractName()
+    val gender = patient.extractGender(EirApplication.getContext()).first()
+    val age = patient.extractAge()
     return PatientItem(
       patientIdentifier = patient.logicalId,
-      demographics =
-        "${patient.extractName()}, ${patient.extractGender(EirApplication.getContext()).first()}, ${patient.extractAge()}",
+      name = name,
+      gender = gender.toString(),
+      age = age,
+      demographics = "$name, $gender, $age",
       lastSeen = patient.getLastSeen(immunizations),
       vaccineStatus = immunizations.getVaccineStatus(),
       atRisk = patient.atRisk()
@@ -107,6 +112,6 @@ object PatientItemMapper : DomainMapper<Pair<Patient, List<Immunization>>, Patie
     )
   }
 
-  fun Patient.atRisk() =
+  private fun Patient.atRisk() =
     this.extension.singleOrNull { it.value.toString().contains(RISK) }?.value?.toString() ?: ""
 }

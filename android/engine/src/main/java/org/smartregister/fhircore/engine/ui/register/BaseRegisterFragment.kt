@@ -4,6 +4,9 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
@@ -41,12 +44,14 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
     registerViewModel.filterValue.observe(
       viewLifecycleOwner,
       {
-        val (registerFilterType, value) = it
-        registerDataViewModel.filterRegisterData(
-          registerFilterType = registerFilterType,
-          filterValue = value,
-          registerFilter = this::performFilter
-        )
+        lifecycleScope.launch(Dispatchers.Main) {
+          val (registerFilterType, value) = it
+          registerDataViewModel.filterRegisterData(
+            registerFilterType = registerFilterType,
+            filterValue = value,
+            registerFilter = this@BaseRegisterFragment::performFilter
+          )
+        }
       }
     )
   }

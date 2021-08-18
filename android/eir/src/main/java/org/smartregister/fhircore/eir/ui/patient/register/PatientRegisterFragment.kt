@@ -20,6 +20,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.collectAsLazyPagingItems
 import org.hl7.fhir.r4.model.Immunization
@@ -68,9 +69,9 @@ class PatientRegisterFragment :
 
   @Composable
   override fun ConstructRegisterList() {
-    val pagingItems = registerDataViewModel.registerData.collectAsLazyPagingItems()
+    val registerData = registerDataViewModel.registerData.observeAsState()
     PaginatedList(
-      pagingItems = pagingItems,
+      pagingItems = registerData.value!!.collectAsLazyPagingItems(),
       { patientItem ->
         PatientRow(
           patientItem = patientItem,
@@ -92,7 +93,9 @@ class PatientRegisterFragment :
     return when (registerFilterType) {
       RegisterFilterType.SEARCH_FILTER -> {
         if (value is String && value.isEmpty()) return true
-        else data.demographics.contains(value.toString(), ignoreCase = true)
+        else
+          data.name.contains(value.toString(), ignoreCase = true) ||
+            data.patientIdentifier.contentEquals(value.toString())
       }
       RegisterFilterType.OVERDUE_FILTER -> data.vaccineStatus.status == VaccineStatus.OVERDUE
     }

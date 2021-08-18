@@ -25,17 +25,14 @@ fun <O : Any> PaginatedList(
 
     pagingItems.apply {
       when {
-        loadState.refresh is LoadState.Loading -> {
+        loadState.refresh is LoadState.Loading ->
           item { CircularProgressBar(modifier = modifier.fillParentMaxSize()) }
-        }
-        loadState.append is LoadState.Loading -> {
-          item { CircularProgressBar() }
-        }
+        loadState.append is LoadState.Loading -> item { CircularProgressBar() }
         loadState.refresh is LoadState.Error -> {
-          val e = pagingItems.loadState.refresh as LoadState.Error
+          val loadStateError = pagingItems.loadState.refresh as LoadState.Error
           item {
             ErrorMessage(
-              message = e.error.localizedMessage!!,
+              message = loadStateError.error.localizedMessage!!,
               modifier = modifier.fillParentMaxSize(),
               onClickRetry = { retry() }
             )

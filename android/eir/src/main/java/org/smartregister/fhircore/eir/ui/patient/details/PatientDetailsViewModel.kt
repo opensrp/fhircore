@@ -37,7 +37,7 @@ class PatientDetailsViewModel(
 
   val patientImmunizations = MutableLiveData<List<Immunization>>()
 
-  //Todo migrate to PatientRepository to follow repository pattern
+  // Todo migrate to PatientRepository to follow repository pattern
   fun fetchDemographics() {
     if (patientId.isNotEmpty())
       viewModelScope.launch(dispatcher.io()) {
@@ -46,7 +46,7 @@ class PatientDetailsViewModel(
       }
   }
 
-  //Todo migrate to PatientRepository to follow repository pattern
+  // Todo migrate to PatientRepository to follow repository pattern
   fun fetchImmunizations() {
     if (patientId.isNotEmpty())
       viewModelScope.launch(dispatcher.io()) {

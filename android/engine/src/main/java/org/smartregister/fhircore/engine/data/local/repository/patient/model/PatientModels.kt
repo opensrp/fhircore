@@ -5,6 +5,9 @@ import androidx.compose.runtime.Stable
 @Stable
 data class PatientItem(
   val patientIdentifier: String = "",
+  val name: String = "",
+  val gender: String = "",
+  val age: String = "",
   val demographics: String = "",
   val lastSeen: String = "",
   val vaccineStatus: PatientVaccineStatus = PatientVaccineStatus(VaccineStatus.NOT_VACCINATED, ""),
