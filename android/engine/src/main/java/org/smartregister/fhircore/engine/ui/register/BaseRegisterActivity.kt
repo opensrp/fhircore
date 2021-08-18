@@ -144,13 +144,14 @@ abstract class BaseRegisterActivity :
     registerActivityBinding.listPager.adapter = registerPagerAdapter
 
     setupSearchView()
+    setupDueButtonView()
   }
 
   @SuppressLint("ClickableViewAccessibility")
   private fun setupSearchView() {
     with(registerActivityBinding.toolbarLayout) {
       editTextSearch.run {
-        //Todo add button in the form of an icon to clear the search text
+        // Todo add button in the form of an icon to clear the search text
         addTextChangedListener(
           object : TextWatcher {
             override fun beforeTextChanged(
@@ -175,6 +176,15 @@ abstract class BaseRegisterActivity :
             override fun afterTextChanged(s: Editable?) {}
           }
         )
+      }
+    }
+  }
+
+  private fun setupDueButtonView() {
+    with(registerActivityBinding.toolbarLayout) {
+      btnShowOverdue.setOnCheckedChangeListener { _, isChecked ->
+        if (isChecked) registerViewModel.updateFilterValue(RegisterFilterType.OVERDUE_FILTER, true)
+        else registerViewModel.updateFilterValue(RegisterFilterType.OVERDUE_FILTER, false)
       }
     }
   }

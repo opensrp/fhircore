@@ -97,7 +97,10 @@ class PatientRegisterFragment :
           data.name.contains(value.toString(), ignoreCase = true) ||
             data.patientIdentifier.contentEquals(value.toString())
       }
-      RegisterFilterType.OVERDUE_FILTER -> data.vaccineStatus.status == VaccineStatus.OVERDUE
+      RegisterFilterType.OVERDUE_FILTER -> {
+        if (value is Boolean && value) data.vaccineStatus.status == VaccineStatus.OVERDUE
+        else return true
+      }
     }
   }
 }
