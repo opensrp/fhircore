@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.base
 
 import android.view.ViewGroup
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import org.smartregister.fhircore.engine.ui.base.BaseRecyclerViewAdapter.DataDiffCallback
@@ -32,10 +33,10 @@ import org.smartregister.fhircore.engine.util.ListenerIntent
  *
  * @param dataDiffCallback Subclass of [DataDiffCallback] that is used to compare list row [Data]
  */
-abstract class BaseRecyclerViewAdapter<Data>(
+abstract class BaseRecyclerViewAdapter<Data: Any>(
     private val onItemClicked: (ListenerIntent, Data) -> Unit,
     dataDiffCallback: DataDiffCallback<Data>
-) : ListAdapter<Data, BaseRecyclerViewHolder<Data>>(dataDiffCallback) {
+) : PagingDataAdapter<Data, BaseRecyclerViewHolder<Data>>(dataDiffCallback) {
 
   abstract override fun onCreateViewHolder(
     parent: ViewGroup,
@@ -43,7 +44,7 @@ abstract class BaseRecyclerViewAdapter<Data>(
   ): BaseRecyclerViewHolder<Data>
 
   override fun onBindViewHolder(holder: BaseRecyclerViewHolder<Data>, position: Int) {
-    holder.bindTo(currentList[position], onItemClicked)
+      getItem(position)?.let { holder.bindTo(it, onItemClicked) }
   }
 
   abstract class DataDiffCallback<Data> : DiffUtil.ItemCallback<Data>()
