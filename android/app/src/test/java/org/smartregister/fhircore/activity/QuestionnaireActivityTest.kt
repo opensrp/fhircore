@@ -44,11 +44,12 @@ import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE_KEY
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
+import org.smartregister.fhircore.shadow.ShadowNpmPackageProvider
 import org.smartregister.fhircore.shadow.TestUtils
 import org.smartregister.fhircore.util.QuestionnaireUtils
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
-@Config(shadows = [FhirApplicationShadow::class])
+@Config(shadows = [FhirApplicationShadow::class, ShadowNpmPackageProvider::class])
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
   private lateinit var context: FhirApplication
   private lateinit var questionnaireActivity: QuestionnaireActivity
