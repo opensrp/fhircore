@@ -15,11 +15,10 @@ import org.smartregister.fhircore.engine.data.local.repository.model.PatientItem
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-class PatientRepository
-private constructor(
+class PatientRepository(
   override val fhirEngine: FhirEngine,
   override val domainMapper: DomainMapper<Pair<Patient, List<Immunization>>, PatientItem>,
-  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+  private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : FhirRepository<Pair<Patient, List<Immunization>>, PatientItem> {
 
   override val defaultPageSize: Int
@@ -74,21 +73,5 @@ private constructor(
         }
       }
       .toInt()
-  }
-
-  companion object {
-    @Volatile private var instance: PatientRepository? = null
-
-    fun getInstance(
-      fhirEngine: FhirEngine,
-      domainMapper: DomainMapper<Pair<Patient, List<Immunization>>, PatientItem>,
-      dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
-    ): PatientRepository =
-      instance
-        ?: synchronized(this) {
-          PatientRepository(fhirEngine = fhirEngine, domainMapper, dispatcherProvider).also {
-            instance = it
-          }
-        }
   }
 }

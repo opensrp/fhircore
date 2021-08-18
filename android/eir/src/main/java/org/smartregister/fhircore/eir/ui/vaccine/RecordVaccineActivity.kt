@@ -23,11 +23,9 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import java.util.Date
 import java.util.UUID
-import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.DateTimeType
@@ -48,15 +46,15 @@ import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class RecordVaccineActivity : AppCompatActivity() {
 
+  lateinit var recordVaccineViewModel: RecordVaccineViewModel
   private val questionnaireViewModel: QuestionnaireViewModel by viewModels()
-  private lateinit var recordVaccineViewModel: RecordVaccineViewModel
   private lateinit var clientIdentifier: String
   private lateinit var detailView: QuestionnaireFormConfig
   private lateinit var recordVaccine: ActivityResultLauncher<QuestionnaireFormConfig>
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
+    setContentView(R.layout.activity_record_vaccine)
     clientIdentifier = intent.getStringExtra(QuestionnaireFormConfig.COVAX_ARG_ITEM_ID)!!
     detailView =
       FormConfigUtil.loadConfig(QuestionnaireFormConfig.COVAX_DETAIL_VIEW_CONFIG_ID, this)
@@ -76,7 +74,7 @@ class RecordVaccineActivity : AppCompatActivity() {
           this,
           RecordVaccineViewModel(
               application,
-              PatientRepository.getInstance(
+              PatientRepository(
                 (application as ConfigurableApplication).fhirEngine,
                 PatientItemMapper
               )
@@ -89,40 +87,36 @@ class RecordVaccineActivity : AppCompatActivity() {
   }
 
   private fun recordVaccine() {
-    lifecycleScope.launch {
-      recordVaccineViewModel
-        .getPatientItem(clientIdentifier)
-        .observe(this@RecordVaccineActivity, { recordVaccine.launch(detailView) })
-    }
+    recordVaccineViewModel
+      .getVaccineSummary(clientIdentifier)
+      .observe(this@RecordVaccineActivity, { recordVaccine.launch(detailView) })
   }
 
   private fun handleImmunizationResult(response: QuestionnaireResponse) {
     val questionnaire =
       questionnaireViewModel.loadQuestionnaire(detailView.vaccineQuestionnaireIdentifier)
-    lifecycleScope.launch {
-      recordVaccineViewModel.getPatientItem(clientIdentifier).observe(this@RecordVaccineActivity) {
-        val immunization =
-          ResourceMapper.extract(questionnaire, response).entry[0].resource as Immunization
-        immunization.id = UUID.randomUUID().toString()
-        immunization.recorded = Date()
-        immunization.status = Immunization.ImmunizationStatus.COMPLETED
-        immunization.vaccineCode =
-          CodeableConcept().apply {
-            this.text = response.item[0].answer[0].valueCoding.code
-            this.coding = listOf(response.item[0].answer[0].valueCoding)
-          }
-        immunization.occurrence = DateTimeType.today()
-        immunization.patient = Reference().apply { this.reference = "Patient/$clientIdentifier" }
+    recordVaccineViewModel.getVaccineSummary(clientIdentifier).observe(this@RecordVaccineActivity) {
+      val immunization =
+        ResourceMapper.extract(questionnaire, response).entry[0].resource as Immunization
+      immunization.id = UUID.randomUUID().toString()
+      immunization.recorded = Date()
+      immunization.status = Immunization.ImmunizationStatus.COMPLETED
+      immunization.vaccineCode =
+        CodeableConcept().apply {
+          this.text = response.item[0].answer[0].valueCoding.code
+          this.coding = listOf(response.item[0].answer[0].valueCoding)
+        }
+      immunization.occurrence = DateTimeType.today()
+      immunization.patient = Reference().apply { this.reference = "Patient/$clientIdentifier" }
 
-        immunization.protocolApplied =
-          listOf(
-            Immunization.ImmunizationProtocolAppliedComponent().apply {
-              val currentDoseNumber = it.doseNumber
-              this.doseNumber = PositiveIntType(currentDoseNumber + 1)
-            }
-          )
-        showVaccineRecordDialog(immunization, it)
-      }
+      immunization.protocolApplied =
+        listOf(
+          Immunization.ImmunizationProtocolAppliedComponent().apply {
+            val currentDoseNumber = it.doseNumber
+            this.doseNumber = PositiveIntType(currentDoseNumber + 1)
+          }
+        )
+      showVaccineRecordDialog(immunization, it)
     }
   }
 
