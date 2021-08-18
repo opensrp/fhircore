@@ -12,9 +12,9 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
-import org.smartregister.fhircore.engine.ui.model.Language
-import org.smartregister.fhircore.engine.ui.model.SideMenuOption
-import org.smartregister.fhircore.engine.ui.model.SyncStatus
+import org.smartregister.fhircore.engine.ui.register.model.Language
+import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
+import org.smartregister.fhircore.engine.ui.register.model.SyncStatus
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper

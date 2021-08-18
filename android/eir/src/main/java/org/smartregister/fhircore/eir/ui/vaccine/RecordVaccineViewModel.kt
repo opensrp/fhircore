@@ -23,8 +23,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.PositiveIntType
-import org.smartregister.fhircore.engine.data.local.repository.model.PatientVaccineSummary
 import org.smartregister.fhircore.engine.data.local.repository.patient.PatientRepository
+import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientVaccineSummary
 
 class RecordVaccineViewModel(application: Application, val patientRepository: PatientRepository) :
   AndroidViewModel(application) {

@@ -28,8 +28,8 @@ import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireUtils.buildQuestionnaireIntent
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.data.local.repository.patient.PatientPaginatedDataSource
-import org.smartregister.fhircore.engine.ui.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
+import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FormConfigUtil

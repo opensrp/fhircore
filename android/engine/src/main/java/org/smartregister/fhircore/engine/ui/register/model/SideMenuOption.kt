@@ -1,4 +1,4 @@
-package org.smartregister.fhircore.engine.ui.model
+package org.smartregister.fhircore.engine.ui.register.model
 
 import android.graphics.drawable.Drawable
 import com.google.android.fhir.search.Search

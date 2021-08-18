@@ -44,9 +44,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.engine.data.local.repository.model.PatientItem
-import org.smartregister.fhircore.engine.data.local.repository.model.PatientVaccineStatus
-import org.smartregister.fhircore.engine.data.local.repository.model.VaccineStatus
+import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientItem
+import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientVaccineStatus
+import org.smartregister.fhircore.engine.data.local.repository.patient.model.VaccineStatus
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor

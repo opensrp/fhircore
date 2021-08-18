@@ -1,4 +1,4 @@
-package org.smartregister.fhircore.engine.data.local.repository.model
+package org.smartregister.fhircore.engine.data.local.repository.patient.model
 
 import androidx.compose.runtime.Stable
 

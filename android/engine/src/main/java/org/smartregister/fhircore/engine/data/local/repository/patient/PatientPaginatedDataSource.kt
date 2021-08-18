@@ -7,7 +7,7 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
-import org.smartregister.fhircore.engine.data.local.repository.model.PatientItem
+import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientItem
 
 class PatientPaginatedDataSource(val fhirEngine: FhirEngine, domainMapper: DomainMapper<Pair<Patient, List<Immunization>>, PatientItem>) :
   PaginatedDataSource<Pair<Patient, List<Immunization>>, PatientItem>(PatientRepository(fhirEngine, domainMapper)) {

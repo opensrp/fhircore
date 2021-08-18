@@ -27,8 +27,8 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.eir.ui.patient.register.components.PatientRow
-import org.smartregister.fhircore.engine.data.local.repository.model.PatientItem
 import org.smartregister.fhircore.engine.data.local.repository.patient.PatientPaginatedDataSource
+import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientItem
 import org.smartregister.fhircore.engine.ui.components.PaginatedList
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment

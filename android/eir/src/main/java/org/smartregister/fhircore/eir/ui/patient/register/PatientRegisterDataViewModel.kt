@@ -19,8 +19,8 @@ package org.smartregister.fhircore.eir.ui.patient.register
 import android.app.Application
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.engine.data.local.repository.model.PatientItem
 import org.smartregister.fhircore.engine.data.local.repository.patient.PatientPaginatedDataSource
+import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientItem
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterDataViewModel
 
 class PatientRegisterDataViewModel(

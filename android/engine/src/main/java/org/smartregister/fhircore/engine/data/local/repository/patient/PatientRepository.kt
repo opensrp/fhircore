@@ -11,7 +11,7 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
-import org.smartregister.fhircore.engine.data.local.repository.model.PatientItem
+import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientItem
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 

@@ -75,7 +75,7 @@ class QuestionnaireActivity : AppCompatActivity(), View.OnClickListener {
           bundleOf(
             BUNDLE_KEY_QUESTIONNAIRE to parser.encodeResourceToString(getQuestionnaire()),
             BUNDLE_KEY_QUESTIONNAIRE_RESPONSE to
-                    parser.encodeResourceToString(getQuestionnaireResponse())
+              parser.encodeResourceToString(getQuestionnaireResponse())
           )
       }
         ?: kotlin.run {
@@ -136,7 +136,6 @@ class QuestionnaireActivity : AppCompatActivity(), View.OnClickListener {
     return questionnaireResponse
   }
 
-
   companion object {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
     const val QUESTIONNAIRE_PATH_KEY = "questionnaire-path-key"
@@ -147,7 +146,10 @@ class QuestionnaireActivity : AppCompatActivity(), View.OnClickListener {
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR = "bypass-sdk-extractor"
 
-    fun getExtrasBundle(clientIdentifier: String, questionnaireFormConfig: QuestionnaireFormConfig) =
+    fun getExtrasBundle(
+      clientIdentifier: String,
+      questionnaireFormConfig: QuestionnaireFormConfig
+    ) =
       bundleOf(
         Pair(QUESTIONNAIRE_TITLE_KEY, questionnaireFormConfig.registrationQuestionnaireTitle),
         Pair(QUESTIONNAIRE_PATH_KEY, questionnaireFormConfig.registrationQuestionnaireIdentifier),
