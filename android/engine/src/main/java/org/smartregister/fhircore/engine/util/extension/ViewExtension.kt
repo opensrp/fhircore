@@ -26,14 +26,11 @@ enum class DrawablePosition(val position: Int) {
 }
 
 @SuppressLint("ClickableViewAccessibility")
-fun EditText.addOnDrawableClickedListener(
-  drawablePosition: DrawablePosition,
-  onClicked: () -> Unit
-) {
+fun EditText.addOnDrawableClickListener(drawablePosition: DrawablePosition, onClicked: () -> Unit) {
   this.setOnTouchListener(
     object : View.OnTouchListener {
-      override fun onTouch(view: View, motionEvent: MotionEvent?): Boolean {
-        if (motionEvent == null) return false
+      override fun onTouch(view: View?, motionEvent: MotionEvent?): Boolean {
+        if (motionEvent == null || view == null) return false
         if (motionEvent.action == MotionEvent.ACTION_UP &&
             (view as EditText).isDrawableClicked(drawablePosition, motionEvent)
         ) {
@@ -46,11 +43,11 @@ fun EditText.addOnDrawableClickedListener(
   )
 }
 
-private fun EditText?.isDrawableClicked(
+private fun EditText.isDrawableClicked(
   drawablePosition: DrawablePosition,
   motionEvent: MotionEvent?,
 ): Boolean {
-  if (motionEvent == null || this == null) return false
+  if (motionEvent == null) return false
   return when (drawablePosition) {
     DrawablePosition.DRAWABLE_RIGHT ->
       motionEvent.rawX >=

@@ -16,6 +16,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.core.widget.doAfterTextChanged
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -37,8 +38,11 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.SyncStatus
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.DrawablePosition
+import org.smartregister.fhircore.engine.util.extension.addOnDrawableClickListener
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import org.smartregister.fhircore.engine.util.extension.getDrawable
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -151,7 +155,25 @@ abstract class BaseRegisterActivity :
   private fun setupSearchView() {
     with(registerActivityBinding.toolbarLayout) {
       editTextSearch.run {
-        // Todo add button in the form of an icon to clear the search text
+        doAfterTextChanged { editable: Editable? ->
+          if (editable?.isEmpty() == true) {
+            setOnTouchListener(null)
+            setCompoundDrawablesWithIntrinsicBounds(
+              this.getDrawable(R.drawable.ic_search),
+              null,
+              null,
+              null
+            )
+          } else {
+            setCompoundDrawablesWithIntrinsicBounds(
+              null,
+              null,
+              getDrawable(R.drawable.ic_cancel),
+              null
+            )
+            this.addOnDrawableClickListener(DrawablePosition.DRAWABLE_RIGHT) { editable?.clear() }
+          }
+        }
         addTextChangedListener(
           object : TextWatcher {
             override fun beforeTextChanged(
