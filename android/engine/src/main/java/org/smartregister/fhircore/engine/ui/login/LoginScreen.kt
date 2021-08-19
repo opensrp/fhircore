@@ -1,6 +1,7 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
+import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 
 @Composable
 fun LoginScreen(loginViewModel: LoginViewModel) {
@@ -49,6 +51,8 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
   )
   val username by loginViewModel.username.observeAsState("")
   val password by loginViewModel.password.observeAsState("")
+  val loginError by loginViewModel.loginError.observeAsState("")
+  val showProgressBar by loginViewModel.showProgressBar.observeAsState(false)
 
   LoginPage(
     viewConfiguration = viewConfiguration,
@@ -56,7 +60,9 @@ fun LoginScreen(loginViewModel: LoginViewModel) {
     onUsernameChanged = { loginViewModel.onUsernameUpdated(it) },
     password = password,
     onPasswordChanged = { loginViewModel.onPasswordUpdated(it) },
-    onLoginButtonClicked = { loginViewModel.attemptRemoteLogin() }
+    onLoginButtonClicked = { loginViewModel.attemptRemoteLogin() },
+    loginError = loginError,
+    showProgressBar = showProgressBar
   )
 }
 
@@ -69,8 +75,11 @@ fun LoginPage(
   onPasswordChanged: (String) -> Unit,
   onLoginButtonClicked: () -> Unit,
   modifier: Modifier = Modifier,
+  loginError: String = "",
+  showProgressBar: Boolean = false
 ) {
   var showPassword by remember { mutableStateOf(false) }
+
   Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
     Spacer(modifier = modifier.height(60.dp))
     Image(
@@ -86,12 +95,14 @@ fun LoginPage(
       modifier =
         modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.CenterHorizontally)
     )
+
     Text(
       fontSize = 16.sp,
       text = stringResource(id = R.string.app_version, viewConfiguration.applicationVersion),
       modifier = modifier.wrapContentWidth().padding(0.dp).align(Alignment.CenterHorizontally)
     )
     Spacer(modifier = modifier.height(40.dp))
+
     TextField(
       value = username,
       onValueChange = onUsernameChanged,
@@ -121,12 +132,27 @@ fun LoginPage(
         IconButton(onClick = { showPassword = !showPassword }) { Icon(imageVector = image, "") }
       }
     )
+    Spacer(modifier = modifier.height(10.dp))
+    if (loginError.isNotEmpty()) {
+      Text(
+        fontSize = 14.sp,
+        color = MaterialTheme.colors.error,
+        text = stringResource(id = R.string.login_error, loginError),
+        modifier = modifier.wrapContentWidth().padding(0.dp).align(Alignment.Start)
+      )
+    }
     Spacer(modifier = modifier.height(40.dp))
-    Button(
-      colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
-      onClick = onLoginButtonClicked,
-      modifier = modifier.fillMaxWidth()
-    ) { Text(text = stringResource(id = R.string.login_text), modifier = modifier.padding(8.dp)) }
+    Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) {
+      Button(
+        enabled = !showProgressBar && username.isNotEmpty() && password.isNotEmpty(),
+        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
+        onClick = onLoginButtonClicked,
+        modifier = modifier.fillMaxWidth()
+      ) { Text(text = stringResource(id = R.string.login_text), modifier = modifier.padding(8.dp)) }
+      if (showProgressBar) {
+        CircularProgressBar(modifier = modifier.matchParentSize().padding(4.dp))
+      }
+    }
 
     Spacer(modifier = modifier.height(40.dp))
     Text(

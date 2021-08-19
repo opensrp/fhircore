@@ -12,7 +12,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
@@ -23,7 +22,7 @@ import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
@@ -43,12 +42,14 @@ class LoginViewModel(
         response.body()?.run {
           Timber.i(this.string())
           SharedPreferencesHelper.init(application.applicationContext).write("USER", this.string())
+          _showProgressBar.postValue(false)
         }
       }
 
       override fun handleFailure(call: Call<ResponseBody>, throwable: Throwable) {
         Timber.e(throwable)
-        application.showToast(application.getString(R.string.userinfo_call_fail_error_message))
+        _loginError.postValue(throwable.localizedMessage)
+        _showProgressBar.postValue(false)
       }
     }
 
@@ -63,8 +64,11 @@ class LoginViewModel(
     object : ResponseHandler<OAuthResponse> {
       override fun handleResponse(call: Call<OAuthResponse>, response: Response<OAuthResponse>) {
         if (!response.isSuccessful) {
-          Timber.e("Error fetching access token %s", response.errorBody()?.string())
+          val errorResponse = response.errorBody()?.string()
+          _loginError.postValue(errorResponse?.decodeJson<LoginError>()?.errorDescription)
+          Timber.e("Error fetching access token %s", errorResponse)
           if (attemptLocalLogin()) _navigateToHome.value = true
+          _showProgressBar.postValue(false)
           return
         }
         with(authenticationService) {
@@ -74,17 +78,18 @@ class LoginViewModel(
           )
           getUserInfo().enqueue(userInfoResponseCallback)
           _navigateToHome.value = true
+          _showProgressBar.postValue(false)
         }
       }
 
       override fun handleFailure(call: Call<OAuthResponse>, throwable: Throwable) {
         Timber.e(throwable.stackTraceToString())
-        application.showToast(application.getString(R.string.login_call_fail_error_message))
-
         if (attemptLocalLogin()) {
           _navigateToHome.value = true
           return
         }
+        _loginError.postValue(throwable.localizedMessage)
+        _showProgressBar.postValue(false)
       }
     }
 
@@ -111,6 +116,14 @@ class LoginViewModel(
   val password: LiveData<String>
     get() = _password
 
+  private val _loginError = MutableLiveData<String>()
+  val loginError: LiveData<String>
+    get() = _loginError
+
+  private val _showProgressBar = MutableLiveData(false)
+  val showProgressBar
+  get() = _showProgressBar
+
   private val _loginViewConfiguration = MutableLiveData(loginViewConfiguration)
   val loginViewConfiguration: LiveData<LoginViewConfiguration>
     get() = _loginViewConfiguration
@@ -136,10 +149,12 @@ class LoginViewModel(
   }
 
   fun onUsernameUpdated(username: String) {
+    _loginError.value = ""
     _username.value = username
   }
 
   fun onPasswordUpdated(password: String) {
+    _loginError.value = ""
     _password.value = password
   }
 
@@ -154,6 +169,8 @@ class LoginViewModel(
 
   fun attemptRemoteLogin() {
     if (username.value != null && password.value != null) {
+      _loginError.postValue("")
+      _showProgressBar.postValue(true)
       authenticationService
         .fetchToken(username.value!!, password.value!!.toCharArray())
         .enqueue(oauthResponseCallback)

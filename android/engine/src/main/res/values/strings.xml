@@ -13,7 +13,7 @@
     <string name="app_logo">Application logo</string>
     <string name="powered_by">Powered By</string>
     <string name="app_version">Version %1$s</string>
-    <string name="login_text">Login</string>
+    <string name="login_text">LOGIN</string>
     <string name="username_input_hint">Enter username</string>
     <string name="password_input_hint">Enter password</string>
     <string name="login_call_fail_error_message">Failed to verify credentials from server. Check your internet connection</string>
@@ -31,4 +31,5 @@
     <string name="record_vaccine_nl">Record\nVaccine</string>
     <string name="date_last_seen">Last seen %1$s</string>
     <string name="str_save">Save</string>
+    <string name="login_error">Login error: %1$s</string>
 </resources>
