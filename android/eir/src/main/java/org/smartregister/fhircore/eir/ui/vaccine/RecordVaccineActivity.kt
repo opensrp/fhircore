@@ -26,6 +26,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import java.util.Date
 import java.util.UUID
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -51,14 +52,14 @@ class RecordVaccineActivity : BaseMultiLanguageActivity() {
   lateinit var recordVaccineViewModel: RecordVaccineViewModel
   private val questionnaireViewModel: QuestionnaireViewModel by viewModels()
   private lateinit var clientIdentifier: String
-  private lateinit var detailView: QuestionnaireFormConfig
+  private lateinit var questionnaireFormConfig: QuestionnaireFormConfig
   private lateinit var recordVaccine: ActivityResultLauncher<QuestionnaireFormConfig>
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_record_vaccine)
     clientIdentifier = intent.getStringExtra(QuestionnaireFormConfig.COVAX_ARG_ITEM_ID)!!
-    detailView =
+    questionnaireFormConfig =
       FormConfigUtil.loadConfig(QuestionnaireFormConfig.COVAX_DETAIL_VIEW_CONFIG_ID, this)
 
     recordVaccine =
@@ -67,7 +68,7 @@ class RecordVaccineActivity : BaseMultiLanguageActivity() {
       }
 
     supportActionBar!!.apply {
-      title = detailView.vaccineQuestionnaireTitle
+      title = questionnaireFormConfig.vaccineQuestionnaireTitle
       setDisplayHomeAsUpEnabled(true)
     }
 
@@ -91,15 +92,17 @@ class RecordVaccineActivity : BaseMultiLanguageActivity() {
   private fun recordVaccine() {
     recordVaccineViewModel
       .getVaccineSummary(clientIdentifier)
-      .observe(this@RecordVaccineActivity, { recordVaccine.launch(detailView) })
+      .observe(this@RecordVaccineActivity, { recordVaccine.launch(questionnaireFormConfig) })
   }
 
   private fun handleImmunizationResult(response: QuestionnaireResponse) {
     val questionnaire =
-      questionnaireViewModel.loadQuestionnaire(detailView.vaccineQuestionnaireIdentifier)
+      questionnaireViewModel.loadQuestionnaire(
+        questionnaireFormConfig.vaccineQuestionnaireIdentifier
+      )
 
     recordVaccineViewModel.getVaccineSummary(clientIdentifier).observe(this@RecordVaccineActivity) {
-      lifecycleScope.launch {
+      lifecycleScope.launch(Dispatchers.Main) {
         val immunization =
           ResourceMapper.extract(questionnaire, response).entry[0].resource as Immunization
         immunization.id = UUID.randomUUID().toString()

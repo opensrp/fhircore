@@ -25,21 +25,27 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.smartregister.fhircore.engine.data.local.repository.patient.PatientRepository
 import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientVaccineSummary
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-class RecordVaccineViewModel(application: Application, val patientRepository: PatientRepository) :
-  AndroidViewModel(application) {
+class RecordVaccineViewModel(
+  application: Application,
+  val patientRepository: PatientRepository,
+  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+) : AndroidViewModel(application) {
 
   fun getVaccineSummary(logicalId: String): LiveData<PatientVaccineSummary> {
     val mutableLiveData: MutableLiveData<PatientVaccineSummary> = MutableLiveData()
-    viewModelScope.launch {
+    viewModelScope.launch(dispatcherProvider.io()) {
       val immunizations = patientRepository.getPatientImmunizations(logicalId = logicalId)
       if (!immunizations.isNullOrEmpty()) {
         val immunization = immunizations.first()
-        mutableLiveData.value =
+        mutableLiveData.postValue(
           PatientVaccineSummary(
             doseNumber = (immunization.protocolApplied[0].doseNumber as PositiveIntType).value,
             initialDose = immunization.vaccineCode.coding.first().code
           )
+        )
       }
     }
     return mutableLiveData

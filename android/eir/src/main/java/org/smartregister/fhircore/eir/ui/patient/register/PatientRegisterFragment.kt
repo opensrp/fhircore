@@ -28,6 +28,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.eir.ui.patient.register.components.PatientRow
+import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
 import org.smartregister.fhircore.engine.data.local.repository.patient.PatientPaginatedDataSource
 import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientItem
 import org.smartregister.fhircore.engine.data.local.repository.patient.model.VaccineStatus
@@ -75,14 +76,23 @@ class PatientRegisterFragment :
       { patientItem ->
         PatientRow(
           patientItem = patientItem,
-          navigateToDetails = { identifier -> navigateToDetails(identifier) }
+          clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
         )
       }
     )
   }
 
   override fun onItemClicked(listenerIntent: ListenerIntent, data: PatientItem) {
-    // Overridden
+    if (listenerIntent is PatientRowClickListenerIntent) {
+      when (listenerIntent) {
+        OpenPatientProfile -> navigateToDetails(data.patientIdentifier)
+        RecordPatientVaccine ->
+          startActivity(
+            Intent(requireContext(), RecordVaccineActivity::class.java)
+              .putExtras(RecordVaccineActivity.getExtraBundles(patientId = data.patientIdentifier))
+          )
+      }
+    }
   }
 
   override fun performFilter(

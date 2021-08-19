@@ -44,6 +44,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.eir.R
+import org.smartregister.fhircore.eir.ui.patient.register.OpenPatientProfile
+import org.smartregister.fhircore.eir.ui.patient.register.PatientRowClickListenerIntent
+import org.smartregister.fhircore.eir.ui.patient.register.RecordPatientVaccine
 import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientItem
 import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientVaccineStatus
 import org.smartregister.fhircore.engine.data.local.repository.patient.model.VaccineStatus
@@ -56,19 +59,21 @@ import org.smartregister.fhircore.engine.ui.theme.WarningColor
 @Composable
 fun PatientRow(
   patientItem: PatientItem,
-  navigateToDetails: (String) -> Unit,
+  clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
-    modifier =
-      modifier
-        .fillMaxWidth()
-        .clickable { navigateToDetails(patientItem.patientIdentifier) }
-        .height(IntrinsicSize.Min)
+    modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min)
   ) {
-    Column(modifier = modifier.padding(24.dp).weight(0.65f)) {
+    Column(
+      modifier =
+        modifier
+          .clickable { clickListener(OpenPatientProfile, patientItem) }
+          .padding(24.dp)
+          .weight(0.65f)
+    ) {
       Text(
         text = patientItem.demographics,
         fontSize = 16.sp,
@@ -98,12 +103,20 @@ fun PatientRow(
           .width(1.dp)
           .background(color = DividerColor)
     )
-    VaccineStatusItem(patientItem = patientItem, modifier = modifier.weight(0.35f))
+    VaccineStatusItem(
+      patientItem = patientItem,
+      clickListener = clickListener,
+      modifier = modifier.weight(0.35f)
+    )
   }
 }
 
 @Composable
-fun VaccineStatusItem(patientItem: PatientItem, modifier: Modifier) {
+fun VaccineStatusItem(
+  patientItem: PatientItem,
+  clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit,
+  modifier: Modifier
+) {
   Column(
     modifier = modifier.padding(vertical = 16.dp, horizontal = 16.dp),
     verticalArrangement = Arrangement.Center,
@@ -138,12 +151,14 @@ fun VaccineStatusItem(patientItem: PatientItem, modifier: Modifier) {
               1,
               patientItem.vaccineStatus.date
             ),
-          color = SubtitleTextColor
+          color = SubtitleTextColor,
+          modifier = modifier.clickable { clickListener(RecordPatientVaccine, patientItem) }
         )
       VaccineStatus.DUE ->
         Text(
           text = stringResource(id = R.string.record_vaccine_nl),
-          color = MaterialTheme.colors.primary
+          color = MaterialTheme.colors.primary,
+          modifier = modifier.clickable { clickListener(RecordPatientVaccine, patientItem) }
         )
       else -> return
     }
@@ -159,7 +174,7 @@ fun PatientRowDuePreview() {
       lastSeen = "2022-02-09",
       vaccineStatus = PatientVaccineStatus(VaccineStatus.DUE, "")
     )
-  PatientRow(patientItem = patientItem, {})
+  PatientRow(patientItem = patientItem, { _, _ -> })
 }
 
 @Composable
@@ -172,7 +187,7 @@ fun PatientRowPartialPreview() {
       atRisk = "at risk",
       vaccineStatus = PatientVaccineStatus(VaccineStatus.PARTIAL, "2021-09-21")
     )
-  PatientRow(patientItem = patientItem, {})
+  PatientRow(patientItem = patientItem, { _, _ -> })
 }
 
 @Composable
@@ -184,7 +199,7 @@ fun PatientRowOverduePreview() {
       lastSeen = "2022-02-09",
       vaccineStatus = PatientVaccineStatus(VaccineStatus.OVERDUE, "")
     )
-  PatientRow(patientItem = patientItem, {})
+  PatientRow(patientItem = patientItem, { _, _ -> })
 }
 
 @Composable
@@ -196,5 +211,5 @@ fun PatientRowVaccinatedPreview() {
       lastSeen = "2022-02-09",
       vaccineStatus = PatientVaccineStatus(VaccineStatus.VACCINATED, "")
     )
-  PatientRow(patientItem = patientItem, {})
+  PatientRow(patientItem = patientItem, { _, _ -> })
 }
