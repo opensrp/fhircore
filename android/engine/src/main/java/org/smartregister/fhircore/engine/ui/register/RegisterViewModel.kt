@@ -19,7 +19,7 @@ import org.smartregister.fhircore.engine.ui.register.model.SyncStatus
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.syncData
+import org.smartregister.fhircore.engine.util.extension.runSync
 import timber.log.Timber
 
 /**
@@ -60,10 +60,10 @@ class RegisterViewModel(
       applicationConfiguration.languages.map { Language(it, Locale.forLanguageTag(it).displayName) }
   }
 
-  fun syncData() =
+  fun runSync() =
     viewModelScope.launch(dispatcher.io()) {
       try {
-        getApplication<Application>().syncData(applicationConfiguration)
+        getApplication<Application>().runSync()
         syncStatus.postValue(SyncStatus.COMPLETE)
       } catch (exception: Exception) {
         Timber.e("Error syncing data", exception)

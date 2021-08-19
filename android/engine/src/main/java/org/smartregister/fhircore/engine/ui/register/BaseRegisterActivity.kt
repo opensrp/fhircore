@@ -140,7 +140,7 @@ abstract class BaseRegisterActivity :
     registerActivityBinding.tvSync.setOnClickListener {
       showToast(getString(R.string.syncing))
       manipulateDrawer(open = false)
-      registerViewModel.syncData()
+      registerViewModel.runSync()
     }
 
     // Setup view pager

@@ -9,14 +9,14 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplicati
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 
-suspend fun Application.syncData(applicationConfiguration: ApplicationConfiguration): Result {
+suspend fun Application.runSync(): Result {
   if (this !is ConfigurableApplication)
     throw (IllegalStateException("Application should extend ConfigurableApplication interface"))
   val dataSource =
     FhirResourceService.create(
       FhirContext.forR4().newJsonParser(),
       applicationContext,
-      applicationConfiguration
+      this.applicationConfiguration
     )
   return Sync.oneTimeSync(
     fhirEngine = (this as ConfigurableApplication).fhirEngine,

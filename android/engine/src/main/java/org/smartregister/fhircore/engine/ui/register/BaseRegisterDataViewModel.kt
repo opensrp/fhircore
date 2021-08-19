@@ -45,4 +45,8 @@ abstract class BaseRegisterDataViewModel<I : Any, O : Any>(
       )
     }
   }
+
+  fun refreshData() {
+    viewModelScope.launch(dispatcherProvider.io()) { registerData.postValue(originalData) }
+  }
 }
