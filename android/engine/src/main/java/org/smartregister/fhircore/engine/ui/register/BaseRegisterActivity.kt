@@ -13,7 +13,6 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.annotation.VisibleForTesting
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.widget.doAfterTextChanged
@@ -33,6 +32,7 @@ import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfigur
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
+import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
@@ -49,7 +49,7 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.toggleVisibility
 
 abstract class BaseRegisterActivity :
-  AppCompatActivity(),
+  BaseMultiLanguageActivity(),
   NavigationView.OnNavigationItemSelectedListener,
   ConfigurableView<RegisterViewConfiguration> {
 

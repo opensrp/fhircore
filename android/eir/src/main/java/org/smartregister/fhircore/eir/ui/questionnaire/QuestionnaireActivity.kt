@@ -21,7 +21,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import ca.uhn.fhir.context.FhirContext
@@ -36,6 +35,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
+import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 
 /**
  * Launches Questionnaire with given id. If questionnaire has subjectType = Patient his activity can
@@ -58,7 +58,7 @@ import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
  * recordData.launch(MyInput())
  * ```
  */
-class QuestionnaireActivity : AppCompatActivity(), View.OnClickListener {
+class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener {
   internal val viewModel by viewModels<QuestionnaireViewModel>()
   private val parser = FhirContext.forR4().newJsonParser()
 

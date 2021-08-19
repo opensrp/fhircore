@@ -1,10 +1,12 @@
 package org.smartregister.fhircore.engine.ui.login
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import java.util.Locale
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
@@ -13,9 +15,11 @@ import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurati
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.runSync
+import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
 abstract class BaseLoginActivity :
   ComponentActivity(), ConfigurableComposableView<LoginViewConfiguration> {
@@ -51,6 +55,16 @@ abstract class BaseLoginActivity :
     }
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
+  }
+
+  override fun attachBaseContext(baseContext: Context) {
+    val lang =
+      SharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
+        ?: Locale.ENGLISH.toLanguageTag()
+    baseContext.setAppLocale(lang).run {
+      super.attachBaseContext(baseContext)
+      applyOverrideConfiguration(this)
+    }
   }
 
   override fun configureViews(viewConfiguration: LoginViewConfiguration) {

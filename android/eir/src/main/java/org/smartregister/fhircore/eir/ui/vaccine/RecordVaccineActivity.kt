@@ -20,7 +20,6 @@ import android.app.AlertDialog
 import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -42,11 +41,12 @@ import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireViewModel
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.data.local.repository.patient.PatientRepository
 import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientVaccineSummary
+import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DateUtils
 import org.smartregister.fhircore.engine.util.FormConfigUtil
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
-class RecordVaccineActivity : AppCompatActivity() {
+class RecordVaccineActivity : BaseMultiLanguageActivity() {
 
   lateinit var recordVaccineViewModel: RecordVaccineViewModel
   private val questionnaireViewModel: QuestionnaireViewModel by viewModels()

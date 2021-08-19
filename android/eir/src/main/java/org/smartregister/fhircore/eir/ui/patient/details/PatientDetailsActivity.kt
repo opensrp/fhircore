@@ -20,15 +20,15 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import kotlinx.android.synthetic.main.activity_patient_details.patientDetailsToolbar
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.FormConfigUtil
 
-class PatientDetailsActivity : AppCompatActivity() {
+class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
   private lateinit var patientId: String
 
