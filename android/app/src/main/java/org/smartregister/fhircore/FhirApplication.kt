@@ -39,7 +39,6 @@ class FhirApplication : Application() {
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
-
   }
 
   // only initiate the FhirEngine when used for the first time, not when the app is created

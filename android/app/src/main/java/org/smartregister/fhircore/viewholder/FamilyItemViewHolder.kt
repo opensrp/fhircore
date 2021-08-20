@@ -16,30 +16,17 @@
 
 package org.smartregister.fhircore.viewholder
 
+import android.content.Context
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.ImageView
+import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.RecyclerView
-import org.smartregister.fhircore.fragment.CovaxListFragment
-import org.smartregister.fhircore.fragment.FamilyListFragment
-import org.smartregister.fhircore.model.FamilyItem
-import org.smartregister.fhircore.model.PatientItem
-import org.smartregister.fhircore.model.PatientStatus
-import org.smartregister.fhircore.model.VaccineStatus
-import org.smartregister.fhircore.util.Utils
-import org.smartregister.fhircore.util.Utils.getPatientAgeGender
-import android.content.Context
-
-import androidx.test.core.app.ApplicationProvider.getApplicationContext
-
-import android.view.LayoutInflater
-import android.view.ViewGroup
 import androidx.annotation.LayoutRes
-import androidx.test.core.app.ApplicationProvider
+import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
-
+import org.smartregister.fhircore.model.FamilyItem
+import org.smartregister.fhircore.util.Utils
 
 class FamilyItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val demographics: TextView = itemView.findViewById(R.id.tv_family_demographics)
@@ -56,14 +43,18 @@ class FamilyItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     familyItem.members.forEach {
       inflateAndAddView(
-        if(!it.pregnant.isNullOrEmpty()) {R.layout.family_member_mother_item}
-        else R.layout.family_member_other_item
-      , membersContainer)
+        if (!it.pregnant.isNullOrEmpty()) {
+          R.layout.family_member_mother_item
+        } else R.layout.family_member_other_item,
+        membersContainer
+      )
     }
   }
 
   fun inflateAndAddView(@LayoutRes id: Int, root: ViewGroup) {
-    val inflater = itemView.context.applicationContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+    val inflater =
+      itemView.context.applicationContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as
+        LayoutInflater
     val view = inflater.inflate(id, root, false)
 
     membersContainer.addView(view)

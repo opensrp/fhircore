@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.model
 
-import ca.uhn.fhir.rest.gclient.StringClientParam
-import ca.uhn.fhir.rest.gclient.UriClientParam
 import java.io.Serializable
 
 data class FamilyDetailView(

@@ -193,7 +193,8 @@ object QuestionnaireUtils {
   ): Extension? {
     return item.extension.firstOrNull {
       it.url.contains(flaggableKey) &&
-        (it.value.asStringValue().contains(code.display, true) || code.display.contains(it.value.asStringValue()))
+        (it.value.asStringValue().contains(code.display, true) ||
+          code.display.contains(it.value.asStringValue()))
     }
   }
 
@@ -251,7 +252,8 @@ object QuestionnaireUtils {
 
     flaggableItems.forEach { qi ->
       // only add flags where answer is true or answer code matches flag value
-      questionnaireResponse.find(qi.linkId)
+      questionnaireResponse
+        .find(qi.linkId)
         ?.answer
         ?.firstOrNull { it.hasValue() }
         ?.takeIf {
@@ -268,8 +270,9 @@ object QuestionnaireUtils {
           flag.code = asCodeableConcept(qi)
           flag.subject = asPatientReference(patient.id)
 
-          val ext = if (it.hasValueCoding()) extractFlagExtension(it.valueCoding, qi)
-          else extractFlagExtension(qi)
+          val ext =
+            if (it.hasValueCoding()) extractFlagExtension(it.valueCoding, qi)
+            else extractFlagExtension(qi)
 
           flags.add(Pair(flag, ext!!))
         }
@@ -290,7 +293,8 @@ object QuestionnaireUtils {
 
     taggable.forEach { qi ->
       // only add flags where answer is true or answer code matches flag value
-      questionnaireResponse.find(qi.linkId)
+      questionnaireResponse
+        .find(qi.linkId)
         ?.answer
         ?.firstOrNull { it.hasValue() }
         ?.let {
@@ -300,9 +304,7 @@ object QuestionnaireUtils {
             else -> null
           }
         }
-        ?.let {
-          tags.add(it)
-        }
+        ?.let { tags.add(it) }
     }
 
     return tags
@@ -318,7 +320,7 @@ object QuestionnaireUtils {
         target.add(it)
       }
 
-      if(it.item.isNotEmpty()){
+      if (it.item.isNotEmpty()) {
         itemsWithDefinition(definition, it.item, target)
       }
     }

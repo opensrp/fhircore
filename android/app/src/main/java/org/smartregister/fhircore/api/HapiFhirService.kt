@@ -59,7 +59,7 @@ interface HapiFhirService {
 
     fun create(parser: IParser, context: Context): HapiFhirService {
       val logger = HttpLoggingInterceptor()
-      logger.level = HttpLoggingInterceptor.Level.NONE //BODY
+      logger.level = HttpLoggingInterceptor.Level.NONE // BODY
 
       val oauthInterceptor = OAuthInterceptor(context)
 

@@ -21,10 +21,7 @@ import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
@@ -33,7 +30,6 @@ import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.Sync
-import com.google.android.fhir.sync.SyncWorkType
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -264,7 +260,6 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
       Pair(emptyList(), Pagination(totalItems = 0, pageSize = 1, currentPage = 0))
   }
 }
-
 
 suspend fun Patient.toPatientItem(viewModelScope: CoroutineScope): PatientItem {
   val name = this.name[0].nameAsSingleString

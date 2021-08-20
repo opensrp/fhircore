@@ -17,27 +17,17 @@
 package org.smartregister.fhircore.viewholder
 
 import android.view.View
-import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.fragment.CovaxListFragment
 import org.smartregister.fhircore.model.PatientItem
-import org.smartregister.fhircore.model.PatientStatus
-import org.smartregister.fhircore.model.VaccineStatus
-import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.util.Utils.getPatientAgeGender
 
 class AncItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val demographics: TextView = itemView.findViewById(R.id.tv_patient_demographics)
   private val area: TextView = itemView.findViewById(R.id.tv_area)
 
-  fun bindTo(
-    patientItem: PatientItem,
-    onItemClicked: (PatientItem) -> Unit
-  ) {
+  fun bindTo(patientItem: PatientItem, onItemClicked: (PatientItem) -> Unit) {
     this.demographics.text = getPatientDemographics(patientItem)
     this.area.text = patientItem.area
   }

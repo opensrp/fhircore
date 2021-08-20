@@ -24,4 +24,4 @@ data class FamilyMemberItem(
   val phone: String,
   val logicalId: String,
   val pregnant: String
-  )
+)

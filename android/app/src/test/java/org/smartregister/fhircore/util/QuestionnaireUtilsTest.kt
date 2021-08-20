@@ -68,8 +68,7 @@ class QuestionnaireUtilsTest : RobolectricTest() {
 
   @Test
   fun testAsPatientReference_shouldReturnPatientReferenceWithId() {
-    val result =
-      QuestionnaireUtils.asPatientReference("123456")
+    val result = QuestionnaireUtils.asPatientReference("123456")
 
     assertEquals("Patient/123456", result.reference)
   }
@@ -274,8 +273,9 @@ class QuestionnaireUtilsTest : RobolectricTest() {
     val risk =
       QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)!!
 
-    val flag = QuestionnaireUtils.
-    extractFlagForRiskAssessment(questionnaireResponse, questionnaire, risk)!!.first
+    val flag =
+      QuestionnaireUtils.extractFlagForRiskAssessment(questionnaireResponse, questionnaire, risk)!!
+        .first
 
     assertEquals(risk.subject.reference, flag.subject.reference)
     assertEquals(Flag.FlagStatus.ACTIVE, flag.status)
@@ -296,8 +296,9 @@ class QuestionnaireUtilsTest : RobolectricTest() {
 
     val risk =
       QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)!!
-    val flag = QuestionnaireUtils
-      .extractFlagForRiskAssessment(questionnaireResponse, questionnaire, risk)!!.first
+    val flag =
+      QuestionnaireUtils.extractFlagForRiskAssessment(questionnaireResponse, questionnaire, risk)!!
+        .first
 
     val flagExt =
       QuestionnaireUtils.extractFlagExtension(flag, questionnaireResponse, questionnaire)!!
@@ -318,8 +319,9 @@ class QuestionnaireUtilsTest : RobolectricTest() {
 
     val risk =
       QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)!!
-    val flag = QuestionnaireUtils
-      .extractFlagForRiskAssessment(questionnaireResponse, questionnaire, risk)!!.first
+    val flag =
+      QuestionnaireUtils.extractFlagForRiskAssessment(questionnaireResponse, questionnaire, risk)!!
+        .first
 
     val flagExt =
       QuestionnaireUtils.extractFlagExtension(flag, questionnaireResponse, questionnaire)!!

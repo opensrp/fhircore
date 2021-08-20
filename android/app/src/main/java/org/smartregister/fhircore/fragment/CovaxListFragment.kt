@@ -33,13 +33,11 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.google.android.fhir.sync.SyncWorkType
 import com.google.android.material.switchmaterial.SwitchMaterial
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.CovaxListActivity
@@ -202,13 +200,12 @@ class CovaxListFragment : Fragment() {
         patientListViewModel.loadingListObservable.postValue(1)
         WorkManager.getInstance(requireContext())
           .getWorkInfosForUniqueWorkLiveData(SyncWorkType.DOWNLOAD.workerName)
-          .observe(requireActivity()){
+          .observe(requireActivity()) {
             if (it.isNotEmpty() && it[0].state == WorkInfo.State.ENQUEUED) {
               patientListViewModel.loadingListObservable.postValue(0)
               patientListViewModel.searchResults("")
             }
           }
-
       } else patientListViewModel.searchResults("")
     }
   }

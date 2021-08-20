@@ -38,8 +38,10 @@ class RecordVaccineResult(private val patientId: String) :
   }
 
   override fun parseResult(resultCode: Int, intent: Intent?): QuestionnaireResponse? {
-    val data = intent?.getBundleExtra(QUESTIONNAIRE_ARG_ACTIVITY_RESULT_KEY)?.getString(
-      QUESTIONNAIRE_ARG_RESPONSE_KEY)
+    val data =
+      intent
+        ?.getBundleExtra(QUESTIONNAIRE_ARG_ACTIVITY_RESULT_KEY)
+        ?.getString(QUESTIONNAIRE_ARG_RESPONSE_KEY)
 
     return if (resultCode == Activity.RESULT_OK && data != null) {
       QuestionnaireUtils.asQuestionnaireResponse(data)

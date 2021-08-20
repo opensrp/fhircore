@@ -21,16 +21,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.fragment.CovaxListFragment
-import org.smartregister.fhircore.fragment.FamilyListFragment
 import org.smartregister.fhircore.model.FamilyItem
-import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.viewholder.FamilyItemViewHolder
-import org.smartregister.fhircore.viewholder.PatientItemViewHolder
 
-class FamilyItemRecyclerViewAdapter(
-  private val onItemClicked: (FamilyItem) -> Unit
-) : ListAdapter<FamilyItem, FamilyItemViewHolder>(FamilyItemDiffCallback()) {
+class FamilyItemRecyclerViewAdapter(private val onItemClicked: (FamilyItem) -> Unit) :
+  ListAdapter<FamilyItem, FamilyItemViewHolder>(FamilyItemDiffCallback()) {
 
   class FamilyItemDiffCallback : DiffUtil.ItemCallback<FamilyItem>() {
     override fun areItemsTheSame(oldItem: FamilyItem, newItem: FamilyItem): Boolean =

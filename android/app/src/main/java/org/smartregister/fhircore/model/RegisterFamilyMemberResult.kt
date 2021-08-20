@@ -20,25 +20,23 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
-import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_ACTIVITY_RESULT_KEY
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_RELATED_PATIENT_KEY
-import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_RESPONSE_KEY
 import org.smartregister.fhircore.util.QuestionnaireUtils
 
 data class RegisterFamilyMemberData(val headId: String, val familyDetailView: FamilyDetailView)
 
-class RegisterFamilyMemberResult: ActivityResultContract<RegisterFamilyMemberData, String?>() {
+class RegisterFamilyMemberResult : ActivityResultContract<RegisterFamilyMemberData, String?>() {
 
   override fun createIntent(context: Context, input: RegisterFamilyMemberData): Intent {
-    val intent = QuestionnaireUtils.buildQuestionnaireIntent(
-      context,
-      input.familyDetailView.memberRegistrationQuestionnaireTitle,
-      input.familyDetailView.memberRegistrationQuestionnaireIdentifier,
-      null,
-      true
-    )
+    val intent =
+      QuestionnaireUtils.buildQuestionnaireIntent(
+        context,
+        input.familyDetailView.memberRegistrationQuestionnaireTitle,
+        input.familyDetailView.memberRegistrationQuestionnaireIdentifier,
+        null,
+        true
+      )
     intent.putExtra(QUESTIONNAIRE_ARG_RELATED_PATIENT_KEY, input.headId)
     return intent
   }

@@ -18,47 +18,43 @@ package org.smartregister.fhircore.fragment
 
 import android.os.Bundle
 import android.view.View
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.MutableLiveData
-import androidx.recyclerview.widget.ListAdapter
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.core.BaseRegisterActivity
 import org.smartregister.fhircore.adapter.AncItemRecyclerViewAdapter
-import org.smartregister.fhircore.domain.Pagination
 import org.smartregister.fhircore.model.BaseRegister
-import org.smartregister.fhircore.model.FamilyItem
 import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.viewholder.AncItemViewHolder
-import org.smartregister.fhircore.viewholder.PatientItemViewHolder
 import org.smartregister.fhircore.viewmodel.AncListViewModel
 
 class AncListFragment : BaseListFragment<PatientItem, AncItemViewHolder>() {
-    private val viewModel by activityViewModels<AncListViewModel>()
+  private val viewModel by activityViewModels<AncListViewModel>()
 
-    override fun getFragmentListLayout(): Int {
-        return R.layout.anc_fragment_list
-    }
+  override fun getFragmentListLayout(): Int {
+    return R.layout.anc_fragment_list
+  }
 
-    private fun getRegister(): BaseRegister {
-        return (requireActivity() as BaseRegisterActivity).register
-    }
+  private fun getRegister(): BaseRegister {
+    return (requireActivity() as BaseRegisterActivity).register
+  }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        setupListFragment(R.id.anc_list, viewModel.paginatedDataList
-            , AncItemRecyclerViewAdapter(this::onListItemClicked), view)
-        setupSearch(getRegister().searchBox()!!)
-        setupEmptyListView(R.id.empty_list_message_container, view)
-        setupProgress(R.id.loader_overlay, viewModel.loader)
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    setupListFragment(
+      R.id.anc_list,
+      viewModel.paginatedDataList,
+      AncItemRecyclerViewAdapter(this::onListItemClicked),
+      view
+    )
+    setupSearch(getRegister().searchBox()!!)
+    setupEmptyListView(R.id.empty_list_message_container, view)
+    setupProgress(R.id.loader_overlay, viewModel.loader)
 
-        super.onViewCreated(view, savedInstanceState)
-    }
+    super.onViewCreated(view, savedInstanceState)
+  }
 
-    fun onListItemClicked(patientItem: PatientItem) {
+  fun onListItemClicked(patientItem: PatientItem) {}
 
-    }
-
-    override fun loadData(currentSearch: String?, page: Int, pageSize: Int) {
-        viewModel.searchResults(currentSearch, page, pageSize)
-    }
+  override fun loadData(currentSearch: String?, page: Int, pageSize: Int) {
+    viewModel.searchResults(currentSearch, page, pageSize)
+  }
 }

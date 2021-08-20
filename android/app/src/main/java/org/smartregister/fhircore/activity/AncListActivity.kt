@@ -53,9 +53,9 @@ class AncListActivity : BaseRegisterActivity() {
 
     listViewModel =
       ViewModelProvider(
-        this,
-        FhirListViewModelFactory(application, FhirApplication.fhirEngine(baseContext))
-      )
+          this,
+          FhirListViewModelFactory(application, FhirApplication.fhirEngine(baseContext))
+        )
         .get(AncListViewModel::class.java)
   }
 

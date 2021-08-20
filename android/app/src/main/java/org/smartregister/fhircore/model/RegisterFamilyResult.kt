@@ -20,14 +20,11 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_ACTIVITY_RESULT_KEY
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
-import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_RESPONSE_KEY
 import org.smartregister.fhircore.util.QuestionnaireUtils
 
-class RegisterFamilyResult() :
-  ActivityResultContract<FamilyDetailView, String?>() {
+class RegisterFamilyResult() : ActivityResultContract<FamilyDetailView, String?>() {
 
   override fun createIntent(context: Context, input: FamilyDetailView): Intent {
     return QuestionnaireUtils.buildQuestionnaireIntent(

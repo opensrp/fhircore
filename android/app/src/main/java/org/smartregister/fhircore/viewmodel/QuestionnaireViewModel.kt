@@ -22,8 +22,8 @@ import android.content.Intent
 import androidx.core.os.bundleOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import java.lang.Exception
 import java.util.UUID
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -38,13 +38,13 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE_KEY
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_RELATED_PATIENT_KEY
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.util.QuestionnaireUtils
 import org.smartregister.fhircore.util.QuestionnaireUtils.asPatientReference
 import org.smartregister.fhircore.util.Utils
 import timber.log.Timber
-import java.lang.Exception
 
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
   AndroidViewModel(application) {
@@ -59,12 +59,11 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     }
 
   fun loadQuestionnaire(id: String): Questionnaire {
-    try{
-      val q = getApplication<FhirApplication>()
-        .assets.open(id).bufferedReader().use { it.readText() }
+    try {
+      val q =
+        getApplication<FhirApplication>().assets.open(id).bufferedReader().use { it.readText() }
       return Utils.parser.parseResource(Questionnaire::class.java, q)
-    }
-    catch (e: Exception) {}
+    } catch (e: Exception) {}
     return runBlocking { fhirEngine.load(Questionnaire::class.java, id) }
   }
 
@@ -105,16 +104,17 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ): android.os.Bundle {
+    GlobalScope.launch { // todo
 
-    // todo remove if below to turn below login on, when structure-map has obs and flag and
-    // risk-assessment as well
-    if (intent.hasExtra(QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR)) {
-      return saveParsedResource(questionnaireResponse, questionnaire, intent)
-    }
+      // todo remove if below to turn below login on, when structure-map has obs and flag and
+      // risk-assessment as well
+      if (intent.hasExtra(QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR)) {
+        // todo return
+        saveParsedResource(questionnaireResponse, questionnaire, intent)
+      }
 
-    var bundle: Bundle
+      var bundle: Bundle
 
-    viewModelScope.launch {
       bundle =
         ResourceMapper.extract(
           questionnaire,
@@ -125,12 +125,11 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
 
       // todo Assign Encounter , Observation etc their separate Ids with reference to Patient Id
       val resourceId = intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
-    val resourceId = // todo WRONG assignment
       intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
 
       saveBundleResources(bundle, resourceId)
     }
-    return bundleOf()
+    return bundleOf() // todo
   }
 
   fun getStructureMapProvider(context: Context): (suspend (String) -> StructureMap?) {
@@ -144,34 +143,30 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     return structureMapProvider!!
   }
 
-  fun saveParsedResource(
+  suspend fun saveParsedResource(
     questionnaireResponse: QuestionnaireResponse,
     questionnaire: Questionnaire,
     intent: Intent
   ): android.os.Bundle {
     if (!questionnaire.hasSubjectType("Patient")) return bundleOf()
 
-    viewModelScope.launch {
-      val patient =
-        ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
+    val patient =
+      ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
 
-      val barcode =
-        QuestionnaireUtils.valueStringWithLinkId(
-          questionnaireResponse,
-          QUESTIONNAIRE_ARG_BARCODE_KEY
-        )
+    val barcode =
+      QuestionnaireUtils.valueStringWithLinkId(questionnaireResponse, QUESTIONNAIRE_ARG_BARCODE_KEY)
 
-      patient.id = barcode ?: UUID.randomUUID().toString().toLowerCase()
+    patient.id = barcode ?: UUID.randomUUID().toString().toLowerCase()
 
     // only one level of nesting per obs group is supported by fhircore for now
     val observations =
       QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
 
-      observations.forEach { saveResource(it) }
+    observations.forEach { saveResource(it) }
 
-      // only one risk assessment per questionnaire is supported by fhircore for now
-      val riskAssessment =
-        QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)
+    // only one risk assessment per questionnaire is supported by fhircore for now
+    val riskAssessment =
+      QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)
 
     riskAssessment?.let {
       saveResource(it)
@@ -199,14 +194,13 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     }
 
     // do this directly from ResourceMapper when structure map is integrated
-    QuestionnaireUtils.extractTags(questionnaireResponse, questionnaire)
-      .forEach {
-        patient.meta.addTag(it)
-      }
+    QuestionnaireUtils.extractTags(questionnaireResponse, questionnaire).forEach {
+      patient.meta.addTag(it)
+    }
 
     var groupId = intent.getStringExtra(QUESTIONNAIRE_ARG_RELATED_PATIENT_KEY)
 
-   groupId?.let { applyRelationship(patient, groupId) }
+    groupId?.let { applyRelationship(patient, groupId) }
 
     // replace updated patient with extended
     val extendedPatient = Utils.convertToExtendedPatientResource(patient)
@@ -218,7 +212,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     return buildResponseBundle(patient, groupId)
   }
 
-  fun applyRelationship(patient: Patient, groupId: String){
+  fun applyRelationship(patient: Patient, groupId: String) {
     val link = Patient.PatientLinkComponent()
     link.other = asPatientReference(groupId)
     link.type = Patient.LinkType.REFER

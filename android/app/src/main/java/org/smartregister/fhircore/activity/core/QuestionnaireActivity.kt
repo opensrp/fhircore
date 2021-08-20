@@ -99,12 +99,13 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
   }
 
   fun saveExtractedResources(questionnaireResponse: QuestionnaireResponse) {
-    val result = viewModel.saveExtractedResources(
-      this@QuestionnaireActivity,
-      intent,
-      viewModel.questionnaire,
-      questionnaireResponse
-    )
+    val result =
+      viewModel.saveExtractedResources(
+        this@QuestionnaireActivity,
+        intent,
+        viewModel.questionnaire,
+        questionnaireResponse
+      )
 
     result.putString(
       QUESTIONNAIRE_ARG_RESPONSE_KEY,
