@@ -28,13 +28,17 @@ import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import com.google.android.fhir.logicalId
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.model.CovaxDetailView
+import org.smartregister.fhircore.util.WHO_IDENTIFIER_SYSTEM
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 /**
@@ -116,10 +120,10 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
 
   private fun getQuestionnaire(): Questionnaire {
     val questionnaire = viewModel.questionnaire
-    // TODO: Handle Pre Assigned Id Dynamically
-    /*intent.getStringExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID)?.let {
+
+    intent.getStringExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID)?.let {
       setBarcode(questionnaire, it, true)
-    }*/
+    }
     return questionnaire
   }
 
@@ -132,6 +136,17 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
         FhirApplication.fhirEngine(applicationContext).load(Patient::class.java, it)
       }
 
+      if (patient.identifier.isEmpty()) {
+        patient.identifier =
+          mutableListOf(
+            Identifier().apply {
+              value = patient.logicalId
+              use = Identifier.IdentifierUse.OFFICIAL
+              system = WHO_IDENTIFIER_SYSTEM
+            }
+          )
+      }
+
       patient.let {
         questionnaireResponse = runBlocking { ResourceMapper.populate(questionnaire, patient) }
       }
@@ -140,7 +155,7 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
     return questionnaireResponse
   }
 
-  /*private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
+  private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
     questionnaire.find(QUESTIONNAIRE_ARG_BARCODE_KEY)?.apply {
       initial =
         mutableListOf(Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(code)))
@@ -169,7 +184,7 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
     }
 
     return result
-  }*/
+  }
 
   companion object {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
