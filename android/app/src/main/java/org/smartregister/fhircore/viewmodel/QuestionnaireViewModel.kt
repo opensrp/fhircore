@@ -19,11 +19,13 @@ package org.smartregister.fhircore.viewmodel
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import androidx.core.os.bundleOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import java.util.UUID
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
@@ -35,6 +37,7 @@ import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE_KEY
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.util.QuestionnaireUtils
@@ -56,7 +59,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
   }
 
   fun saveResource(resource: Resource) {
-    viewModelScope.launch { fhirEngine.save(resource) }
+    GlobalScope.launch { fhirEngine.save(resource) }
   }
 
   fun saveBundleResources(bundle: Bundle, resourceId: String? = null) {
@@ -91,13 +94,12 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     intent: Intent,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
-  ) {
+  ): android.os.Bundle {
 
     // todo remove if below to turn below login on, when structure-map has obs and flag and
     // risk-assessment as well
     if (intent.hasExtra(QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR)) {
-      saveParsedResource(questionnaireResponse, questionnaire)
-      return
+      return saveParsedResource(questionnaireResponse, questionnaire, intent)
     }
 
     var bundle: Bundle
@@ -116,6 +118,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
 
       saveBundleResources(bundle, resourceId)
     }
+    return bundleOf()
   }
 
   fun getStructureMapProvider(context: Context): (suspend (String) -> StructureMap?) {
@@ -131,9 +134,10 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
 
   fun saveParsedResource(
     questionnaireResponse: QuestionnaireResponse,
-    questionnaire: Questionnaire
-  ) {
-    if (!questionnaire.hasSubjectType("Patient")) return
+    questionnaire: Questionnaire,
+    intent: Intent
+  ): android.os.Bundle {
+    if (!questionnaire.hasSubjectType("Patient")) return buildResponseBundle(null, null, questionnaireResponse)
 
     viewModelScope.launch {
       val patient =
@@ -147,11 +151,9 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
 
       patient.id = barcode ?: UUID.randomUUID().toString().toLowerCase()
 
-      saveResource(patient)
-
-      // only one level of nesting per obs group is supported by fhircore for now
-      val observations =
-        QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
+    // only one level of nesting per obs group is supported by fhircore for now
+    val observations =
+      QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
 
       observations.forEach { saveResource(it) }
 
@@ -159,25 +161,60 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
       val riskAssessment =
         QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)
 
-      if (riskAssessment != null) {
-        saveResource(riskAssessment)
+    riskAssessment?.let {
+      saveResource(it)
 
-        val flag =
-          QuestionnaireUtils.extractFlag(questionnaireResponse, questionnaire, riskAssessment)
+      val flagExt =
+        QuestionnaireUtils.extractFlagForRiskAssessment(
+          questionnaireResponse,
+          questionnaire,
+          riskAssessment
+        )
+      flagExt?.let {
+        val flag = it.first
+        saveResource(flag)
 
-        if (flag != null) {
-          saveResource(flag)
-
-          // todo remove this when sync is implemented
-          val ext =
-            QuestionnaireUtils.extractFlagExtension(flag, questionnaireResponse, questionnaire)
-          if (ext != null) {
-            patient.addExtension(ext)
-          }
-
-          saveResource(patient)
-        }
+        it.second?.let { ext -> applyFlag(patient, flag, ext) }
       }
     }
+
+    val flags = QuestionnaireUtils.extractFlags(questionnaireResponse, questionnaire, patient)
+    flags.forEach {
+      val flag = it.first
+      saveResource(flag)
+
+      applyFlag(patient, flag, it.second)
+    }
+
+    var groupId = intent.getStringExtra(QUESTIONNAIRE_ARG_RELATED_PATIENT_KEY)
+
+   groupId?.let { applyRelationship(patient, groupId) }
+
+    // replace updated patient with extended
+    val extendedPatient = Utils.convertToExtendedPatientResource(patient)
+
+    saveResource(extendedPatient)
+
+    return buildResponseBundle(patient, groupId, questionnaireResponse)
+  }
+
+  fun applyRelationship(patient: Patient, groupId: String){
+    val link = Patient.PatientLinkComponent()
+    link.other = asPatientReference(groupId)
+    link.type = Patient.LinkType.REFER
+
+    patient.addLink(link)
+  }
+
+  fun applyFlag(patient: Patient, flag: Flag, extension: Extension) {
+    patient.meta.addTag(flag.code.coding[0])
+    patient.addExtension(extension)
+  }
+
+  fun buildResponseBundle(patient: Patient?, groupId: String?, questionnaireResponse: QuestionnaireResponse): android.os.Bundle {
+    val result = bundleOf()
+    result.putString(QUESTIONNAIRE_ARG_PATIENT_KEY, patient?.id)
+    result.putString(QUESTIONNAIRE_ARG_RELATED_PATIENT_KEY, groupId)
+    return result
   }
 }

@@ -83,7 +83,7 @@ abstract class BaseRegisterActivity : BaseDrawerActivity() {
     }
   }
 
-  fun startRegistrationActivity(preAssignedId: String?) {
+  open fun startRegistrationActivity(preAssignedId: String?) {
     val questionnaireId = register.newRegistrationQuestionnaireIdentifier!!
     val questionnaireTitle =
       register.newRegistrationQuestionnaireTitle ?: getString(R.string.client_info)

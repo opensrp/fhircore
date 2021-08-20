@@ -19,7 +19,9 @@ package org.smartregister.fhircore.util
 import android.content.Context
 import android.content.Intent
 import ca.uhn.fhir.context.FhirContext
+import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import java.util.UUID
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
@@ -39,6 +41,11 @@ import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.
 
 object QuestionnaireUtils {
   private val parser = FhirContext.forR4().newJsonParser()
+  private val flaggableKey = "flag-detail"
+
+  fun asPatientReference(id: String): Reference {
+    return Reference().apply { this.reference = "Patient/$id" }
+  }
 
   fun buildQuestionnaireIntent(
     context: Context,
@@ -106,6 +113,18 @@ object QuestionnaireUtils {
     }
   }
 
+  fun asCodeableConcept(qit: Questionnaire.QuestionnaireItemComponent): CodeableConcept {
+    return CodeableConcept().apply {
+      this.text = qit.text
+      this.coding = qit.code
+
+      this.addCoding().apply {
+        this.code = qit.linkId
+        this.system = qit.definition
+      }
+    }
+  }
+
   fun asObs(
     qr: QuestionnaireResponse.QuestionnaireResponseItemComponent,
     subject: Patient,
@@ -117,7 +136,7 @@ object QuestionnaireUtils {
     obs.code = asCodeableConcept(qr.linkId, questionnaire)
     obs.status = Observation.ObservationStatus.FINAL
     obs.value = if (qr.hasAnswer()) qr.answer[0].value else null
-    obs.subject = Reference().apply { this.reference = "Patient/" + subject.id }
+    obs.subject = asPatientReference(subject.id)
 
     return obs
   }
@@ -170,10 +189,23 @@ object QuestionnaireUtils {
 
     // flag code of selected answer must match with given extension and there should only be one
     // flag of a type/code
-    return flaggable.firstOrNull {
-      val qrItem = itemWithLinkId(questionnaireResponse, it.linkId)
+    return flaggable.firstOrNull { qItem ->
+      val qrItem = itemWithLinkId(questionnaireResponse, qItem.linkId)!!
 
-      doesIntersect(selectedFlagCode.coding, qrItem!!.answer.map { ans -> ans.valueCoding })
+      // if item has answer, and item code matches with flag code, and answer justifies the flagging
+      qrItem
+        .hasAnswer()
+        .and(doesIntersect(qItem.code, selectedFlagCode.coding))
+        .and(
+          when (qrItem.answerFirstRep.value) {
+            // flag code and answer code match // todo check with other cases
+            is Coding ->
+              doesIntersect(selectedFlagCode.coding, qrItem!!.answer.map { ans -> ans.valueCoding })
+            // flag only if answer is true
+            is BooleanType -> qrItem.answerFirstRep.valueBooleanType.booleanValue()
+            else -> false
+          }
+        )
     }
   }
 
@@ -185,14 +217,28 @@ object QuestionnaireUtils {
     // flag code must match with given extension
     val item = flaggableFor(flag.code, questionnaireResponse, questionnaire) ?: return null
 
-    return item.extension.single { it.url.contains("flag-detail") }
+    return extractFlagExtension(item)
   }
 
-  fun extractFlag(
+  fun extractFlagExtension(item: Questionnaire.QuestionnaireItemComponent): Extension? {
+    return item.extension.firstOrNull { it.url.contains(flaggableKey) }
+  }
+
+  fun extractFlagExtension(
+    code: Coding,
+    item: Questionnaire.QuestionnaireItemComponent
+  ): Extension? {
+    return item.extension.firstOrNull {
+      it.url.contains(flaggableKey) &&
+        (it.value.asStringValue().contains(code.display, true) || code.display.contains(it.value.asStringValue()))
+    }
+  }
+
+  fun extractFlagForRiskAssessment(
     questionnaireResponse: QuestionnaireResponse,
     questionnaire: Questionnaire,
     riskAssessment: RiskAssessment
-  ): Flag? {
+  ): Pair<Flag, Extension?>? {
     // no risk then no flag
     if (riskAssessment.prediction[0].relativeRisk.equals(0) ||
         !riskAssessment.prediction[0].hasOutcome()
@@ -203,7 +249,7 @@ object QuestionnaireUtils {
     val code = riskAssessment.prediction[0].outcome
 
     // if no flagging is needed return
-    flaggableFor(code, questionnaireResponse, questionnaire) ?: return null
+    val item = flaggableFor(code, questionnaireResponse, questionnaire) ?: return null
 
     val flag = Flag()
     flag.id = getUniqueId()
@@ -211,7 +257,78 @@ object QuestionnaireUtils {
     flag.code = code
     flag.subject = riskAssessment.subject
 
-    return flag
+    val ext = extractFlagExtension(item)
+
+    return Pair(flag, ext)
+  }
+
+  fun extractDefinitions(
+    definition: String,
+    items: List<Questionnaire.QuestionnaireItemComponent>,
+    target: MutableList<Questionnaire.QuestionnaireItemComponent>
+  ) {
+    items.forEach {
+      if (it.hasDefinition() && it.definition?.contains(definition) == true) {
+        target.add(it)
+      }
+
+      if (it.item.isNotEmpty()) {
+        extractDefinitions(definition, it.item, target)
+      }
+    }
+  }
+
+  fun extractFlaggables(
+    items: List<Questionnaire.QuestionnaireItemComponent>,
+    target: MutableList<Questionnaire.QuestionnaireItemComponent>
+  ) {
+    items.forEach { qi ->
+      qi.extension.firstOrNull { it.url.contains(flaggableKey) }?.let { target.add(qi) }
+
+      if (qi.item.isNotEmpty()) {
+        extractFlaggables(qi.item, target)
+      }
+    }
+  }
+
+  fun extractFlags(
+    questionnaireResponse: QuestionnaireResponse,
+    questionnaire: Questionnaire,
+    patient: Patient
+  ): MutableList<Pair<Flag, Extension>> {
+    val flaggableItems = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
+
+    extractFlaggables(questionnaire.item, flaggableItems)
+
+    val flags = mutableListOf<Pair<Flag, Extension>>()
+
+    flaggableItems.forEach { qi ->
+      // only add flags where answer is true or answer code matches flag value
+      itemWithLinkId(questionnaireResponse, qi.linkId)
+        ?.answer
+        ?.firstOrNull { it.hasValue() }
+        ?.takeIf {
+          when (it.value) {
+            is Coding -> extractFlagExtension(it.valueCoding, qi) != null
+            is BooleanType -> it.valueBooleanType.booleanValue()
+            else -> false
+          }
+        }
+        ?.let {
+          val flag = Flag()
+          flag.id = getUniqueId()
+          flag.status = Flag.FlagStatus.ACTIVE
+          flag.code = asCodeableConcept(qi)
+          flag.subject = asPatientReference(patient.id)
+
+          val ext = if (it.hasValueCoding()) extractFlagExtension(it.valueCoding, qi)
+          else extractFlagExtension(qi)
+
+          flags.add(Pair(flag, ext!!))
+        }
+    }
+
+    return flags
   }
 
   private fun itemWithDefinition(
@@ -290,6 +407,11 @@ object QuestionnaireUtils {
   fun valueStringWithLinkId(questionnaireResponse: QuestionnaireResponse, linkId: String): String? {
     val ans = itemWithLinkId(questionnaireResponse, linkId)?.answerFirstRep
     return ans?.valueStringType?.asStringValue()
+  }
+
+  fun valueIntWithLinkId(questionnaireResponse: QuestionnaireResponse, linkId: String): Int? {
+    val ans = itemWithLinkId(questionnaireResponse, linkId)?.answerFirstRep
+    return ans?.valueIntegerType?.value
   }
 
   private fun doesIntersect(codingList: List<Coding>, other: List<Coding>): Boolean {

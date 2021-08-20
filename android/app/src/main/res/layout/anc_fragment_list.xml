@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ Copyright 2020 Google LLC
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/anc_list"
+        android:name="com.google.fhirengine.example.AncListFragment"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/rl_pagination"
+        app:layoutManager="LinearLayoutManager"
+        tools:context=".activity.AncListActivity"
+        tools:listitem="@layout/anc_list_item"
+        android:maxHeight="300dp"/>
+
+    <RelativeLayout
+        android:id="@+id/rl_pagination"
+        android:layout_width="fill_parent"
+        android:layout_height="@dimen/pagination_bar_height"
+        android:layout_alignParentBottom="true"
+        android:visibility="gone"
+        tools:visibility="visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <Button
+            android:id="@+id/btn_previous_page"
+            android:layout_width="@dimen/pagination_bar_button_width"
+            android:textColor="@color/black"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:background="@drawable/transparent_blue_background"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="@string/str_previous"
+            android:textSize="@dimen/pagination_bar_text_size" />
+
+        <TextView
+            android:id="@+id/txt_page_info"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:textSize="@dimen/pagination_bar_text_size" />
+
+        <Button
+            android:id="@+id/btn_next_page"
+            android:layout_width="@dimen/pagination_bar_button_width"
+            android:layout_height="fill_parent"
+            android:layout_alignParentEnd="true"
+            android:textColor="@color/black"
+            android:background="@drawable/transparent_blue_background"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="@string/str_next"
+            android:textSize="@dimen/pagination_bar_text_size" />
+    </RelativeLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

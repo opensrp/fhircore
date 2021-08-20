@@ -1,0 +1,214 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "family-member-registration",
+  "language": "en",
+  "status": "active",
+  "subjectType": [
+    "Patient"
+  ],
+  "code": [
+    {
+      "system": "https://www.snomed.org",
+      "code": "303071001",
+      "display": "Family Member"
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+      "valueExpression": {
+        "language": "application/x-fhir-query",
+        "expression": "Patient",
+        "name": "patient"
+      }
+    }
+  ],
+  "item": [
+    {
+      "linkId": "patient-id",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
+      "type": "text",
+      "text": "ID"
+    },
+    {
+      "linkId": "PR",
+      "type": "group",
+      "text": "Family Member Name",
+      "item": [
+        {
+          "linkId": "PR-name",
+          "type": "group",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
+              "valueExpression": {
+                "language": "application/x-fhir-query",
+                "expression": "HumanName",
+                "name": "humanName"
+              }
+            }
+          ],
+          "item": [
+            {
+              "linkId": "PR-name-text",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.given",
+              "type": "string",
+              "required": true,
+              "text": "First Name"
+            },
+            {
+              "linkId": "PR-name-family",
+              "definition": "http://hl7.org/fhir/StructureDefinition/datatypes#HumanName.family",
+              "type": "string",
+              "required": true,
+              "text": "Last Name"
+            }
+          ]
+        },
+        {
+          "linkId": "patient-0-birth-date",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
+          "type": "date",
+          "required": true,
+          "text": "Date of Birth"
+        },
+        {
+          "linkId": "patient-0-gender",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
+          "type": "choice",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
+              "valueExpression": {
+                "language": "application/x-fhir-query",
+                "expression": "Enumerations$AdministrativeGender",
+                "name": "administrativeGender"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button",
+                    "display": "Radio Button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            }
+          ],
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "male",
+                "display": "Male",
+                "designation": [
+                  {
+                    "language": "sw",
+                    "value": "Mwanamke"
+                  }]
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "female",
+                "display": "Female",
+                "designation": [
+                  {
+                    "language": "sw",
+                    "value": "Mwanaume"
+                  }]
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "is_pregnant",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Flag",
+          "type": "boolean",
+          "text": "Is Pregnant?",
+          "code": [
+            {
+              "system": "https://www.snomed.org",
+              "code": "77386006",
+              "display": "Pregnant"
+            }
+          ],
+          "extension" : [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/flag-detail",
+              "valueString": "Pregnant"
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "patient-0-gender",
+              "operator": "=",
+              "answerCoding" : {
+                "code" : "female"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "PR-telecom",
+          "type": "group",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
+              "valueExpression": {
+                "language": "application/x-fhir-query",
+                "expression": "ContactPoint",
+                "name": "contactPoint"
+              }
+            }
+          ],
+          "item": [
+            {
+              "linkId": "PR-telecom-system",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom.system",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "ContactPoint$ContactPointSystem",
+                    "name": "contactPointSystem"
+                  }
+                }
+              ],
+              "type": "string",
+              "text": "system",
+              "initial": [
+                {
+                  "valueString": "phone"
+                }
+              ],
+              "enableWhen": [
+                {
+                  "question": "patient-0-gender",
+                  "operator": "=",
+                  "answerString": "ok"
+                }
+              ]
+            },
+            {
+              "linkId": "PR-telecom-value",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom.value",
+              "type": "string",
+              "required": true,
+              "text": "Phone Number"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -16,24 +16,21 @@
 
 package org.smartregister.fhircore.model
 
-/** The Patient's details for display purposes. */
-data class PatientItem(
-  val id: String,
-  val name: String,
-  val gender: String,
-  val dob: String,
-  val html: String,
-  val phone: String,
-  val logicalId: String,
-  val risk: String,
-  var vaccineStatus: PatientStatus? = null,
-  var vaccineSummary: PatientVaccineSummary? = null,
-  var area: String? = null,
-  val lastSeen: String
-) {
-  override fun toString(): String = name
+import ca.uhn.fhir.rest.gclient.StringClientParam
+import ca.uhn.fhir.rest.gclient.UriClientParam
+import java.io.Serializable
+
+data class FamilyDetailView(
+  val registerTitle: String,
+  val registrationQuestionnaireIdentifier: String,
+  val registrationQuestionnaireTitle: String,
+  val memberRegistrationQuestionnaireIdentifier: String,
+  val memberRegistrationQuestionnaireTitle: String,
+  val registerGroupCountField: String
+) : Serializable {
+
+  companion object {
+    const val FAMILY_DETAIL_VIEW_CONFIG_ID = "family_client_register_config.json"
+    const val FAMILY_ARG_ITEM_ID = "family_client_item_id"
+  }
 }
-
-data class PatientStatus(val status: VaccineStatus, val details: String)
-
-data class PatientVaccineSummary(val doseNumber: Int, val initialDose: String)

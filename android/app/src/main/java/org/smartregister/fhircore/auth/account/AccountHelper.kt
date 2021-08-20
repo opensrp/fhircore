@@ -88,7 +88,7 @@ class AccountHelper(context: Context) {
         val tokenOnly = token.substring(0, token.lastIndexOf('.') + 1)
         return Jwts.parser().parseClaimsJwt(tokenOnly).body.expiration.after(Date())
       }
-      .onFailure { Timber.e(it) }
+      .onFailure { Timber.w(it) }
 
     return false
   }

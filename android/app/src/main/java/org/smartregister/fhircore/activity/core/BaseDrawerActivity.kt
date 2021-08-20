@@ -39,6 +39,7 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.AncListActivity
 import org.smartregister.fhircore.activity.CovaxListActivity
+import org.smartregister.fhircore.activity.FamilyListActivity
 import org.smartregister.fhircore.auth.account.AccountHelper
 import org.smartregister.fhircore.auth.secure.SecureConfig
 import org.smartregister.fhircore.domain.Language
@@ -107,6 +108,10 @@ abstract class BaseDrawerActivity :
       }
       R.id.menu_item_anc_clients -> {
         startActivity(Intent(baseContext, AncListActivity::class.java))
+        getDrawerLayout().closeDrawer(GravityCompat.START)
+      }
+      R.id.menu_item_family_clients -> {
+        startActivity(Intent(baseContext, FamilyListActivity::class.java))
         getDrawerLayout().closeDrawer(GravityCompat.START)
       }
       R.id.menu_item_language -> {

@@ -29,6 +29,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.rest.gclient.StringClientParam
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
@@ -52,6 +53,7 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.api.HapiFhirService
 import org.smartregister.fhircore.data.HapiFhirResourceDataSource
 import org.smartregister.fhircore.model.PatientItem
+import org.smartregister.fhircore.sdk.PatientExtended
 import timber.log.Timber
 
 const val DAYS_IN_MONTH: Int = 28
@@ -60,7 +62,13 @@ const val WHO_IDENTIFIER_SYSTEM = "http://who.int/ddcc/hcid"
 
 object Utils {
 
-  private val gson = Gson()
+  val gson = Gson()
+  val parser = FhirContext.forR4().newJsonParser()
+
+  fun convertToExtendedPatientResource(patient: Patient): PatientExtended {
+    val patientEncoded = parser.encodeResourceToString(patient)
+    return parser.parseResource(PatientExtended::class.java, patientEncoded)
+  }
 
   private var simpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault())
 
@@ -91,6 +99,20 @@ object Utils {
           system = WHO_IDENTIFIER_SYSTEM
         }
       )
+    }
+  }
+
+  fun addBaseFamilyFilter(search: Search, filterBy: StringClientParam) {
+    search.filter(filterBy) {
+      this.modifier = StringFilterModifier.CONTAINS
+      this.value = "Family"
+    }
+  }
+
+  fun addBaseAncFilter(search: Search, filterBy: StringClientParam) {
+    search.filter(filterBy) {
+      this.modifier = StringFilterModifier.CONTAINS
+      this.value = "Pregnant"
     }
   }
 

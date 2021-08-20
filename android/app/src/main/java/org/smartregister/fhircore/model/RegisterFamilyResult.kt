@@ -22,27 +22,28 @@ import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_ACTIVITY_RESULT_KEY
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_RESPONSE_KEY
 import org.smartregister.fhircore.util.QuestionnaireUtils
 
-class RecordVaccineResult(private val patientId: String) :
-  ActivityResultContract<CovaxDetailView, QuestionnaireResponse?>() {
-  override fun createIntent(context: Context, input: CovaxDetailView): Intent {
+class RegisterFamilyResult() :
+  ActivityResultContract<FamilyDetailView, String?>() {
+
+  override fun createIntent(context: Context, input: FamilyDetailView): Intent {
     return QuestionnaireUtils.buildQuestionnaireIntent(
       context,
-      input.vaccineQuestionnaireTitle,
-      input.vaccineQuestionnaireIdentifier,
-      patientId,
-      false
+      input.registrationQuestionnaireTitle,
+      input.registrationQuestionnaireIdentifier,
+      null,
+      true
     )
   }
 
-  override fun parseResult(resultCode: Int, intent: Intent?): QuestionnaireResponse? {
-    val data = intent?.getBundleExtra(QUESTIONNAIRE_ARG_ACTIVITY_RESULT_KEY)?.getString(
-      QUESTIONNAIRE_ARG_RESPONSE_KEY)
+  override fun parseResult(resultCode: Int, intent: Intent?): String? {
+    val data = intent?.getBundleExtra(QUESTIONNAIRE_ARG_ACTIVITY_RESULT_KEY)
 
     return if (resultCode == Activity.RESULT_OK && data != null) {
-      QuestionnaireUtils.asQuestionnaireResponse(data)
+      return data?.getString(QUESTIONNAIRE_ARG_PATIENT_KEY)
     } else null
   }
 }

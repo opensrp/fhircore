@@ -35,6 +35,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.model.CovaxDetailView
+import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 /**
@@ -97,18 +98,20 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
   }
 
   fun saveExtractedResources(questionnaireResponse: QuestionnaireResponse) {
-    viewModel.saveExtractedResources(
+    val result = viewModel.saveExtractedResources(
       this@QuestionnaireActivity,
       intent,
       viewModel.questionnaire,
       questionnaireResponse
     )
 
-    val intent = Intent()
-    intent.putExtra(
+    result.putString(
       QUESTIONNAIRE_ARG_RESPONSE_KEY,
-      parser.encodeResourceToString(questionnaireResponse)
+      Utils.parser.encodeResourceToString(questionnaireResponse)
     )
+
+    val intent = Intent()
+    intent.putExtra(QUESTIONNAIRE_ARG_ACTIVITY_RESULT_KEY, result)
 
     setResult(RESULT_OK, intent)
     finish()
@@ -178,7 +181,9 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
     const val QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID = "questionnaire_preassigned_item_id"
     const val QUESTIONNAIRE_ARG_RESPONSE_KEY = "questionnaire_response_item_id"
+    const val QUESTIONNAIRE_ARG_ACTIVITY_RESULT_KEY = "questionnaire_activity_result_item_id"
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
+    const val QUESTIONNAIRE_ARG_RELATED_PATIENT_KEY = "questionnaire_related_patient_item_id"
     const val QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR = "bypass-sdk-extractor"
 
     fun getExtrasBundle(clientIdentifier: String, detailView: CovaxDetailView) =

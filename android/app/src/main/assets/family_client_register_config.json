@@ -1,0 +1,12 @@
+{
+  "registerTitle": "Family",
+  "registrationQuestionnaireIdentifier": "1086",
+  "registrationQuestionnaireTitle": "Add Family",
+
+  "memberRegistrationQuestionnaireIdentifier": "1179",
+  "memberRegistrationQuestionnaireTitle": "Add Family Member",
+
+  "memberRegistrationQuestionnaireTitle": "Add Family Member",
+
+  "registerGroupCountField": "living_family_members"
+}

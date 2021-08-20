@@ -5,6 +5,11 @@
 
     <group android:checkableBehavior="single"
         android:id="@+id/grp_clients">
+        <item
+            android:id="@+id/menu_item_family_clients"
+            android:icon="@drawable/ic_baby_mother"
+            android:title="@string/menu_family_clients_list_title"
+            app:actionLayout="@layout/family_menu_counter"/>
 
         <item
             android:id="@+id/menu_item_covax_clients"

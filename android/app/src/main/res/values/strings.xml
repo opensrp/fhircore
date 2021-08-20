@@ -29,6 +29,7 @@
 
     <string name="menu_covax_clients_list_title">COVAX Clients</string>
     <string name="menu_anc_clients_list_title">ANC Clients</string>
+    <string name="menu_family_clients_list_title">Families</string>
 
     <string name="language">Language</string>
     <string name="empty_client_list_message_title">No Results</string>
@@ -66,6 +67,9 @@
     <string name="view_registration_details">View Registration Details</string>
     <string name="client_list_title_covax">COVAX clients</string>
     <string name="client_list_title_anc">ANC clients</string>
+    <string name="client_list_title_family">Families</string>
+
+    <string name="record_anc_visit_title">ANC Visit</string>
 
     <string name="show_overdue">Show overdue</string>
     <string name="record_vaccine_nl">Record\nVaccine</string>
