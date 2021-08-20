@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Integrate StructureMap-based extraction
 - ANC register
 - Load Questionnaire from DB
+- Search by WHO identifier
 
 ### Fixed
 
