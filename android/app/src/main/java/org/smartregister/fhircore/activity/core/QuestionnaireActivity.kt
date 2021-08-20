@@ -36,6 +36,7 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.util.Utils
+import org.smartregister.fhircore.util.find
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 /**
@@ -149,7 +150,7 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
         mutableListOf(Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(code)))
       readOnly = readonly
     }
-  }
+  }*/
 
   private fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {
     return item.find(linkId, null)
@@ -172,7 +173,7 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
     }
 
     return result
-  }*/
+  }
 
   companion object {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"

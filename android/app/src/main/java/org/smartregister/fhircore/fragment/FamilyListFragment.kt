@@ -24,8 +24,10 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.ListAdapter
 import org.smartregister.fhircore.R
+import org.smartregister.fhircore.activity.core.BaseRegisterActivity
 import org.smartregister.fhircore.adapter.FamilyItemRecyclerViewAdapter
 import org.smartregister.fhircore.domain.Pagination
+import org.smartregister.fhircore.model.BaseRegister
 import org.smartregister.fhircore.model.FamilyItem
 import org.smartregister.fhircore.viewholder.FamilyItemViewHolder
 import org.smartregister.fhircore.viewmodel.FamilyListViewModel
@@ -37,28 +39,24 @@ class FamilyListFragment : BaseListFragment<FamilyItem, FamilyItemViewHolder>() 
         return R.layout.family_fragment_list
     }
 
-    override fun getFragmentListId(): Int {
-        return R.id.family_list
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        setupListFragment(R.id.family_list,
+            listViewModel.paginatedDataList,
+            FamilyItemRecyclerViewAdapter(this::onFamilyItemClicked),
+            view)
+        setupSearch(getRegister().searchBox()!!)
+        setupEmptyListView(R.id.empty_list_message_container, view)
+        setupProgress(R.id.loader_overlay, listViewModel.loader)
+
+        onViewCreated(view, savedInstanceState)
     }
 
-    override fun getEmptyListView(): Int {
-        return R.id.empty_list_message_container
-    }
-
-    override fun buildAdapter(): ListAdapter<FamilyItem, FamilyItemViewHolder> {
-        return FamilyItemRecyclerViewAdapter(this::onFamilyItemClicked)
+    private fun getRegister(): BaseRegister {
+        return (requireActivity() as BaseRegisterActivity).register
     }
 
     private fun onFamilyItemClicked(familyItem: FamilyItem) {
 
-    }
-
-    override fun getObservableList(): MutableLiveData<Pair<List<FamilyItem>, Pagination>> {
-        return listViewModel.paginatedDataList
-    }
-
-    override fun getObservableProgressBar(): Int {
-        return R.id.loader_overlay
     }
 
     override fun loadData(currentSearch: String?, page: Int, pageSize: Int) {

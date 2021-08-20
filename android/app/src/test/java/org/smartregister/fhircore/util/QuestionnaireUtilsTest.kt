@@ -67,6 +67,14 @@ class QuestionnaireUtilsTest : RobolectricTest() {
   }
 
   @Test
+  fun testAsPatientReference_shouldReturnPatientReferenceWithId() {
+    val result =
+      QuestionnaireUtils.asPatientReference("123456")
+
+    assertEquals("Patient/123456", result.reference)
+  }
+
+  @Test
   fun testBuildQuestionnaireIntent_shouldReturnIntentWithExtrasWithPatientId() {
     val result =
       QuestionnaireUtils.buildQuestionnaireIntent(context, "My Q title", "my-q-id", "12345", false)
@@ -266,7 +274,8 @@ class QuestionnaireUtilsTest : RobolectricTest() {
     val risk =
       QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)!!
 
-    val flag = QuestionnaireUtils.extractFlag(questionnaireResponse, questionnaire, risk)!!
+    val flag = QuestionnaireUtils.
+    extractFlagForRiskAssessment(questionnaireResponse, questionnaire, risk)!!.first
 
     assertEquals(risk.subject.reference, flag.subject.reference)
     assertEquals(Flag.FlagStatus.ACTIVE, flag.status)
@@ -287,7 +296,30 @@ class QuestionnaireUtilsTest : RobolectricTest() {
 
     val risk =
       QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)!!
-    val flag = QuestionnaireUtils.extractFlag(questionnaireResponse, questionnaire, risk)!!
+    val flag = QuestionnaireUtils
+      .extractFlagForRiskAssessment(questionnaireResponse, questionnaire, risk)!!.first
+
+    val flagExt =
+      QuestionnaireUtils.extractFlagExtension(flag, questionnaireResponse, questionnaire)!!
+
+    assertEquals("http://hl7.org/fhir/StructureDefinition/flag-detail", flagExt.url)
+    assertEquals("at risk", flagExt.value.toString())
+  }
+
+  @Test
+  fun testExtractFlags_shouldReturnValidExtensionAndFlag() {
+    val patient = Patient()
+    patient.id = "1122"
+
+    setResponsesToTrue("diabetes_mellitus", "hypertension")
+
+    val observations =
+      QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
+
+    val risk =
+      QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)!!
+    val flag = QuestionnaireUtils
+      .extractFlagForRiskAssessment(questionnaireResponse, questionnaire, risk)!!.first
 
     val flagExt =
       QuestionnaireUtils.extractFlagExtension(flag, questionnaireResponse, questionnaire)!!

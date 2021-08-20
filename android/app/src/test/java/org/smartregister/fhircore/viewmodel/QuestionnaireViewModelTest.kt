@@ -234,7 +234,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.saveParsedResource(
       questionnaireResponse,
-      samplePatientRegisterQuestionnaire
+      samplePatientRegisterQuestionnaire,
+      Intent()
     )
 
     coVerifyOrder {

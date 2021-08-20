@@ -69,48 +69,9 @@ object QuestionnaireUtils {
     return parser.parseResource(questionnaireResponse) as QuestionnaireResponse
   }
 
-  private fun asQuestionnaireItem(
-    item: Questionnaire.QuestionnaireItemComponent,
-    linkId: String
-  ): Questionnaire.QuestionnaireItemComponent? {
-    if (item.linkId.contentEquals(linkId)) {
-      return item
-    }
-
-    item.item.forEach {
-      val res = asQuestionnaireItem(it, linkId)
-      if (res != null) {
-        return res
-      }
-    }
-    return null
-  }
-
-  private fun asQuestionnaireItem(
-    questionnaire: Questionnaire,
-    linkId: String
-  ): Questionnaire.QuestionnaireItemComponent? {
-    questionnaire.item.forEach {
-      val res = asQuestionnaireItem(it, linkId)
-      if (res != null) {
-        return res
-      }
-    }
-    return null
-  }
-
   fun asCodeableConcept(linkId: String, q: Questionnaire): CodeableConcept {
-    return CodeableConcept().apply {
-      val qit = asQuestionnaireItem(q, linkId)!!
-
-      this.text = qit.text
-      this.coding = qit.code
-
-      this.addCoding().apply {
-        this.code = qit.linkId
-        this.system = qit.definition
-      }
-    }
+    val qit = q.find(linkId)!!
+    return asCodeableConcept(qit)
   }
 
   fun asCodeableConcept(qit: Questionnaire.QuestionnaireItemComponent): CodeableConcept {
@@ -185,12 +146,14 @@ object QuestionnaireUtils {
     questionnaire: Questionnaire
   ): Questionnaire.QuestionnaireItemComponent? {
     // is allowed for flagging with extension
-    val flaggable = itemWithExtension(questionnaire, "flag-detail")
+    val flaggable = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
+
+    extractFlaggables(questionnaire.item, flaggable)
 
     // flag code of selected answer must match with given extension and there should only be one
     // flag of a type/code
     return flaggable.firstOrNull { qItem ->
-      val qrItem = itemWithLinkId(questionnaireResponse, qItem.linkId)!!
+      val qrItem = questionnaireResponse.find(qItem.linkId)!!
 
       // if item has answer, and item code matches with flag code, and answer justifies the flagging
       qrItem
@@ -262,22 +225,6 @@ object QuestionnaireUtils {
     return Pair(flag, ext)
   }
 
-  fun extractDefinitions(
-    definition: String,
-    items: List<Questionnaire.QuestionnaireItemComponent>,
-    target: MutableList<Questionnaire.QuestionnaireItemComponent>
-  ) {
-    items.forEach {
-      if (it.hasDefinition() && it.definition?.contains(definition) == true) {
-        target.add(it)
-      }
-
-      if (it.item.isNotEmpty()) {
-        extractDefinitions(definition, it.item, target)
-      }
-    }
-  }
-
   fun extractFlaggables(
     items: List<Questionnaire.QuestionnaireItemComponent>,
     target: MutableList<Questionnaire.QuestionnaireItemComponent>
@@ -304,7 +251,7 @@ object QuestionnaireUtils {
 
     flaggableItems.forEach { qi ->
       // only add flags where answer is true or answer code matches flag value
-      itemWithLinkId(questionnaireResponse, qi.linkId)
+      questionnaireResponse.find(qi.linkId)
         ?.answer
         ?.firstOrNull { it.hasValue() }
         ?.takeIf {
@@ -343,7 +290,7 @@ object QuestionnaireUtils {
 
     taggable.forEach { qi ->
       // only add flags where answer is true or answer code matches flag value
-      itemWithLinkId(questionnaireResponse, qi.linkId)
+      questionnaireResponse.find(qi.linkId)
         ?.answer
         ?.firstOrNull { it.hasValue() }
         ?.let {
@@ -377,64 +324,9 @@ object QuestionnaireUtils {
     }
   }
 
-  private fun itemWithExtension(
-    item: Questionnaire.QuestionnaireItemComponent,
-    extension: String
-  ): Questionnaire.QuestionnaireItemComponent? {
-    if (item.extension.singleOrNull { ro -> ro.url.contains(extension) } != null) {
-      return item
-    }
-
-    for (i in item.item) {
-      val qit = itemWithExtension(i, extension)
-      if (qit != null) {
-        return qit
-      }
-    }
-
-    return null
-  }
-
-  private fun itemWithExtension(
-    questionnaire: Questionnaire,
-    extension: String
-  ): List<Questionnaire.QuestionnaireItemComponent> {
-    return questionnaire.item.mapNotNull { itemWithExtension(it, extension) }
-  }
-
-  private fun itemWithLinkId(
-    item: QuestionnaireResponse.QuestionnaireResponseItemComponent,
-    linkId: String
-  ): QuestionnaireResponse.QuestionnaireResponseItemComponent? {
-    if (item.linkId.contentEquals(linkId)) {
-      return item
-    }
-
-    for (i in item.item) {
-      val qit = itemWithLinkId(i, linkId)
-      if (qit != null) {
-        return qit
-      }
-    }
-
-    return null
-  }
-
-  private fun itemWithLinkId(
-    questionnaireResponse: QuestionnaireResponse,
-    linkId: String
-  ): QuestionnaireResponse.QuestionnaireResponseItemComponent? {
-    return questionnaireResponse.item.mapNotNull { itemWithLinkId(it, linkId) }.firstOrNull()
-  }
-
   fun valueStringWithLinkId(questionnaireResponse: QuestionnaireResponse, linkId: String): String? {
-    val ans = itemWithLinkId(questionnaireResponse, linkId)?.answerFirstRep
+    val ans = questionnaireResponse.find(linkId)?.answerFirstRep
     return ans?.valueStringType?.asStringValue()
-  }
-
-  fun valueIntWithLinkId(questionnaireResponse: QuestionnaireResponse, linkId: String): Int? {
-    val ans = itemWithLinkId(questionnaireResponse, linkId)?.answerFirstRep
-    return ans?.valueIntegerType?.value
   }
 
   private fun doesIntersect(codingList: List<Coding>, other: List<Coding>): Boolean {
@@ -479,7 +371,7 @@ object QuestionnaireUtils {
     if (risks.isEmpty()) return null
 
     val qItem = risks[0]
-    var qrItem = itemWithLinkId(questionnaireResponse, qItem.linkId)
+    var qrItem = questionnaireResponse.find(qItem.linkId)
 
     var riskScore = 0
     val risk = RiskAssessment()

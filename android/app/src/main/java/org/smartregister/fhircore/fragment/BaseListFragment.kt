@@ -8,150 +8,43 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.activity.core.BaseRegisterActivity
-import org.smartregister.fhircore.adapter.FamilyItemRecyclerViewAdapter
 import org.smartregister.fhircore.domain.Pagination
 import org.smartregister.fhircore.domain.currentPageNumber
 import org.smartregister.fhircore.domain.hasNextPage
 import org.smartregister.fhircore.domain.hasPreviousPage
 import org.smartregister.fhircore.domain.totalPages
-import org.smartregister.fhircore.model.BaseRegister
-import org.smartregister.fhircore.model.PatientItem
-import org.smartregister.fhircore.viewmodel.FamilyListViewModel
 import timber.log.Timber
 
-abstract class BaseListFragment<T : Any?, VH : RecyclerView.ViewHolder?> : Fragment() {
-  val PAGE_SIZE = 7
+enum class Direction {
+  NEXT,
+  PREVIOUS
+}
 
-  private var search: String? = ""
-  private lateinit var adapter: ListAdapter<T, VH>
-  private lateinit var paginationView: RelativeLayout
-  private lateinit var recyclerView: RecyclerView
-  private lateinit var nextButton: Button
-  private lateinit var prevButton: Button
-  private lateinit var infoTextView: TextView
-  private var activePageNum = 0
+class PaginationView(
+  val paginationView: ViewGroup,
+  val nextButton: Button,
+  val prevButton: Button,
+  val infoTextView: TextView,
+  val pageSize: Int = 7,
+  val onNavigationClicked: (direction: Direction, page: Int, pageSize: Int) -> Unit
+) {
+  var activePageNum = 0
 
-  override fun onCreateView(
-    inflater: LayoutInflater,
-    container: ViewGroup?,
-    savedInstanceState: Bundle?
-  ): View? {
-    return inflater.inflate(getFragmentListLayout(), container, false)
-  }
-
-  @LayoutRes abstract fun getFragmentListLayout(): Int
-
-  @IdRes abstract fun getFragmentListId(): Int
-
-  @IdRes abstract fun getEmptyListView(): Int
-
-  abstract fun buildAdapter(): ListAdapter<T, VH>
-
-  abstract fun getObservableList(): MutableLiveData<Pair<List<T>, Pagination>>
-
-  abstract fun getObservableProgressBar(): Int
-
-  open fun getRegister(): BaseRegister {
-    return (requireActivity() as BaseRegisterActivity).register
-  }
-
-  abstract fun loadData(currentSearch: String?, page: Int, pageSize: Int)
-
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    recyclerView = view.findViewById(getFragmentListId())
-    paginationView = view.findViewById(R.id.rl_pagination)
-    nextButton = view.findViewById(R.id.btn_next_page)
-    prevButton = view.findViewById(R.id.btn_previous_page)
-    infoTextView = view.findViewById(R.id.txt_page_info)
-    adapter = buildAdapter()
-
-    recyclerView.adapter = adapter
-
-    getObservableList().observe(requireActivity(), { setData(it) })
-
-    // todo sync should be on reg
-
-    getRegister().searchBox()?.addTextChangedListener(
-        object : TextWatcher {
-          override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-          override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            search = s?.toString()
-            loadData(search, 0, PAGE_SIZE)
-          }
-
-          override fun afterTextChanged(s: Editable?) {}
-        }
-      )
-
-    // todo move overdue here
-
-    // todo loader here
-//    patientListViewModel.loadingListObservable.observe(
-//      requireActivity(),
-//      {
-//        if (it != -1) {
-//          requireActivity().findViewById<ConstraintLayout>(R.id.loader_overlay).visibility =
-//            if (it == 1) View.VISIBLE else View.GONE
-//        }
-//      }
-//    )
-
-    loadData("", 0, PAGE_SIZE) // todo sync first somewhere blocking the ui
-    super.onViewCreated(view, savedInstanceState)
-  }
-
-  override fun onResume() {
-    loadData(search, 0, PAGE_SIZE)
-    adapter.notifyDataSetChanged()
-    super.onResume()
-  }
-
-  fun setData(data: Pair<List<T>, Pagination>) {
-    Timber.d("rendering ${data.first.count()} patient records")
-    val list = ArrayList<T>(data.first)
-    updatePagination(data.second)
-    adapter.submitList(list)
-
-    if (data.first.count() == 0) {
-      showEmptyListViews()
-    } else {
-      hideEmptyListViews()
-    }
-  }
-
-  fun hideEmptyListViews() {
-    setVisibility(getEmptyListView(), View.GONE)
-  }
-
-  fun showEmptyListViews() {
-    setVisibility(getEmptyListView(), View.VISIBLE)
-  }
-
-  private fun setVisibility(id: Int, visibility: Int) {
-    requireActivity().findViewById<View>(id).visibility = visibility
-  }
-
-  private fun updatePagination(pagination: Pagination) {
+  fun updatePagination(pagination: Pagination) {
     activePageNum = pagination.currentPage
     nextButton.setOnClickListener {
-      onNavigationClicked(NavigationDirection.NEXT, pagination.currentPage)
+      onNavigationClicked.invoke(Direction.NEXT, pagination.currentPage, pageSize)
     }
     prevButton.setOnClickListener {
-      onNavigationClicked(NavigationDirection.PREVIOUS, pagination.currentPage)
+      onNavigationClicked.invoke(Direction.PREVIOUS, pagination.currentPage, pageSize)
     }
 
     nextButton.visibility = if (pagination.hasNextPage()) View.GONE else View.VISIBLE
@@ -164,15 +57,147 @@ abstract class BaseListFragment<T : Any?, VH : RecyclerView.ViewHolder?> : Fragm
     this.infoTextView.text =
       if (pagination.totalPages() < 2) ""
       else
-        resources.getString(
+        paginationView.resources.getString(
           R.string.str_page_info,
           pagination.currentPageNumber(),
           pagination.totalPages()
         )
   }
 
-  private fun onNavigationClicked(direction: NavigationDirection, currentPage: Int) {
-    val nextPage = currentPage + if (direction == NavigationDirection.NEXT) 1 else -1
-    loadData(search, nextPage, PAGE_SIZE)
+  companion object {
+    const val DEFAULT_PAGE_SIZE = 20
+
+    fun createPaginationView(
+      container: ViewGroup,
+      onNavigation: (direction: Direction, page: Int, pageSize: Int) -> Unit
+    ): PaginationView {
+      val paginationView =
+        LayoutInflater.from(container.context).inflate(R.layout.pagination, container, false)
+      return PaginationView(
+        paginationView as ViewGroup,
+        pageSize = 7,
+        infoTextView = paginationView.findViewById(R.id.txt_page_info),
+        nextButton = paginationView.findViewById(R.id.btn_next_page),
+        prevButton = paginationView.findViewById(R.id.btn_previous_page),
+        onNavigationClicked = onNavigation
+      )
+    }
+  }
+}
+
+abstract class BaseListFragment<T : Any?, VH : RecyclerView.ViewHolder?> : Fragment() {
+  private var search: String? = ""
+  private lateinit var adapter: ListAdapter<T, VH>
+  private lateinit var recyclerView: RecyclerView
+  private var paginationView: PaginationView? = null
+  private var emptyListView: View? = null
+
+  override fun onCreateView(
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?
+  ): View? {
+    return inflater.inflate(getFragmentListLayout(), container, false)
+  }
+
+  @LayoutRes abstract fun getFragmentListLayout(): Int
+
+  abstract fun loadData(currentSearch: String?, page: Int, pageSize: Int)
+
+  fun setupEmptyListView(@IdRes id: Int, container: View) {
+    emptyListView = container.findViewById(id)
+  }
+
+  fun setupPagination(container: ViewGroup) {
+    paginationView =
+      PaginationView.createPaginationView(container) { d, page, pageSize ->
+        Timber.i("Loading $d page #$page with records $pageSize")
+        loadData(search, page, pageSize)
+      }
+  }
+
+  fun setupListFragment(
+    @IdRes fragmentListView: Int,
+    fragmentList: MutableLiveData<Pair<List<T>, Pagination>>,
+    adapter: ListAdapter<T, VH>,
+    view: View
+  ) {
+    recyclerView = view.findViewById(fragmentListView)
+    this.adapter = adapter
+    recyclerView.adapter = adapter
+
+    fragmentList.observe(requireActivity(), { setData(it) })
+  }
+
+  fun setupSearch(searchBox: EditText) {
+    searchBox.addTextChangedListener(
+      object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+          search = s?.toString()
+          loadData(search, 0, getPageSize())
+        }
+
+        override fun afterTextChanged(s: Editable?) {}
+      }
+    )
+  }
+
+  fun setupProgress(@IdRes id: Int, state: MutableLiveData<Int>) {
+    state.observe(
+      requireActivity(),
+      {
+        if (it != -1) {
+          requireActivity().findViewById<View>(id).visibility =
+            if (it == 1) View.VISIBLE else View.GONE
+        }
+      }
+    )
+  }
+
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    kotlin.runCatching {
+      recyclerView.adapter != null
+    }
+      .onFailure {
+        throw IllegalStateException(
+          "You must initialize adapter and recyclerview by calling #setupListFragment as first method"
+        )
+      }
+
+    loadData("", 0, getPageSize()) // todo sync first somewhere blocking the ui
+    super.onViewCreated(view, savedInstanceState)
+  }
+
+  override fun onResume() {
+    loadData(search, 0, getPageSize())
+    adapter.notifyDataSetChanged()
+    super.onResume()
+  }
+
+  fun getPageSize(): Int {
+    return paginationView?.pageSize ?: PaginationView.DEFAULT_PAGE_SIZE
+  }
+
+  fun setData(data: Pair<List<T>, Pagination>) {
+    Timber.d("rendering ${data.first.count()} patient records")
+    val list = ArrayList<T>(data.first)
+    paginationView?.updatePagination(data.second)
+    adapter.submitList(list)
+
+    if (data.first.count() == 0) {
+      showEmptyListViews()
+    } else {
+      hideEmptyListViews()
+    }
+  }
+
+  fun hideEmptyListViews() {
+    emptyListView?.visibility = View.GONE
+  }
+
+  fun showEmptyListViews() {
+    emptyListView?.visibility = View.VISIBLE
   }
 }

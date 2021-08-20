@@ -21,66 +21,24 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/family_list"
         android:name="com.google.fhirengine.example.FamilyListFragment"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/lt_pagination"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/rl_pagination"
         app:layoutManager="LinearLayoutManager"
         tools:context=".activity.FamilyListActivity"
         tools:listitem="@layout/family_list_item"
         android:maxHeight="300dp"/>
 
-    <RelativeLayout
-        android:id="@+id/rl_pagination"
-        android:layout_width="fill_parent"
-        android:layout_height="@dimen/pagination_bar_height"
-        android:layout_alignParentBottom="true"
-        android:visibility="gone"
-        tools:visibility="visible"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <Button
-            android:id="@+id/btn_previous_page"
-            android:layout_width="@dimen/pagination_bar_button_width"
-            android:textColor="@color/black"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:background="@drawable/transparent_blue_background"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:text="@string/str_previous"
-            android:textSize="@dimen/pagination_bar_text_size" />
-
-        <TextView
-            android:id="@+id/txt_page_info"
-            android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
-            android:layout_centerInParent="true"
-            android:gravity="center"
-            android:textSize="@dimen/pagination_bar_text_size" />
-
-        <Button
-            android:id="@+id/btn_next_page"
-            android:layout_width="@dimen/pagination_bar_button_width"
-            android:layout_height="fill_parent"
-            android:layout_alignParentEnd="true"
-            android:textColor="@color/black"
-            android:background="@drawable/transparent_blue_background"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:text="@string/str_next"
-            android:textSize="@dimen/pagination_bar_text_size" />
-    </RelativeLayout>
+    <include android:id="@+id/lt_pagination"
+        layout="@layout/pagination"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
