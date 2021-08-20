@@ -331,27 +331,50 @@ object QuestionnaireUtils {
     return flags
   }
 
-  private fun itemWithDefinition(
-    item: Questionnaire.QuestionnaireItemComponent,
-    definition: String
-  ): Questionnaire.QuestionnaireItemComponent? {
-    if (item.definition?.contains(definition) == true) {
-      return item
+  fun extractTags(
+    questionnaireResponse: QuestionnaireResponse,
+    questionnaire: Questionnaire
+  ): MutableList<Coding> {
+    val taggable = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
+
+    itemsWithDefinition("Patient.meta.tag", questionnaire.item, taggable)
+
+    val tags = mutableListOf<Coding>()
+
+    taggable.forEach { qi ->
+      // only add flags where answer is true or answer code matches flag value
+      itemWithLinkId(questionnaireResponse, qi.linkId)
+        ?.answer
+        ?.firstOrNull { it.hasValue() }
+        ?.let {
+          when (it.value) {
+            is Coding -> it.valueCoding // for coding tag with any option selected by user
+            is BooleanType -> qi.code[0] // for boolean tag wih question code if true
+            else -> null
+          }
+        }
+        ?.let {
+          tags.add(it)
+        }
     }
 
-    item.item.forEach {
-      val qit = itemWithDefinition(it, definition)
-      if (qit != null) return qit
-    }
-
-    return null
+    return tags
   }
 
-  private fun itemWithDefinition(
-    questionnaire: Questionnaire,
-    definition: String
-  ): List<Questionnaire.QuestionnaireItemComponent> {
-    return questionnaire.item.mapNotNull { itemWithDefinition(it, definition) }
+  private fun itemsWithDefinition(
+    definition: String,
+    items: List<Questionnaire.QuestionnaireItemComponent>,
+    target: MutableList<Questionnaire.QuestionnaireItemComponent>
+  ) {
+    items.forEach {
+      if (it.definition?.contains(definition, true) == true) {
+        target.add(it)
+      }
+
+      if(it.item.isNotEmpty()){
+        itemsWithDefinition(definition, it.item, target)
+      }
+    }
   }
 
   private fun itemWithExtension(
@@ -450,7 +473,12 @@ object QuestionnaireUtils {
     questionnaireResponse: QuestionnaireResponse,
     questionnaire: Questionnaire
   ): RiskAssessment? {
-    val qItem = itemWithDefinition(questionnaire, "RiskAssessment").firstOrNull() ?: return null
+    val risks = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
+    itemsWithDefinition("RiskAssessment", questionnaire.item, risks)
+
+    if (risks.isEmpty()) return null
+
+    val qItem = risks[0]
     var qrItem = itemWithLinkId(questionnaireResponse, qItem.linkId)
 
     var riskScore = 0

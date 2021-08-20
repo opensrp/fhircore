@@ -26,15 +26,12 @@ import kotlinx.android.synthetic.main.toolbar_base_register.layout_scan_barcode
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.core.BaseRegisterActivity
-import org.smartregister.fhircore.fragment.Anc2ListFragment
 import org.smartregister.fhircore.fragment.AncListFragment
 import org.smartregister.fhircore.model.AncDetailView
 import org.smartregister.fhircore.model.BaseRegister
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.AncListViewModel
-import org.smartregister.fhircore.viewmodel.FamilyListViewModel
 import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
-import timber.log.Timber
 
 class AncListActivity : BaseRegisterActivity() {
   private lateinit var listViewModel: AncListViewModel

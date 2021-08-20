@@ -41,6 +41,10 @@ import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.util.QuestionnaireUtils
+import org.smartregister.fhircore.util.QuestionnaireUtils.asPatientReference
+import org.smartregister.fhircore.util.Utils
+import timber.log.Timber
+import java.lang.Exception
 
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
   AndroidViewModel(application) {
@@ -55,6 +59,12 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     }
 
   fun loadQuestionnaire(id: String): Questionnaire {
+    try{
+      val q = getApplication<FhirApplication>()
+        .assets.open(id).bufferedReader().use { it.readText() }
+      return Utils.parser.parseResource(Questionnaire::class.java, q)
+    }
+    catch (e: Exception) {}
     return runBlocking { fhirEngine.load(Questionnaire::class.java, id) }
   }
 
@@ -115,6 +125,8 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
 
       // todo Assign Encounter , Observation etc their separate Ids with reference to Patient Id
       val resourceId = intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
+    val resourceId = // todo WRONG assignment
+      intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
 
       saveBundleResources(bundle, resourceId)
     }
@@ -137,7 +149,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     questionnaire: Questionnaire,
     intent: Intent
   ): android.os.Bundle {
-    if (!questionnaire.hasSubjectType("Patient")) return buildResponseBundle(null, null, questionnaireResponse)
+    if (!questionnaire.hasSubjectType("Patient")) return buildResponseBundle(null, null)
 
     viewModelScope.launch {
       val patient =
@@ -174,7 +186,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
         val flag = it.first
         saveResource(flag)
 
-        it.second?.let { ext -> applyFlag(patient, flag, ext) }
+        it.second?.let { ext -> patient.addExtension(ext) }
       }
     }
 
@@ -183,8 +195,14 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
       val flag = it.first
       saveResource(flag)
 
-      applyFlag(patient, flag, it.second)
+      patient.addExtension(it.second) // do this directly from ResourceMapper
     }
+
+    // do this directly from ResourceMapper when structure map is integrated
+    QuestionnaireUtils.extractTags(questionnaireResponse, questionnaire)
+      .forEach {
+        patient.meta.addTag(it)
+      }
 
     var groupId = intent.getStringExtra(QUESTIONNAIRE_ARG_RELATED_PATIENT_KEY)
 
@@ -195,7 +213,9 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
 
     saveResource(extendedPatient)
 
-    return buildResponseBundle(patient, groupId, questionnaireResponse)
+    Timber.e("PatIENT: ${Utils.parser.encodeResourceToString(extendedPatient)}")
+
+    return buildResponseBundle(patient, groupId)
   }
 
   fun applyRelationship(patient: Patient, groupId: String){
@@ -206,12 +226,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     patient.addLink(link)
   }
 
-  fun applyFlag(patient: Patient, flag: Flag, extension: Extension) {
-    patient.meta.addTag(flag.code.coding[0])
-    patient.addExtension(extension)
-  }
-
-  fun buildResponseBundle(patient: Patient?, groupId: String?, questionnaireResponse: QuestionnaireResponse): android.os.Bundle {
+  fun buildResponseBundle(patient: Patient?, groupId: String?): android.os.Bundle {
     val result = bundleOf()
     result.putString(QUESTIONNAIRE_ARG_PATIENT_KEY, patient?.id)
     result.putString(QUESTIONNAIRE_ARG_RELATED_PATIENT_KEY, groupId)

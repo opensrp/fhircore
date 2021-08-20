@@ -25,16 +25,57 @@
   ],
   "item": [
     {
-      "linkId": "patient-id",
-      "definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
-      "type": "text",
-      "text": "ID"
-    },
-    {
       "linkId": "PR",
       "type": "group",
-      "text": "Family Member Name",
+      "text": "Family Member info",
       "item": [
+        {
+          "type": "group",
+          "required": true,
+          "linkId": "patient-identifier-group",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
+              "valueExpression": {
+                "language": "application/x-fhir-query",
+                "expression": "Identifier",
+                "name": "identifier"
+              }
+            }
+          ],
+          "item": [
+            {
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.type",
+              "linkId" : "patient-id-type",
+              "type" : "choice",
+              "hidden": true,
+              "initial": [
+                {
+                  "valueCoding": {
+                    "code": "MR",
+                    "display": "MR Number",
+                    "system": "http://terminology.hl7.org/ValueSet/v2-0203"
+                  }
+                }
+              ],
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "code": "MR",
+                    "display": "MR Number",
+                    "system": "http://terminology.hl7.org/ValueSet/v2-0203"
+                  }
+                }
+              ]
+            },
+            {
+              "linkId": "patient-id",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value",
+              "type": "text"
+            }
+          ]
+        },
         {
           "linkId": "PR-name",
           "type": "group",
@@ -62,7 +103,7 @@
               "definition": "http://hl7.org/fhir/StructureDefinition/datatypes#HumanName.family",
               "type": "string",
               "required": true,
-              "text": "Last Name"
+              "text": "Surname"
             }
           ]
         },
@@ -77,6 +118,7 @@
           "linkId": "patient-0-gender",
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
           "type": "choice",
+          "required": true,
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
@@ -106,8 +148,8 @@
           "answerOption": [
             {
               "valueCoding": {
-                "code": "male",
-                "display": "Male",
+                "code": "female",
+                "display": "Female",
                 "designation": [
                   {
                     "language": "sw",
@@ -117,8 +159,8 @@
             },
             {
               "valueCoding": {
-                "code": "female",
-                "display": "Female",
+                "code": "male",
+                "display": "Male",
                 "designation": [
                   {
                     "language": "sw",
@@ -130,7 +172,7 @@
         },
         {
           "linkId": "is_pregnant",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Flag",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.meta.tag",
           "type": "boolean",
           "text": "Is Pregnant?",
           "code": [
