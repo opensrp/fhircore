@@ -1,7 +1,6 @@
 package org.smartregister.fhircore.activity
 
 import android.app.AlertDialog
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
@@ -9,23 +8,19 @@ import androidx.lifecycle.ViewModelProvider
 import kotlinx.android.synthetic.main.activity_register_list.base_register_toolbar
 import kotlinx.android.synthetic.main.toolbar_base_register.btn_show_overdue
 import kotlinx.android.synthetic.main.toolbar_base_register.layout_scan_barcode
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.core.BaseRegisterActivity
 import org.smartregister.fhircore.fragment.FamilyListFragment
 import org.smartregister.fhircore.fragment.PAGE_COUNT
 import org.smartregister.fhircore.model.BaseRegister
-import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.model.FamilyDetailView
-import org.smartregister.fhircore.model.RecordVaccineResult
 import org.smartregister.fhircore.model.RegisterFamilyMemberData
 import org.smartregister.fhircore.model.RegisterFamilyMemberResult
 import org.smartregister.fhircore.model.RegisterFamilyResult
-import org.smartregister.fhircore.util.QuestionnaireUtils
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.FamilyListViewModel
-import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
+import org.smartregister.fhircore.viewmodel.FhirListViewModelFactory
 
 class FamilyListActivity: BaseRegisterActivity() {
     lateinit var listViewModel: FamilyListViewModel
@@ -51,7 +46,7 @@ class FamilyListActivity: BaseRegisterActivity() {
         listViewModel =
             ViewModelProvider(
                 this,
-                PatientListViewModelFactory(application, FhirApplication.fhirEngine(baseContext))
+                FhirListViewModelFactory(application, FhirApplication.fhirEngine(baseContext))
             )
                 .get(FamilyListViewModel::class.java)
 

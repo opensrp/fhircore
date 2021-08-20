@@ -48,7 +48,7 @@ class FamilyItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
   fun bindTo(
     familyItem: FamilyItem,
-    onItemClicked: (FamilyListFragment.Intention, FamilyItem) -> Unit,
+    onItemClicked: (FamilyItem) -> Unit,
   ) {
     this.demographics.text = getDemographics(familyItem)
     area.text = familyItem.area

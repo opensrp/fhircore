@@ -28,7 +28,7 @@ import org.smartregister.fhircore.model.BaseRegister
 import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.util.Utils.loadConfig
 import org.smartregister.fhircore.viewmodel.CovaxListViewModel
-import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
+import org.smartregister.fhircore.viewmodel.FhirListViewModelFactory
 
 class CovaxListActivity : BaseRegisterActivity() {
   lateinit var listViewModel: CovaxListViewModel
@@ -49,7 +49,7 @@ class CovaxListActivity : BaseRegisterActivity() {
     listViewModel =
       ViewModelProvider(
           this,
-          PatientListViewModelFactory(application, FhirApplication.fhirEngine(baseContext))
+          FhirListViewModelFactory(application, FhirApplication.fhirEngine(baseContext))
         )
         .get(CovaxListViewModel::class.java)
 

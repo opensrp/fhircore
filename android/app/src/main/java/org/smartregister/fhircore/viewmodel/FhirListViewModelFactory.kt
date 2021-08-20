@@ -5,11 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.fhir.FhirEngine
 
-class PatientListViewModelFactory(
+class FhirListViewModelFactory(
   private val application: Application,
   private val fhirEngine: FhirEngine
 ) : ViewModelProvider.Factory {
   override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    if(modelClass.isAssignableFrom(BaseViewModel::class.java)){
+      return BaseViewModel(application, fhirEngine) as T
+    }
     if (modelClass.isAssignableFrom(CovaxListViewModel::class.java)) {
       return CovaxListViewModel(application, fhirEngine) as T
     }

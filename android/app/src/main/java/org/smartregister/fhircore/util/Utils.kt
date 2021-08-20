@@ -54,6 +54,7 @@ import org.smartregister.fhircore.api.HapiFhirService
 import org.smartregister.fhircore.data.HapiFhirResourceDataSource
 import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.sdk.PatientExtended
+import org.smartregister.fhircore.util.Utils.getAgeFromDate
 import timber.log.Timber
 
 const val DAYS_IN_MONTH: Int = 28
@@ -113,6 +114,17 @@ object Utils {
     search.filter(filterBy) {
       this.modifier = StringFilterModifier.CONTAINS
       this.value = "Pregnant"
+    }
+  }
+
+  fun addSearchQueryFilter(search: Search, query: String?) {
+    search.apply {
+      if (query?.isNotBlank() == true) {
+        filter(Patient.NAME) {
+          modifier = StringFilterModifier.CONTAINS
+          value = query.trim()
+        }
+      }
     }
   }
 

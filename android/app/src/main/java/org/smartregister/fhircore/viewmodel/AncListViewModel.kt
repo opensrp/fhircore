@@ -13,6 +13,7 @@ import com.google.android.fhir.search.search
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
+import org.slf4j.helpers.Util
 import org.smartregister.fhircore.domain.Pagination
 import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.sdk.PatientExtended
@@ -32,15 +33,7 @@ class AncListViewModel(application: Application, private val fhirEngine: FhirEng
       val searchResults: List<Patient> =
         fhirEngine.search {
           Utils.addBaseAncFilter(this, PatientExtended.TAG)
-
-          apply {
-            if (query?.isNotBlank() == true) {
-              filter(Patient.NAME) {
-                modifier = StringFilterModifier.CONTAINS
-                value = query.trim()
-              }
-            }
-          }
+          Utils.addSearchQueryFilter(this, query)
 
           sort(Patient.GIVEN, Order.ASCENDING)
           count = totalCount
@@ -63,14 +56,7 @@ class AncListViewModel(application: Application, private val fhirEngine: FhirEng
   suspend fun count(query: String?): Long {
     return fhirEngine.count<Patient> {
       Utils.addBaseAncFilter(this, PatientExtended.TAG)
-      apply {
-        if (query?.isNotBlank() == true) {
-          filter(Patient.NAME) {
-            modifier = StringFilterModifier.CONTAINS
-            value = query.trim()
-          }
-        }
-      }
+      Utils.addSearchQueryFilter(this, query)
     }
   }
 }

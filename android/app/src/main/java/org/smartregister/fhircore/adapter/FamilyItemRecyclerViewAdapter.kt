@@ -29,7 +29,7 @@ import org.smartregister.fhircore.viewholder.FamilyItemViewHolder
 import org.smartregister.fhircore.viewholder.PatientItemViewHolder
 
 class FamilyItemRecyclerViewAdapter(
-  private val onItemClicked: (FamilyListFragment.Intention, FamilyItem) -> Unit
+  private val onItemClicked: (FamilyItem) -> Unit
 ) : ListAdapter<FamilyItem, FamilyItemViewHolder>(FamilyItemDiffCallback()) {
 
   class FamilyItemDiffCallback : DiffUtil.ItemCallback<FamilyItem>() {

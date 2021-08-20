@@ -149,7 +149,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     questionnaire: Questionnaire,
     intent: Intent
   ): android.os.Bundle {
-    if (!questionnaire.hasSubjectType("Patient")) return buildResponseBundle(null, null)
+    if (!questionnaire.hasSubjectType("Patient")) return bundleOf()
 
     viewModelScope.launch {
       val patient =

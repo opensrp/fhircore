@@ -31,7 +31,7 @@ import org.smartregister.fhircore.model.AncDetailView
 import org.smartregister.fhircore.model.BaseRegister
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.AncListViewModel
-import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
+import org.smartregister.fhircore.viewmodel.FhirListViewModelFactory
 
 class AncListActivity : BaseRegisterActivity() {
   private lateinit var listViewModel: AncListViewModel
@@ -54,7 +54,7 @@ class AncListActivity : BaseRegisterActivity() {
     listViewModel =
       ViewModelProvider(
         this,
-        PatientListViewModelFactory(application, FhirApplication.fhirEngine(baseContext))
+        FhirListViewModelFactory(application, FhirApplication.fhirEngine(baseContext))
       )
         .get(AncListViewModel::class.java)
   }

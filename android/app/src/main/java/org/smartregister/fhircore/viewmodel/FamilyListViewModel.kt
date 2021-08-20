@@ -33,15 +33,7 @@ class FamilyListViewModel(application: Application, private val fhirEngine: Fhir
       val searchResults: List<Patient> =
         fhirEngine.search {
           Utils.addBaseFamilyFilter(this, PatientExtended.TAG)
-
-          apply {
-            if (query?.isNotBlank() == true) {
-              filter(Patient.NAME) {
-                modifier = StringFilterModifier.CONTAINS
-                value = query.trim()
-              }
-            }
-          }
+          Utils.addSearchQueryFilter(this, query)
 
           sort(Patient.GIVEN, Order.ASCENDING)
           count = totalCount
@@ -69,14 +61,7 @@ class FamilyListViewModel(application: Application, private val fhirEngine: Fhir
   suspend fun count(query: String?): Long {
     return fhirEngine.count<Patient> {
       Utils.addBaseFamilyFilter(this, PatientExtended.TAG)
-      apply {
-        if (query?.isNotBlank() == true) {
-          filter(Patient.NAME) {
-            modifier = StringFilterModifier.CONTAINS
-            value = query.trim()
-          }
-        }
-      }
+      Utils.addSearchQueryFilter(this, query)
     }
   }
 

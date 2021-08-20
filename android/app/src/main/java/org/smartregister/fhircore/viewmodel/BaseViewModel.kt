@@ -67,13 +67,4 @@ class BaseViewModel(application: Application, private val fhirEngine: FhirEngine
       Timber.d("Loaded %s languages from languages.xml resource file", languageList.size)
     }
   }
-
-  class BaseViewModelFactory(
-    private val mApplication: Application,
-    private val fhirEngine: FhirEngine
-  ) : ViewModelProvider.Factory {
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-      return BaseViewModel(mApplication, fhirEngine) as T
-    }
-  }
 }
