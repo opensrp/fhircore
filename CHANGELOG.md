@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC register
 - Load Questionnaire from DB
 - Search by WHO identifier
+- Family Register and ANC Fragment List
 
 ### Fixed
 

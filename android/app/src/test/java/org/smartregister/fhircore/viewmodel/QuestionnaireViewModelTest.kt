@@ -23,16 +23,17 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.logicalId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.just
+import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.BooleanType
@@ -49,6 +50,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.RiskAssessment
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -59,7 +61,6 @@ import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_RELATED_PATIENT_KEY
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
-import org.smartregister.fhircore.shadow.TestUtils
 import org.smartregister.fhircore.util.Utils
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 03-07-2021. */
@@ -89,7 +90,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireResponse = iParser.parseResource(qrJson) as QuestionnaireResponse
 
-    fhirEngine = spyk(FhirApplication.fhirEngine(context))
+    fhirEngine = mockk()
 
     mockkObject(FhirApplication)
     every { FhirApplication.fhirEngine(any()) } returns fhirEngine
@@ -98,6 +99,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     savedState[QUESTIONNAIRE_PATH_KEY] = "sample_patient_registration.json"
     questionnaireViewModel =
       spyk(QuestionnaireViewModel(ApplicationProvider.getApplicationContext(), savedState))
+  }
+
+  @After
+  fun cleanup() {
+    unmockkObject(FhirApplication)
   }
 
   @Test
@@ -359,17 +365,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     Assert.assertNotNull(questionnaire)
     Assert.assertEquals("Patient", questionnaire.subjectType[0].code)
-  }
-
-  @Test
-  fun testVerifySavedResource() {
-    val sourcePatient = TestUtils.TEST_PATIENT_1
-
-    questionnaireViewModel.saveResource(sourcePatient)
-    val patient = runBlocking { fhirEngine.load(Patient::class.java, sourcePatient.id) }
-
-    Assert.assertNotNull(patient)
-    Assert.assertEquals(sourcePatient.logicalId, patient.logicalId)
   }
 
   @Test
