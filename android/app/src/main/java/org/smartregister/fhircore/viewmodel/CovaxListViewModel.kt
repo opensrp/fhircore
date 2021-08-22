@@ -21,6 +21,8 @@ import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
@@ -261,6 +263,18 @@ class CovaxListViewModel(application: Application, private val fhirEngine: FhirE
   }
 }
 
+class PatientListViewModelFactory(
+  private val application: Application,
+  private val fhirEngine: FhirEngine
+) : ViewModelProvider.Factory {
+  override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    if (modelClass.isAssignableFrom(CovaxListViewModel::class.java)) {
+      return CovaxListViewModel(application, fhirEngine) as T
+    }
+    throw IllegalArgumentException("Unknown ViewModel class")
+  }
+}
+
 suspend fun Patient.toPatientItem(viewModelScope: CoroutineScope): PatientItem {
   val name = this.name[0].nameAsSingleString
 
@@ -271,9 +285,8 @@ suspend fun Patient.toPatientItem(viewModelScope: CoroutineScope): PatientItem {
   val phone: String =
     if (this.hasTelecom() && this.telecom[0].hasValue()) this.telecom[0].value else ""
   val logicalId: String = this.logicalId
-  val ext = this.extension.firstOrNull { it.value.toString().contains("risk") }
+  val ext = this.extension.singleOrNull { it.value.toString().contains("risk") }
   val risk = ext?.value?.toString() ?: ""
-  val area = this.addressFirstRep.city
 
   return withContext(viewModelScope.coroutineContext) {
     val lastSeen = Utils.getLastSeen(logicalId, meta.lastUpdated)
@@ -286,7 +299,6 @@ suspend fun Patient.toPatientItem(viewModelScope: CoroutineScope): PatientItem {
       phone = phone,
       logicalId = logicalId,
       risk = risk,
-      area = area,
       lastSeen = lastSeen
     )
   }

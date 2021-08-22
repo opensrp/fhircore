@@ -46,7 +46,6 @@ import org.smartregister.fhircore.domain.Language
 import org.smartregister.fhircore.util.SharedPreferencesHelper
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.BaseViewModel
-import org.smartregister.fhircore.viewmodel.FhirListViewModelFactory
 import timber.log.Timber
 
 abstract class BaseDrawerActivity :
@@ -67,7 +66,7 @@ abstract class BaseDrawerActivity :
     val fhirEngine: FhirEngine = FhirApplication.fhirEngine(this)
 
     viewModel =
-      ViewModelProvider(this, FhirListViewModelFactory(application, fhirEngine))
+      ViewModelProvider(this, BaseViewModel.BaseViewModelFactory(application, fhirEngine))
         .get(BaseViewModel::class.java)
 
     Timber.d("setting account helper")

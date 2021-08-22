@@ -44,7 +44,7 @@ import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.model.RecordVaccineResult
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.CovaxListViewModel
-import org.smartregister.fhircore.viewmodel.FhirListViewModelFactory
+import org.smartregister.fhircore.viewmodel.PatientListViewModelFactory
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 class RecordVaccineActivity : BaseActivity() {
@@ -79,7 +79,7 @@ class RecordVaccineActivity : BaseActivity() {
     covaxListViewModel =
       ViewModelProvider(
           this,
-          FhirListViewModelFactory(application, FhirApplication.fhirEngine(this))
+          PatientListViewModelFactory(application, FhirApplication.fhirEngine(this))
         )
         .get(CovaxListViewModel::class.java)
 

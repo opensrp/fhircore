@@ -37,6 +37,8 @@ import org.smartregister.fhircore.domain.currentPageNumber
 import org.smartregister.fhircore.domain.hasNextPage
 import org.smartregister.fhircore.domain.hasPreviousPage
 import org.smartregister.fhircore.domain.totalPages
+import org.smartregister.fhircore.util.hide
+import org.smartregister.fhircore.util.show
 import timber.log.Timber
 
 enum class Direction {
@@ -102,11 +104,11 @@ class PaginationView(
 }
 
 abstract class BaseListFragment<T : Any?, VH : RecyclerView.ViewHolder?> : Fragment() {
-  private var search: String? = ""
-  private lateinit var adapter: ListAdapter<T, VH>
-  private lateinit var recyclerView: RecyclerView
-  private var paginationView: PaginationView? = null
-  private var emptyListView: View? = null
+  var search: String? = ""
+  lateinit var adapter: ListAdapter<T, VH>
+  lateinit var recyclerView: RecyclerView
+  var paginationView: PaginationView? = null
+  var emptyListView: View? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -120,8 +122,8 @@ abstract class BaseListFragment<T : Any?, VH : RecyclerView.ViewHolder?> : Fragm
 
   abstract fun loadData(currentSearch: String?, page: Int, pageSize: Int)
 
-  fun setupEmptyListView(@IdRes id: Int, container: View) {
-    emptyListView = container.findViewById(id)
+  fun setupEmptyListView(@IdRes id: Int) {
+    emptyListView = requireActivity().findViewById(id)!!
   }
 
   fun setupPagination(container: ViewGroup) {
@@ -200,17 +202,9 @@ abstract class BaseListFragment<T : Any?, VH : RecyclerView.ViewHolder?> : Fragm
     adapter.submitList(list)
 
     if (data.first.count() == 0) {
-      showEmptyListViews()
+      emptyListView?.show()
     } else {
-      hideEmptyListViews()
+      emptyListView?.hide()
     }
-  }
-
-  fun hideEmptyListViews() {
-    emptyListView?.visibility = View.GONE
-  }
-
-  fun showEmptyListViews() {
-    emptyListView?.visibility = View.VISIBLE
   }
 }

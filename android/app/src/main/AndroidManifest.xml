@@ -52,13 +52,9 @@
             android:windowSoftInputMode="adjustPan" >
         </activity>
         <activity
-            android:name="org.smartregister.fhircore.activity.CovaxDetailActivity"
-            android:label=""
-            android:parentActivityName="org.smartregister.fhircore.activity.CovaxListActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="org.smartregister.fhircore.activity.CovaxListActivity" />
+            android:name="org.smartregister.fhircore.activity.core.QuestionnaireActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustPan" >
         </activity>
         <service android:name=".auth.account.AccountService">
             <intent-filter>

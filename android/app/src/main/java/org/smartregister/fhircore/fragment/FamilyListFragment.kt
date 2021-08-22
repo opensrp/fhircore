@@ -18,6 +18,7 @@ package org.smartregister.fhircore.fragment
 
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.core.BaseRegisterActivity
@@ -42,10 +43,11 @@ class FamilyListFragment : BaseListFragment<FamilyItem, FamilyItemViewHolder>() 
       view
     )
     setupSearch(getRegister().searchBox()!!)
-    setupEmptyListView(R.id.empty_list_message_container, view)
+    setupEmptyListView(R.id.empty_list_message_container)
     setupProgress(R.id.loader_overlay, listViewModel.loader)
+    setupPagination(view as ViewGroup)
 
-    onViewCreated(view, savedInstanceState)
+    super.onViewCreated(view, savedInstanceState)
   }
 
   private fun getRegister(): BaseRegister {

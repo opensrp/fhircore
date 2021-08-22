@@ -208,7 +208,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     verifyOrder {
       viewModel.saveExtractedResources(any(), intent, any(), questionnaireResponse)
-      viewModel.saveParsedResource(any(), any(), questionnaireActivity.intent)
+      viewModel.saveParsedResource(any(), any(), any())
     }
     verify(inverse = true) { viewModel.saveBundleResources(any()) }
     verify { questionnaireActivity.finish() }

@@ -18,17 +18,18 @@ package org.smartregister.fhircore.fragment
 
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.core.BaseRegisterActivity
 import org.smartregister.fhircore.adapter.AncItemRecyclerViewAdapter
+import org.smartregister.fhircore.model.AncItem
 import org.smartregister.fhircore.model.BaseRegister
-import org.smartregister.fhircore.model.PatientItem
 import org.smartregister.fhircore.viewholder.AncItemViewHolder
 import org.smartregister.fhircore.viewmodel.AncListViewModel
 
-class AncListFragment : BaseListFragment<PatientItem, AncItemViewHolder>() {
-  private val viewModel by activityViewModels<AncListViewModel>()
+class AncListFragment : BaseListFragment<AncItem, AncItemViewHolder>() {
+  val viewModel by activityViewModels<AncListViewModel>()
 
   override fun getFragmentListLayout(): Int {
     return R.layout.anc_fragment_list
@@ -46,13 +47,14 @@ class AncListFragment : BaseListFragment<PatientItem, AncItemViewHolder>() {
       view
     )
     setupSearch(getRegister().searchBox()!!)
-    setupEmptyListView(R.id.empty_list_message_container, view)
+    setupEmptyListView(R.id.empty_list_message_container)
     setupProgress(R.id.loader_overlay, viewModel.loader)
+    setupPagination(view as ViewGroup)
 
     super.onViewCreated(view, savedInstanceState)
   }
 
-  fun onListItemClicked(patientItem: PatientItem) {}
+  fun onListItemClicked(dataItem: AncItem) {}
 
   override fun loadData(currentSearch: String?, page: Int, pageSize: Int) {
     viewModel.searchResults(currentSearch, page, pageSize)

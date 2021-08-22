@@ -491,7 +491,7 @@
   }, {
     "extension": [ {
       "url": "http://hl7.org/fhir/StructureDefinition/flag-detail",
-      "valueString": "at risk"
+      "valueString": "High Risk for COVID-19"
     } ],
     "linkId": "risk_assessment",
     "definition": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",

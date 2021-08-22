@@ -34,7 +34,7 @@ import org.smartregister.fhircore.viewmodel.AncListViewModel
 import org.smartregister.fhircore.viewmodel.FhirListViewModelFactory
 
 class AncListActivity : BaseRegisterActivity() {
-  private lateinit var listViewModel: AncListViewModel
+  lateinit var listViewModel: AncListViewModel
   @VisibleForTesting private lateinit var detailView: AncDetailView
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +48,7 @@ class AncListActivity : BaseRegisterActivity() {
 
     setNavigationHeaderTitle(detailView.registerTitle, R.id.tv_nav_header)
 
-    btn_register_new_client.visibility = View.INVISIBLE // dont set GONE otherwise VP not loaded
+    btn_register_new_client.visibility = View.INVISIBLE // dont set GONE otherwise VPager not loaded
     layout_scan_barcode.visibility = View.GONE
 
     listViewModel =

@@ -36,7 +36,6 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.util.Utils
-import org.smartregister.fhircore.util.find
 import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
 
 /**
@@ -67,7 +66,7 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    supportActionBar!!.hide()
+    supportActionBar?.hide()
 
     // Only add the fragment once, when the activity is first created.
     if (savedInstanceState == null) {
@@ -152,29 +151,6 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
       readOnly = readonly
     }
   }*/
-
-  private fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {
-    return item.find(linkId, null)
-  }
-
-  private fun List<Questionnaire.QuestionnaireItemComponent>.find(
-    linkId: String,
-    default: Questionnaire.QuestionnaireItemComponent?
-  ): Questionnaire.QuestionnaireItemComponent? {
-    var result = default
-    run loop@{
-      forEach {
-        if (it.linkId == linkId) {
-          result = it
-          return@loop
-        } else if (it.item.isNotEmpty()) {
-          result = it.item.find(linkId, result)
-        }
-      }
-    }
-
-    return result
-  }
 
   companion object {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"

@@ -34,9 +34,6 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
-import com.google.android.fhir.sync.SyncWorkType
 import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.R
@@ -197,15 +194,7 @@ class CovaxListFragment : Fragment() {
   internal fun loadData() {
     runBlocking {
       if (patientListViewModel.count("") == 0L) {
-        patientListViewModel.loadingListObservable.postValue(1)
-        WorkManager.getInstance(requireContext())
-          .getWorkInfosForUniqueWorkLiveData(SyncWorkType.DOWNLOAD.workerName)
-          .observe(requireActivity()) {
-            if (it.isNotEmpty() && it[0].state == WorkInfo.State.ENQUEUED) {
-              patientListViewModel.loadingListObservable.postValue(0)
-              patientListViewModel.searchResults("")
-            }
-          }
+        patientListViewModel.runSync(true)
       } else patientListViewModel.searchResults("")
     }
   }

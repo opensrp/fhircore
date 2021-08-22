@@ -86,6 +86,12 @@ object QuestionnaireUtils {
     }
   }
 
+  fun asCodeableConcept(
+    qit: QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent
+  ): CodeableConcept {
+    return CodeableConcept().apply { this.addCoding(qit.valueCoding) }
+  }
+
   fun asObs(
     qr: QuestionnaireResponse.QuestionnaireResponseItemComponent,
     subject: Patient,
@@ -140,49 +146,6 @@ object QuestionnaireUtils {
     return observations
   }
 
-  private fun flaggableFor(
-    selectedFlagCode: CodeableConcept,
-    questionnaireResponse: QuestionnaireResponse,
-    questionnaire: Questionnaire
-  ): Questionnaire.QuestionnaireItemComponent? {
-    // is allowed for flagging with extension
-    val flaggable = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
-
-    extractFlaggables(questionnaire.item, flaggable)
-
-    // flag code of selected answer must match with given extension and there should only be one
-    // flag of a type/code
-    return flaggable.firstOrNull { qItem ->
-      val qrItem = questionnaireResponse.find(qItem.linkId)!!
-
-      // if item has answer, and item code matches with flag code, and answer justifies the flagging
-      qrItem
-        .hasAnswer()
-        .and(doesIntersect(qItem.code, selectedFlagCode.coding))
-        .and(
-          when (qrItem.answerFirstRep.value) {
-            // flag code and answer code match // todo check with other cases
-            is Coding ->
-              doesIntersect(selectedFlagCode.coding, qrItem!!.answer.map { ans -> ans.valueCoding })
-            // flag only if answer is true
-            is BooleanType -> qrItem.answerFirstRep.valueBooleanType.booleanValue()
-            else -> false
-          }
-        )
-    }
-  }
-
-  fun extractFlagExtension(
-    flag: Flag,
-    questionnaireResponse: QuestionnaireResponse,
-    questionnaire: Questionnaire
-  ): Extension? {
-    // flag code must match with given extension
-    val item = flaggableFor(flag.code, questionnaireResponse, questionnaire) ?: return null
-
-    return extractFlagExtension(item)
-  }
-
   fun extractFlagExtension(item: Questionnaire.QuestionnaireItemComponent): Extension? {
     return item.extension.firstOrNull { it.url.contains(flaggableKey) }
   }
@@ -193,37 +156,8 @@ object QuestionnaireUtils {
   ): Extension? {
     return item.extension.firstOrNull {
       it.url.contains(flaggableKey) &&
-        (it.value.asStringValue().contains(code.display, true) ||
-          code.display.contains(it.value.asStringValue()))
+        (it.value.toString().contains(code.display) || code.display.contains(it.value.toString()))
     }
-  }
-
-  fun extractFlagForRiskAssessment(
-    questionnaireResponse: QuestionnaireResponse,
-    questionnaire: Questionnaire,
-    riskAssessment: RiskAssessment
-  ): Pair<Flag, Extension?>? {
-    // no risk then no flag
-    if (riskAssessment.prediction[0].relativeRisk.equals(0) ||
-        !riskAssessment.prediction[0].hasOutcome()
-    ) {
-      return null
-    }
-
-    val code = riskAssessment.prediction[0].outcome
-
-    // if no flagging is needed return
-    val item = flaggableFor(code, questionnaireResponse, questionnaire) ?: return null
-
-    val flag = Flag()
-    flag.id = getUniqueId()
-    flag.status = Flag.FlagStatus.ACTIVE
-    flag.code = code
-    flag.subject = riskAssessment.subject
-
-    val ext = extractFlagExtension(item)
-
-    return Pair(flag, ext)
   }
 
   fun extractFlaggables(
@@ -252,30 +186,25 @@ object QuestionnaireUtils {
 
     flaggableItems.forEach { qi ->
       // only add flags where answer is true or answer code matches flag value
-      questionnaireResponse
-        .find(qi.linkId)
-        ?.answer
-        ?.firstOrNull { it.hasValue() }
-        ?.takeIf {
-          when (it.value) {
-            is Coding -> extractFlagExtension(it.valueCoding, qi) != null
-            is BooleanType -> it.valueBooleanType.booleanValue()
-            else -> false
-          }
-        }
-        ?.let {
-          val flag = Flag()
-          flag.id = getUniqueId()
-          flag.status = Flag.FlagStatus.ACTIVE
-          flag.code = asCodeableConcept(qi)
-          flag.subject = asPatientReference(patient.id)
+      questionnaireResponse.find(qi.linkId)?.answer?.firstOrNull { it.hasValue() }?.let {
+        val flag = Flag()
+        flag.id = getUniqueId()
+        flag.status = Flag.FlagStatus.ACTIVE
+        flag.subject = asPatientReference(patient.id)
+        // todo simplify
+        if (it.hasValueCoding() && extractFlagExtension(it.valueCoding, qi) != null) {
+          flag.code = asCodeableConcept(it)
+          val ext = extractFlagExtension(it.valueCoding, qi)
 
-          val ext =
-            if (it.hasValueCoding()) extractFlagExtension(it.valueCoding, qi)
-            else extractFlagExtension(qi)
+          flags.add(Pair(flag, ext!!))
+        } else if (it.hasValueBooleanType() && it.valueBooleanType.booleanValue()) {
+          flag.code = asCodeableConcept(qi)
+
+          val ext = extractFlagExtension(qi)
 
           flags.add(Pair(flag, ext!!))
         }
+      }
     }
 
     return flags
@@ -329,12 +258,6 @@ object QuestionnaireUtils {
   fun valueStringWithLinkId(questionnaireResponse: QuestionnaireResponse, linkId: String): String? {
     val ans = questionnaireResponse.find(linkId)?.answerFirstRep
     return ans?.valueStringType?.asStringValue()
-  }
-
-  private fun doesIntersect(codingList: List<Coding>, other: List<Coding>): Boolean {
-    val codes = codingList.map { it.code }
-
-    return other.any { codes.contains(it.code) }
   }
 
   private fun getItem(

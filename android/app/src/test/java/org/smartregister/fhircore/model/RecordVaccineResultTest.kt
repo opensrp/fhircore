@@ -19,12 +19,14 @@ package org.smartregister.fhircore.model
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.RobolectricTest
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_ACTIVITY_RESULT_KEY
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_RESPONSE_KEY
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
@@ -69,7 +71,13 @@ class RecordVaccineResultTest : RobolectricTest() {
         it.readText()
       }
 
-    val intent = Intent().apply { putExtra(QUESTIONNAIRE_ARG_RESPONSE_KEY, qrJson) }
+    val intent =
+      Intent().apply {
+        putExtra(
+          QUESTIONNAIRE_ARG_ACTIVITY_RESULT_KEY,
+          bundleOf(QUESTIONNAIRE_ARG_RESPONSE_KEY to qrJson)
+        )
+      }
 
     val result = activityResultContract.parseResult(Activity.RESULT_OK, intent)!!
 

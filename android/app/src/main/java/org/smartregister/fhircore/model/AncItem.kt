@@ -16,23 +16,13 @@
 
 package org.smartregister.fhircore.model
 
-/** The Patient's details for display purposes. */
-data class PatientItem(
+data class AncItem(
   val id: String,
   val name: String,
-  val gender: String,
   val dob: String,
-  val html: String,
   val phone: String,
   val logicalId: String,
-  val risk: String,
-  var vaccineStatus: PatientStatus? = null,
-  var vaccineSummary: PatientVaccineSummary? = null,
-  val lastSeen: String
+  val area: String
 ) {
   override fun toString(): String = name
 }
-
-data class PatientStatus(val status: VaccineStatus, val details: String)
-
-data class PatientVaccineSummary(val doseNumber: Int, val initialDose: String)

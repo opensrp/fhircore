@@ -85,7 +85,7 @@ class FamilyListViewModel(application: Application, private val fhirEngine: Fhir
       if (this.hasTelecom() && this.telecom[0].hasValue()) this.telecom[0].value else ""
     val logicalId: String = this.logicalId
     val members = familyMembers.map { it.toFamilyMemberItem() }
-    val area = this.addressFirstRep.city
+    val area = if (this.hasAddress()) this.addressFirstRep.city else ""
 
     return FamilyItem(this.id, name, gender, dob, phone, logicalId, area, members)
   }

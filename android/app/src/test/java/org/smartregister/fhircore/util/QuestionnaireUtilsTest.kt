@@ -261,7 +261,7 @@ class QuestionnaireUtilsTest : RobolectricTest() {
   }
 
   @Test
-  fun testExtractFlag_shouldReturnValidFlagWithData() {
+  fun testExtractFlag_shouldReturnValidFlagAndExtensionForRiskAssessment() {
     val patient = Patient()
     patient.id = "1122"
 
@@ -273,61 +273,90 @@ class QuestionnaireUtilsTest : RobolectricTest() {
     val risk =
       QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)!!
 
-    val flag =
-      QuestionnaireUtils.extractFlagForRiskAssessment(questionnaireResponse, questionnaire, risk)!!
-        .first
+    val result = QuestionnaireUtils.extractFlags(questionnaireResponse, questionnaire, patient)
+
+    val flag = result[0].first
+    val ext = result[0].second
 
     assertEquals(risk.subject.reference, flag.subject.reference)
     assertEquals(Flag.FlagStatus.ACTIVE, flag.status)
 
     assertEquals("870577009", flag.code.coding[0].code)
     assertEquals("https://www.snomed.org", flag.code.coding[0].system)
+    assertEquals("High Risk for COVID-19", flag.code.coding[0].display)
+
+    assertEquals(risk.prediction[0].outcome.coding[0].code, flag.code.coding[0].code)
+    assertEquals(risk.prediction[0].outcome.coding[0].system, flag.code.coding[0].system)
+    assertEquals(risk.prediction[0].outcome.coding[0].display, flag.code.coding[0].display)
+
+    assertEquals("http://hl7.org/fhir/StructureDefinition/flag-detail", ext.url)
+    assertEquals("High Risk for COVID-19", ext.value.toString())
   }
 
   @Test
-  fun testExtractFlag_shouldReturnValidExtensionWithData() {
+  fun testExtractFlags_shouldReturnValidExtensionAndMultipleFlagList() {
+    val questionnaire = getQuestionnaire("sample_family_registration.json")
+    val questionnaireResponse =
+      getQuestionnaireResponse("sample_family_registration_questionnaireresponse.json")
+
     val patient = Patient()
     patient.id = "1122"
 
-    setResponsesToTrue("diabetes_mellitus", "hypertension")
+    val result = QuestionnaireUtils.extractFlags(questionnaireResponse, questionnaire, patient)
 
-    val observations =
-      QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
+    val flagPregnancy = result[0].first
+    val extPregnancy = result[0].second
+    val flagFamily = result[1].first
+    val extFamily = result[1].second
 
-    val risk =
-      QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)!!
-    val flag =
-      QuestionnaireUtils.extractFlagForRiskAssessment(questionnaireResponse, questionnaire, risk)!!
-        .first
+    assertEquals("77386006", flagPregnancy.code.coding[0].code)
+    assertEquals("Pregnant", flagPregnancy.code.coding[0].display)
+    assertEquals(Flag.FlagStatus.ACTIVE, flagPregnancy.status)
+    assertTrue(flagPregnancy.subject.reference.contains("Patient/1122"))
 
-    val flagExt =
-      QuestionnaireUtils.extractFlagExtension(flag, questionnaireResponse, questionnaire)!!
+    assertEquals("http://hl7.org/fhir/StructureDefinition/flag-detail", extPregnancy.url)
+    assertEquals("Pregnant", extPregnancy.value.toString())
 
-    assertEquals("http://hl7.org/fhir/StructureDefinition/flag-detail", flagExt.url)
-    assertEquals("at risk", flagExt.value.toString())
+    assertEquals("35359004", flagFamily.code.coding[0].code)
+    assertEquals("Family", flagFamily.code.coding[0].display)
+    assertEquals(Flag.FlagStatus.ACTIVE, flagFamily.status)
+    assertTrue(flagFamily.subject.reference.contains("Patient/1122"))
+
+    assertEquals("http://hl7.org/fhir/StructureDefinition/flag-detail", extFamily.url)
+    assertEquals("Family", extFamily.value.toString())
   }
 
   @Test
-  fun testExtractFlags_shouldReturnValidExtensionAndFlag() {
+  fun testExtractTags_shouldReturnValidTagsList() {
+    val questionnaire = getQuestionnaire("sample_family_registration.json")
+    val questionnaireResponse =
+      getQuestionnaireResponse("sample_family_registration_questionnaireresponse.json")
+
     val patient = Patient()
     patient.id = "1122"
 
-    setResponsesToTrue("diabetes_mellitus", "hypertension")
+    val result = QuestionnaireUtils.extractTags(questionnaireResponse, questionnaire)
 
-    val observations =
-      QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
+    val tagPregnancy = result[0]
+    val tagFamily = result[1]
 
-    val risk =
-      QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)!!
-    val flag =
-      QuestionnaireUtils.extractFlagForRiskAssessment(questionnaireResponse, questionnaire, risk)!!
-        .first
+    assertEquals("77386006", tagPregnancy.code)
+    assertEquals("Pregnant", tagPregnancy.display)
 
-    val flagExt =
-      QuestionnaireUtils.extractFlagExtension(flag, questionnaireResponse, questionnaire)!!
+    assertEquals("35359004", tagFamily.code)
+    assertEquals("Family", tagFamily.display)
+  }
 
-    assertEquals("http://hl7.org/fhir/StructureDefinition/flag-detail", flagExt.url)
-    assertEquals("at risk", flagExt.value.toString())
+  private fun getQuestionnaire(id: String): Questionnaire {
+    val qJson = context.assets.open(id).bufferedReader().use { it.readText() }
+
+    return Utils.parser.parseResource(qJson) as Questionnaire
+  }
+
+  private fun getQuestionnaireResponse(id: String): QuestionnaireResponse {
+    val qrJson = context.assets.open(id).bufferedReader().use { it.readText() }
+
+    return Utils.parser.parseResource(qrJson) as QuestionnaireResponse
   }
 
   private fun getQuestionnaireResponseItem(

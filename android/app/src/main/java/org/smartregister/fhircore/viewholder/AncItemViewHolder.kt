@@ -20,21 +20,21 @@ import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.R
-import org.smartregister.fhircore.model.PatientItem
-import org.smartregister.fhircore.util.Utils.getPatientAgeGender
+import org.smartregister.fhircore.model.AncItem
+import org.smartregister.fhircore.util.Utils
 
 class AncItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val demographics: TextView = itemView.findViewById(R.id.tv_patient_demographics)
   private val area: TextView = itemView.findViewById(R.id.tv_area)
 
-  fun bindTo(patientItem: PatientItem, onItemClicked: (PatientItem) -> Unit) {
-    this.demographics.text = getPatientDemographics(patientItem)
-    this.area.text = patientItem.area
+  fun bindTo(dataItem: AncItem, onItemClicked: (AncItem) -> Unit) {
+    this.demographics.text = getPatientDemographics(dataItem)
+    this.area.text = dataItem.area
   }
 
-  private fun getPatientDemographics(patientItem: PatientItem): String {
-    val (age, gender) = getPatientAgeGender(patientItem)
-    val names = patientItem.name.split(' ')
-    return listOf(names[1], names[0], gender, "$age").joinToString()
+  private fun getPatientDemographics(dataItem: AncItem): String {
+    val age = Utils.getAgeFromDate(dataItem.dob)
+    val names = dataItem.name.split(' ')
+    return listOf(names[1], names[0], "$age").joinToString()
   }
 }

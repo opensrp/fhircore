@@ -56,9 +56,11 @@ import org.robolectric.annotation.Config
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.RobolectricTest
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_RELATED_PATIENT_KEY
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.shadow.TestUtils
+import org.smartregister.fhircore.util.Utils
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 03-07-2021. */
 @Config(shadows = [FhirApplicationShadow::class])
@@ -201,13 +203,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     every { questionnaireViewModel.saveBundleResources(any(), any()) } just runs
 
-    questionnaireViewModel.saveExtractedResources(
-      ApplicationProvider.getApplicationContext(),
-      intent,
-      questionnaire,
-      questionnaireResponse
-    )
-
+    runBlocking {
+      questionnaireViewModel.saveExtractedResources(
+        ApplicationProvider.getApplicationContext(),
+        intent,
+        questionnaire,
+        questionnaireResponse
+      )
+    }
     coVerify(exactly = 1) {
       questionnaireViewModel.saveBundleResources(any(), capture(resourceIdSlot))
     }
@@ -216,7 +219,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSaveParsedResourceShouldSaveAllResourceTypes() {
+  fun testSaveParsedResourceShouldSaveAllResourceTypesForPatientRegister() {
     coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns
       samplePatientRegisterQuestionnaire
 
@@ -232,14 +235,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       .addAnswer()
       .value = BooleanType(true)
 
-    questionnaireViewModel.saveParsedResource(
-      questionnaireResponse,
-      samplePatientRegisterQuestionnaire,
-      Intent()
-    )
+    runBlocking {
+      questionnaireViewModel.saveParsedResource(
+        questionnaireResponse,
+        samplePatientRegisterQuestionnaire,
+        Intent()
+      )
+    }
 
     coVerifyOrder {
-      fhirEngine.save(capture(patient))
       fhirEngine.save(capture(observation)) // comorb group obs
       fhirEngine.save(capture(observation))
       fhirEngine.save(capture(riskAssessment))
@@ -247,7 +251,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       fhirEngine.save(capture(patient))
     }
 
-    Assert.assertEquals("testeight", patient.captured.nameFirstRep.given[0].value)
     Assert.assertEquals("hypertension", observation.captured.code.coding[1].code)
     Assert.assertEquals("225338004", riskAssessment.captured.code.coding[0].code)
     Assert.assertEquals(
@@ -255,6 +258,96 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       riskAssessment.captured.prediction[0].outcome.text
     )
     Assert.assertEquals("870577009", flag.captured.code.coding[0].code)
+    Assert.assertEquals("testeight", patient.captured.nameFirstRep.given[0].value)
+  }
+
+  @Test
+  fun testSaveParsedResourceShouldSaveAllResourceTypesForFamilyRegister() {
+    val questionnaire = getQuestionnaire("sample_family_registration.json")
+    val questionnaireResponse =
+      getQuestionnaireResponse("sample_family_registration_questionnaireresponse.json")
+
+    coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns questionnaire
+
+    val patient = slot<Patient>()
+    val observation = slot<Observation>()
+    val flagPregnancy = slot<Flag>()
+    val flagFamily = slot<Flag>()
+
+    runBlocking {
+      questionnaireViewModel.saveParsedResource(questionnaireResponse, questionnaire, Intent())
+    }
+
+    coVerifyOrder {
+      fhirEngine.save(capture(observation)) // geopoint obs
+      fhirEngine.save(capture(observation)) // income obs
+      fhirEngine.save(capture(observation)) // living members obs
+      fhirEngine.save(capture(flagPregnancy))
+      fhirEngine.save(capture(flagFamily))
+      fhirEngine.save(capture(patient))
+    }
+
+    Assert.assertEquals("77386006", flagPregnancy.captured.code.coding[0].code)
+    Assert.assertEquals("Pregnant", flagPregnancy.captured.code.coding[0].display)
+
+    Assert.assertEquals("35359004", flagFamily.captured.code.coding[0].code)
+    Assert.assertEquals("Family", flagFamily.captured.code.coding[0].display)
+
+    Assert.assertEquals("77386006", patient.captured.meta.tag[0].code)
+    Assert.assertEquals("Pregnant", patient.captured.meta.tag[0].display)
+
+    Assert.assertEquals("35359004", patient.captured.meta.tag[1].code)
+    Assert.assertEquals("Family", patient.captured.meta.tag[1].display)
+
+    Assert.assertEquals(
+      "http://hl7.org/fhir/StructureDefinition/flag-detail",
+      patient.captured.extension[0].url
+    )
+    Assert.assertEquals("Pregnant", patient.captured.extension[0].value.toString())
+    Assert.assertEquals(
+      "http://hl7.org/fhir/StructureDefinition/flag-detail",
+      patient.captured.extension[1].url
+    )
+    Assert.assertEquals("Family", patient.captured.extension[1].value.toString())
+  }
+
+  @Test
+  fun testSaveParsedResourceShouldSaveAllResourceTypesForFamilyMemberRegister() {
+    val questionnaire = getQuestionnaire("sample_family_member_registration.json")
+    val questionnaireResponse =
+      getQuestionnaireResponse("sample_family_member_registration_questionnaireresponse.json")
+
+    coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns questionnaire
+
+    val patient = slot<Patient>()
+    val observation = slot<Observation>()
+    val flagPregnancy = slot<Flag>()
+
+    val intent = Intent().apply { this.putExtra(QUESTIONNAIRE_ARG_RELATED_PATIENT_KEY, "1234567") }
+
+    runBlocking {
+      questionnaireViewModel.saveParsedResource(questionnaireResponse, questionnaire, intent)
+    }
+
+    coVerifyOrder {
+      fhirEngine.save(capture(flagPregnancy))
+      fhirEngine.save(capture(patient))
+    }
+
+    Assert.assertEquals("77386006", flagPregnancy.captured.code.coding[0].code)
+    Assert.assertEquals("Pregnant", flagPregnancy.captured.code.coding[0].display)
+
+    Assert.assertEquals("77386006", patient.captured.meta.tag[0].code)
+    Assert.assertEquals("Pregnant", patient.captured.meta.tag[0].display)
+
+    Assert.assertEquals(
+      "http://hl7.org/fhir/StructureDefinition/flag-detail",
+      patient.captured.extension[0].url
+    )
+    Assert.assertEquals("Pregnant", patient.captured.extension[0].value.toString())
+
+    Assert.assertEquals(Patient.LinkType.REFER, patient.captured.link[0].type)
+    Assert.assertEquals("Patient/1234567", patient.captured.link[0].other.reference)
   }
 
   @Test
@@ -299,5 +392,17 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     runBlocking { structureMapProvider.invoke(resourceUrl) }
 
     verify { questionnaireViewModel.fetchStructureMap(any(), resourceUrl) }
+  }
+
+  private fun getQuestionnaire(id: String): Questionnaire {
+    val qJson = context.assets.open(id).bufferedReader().use { it.readText() }
+
+    return Utils.parser.parseResource(qJson) as Questionnaire
+  }
+
+  private fun getQuestionnaireResponse(id: String): QuestionnaireResponse {
+    val qrJson = context.assets.open(id).bufferedReader().use { it.readText() }
+
+    return Utils.parser.parseResource(qrJson) as QuestionnaireResponse
   }
 }

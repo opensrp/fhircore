@@ -19,7 +19,6 @@ package org.smartregister.fhircore.activity
 import android.app.Activity
 import android.content.Intent
 import android.view.MenuItem
-import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
@@ -41,53 +40,54 @@ import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.auth.account.AccountHelper
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
-import org.smartregister.fhircore.fragment.AncListFragment
-import org.smartregister.fhircore.model.AncDetailView
-import org.smartregister.fhircore.model.AncDetailView.Companion.ANC_DETAIL_VIEW_CONFIG_ID
+import org.smartregister.fhircore.fragment.FamilyListFragment
 import org.smartregister.fhircore.model.BaseRegister
+import org.smartregister.fhircore.model.FamilyDetailView
+import org.smartregister.fhircore.model.FamilyDetailView.Companion.FAMILY_DETAIL_VIEW_CONFIG_ID
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.util.Utils
 
 @Config(shadows = [FhirApplicationShadow::class])
-class AncListActivityTest : ActivityRobolectricTest() {
+class FamilyListActivityTest : ActivityRobolectricTest() {
 
-  private lateinit var ancListActivity: AncListActivity
+  private lateinit var familyListActivity: FamilyListActivity
   private lateinit var register: BaseRegister
-  private lateinit var detailView: AncDetailView
+  private lateinit var detailView: FamilyDetailView
 
   @Before
   fun setUp() {
-    ancListActivity = Robolectric.buildActivity(AncListActivity::class.java, null).create().get()
-    register = ancListActivity.register
+    familyListActivity =
+      Robolectric.buildActivity(FamilyListActivity::class.java, null).create().get()
+    register = familyListActivity.register
     detailView =
       Utils.loadConfig(
-        ANC_DETAIL_VIEW_CONFIG_ID,
-        AncDetailView::class.java,
+        FAMILY_DETAIL_VIEW_CONFIG_ID,
+        FamilyDetailView::class.java,
         ApplicationProvider.getApplicationContext()
       )
   }
 
   @Test
-  fun testAncActivityShouldNotNull() {
-    Assert.assertNotNull(ancListActivity)
+  fun testFamilyActivityShouldNotNull() {
+    Assert.assertNotNull(familyListActivity)
   }
 
   @Test
-  fun testVerifyAncListPagerAdapterProperties() {
+  fun testVerifyFamilyListPagerAdapterProperties() {
     val adapter =
-      ancListActivity.findViewById<ViewPager2>(R.id.list_pager).adapter as FragmentStateAdapter
+      familyListActivity.findViewById<ViewPager2>(R.id.list_pager).adapter as FragmentStateAdapter
 
     Assert.assertEquals(1, adapter.itemCount)
     Assert.assertEquals(
-      AncListFragment::class.java.simpleName,
+      FamilyListFragment::class.java.simpleName,
       adapter.createFragment(0).javaClass.simpleName
     )
   }
 
   @Test
-  fun testAncRegisterProperties() {
+  fun testFamilyRegisterProperties() {
     Assert.assertEquals(R.layout.activity_register_list, register.contentLayoutId)
-    Assert.assertTrue(register.listFragment is AncListFragment)
+    Assert.assertTrue(register.listFragment is FamilyListFragment)
     Assert.assertEquals(
       detailView.registrationQuestionnaireIdentifier,
       register.newRegistrationQuestionnaireIdentifier
@@ -96,41 +96,31 @@ class AncListActivityTest : ActivityRobolectricTest() {
       detailView.registrationQuestionnaireTitle,
       register.newRegistrationQuestionnaireTitle
     )
-    Assert.assertNull(register.newRegistrationViewId)
-    Assert.assertNull(register.newRegistrationView())
+    Assert.assertEquals(R.id.btn_register_new_client, register.newRegistrationViewId)
     Assert.assertEquals(R.id.edit_text_search, register.searchBoxId)
     Assert.assertEquals(R.id.list_pager, register.viewPagerId)
     Assert.assertEquals(findViewById(R.id.list_pager), register.viewPager())
     Assert.assertEquals(findViewById(R.id.edit_text_search), register.searchBox())
+    Assert.assertEquals(findViewById(R.id.btn_register_new_client), register.newRegistrationView())
 
-    val ancNavBarTitleView = ancListActivity.getNavigationHeaderTitleView(R.id.tv_nav_header)
-    Assert.assertEquals(detailView.registerTitle, ancNavBarTitleView!!.text)
+    val familyNavBarTitleView = familyListActivity.getNavigationHeaderTitleView(R.id.tv_nav_header)
+    Assert.assertEquals(detailView.registerTitle, familyNavBarTitleView!!.text)
 
     val toolbarTextView =
       findViewById<Toolbar>(R.id.base_register_toolbar)
         .findViewById<TextView>(R.id.tv_clients_list_title)
-    Assert.assertEquals(getString(R.string.client_list_title_anc), toolbarTextView!!.text)
+    Assert.assertEquals(getString(R.string.client_list_title_family), toolbarTextView!!.text)
   }
 
   @Test
-  fun testVerifyAddPatientIsHidden() {
-    val view = ancListActivity.findViewById<Button>(R.id.btn_register_new_client)
-    Assert.assertEquals(View.INVISIBLE, view.visibility)
-  }
+  fun testVerifyAddClientOpenRegistration() {
+    familyListActivity.findViewById<Button>(R.id.btn_register_new_client).performClick()
 
-  @Test
-  fun testVerifyAddPatientWithPreAssignedIdStartedActivity() {
-    ancListActivity.startRegistrationActivity("test-id")
-
-    val expectedIntent = Intent(ancListActivity, QuestionnaireActivity::class.java)
+    val expectedIntent = Intent(familyListActivity, QuestionnaireActivity::class.java)
     val actualIntent =
       shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
-    Assert.assertEquals(
-      "test-id",
-      actualIntent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID)
-    )
     Assert.assertEquals(
       register.newRegistrationQuestionnaireIdentifier,
       actualIntent.getStringExtra(QUESTIONNAIRE_PATH_KEY)
@@ -139,48 +129,56 @@ class AncListActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testGetContentLayoutShouldReturnActivityListLayout() {
-    Assert.assertEquals(R.layout.activity_register_list, ancListActivity.getContentLayout())
+    Assert.assertEquals(R.layout.activity_register_list, familyListActivity.getContentLayout())
   }
 
   @Test
-  fun testAncCountShouldBeEmptyWithZeroClients() {
+  fun testFamilyCountShouldBeEmptyWithZeroClients() {
 
     val method =
-      ancListActivity.javaClass.superclass?.superclass?.getDeclaredMethod(
+      familyListActivity.javaClass.superclass?.superclass?.getDeclaredMethod(
         "setMenuCounter",
         Int::class.java,
         Int::class.java
       )
     method?.isAccessible = true
-    method?.invoke(ancListActivity, R.id.menu_item_anc_clients, 0)
+    method?.invoke(familyListActivity, R.id.menu_item_family_clients, 0)
 
     val countItem =
-      ancListActivity.getNavigationView().menu.findItem(R.id.menu_item_anc_clients).actionView as
+      familyListActivity
+        .getNavigationView()
+        .menu
+        .findItem(R.id.menu_item_family_clients)
+        .actionView as
         TextView
     Assert.assertEquals("", countItem.text)
   }
 
   @Test
-  fun testAncCountShouldNotBeEmptyWithNonZeroClients() {
+  fun testFamilyCountShouldNotBeEmptyWithNonZeroClients() {
 
     val method =
-      ancListActivity.javaClass.superclass?.superclass?.getDeclaredMethod(
+      familyListActivity.javaClass.superclass?.superclass?.getDeclaredMethod(
         "setMenuCounter",
         Int::class.java,
         Int::class.java
       )
     method?.isAccessible = true
-    method?.invoke(ancListActivity, R.id.menu_item_anc_clients, 2)
+    method?.invoke(familyListActivity, R.id.menu_item_family_clients, 2)
 
     val countItem =
-      ancListActivity.getNavigationView().menu.findItem(R.id.menu_item_anc_clients).actionView as
+      familyListActivity
+        .getNavigationView()
+        .menu
+        .findItem(R.id.menu_item_family_clients)
+        .actionView as
         TextView
     Assert.assertEquals("2", countItem.text)
   }
 
   @Test
-  fun `test AncListFragmentAdapterCount should return one`() {
-    val viewPager = ancListActivity.findViewById<ViewPager2>(R.id.list_pager)
+  fun `test FamilyListFragmentAdapterCount should return one`() {
+    val viewPager = familyListActivity.findViewById<ViewPager2>(R.id.list_pager)
     Assert.assertNotNull(viewPager)
     Assert.assertEquals(1, viewPager?.adapter?.itemCount)
   }
@@ -188,16 +186,16 @@ class AncListActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnNavigationItemSelectedShouldVerifyRelativeActions() {
     val accountHelper = mockk<AccountHelper>()
-    ancListActivity.accountHelper = accountHelper
+    familyListActivity.accountHelper = accountHelper
 
     val menuItem = mockk<MenuItem>()
 
     every { menuItem.title } returns ""
 
-    every { menuItem.itemId } returns R.id.menu_item_anc_clients
-    ancListActivity.onNavigationItemSelected(menuItem)
+    every { menuItem.itemId } returns R.id.menu_item_family_clients
+    familyListActivity.onNavigationItemSelected(menuItem)
 
-    val expectedIntent = Intent(ancListActivity, AncListActivity::class.java)
+    val expectedIntent = Intent(familyListActivity, FamilyListActivity::class.java)
     val actualIntent =
       shadowOf(ApplicationProvider.getApplicationContext<FhirApplication>()).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
@@ -205,11 +203,11 @@ class AncListActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testGetAlertDialogBuilderShouldReturnNotNull() {
-    Assert.assertNotNull(ancListActivity.getAlertDialogBuilder())
+    Assert.assertNotNull(familyListActivity.getAlertDialogBuilder())
   }
 
   override fun getActivity(): Activity {
-    return ancListActivity
+    return familyListActivity
   }
 
   companion object {

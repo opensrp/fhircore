@@ -23,7 +23,6 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
-import java.lang.Exception
 import java.util.UUID
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -35,7 +34,6 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.FhirApplication
-import org.smartregister.fhircore.activity.core.QuestionnaireActivity
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE_KEY
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_RELATED_PATIENT_KEY
@@ -59,11 +57,6 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     }
 
   fun loadQuestionnaire(id: String): Questionnaire {
-    try {
-      val q =
-        getApplication<FhirApplication>().assets.open(id).bufferedReader().use { it.readText() }
-      return Utils.parser.parseResource(Questionnaire::class.java, q)
-    } catch (e: Exception) {}
     return runBlocking { fhirEngine.load(Questionnaire::class.java, id) }
   }
 
@@ -104,32 +97,26 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ): android.os.Bundle {
-    GlobalScope.launch { // todo
-
-      // todo remove if below to turn below login on, when structure-map has obs and flag and
-      // risk-assessment as well
-      if (intent.hasExtra(QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR)) {
-        // todo return
-        saveParsedResource(questionnaireResponse, questionnaire, intent)
-      }
-
-      var bundle: Bundle
-
-      bundle =
-        ResourceMapper.extract(
-          questionnaire,
-          questionnaireResponse,
-          getStructureMapProvider(context),
-          context
-        )
-
-      // todo Assign Encounter , Observation etc their separate Ids with reference to Patient Id
-      val resourceId = intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
-      intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
-
-      saveBundleResources(bundle, resourceId)
+    // todo remove if condition below when structure-map has obs and flag and risk-assessment
+    if (intent.hasExtra(QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR)) {
+      return saveParsedResource(questionnaireResponse, questionnaire, intent)
     }
-    return bundleOf() // todo
+
+    var bundle: Bundle = runBlocking {
+      ResourceMapper.extract(
+        questionnaire,
+        questionnaireResponse,
+        getStructureMapProvider(context),
+        context
+      )
+    }
+
+    // todo Assign Encounter , Observation etc their separate Ids with reference to Patient Id
+    val resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
+
+    saveBundleResources(bundle, resourceId)
+
+    return bundleOf()
   }
 
   fun getStructureMapProvider(context: Context): (suspend (String) -> StructureMap?) {
@@ -143,16 +130,18 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     return structureMapProvider!!
   }
 
-  suspend fun saveParsedResource(
+  fun saveParsedResource(
     questionnaireResponse: QuestionnaireResponse,
     questionnaire: Questionnaire,
     intent: Intent
   ): android.os.Bundle {
+    Timber.i(Utils.parser.encodeResourceToString(questionnaireResponse)) // todo
+
     if (!questionnaire.hasSubjectType("Patient")) return bundleOf()
 
-    val patient =
+    val patient = runBlocking {
       ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
-
+    }
     val barcode =
       QuestionnaireUtils.valueStringWithLinkId(questionnaireResponse, QUESTIONNAIRE_ARG_BARCODE_KEY)
 
@@ -168,22 +157,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     val riskAssessment =
       QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)
 
-    riskAssessment?.let {
-      saveResource(it)
-
-      val flagExt =
-        QuestionnaireUtils.extractFlagForRiskAssessment(
-          questionnaireResponse,
-          questionnaire,
-          riskAssessment
-        )
-      flagExt?.let {
-        val flag = it.first
-        saveResource(flag)
-
-        it.second?.let { ext -> patient.addExtension(ext) }
-      }
-    }
+    riskAssessment?.let { saveResource(it) }
 
     val flags = QuestionnaireUtils.extractFlags(questionnaireResponse, questionnaire, patient)
     flags.forEach {
