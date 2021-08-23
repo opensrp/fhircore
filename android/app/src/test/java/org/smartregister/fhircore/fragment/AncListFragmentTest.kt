@@ -27,6 +27,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.spyk
+import io.mockk.verify
 import org.hl7.fhir.r4.model.Patient
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -130,6 +131,20 @@ class AncListFragmentTest : FragmentRobolectricTest() {
   @Test
   fun testFragmentHasPagination() {
     assertNotNull(ancListFragment.paginationView)
+  }
+
+  @Test
+  fun testOnNavigationClickedNextPageNo() {
+    ancListFragment.paginationView!!.nextButton!!.performClick()
+
+    verify { listViewModel.searchResults(any(), any(), any()) }
+  }
+
+  @Test
+  fun testOnNavigationClickedPrevPageNo() {
+    ancListFragment.paginationView!!.prevButton!!.performClick()
+
+    verify { listViewModel.searchResults(any(), any(), any()) }
   }
 
   override fun getFragmentScenario(): FragmentScenario<out Fragment> {

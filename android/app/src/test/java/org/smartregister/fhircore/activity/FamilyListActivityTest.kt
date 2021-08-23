@@ -18,6 +18,7 @@ package org.smartregister.fhircore.activity
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Looper
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
@@ -34,6 +35,8 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowAlertDialog
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.core.QuestionnaireActivity
@@ -46,6 +49,7 @@ import org.smartregister.fhircore.model.FamilyDetailView
 import org.smartregister.fhircore.model.FamilyDetailView.Companion.FAMILY_DETAIL_VIEW_CONFIG_ID
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.util.Utils
+import org.smartregister.fhircore.viewmodel.FamilyListViewModel
 
 @Config(shadows = [FhirApplicationShadow::class])
 class FamilyListActivityTest : ActivityRobolectricTest() {
@@ -53,9 +57,12 @@ class FamilyListActivityTest : ActivityRobolectricTest() {
   private lateinit var familyListActivity: FamilyListActivity
   private lateinit var register: BaseRegister
   private lateinit var detailView: FamilyDetailView
+  private lateinit var listViewModel: FamilyListViewModel
 
   @Before
   fun setUp() {
+    listViewModel = mockk()
+
     familyListActivity =
       Robolectric.buildActivity(FamilyListActivity::class.java, null).create().get()
     register = familyListActivity.register
@@ -65,6 +72,8 @@ class FamilyListActivityTest : ActivityRobolectricTest() {
         FamilyDetailView::class.java,
         ApplicationProvider.getApplicationContext()
       )
+
+    familyListActivity.listViewModel = listViewModel
   }
 
   @Test
@@ -204,6 +213,23 @@ class FamilyListActivityTest : ActivityRobolectricTest() {
   @Test
   fun testGetAlertDialogBuilderShouldReturnNotNull() {
     Assert.assertNotNull(familyListActivity.getAlertDialogBuilder())
+  }
+
+  @Test
+  fun testVerifyRegisteredFamilySavedDialogProperty() {
+    Assert.assertNull(ShadowAlertDialog.getLatestAlertDialog())
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      familyListActivity,
+      "handleRegisterFamilyResult",
+      ReflectionHelpers.ClassParameter.from(String::class.java, "1233"),
+    )
+
+    shadowOf(Looper.getMainLooper()).idle()
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    Assert.assertNotNull(dialog)
+    Assert.assertEquals("Register another family member?", dialog.message)
   }
 
   override fun getActivity(): Activity {
