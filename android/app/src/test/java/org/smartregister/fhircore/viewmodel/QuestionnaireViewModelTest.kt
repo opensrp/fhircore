@@ -255,11 +255,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
     coVerifyOrder {
-      fhirEngine.save(capture(observation)) // comorb group obs
-      fhirEngine.save(capture(observation))
-      fhirEngine.save(capture(riskAssessment))
-      fhirEngine.save(capture(flag))
-      fhirEngine.save(capture(patient))
+      questionnaireViewModel.saveResource(capture(observation)) // comorb group obs
+      questionnaireViewModel.saveResource(capture(observation))
+      questionnaireViewModel.saveResource(capture(riskAssessment))
+      questionnaireViewModel.saveResource(capture(flag))
+      questionnaireViewModel.saveResource(capture(patient))
     }
 
     Assert.assertEquals("hypertension", observation.captured.code.coding[1].code)
@@ -290,12 +290,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
     coVerifyOrder {
-      fhirEngine.save(capture(observation)) // geopoint obs
-      fhirEngine.save(capture(observation)) // income obs
-      fhirEngine.save(capture(observation)) // living members obs
-      fhirEngine.save(capture(flagPregnancy))
-      fhirEngine.save(capture(flagFamily))
-      fhirEngine.save(capture(patient))
+      questionnaireViewModel.saveResource(capture(observation)) // geopoint obs
+      questionnaireViewModel.saveResource(capture(observation)) // income obs
+      questionnaireViewModel.saveResource(capture(observation)) // living members obs
+      questionnaireViewModel.saveResource(capture(flagPregnancy))
+      questionnaireViewModel.saveResource(capture(flagFamily))
+      questionnaireViewModel.saveResource(capture(patient))
     }
 
     Assert.assertEquals("77386006", flagPregnancy.captured.code.coding[0].code)
@@ -341,8 +341,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
     coVerifyOrder {
-      fhirEngine.save(capture(flagPregnancy))
-      fhirEngine.save(capture(patient))
+      questionnaireViewModel.saveResource(capture(flagPregnancy))
+      questionnaireViewModel.saveResource(capture(patient))
     }
 
     Assert.assertEquals("77386006", flagPregnancy.captured.code.coding[0].code)
