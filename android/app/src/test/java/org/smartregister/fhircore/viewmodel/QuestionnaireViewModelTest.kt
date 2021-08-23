@@ -37,6 +37,7 @@ import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Expression
@@ -229,7 +230,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSaveParsedResourceShouldSaveAllResourceTypesForPatientRegister() {
+  fun testSaveParsedResourceShouldSaveAllResourceTypesForPatientRegister() = runBlockingTest {
     coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns
       samplePatientRegisterQuestionnaire
 
@@ -272,7 +273,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSaveParsedResourceShouldSaveAllResourceTypesForFamilyRegister() {
+  fun testSaveParsedResourceShouldSaveAllResourceTypesForFamilyRegister() = runBlockingTest {
     val questionnaire = getQuestionnaire("sample_family_registration.json")
     val questionnaireResponse =
       getQuestionnaireResponse("sample_family_registration_questionnaireresponse.json")
@@ -322,7 +323,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSaveParsedResourceShouldSaveAllResourceTypesForFamilyMemberRegister() {
+  fun testSaveParsedResourceShouldSaveAllResourceTypesForFamilyMemberRegister() = runBlockingTest {
     val questionnaire = getQuestionnaire("sample_family_member_registration.json")
     val questionnaireResponse =
       getQuestionnaireResponse("sample_family_member_registration_questionnaireresponse.json")
