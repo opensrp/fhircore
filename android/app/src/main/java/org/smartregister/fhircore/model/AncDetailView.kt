@@ -21,11 +21,7 @@ import java.io.Serializable
 data class AncDetailView(
   val registerTitle: String,
   val registrationQuestionnaireIdentifier: String,
-  val registrationQuestionnaireTitle: String,
-  val pregnancyLogQuestionnaireIdentifier: String,
-  val pregnancyLogQuestionnaireTitle: String,
-  val deliveryLogQuestionnaireIdentifier: String,
-  val deliveryLogQuestionnaireTitle: String,
+  val registrationQuestionnaireTitle: String
 ) : Serializable {
 
   companion object {

@@ -75,17 +75,8 @@ class AncListViewModel(application: Application, private val fhirEngine: FhirEng
   fun Patient.toAncItem(): AncItem {
     val name = this.name[0].nameAsSingleString
     val dob = if (this.hasBirthDateElement()) this.birthDateElement.valueAsString else ""
-    val phone: String =
-      if (this.hasTelecom() && this.telecom[0].hasValue()) this.telecom[0].value else ""
     val logicalId: String = this.logicalId
     val area = if (this.hasAddress()) this.addressFirstRep.city else ""
-    return AncItem(
-      id = logicalId,
-      name = name,
-      dob = dob,
-      phone = phone,
-      logicalId = logicalId,
-      area = area
-    )
+    return AncItem(id = logicalId, name = name, dob = dob, logicalId = logicalId, area = area)
   }
 }

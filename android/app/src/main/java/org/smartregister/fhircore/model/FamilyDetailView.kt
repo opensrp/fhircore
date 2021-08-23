@@ -23,8 +23,7 @@ data class FamilyDetailView(
   val registrationQuestionnaireIdentifier: String,
   val registrationQuestionnaireTitle: String,
   val memberRegistrationQuestionnaireIdentifier: String,
-  val memberRegistrationQuestionnaireTitle: String,
-  val registerGroupCountField: String
+  val memberRegistrationQuestionnaireTitle: String
 ) : Serializable {
 
   companion object {

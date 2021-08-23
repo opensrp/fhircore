@@ -101,8 +101,7 @@ class AncListFragmentTest : FragmentRobolectricTest() {
         "12",
         "John Doe",
         "1985-05-21",
-        "0700 000 000",
-        "test_id",
+        "1122",
         "nairobi",
       )
 

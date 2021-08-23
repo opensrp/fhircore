@@ -43,6 +43,7 @@ import org.smartregister.fhircore.adapter.FamilyItemRecyclerViewAdapter
 import org.smartregister.fhircore.auth.secure.FakeKeyStore
 import org.smartregister.fhircore.domain.Pagination
 import org.smartregister.fhircore.model.FamilyItem
+import org.smartregister.fhircore.model.FamilyMemberItem
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.viewmodel.FamilyListViewModel
 
@@ -102,10 +103,12 @@ class FamilyListFragmentTest : FragmentRobolectricTest() {
         "John Doe",
         "male",
         "1985-05-21",
-        "somehtml",
         "0700 000 000",
-        "area living",
-        listOf(),
+        "123",
+        "narobi",
+        listOf(
+          FamilyMemberItem("123", "Sami", "female", "1987-01-01", "37287328", "1222", "pregnant")
+        ),
       )
 
     familyListFragment.setData(

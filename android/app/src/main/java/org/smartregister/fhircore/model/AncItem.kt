@@ -20,9 +20,6 @@ data class AncItem(
   val id: String,
   val name: String,
   val dob: String,
-  val phone: String,
   val logicalId: String,
   val area: String
-) {
-  override fun toString(): String = name
-}
+)
