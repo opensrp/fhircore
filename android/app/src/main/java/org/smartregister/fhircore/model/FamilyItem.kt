@@ -21,8 +21,6 @@ data class FamilyItem(
   val name: String,
   val gender: String,
   val dob: String,
-  val phone: String,
-  val logicalId: String,
   val area: String,
   val members: List<FamilyMemberItem>
 ) {

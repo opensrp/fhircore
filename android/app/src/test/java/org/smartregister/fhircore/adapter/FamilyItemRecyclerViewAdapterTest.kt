@@ -31,6 +31,7 @@ import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.RobolectricTest
 import org.smartregister.fhircore.model.FamilyItem
+import org.smartregister.fhircore.model.FamilyMemberItem
 
 class FamilyItemRecyclerViewAdapterTest : RobolectricTest() {
 
@@ -78,10 +79,8 @@ class FamilyItemRecyclerViewAdapterTest : RobolectricTest() {
         name = "name",
         gender = "male",
         dob = "2021-01-01",
-        phone = "338299819",
-        logicalId = "1234",
         area = "nairobi",
-        members = listOf()
+        members = listOf(FamilyMemberItem("122", "Pregnant"))
       )
 
     // change id only
@@ -91,10 +90,8 @@ class FamilyItemRecyclerViewAdapterTest : RobolectricTest() {
         name = "name",
         gender = "male",
         dob = "2021-01-01",
-        phone = "338299819",
-        logicalId = "1234",
         area = "nairobi",
-        members = listOf()
+        members = listOf(FamilyMemberItem("122", "Pregnant"))
       )
     Assert.assertFalse(diffCallback.areContentsTheSame(item, itemDifferentId))
     Assert.assertFalse(diffCallback.areItemsTheSame(item, itemDifferentId))
@@ -106,10 +103,8 @@ class FamilyItemRecyclerViewAdapterTest : RobolectricTest() {
         name = "name1",
         gender = "male",
         dob = "2021-01-02",
-        phone = "3382998193",
-        logicalId = "1234",
         area = "nairobi",
-        members = listOf()
+        members = listOf(FamilyMemberItem("122", "Pregnant"))
       )
     Assert.assertFalse(diffCallback.areContentsTheSame(item, itemWithMatchingId))
     Assert.assertTrue(diffCallback.areItemsTheSame(item, itemWithMatchingId))
@@ -121,10 +116,8 @@ class FamilyItemRecyclerViewAdapterTest : RobolectricTest() {
         name = "name",
         gender = "male",
         dob = "2021-01-01",
-        phone = "338299819",
-        logicalId = "1234",
         area = "nairobi",
-        members = listOf()
+        members = listOf(FamilyMemberItem("122", "Pregnant"))
       )
     Assert.assertTrue(diffCallback.areContentsTheSame(item, identical))
     Assert.assertTrue(diffCallback.areItemsTheSame(item, identical))

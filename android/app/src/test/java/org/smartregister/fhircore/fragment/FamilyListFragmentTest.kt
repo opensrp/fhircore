@@ -103,12 +103,8 @@ class FamilyListFragmentTest : FragmentRobolectricTest() {
         "John Doe",
         "male",
         "1985-05-21",
-        "0700 000 000",
-        "123",
-        "narobi",
-        listOf(
-          FamilyMemberItem("123", "Sami", "female", "1987-01-01", "37287328", "1222", "pregnant")
-        ),
+        "nairobi",
+        listOf(FamilyMemberItem("123", "pregnant"))
       )
 
     familyListFragment.setData(

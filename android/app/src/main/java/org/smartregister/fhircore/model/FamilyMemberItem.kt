@@ -16,12 +16,4 @@
 
 package org.smartregister.fhircore.model
 
-data class FamilyMemberItem(
-  val id: String,
-  val name: String,
-  val gender: String,
-  val dob: String,
-  val phone: String,
-  val logicalId: String,
-  val pregnant: String
-)
+data class FamilyMemberItem(val id: String, val pregnant: String)

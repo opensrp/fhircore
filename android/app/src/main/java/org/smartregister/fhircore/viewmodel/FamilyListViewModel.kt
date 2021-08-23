@@ -21,7 +21,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
@@ -81,25 +80,16 @@ class FamilyListViewModel(application: Application, private val fhirEngine: Fhir
     val name = this.name[0].nameAsSingleString
     val gender = if (this.hasGenderElement()) this.genderElement.valueAsString else ""
     val dob = if (this.hasBirthDateElement()) this.birthDateElement.valueAsString else ""
-    val phone: String =
-      if (this.hasTelecom() && this.telecom[0].hasValue()) this.telecom[0].value else ""
-    val logicalId: String = this.logicalId
     val members = familyMembers.map { it.toFamilyMemberItem() }
     val area = if (this.hasAddress()) this.addressFirstRep.city else ""
 
-    return FamilyItem(this.id, name, gender, dob, phone, logicalId, area, members)
+    return FamilyItem(this.id, name, gender, dob, area, members)
   }
 
   fun Patient.toFamilyMemberItem(): FamilyMemberItem {
-    val name = this.name[0].nameAsSingleString
-    val gender = if (this.hasGenderElement()) this.genderElement.valueAsString else ""
-    val dob = if (this.hasBirthDateElement()) this.birthDateElement.valueAsString else ""
-    val phone: String =
-      if (this.hasTelecom() && this.telecom[0].hasValue()) this.telecom[0].value else ""
-    val logicalId: String = this.logicalId
     val ext = this.extension.firstOrNull { it.value.toString().contains("pregnant", true) }
     val pregnant = ext?.value?.toString() ?: ""
 
-    return FamilyMemberItem(this.id, name, gender, dob, phone, logicalId, pregnant)
+    return FamilyMemberItem(this.id, pregnant)
   }
 }
