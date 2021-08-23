@@ -54,7 +54,6 @@ import org.hl7.fhir.r4.model.StructureMap
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
@@ -76,8 +75,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private lateinit var questionnaireViewModel: QuestionnaireViewModel
   private lateinit var context: Context
 
-  @get:Rule
-  var instantExecutorRule = InstantTaskExecutorRule()
+  @get:Rule var instantExecutorRule = InstantTaskExecutorRule()
 
   @Before
   fun setUp() {
