@@ -29,6 +29,7 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
 import io.mockk.verifyOrder
+import kotlinx.android.synthetic.main.activity_questionnaire.btn_save_client_info
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -212,6 +213,16 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     }
     verify(inverse = true) { viewModel.saveBundleResources(any()) }
     verify { questionnaireActivity.finish() }
+  }
+
+  @Test
+  fun `onClickSaveButton() should click button`() {
+    val viewModel = spyViewModel()
+
+    questionnaireActivity.onClick(questionnaireActivity.btn_save_client_info)
+
+    verify(exactly = 1) { questionnaireActivity.saveExtractedResources(any()) }
+    verify(exactly = 1) { viewModel.saveExtractedResources(any(), any(), any(), any()) }
   }
 
   private fun spyViewModel(): QuestionnaireViewModel {

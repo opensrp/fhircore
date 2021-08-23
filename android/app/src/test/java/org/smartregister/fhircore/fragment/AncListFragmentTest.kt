@@ -89,7 +89,7 @@ class AncListFragmentTest : FragmentRobolectricTest() {
   @Test
   fun testEmptyListMessageWithZeroClients() {
     ancListFragment.setData(
-      Pair(mutableListOf(), Pagination(totalItems = 1, pageSize = 5, currentPage = 1))
+      Pair(mutableListOf(), Pagination(totalItems = 0, pageSize = 2, currentPage = 1))
     )
     val container = getView<LinearLayout>(R.id.empty_list_message_container)
     assertEquals(View.VISIBLE, container.visibility)
@@ -107,7 +107,10 @@ class AncListFragmentTest : FragmentRobolectricTest() {
       )
 
     ancListFragment.setData(
-      Pair(mutableListOf(anc), Pagination(totalItems = 1, pageSize = 5, currentPage = 1))
+      Pair(
+        mutableListOf(anc, anc, anc, anc),
+        Pagination(totalItems = 4, pageSize = 2, currentPage = 1)
+      )
     )
     val container = getView<LinearLayout>(R.id.empty_list_message_container)
     assertEquals(View.GONE, container.visibility)

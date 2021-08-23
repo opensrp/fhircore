@@ -172,9 +172,13 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
       )
   }
 
-  override fun onClick(v: View?) {
+  internal fun getFragmentQuestionnaireResponse(): QuestionnaireResponse {
     val questionnaireFragment =
       supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
-    saveExtractedResources(questionnaireFragment.getQuestionnaireResponse())
+    return questionnaireFragment.getQuestionnaireResponse()
+  }
+
+  override fun onClick(v: View?) {
+    saveExtractedResources(getFragmentQuestionnaireResponse())
   }
 }
