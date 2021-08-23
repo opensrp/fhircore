@@ -18,6 +18,7 @@ package org.smartregister.fhircore.viewmodel
 
 import android.content.Context
 import android.content.Intent
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
@@ -54,6 +55,7 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Ignore
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.FhirApplication
@@ -73,6 +75,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private lateinit var questionnaireResponse: QuestionnaireResponse
   private lateinit var questionnaireViewModel: QuestionnaireViewModel
   private lateinit var context: Context
+
+  @get:Rule
+  var instantExecutorRule = InstantTaskExecutorRule()
 
   @Before
   fun setUp() {
@@ -226,7 +231,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Test failing on CI but passing on local")
   fun testSaveParsedResourceShouldSaveAllResourceTypesForPatientRegister() {
     coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns
       samplePatientRegisterQuestionnaire
@@ -270,7 +274,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Test failing on CI but passing on local")
   fun testSaveParsedResourceShouldSaveAllResourceTypesForFamilyRegister() {
     val questionnaire = getQuestionnaire("sample_family_registration.json")
     val questionnaireResponse =
