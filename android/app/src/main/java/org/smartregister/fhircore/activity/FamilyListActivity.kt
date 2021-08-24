@@ -41,7 +41,7 @@ import org.smartregister.fhircore.viewmodel.FhirListViewModelFactory
 class FamilyListActivity : BaseRegisterActivity() {
   lateinit var listViewModel: FamilyListViewModel
   private lateinit var familyRegistration: ActivityResultLauncher<FamilyDetailView>
-  private lateinit var familyMemberRegistration: ActivityResultLauncher<RegisterFamilyMemberData>
+  lateinit var familyMemberRegistration: ActivityResultLauncher<RegisterFamilyMemberData>
 
   private lateinit var detailView: FamilyDetailView
 

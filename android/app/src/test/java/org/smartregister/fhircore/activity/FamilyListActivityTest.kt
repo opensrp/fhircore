@@ -18,10 +18,10 @@ package org.smartregister.fhircore.activity
 
 import android.app.Activity
 import android.content.Intent
-import android.os.Looper
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
+import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.widget.Toolbar
 import androidx.test.core.app.ApplicationProvider
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -30,6 +30,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.spyk
 import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
@@ -50,6 +51,7 @@ import org.smartregister.fhircore.fragment.FamilyListFragment
 import org.smartregister.fhircore.model.BaseRegister
 import org.smartregister.fhircore.model.FamilyDetailView
 import org.smartregister.fhircore.model.FamilyDetailView.Companion.FAMILY_DETAIL_VIEW_CONFIG_ID
+import org.smartregister.fhircore.model.RegisterFamilyMemberData
 import org.smartregister.fhircore.shadow.FhirApplicationShadow
 import org.smartregister.fhircore.util.Utils
 import org.smartregister.fhircore.viewmodel.FamilyListViewModel
@@ -224,8 +226,8 @@ class FamilyListActivityTest : ActivityRobolectricTest() {
       ReflectionHelpers.ClassParameter.from(String::class.java, "1233"),
     )
 
-    shadowOf(Looper.getMainLooper()).idle()
-    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+    val shadowAlertDialog = ShadowAlertDialog.getLatestAlertDialog()
+    val dialog = shadowOf(shadowAlertDialog)
 
     Assert.assertNotNull(dialog)
     Assert.assertEquals("Register another family member?", dialog.message)
@@ -242,6 +244,16 @@ class FamilyListActivityTest : ActivityRobolectricTest() {
     familyListActivity.reloadList()
 
     verify(exactly = 1) { viewModel.searchResults(any(), any(), any()) }
+  }
+
+  @Test
+  fun testRegisterMemberShouldLaunchActivity() {
+    val launcher = spyk<ActivityResultLauncher<RegisterFamilyMemberData>>()
+    familyListActivity.familyMemberRegistration = launcher
+
+    familyListActivity.registerMember("123")
+
+    verify(exactly = 1) { launcher.launch(any(), any()) }
   }
 
   override fun getActivity(): Activity {
