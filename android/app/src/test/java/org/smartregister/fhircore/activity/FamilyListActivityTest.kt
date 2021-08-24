@@ -27,7 +27,10 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
@@ -61,8 +64,6 @@ class FamilyListActivityTest : ActivityRobolectricTest() {
 
   @Before
   fun setUp() {
-    listViewModel = mockk()
-
     familyListActivity =
       Robolectric.buildActivity(FamilyListActivity::class.java, null).create().get()
     register = familyListActivity.register
@@ -72,8 +73,6 @@ class FamilyListActivityTest : ActivityRobolectricTest() {
         FamilyDetailView::class.java,
         ApplicationProvider.getApplicationContext()
       )
-
-    familyListActivity.listViewModel = listViewModel
   }
 
   @Test
@@ -230,6 +229,19 @@ class FamilyListActivityTest : ActivityRobolectricTest() {
 
     Assert.assertNotNull(dialog)
     Assert.assertEquals("Register another family member?", dialog.message)
+  }
+
+  @Test
+  fun testReloadListShouldCallSearchResults() {
+    val viewModel = mockk<FamilyListViewModel>()
+
+    every { viewModel.searchResults(any(), any(), any()) } just runs
+
+    familyListActivity.listViewModel = viewModel
+
+    familyListActivity.reloadList()
+
+    verify(exactly = 1) { viewModel.searchResults(any(), any(), any()) }
   }
 
   override fun getActivity(): Activity {

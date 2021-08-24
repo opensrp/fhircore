@@ -87,7 +87,7 @@ class FamilyListActivity : BaseRegisterActivity() {
       }
       .setPositiveButton("Yes") { dialogInterface, _ ->
         dialogInterface.dismiss()
-        familyMemberRegistration.launch(RegisterFamilyMemberData(headId, detailView))
+        registerMember(headId)
       }
       .show()
   }
@@ -118,5 +118,9 @@ class FamilyListActivity : BaseRegisterActivity() {
 
   fun reloadList() {
     listViewModel.searchResults("", 0, PAGE_COUNT)
+  }
+
+  fun registerMember(headId: String) {
+    familyMemberRegistration.launch(RegisterFamilyMemberData(headId, detailView))
   }
 }
