@@ -165,7 +165,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.load(any<Class<StructureMap>>(), any()) } returns structureMap
 
     questionnaireViewModel.fetchStructureMap(
-      ApplicationProvider.getApplicationContext(),
       "https://someorg.org/StructureMap/678934"
     )
 
@@ -292,10 +291,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val structureMapProvider =
       questionnaireViewModel.getStructureMapProvider(ApplicationProvider.getApplicationContext())
 
-    every { questionnaireViewModel.fetchStructureMap(any(), any()) } returns StructureMap()
+    every { questionnaireViewModel.fetchStructureMap(any()) } returns StructureMap()
 
     runBlocking { structureMapProvider.invoke(resourceUrl) }
 
-    verify { questionnaireViewModel.fetchStructureMap(any(), resourceUrl) }
+    verify { questionnaireViewModel.fetchStructureMap(resourceUrl) }
   }
 }

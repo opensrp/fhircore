@@ -66,7 +66,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     }
   }
 
-  fun fetchStructureMap(context: Context, structureMapUrl: String?): StructureMap? {
+  fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
     runBlocking {
       launch {
@@ -117,7 +117,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     if (structureMapProvider == null) {
       structureMapProvider =
         { structureMapUrl: String ->
-          fetchStructureMap(context, structureMapUrl)
+          fetchStructureMap(structureMapUrl)
         }
     }
 
@@ -140,7 +140,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
           QuestionnaireActivity.QUESTIONNAIRE_ARG_BARCODE_KEY
         )
 
-      patient.id = barcode ?: UUID.randomUUID().toString().toLowerCase()
+      patient.id = barcode ?: UUID.randomUUID().toString().lowercase()
 
       saveResource(patient)
 
