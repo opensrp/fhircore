@@ -135,8 +135,8 @@ class RecordVaccineActivity : BaseMultiLanguageActivity() {
   ) {
     val builder = AlertDialog.Builder(this)
     val doseNumber = immunization.protocolApplied.first().doseNumberPositiveIntType.value
-    var msgText = ""
-    var titleText = ""
+    var msgText: String
+    var titleText: String
     val vaccineDate = immunization.occurrenceDateTimeType.toHumanDisplay()
     val nextVaccineDate = DateUtils.addDays(vaccineDate, 28)
     val currentDose = immunization.vaccineCode.coding.first().code

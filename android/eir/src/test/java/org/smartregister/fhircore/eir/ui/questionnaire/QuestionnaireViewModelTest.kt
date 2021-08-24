@@ -164,9 +164,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coEvery { fhirEngine.load(any<Class<StructureMap>>(), any()) } returns structureMap
 
-    questionnaireViewModel.fetchStructureMap(
-      "https://someorg.org/StructureMap/678934"
-    )
+    questionnaireViewModel.fetchStructureMap("https://someorg.org/StructureMap/678934")
 
     coVerify(exactly = 1) {
       fhirEngine.load(any<Class<StructureMap>>(), capture(structureMapIdSlot))

@@ -115,10 +115,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
 
   fun getStructureMapProvider(context: Context): (suspend (String) -> StructureMap?) {
     if (structureMapProvider == null) {
-      structureMapProvider =
-        { structureMapUrl: String ->
-          fetchStructureMap(structureMapUrl)
-        }
+      structureMapProvider = { structureMapUrl: String -> fetchStructureMap(structureMapUrl) }
     }
 
     return structureMapProvider!!
