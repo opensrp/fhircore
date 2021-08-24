@@ -23,10 +23,12 @@ import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import java.util.Date
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -119,7 +121,7 @@ class RecordVaccineActivity : BaseMultiLanguageActivity() {
         immunization.protocolApplied =
           listOf(
             Immunization.ImmunizationProtocolAppliedComponent().apply {
-              val currentDoseNumber = it.doseNumber
+              val currentDoseNumber = it?.doseNumber ?: 0
               this.doseNumber = PositiveIntType(currentDoseNumber + 1)
             }
           )
