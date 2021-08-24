@@ -22,11 +22,11 @@ import android.widget.Button
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.ViewModelLazy
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
@@ -43,7 +43,6 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
-<<<<<<< HEAD:android/eir/src/test/java/org/smartregister/fhircore/eir/ui/questionnaire/QuestionnaireActivityTest.kt
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
@@ -54,18 +53,6 @@ import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Com
 import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR
 
 @Config(shadows = [EirApplicationShadow::class])
-=======
-import org.smartregister.fhircore.FhirApplication
-import org.smartregister.fhircore.R
-import org.smartregister.fhircore.activity.core.QuestionnaireActivity
-import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE_KEY
-import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR
-import org.smartregister.fhircore.shadow.FhirApplicationShadow
-import org.smartregister.fhircore.shadow.TestUtils
-import org.smartregister.fhircore.util.QuestionnaireUtils
-import org.smartregister.fhircore.viewmodel.QuestionnaireViewModel
-
-@Config(shadows = [FhirApplicationShadow::class])
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
   private lateinit var context: EirApplication
   private lateinit var questionnaireActivity: QuestionnaireActivity
@@ -80,12 +67,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val samplePatientRegisterQuestionnaire =
       TestUtils.loadQuestionnaire(context, REGISTER_QUESTIONNAIRE_ID)
 
-    val fhirEngine = spyk(FhirApplication.fhirEngine(context))
+    val fhirEngine: FhirEngine = mockk()
 
-    mockkObject(FhirApplication)
-    every { FhirApplication.fhirEngine(any()) } returns fhirEngine
-
-    // val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.load(Questionnaire::class.java, REGISTER_QUESTIONNAIRE_ID) } returns
       samplePatientRegisterQuestionnaire
     coEvery { fhirEngine.load(Patient::class.java, TEST_PATIENT_1_ID) } returns TEST_PATIENT_1
