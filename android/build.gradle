@@ -67,5 +67,15 @@ allprojects {
                 licenseHeaderFile "${project.rootProject.projectDir}/license-header.txt"
             }
         }
+
+        configurations.all {
+            resolutionStrategy {
+                eachDependency { details ->
+                    if ('org.jacoco' == details.requested.group) {
+                        details.useVersion versions.jacoco_tool
+                    }
+                }
+            }
+        }
     }
 }
