@@ -4,5 +4,8 @@
   "registrationQuestionnaireTitle": "Add Patient",
 
   "vaccineQuestionnaireIdentifier": "800",
-  "vaccineQuestionnaireTitle": "Record Vaccine"
+  "vaccineQuestionnaireTitle": "Record Vaccine",
+
+  "adverseEventQuestionnaireIdentifier": "1568",
+  "adverseEventQuestionnaireTitle": "Adverse Event"
 }

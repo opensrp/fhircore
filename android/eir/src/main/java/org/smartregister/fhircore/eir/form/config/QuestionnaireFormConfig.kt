@@ -25,6 +25,8 @@ data class QuestionnaireFormConfig(
   val registrationQuestionnaireTitle: String,
   val vaccineQuestionnaireIdentifier: String,
   val vaccineQuestionnaireTitle: String,
+  val adverseEventsQuestionnaireIdentifier: String,
+  val adverseEventsQuestionnaireTitle: String,
 ) {
   companion object {
     const val COVAX_DETAIL_VIEW_CONFIG_ID = "covax_client_register_config.json"

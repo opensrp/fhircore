@@ -108,6 +108,13 @@ class PatientDetailsFragment private constructor() : Fragment() {
           .putExtras(RecordVaccineActivity.getExtraBundles(patientId = patientId))
       )
     }
+
+    reportAdverseEventButton.setOnClickListener {
+      startActivity(
+        Intent(requireContext(), AdverseEventActivity::class.java)
+          .putExtras(AdverseEventActivity.getExtraBundles(patientId = patientId))
+      )
+    }
   }
 
   private fun handlePatientDemographics(patient: Patient) {
