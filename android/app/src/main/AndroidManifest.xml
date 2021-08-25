@@ -19,6 +19,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".activity.AdverseEventActivity"
+            android:exported="true" />
+        <activity
             android:name=".activity.PatientDetailsActivity"
             android:label=""
             android:parentActivityName=".activity.CovaxListActivity"
@@ -39,11 +42,11 @@
         </activity>
         <activity android:name=".activity.RecordVaccineActivity" />
         <activity
-            android:name="org.smartregister.fhircore.activity.CovaxListActivity"
+            android:name=".activity.CovaxListActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name="org.smartregister.fhircore.activity.AncListActivity"
+            android:name=".activity.AncListActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
         <activity
@@ -60,4 +63,5 @@
                 android:resource="@xml/authenticator" />
         </service>
     </application>
+
 </manifest>

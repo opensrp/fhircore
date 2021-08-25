@@ -24,6 +24,8 @@ data class CovaxDetailView(
   val registrationQuestionnaireTitle: String,
   val vaccineQuestionnaireIdentifier: String,
   val vaccineQuestionnaireTitle: String,
+  val adverseEventsQuestionnaireIdentifier: String,
+  val adverseEventsQuestionnaireTitle: String,
 ) : Serializable {
 
   companion object {

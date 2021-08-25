@@ -654,4 +654,175 @@ group ExtractRelatedPerson(source src : QuestionnaireResponse, target bundle : B
     } "rule_erp_14";
 }
     """.trimIndent()
+
+
+  @Language("Json")
+  private val questionnaireForAdverseEvent = """
+{
+  "resourceType": "Questionnaire",
+  "id": "immunization-adverse-events-reaction",
+  "status": "active",
+  "date": "2020-11-18T07:24:47.111Z",
+  "subjectType": [
+    "Immunization"
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap"
+    }
+  ],
+  "item": [
+    {
+      "linkId": "adverse-event-reaction",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "adverse-event-codes",
+          "type": "choice",
+          "text": "Select adverse reaction",
+          "_text": {
+            "extension": [
+              {
+                "extension": [
+                  {
+                    "url": "lang",
+                    "valueCode": "sw"
+                  },
+                  {
+                    "url": "content",
+                    "valueString": "Chagua athari mbaya"
+                  }
+                ],
+                "url": "http://hl7.org/fhir/StructureDefinition/translation"
+              }
+            ]
+          },
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button",
+                    "display": "Radio Button"
+                  }
+                ]
+              }
+            }
+          ],
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "39579001",
+                "display": "Anaphylaxis",
+                "system": "https://www.snomed.org"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "75753009",
+                "display": "Blood clots",
+                "system": "https://www.snomed.org"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "50920009",
+                "display": "Myocarditis",
+                "system": "https://www.snomed.org"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "3238004",
+                "display": "Pericarditis",
+                "system": "https://www.snomed.org"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "111588002",
+                "display": "Heparin-induced thrombocytopenia (disorder) Thrombosis (disorder)",
+                "system": "https://www.snomed.org"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "Other",
+                "display": "Other",
+                "system": "https://www.snomed.org"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "adverse-event-date",
+          "type": "date",
+          "required": true,
+          "text": "Date of adverse reaction",
+          "_text": {
+            "extension": [
+              {
+                "extension": [
+                  {
+                    "url": "lang",
+                    "valueCode": "sw"
+                  },
+                  {
+                    "url": "content",
+                    "valueString": "Tarehe ya athari mbaya"
+                  }
+                ],
+                "url": "http://hl7.org/fhir/StructureDefinition/translation"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+} 
+""".trimIndent()
+
+  private val fhirStructureMapForAdverseEvents = """
+  map "http://hl7.org/fhir/StructureMap/AdverseReaction" = 'Adverse Reaction of vaccine'
+  
+  uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+  uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+  uses "http://hl7.org/fhir/StructureDefinition/Observation as source
+  uses "http://hl7.org/fhir/StructureDefinition/Immunization as target
+  
+  group AdverseReaction(source src : QuestionnaireResponse, target bundle: Bundle) {
+      src -> bundle.id = uuid() "rule_c";
+      src -> bundle.type = 'collection' "rule_b";
+      src -> bundle.entry as entry, entry.resource = create('Immunization') as immunization then
+          ExtractImmunization(src, bundle, immunization) "rule_i";
+  }
+  
+  group ExtractImmunization(source src: QuestionnaireResponse, target bundle: Bundle, target immunization: Immunization) {
+      src -> immunization.id = src.id "rule_j";
+      
+      src.item as item where(linkId = 'adverse-event-reaction') -> immunization.reaction = create('BackboneElement') as immunizationReaction then {
+      
+        item.item as inner_item where (linkId = 'adverse-event-date') then {
+          inner_item.answer first as ans then {
+            ans.value as val -> immunizationReaction.date = val "rule_a";
+          };
+        };
+        
+        item.item as reaction_detail_item where (linkId = 'adverse-event-codes') -> bundle.entry as entry, entry.resource = create('Observation') as observation then {
+          reaction_detail_item -> observation.id = uuid() "rule_obs_1";
+          reaction_detail_item -> observation.code = evaluate(reaction_detail_item, ${"$"}this.item.answer.value) "rule_obs_2";
+        };
+
+        observation -> immunizationReaction.detail = create('Reference') as observationReference then {
+         observation.id as theObservationId -> observationReference.reference = theObservationId "rule_obs_3";
+         observation -> observationReference.type = "Observation" "rule_obs_4";
+         } "rule_obs_5";
+      }
+  }
+  
+""".trimIndent()
+
 }

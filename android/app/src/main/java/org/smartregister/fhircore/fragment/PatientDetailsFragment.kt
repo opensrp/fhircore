@@ -32,6 +32,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.R
 import org.smartregister.fhircore.activity.RecordVaccineActivity
+import org.smartregister.fhircore.activity.AdverseEventActivity
 import org.smartregister.fhircore.adapter.PatientImmunizationsAdapter
 import org.smartregister.fhircore.model.CovaxDetailView
 import org.smartregister.fhircore.util.createFactory
@@ -100,6 +101,13 @@ class PatientDetailsFragment private constructor() : Fragment() {
       startActivity(
         Intent(requireContext(), RecordVaccineActivity::class.java)
           .putExtras(RecordVaccineActivity.getExtraBundles(patientId = patientId))
+      )
+    }
+
+    reportAdverseEventButton.setOnClickListener {
+      startActivity(
+        Intent(requireContext(), AdverseEventActivity::class.java)
+          .putExtras(AdverseEventActivity.getExtraBundles(patientId = patientId))
       )
     }
   }
