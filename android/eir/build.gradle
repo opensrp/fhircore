@@ -236,7 +236,7 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'crea
 
 coveralls {
     sourceDirs = ["$project.projectDir/src/main/java"]
-    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/merged.xml"
+    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoTestReportRelease/merged.xml"
 }
 
 tasks.coveralls {
