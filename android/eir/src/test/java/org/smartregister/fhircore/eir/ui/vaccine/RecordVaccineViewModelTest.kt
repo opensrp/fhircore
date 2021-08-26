@@ -67,7 +67,8 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
     coroutinesTestRule.runBlockingTest {
       val vaccineSummary = recordVaccineViewModel.getVaccineSummary("1")
       Assert.assertNotNull(vaccineSummary)
-      val patientVaccineSummary = vaccineSummary.value
+
+      val patientVaccineSummary = getLiveDataValue(vaccineSummary)
       Assert.assertNotNull(patientVaccineSummary)
       Assert.assertTrue(patientVaccineSummary is PatientVaccineSummary)
       Assert.assertEquals(1, patientVaccineSummary?.doseNumber)

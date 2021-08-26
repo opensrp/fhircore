@@ -17,9 +17,31 @@
 package org.smartregister.fhircore.eir.robolectric
 
 import android.os.Build
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 
 @RunWith(FhircoreTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1])
-abstract class RobolectricTest
+abstract class RobolectricTest {
+  /** Get the liveData value by observing but wait for 3 seconds if not ready then stop observing */
+  @Throws(InterruptedException::class)
+  fun <T> getLiveDataValue(liveData: LiveData<T>): T? {
+    val data = arrayOfNulls<Any>(1)
+    val latch = CountDownLatch(1)
+    val observer: Observer<T> =
+      object : Observer<T> {
+        override fun onChanged(o: T?) {
+          data[0] = o
+          latch.countDown()
+          liveData.removeObserver(this)
+        }
+      }
+    liveData.observeForever(observer)
+    latch.await(3, TimeUnit.SECONDS)
+    return data[0] as T?
+  }
+}
