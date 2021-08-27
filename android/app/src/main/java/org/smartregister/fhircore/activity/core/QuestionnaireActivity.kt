@@ -186,8 +186,11 @@ class QuestionnaireActivity : BaseActivity(), View.OnClickListener {
   }
 
   override fun onClick(v: View?) {
-    val questionnaireFragment =
-      supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
-    saveExtractedResources(questionnaireFragment.getQuestionnaireResponse())
+    if (v != null && v.id == R.id.btn_save_client_info) {
+      val questionnaireFragment =
+        supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
+          QuestionnaireFragment
+      saveExtractedResources(questionnaireFragment.getQuestionnaireResponse())
+    }
   }
 }

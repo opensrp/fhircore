@@ -18,12 +18,14 @@ package org.smartregister.fhircore.activity
 
 import android.app.Activity
 import android.content.Intent
+import android.view.View
 import android.widget.Button
 import androidx.lifecycle.ViewModelLazy
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
+import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.spyk
@@ -186,6 +188,19 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     }
     verify(exactly = 1) { viewModel.saveBundleResources(any(), any()) }
     verify { questionnaireActivity.finish() }
+  }
+
+  @Test
+  fun `onClick() should cal`() {
+    val view: View = mockk() // View(context)
+    // view.id = R.id.btn_save_client_info
+
+    every { view.id } returns R.id.btn_save_client_info
+
+    questionnaireActivity.onClick(view)
+
+    verify(exactly = 1) { questionnaireActivity.saveExtractedResources(any()) }
+    every { questionnaireActivity.saveExtractedResources(any()) } just runs
   }
 
   private fun spyViewModel(): QuestionnaireViewModel {
