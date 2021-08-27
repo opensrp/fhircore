@@ -1,16 +1,11 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
-apply plugin: "com.github.kt3k.coveralls"
-apply plugin: 'jacoco'
 apply plugin: 'de.mannodermaus.android-junit5'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'org.jetbrains.dokka'
 apply plugin: "org.jetbrains.kotlin.plugin.serialization"
-
-jacoco {
-    toolVersion = versions.jacoco_tool
-}
+apply from: "code.coverage.gradle"
 
 Properties props = new Properties()
 
@@ -126,8 +121,6 @@ dependencies {
     androidTestImplementation deps.atsl.espresso
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2'
 
-    coreLibraryDesugaring deps.desugar
-
     implementation('org.smartregister:data-capture:0.1.0-alpha03-preview-2-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
@@ -210,37 +203,6 @@ dependencies {
 
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
-}
-
-task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'createDebugCoverageReport']) {
-
-    reports {
-        xml.enabled = true
-        html.enabled = true
-    }
-
-    getReports().getXml().setDestination(file("${buildDir}/reports/jacoco/jacocoRootReport/merged.xml"))
-    getReports().getHtml().setDestination(file("${buildDir}/reports/jacoco/jacocoRootReport/html"))
-
-    def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*', 'android*/**/*.*', '**/*$ViewBinder*.*']
-    def debugTreeJava = fileTree(dir: "$project.buildDir/intermediates/javac/debug/classes", excludes: fileFilter)
-    def debugTreeKotlin = fileTree(dir: "$project.buildDir/tmp/kotlin-classes/debug", excludes: fileFilter)
-    def mainSrc = "$project.projectDir/src/main/java"
-
-    sourceDirectories.from(files([mainSrc]))
-    classDirectories.from(files([debugTreeJava, debugTreeKotlin]))
-    executionData.from(fileTree(dir: project.buildDir, includes: [
-            'testReleaseUnitTest.exec', 'jacoco/testDebugUnitTest.exec', 'outputs/code_coverage/debugAndroidTest/connected/*coverage.ec'
-    ]))
-}
-
-coveralls {
-    sourceDirs = ["$project.projectDir/src/main/java"]
-    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/merged.xml"
-}
-
-tasks.coveralls {
-    dependsOn 'jacocoTestReport'
 }
 
 dokkaHtml.configure {
