@@ -909,10 +909,7 @@ group ExtractRelatedPerson(source src : QuestionnaireResponse, target bundle : B
             } "rule_erp_10a";
 
             src -> relatedPerson.id = uuid() "rule_erp_11";
-            patient -> relatedPerson.patient = create('Reference') as patientReference then {
-                patient.id as thePatientId  -> patientReference.reference = thePatientId "rule_erp_12";
-                src -> patientReference.type = "Patient" "rule_erp_13";
-            } "rule_erp_13a";
+            patient -> relatedPerson.patient = reference(patient) "rule_erp_13a";
         };
     } "rule_erp_14";
 }
@@ -948,7 +945,10 @@ group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bu
 group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, source bundleEn : Bundle, target bundle : Bundle, source patient : Patient) {
     src.item as item where(linkId = 'comorbidities' and answer.count() > 0) -> bundle.entry as entry, entry.resource = create('RiskAssessment') as riskAm then {
         src -> riskAm.id = uuid() "rule_erao_1";
-        src -> riskAm.code = cc("https://www.snomed.org", "38651000000103") "rule_erao_2";
+        src -> riskAm.code = create('CodeableConcept') as riskAmCc then {
+          src -> riskAmCc.text = "Client is at risk for serious illness from COVID-19" "rule_erao_2_1";
+          src -> riskAmCc.coding = c("https://www.snomed.org", "225338004", "Risk Assessment") "rule_erao_2_2";
+        } "rule_erao_2";
         src -> riskAm.status = "final" "rule_erao_3";
         src -> riskAm.subject = reference(patient) "rule_erao_4";
         src -> riskAm.occurrence = evaluate(patient, now()) "rule_erao_5";
@@ -959,7 +959,21 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
         bundleEn.entry as resourceEntry where(resource.is(Observation) and resource.code.coding[0].code = '991381000000107') then {
           resourceEntry.resource as rs -> riskAm.basis = reference(rs) "rule_erao_7_1"; 
         } "rule_erao_7";
-    } "rule_erao_8";
+        
+        src -> bundle.entry as entry, entry.resource = create('Flag') as riskFlag then {
+          src -> riskFlag.id = uuid() "rule_erao_8_1";
+          src -> riskFlag.status = "active" "rule_erao_8_2";
+          src -> riskFlag.subject = reference(patient) "rule_erao_8_3";
+          src -> riskFlag.code = create('CodeableConcept') as riskFlagCc then {
+            src -> riskFlagCc.text = "Client is at risk for serious illness from COVID-19" "rule_erao_8_4_1";
+            src -> riskFlagCc.coding = c("https://www.snomed.org", "225338004", "Risk Assessment") "rule_erao_8_4_2";
+          } "rule_erao_8_4";
+          src -> riskFlag.extension = create('Extension') as flagDetailExt then {
+            src -> flagDetailExt.url = "http://hl7.org/fhir/StructureDefinition/flag-detail" "rule_erao_8_5_1";
+            src -> flagDetailExt.value = reference(riskAm) "rule_erao_8_5_2";
+          } "rule_erao_8_5";
+        } "rule_erao_8";
+    } "rule_erao_9";
 }
     """.trimIndent()
 }
