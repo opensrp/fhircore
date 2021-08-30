@@ -8,11 +8,13 @@ buildscript {
     }
     dependencies {
         classpath deps.android_gradle_plugin
-        classpath deps.kotlin.plugin
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.21"
+        classpath "org.jetbrains.kotlin:kotlin-serialization:1.5.21"
         classpath deps.spotless
         classpath deps.kotlin_coveralls_plugin
         classpath deps.junit5_plugin
         classpath deps.dokka_plugin
+        classpath "com.android.tools.build:gradle:7.0.1"
     }
 }
 
@@ -63,6 +65,16 @@ allprojects {
                 ktlint(versions.ktlint).userData(['indent_size': '2', 'continuation_indent_size': '2'])
                 ktfmt().googleStyle()
                 licenseHeaderFile "${project.rootProject.projectDir}/license-header.txt"
+            }
+        }
+
+        configurations.all {
+            resolutionStrategy {
+                eachDependency { details ->
+                    if ('org.jacoco' == details.requested.group) {
+                        details.useVersion versions.jacoco_tool
+                    }
+                }
             }
         }
     }
