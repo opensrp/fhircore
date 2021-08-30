@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp">
+
+            <ImageButton
+                android:id="@+id/btn_drawer_menu"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:backgroundTint="?attr/colorPrimary"
+                android:src="@drawable/ic_menu" />
+
+            <TextView
+                android:id="@+id/tv_clients_list_title"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="5"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center"
+                android:text="@string/default_app_title"
+                android:textColor="@color/white"
+                android:textSize="21sp"
+                tools:textColor="@color/white" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/btn_show_overdue"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:checked="false"
+                android:gravity="center_vertical"
+                android:text="@string/show_overdue"
+                android:textColor="@color/white"
+                tools:textColor="#000000" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/edit_text_search"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_white_bg"
+                android:drawableStart="@drawable/ic_search"
+                android:drawablePadding="10dp"
+                android:fontFamily="sans-serif"
+                android:gravity="center_vertical"
+                android:hint="@string/search_hint"
+                android:paddingStart="10dp"
+                android:paddingTop="10dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="10dp"
+                android:textColor="#000000"
+                android:textColorHint="#AEAEAE"
+                android:textSize="17sp"
+                android:maxLines="1"
+                android:singleLine="true"
+                app:drawableTint="@color/grey_drawable_color" />
+
+
+            <LinearLayout
+                android:id="@+id/layout_scan_barcode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/rounded_white_thicker_stroked_bg"
+                android:gravity="center"
+                android:padding="15dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:drawableEndCompat="@drawable/ic_barcode"
+                    app:drawableTint="@color/white" />
+
+                <TextView
+                    android:id="@+id/btn_scan_barcode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:gravity="center"
+                    android:text="@string/scan_bar_code"
+                    android:textColor="@color/white"
+                    android:textSize="22sp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</layout>

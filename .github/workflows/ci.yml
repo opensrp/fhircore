@@ -27,18 +27,18 @@ jobs:
         working-directory: android
 
       - name: Spotless check
-        run: ./gradlew spotlessCheck
+        run: ./gradlew :eir:spotlessCheck
         working-directory: android
 
       - name: Run unit tests with Gradle
-        run: ./gradlew jacocoTestReport --stacktrace
+        run: ./gradlew :eir:jacocoTestReport -x testDebugUnitTest --stacktrace
         working-directory: android
         env:
          FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
          FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
 
       - name: Upload code coverage report to coveralls
-        run: ./gradlew coveralls --stacktrace
+        run: ./gradlew :eir:coveralls --stacktrace
         working-directory: android
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
