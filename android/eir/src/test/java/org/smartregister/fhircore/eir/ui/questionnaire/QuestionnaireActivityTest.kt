@@ -28,8 +28,6 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
@@ -52,7 +50,6 @@ import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE_KEY
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR
 
 @Config(shadows = [EirApplicationShadow::class])
 class QuestionnaireActivityTest : ActivityRobolectricTest() {

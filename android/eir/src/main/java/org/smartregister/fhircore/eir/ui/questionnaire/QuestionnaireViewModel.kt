@@ -33,7 +33,6 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.eir.EirApplication
-import org.smartregister.fhircore.FhirApplication
 import org.smartregister.fhircore.helper.TransformSupportServices
 
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :

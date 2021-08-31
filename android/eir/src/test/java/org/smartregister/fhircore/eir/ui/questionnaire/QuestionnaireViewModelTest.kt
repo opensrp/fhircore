@@ -48,13 +48,13 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity
+import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
 import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
-import org.smartregister.fhircore.activity.core.QuestionnaireActivity
-import org.smartregister.fhircore.activity.core.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 03-07-2021. */
 @Config(shadows = [EirApplicationShadow::class])
