@@ -34,14 +34,11 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.vaccine.RecordVaccineActivity" />
+        <activity android:name="org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity" />
         <activity
             android:name=".ui.patient.register.PatientRegisterActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
-
-        <activity
-            android:name=".ui.questionnaire.QuestionnaireActivity"
-            android:parentActivityName=".ui.patient.register.PatientRegisterActivity" />
 
         <service android:name=".EirAuthAndroidService">
             <intent-filter>

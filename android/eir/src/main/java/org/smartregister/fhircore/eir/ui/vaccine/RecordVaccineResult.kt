@@ -22,8 +22,8 @@ import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_RESPONSE_KEY
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireUtils
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_RESPONSE_KEY
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils
 
 class RecordVaccineResult(private val patientId: String) :
   ActivityResultContract<QuestionnaireFormConfig, QuestionnaireResponse?>() {
