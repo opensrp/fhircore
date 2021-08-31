@@ -20,9 +20,9 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.anc.data.model.AncItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
-import org.smartregister.fhircore.anc.data.model.AncItem
 
 class AncPaginatedDataSource(
   val fhirEngine: FhirEngine,

@@ -24,8 +24,8 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.form.config.AncFormConfig
 import org.smartregister.fhircore.anc.data.AncPaginatedDataSource
+import org.smartregister.fhircore.anc.form.config.AncFormConfig
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.buildQuestionnaireIntent
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
