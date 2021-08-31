@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.eir.ui.patient.register.components
+package org.smartregister.fhircore.anc.ui.anccare.register.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,9 +33,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.smartregister.fhircore.anc.ui.anccare.AncRowClickListenerIntent
-import org.smartregister.fhircore.anc.ui.anccare.OpenPatientProfile
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.AncItem
+import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
+import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
+import org.smartregister.fhircore.anc.data.model.AncItem
 import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientItem
 import org.smartregister.fhircore.engine.ui.theme.WarningColor
 

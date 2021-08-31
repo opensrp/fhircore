@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.anccare
+package org.smartregister.fhircore.anc.ui.anccare.details
 
 import android.os.Bundle
 import android.view.Menu
@@ -31,8 +31,8 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    // setContentView(R.layout.activity_patient_details)
-    // setSupportActionBar(patientDetailsToolbar)
+    // setContentView(R.layout.activity_patient_details) // todo use details activity for anc
+    // setSupportActionBar(patientDetailsToolbar) // todo add anc details activity toolbar
 
     if (savedInstanceState == null) {
       ancFormConfig = FormConfigUtil.loadConfig(AncFormConfig.ANC_DETAIL_VIEW_CONFIG_ID, this)
@@ -42,7 +42,7 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
   }
 
   override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-    // menuInflater.inflate(R.menu.profile_menu, menu)
+    // menuInflater.inflate(R.menu.profile_menu, menu) // todo use anc menu
     return true
   }
 

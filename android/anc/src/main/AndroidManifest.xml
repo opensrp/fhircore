@@ -22,7 +22,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.anccare.AncRegisterActivity" />
+        <activity android:name=".ui.anccare.register.AncRegisterActivity" />
 
         <service android:name=".AncAuthAndroidService">
             <intent-filter>

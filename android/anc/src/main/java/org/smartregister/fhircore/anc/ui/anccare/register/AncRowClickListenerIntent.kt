@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.anccare
+package org.smartregister.fhircore.anc.ui.anccare.register
 
 import org.smartregister.fhircore.engine.util.ListenerIntent
 

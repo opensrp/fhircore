@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.anccare
+package org.smartregister.fhircore.anc.ui.anccare.register
 
 import android.content.Intent
 import android.os.Bundle
@@ -25,8 +25,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.collectAsLazyPagingItems
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.form.config.AncFormConfig
-import org.smartregister.fhircore.eir.ui.patient.register.components.AncRow
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.AncItem
+import org.smartregister.fhircore.anc.data.AncPaginatedDataSource
+import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
+import org.smartregister.fhircore.anc.ui.anccare.register.components.AncRow
+import org.smartregister.fhircore.anc.data.model.AncItem
 import org.smartregister.fhircore.engine.ui.components.PaginatedList
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterDataViewModel
@@ -92,9 +94,9 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncItem>() {
   }
 
   override fun performFilter(
-    registerFilterType: RegisterFilterType,
-    data: AncItem,
-    value: Any
+      registerFilterType: RegisterFilterType,
+      data: AncItem,
+      value: Any
   ): Boolean {
     return when (registerFilterType) {
       RegisterFilterType.SEARCH_FILTER -> {

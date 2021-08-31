@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.anccare
+package org.smartregister.fhircore.anc.data.model
 
-import android.app.Application
-import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.AncItem
-import org.smartregister.fhircore.engine.ui.register.BaseRegisterDataViewModel
+import androidx.compose.runtime.Stable
 
-class AncRegisterDataViewModel(
-  application: Application,
-  paginatedDataSource: AncPaginatedDataSource,
-  pageSize: Int = 50
-) :
-  BaseRegisterDataViewModel<Patient, AncItem>(
-    application = application,
-    paginatedDataSource = paginatedDataSource,
-    pageSize = pageSize
-  )
+@Stable
+data class AncItem(
+  val patientIdentifier: String = "",
+  val name: String = "",
+  val gender: String = "",
+  val age: String = "",
+  val demographics: String = "",
+  val atRisk: String = ""
+)
