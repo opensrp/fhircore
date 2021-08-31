@@ -6,6 +6,6 @@
   "vaccineQuestionnaireIdentifier": "800",
   "vaccineQuestionnaireTitle": "Record Vaccine",
 
-  "adverseEventQuestionnaireIdentifier": "1568",
-  "adverseEventQuestionnaireTitle": "Adverse Event"
+  "adverseEventsQuestionnaireIdentifier": "1568",
+  "adverseEventsQuestionnaireTitle": "Adverse Event"
 }
