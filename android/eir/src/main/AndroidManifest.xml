@@ -39,10 +39,6 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
 
-        <activity
-            android:name=".ui.questionnaire.QuestionnaireActivity"
-            android:parentActivityName=".ui.patient.register.PatientRegisterActivity" />
-
         <service android:name=".EirAuthAndroidService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />

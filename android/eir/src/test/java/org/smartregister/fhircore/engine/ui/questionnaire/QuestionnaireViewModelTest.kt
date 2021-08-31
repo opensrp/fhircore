@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-<<<<<<< HEAD:android/eir/src/test/java/org/smartregister/fhircore/eir/ui/questionnaire/QuestionnaireViewModelTest.kt
-package org.smartregister.fhircore.eir.ui.questionnaire
-=======
 package org.smartregister.fhircore.engine.ui.questionnaire
->>>>>>> 416_anc_reg:android/eir/src/test/java/org/smartregister/fhircore/engine/ui/questionnaire/QuestionnaireViewModelTest.kt
 
 import android.content.Context
 import android.content.Intent
@@ -61,11 +57,7 @@ import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
-<<<<<<< HEAD:android/eir/src/test/java/org/smartregister/fhircore/eir/ui/questionnaire/QuestionnaireViewModelTest.kt
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
-=======
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
->>>>>>> 416_anc_reg:android/eir/src/test/java/org/smartregister/fhircore/engine/ui/questionnaire/QuestionnaireViewModelTest.kt
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 03-07-2021. */
 @Config(shadows = [EirApplicationShadow::class])
@@ -184,7 +176,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun `saveExtractedResources() should call saveBundleResources and pass intent extra resourceId`() {
     coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns
-      samplePatientRegisterQuestionnaire
+            samplePatientRegisterQuestionnaire
 
     val questionnaire = Questionnaire()
     questionnaire.extension.add(
@@ -222,7 +214,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testSaveParsedResourceShouldSaveAllResourceTypes() {
     coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns
-      samplePatientRegisterQuestionnaire
+            samplePatientRegisterQuestionnaire
 
     val patient = slot<Patient>()
     val observation = slot<Observation>()
@@ -263,7 +255,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testVerifyQuestionnaireSubjectType() {
     coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns
-      samplePatientRegisterQuestionnaire
+            samplePatientRegisterQuestionnaire
 
     val questionnaire = questionnaireViewModel.questionnaire
 

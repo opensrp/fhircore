@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-<<<<<<< HEAD:android/eir/src/test/java/org/smartregister/fhircore/eir/ui/questionnaire/QuestionnaireUtilsTest.kt
-package org.smartregister.fhircore.eir.ui.questionnaire
-=======
 package org.smartregister.fhircore.engine.ui.questionnaire
->>>>>>> 416_anc_reg:android/eir/src/test/java/org/smartregister/fhircore/engine/ui/questionnaire/QuestionnaireUtilsTest.kt
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
@@ -42,17 +38,10 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
-<<<<<<< HEAD:android/eir/src/test/java/org/smartregister/fhircore/eir/ui/questionnaire/QuestionnaireUtilsTest.kt
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_TITLE_KEY
-=======
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_TITLE_KEY
->>>>>>> 416_anc_reg:android/eir/src/test/java/org/smartregister/fhircore/engine/ui/questionnaire/QuestionnaireUtilsTest.kt
 
 @Config(shadows = [EirApplicationShadow::class])
 class QuestionnaireUtilsTest : RobolectricTest() {

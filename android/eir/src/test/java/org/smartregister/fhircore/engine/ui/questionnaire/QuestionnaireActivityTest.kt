@@ -13,12 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-<<<<<<< HEAD:android/eir/src/test/java/org/smartregister/fhircore/eir/ui/questionnaire/QuestionnaireActivityTest.kt
-package org.smartregister.fhircore.eir.ui.questionnaire
-=======
 package org.smartregister.fhircore.engine.ui.questionnaire
->>>>>>> 416_anc_reg:android/eir/src/test/java/org/smartregister/fhircore/engine/ui/questionnaire/QuestionnaireActivityTest.kt
 
 import android.app.Activity
 import android.content.Intent
@@ -53,13 +48,8 @@ import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
-<<<<<<< HEAD:android/eir/src/test/java/org/smartregister/fhircore/eir/ui/questionnaire/QuestionnaireActivityTest.kt
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE_KEY
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR
-=======
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR
->>>>>>> 416_anc_reg:android/eir/src/test/java/org/smartregister/fhircore/engine/ui/questionnaire/QuestionnaireActivityTest.kt
 
 @Config(shadows = [EirApplicationShadow::class])
 class QuestionnaireActivityTest : ActivityRobolectricTest() {

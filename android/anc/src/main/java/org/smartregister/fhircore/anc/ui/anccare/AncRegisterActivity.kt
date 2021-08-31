@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.eir.ui.patient.register
+package org.smartregister.fhircore.anc.ui.anccare
 
 import android.os.Bundle
 import android.view.MenuItem
@@ -23,10 +23,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
+import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.form.config.AncFormConfig
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
-import org.smartregister.fhircore.engine.data.local.repository.patient.PatientPaginatedDataSource
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.buildQuestionnaireIntent
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
@@ -34,24 +33,24 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FormConfigUtil
 
-class PatientRegisterActivity : BaseRegisterActivity() {
+class AncRegisterActivity : BaseRegisterActivity() {
 
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 
-  private lateinit var questionnaireFormConfig: QuestionnaireFormConfig
+  private lateinit var ancFormConfig: AncFormConfig
 
-  private val patientItemMapper = PatientItemMapper
+  private val ancItemMapper = AncItemMapper
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    configureViews(registerViewConfigurationOf().apply { appTitle = getString(R.string.covax_app) })
+    configureViews(registerViewConfigurationOf().apply { appTitle = getString(R.string.app_name) })
   }
 
   override fun sideMenuOptions(): List<SideMenuOption> =
     listOf(
       SideMenuOption(
-        itemId = COVAX_MENU_OPTION,
-        titleResource = R.string.client_list_title_covax,
+        itemId = ANC_MENU_OPTION,
+        titleResource = R.string.app_name,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
         opensMainRegister = false
       )
@@ -63,21 +62,21 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   override fun registerClient() {
     lifecycleScope.launch {
-      questionnaireFormConfig =
+      ancFormConfig =
         withContext(dispatcherProvider.io()) {
           FormConfigUtil.loadConfig(
-            QuestionnaireFormConfig.COVAX_DETAIL_VIEW_CONFIG_ID,
-            this@PatientRegisterActivity
+            AncFormConfig.ANC_DETAIL_VIEW_CONFIG_ID,
+            this@AncRegisterActivity
           )
         }
 
-      with(questionnaireFormConfig) {
+      with(ancFormConfig) {
         val questionnaireId = registrationQuestionnaireIdentifier
         val questionnaireTitle = registrationQuestionnaireTitle
 
         startActivity(
           buildQuestionnaireIntent(
-            context = this@PatientRegisterActivity,
+            context = this@AncRegisterActivity,
             questionnaireTitle = questionnaireTitle,
             questionnaireId = questionnaireId,
             patientId = null,
@@ -89,14 +88,14 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   }
 
   override fun supportedFragments(): List<Fragment> {
-    val patientRegisterFragment =
-      PatientRegisterFragment().apply {
-        paginatedDataSource = PatientPaginatedDataSource(fhirEngine, patientItemMapper)
+    val registerFragment =
+      AncRegisterFragment().apply {
+        paginatedDataSource = AncPaginatedDataSource(fhirEngine, ancItemMapper)
       }
-    return listOf(patientRegisterFragment)
+    return listOf(registerFragment)
   }
 
   companion object {
-    const val COVAX_MENU_OPTION = 1000
+    const val ANC_MENU_OPTION = 1000
   }
 }
