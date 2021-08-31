@@ -31,19 +31,18 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-   // setContentView(R.layout.activity_patient_details)
-   // setSupportActionBar(patientDetailsToolbar)
+    // setContentView(R.layout.activity_patient_details)
+    // setSupportActionBar(patientDetailsToolbar)
 
     if (savedInstanceState == null) {
-      ancFormConfig =
-        FormConfigUtil.loadConfig(AncFormConfig.ANC_DETAIL_VIEW_CONFIG_ID, this)
+      ancFormConfig = FormConfigUtil.loadConfig(AncFormConfig.ANC_DETAIL_VIEW_CONFIG_ID, this)
 
       patientId = intent.extras?.getString(AncFormConfig.ANC_ARG_ITEM_ID) ?: ""
     }
   }
 
   override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-   // menuInflater.inflate(R.menu.profile_menu, menu)
+    // menuInflater.inflate(R.menu.profile_menu, menu)
     return true
   }
 

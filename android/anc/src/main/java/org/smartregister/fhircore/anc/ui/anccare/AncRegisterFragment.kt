@@ -35,13 +35,11 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
-class AncRegisterFragment :
-  ComposeRegisterFragment<Patient, AncItem>() {
+class AncRegisterFragment : ComposeRegisterFragment<Patient, AncItem>() {
 
   override lateinit var paginatedDataSource: AncPaginatedDataSource
 
-  override lateinit var registerDataViewModel:
-    BaseRegisterDataViewModel<Patient, AncItem>
+  override lateinit var registerDataViewModel: BaseRegisterDataViewModel<Patient, AncItem>
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
@@ -85,7 +83,9 @@ class AncRegisterFragment :
         RecordAncVisit ->
           startActivity(
             Intent(requireContext(), QuestionnaireActivity::class.java)
-              .putExtras(QuestionnaireActivity.getExtrasBundle(data.patientIdentifier, "???", "???"))
+              .putExtras(
+                QuestionnaireActivity.getExtrasBundle(data.patientIdentifier, "???", "???")
+              )
           )
       }
     }
@@ -104,7 +104,7 @@ class AncRegisterFragment :
             data.patientIdentifier.contentEquals(value.toString())
       }
       RegisterFilterType.OVERDUE_FILTER -> {
-        return false //todo
+        return false // todo
       }
     }
   }

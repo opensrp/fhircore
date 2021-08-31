@@ -57,11 +57,7 @@ fun AncRow(
           .padding(24.dp)
           .weight(0.65f)
     ) {
-      Text(
-        text = ancItem.demographics,
-        fontSize = 16.sp,
-        modifier = modifier.wrapContentWidth()
-      )
+      Text(text = ancItem.demographics, fontSize = 16.sp, modifier = modifier.wrapContentWidth())
       Spacer(modifier = modifier.height(8.dp))
       Row {
         Text(
@@ -85,8 +81,7 @@ fun VaccineStatusItem(
     modifier = modifier.padding(vertical = 16.dp, horizontal = 16.dp),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
-  ) {
-  }
+  ) {}
 }
 
 @Composable
@@ -113,19 +108,13 @@ fun PatientRowPartialPreview() {
 @Composable
 @Preview(showBackground = true)
 fun PatientRowOverduePreview() {
-  val ancItem =
-    AncItem(
-      demographics = "Donald Dump, M, 78"
-    )
+  val ancItem = AncItem(demographics = "Donald Dump, M, 78")
   AncRow(ancItem = ancItem, { _, _ -> })
 }
 
 @Composable
 @Preview(showBackground = true)
 fun PatientRowVaccinatedPreview() {
-  val ancItem =
-    AncItem(
-      demographics = "Donald Dump, M, 78"
-    )
+  val ancItem = AncItem(demographics = "Donald Dump, M, 78")
   AncRow(ancItem = ancItem, { _, _ -> })
 }
