@@ -39,7 +39,7 @@ import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
 
-  lateinit var patientPaginatedDataSource: AncPatientPaginatedDataSource
+  override lateinit var paginatedDataSource: AncPatientPaginatedDataSource
 
   override lateinit var registerDataViewModel: BaseRegisterDataViewModel<Patient, AncPatientItem>
 
@@ -50,7 +50,7 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
         requireActivity(),
         AncRegisterDataViewModel(
             application = requireActivity().application,
-            patientPaginatedDataSource = patientPaginatedDataSource,
+            patientPaginatedDataSource = paginatedDataSource,
           )
           .createFactory()
       )[AncRegisterDataViewModel::class.java]

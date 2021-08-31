@@ -91,7 +91,7 @@ class AncRegisterActivity : BaseRegisterActivity() {
   override fun supportedFragments(): List<Fragment> {
     val registerFragment =
       AncRegisterFragment().apply {
-        patientPaginatedDataSource = AncPatientPaginatedDataSource(fhirEngine, ancItemMapper)
+        paginatedDataSource = AncPatientPaginatedDataSource(fhirEngine, ancItemMapper)
       }
     return listOf(registerFragment)
   }
