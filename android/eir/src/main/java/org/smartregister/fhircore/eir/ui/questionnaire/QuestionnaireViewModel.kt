@@ -74,8 +74,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
       launch {
         val structureMapId = structureMapUrl?.substringAfterLast("/")
         if (structureMapId != null) {
-          structureMap =
-            fhirEngine.load(StructureMap::class.java, structureMapId)
+          structureMap = fhirEngine.load(StructureMap::class.java, structureMapId)
         }
       }
     }
