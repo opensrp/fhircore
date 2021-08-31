@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.eir.ui.questionnaire
+package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.content.Context
 import android.content.Intent
@@ -31,10 +31,10 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RiskAssessment
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_TITLE_KEY
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_TITLE_KEY
 
 object QuestionnaireUtils {
   private val parser = FhirContext.forR4().newJsonParser()
@@ -194,7 +194,7 @@ object QuestionnaireUtils {
   ): Flag? {
     // no risk then no flag
     if (riskAssessment.prediction[0].relativeRisk.equals(0) ||
-        !riskAssessment.prediction[0].hasOutcome()
+      !riskAssessment.prediction[0].hasOutcome()
     ) {
       return null
     }
@@ -342,8 +342,8 @@ object QuestionnaireUtils {
 
         // todo revisit this when calculate expression is working
         if (isRiskObs &&
-            ((obs.hasValueBooleanType() && obs.valueBooleanType.booleanValue()) ||
-              (obs.hasValueStringType() && obs.hasValue()))
+          ((obs.hasValueBooleanType() && obs.valueBooleanType.booleanValue()) ||
+                  (obs.hasValueStringType() && obs.hasValue()))
         ) {
           riskScore++
 
