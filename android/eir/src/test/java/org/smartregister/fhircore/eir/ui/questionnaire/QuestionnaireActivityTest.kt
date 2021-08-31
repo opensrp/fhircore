@@ -176,21 +176,25 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun `saveExtractedResources() should call viewModel#saveExtractedResources`() {
-    val viewModel = spyViewModel()
-
-    // questionnaire and response must map
-    viewModel.questionnaire.item.clear()
-    viewModel.questionnaire.addItem().linkId = "test_field_i"
-
+    val viewModel =
+      spyk(
+        ReflectionHelpers.getField<ViewModelLazy<QuestionnaireViewModel>>(
+            questionnaireActivity,
+            "viewModel\$delegate"
+          )
+          .value
+      )
+    ReflectionHelpers.setField(questionnaireActivity, "viewModel\$delegate", lazy { viewModel })
     val questionnaireResponse = QuestionnaireResponse()
-    questionnaireResponse.addItem().linkId = "test_field_i"
+
+    every { viewModel.saveExtractedResources(any(), intent, any(), questionnaireResponse) } just
+      runs
 
     questionnaireActivity.saveExtractedResources(questionnaireResponse)
 
     verify(exactly = 1) {
       viewModel.saveExtractedResources(any(), intent, any(), questionnaireResponse)
     }
-    verify(exactly = 1) { viewModel.saveBundleResources(any(), any()) }
     verify { questionnaireActivity.finish() }
   }
 
@@ -205,19 +209,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     verify(exactly = 1) { questionnaireActivity.saveExtractedResources(any()) }
     every { questionnaireActivity.saveExtractedResources(any()) } just runs
-  }
-
-  private fun spyViewModel(): QuestionnaireViewModel {
-    val viewModel =
-      spyk(
-        ReflectionHelpers.getField<ViewModelLazy<QuestionnaireViewModel>>(
-            questionnaireActivity,
-            "viewModel\$delegate"
-          )
-          .value
-      )
-    ReflectionHelpers.setField(questionnaireActivity, "viewModel\$delegate", lazy { viewModel })
-    return viewModel
   }
 
   override fun getActivity(): Activity {
