@@ -24,8 +24,8 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.collectAsLazyPagingItems
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.anc.data.AncPaginatedDataSource
-import org.smartregister.fhircore.anc.data.model.AncItem
+import org.smartregister.fhircore.anc.data.AncPatientPaginatedDataSource
+import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.anc.form.config.AncFormConfig
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
 import org.smartregister.fhircore.anc.ui.anccare.register.components.AncRow
@@ -37,11 +37,11 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
-class AncRegisterFragment : ComposeRegisterFragment<Patient, AncItem>() {
+class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
 
-  override lateinit var paginatedDataSource: AncPaginatedDataSource
+  lateinit var patientPaginatedDataSource: AncPatientPaginatedDataSource
 
-  override lateinit var registerDataViewModel: BaseRegisterDataViewModel<Patient, AncItem>
+  override lateinit var registerDataViewModel: BaseRegisterDataViewModel<Patient, AncPatientItem>
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
@@ -50,7 +50,7 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncItem>() {
         requireActivity(),
         AncRegisterDataViewModel(
             application = requireActivity().application,
-            paginatedDataSource = paginatedDataSource,
+            patientPaginatedDataSource = patientPaginatedDataSource,
           )
           .createFactory()
       )[AncRegisterDataViewModel::class.java]
@@ -71,14 +71,14 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncItem>() {
       pagingItems = registerData.value!!.collectAsLazyPagingItems(),
       { ancItem ->
         AncRow(
-          ancItem = ancItem,
+          ancPatientItem = ancItem,
           clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
         )
       }
     )
   }
 
-  override fun onItemClicked(listenerIntent: ListenerIntent, data: AncItem) {
+  override fun onItemClicked(listenerIntent: ListenerIntent, data: AncPatientItem) {
     if (listenerIntent is AncRowClickListenerIntent) {
       when (listenerIntent) {
         OpenPatientProfile -> navigateToDetails(data.patientIdentifier)
@@ -94,9 +94,9 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncItem>() {
   }
 
   override fun performFilter(
-    registerFilterType: RegisterFilterType,
-    data: AncItem,
-    value: Any
+      registerFilterType: RegisterFilterType,
+      data: AncPatientItem,
+      value: Any
   ): Boolean {
     return when (registerFilterType) {
       RegisterFilterType.SEARCH_FILTER -> {

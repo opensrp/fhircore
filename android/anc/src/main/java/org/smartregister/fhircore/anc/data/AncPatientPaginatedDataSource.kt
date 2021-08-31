@@ -20,18 +20,18 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.anc.data.model.AncItem
+import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
 
-class AncPaginatedDataSource(
+class AncPatientPaginatedDataSource(
   val fhirEngine: FhirEngine,
-  domainMapper: DomainMapper<Patient, AncItem>
-) : PaginatedDataSource<Patient, AncItem>(AncRepository(fhirEngine, domainMapper)) {
+  domainMapper: DomainMapper<Patient, AncPatientItem>
+) : PaginatedDataSource<Patient, AncPatientItem>(AncPatientRepository(fhirEngine, domainMapper)) {
 
   private var query: String = ""
 
-  override suspend fun loadData(pageNumber: Int): List<AncItem> {
+  override suspend fun loadData(pageNumber: Int): List<AncPatientItem> {
     return registerRepository.loadData(
       pageNumber = pageNumber,
       query = query,

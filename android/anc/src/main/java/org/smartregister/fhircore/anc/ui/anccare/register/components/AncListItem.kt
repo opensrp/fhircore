@@ -33,7 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.smartregister.fhircore.anc.data.model.AncItem
+import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
 import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientItem
@@ -41,9 +41,9 @@ import org.smartregister.fhircore.engine.ui.theme.WarningColor
 
 @Composable
 fun AncRow(
-  ancItem: AncItem,
-  clickListener: (AncRowClickListenerIntent, AncItem) -> Unit,
-  modifier: Modifier = Modifier,
+    ancPatientItem: AncPatientItem,
+    clickListener: (AncRowClickListenerIntent, AncPatientItem) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -53,16 +53,16 @@ fun AncRow(
     Column(
       modifier =
         modifier
-          .clickable { clickListener(OpenPatientProfile, ancItem) }
+          .clickable { clickListener(OpenPatientProfile, ancPatientItem) }
           .padding(24.dp)
           .weight(0.65f)
     ) {
-      Text(text = ancItem.demographics, fontSize = 16.sp, modifier = modifier.wrapContentWidth())
+      Text(text = ancPatientItem.demographics, fontSize = 16.sp, modifier = modifier.wrapContentWidth())
       Spacer(modifier = modifier.height(8.dp))
       Row {
         Text(
           color = WarningColor,
-          text = ancItem.atRisk,
+          text = ancPatientItem.atRisk,
           fontSize = 12.sp,
           modifier = modifier.wrapContentWidth().padding(horizontal = 8.dp)
         )
@@ -73,9 +73,9 @@ fun AncRow(
 
 @Composable
 fun VaccineStatusItem(
-  patientItem: PatientItem,
-  clickListener: (AncRowClickListenerIntent, AncItem) -> Unit,
-  modifier: Modifier
+    patientItem: PatientItem,
+    clickListener: (AncRowClickListenerIntent, AncPatientItem) -> Unit,
+    modifier: Modifier
 ) {
   Column(
     modifier = modifier.padding(vertical = 16.dp, horizontal = 16.dp),
@@ -88,33 +88,33 @@ fun VaccineStatusItem(
 @Preview(showBackground = true)
 fun PatientRowDuePreview() {
   val ancItem =
-    AncItem(
+    AncPatientItem(
       demographics = "Donald Dump, M, 78",
     )
-  AncRow(ancItem = ancItem, { _, _ -> })
+  AncRow(ancPatientItem = ancItem, { _, _ -> })
 }
 
 @Composable
 @Preview(showBackground = true)
 fun PatientRowPartialPreview() {
   val ancItem =
-    AncItem(
+    AncPatientItem(
       demographics = "Donald Dump, M, 78",
       atRisk = "at risk",
     )
-  AncRow(ancItem = ancItem, { _, _ -> })
+  AncRow(ancPatientItem = ancItem, { _, _ -> })
 }
 
 @Composable
 @Preview(showBackground = true)
 fun PatientRowOverduePreview() {
-  val ancItem = AncItem(demographics = "Donald Dump, M, 78")
-  AncRow(ancItem = ancItem, { _, _ -> })
+  val ancItem = AncPatientItem(demographics = "Donald Dump, M, 78")
+  AncRow(ancPatientItem = ancItem, { _, _ -> })
 }
 
 @Composable
 @Preview(showBackground = true)
 fun PatientRowVaccinatedPreview() {
-  val ancItem = AncItem(demographics = "Donald Dump, M, 78")
-  AncRow(ancItem = ancItem, { _, _ -> })
+  val ancItem = AncPatientItem(demographics = "Donald Dump, M, 78")
+  AncRow(ancPatientItem = ancItem, { _, _ -> })
 }

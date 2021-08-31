@@ -22,17 +22,17 @@ import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.anc.data.model.AncItem
+import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-class AncRepository(
-  override val fhirEngine: FhirEngine,
-  override val domainMapper: DomainMapper<Patient, AncItem>,
-  private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
-) : RegisterRepository<Patient, AncItem> {
+class AncPatientRepository(
+    override val fhirEngine: FhirEngine,
+    override val domainMapper: DomainMapper<Patient, AncPatientItem>,
+    private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+) : RegisterRepository<Patient, AncPatientItem> {
 
   override val defaultPageSize: Int
     get() = 50
@@ -42,7 +42,7 @@ class AncRepository(
     pageNumber: Int,
     primaryFilterCallback: (Search) -> Unit,
     vararg secondaryFilterCallbacks: (String, Search) -> Unit
-  ): List<AncItem> {
+  ): List<AncPatientItem> {
     return withContext(dispatcherProvider.io()) {
       val patients =
         fhirEngine.search<Patient> {

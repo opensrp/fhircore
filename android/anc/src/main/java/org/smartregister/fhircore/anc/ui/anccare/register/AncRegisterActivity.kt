@@ -24,7 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.AncPaginatedDataSource
+import org.smartregister.fhircore.anc.data.AncPatientPaginatedDataSource
 import org.smartregister.fhircore.anc.form.config.AncFormConfig
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.buildQuestionnaireIntent
@@ -91,7 +91,7 @@ class AncRegisterActivity : BaseRegisterActivity() {
   override fun supportedFragments(): List<Fragment> {
     val registerFragment =
       AncRegisterFragment().apply {
-        paginatedDataSource = AncPaginatedDataSource(fhirEngine, ancItemMapper)
+        patientPaginatedDataSource = AncPatientPaginatedDataSource(fhirEngine, ancItemMapper)
       }
     return listOf(registerFragment)
   }

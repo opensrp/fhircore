@@ -19,7 +19,7 @@ package org.smartregister.fhircore.anc.data.model
 import androidx.compose.runtime.Stable
 
 @Stable
-data class AncItem(
+data class AncPatientItem(
   val patientIdentifier: String = "",
   val name: String = "",
   val gender: String = "",
