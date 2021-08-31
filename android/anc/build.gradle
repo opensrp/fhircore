@@ -22,15 +22,13 @@ if (rootProject.file("local.properties").exists()) {
 
 android {
     compileSdkVersion 30
-    dataBinding {
-        enabled true
-    }
+
     defaultConfig {
         applicationId "org.smartregister.fhircore.anc"
-        minSdkVersion sdk_versions.min_sdk
-        targetSdkVersion sdk_versions.target_sdk
+        minSdkVersion 21
+        targetSdkVersion 30
         versionCode 1
-        versionName "1.0"
+        versionName "0.0.1"
         multiDexEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
