@@ -29,10 +29,12 @@ import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.just
+import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.BooleanType
@@ -49,6 +51,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.RiskAssessment
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -86,15 +89,20 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireResponse = iParser.parseResource(qrJson) as QuestionnaireResponse
 
-    fhirEngine = spyk(EirApplication.getContext().fhirEngine)
+    fhirEngine = mockk()
+    coEvery { fhirEngine.load(Patient::class.java, any()) } returns TestUtils.TEST_PATIENT_1
 
     mockkObject(EirApplication)
     every { EirApplication.getContext().fhirEngine } returns fhirEngine
 
     val savedState = SavedStateHandle()
     savedState[QUESTIONNAIRE_PATH_KEY] = "sample_patient_registration.json"
-    questionnaireViewModel =
-      spyk(QuestionnaireViewModel(ApplicationProvider.getApplicationContext(), savedState))
+    questionnaireViewModel = spyk(QuestionnaireViewModel(EirApplication.getContext(), savedState))
+  }
+
+  @After
+  fun cleanup() {
+    unmockkObject(EirApplication)
   }
 
   @Test
