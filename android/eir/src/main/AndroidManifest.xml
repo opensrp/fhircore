@@ -34,6 +34,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.vaccine.RecordVaccineActivity" />
+        <activity android:name="org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity" />
         <activity
             android:name=".ui.patient.register.PatientRegisterActivity"
             android:theme="@style/AppTheme.NoActionBar"

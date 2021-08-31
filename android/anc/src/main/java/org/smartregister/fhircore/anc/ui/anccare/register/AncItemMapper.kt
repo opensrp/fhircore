@@ -19,21 +19,21 @@ package org.smartregister.fhircore.anc.ui.anccare.register
 import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.model.AncItem
+import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.extension.atRisk
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 
-object AncItemMapper : DomainMapper<Patient, AncItem> {
+object AncItemMapper : DomainMapper<Patient, AncPatientItem> {
   private const val RISK = "risk"
 
-  override fun mapToDomainModel(dto: Patient): AncItem {
+  override fun mapToDomainModel(dto: Patient): AncPatientItem {
     val name = dto.extractName()
     val gender = dto.extractGender(AncApplication.getContext()).first()
     val age = dto.extractAge()
-    return AncItem(
+    return AncPatientItem(
       patientIdentifier = dto.logicalId,
       name = name,
       gender = gender.toString(),
@@ -43,7 +43,7 @@ object AncItemMapper : DomainMapper<Patient, AncItem> {
     )
   }
 
-  override fun mapFromDomainModel(domainModel: AncItem): Patient {
+  override fun mapFromDomainModel(domainModel: AncPatientItem): Patient {
     throw UnsupportedOperationException()
   }
 }

@@ -50,9 +50,6 @@ class AncApplication : Application(), ConfigurableApplication {
     get() =
       mapOf(
         ResourceType.Patient to emptyMap(),
-        ResourceType.Encounter to emptyMap(),
-        ResourceType.Observation to emptyMap(),
-        ResourceType.Flag to emptyMap(),
         ResourceType.Questionnaire to emptyMap(),
         ResourceType.StructureMap to mapOf(),
         ResourceType.RelatedPerson to mapOf()
