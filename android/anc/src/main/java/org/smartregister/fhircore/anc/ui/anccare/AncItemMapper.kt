@@ -18,16 +18,16 @@ package org.smartregister.fhircore.anc.ui.anccare
 
 import android.content.Context
 import com.google.android.fhir.logicalId
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
-import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.AncItem
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
+import org.smartregister.fhircore.anc.AncApplication
+import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
+import org.smartregister.fhircore.engine.data.local.repository.patient.model.AncItem
 
 object AncItemMapper : DomainMapper<Patient, AncItem> {
   private val simpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.ENGLISH)

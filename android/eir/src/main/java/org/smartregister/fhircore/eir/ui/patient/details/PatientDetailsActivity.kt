@@ -65,7 +65,13 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
     if (item.itemId == R.id.patient_profile_edit) {
       startActivity(
         Intent(this, QuestionnaireActivity::class.java)
-          .putExtras(QuestionnaireActivity.getExtrasBundle(patientId, questionnaireFormConfig.registrationQuestionnaireTitle, questionnaireFormConfig.registrationQuestionnaireIdentifier))
+          .putExtras(
+            QuestionnaireActivity.getExtrasBundle(
+              patientId,
+              questionnaireFormConfig.registrationQuestionnaireTitle,
+              questionnaireFormConfig.registrationQuestionnaireIdentifier
+            )
+          )
       )
       return true
     }

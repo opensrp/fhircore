@@ -176,7 +176,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun `saveExtractedResources() should call saveBundleResources and pass intent extra resourceId`() {
     coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns
-            samplePatientRegisterQuestionnaire
+      samplePatientRegisterQuestionnaire
 
     val questionnaire = Questionnaire()
     questionnaire.extension.add(
@@ -214,7 +214,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testSaveParsedResourceShouldSaveAllResourceTypes() {
     coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns
-            samplePatientRegisterQuestionnaire
+      samplePatientRegisterQuestionnaire
 
     val patient = slot<Patient>()
     val observation = slot<Observation>()
@@ -255,7 +255,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testVerifyQuestionnaireSubjectType() {
     coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns
-            samplePatientRegisterQuestionnaire
+      samplePatientRegisterQuestionnaire
 
     val questionnaire = questionnaireViewModel.questionnaire
 

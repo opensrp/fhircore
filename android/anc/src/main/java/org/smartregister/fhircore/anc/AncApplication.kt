@@ -23,6 +23,7 @@ import com.google.android.fhir.FhirEngineBuilder
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.Sync
+import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -31,7 +32,6 @@ import org.smartregister.fhircore.engine.configuration.app.applicationConfigurat
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
 
 class AncApplication : Application(), ConfigurableApplication {
   override val applicationConfiguration: ApplicationConfiguration by lazy {
