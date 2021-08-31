@@ -24,8 +24,8 @@ import androidx.core.os.bundleOf
 import kotlinx.android.synthetic.main.activity_patient_details.patientDetailsToolbar
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.FormConfigUtil
 
 class PatientDetailsActivity : BaseMultiLanguageActivity() {
@@ -65,7 +65,13 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
     if (item.itemId == R.id.patient_profile_edit) {
       startActivity(
         Intent(this, QuestionnaireActivity::class.java)
-          .putExtras(QuestionnaireActivity.getExtrasBundle(patientId, questionnaireFormConfig))
+          .putExtras(
+            QuestionnaireActivity.getExtrasBundle(
+              patientId,
+              questionnaireFormConfig.registrationQuestionnaireTitle,
+              questionnaireFormConfig.registrationQuestionnaireIdentifier
+            )
+          )
       )
       return true
     }

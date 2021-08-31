@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.eir.ui.questionnaire
+package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.content.Context
 import android.content.Intent
@@ -28,10 +28,12 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
+import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
@@ -44,6 +46,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -52,7 +55,7 @@ import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.shadow.ShadowNpmPackageProvider
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 03-07-2021. */
@@ -82,15 +85,20 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireResponse = iParser.parseResource(qrJson) as QuestionnaireResponse
 
-    fhirEngine = spyk(EirApplication.getContext().fhirEngine)
+    fhirEngine = mockk()
+    coEvery { fhirEngine.load(Patient::class.java, any()) } returns TestUtils.TEST_PATIENT_1
 
     mockkObject(EirApplication)
     every { EirApplication.getContext().fhirEngine } returns fhirEngine
 
     val savedState = SavedStateHandle()
     savedState[QUESTIONNAIRE_PATH_KEY] = "sample_patient_registration.json"
-    questionnaireViewModel =
-      spyk(QuestionnaireViewModel(ApplicationProvider.getApplicationContext(), savedState))
+    questionnaireViewModel = spyk(QuestionnaireViewModel(EirApplication.getContext(), savedState))
+  }
+
+  @After
+  fun cleanup() {
+    unmockkObject(EirApplication)
   }
 
   @Test

@@ -38,11 +38,11 @@ import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireViewModel
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.data.local.repository.patient.PatientRepository
 import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientVaccineSummary
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
 import org.smartregister.fhircore.engine.util.DateUtils
 import org.smartregister.fhircore.engine.util.FormConfigUtil
 import org.smartregister.fhircore.engine.util.extension.createFactory

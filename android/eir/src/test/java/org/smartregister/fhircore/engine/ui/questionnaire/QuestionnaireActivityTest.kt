@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.eir.ui.questionnaire
+package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.app.Activity
 import android.content.Intent
@@ -49,7 +49,7 @@ import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
-import org.smartregister.fhircore.eir.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE_KEY
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE_KEY
 
 @Config(shadows = [EirApplicationShadow::class])
 class QuestionnaireActivityTest : ActivityRobolectricTest() {

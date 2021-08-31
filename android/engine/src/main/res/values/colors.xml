@@ -5,4 +5,5 @@
     <color name="drawer_menu_bg_color">#2C2C2C</color>
     <color name="white_slightly_opaque">#38ffffff</color>
     <color name="grey_drawable_color">#AEAEAE</color>
+    <color name="colorPrimary">#005084</color>
 </resources>

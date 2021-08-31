@@ -33,6 +33,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.eir.EirApplication
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.helper.TransformSupportServices
 
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
@@ -74,7 +75,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
         val structureMapId = structureMapUrl?.substringAfterLast("/")
         if (structureMapId != null) {
           structureMap =
-            EirApplication.getContext().fhirEngine.load(StructureMap::class.java, structureMapId)
+            fhirEngine.load(StructureMap::class.java, structureMapId)
         }
       }
     }

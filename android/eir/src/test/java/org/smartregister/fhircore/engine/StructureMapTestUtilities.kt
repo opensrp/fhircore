@@ -28,8 +28,9 @@ import org.hl7.fhir.utilities.npm.ToolsVersion
 import org.intellij.lang.annotations.Language
 import org.junit.Test
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.eir.robolectric.RobolectricTest
+import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.helper.TransformSupportServices
-import org.smartregister.fhircore.shadow.FhirApplicationShadow
 
 /**
  * Provides a playground for quickly testing and authoring questionnaire and the respective
@@ -37,7 +38,7 @@ import org.smartregister.fhircore.shadow.FhirApplicationShadow
  *
  * This should be removed at a later point once we have a more clear way of doing this
  */
-@Config(shadows = [FhirApplicationShadow::class])
+@Config(shadows = [EirApplicationShadow::class])
 class StructureMapTestUtilities : RobolectricTest() {
 
   @Test
