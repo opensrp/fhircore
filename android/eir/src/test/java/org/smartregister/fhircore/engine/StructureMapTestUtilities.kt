@@ -890,9 +890,11 @@ group ExtractRelatedPerson(source src : QuestionnaireResponse, target bundle : B
                 src -> relatedPersonName.family = evaluate(item, ${"$"}this.item.where(linkId = 'RP-family-name').answer.value) "rule_erp_2";
                 src -> relatedPersonName.given = evaluate(item, ${"$"}this.item.where(linkId = 'RP-first-name').answer.value) "rule_erp_3";
             } "rule_erp_1";
-            src -> evaluate(item, ${"$"}this.item.where(linkId = 'RP-relationship').answer.value) as relationshipString then {
-                src -> relatedPerson.relationship = cc("http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype", relationshipString) "rule_erp_4a";
-            } "rule_erp_4";
+            item.item as patientRelationship where(linkId = 'RP-relationship' and answer.count() > 0 and answer[0].empty().not()) then {
+                  src -> evaluate(patientRelationship, ${"$"}this.answer.value) as relationshipString then {
+                      src -> relatedPerson.relationship = cc("http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype", relationshipString) "rule_erp_4a";
+                  } "rule_erp_4";
+            } "rule_erp_4__3";
             src -> relatedPerson.telecom = create('ContactPoint') as relatedPersonContact then {
                 src -> relatedPersonContact.system = "phone" "rule_erp_5";
                 src -> relatedPersonContact.value = evaluate(item, ${"$"}this.item.where(linkId = 'RP-contact-1').answer.value) "rule_erp_6";
