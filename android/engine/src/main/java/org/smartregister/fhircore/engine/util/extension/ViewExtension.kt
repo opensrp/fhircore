@@ -11,8 +11,8 @@ fun View.show() {
   this.visibility = View.VISIBLE
 }
 
-fun View.hide() {
-  this.visibility = View.GONE
+fun View.hide(gone: Boolean = true) {
+  if(gone) this.visibility = View.GONE else  this.visibility = View.INVISIBLE
 }
 
 fun View.toggleVisibility(show: Boolean) =

@@ -21,9 +21,6 @@ class PatientRepository(
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : RegisterRepository<Pair<Patient, List<Immunization>>, PatientItem> {
 
-  override val defaultPageSize: Int
-    get() = 50
-
   override suspend fun loadData(
     query: String,
     pageNumber: Int,

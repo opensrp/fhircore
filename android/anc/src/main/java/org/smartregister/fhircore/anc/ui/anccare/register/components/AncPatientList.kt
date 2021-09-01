@@ -1,4 +1,4 @@
-package org.smartregister.fhircore.engine.ui.components
+package org.smartregister.fhircore.anc.ui.anccare.register.components
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
@@ -7,19 +7,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemsIndexed
+import androidx.paging.compose.items
+import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
+import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
+import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 
 @Composable
-fun <O : Any> PaginatedList(
-  pagingItems: LazyPagingItems<O>,
-  itemRow: @Composable (O) -> Unit,
-  modifier: Modifier = Modifier
+fun AncPatientList(
+  pagingItems: LazyPagingItems<AncPatientItem>,
+  modifier: Modifier = Modifier,
+  clickListener: (AncRowClickListenerIntent, AncPatientItem) -> Unit
 ) {
 
   LazyColumn {
-    itemsIndexed(items = pagingItems, key = { index, _ -> index }) { _, item ->
-      itemRow(item!!)
+    items(pagingItems, key = { it.patientIdentifier }) {
+      AncRow(it!!, clickListener, modifier = modifier)
       Divider(color = DividerColor, thickness = 1.dp)
     }
 

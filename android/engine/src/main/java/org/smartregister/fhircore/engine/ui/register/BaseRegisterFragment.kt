@@ -54,6 +54,10 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
         }
       }
     )
+
+    registerViewModel.currentPage.observe(viewLifecycleOwner, {
+      registerDataViewModel.loadPageData(it)
+    })
   }
 
   /**

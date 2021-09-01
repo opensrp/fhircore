@@ -9,8 +9,12 @@ import com.google.android.fhir.search.Search
  * search API
  */
 interface RegisterRepository<I : Any, O> {
+
   val domainMapper: DomainMapper<I, O>
+
   val defaultPageSize: Int
+    get() = PaginationUtil.DEFAULT_PAGE_SIZE
+
   val fhirEngine: FhirEngine
 
   /**

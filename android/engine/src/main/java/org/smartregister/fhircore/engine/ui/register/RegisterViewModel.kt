@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import com.google.android.fhir.search.count
 import java.util.Locale
 import kotlinx.coroutines.launch
@@ -36,6 +37,10 @@ class RegisterViewModel(
   private val _filterValue = MutableLiveData<Pair<RegisterFilterType, Any>>()
   val filterValue
     get() = _filterValue
+
+  private val _currentPage = MutableLiveData(0)
+  val currentPage
+    get() = _currentPage
 
   private val applicationConfiguration =
     (getApplication<Application>() as ConfigurableApplication).applicationConfiguration
@@ -76,17 +81,29 @@ class RegisterViewModel(
         sideMenuOption.entityTypePatient &&
         sideMenuOption.showCount
     ) {
-      return withContext(dispatcher.io()) {
-          val count = fhirEngine.count<Patient> { sideMenuOption.searchFilterLambda }.toInt()
-          Timber.d("Loaded %s clients from db", count)
-          count
-        }
-        .toLong()
+      return try {
+        withContext(dispatcher.io()) {
+            val count = fhirEngine.count<Patient> { sideMenuOption.searchFilterLambda }.toInt()
+            Timber.d("Loaded %s clients from db", count)
+            count
+          }
+          .toLong()
+      } catch (resourceNotFoundException: ResourceNotFoundException) {
+        -1
+      }
     }
     return -1
   }
 
   fun updateFilterValue(registerFilterType: RegisterFilterType, newValue: Any) {
     _filterValue.value = Pair(registerFilterType, newValue)
+  }
+
+  fun backToPreviousPage() {
+    if (_currentPage.value!! > 0) _currentPage.value = _currentPage.value?.minus(1)
+  }
+
+  fun nextPage() {
+    _currentPage.value = _currentPage.value?.plus(1)
   }
 }

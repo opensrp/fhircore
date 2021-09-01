@@ -34,9 +34,6 @@ class AncPatientRepository(
     private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : RegisterRepository<Patient, AncPatientItem> {
 
-  override val defaultPageSize: Int
-    get() = 50
-
   override suspend fun loadData(
     query: String,
     pageNumber: Int,
