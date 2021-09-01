@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.eir.ui.questionnaire
+package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.content.Intent
 import android.os.Bundle
@@ -32,9 +32,7 @@ import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.eir.EirApplication
-import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 
 /**
@@ -75,7 +73,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener 
           bundleOf(
             BUNDLE_KEY_QUESTIONNAIRE to parser.encodeResourceToString(getQuestionnaire()),
             BUNDLE_KEY_QUESTIONNAIRE_RESPONSE to
-              parser.encodeResourceToString(getQuestionnaireResponse())
+                    parser.encodeResourceToString(getQuestionnaireResponse())
           )
       }
         ?: kotlin.run {
@@ -125,7 +123,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener 
 
     intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)?.let {
       val patient = runBlocking {
-        EirApplication.getContext().fhirEngine.load(Patient::class.java, it)
+        viewModel.fhirEngine.load(Patient::class.java, it)
       }
 
       patient.let {
@@ -148,11 +146,12 @@ class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener 
 
     fun getExtrasBundle(
       clientIdentifier: String,
-      questionnaireFormConfig: QuestionnaireFormConfig
+      title: String,
+      id: String
     ) =
       bundleOf(
-        Pair(QUESTIONNAIRE_TITLE_KEY, questionnaireFormConfig.registrationQuestionnaireTitle),
-        Pair(QUESTIONNAIRE_PATH_KEY, questionnaireFormConfig.registrationQuestionnaireIdentifier),
+        Pair(QUESTIONNAIRE_TITLE_KEY, title),
+        Pair(QUESTIONNAIRE_PATH_KEY, id),
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier)
       )
   }

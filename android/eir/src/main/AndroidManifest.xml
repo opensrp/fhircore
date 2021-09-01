@@ -43,8 +43,6 @@
             android:name=".ui.questionnaire.QuestionnaireActivity"
             android:parentActivityName=".ui.patient.register.PatientRegisterActivity" />
         <activity android:name=".activity.AdverseEventActivity"/>
-        
-        <activity android:name=".activity.AdverseEventActivity"/>
 
         <service android:name=".EirAuthAndroidService">
             <intent-filter>
