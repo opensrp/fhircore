@@ -17,18 +17,19 @@
 package org.smartregister.fhircore.anc.ui.anccare.register
 
 import android.app.Application
+import com.google.android.fhir.FhirEngine
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.AncPatientPaginatedDataSource
 import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterDataViewModel
 
 class AncRegisterDataViewModel(
   application: Application,
-  patientPaginatedDataSource: AncPatientPaginatedDataSource,
-  pageSize: Int = 50
+  val fhirEngine: FhirEngine,
 ) :
-  BaseRegisterDataViewModel<Patient, AncPatientItem>(
-    application = application,
-    paginatedDataSource = patientPaginatedDataSource,
-    pageSize = pageSize
-  )
+  BaseRegisterDataViewModel<Patient, AncPatientItem>(application = application) {
+  override fun paginatedDataSourceInstance(): PaginatedDataSource<Patient, AncPatientItem> {
+    return AncPatientPaginatedDataSource(fhirEngine, AncItemMapper)
+  }
+}

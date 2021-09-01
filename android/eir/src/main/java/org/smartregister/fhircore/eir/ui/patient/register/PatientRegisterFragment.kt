@@ -20,19 +20,21 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.collectAsLazyPagingItems
+import kotlinx.coroutines.flow.emptyFlow
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
-import org.smartregister.fhircore.eir.ui.patient.register.components.PatientRow
+import org.smartregister.fhircore.eir.ui.patient.register.components.PatientRegisterList
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
 import org.smartregister.fhircore.engine.data.local.repository.patient.PatientPaginatedDataSource
 import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientItem
 import org.smartregister.fhircore.engine.data.local.repository.patient.model.VaccineStatus
-import org.smartregister.fhircore.engine.ui.components.PaginatedList
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
@@ -54,7 +56,7 @@ class PatientRegisterFragment :
         requireActivity(),
         PatientRegisterDataViewModel(
             application = requireActivity().application,
-            paginatedDataSource = paginatedDataSource,
+            (requireActivity().application as EirApplication).fhirEngine
           )
           .createFactory()
       )[PatientRegisterDataViewModel::class.java]
@@ -70,15 +72,11 @@ class PatientRegisterFragment :
 
   @Composable
   override fun ConstructRegisterList() {
-    val registerData = registerDataViewModel.registerData.observeAsState()
-    PaginatedList(
-      pagingItems = registerData.value!!.collectAsLazyPagingItems(),
-      { patientItem ->
-        PatientRow(
-          patientItem = patientItem,
-          clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
-        )
-      }
+    val registerData = registerDataViewModel.registerData.collectAsState(emptyFlow())
+    PatientRegisterList(
+      pagingItems = registerData.value.collectAsLazyPagingItems(),
+      modifier = Modifier,
+      clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
     )
   }
 

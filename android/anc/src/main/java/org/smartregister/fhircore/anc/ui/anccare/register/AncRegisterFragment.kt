@@ -21,15 +21,16 @@ import android.os.Bundle
 import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.collectAsLazyPagingItems
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.AncPatientPaginatedDataSource
 import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.anc.form.config.AncFormConfig
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
-import org.smartregister.fhircore.anc.ui.anccare.register.components.AncRow
-import org.smartregister.fhircore.engine.ui.components.PaginatedList
+import org.smartregister.fhircore.anc.ui.anccare.register.components.AncPatientList
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
@@ -50,7 +51,7 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
         requireActivity(),
         AncRegisterDataViewModel(
             application = requireActivity().application,
-            patientPaginatedDataSource = paginatedDataSource,
+            (requireActivity().application as AncApplication).fhirEngine,
           )
           .createFactory()
       )[AncRegisterDataViewModel::class.java]
@@ -67,14 +68,10 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
   @Composable
   override fun ConstructRegisterList() {
     val registerData = registerDataViewModel.registerData.observeAsState()
-    PaginatedList(
+    AncPatientList(
       pagingItems = registerData.value!!.collectAsLazyPagingItems(),
-      { ancItem ->
-        AncRow(
-          ancPatientItem = ancItem,
-          clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
-        )
-      }
+      modifier = Modifier,
+      clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
     )
   }
 
@@ -94,9 +91,9 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
   }
 
   override fun performFilter(
-      registerFilterType: RegisterFilterType,
-      data: AncPatientItem,
-      value: Any
+    registerFilterType: RegisterFilterType,
+    data: AncPatientItem,
+    value: Any
   ): Boolean {
     return when (registerFilterType) {
       RegisterFilterType.SEARCH_FILTER -> {
