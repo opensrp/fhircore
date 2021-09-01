@@ -49,7 +49,6 @@ import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_BARCODE_KEY
 
 @Config(shadows = [EirApplicationShadow::class])
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
@@ -92,20 +91,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @Test
   fun testActivityShouldNotNull() {
     Assert.assertNotNull(questionnaireActivity)
-  }
-
-  @Test
-  fun testActivityShouldSetPreAssignedId() {
-
-    val response =
-      ReflectionHelpers.callInstanceMethod<QuestionnaireResponse>(
-        questionnaireActivity,
-        "getQuestionnaireResponse"
-      )
-    // Assert.assertEquals("test-id", response.find("patient-barcode")?.value.toString())
-
-    val barcode = QuestionnaireUtils.valueStringWithLinkId(response, QUESTIONNAIRE_ARG_BARCODE_KEY)
-    Assert.assertEquals(barcode, response.find("patient-barcode")?.value.toString())
   }
 
   @Test

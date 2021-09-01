@@ -83,6 +83,7 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
 
         return structureMap
     }
+
     fun saveExtractedResources(
         context: Context,
         intent: Intent,
