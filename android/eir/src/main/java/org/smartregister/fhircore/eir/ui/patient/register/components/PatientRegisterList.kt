@@ -9,7 +9,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.items
 import org.smartregister.fhircore.eir.ui.patient.register.PatientRowClickListenerIntent
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientItem
+import org.smartregister.fhircore.eir.data.model.PatientItem
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.engine.ui.theme.DividerColor

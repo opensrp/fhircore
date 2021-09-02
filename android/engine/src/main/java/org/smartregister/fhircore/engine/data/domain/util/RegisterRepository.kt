@@ -1,7 +1,6 @@
 package org.smartregister.fhircore.engine.data.domain.util
 
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Search
 
 /**
  * Implement [RegisterRepository] to query for FHIR resources of type [I]. The result should then be
@@ -27,7 +26,6 @@ interface RegisterRepository<I : Any, O> {
   suspend fun loadData(
     query: String = "",
     pageNumber: Int,
-    primaryFilterCallback: (Search) -> Unit,
-    vararg secondaryFilterCallbacks: (String, Search) -> Unit
   ): List<O>
+
 }

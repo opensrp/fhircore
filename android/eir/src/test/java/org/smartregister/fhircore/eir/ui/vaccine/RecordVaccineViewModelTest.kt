@@ -35,8 +35,8 @@ import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
-import org.smartregister.fhircore.engine.data.local.repository.patient.PatientRepository
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientVaccineSummary
+import org.smartregister.fhircore.eir.data.PatientRepository
+import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
 
 @ExperimentalCoroutinesApi
 @Config(shadows = [EirApplicationShadow::class])

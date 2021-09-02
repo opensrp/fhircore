@@ -28,15 +28,15 @@ import kotlinx.coroutines.flow.emptyFlow
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.EirApplication
+import org.smartregister.fhircore.eir.data.PatientRepository
+import org.smartregister.fhircore.eir.data.model.PatientItem
+import org.smartregister.fhircore.eir.data.model.VaccineStatus
 import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.eir.ui.patient.register.components.PatientRegisterList
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
-import org.smartregister.fhircore.engine.data.local.repository.patient.PatientPaginatedDataSource
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientItem
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.VaccineStatus
-import org.smartregister.fhircore.engine.ui.register.BaseRegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
+import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
@@ -44,22 +44,30 @@ import org.smartregister.fhircore.engine.util.extension.createFactory
 class PatientRegisterFragment :
   ComposeRegisterFragment<Pair<Patient, List<Immunization>>, PatientItem>() {
 
-  override lateinit var paginatedDataSource: PatientPaginatedDataSource
-
   override lateinit var registerDataViewModel:
-    BaseRegisterDataViewModel<Pair<Patient, List<Immunization>>, PatientItem>
+    RegisterDataViewModel<Pair<Patient, List<Immunization>>, PatientItem>
 
+  private lateinit var patientRepository: PatientRepository
+
+  @Suppress("UNCHECKED_CAST")
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
+
+    patientRepository =
+      PatientRepository(
+        (requireActivity().application as EirApplication).fhirEngine,
+        PatientItemMapper
+      )
     registerDataViewModel =
       ViewModelProvider(
         requireActivity(),
-        PatientRegisterDataViewModel(
+        RegisterDataViewModel(
             application = requireActivity().application,
-            (requireActivity().application as EirApplication).fhirEngine
+            registerRepository = patientRepository
           )
           .createFactory()
-      )[PatientRegisterDataViewModel::class.java]
+      )[RegisterDataViewModel::class.java] as
+        RegisterDataViewModel<Pair<Patient, List<Immunization>>, PatientItem>
   }
 
   override fun navigateToDetails(uniqueIdentifier: String) {

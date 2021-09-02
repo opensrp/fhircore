@@ -57,8 +57,8 @@ import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig.Compan
 import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig.Companion.COVAX_DETAIL_VIEW_CONFIG_ID
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
-import org.smartregister.fhircore.engine.data.local.repository.patient.PatientRepository
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientVaccineSummary
+import org.smartregister.fhircore.eir.data.PatientRepository
+import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
 import org.smartregister.fhircore.engine.util.DateUtils
 
 @Config(shadows = [EirApplicationShadow::class])

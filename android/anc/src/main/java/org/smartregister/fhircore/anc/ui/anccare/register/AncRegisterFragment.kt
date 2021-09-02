@@ -27,35 +27,42 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.AncPatientPaginatedDataSource
+import org.smartregister.fhircore.anc.data.AncPatientRepository
 import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.anc.form.config.AncFormConfig
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
 import org.smartregister.fhircore.anc.ui.anccare.register.components.AncPatientList
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.register.BaseRegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
+import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
 
-  override lateinit var paginatedDataSource: AncPatientPaginatedDataSource
+  override lateinit var registerDataViewModel: RegisterDataViewModel<Patient, AncPatientItem>
 
-  override lateinit var registerDataViewModel: BaseRegisterDataViewModel<Patient, AncPatientItem>
+  private lateinit var ancPatientRepository: AncPatientRepository
 
+  @Suppress("UNCHECKED_CAST")
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
+    ancPatientRepository =
+      AncPatientRepository(
+        (requireActivity().application as AncApplication).fhirEngine,
+        AncItemMapper
+      )
     registerDataViewModel =
       ViewModelProvider(
         requireActivity(),
-        AncRegisterDataViewModel(
+        RegisterDataViewModel(
             application = requireActivity().application,
-            (requireActivity().application as AncApplication).fhirEngine,
+            registerRepository = ancPatientRepository
           )
           .createFactory()
-      )[AncRegisterDataViewModel::class.java]
+      )[RegisterDataViewModel::class.java] as
+        RegisterDataViewModel<Patient, AncPatientItem>
   }
 
   override fun navigateToDetails(uniqueIdentifier: String) {

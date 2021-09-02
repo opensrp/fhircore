@@ -9,11 +9,12 @@ import androidx.paging.PagingState
  * Transfer Object (DTO) like a FHIR Patient Resource. [O] represents the output type of
  * [RegisterRepository] data. [I] is transformed into [O] using a [DomainMapper]
  */
-abstract class PaginatedDataSource<I : Any, O : Any>(
-  protected val registerRepository: RegisterRepository<I, O>
+class PaginatedDataSource<I : Any, O : Any>(
+  private val registerRepository: RegisterRepository<I, O>
 ) : PagingSource<Int, O>() {
 
   var currentPage: Int = 0
+  var query: String = ""
 
   /**
    * Load data for the [currentPage]. nextKey and prevKey for [params] are both set to null to
@@ -31,14 +32,15 @@ abstract class PaginatedDataSource<I : Any, O : Any>(
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, O> {
     return try {
       val pageNumber = params.key ?: currentPage
-      LoadResult.Page(data = loadData(pageNumber), prevKey = null, nextKey = null)
+      LoadResult.Page(
+        data = registerRepository.loadData(query = query, pageNumber = pageNumber),
+        prevKey = null,
+        nextKey = null
+      )
     } catch (exception: Exception) {
       LoadResult.Error(exception)
     }
   }
-
-  /** Provide data of type [O] to the [PagingSource] */
-  abstract suspend fun loadData(pageNumber: Int): List<O>
 
   override fun getRefreshKey(state: PagingState<Int, O>): Int? {
     return state.anchorPosition

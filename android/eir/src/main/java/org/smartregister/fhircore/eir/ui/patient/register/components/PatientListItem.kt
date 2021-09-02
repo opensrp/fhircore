@@ -47,9 +47,9 @@ import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.ui.patient.register.OpenPatientProfile
 import org.smartregister.fhircore.eir.ui.patient.register.PatientRowClickListenerIntent
 import org.smartregister.fhircore.eir.ui.patient.register.RecordPatientVaccine
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientItem
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientVaccineStatus
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.VaccineStatus
+import org.smartregister.fhircore.eir.data.model.PatientItem
+import org.smartregister.fhircore.eir.data.model.PatientVaccineStatus
+import org.smartregister.fhircore.eir.data.model.VaccineStatus
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
