@@ -34,10 +34,7 @@ interface RegisterRepository<I : Any, O> {
 
   /**
    * Method to read data from the local database. This method will return paginated data for the run
-   * [query]. It accepts two callbacks [primaryFilterCallback] and [secondaryFilterCallbacks].
-   * [primaryFilterCallback] refers to the main filter applied to the query as expected by the
-   * [FhirEngine] API e.g. filtering out only active clients. [secondaryFilterCallbacks] are
-   * additional filters that are applied to the query to further filter the data
+   * [query]
    */
   suspend fun loadData(
     query: String = "",

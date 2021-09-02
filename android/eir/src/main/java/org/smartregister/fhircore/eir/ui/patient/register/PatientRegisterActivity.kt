@@ -39,8 +39,6 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   private lateinit var questionnaireFormConfig: QuestionnaireFormConfig
 
-  private val patientItemMapper = PatientItemMapper
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     configureViews(registerViewConfigurationOf().apply { appTitle = getString(R.string.covax_app) })
