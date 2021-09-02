@@ -2,7 +2,6 @@ package org.smartregister.fhircore.engine.ui.register
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -15,18 +14,16 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
+import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-abstract class BaseRegisterDataViewModel<I : Any, O : Any>(
+class RegisterDataViewModel<I : Any, O : Any>(
   application: Application,
-  private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+  val registerRepository: RegisterRepository<I, O>,
+  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : AndroidViewModel(application) {
-
-  val _totalRecordsCount: MutableLiveData<Long> = MutableLiveData()
-  val totalCount
-    get() = _totalRecordsCount
 
   private val originalData: MutableStateFlow<Flow<PagingData<O>>> =
     MutableStateFlow(getPagingData(0))
@@ -74,5 +71,7 @@ abstract class BaseRegisterDataViewModel<I : Any, O : Any>(
    * Extend function so as to ensure that the pagingSourceFactory passed to Pager always returns a
    * new instance of [PaginatedDataSource]
    */
-  abstract fun paginatedDataSourceInstance(): PaginatedDataSource<I, O>
+  private fun paginatedDataSourceInstance(): PaginatedDataSource<I, O> {
+    return PaginatedDataSource(registerRepository)
+  }
 }

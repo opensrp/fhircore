@@ -30,13 +30,11 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientItem
 import org.smartregister.fhircore.engine.ui.theme.WarningColor
 
 @Composable

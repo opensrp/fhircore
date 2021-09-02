@@ -30,9 +30,9 @@ import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientItem
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientVaccineStatus
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.VaccineStatus
+import org.smartregister.fhircore.eir.data.model.PatientItem
+import org.smartregister.fhircore.eir.data.model.PatientVaccineStatus
+import org.smartregister.fhircore.eir.data.model.VaccineStatus
 
 object PatientItemMapper : DomainMapper<Pair<Patient, List<Immunization>>, PatientItem> {
   private val simpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.ENGLISH)

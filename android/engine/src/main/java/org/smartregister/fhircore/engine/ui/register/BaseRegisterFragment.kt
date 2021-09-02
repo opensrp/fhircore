@@ -7,15 +7,12 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 
 abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
 
-  abstract val paginatedDataSource: PaginatedDataSource<I, O>
-
-  abstract val registerDataViewModel: BaseRegisterDataViewModel<I, O>
+  abstract val registerDataViewModel: RegisterDataViewModel<I, O>
 
   protected val registerViewModel by activityViewModels<RegisterViewModel>()
 
