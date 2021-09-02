@@ -22,6 +22,8 @@ import java.util.Date
 import java.util.Locale
 import org.hl7.fhir.r4.model.DateTimeType
 import org.joda.time.DateTime
+import org.joda.time.LocalDate
+import org.joda.time.Years
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 
@@ -42,4 +44,10 @@ object DateUtils {
   }
 
   fun Date.makeItReadable(): String = simpleDateFormat.format(this)
+
+  fun getAgeFromDate(dateOfBirth: String): Int {
+    val date: DateTime = DateTime.parse(dateOfBirth)
+    val age: Years = Years.yearsBetween(date.toLocalDate(), LocalDate.now())
+    return age.years
+  }
 }
