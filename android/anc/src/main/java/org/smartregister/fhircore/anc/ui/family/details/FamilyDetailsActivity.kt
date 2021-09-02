@@ -18,20 +18,18 @@ package org.smartregister.fhircore.anc.ui.family.details
 
 import android.os.Bundle
 import android.widget.TextView
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.data.family.FamilyMemberRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.family.details.adapter.FamilyEncounterAdapter
 import org.smartregister.fhircore.anc.ui.family.details.adapter.FamilyMemberAdapter
-import org.smartregister.fhircore.anc.ui.family.details.viewmodel.FamilyDetailsViewModel
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
@@ -40,7 +38,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
   private lateinit var familyMemberAdapter: FamilyMemberAdapter
   private lateinit var familyEncounterAdapter: FamilyEncounterAdapter
 
-  lateinit var familyDetailsViewModel: FamilyDetailsViewModel
+  lateinit var familyMemberRepository: FamilyMemberRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -51,11 +49,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
     fhirEngine = (AncApplication.getContext() as ConfigurableApplication).fhirEngine
 
-    familyDetailsViewModel =
-      ViewModelProvider(
-        this,
-        FamilyDetailsViewModel(fhirEngine = fhirEngine, familyId = familyId).createFactory()
-      )[FamilyDetailsViewModel::class.java]
+    familyMemberRepository = FamilyMemberRepository(familyId, fhirEngine)
 
     familyMemberAdapter =
       FamilyMemberAdapter(this::onFamilyMemberItemClicked, this::onAddNewMemberButtonClicked)
@@ -63,19 +57,13 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
     familyEncounterAdapter = FamilyEncounterAdapter(this::onFamilyEncounterItemClicked)
     findViewById<RecyclerView>(R.id.encounterList).adapter = familyEncounterAdapter
-
-    familyDetailsViewModel.familyDemographics.observe(this, this::handlePatientDemographics)
-
-    familyDetailsViewModel.familyMembers.observe(this, this::handleFamilyMembers)
-
-    familyDetailsViewModel.familyEncounters.observe(this, this::handleFamilyEncounters)
   }
 
   override fun onResume() {
     super.onResume()
-    familyDetailsViewModel.fetchDemographics()
-    familyDetailsViewModel.fetchFamilyMembers()
-    familyDetailsViewModel.fetchEncounters()
+    familyMemberRepository.fetchDemographics().observe(this, this::handlePatientDemographics)
+    familyMemberRepository.fetchFamilyMembers().observe(this, this::handleFamilyMembers)
+    familyMemberRepository.fetchEncounters().observe(this, this::handleFamilyEncounters)
   }
 
   private fun handlePatientDemographics(family: Patient) {
