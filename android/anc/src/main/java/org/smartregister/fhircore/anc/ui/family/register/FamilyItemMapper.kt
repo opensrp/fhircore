@@ -20,13 +20,10 @@ import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.codesystems.RequestStatus
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
-import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.ListenerIntent
-import org.smartregister.fhircore.engine.util.extension.atRisk
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
@@ -52,8 +49,10 @@ object FamilyItemMapper : DomainMapper<Family, FamilyItem> {
       address = head.extractAddress(),
       isPregnant = head.isPregnant(),
       members = members.map { toFamilyMemberItem(it) },
-      servicesDue = servicesDue.filter { it.status.equals(RequestStatus.ACTIVE) && it.period.hasStart() }.size,
-      servicesOverdue = servicesDue.filter { it.status.equals(RequestStatus.ACTIVE) && it.period.hasEnd() }.size
+      servicesDue =
+        servicesDue.filter { it.status.equals(RequestStatus.ACTIVE) && it.period.hasStart() }.size,
+      servicesOverdue =
+        servicesDue.filter { it.status.equals(RequestStatus.ACTIVE) && it.period.hasEnd() }.size
     )
   }
 

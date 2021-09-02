@@ -29,9 +29,9 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class AncPatientRepository(
-    override val fhirEngine: FhirEngine,
-    override val domainMapper: DomainMapper<Patient, AncPatientItem>,
-    private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+  override val fhirEngine: FhirEngine,
+  override val domainMapper: DomainMapper<Patient, AncPatientItem>,
+  private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : RegisterRepository<Patient, AncPatientItem> {
 
   override val defaultPageSize: Int

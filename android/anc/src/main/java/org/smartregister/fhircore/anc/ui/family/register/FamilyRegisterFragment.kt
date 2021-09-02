@@ -24,9 +24,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.get
 import androidx.paging.compose.collectAsLazyPagingItems
-import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.family.FamilyPaginatedDataSource
-import org.smartregister.fhircore.anc.data.family.FamilyPaginatedRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.ui.family.FamilyFormConfig
 import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
@@ -48,13 +46,14 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
     super.onViewCreated(view, savedInstanceState)
     registerDataViewModel =
       ViewModelProvider(
-        requireActivity(),
-        BaseRegisterDataViewModel(
-            application = requireActivity().application,
-            paginatedDataSource = paginatedDataSource,
-          )
-          .createFactory()
-      ).get()
+          requireActivity(),
+          BaseRegisterDataViewModel(
+              application = requireActivity().application,
+              paginatedDataSource = paginatedDataSource,
+            )
+            .createFactory()
+        )
+        .get()
   }
 
   override fun navigateToDetails(uniqueIdentifier: String) {
@@ -80,17 +79,17 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
   }
 
   override fun onItemClicked(listenerIntent: ListenerIntent, data: FamilyItem) {
-    //todo we may want to provide defaults as well so that we do not have to implement it
+    // todo we may want to provide defaults as well so that we do not have to implement it
     if (listenerIntent is OpenFamilyProfile) {
       navigateToDetails(data.id)
     }
   }
 
-  //todo maybe we need to do a db call
+  // todo maybe we need to do a db call
   override fun performFilter(
-      registerFilterType: RegisterFilterType,
-      data: FamilyItem,
-      value: Any
+    registerFilterType: RegisterFilterType,
+    data: FamilyItem,
+    value: Any
   ): Boolean {
     return when (registerFilterType) {
       RegisterFilterType.SEARCH_FILTER -> {

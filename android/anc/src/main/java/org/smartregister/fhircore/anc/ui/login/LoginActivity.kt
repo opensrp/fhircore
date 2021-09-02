@@ -20,7 +20,6 @@ import android.content.Intent
 import android.os.Bundle
 import org.smartregister.fhircore.anc.BuildConfig
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity

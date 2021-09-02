@@ -94,9 +94,9 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
   }
 
   override fun performFilter(
-      registerFilterType: RegisterFilterType,
-      data: AncPatientItem,
-      value: Any
+    registerFilterType: RegisterFilterType,
+    data: AncPatientItem,
+    value: Any
   ): Boolean {
     return when (registerFilterType) {
       RegisterFilterType.SEARCH_FILTER -> {

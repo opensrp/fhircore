@@ -39,9 +39,9 @@ import org.smartregister.fhircore.engine.util.ListenerIntent
 
 @Composable
 fun FamilyRow(
-    familyItem: FamilyItem,
-    clickListener: (ListenerIntent, FamilyItem) -> Unit,
-    modifier: Modifier = Modifier,
+  familyItem: FamilyItem,
+  clickListener: (ListenerIntent, FamilyItem) -> Unit,
+  modifier: Modifier = Modifier,
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -55,7 +55,11 @@ fun FamilyRow(
           .padding(24.dp)
           .weight(0.65f)
     ) {
-      Text(text = familyItem.extractDemographics(), fontSize = 16.sp, modifier = modifier.wrapContentWidth())
+      Text(
+        text = familyItem.extractDemographics(),
+        fontSize = 16.sp,
+        modifier = modifier.wrapContentWidth()
+      )
       Spacer(modifier = modifier.height(8.dp))
       Row {
         Text(

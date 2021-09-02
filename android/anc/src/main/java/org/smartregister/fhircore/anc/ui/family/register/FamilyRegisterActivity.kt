@@ -22,10 +22,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyPaginatedDataSource
-import org.smartregister.fhircore.anc.data.family.FamilyPaginatedRepository
 import org.smartregister.fhircore.anc.ui.family.FamilyFormConfig
 import org.smartregister.fhircore.anc.ui.family.FamilyFormConfig.Companion.FAMILY_DETAIL_VIEW_CONFIG_ID
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
@@ -88,7 +86,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
   override fun supportedFragments(): List<Fragment> {
     // todo need it to be somewhere to load first
     familyFormConfig =
-        FormConfigUtil.loadConfig(FAMILY_DETAIL_VIEW_CONFIG_ID, this@FamilyRegisterActivity)
+      FormConfigUtil.loadConfig(FAMILY_DETAIL_VIEW_CONFIG_ID, this@FamilyRegisterActivity)
 
     familyPaginatedDataSource =
       FamilyPaginatedDataSource(
