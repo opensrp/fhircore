@@ -22,8 +22,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.family.FamilyPaginatedDataSource
 import org.smartregister.fhircore.anc.ui.family.FamilyFormConfig
 import org.smartregister.fhircore.anc.ui.family.FamilyFormConfig.Companion.FAMILY_DETAIL_VIEW_CONFIG_ID
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
@@ -39,14 +39,13 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 
   private lateinit var familyFormConfig: FamilyFormConfig
-  private lateinit var familyPaginatedDataSource: FamilyPaginatedDataSource
 
   private val familyItemMapper = FamilyItemMapper
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     configureViews(
-      registerViewConfigurationOf().apply { appTitle = familyFormConfig.registerTitle }
+      registerViewConfigurationOf().apply { appTitle = getString(R.string.menu_family) }
     )
   }
 
@@ -66,6 +65,14 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
 
   override fun registerClient() {
     lifecycleScope.launch {
+      familyFormConfig =
+        withContext(dispatcherProvider.io()) {
+          FormConfigUtil.loadConfig(
+            FamilyFormConfig.FAMILY_DETAIL_VIEW_CONFIG_ID,
+            this@FamilyRegisterActivity
+          )
+        }
+
       with(familyFormConfig) {
         val questionnaireId = registrationQuestionnaireIdentifier
         val questionnaireTitle = registrationQuestionnaireTitle
@@ -83,22 +90,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
     }
   }
 
-  override fun supportedFragments(): List<Fragment> {
-    // todo need it to be somewhere to load first
-    familyFormConfig =
-      FormConfigUtil.loadConfig(FAMILY_DETAIL_VIEW_CONFIG_ID, this@FamilyRegisterActivity)
-
-    familyPaginatedDataSource =
-      FamilyPaginatedDataSource(
-        familyFormConfig.registerPrimaryFilterTag,
-        fhirEngine,
-        familyItemMapper
-      )
-
-    val registerFragment =
-      FamilyRegisterFragment().apply { paginatedDataSource = familyPaginatedDataSource }
-    return listOf(registerFragment)
-  }
+  override fun supportedFragments(): List<Fragment> = listOf(FamilyRegisterFragment())
 
   companion object {
     const val FAMILY_MENU_OPTION = 1000

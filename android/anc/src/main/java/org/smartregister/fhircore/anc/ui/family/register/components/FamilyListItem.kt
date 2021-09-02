@@ -40,15 +40,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
+import org.smartregister.fhircore.anc.ui.family.register.FamilyListenerIntent
 import org.smartregister.fhircore.anc.ui.family.register.OpenFamilyProfile
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
-import org.smartregister.fhircore.engine.util.ListenerIntent
 
 @Composable
 fun FamilyRow(
   familyItem: FamilyItem,
-  clickListener: (ListenerIntent, FamilyItem) -> Unit = { _, _ -> },
+  clickListener: (FamilyListenerIntent, FamilyItem) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   Row(

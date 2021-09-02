@@ -18,7 +18,7 @@ package org.smartregister.fhircore.anc.data.family
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Order
-import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
@@ -31,31 +31,24 @@ import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-// todo Patient is not the only class
-// todo remove repository from PaginatedDataSource
-// todo we may not need multiple layers
-class FamilyPaginatedRepository(
+class FamilyRepository(
   override val fhirEngine: FhirEngine,
   override val domainMapper: DomainMapper<Family, FamilyItem>,
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : RegisterRepository<Family, FamilyItem> {
 
-  override val defaultPageSize: Int
-    get() = 50
-
-  override suspend fun loadData(
-    query: String,
-    pageNumber: Int,
-    primaryFilterCallback: (Search) -> Unit,
-    vararg secondaryFilterCallbacks: (String, Search) -> Unit
-  ): List<FamilyItem> {
+  override suspend fun loadData(query: String, pageNumber: Int): List<FamilyItem> {
     return withContext(dispatcherProvider.io()) {
       val patients =
         fhirEngine.search<Patient> {
-          primaryFilterCallback(this)
-          secondaryFilterCallbacks.forEach { filterCallback: (String, Search) -> Unit ->
-            if (query.isNotEmpty() && query.isNotBlank()) {
-              filterCallback(query, this)
+          filter(Patient.ADDRESS_CITY) {
+            modifier = StringFilterModifier.CONTAINS
+            value = "NAIROBI"
+          }
+          if (query.isNotEmpty() && query.isNotBlank()) {
+            filter(Patient.NAME) {
+              modifier = StringFilterModifier.CONTAINS
+              value = query.trim()
             }
           }
           sort(Patient.NAME, Order.ASCENDING)

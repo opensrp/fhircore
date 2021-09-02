@@ -20,40 +20,47 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.get
 import androidx.paging.compose.collectAsLazyPagingItems
-import org.smartregister.fhircore.anc.data.family.FamilyPaginatedDataSource
+import kotlinx.coroutines.flow.emptyFlow
+import org.smartregister.fhircore.anc.AncApplication
+import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.ui.family.FamilyFormConfig
 import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
-import org.smartregister.fhircore.anc.ui.family.register.components.FamilyRow
-import org.smartregister.fhircore.engine.ui.components.PaginatedList
-import org.smartregister.fhircore.engine.ui.register.BaseRegisterDataViewModel
+import org.smartregister.fhircore.anc.ui.family.register.components.FamilyList
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
+import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
 
-  override lateinit var paginatedDataSource: FamilyPaginatedDataSource
+  lateinit var familyRepository: FamilyRepository
 
-  override lateinit var registerDataViewModel: BaseRegisterDataViewModel<Family, FamilyItem>
+  override lateinit var registerDataViewModel: RegisterDataViewModel<Family, FamilyItem>
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
+    familyRepository =
+      FamilyRepository(
+        (requireActivity().application as AncApplication).fhirEngine,
+        FamilyItemMapper
+      )
+
     registerDataViewModel =
       ViewModelProvider(
-          requireActivity(),
-          BaseRegisterDataViewModel(
-              application = requireActivity().application,
-              paginatedDataSource = paginatedDataSource,
-            )
-            .createFactory()
-        )
-        .get()
+        requireActivity(),
+        RegisterDataViewModel(
+            application = requireActivity().application,
+            registerRepository = familyRepository
+          )
+          .createFactory()
+      )[RegisterDataViewModel::class.java] as
+        RegisterDataViewModel<Family, FamilyItem>
   }
 
   override fun navigateToDetails(uniqueIdentifier: String) {
@@ -66,20 +73,15 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
 
   @Composable
   override fun ConstructRegisterList() {
-    val registerData = registerDataViewModel.registerData.observeAsState()
-    PaginatedList(
+    val registerData = registerDataViewModel.registerData.collectAsState(emptyFlow())
+    FamilyList(
       pagingItems = registerData.value!!.collectAsLazyPagingItems(),
-      { familyItem ->
-        FamilyRow(
-          familyItem = familyItem,
-          clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
-        )
-      }
+      modifier = Modifier,
+      clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
     )
   }
 
   override fun onItemClicked(listenerIntent: ListenerIntent, data: FamilyItem) {
-    // todo we may want to provide defaults as well so that we do not have to implement it
     if (listenerIntent is OpenFamilyProfile) {
       navigateToDetails(data.id)
     }

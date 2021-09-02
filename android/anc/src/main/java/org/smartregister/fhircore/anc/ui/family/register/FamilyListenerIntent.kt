@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration
+package org.smartregister.fhircore.anc.ui.family.register
 
-/**
- * Every class or object providing UI customizations e.g. appTitle, showFilter, showSideMenu,
- * showSearchBar etc. is required MUST adhere to this contract to provide consistencies.
- * Conventionally, the implementers should be named after this interface e.g.
- * RegisterViewConfiguration, ProfileViewConfiguration etc. [viewClass] method just returns the
- * Class implementing this interface.
- */
-interface Configuration {
-  fun viewClass() = this::class
-}
+import org.smartregister.fhircore.engine.util.ListenerIntent
+
+open class FamilyListenerIntent : ListenerIntent
+
+object OpenFamilyProfile : FamilyListenerIntent()

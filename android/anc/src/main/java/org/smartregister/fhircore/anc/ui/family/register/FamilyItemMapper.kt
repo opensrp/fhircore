@@ -23,14 +23,11 @@ import org.hl7.fhir.r4.model.codesystems.RequestStatus
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
-import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.isPregnant
-
-object OpenFamilyProfile : ListenerIntent
 
 data class Family(val head: Patient, val members: List<Patient>, val servicesDue: List<CarePlan>)
 
@@ -63,9 +60,5 @@ object FamilyItemMapper : DomainMapper<Family, FamilyItem> {
       gender = member.extractGender(),
       pregnant = member.isPregnant()
     )
-  }
-
-  override fun mapFromDomainModel(domainModel: FamilyItem): Family {
-    throw UnsupportedOperationException()
   }
 }
