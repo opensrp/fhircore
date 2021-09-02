@@ -42,15 +42,15 @@ interface FhirResourceService {
   @GET suspend fun getResource(@Url url: String): Bundle
   @PUT("{type}/{id}")
   suspend fun insertResource(
-      @Path("type") type: String,
-      @Path("id") id: String,
-      @Body body: RequestBody
+    @Path("type") type: String,
+    @Path("id") id: String,
+    @Body body: RequestBody
   ): Resource
   @PATCH("{type}/{id}")
   suspend fun updateResource(
-      @Path("type") type: String,
-      @Path("id") id: String,
-      @Body body: RequestBody
+    @Path("type") type: String,
+    @Path("id") id: String,
+    @Body body: RequestBody
   ): OperationOutcome
   @DELETE("{type}/{id}")
   suspend fun deleteResource(@Path("type") type: String, @Path("id") id: String): OperationOutcome
@@ -58,9 +58,9 @@ interface FhirResourceService {
   companion object {
 
     fun create(
-        parser: IParser,
-        context: Context,
-        applicationConfiguration: ApplicationConfiguration
+      parser: IParser,
+      context: Context,
+      applicationConfiguration: ApplicationConfiguration
     ): FhirResourceService {
       val logger = HttpLoggingInterceptor()
       logger.level = HttpLoggingInterceptor.Level.BODY
@@ -68,15 +68,15 @@ interface FhirResourceService {
       val oauthInterceptor = OAuthInterceptor(context)
 
       val client =
-          OkHttpClient.Builder().addInterceptor(oauthInterceptor).addInterceptor(logger).build()
+        OkHttpClient.Builder().addInterceptor(oauthInterceptor).addInterceptor(logger).build()
 
       return Retrofit.Builder()
-          .baseUrl(applicationConfiguration.fhirServerBaseUrl)
-          .client(client)
-          .addConverterFactory(FhirConverterFactory(parser))
-          .addConverterFactory(GsonConverterFactory.create())
-          .build()
-          .create(FhirResourceService::class.java)
+        .baseUrl(applicationConfiguration.fhirServerBaseUrl)
+        .client(client)
+        .addConverterFactory(FhirConverterFactory(parser))
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(FhirResourceService::class.java)
     }
   }
 }

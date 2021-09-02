@@ -32,4 +32,7 @@
     <string name="date_last_seen">Last seen %1$s</string>
     <string name="str_save">Save</string>
     <string name="login_error">Login error: %1$s</string>
+    <string name="str_next">Next</string>
+    <string name="str_previous">Previous</string>
+    <string name="str_page_info">Page %1$d of %2$d</string>
 </resources>

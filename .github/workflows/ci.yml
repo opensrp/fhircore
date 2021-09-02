@@ -26,8 +26,16 @@ jobs:
         run: chmod +x gradlew
         working-directory: android
 
-      - name: Spotless check
+      - name: Spotless check engine module
+        run: ./gradlew :engine:spotlessCheck
+        working-directory: android
+
+      - name: Spotless check eir application
         run: ./gradlew :eir:spotlessCheck
+        working-directory: android
+
+      - name: Spotless check anc application
+        run: ./gradlew :anc:spotlessCheck
         working-directory: android
 
       - name: Run unit tests with Gradle
