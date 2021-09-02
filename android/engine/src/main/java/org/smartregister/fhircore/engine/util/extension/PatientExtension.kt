@@ -36,7 +36,7 @@ fun Patient.extractAge(): String {
 
 fun Patient.extractAddress(): String {
   if (!hasAddress()) return ""
-  return with(addressFirstRep) { "$district $city" }
+  return with(addressFirstRep) { "${district?:""} $city" }
 }
 
 fun Patient.atRisk(riskCode: String) =
