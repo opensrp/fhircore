@@ -1,60 +1,54 @@
-package org.smartregister.fhircore.engine.cql;
+package org.smartregister.fhircore.engine.cql
 
-import com.google.common.collect.Lists;
-import org.apache.commons.lang3.tuple.Pair;
-import org.cqframework.cql.cql2elm.CqlTranslatorOptions;
-import org.cqframework.cql.cql2elm.ModelManager;
-import org.cqframework.cql.elm.execution.Library;
-import org.cqframework.cql.elm.execution.VersionedIdentifier;
-import org.hl7.fhir.instance.model.api.IBaseBundle;
-import org.hl7.fhir.instance.model.api.IBaseParameters;
-import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.opencds.cqf.cql.engine.data.CompositeDataProvider;
-import org.opencds.cqf.cql.engine.data.DataProvider;
-import org.opencds.cqf.cql.engine.fhir.converter.FhirTypeConverter;
-import org.opencds.cqf.cql.engine.fhir.converter.FhirTypeConverterFactory;
-import org.opencds.cqf.cql.engine.fhir.model.R4FhirModelResolver;
-import org.opencds.cqf.cql.evaluator.CqlEvaluator;
-import org.opencds.cqf.cql.evaluator.cql2elm.content.LibraryContentProvider;
-import org.opencds.cqf.cql.evaluator.cql2elm.content.fhir.BundleFhirLibraryContentProvider;
-import org.opencds.cqf.cql.evaluator.cql2elm.util.LibraryVersionSelector;
-import org.opencds.cqf.cql.evaluator.engine.execution.TranslatingLibraryLoader;
-import org.opencds.cqf.cql.evaluator.engine.retrieve.BundleRetrieveProvider;
-import org.opencds.cqf.cql.evaluator.engine.terminology.BundleTerminologyProvider;
-import org.opencds.cqf.cql.evaluator.fhir.adapter.r4.AdapterFactory;
-import org.opencds.cqf.cql.evaluator.library.CqlFhirParametersConverter;
-import org.opencds.cqf.cql.evaluator.library.LibraryEvaluator;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.context.api.BundleInclusionRule;
-import ca.uhn.fhir.model.valueset.BundleTypeEnum;
-import ca.uhn.fhir.parser.IParser;
-import ca.uhn.fhir.rest.api.BundleLinks;
-import ca.uhn.fhir.rest.api.IVersionSpecificBundleFactory;
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.context.api.BundleInclusionRule
+import ca.uhn.fhir.model.valueset.BundleTypeEnum
+import ca.uhn.fhir.parser.IParser
+import ca.uhn.fhir.rest.api.BundleLinks
+import com.google.common.collect.Lists
+import org.apache.commons.lang3.tuple.Pair
+import org.cqframework.cql.cql2elm.CqlTranslatorOptions
+import org.cqframework.cql.cql2elm.ModelManager
+import org.cqframework.cql.elm.execution.Library
+import org.cqframework.cql.elm.execution.VersionedIdentifier
+import org.hl7.fhir.instance.model.api.IBaseBundle
+import org.hl7.fhir.instance.model.api.IBaseResource
+import org.opencds.cqf.cql.engine.data.CompositeDataProvider
+import org.opencds.cqf.cql.engine.data.DataProvider
+import org.opencds.cqf.cql.engine.fhir.converter.FhirTypeConverter
+import org.opencds.cqf.cql.engine.fhir.converter.FhirTypeConverterFactory
+import org.opencds.cqf.cql.engine.fhir.model.R4FhirModelResolver
+import org.opencds.cqf.cql.evaluator.CqlEvaluator
+import org.opencds.cqf.cql.evaluator.cql2elm.content.LibraryContentProvider
+import org.opencds.cqf.cql.evaluator.cql2elm.content.fhir.BundleFhirLibraryContentProvider
+import org.opencds.cqf.cql.evaluator.cql2elm.util.LibraryVersionSelector
+import org.opencds.cqf.cql.evaluator.engine.execution.TranslatingLibraryLoader
+import org.opencds.cqf.cql.evaluator.engine.retrieve.BundleRetrieveProvider
+import org.opencds.cqf.cql.evaluator.engine.terminology.BundleTerminologyProvider
+import org.opencds.cqf.cql.evaluator.fhir.adapter.r4.AdapterFactory
+import org.opencds.cqf.cql.evaluator.library.CqlFhirParametersConverter
+import org.opencds.cqf.cql.evaluator.library.LibraryEvaluator
+import java.io.ByteArrayInputStream
+import java.io.InputStream
+import java.util.*
 
 /**
  * This class contains methods to run CQL evaluators given Fhir expressions
  * It borrows code from https://github.com/DBCG/CqlEvaluatorSampleApp
  * See also https://www.hl7.org/fhir/
  */
-public class Evaluator {
-
-    FhirContext fhirContext = FhirContext.forCached(FhirVersionEnum.R4);
-    AdapterFactory adapterFactory = new AdapterFactory();
-    FhirTypeConverter fhirTypeConverter;
-    CqlFhirParametersConverter cqlFhirParametersConverter;
-    LibraryVersionSelector libraryVersionSelector;
-    LibraryContentProvider contentProvider;
-    BundleTerminologyProvider terminologyProvider;
-    BundleRetrieveProvider bundleRetrieveProvider;
-    IParser parser;
-    CqlEvaluator cqlEvaluator;
-    LibraryEvaluator libraryEvaluator;
+class Evaluator {
+    var fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
+    var adapterFactory = AdapterFactory()
+    var fhirTypeConverter: FhirTypeConverter? = null
+    var cqlFhirParametersConverter: CqlFhirParametersConverter? = null
+    var libraryVersionSelector: LibraryVersionSelector? = null
+    var contentProvider: LibraryContentProvider? = null
+    var terminologyProvider: BundleTerminologyProvider? = null
+    var bundleRetrieveProvider: BundleRetrieveProvider? = null
+    var cqlEvaluator: CqlEvaluator? = null
+    var libraryEvaluator: LibraryEvaluator? = null
 
     /**
      * This method loads configurations for CQL evaluation
@@ -63,68 +57,79 @@ public class Evaluator {
      * @param valueSetData Fhir resource type ValueSet
      * @param testData Fhir resource to evaluate e.g Patient
      */
-    private void loadConfigs(String libraryData,
-                               String helperData,
-                               String valueSetData,
-                               String testData) {
-
-        this.parser = this.fhirContext.newJsonParser();
-        this.parser.setPrettyPrint(true);
-
-        this.libraryVersionSelector = new LibraryVersionSelector(this.adapterFactory);
-        this.fhirTypeConverter = new FhirTypeConverterFactory().create(fhirContext.getVersion().getVersion());
-        this.cqlFhirParametersConverter = new CqlFhirParametersConverter(this.fhirContext, this.adapterFactory, this.fhirTypeConverter);
+    private fun loadConfigs(
+        libraryData: String,
+        helperData: String,
+        valueSetData: String,
+        testData: String
+    ) {
+        var parser: IParser? = null
+        parser = fhirContext.newJsonParser()
+        parser.setPrettyPrint(true)
+        libraryVersionSelector = LibraryVersionSelector(adapterFactory)
+        fhirTypeConverter = FhirTypeConverterFactory().create(fhirContext.version.version)
+        cqlFhirParametersConverter =
+            CqlFhirParametersConverter(fhirContext, adapterFactory, fhirTypeConverter)
         // Load Library Content and create a LibraryContentProvider, which is the interface used by the LibraryLoader for getting library CQL/ELM/etc.
-        InputStream libraryStream = new ByteArrayInputStream(libraryData.getBytes());
-        InputStream fhirHelpersStream = new ByteArrayInputStream(helperData.getBytes());
-        IBaseResource library = this.parser.parseResource(libraryStream);
-        IBaseResource fhirHelpersLibrary = this.parser.parseResource(fhirHelpersStream);
-
-        List<IBaseResource> resources = Lists.newArrayList(library, fhirHelpersLibrary);
-        IVersionSpecificBundleFactory bundleFactory = this.fhirContext.newBundleFactory();
-
-        BundleLinks bundleLinks = new BundleLinks("", null, true, BundleTypeEnum.COLLECTION);
-
-        bundleFactory.addRootPropertiesToBundle("bundled-directory", bundleLinks, resources.size(), null);
-
-        bundleFactory.addResourcesToBundle(resources, BundleTypeEnum.COLLECTION, "",
-                BundleInclusionRule.BASED_ON_INCLUDES, null);
-
-        this.contentProvider = new BundleFhirLibraryContentProvider(this.fhirContext, (IBaseBundle) bundleFactory.getResourceBundle(), this.adapterFactory, this.libraryVersionSelector);
+        val libraryStream: InputStream = ByteArrayInputStream(libraryData.toByteArray())
+        val fhirHelpersStream: InputStream = ByteArrayInputStream(helperData.toByteArray())
+        val library = parser.parseResource(libraryStream)
+        val fhirHelpersLibrary = parser.parseResource(fhirHelpersStream)
+        val resources: List<IBaseResource> = Lists.newArrayList(library, fhirHelpersLibrary)
+        val bundleFactory = fhirContext.newBundleFactory()
+        val bundleLinks = BundleLinks("", null, true, BundleTypeEnum.COLLECTION)
+        bundleFactory.addRootPropertiesToBundle(
+            "bundled-directory",
+            bundleLinks,
+            resources.size,
+            null
+        )
+        bundleFactory.addResourcesToBundle(
+            resources, BundleTypeEnum.COLLECTION, "",
+            BundleInclusionRule.BASED_ON_INCLUDES, null
+        )
+        contentProvider = BundleFhirLibraryContentProvider(
+            fhirContext,
+            bundleFactory.resourceBundle as IBaseBundle,
+            adapterFactory,
+            libraryVersionSelector
+        )
 
         // Load terminology content, and create a TerminologyProvider which is the interface used by the evaluator for resolving terminology
-        InputStream valueSetStream = new ByteArrayInputStream(valueSetData.getBytes());
-        IBaseResource valueSetBundle = this.parser.parseResource(valueSetStream);
-        this.terminologyProvider = new BundleTerminologyProvider(this.fhirContext, (IBaseBundle) valueSetBundle);
+        val valueSetStream: InputStream = ByteArrayInputStream(valueSetData.toByteArray())
+        val valueSetBundle = parser.parseResource(valueSetStream)
+        terminologyProvider = BundleTerminologyProvider(fhirContext, valueSetBundle as IBaseBundle)
 
         // Load data content, and create a RetrieveProvider which is the interface used for implementations of CQL retrieves.
-        InputStream dataStream = new ByteArrayInputStream(testData.getBytes());
-        IBaseResource dataBundle = this.parser.parseResource(dataStream);
-        this.bundleRetrieveProvider = new BundleRetrieveProvider(this.fhirContext, (IBaseBundle) dataBundle);
-        this.bundleRetrieveProvider.setTerminologyProvider(this.terminologyProvider);
-        this.bundleRetrieveProvider.setExpandValueSets(true);
-
-        this.cqlEvaluator = new CqlEvaluator(
-                new TranslatingLibraryLoader(
-                        new ModelManager(),
-                        Collections.singletonList(this.contentProvider),
-                        CqlTranslatorOptions.defaultOptions()) {
-
-                    // This is a hack needed to circumvent a bug that's currently present in the cql-engine.
-                    // By default, the LibraryLoader checks to ensure that the same translator options are used to for all libraries,
-                    // And it will re-translate if possible. Since translating CQL is not currently possible
-                    // on Android (some changes to the way ModelInfos are loaded is needed) the library loader just needs to load libraries
-                    // regardless of whether the options match.
-                    @Override
-                    protected Boolean translatorOptionsMatch(Library library) {
-                        return true;
-                    }
-                },
-                new HashMap<String, DataProvider>() {{
-                    put("http://hl7.org/fhir", new CompositeDataProvider(new R4FhirModelResolver(), bundleRetrieveProvider));
-                }}, this.terminologyProvider);
-
-        this.libraryEvaluator = new LibraryEvaluator(this.cqlFhirParametersConverter, cqlEvaluator);
+        val dataStream: InputStream = ByteArrayInputStream(testData.toByteArray())
+        val dataBundle = parser.parseResource(dataStream)
+        bundleRetrieveProvider = BundleRetrieveProvider(fhirContext, dataBundle as IBaseBundle)
+        bundleRetrieveProvider!!.terminologyProvider = terminologyProvider
+        bundleRetrieveProvider!!.isExpandValueSets = true
+        cqlEvaluator = CqlEvaluator(
+            object : TranslatingLibraryLoader(
+                ModelManager(), listOf(contentProvider),
+                CqlTranslatorOptions.defaultOptions()
+            ) {
+                // This is a hack needed to circumvent a bug that's currently present in the cql-engine.
+                // By default, the LibraryLoader checks to ensure that the same translator options are used to for all libraries,
+                // And it will re-translate if possible. Since translating CQL is not currently possible
+                // on Android (some changes to the way ModelInfos are loaded is needed) the library loader just needs to load libraries
+                // regardless of whether the options match.
+                override fun translatorOptionsMatch(library: Library): Boolean {
+                    return true
+                }
+            },
+            object : HashMap<String?, DataProvider?>() {
+                init {
+                    put(
+                        "http://hl7.org/fhir",
+                        CompositeDataProvider(R4FhirModelResolver(), bundleRetrieveProvider)
+                    )
+                }
+            }, terminologyProvider
+        )
+        libraryEvaluator = LibraryEvaluator(cqlFhirParametersConverter, cqlEvaluator)
     }
 
     /**
@@ -138,23 +143,25 @@ public class Evaluator {
      * @param contextLabel Fhir context e.g. mom-with-anemia
      * @return JSON String Fhir Resource type Parameter
      */
-    public String runCql(String libraryData,
-                         String helperData,
-                         String valueSetData,
-                         String testData,
-                         String evaluatorId,
-                         String context,
-                         String contextLabel) {
-
-        loadConfigs(libraryData,
-                helperData,
-                valueSetData,
-                testData);
-
-        IBaseParameters result = libraryEvaluator.evaluate(
-                new VersionedIdentifier().
-                        withId(evaluatorId),
-                Pair.of(context, contextLabel), null, null);
-        return this.fhirContext.newJsonParser().encodeResourceToString(result);
+    fun runCql(
+        libraryData: String,
+        helperData: String,
+        valueSetData: String,
+        testData: String,
+        evaluatorId: String?,
+        context: String,
+        contextLabel: String
+    ): String {
+        loadConfigs(
+            libraryData,
+            helperData,
+            valueSetData,
+            testData
+        )
+        val result = libraryEvaluator!!.evaluate(
+            VersionedIdentifier().withId(evaluatorId),
+            Pair.of(context, contextLabel), null, null
+        )
+        return fhirContext.newJsonParser().encodeResourceToString(result)
     }
 }
