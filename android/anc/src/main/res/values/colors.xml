@@ -16,6 +16,7 @@
 
 <resources>
     <color name="colorError">#DD0000</color>
+    <color name="colorErrorDull">#f2d0d3</color>
     <color name="colorPrimary">#005084</color>
     <color name="colorPrimaryDark">#003D66</color>
     <color name="colorPrimaryLight">#006EB8</color>
@@ -27,6 +28,7 @@
     <color name="profile_header_background">#ECF1F7</color>
     <color name="black">#000000</color>
     <color name="light">#E9E9E9</color>
+    <color name="backgroundGray">#f2f5f6</color>
 
     <color name="transparent_blue">#44389cc8</color>
     <color name="status_green">#319440</color>

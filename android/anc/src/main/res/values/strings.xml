@@ -1,4 +1,18 @@
 <resources>
     <string name="app_name">ANC</string>
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.anc</string>
+    <string name="back_to_anc_clients">Back to ANC Clients</string>
+    <string name="edit">Edit</string>
+    <string name="care_plan">Care plan</string>
+    <string name="see_all">See All</string>
+    <string name="anc_overview">ANC Overview</string>
+    <string name="anc_visit_overdue">ANC visit overdue</string>
+    <string name="edd">EDD</string>
+    <string name="ga">GA</string>
+    <string name="no_of_fetuses">No. of fetuses</string>
+    <string name="risks">Risks</string>
+    <string name="anc_facility_visit">ANC facility visit</string>
+    <string name="anc_home_visit">ANC home visit</string>
+    <string name="upcoming_services">Upcoming Services</string>
+    <string name="last_seen">Last Seen</string>
 </resources>

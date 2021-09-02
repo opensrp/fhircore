@@ -19,34 +19,56 @@ package org.smartregister.fhircore.anc.ui.anccare.details
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import androidx.core.os.bundleOf
+import androidx.databinding.DataBindingUtil
+import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.databinding.ActivityAncDetailsBinding
 import org.smartregister.fhircore.anc.form.config.AncFormConfig
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.FormConfigUtil
 
 class AncDetailsActivity : BaseMultiLanguageActivity() {
 
-  private lateinit var patientId: String
+    private lateinit var patientId: String
 
-  private lateinit var ancFormConfig: AncFormConfig
+    private lateinit var activityAncDetailsBinding: ActivityAncDetailsBinding
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    // setContentView(R.layout.activity_patient_details) // todo use details activity for anc
-    // setSupportActionBar(patientDetailsToolbar) // todo add anc details activity toolbar
+    private lateinit var ancFormConfig: AncFormConfig
 
-    if (savedInstanceState == null) {
-      ancFormConfig = FormConfigUtil.loadConfig(AncFormConfig.ANC_DETAIL_VIEW_CONFIG_ID, this)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        activityAncDetailsBinding =
+            DataBindingUtil.setContentView(this, R.layout.activity_anc_details)
+        setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
 
-      patientId = intent.extras?.getString(AncFormConfig.ANC_ARG_ITEM_ID) ?: ""
+        if (savedInstanceState == null) {
+            ancFormConfig = FormConfigUtil.loadConfig(AncFormConfig.ANC_DETAIL_VIEW_CONFIG_ID, this)
+
+            patientId = intent.extras?.getString(AncFormConfig.ANC_ARG_ITEM_ID) ?: ""
+
+            supportFragmentManager
+                .beginTransaction()
+                .replace(
+                    R.id.container,
+                    AncDetailsFragment.newInstance(
+                        bundleOf(Pair(AncFormConfig.ANC_ARG_ITEM_ID, patientId))
+                    )
+                )
+                .commitNow()
+        }
+
+        activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener {
+            onBackPressed()
+        }
     }
-  }
 
-  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-    // menuInflater.inflate(R.menu.profile_menu, menu) // todo use anc menu
-    return true
-  }
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.profile_menu, menu)
+        return true
+    }
 
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    return super.onOptionsItemSelected(item)
-  }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return super.onOptionsItemSelected(item)
+    }
 }
