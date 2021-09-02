@@ -37,9 +37,9 @@ class RegisterViewModel(
   val filterValue
     get() = _filterValue
 
-  private val applicationConfiguration =
+  val applicationConfiguration =
     (getApplication<Application>() as ConfigurableApplication).applicationConfiguration
-  private val fhirEngine = (application as ConfigurableApplication).fhirEngine
+  val fhirEngine = (application as ConfigurableApplication).fhirEngine
 
   lateinit var languages: List<Language>
 

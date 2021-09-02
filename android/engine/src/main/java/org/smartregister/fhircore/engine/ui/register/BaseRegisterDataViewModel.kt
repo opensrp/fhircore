@@ -16,7 +16,7 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-abstract class BaseRegisterDataViewModel<I : Any, O : Any>(
+open class BaseRegisterDataViewModel<I : Any, O : Any>(
   application: Application,
   val paginatedDataSource: PaginatedDataSource<I, O>,
   pageSize: Int = 50,

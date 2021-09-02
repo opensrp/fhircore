@@ -24,10 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.AncPatientPaginatedDataSource
-import org.smartregister.fhircore.anc.form.config.AncFormConfig
-import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
-import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
+import org.smartregister.fhircore.anc.data.family.FamilyPaginatedRepository
 import org.smartregister.fhircore.anc.ui.family.FamilyFormConfig
 import org.smartregister.fhircore.anc.ui.family.FamilyFormConfig.Companion.FAMILY_DETAIL_VIEW_CONFIG_ID
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
@@ -43,12 +40,15 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 
   private lateinit var familyFormConfig: FamilyFormConfig
+  private lateinit var paginatedRepository: FamilyPaginatedRepository
 
-  private val ancItemMapper = AncItemMapper
+  private val familyItemMapper = FamilyItemMapper
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    configureViews(registerViewConfigurationOf().apply { appTitle = familyFormConfig.registerTitle })
+    configureViews(
+      registerViewConfigurationOf().apply { appTitle = familyFormConfig.registerTitle }
+    )
   }
 
   override fun sideMenuOptions(): List<SideMenuOption> =
@@ -67,14 +67,6 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
 
   override fun registerClient() {
     lifecycleScope.launch {
-      familyFormConfig =
-        withContext(dispatcherProvider.io()) {
-          FormConfigUtil.loadConfig(
-            FAMILY_DETAIL_VIEW_CONFIG_ID,
-            this@FamilyRegisterActivity
-          )
-        }
-
       with(familyFormConfig) {
         val questionnaireId = registrationQuestionnaireIdentifier
         val questionnaireTitle = registrationQuestionnaireTitle
@@ -93,8 +85,19 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
   }
 
   override fun supportedFragments(): List<Fragment> {
+    // todo need it to be somewhere to load first
+    familyFormConfig =
+        FormConfigUtil.loadConfig(FAMILY_DETAIL_VIEW_CONFIG_ID, this@FamilyRegisterActivity)
+
+    paginatedRepository =
+      FamilyPaginatedRepository(
+        familyFormConfig.registerPrimaryFilterTag,
+        fhirEngine,
+        familyItemMapper
+      )
+
     val registerFragment =
-      Fragment()
+      FamilyRegisterFragment().apply { paginatedDataSource = paginatedRepository }
     return listOf(registerFragment)
   }
 

@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class FamilyFormConfig(
   val registerTitle: String,
+  val registerPrimaryFilterTag: String,
   val registrationQuestionnaireIdentifier: String,
   val registrationQuestionnaireTitle: String,
   val memberRegistrationQuestionnaireIdentifier: String,

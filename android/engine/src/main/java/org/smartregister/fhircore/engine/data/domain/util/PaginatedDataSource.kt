@@ -3,7 +3,8 @@ package org.smartregister.fhircore.engine.data.domain.util
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 
-abstract class PaginatedDataSource<I: Any, O : Any>(protected val registerRepository: RegisterRepository<I,O>) :
+abstract class PaginatedDataSource<I: Any, O : Any>(
+  protected val registerRepository: RegisterRepository<I,O>) :
   PagingSource<Int, O>() {
 
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, O> {
