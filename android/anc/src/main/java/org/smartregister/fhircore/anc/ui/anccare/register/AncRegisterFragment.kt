@@ -20,10 +20,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.collectAsLazyPagingItems
+import kotlinx.coroutines.flow.emptyFlow
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.AncPatientPaginatedDataSource
@@ -67,9 +68,9 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
 
   @Composable
   override fun ConstructRegisterList() {
-    val registerData = registerDataViewModel.registerData.observeAsState()
+    val registerData = registerDataViewModel.registerData.collectAsState(emptyFlow())
     AncPatientList(
-      pagingItems = registerData.value!!.collectAsLazyPagingItems(),
+      pagingItems = registerData.value.collectAsLazyPagingItems(),
       modifier = Modifier,
       clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
     )
