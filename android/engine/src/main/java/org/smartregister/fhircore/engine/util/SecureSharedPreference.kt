@@ -29,15 +29,16 @@ class SecureSharedPreference(val context: Context) {
 
   fun getSecurePreferences(): SharedPreferences {
     return EncryptedSharedPreferences.create(
-        context,
-        SECURE_STORAGE_FILE_NAME,
-        getMasterKey(),
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM)
+      context,
+      SECURE_STORAGE_FILE_NAME,
+      getMasterKey(),
+      EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+      EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
   }
 
   private fun getMasterKey() =
-      MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
+    MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
 
   fun saveCredentials(authCredentials: AuthCredentials) {
     getSecurePreferences().edit {
@@ -54,14 +55,14 @@ class SecureSharedPreference(val context: Context) {
   }
 
   fun retrieveSessionToken() =
-      getSecurePreferences().getString(KEY_LATEST_SESSION_TOKEN_PREFERENCE, null)
+    getSecurePreferences().getString(KEY_LATEST_SESSION_TOKEN_PREFERENCE, null)
 
   fun retrieveSessionUsername() = retrieveCredentials()?.username
 
   fun retrieveCredentials(): AuthCredentials? {
     return getSecurePreferences()
-        .getString(KEY_LATEST_CREDENTIALS_PREFERENCE, null)
-        ?.decodeJson<AuthCredentials>()
+      .getString(KEY_LATEST_CREDENTIALS_PREFERENCE, null)
+      ?.decodeJson<AuthCredentials>()
   }
 
   companion object {
