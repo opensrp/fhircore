@@ -55,10 +55,6 @@ object PatientItemMapper : DomainMapper<Pair<Patient, List<Immunization>>, Patie
     )
   }
 
-  override fun mapFromDomainModel(domainModel: PatientItem): Pair<Patient, List<Immunization>> {
-    return Pair(Patient(), listOf())
-  }
-
   private fun Patient.getLastSeen(immunizations: List<Immunization>): String {
     return immunizations
       .maxByOrNull { it.protocolApplied.first().doseNumberPositiveIntType.value }
