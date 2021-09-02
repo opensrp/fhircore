@@ -24,6 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.data.family.FamilyPaginatedDataSource
 import org.smartregister.fhircore.anc.data.family.FamilyPaginatedRepository
 import org.smartregister.fhircore.anc.ui.family.FamilyFormConfig
 import org.smartregister.fhircore.anc.ui.family.FamilyFormConfig.Companion.FAMILY_DETAIL_VIEW_CONFIG_ID
@@ -40,7 +41,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 
   private lateinit var familyFormConfig: FamilyFormConfig
-  private lateinit var paginatedRepository: FamilyPaginatedRepository
+  private lateinit var familyPaginatedDataSource: FamilyPaginatedDataSource
 
   private val familyItemMapper = FamilyItemMapper
 
@@ -89,15 +90,15 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
     familyFormConfig =
         FormConfigUtil.loadConfig(FAMILY_DETAIL_VIEW_CONFIG_ID, this@FamilyRegisterActivity)
 
-    paginatedRepository =
-      FamilyPaginatedRepository(
+    familyPaginatedDataSource =
+      FamilyPaginatedDataSource(
         familyFormConfig.registerPrimaryFilterTag,
         fhirEngine,
         familyItemMapper
       )
 
     val registerFragment =
-      FamilyRegisterFragment().apply { paginatedDataSource = paginatedRepository }
+      FamilyRegisterFragment().apply { paginatedDataSource = familyPaginatedDataSource }
     return listOf(registerFragment)
   }
 

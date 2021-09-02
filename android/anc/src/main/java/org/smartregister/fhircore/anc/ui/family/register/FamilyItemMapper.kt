@@ -35,10 +35,15 @@ import org.smartregister.fhircore.engine.util.extension.isPregnant
 
 object OpenFamilyProfile : ListenerIntent
 
-// todo can not implement the domainmapper methods. we may want to remove it
-object FamilyItemMapper : DomainMapper<Patient, FamilyItem> {
+data class Family(val head: Patient, val members: List<Patient>, val servicesDue: List<CarePlan>)
 
-  fun toFamilyItem(head: Patient, members: List<Patient>, servicesDue: List<CarePlan>): FamilyItem {
+object FamilyItemMapper : DomainMapper<Family, FamilyItem> {
+
+  override fun mapToDomainModel(dto: Family): FamilyItem {
+    val head = dto.head
+    val members = dto.members
+    val servicesDue = dto.servicesDue
+
     return FamilyItem(
       id = head.logicalId,
       name = head.extractName(),
@@ -61,11 +66,7 @@ object FamilyItemMapper : DomainMapper<Patient, FamilyItem> {
     )
   }
 
-  override fun mapToDomainModel(dto: Patient): FamilyItem {
-    throw UnsupportedOperationException()
-  }
-
-  override fun mapFromDomainModel(domainModel: FamilyItem): Patient {
+  override fun mapFromDomainModel(domainModel: FamilyItem): Family {
     throw UnsupportedOperationException()
   }
 }

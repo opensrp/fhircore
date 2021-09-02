@@ -10,6 +10,7 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.sdk.PatientExtended
+import org.smartregister.fhircore.anc.ui.family.register.Family
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
@@ -22,14 +23,10 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 // todo remove repository from PaginatedDataSource
 // todo we may not need multiple layers
 class FamilyPaginatedRepository(
-  private val familyTag: String,
   override val fhirEngine: FhirEngine,
-  override val domainMapper: DomainMapper<Patient, FamilyItem>,
+  override val domainMapper: DomainMapper<Family, FamilyItem>,
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
-) : PaginatedDataSource<Patient, FamilyItem>(DummyFamilyRegisterRepository()),
-  RegisterRepository<Patient, FamilyItem>{
-
-  var query: String = ""
+) : RegisterRepository<Family, FamilyItem>{
 
   override val defaultPageSize: Int
     get() = 50
@@ -69,7 +66,7 @@ class FamilyPaginatedRepository(
           carePlans.addAll(searchCarePlan(it.id))
         }
 
-        FamilyItemMapper.toFamilyItem(p, members, carePlans)
+        FamilyItemMapper.mapToDomainModel(Family(p, members, carePlans))
       }
     }
   }
@@ -80,27 +77,5 @@ class FamilyPaginatedRepository(
         this.value = id
       }
     }
-  }
-
-  override suspend fun loadData(pageNumber: Int): List<FamilyItem> {
-    return loadData(
-      pageNumber = pageNumber,
-      query = query,
-     /* todo primaryFilterCallback = { search: Search -> search.filter(PatientExtended.TAG){
-        modifier = StringFilterModifier.MATCHES_EXACTLY
-        value = familyTag
-      } },*/
-      primaryFilterCallback = { search: Search -> search.filter(Patient.ADDRESS_CITY){
-        modifier = StringFilterModifier.CONTAINS
-        value = "NAI"
-      } },
-      secondaryFilterCallbacks =
-      arrayOf({ filterQuery: String, search: Search ->
-        search.filter(Patient.NAME) {
-          modifier = StringFilterModifier.CONTAINS
-          value = filterQuery.trim()
-        }
-      })
-    )
   }
 }

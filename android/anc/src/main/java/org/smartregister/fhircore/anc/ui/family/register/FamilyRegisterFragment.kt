@@ -25,6 +25,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.get
 import androidx.paging.compose.collectAsLazyPagingItems
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.anc.data.family.FamilyPaginatedDataSource
 import org.smartregister.fhircore.anc.data.family.FamilyPaginatedRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.ui.family.FamilyFormConfig
@@ -37,11 +38,11 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
-class FamilyRegisterFragment : ComposeRegisterFragment<Patient, FamilyItem>() {
+class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
 
-  override lateinit var paginatedDataSource: FamilyPaginatedRepository
+  override lateinit var paginatedDataSource: FamilyPaginatedDataSource
 
-  override lateinit var registerDataViewModel: BaseRegisterDataViewModel<Patient, FamilyItem>
+  override lateinit var registerDataViewModel: BaseRegisterDataViewModel<Family, FamilyItem>
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
