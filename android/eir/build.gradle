@@ -121,7 +121,7 @@ dependencies {
     androidTestImplementation deps.atsl.espresso
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2'
 
-    implementation('org.smartregister:data-capture:0.1.0-alpha03-preview-2-SNAPSHOT') {
+    implementation('com.google.android.fhir:datacapture:0.1.0.1-alpha03') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'

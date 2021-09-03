@@ -41,6 +41,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
+import org.smartregister.fhircore.eir.ui.adverseevent.AdverseEventActivity
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper.extractAge
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper.extractGender
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper.extractName

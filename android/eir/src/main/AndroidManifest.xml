@@ -39,10 +39,8 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
 
-        <activity
-            android:name=".ui.questionnaire.QuestionnaireActivity"
-            android:parentActivityName=".ui.patient.register.PatientRegisterActivity" />
-        <activity android:name=".activity.AdverseEventActivity"/>
+        <activity android:name="org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity" />
+        <activity android:name=".ui.adverseevent.AdverseEventActivity"/>
 
         <service android:name=".EirAuthAndroidService">
             <intent-filter>
