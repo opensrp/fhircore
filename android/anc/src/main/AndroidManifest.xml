@@ -29,11 +29,12 @@
         <activity
             android:name=".ui.family.details.FamilyDetailsActivity"
             android:label=""
+            android:parentActivityName=".ui.family.register.FamilyRegisterActivity"
             android:theme="@style/AppTheme.NoActionBar">
-            <!--android:parentActivityName=".activity.FamilyListActivity" -->
-            <!--<meta-data
+
+            <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="org.smartregister.fhircore.activity.FamilyListActivity" /> -->
+                android:value=".ui.family.register.FamilyRegisterActivity" />
         </activity>
         <service android:name=".AncAuthAndroidService">
             <intent-filter>

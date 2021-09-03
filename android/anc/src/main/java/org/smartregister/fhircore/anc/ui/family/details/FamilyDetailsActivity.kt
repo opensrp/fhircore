@@ -26,6 +26,7 @@ import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyMemberRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
+import org.smartregister.fhircore.anc.ui.family.FamilyFormConfig
 import org.smartregister.fhircore.anc.ui.family.details.adapter.FamilyEncounterAdapter
 import org.smartregister.fhircore.anc.ui.family.details.adapter.FamilyMemberAdapter
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
@@ -45,7 +46,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
     setContentView(R.layout.activity_family_details)
     setSupportActionBar(findViewById(R.id.familyDetailToolbar))
 
-    //familyId = intent.extras?.getString(FamilyDetailView.FAMILY_ARG_ITEM_ID) ?: ""
+    familyId = intent.extras?.getString(FamilyFormConfig.FAMILY_ARG_ITEM_ID) ?: ""
 
     fhirEngine = (AncApplication.getContext() as ConfigurableApplication).fhirEngine
 
