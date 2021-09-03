@@ -21,7 +21,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
-import org.smartregister.fhircore.engine.sdk.PatientExtended
 
 fun Patient.extractName(): String {
   if (!hasName()) return ""
