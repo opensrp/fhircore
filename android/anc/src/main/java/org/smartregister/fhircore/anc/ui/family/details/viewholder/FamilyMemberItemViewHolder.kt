@@ -36,7 +36,7 @@ class FamilyMemberItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemV
   }
 
   private fun getDemographics(familyMemberItem: FamilyMemberItem): String {
-    val age = DateUtils.getAgeFromDate(familyMemberItem.dob)
+    val age = familyMemberItem.age
     val gender = if (familyMemberItem.gender == "male") 'M' else 'F'
 
     val names = familyMemberItem.name.split(' ')

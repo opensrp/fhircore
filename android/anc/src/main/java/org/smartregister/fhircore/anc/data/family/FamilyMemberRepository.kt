@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
+import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
@@ -29,7 +30,7 @@ class FamilyMemberRepository(private val familyId: String,
      CoroutineScope(dispatcherProvider.io()).launch {
       val members =
         fhirEngine.search<Patient> { filter(Patient.LINK) { this.value = familyId } }.map {
-          it.toFamilyMemberItem()
+          FamilyItemMapper.toFamilyMemberItem(it)
         }
       data.postValue(members)
     }
@@ -44,14 +45,5 @@ class FamilyMemberRepository(private val familyId: String,
       data.postValue(encounters)
     }
     return data
-  }
-
-  private fun Patient.toFamilyMemberItem(): FamilyMemberItem {
-    val name = this.name?.first()?.nameAsSingleString ?: ""
-    val gender = if (this.hasGenderElement()) this.genderElement.valueAsString else ""
-    val age = if (this.hasBirthDateElement()) this.birthDateElement.valueAsString else ""
-    val pregnant = extension.any { it.value.toString().contains("pregnant", true) }
-
-    return FamilyMemberItem(name, id, age, gender, pregnant)
   }
 }
