@@ -61,6 +61,8 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
         activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener {
             onBackPressed()
         }
+
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

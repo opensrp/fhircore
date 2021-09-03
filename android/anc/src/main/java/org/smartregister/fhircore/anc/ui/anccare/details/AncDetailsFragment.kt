@@ -25,11 +25,15 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.fhir.FhirEngine
+import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
 import org.smartregister.fhircore.anc.form.config.AncFormConfig
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractGender
+import org.smartregister.fhircore.engine.util.extension.extractName
 
 class AncDetailsFragment private constructor() : Fragment() {
 
@@ -60,14 +64,32 @@ class AncDetailsFragment private constructor() : Fragment() {
                 this,
                 AncDetailsViewModel(fhirEngine = fhirEngine, patientId = patientId).createFactory()
             )[AncDetailsViewModel::class.java]
+
+        binding.txtViewPatientId.text = patientId
+
+        ancDetailsViewModel.patientDemographics.observe(
+            viewLifecycleOwner,
+            this::handlePatientDemographics
+        )
     }
 
     override fun onResume() {
         super.onResume()
+        ancDetailsViewModel.run {
+            fetchDemographics()
+        }
     }
 
     companion object {
         fun newInstance(bundle: Bundle = Bundle()) =
             AncDetailsFragment().apply { arguments = bundle }
+    }
+
+    private fun handlePatientDemographics(patient: Patient) {
+        with(patient) {
+            val patientDetails =
+                extractName() + ", " + extractGender(requireContext()) + ", " + extractAge()
+            binding.txtViewPatientDetails.text = patientDetails
+        }
     }
 }
