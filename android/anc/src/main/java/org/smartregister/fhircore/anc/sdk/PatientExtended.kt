@@ -14,21 +14,24 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.anccare.register
+package org.smartregister.fhircore.anc.sdk
 
-import android.app.Application
+import ca.uhn.fhir.model.api.annotation.SearchParamDefinition
+import ca.uhn.fhir.rest.gclient.StringClientParam
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.anc.data.AncPatientPaginatedDataSource
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
-import org.smartregister.fhircore.engine.ui.register.BaseRegisterDataViewModel
 
-class AncRegisterDataViewModel(
-  application: Application,
-  patientPaginatedDataSource: AncPatientPaginatedDataSource,
-  pageSize: Int = 50
-) :
-  BaseRegisterDataViewModel<Patient, AncPatientItem>(
-    application = application,
-    paginatedDataSource = patientPaginatedDataSource,
-    pageSize = pageSize
+class PatientExtended : Patient() {
+  @SearchParamDefinition(
+    name = TAG_KEY,
+    path = "Patient.meta.tag.display",
+    description = "Tag",
+    type = "string"
   )
+  @JvmField
+  val SP_TAG = TAG_KEY
+
+  companion object {
+    const val TAG_KEY = "_tag"
+    val TAG = StringClientParam(TAG_KEY)
+  }
+}

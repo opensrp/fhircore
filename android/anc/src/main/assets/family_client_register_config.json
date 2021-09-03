@@ -1,0 +1,9 @@
+{
+  "registerTitle": "Family",
+  "registerPrimaryFilterTag": "Family",
+  "registrationQuestionnaireIdentifier": "1086",
+  "registrationQuestionnaireTitle": "Add Family",
+
+  "memberRegistrationQuestionnaireIdentifier": "1179",
+  "memberRegistrationQuestionnaireTitle": "Add Family Member"
+}

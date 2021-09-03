@@ -26,7 +26,6 @@ import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
-import org.smartregister.fhircore.engine.data.local.repository.patient.PatientPaginatedDataSource
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.buildQuestionnaireIntent
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
@@ -50,7 +49,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   override fun sideMenuOptions(): List<SideMenuOption> =
     listOf(
       SideMenuOption(
-        itemId = COVAX_MENU_OPTION,
+        itemId = R.id.menu_item_covax,
         titleResource = R.string.client_list_title_covax,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
         opensMainRegister = false
@@ -88,15 +87,5 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     }
   }
 
-  override fun supportedFragments(): List<Fragment> {
-    val patientRegisterFragment =
-      PatientRegisterFragment().apply {
-        paginatedDataSource = PatientPaginatedDataSource(fhirEngine, patientItemMapper)
-      }
-    return listOf(patientRegisterFragment)
-  }
-
-  companion object {
-    const val COVAX_MENU_OPTION = 1000
-  }
+  override fun supportedFragments(): List<Fragment> = listOf(PatientRegisterFragment())
 }

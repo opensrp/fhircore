@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">ANC</string>
+    <string name="menu_anc">ANC</string>
+    <string name="menu_family">Family</string>
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.anc</string>
     <string name="all_families">All Families</string>
     <string name="add_member">Add Member</string>

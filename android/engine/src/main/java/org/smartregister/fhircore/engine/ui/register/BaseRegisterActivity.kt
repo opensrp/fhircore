@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.smartregister.fhircore.engine.ui.register
 
 import android.accounts.AccountManager
@@ -19,10 +35,11 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.FhirEngine
 import com.google.android.material.navigation.NavigationView
 import java.util.Locale
+import kotlin.math.ceil
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.BR
 import org.smartregister.fhircore.engine.R
@@ -30,6 +47,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplicati
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
+import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
@@ -43,8 +61,10 @@ import org.smartregister.fhircore.engine.util.extension.addOnDrawableClickListen
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.getDrawable
+import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
+import org.smartregister.fhircore.engine.util.extension.show
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.toggleVisibility
 
@@ -86,6 +106,14 @@ abstract class BaseRegisterActivity :
       )[RegisterViewModel::class.java]
 
     registerViewModel.registerViewConfiguration.observe(this, this::setupConfigurableViews)
+    registerViewModel.currentPage.observe(
+      this,
+      { currentPage ->
+        selectedMenuOption?.count?.let { recordsCount ->
+          updatePaginationViews(recordsCount, currentPage + 1)
+        }
+      }
+    )
 
     registerViewModel.run {
       loadLanguages()
@@ -122,6 +150,8 @@ abstract class BaseRegisterActivity :
     setUpViews()
   }
 
+  private fun updateEntityCounts() = sideMenuOptions().forEach { updateCount(it) }
+
   private fun setUpViews() {
     setupSideMenu()
     with(registerActivityBinding) {
@@ -149,6 +179,16 @@ abstract class BaseRegisterActivity :
 
     setupSearchView()
     setupDueButtonView()
+    setupPagination()
+  }
+
+  private fun setupPagination() {
+    with(registerActivityBinding) {
+      previousPageButton.setOnClickListener {
+        this@BaseRegisterActivity.registerViewModel.backToPreviousPage()
+      }
+      nextPageButton.setOnClickListener { this@BaseRegisterActivity.registerViewModel.nextPage() }
+    }
   }
 
   @SuppressLint("ClickableViewAccessibility")
@@ -216,15 +256,17 @@ abstract class BaseRegisterActivity :
     if (sideMenuOptionMap.size == 1) selectedMenuOption = sideMenuOptionMap.values.elementAt(0)
     val menu = registerActivityBinding.navView.menu
 
-    sideMenuOptions().forEach {
-      menu.add(R.id.menu_group_clients, it.itemId, Menu.NONE, it.titleResource).apply {
-        icon = it.iconResource
-        actionView = layoutInflater.inflate(R.layout.drawable_menu_item_layout, null, false)
-      }
-      if (it.opensMainRegister) {
-        mainRegisterSideMenuOption = sideMenuOptionMap[it.itemId]
+    sideMenuOptions().forEach { menuOption ->
+      menu.add(R.id.menu_group_clients, menuOption.itemId, Menu.NONE, menuOption.titleResource)
+        .apply {
+          icon = menuOption.iconResource
+          actionView = layoutInflater.inflate(R.layout.drawable_menu_item_layout, null, false)
+        }
+      if (menuOption.opensMainRegister) {
+        mainRegisterSideMenuOption = sideMenuOptionMap[menuOption.itemId]
         selectedMenuOption = mainRegisterSideMenuOption
       }
+      updateCount(menuOption)
     }
 
     // Add language and logout menu items
@@ -236,11 +278,14 @@ abstract class BaseRegisterActivity :
     menu.add(R.id.menu_group_app_actions, R.id.menu_item_logout, 1, R.string.logout_as_user).apply {
       icon = ContextCompat.getDrawable(this@BaseRegisterActivity, R.drawable.ic_logout_white)
     }
-    menu.add(R.id.menu_group_empty, MENU_GROUP_EMPTY, 2, "") // Hack to add last menu divider
+    menu.add(
+      R.id.menu_group_empty,
+      R.id.menu_group_empty_item_id,
+      2,
+      ""
+    ) // Hack to add last menu divider
 
     updateRegisterTitle()
-
-    updateEntityCounts()
   }
 
   private fun manipulateDrawer(open: Boolean = false) {
@@ -339,6 +384,7 @@ abstract class BaseRegisterActivity :
       .text = language.displayName
   }
 
+  /** List of [SideMenuOption] representing individual menu items listed in the DrawerLayout */
   abstract fun sideMenuOptions(): List<SideMenuOption>
 
   /**
@@ -370,19 +416,30 @@ abstract class BaseRegisterActivity :
     return application as ConfigurableApplication
   }
 
-  companion object {
-    const val MENU_GROUP_EMPTY = 1111
+  private fun updateCount(menuOption: SideMenuOption) {
+    lifecycleScope.launch(registerViewModel.dispatcher.main()) {
+      var count: Long = registerViewModel.performCount(menuOption)
+      if (count == -1L) count = customEntityCount(menuOption)
+      val counter =
+        registerActivityBinding.navView.menu.findItem(menuOption.itemId).actionView as TextView
+      menuOption.count = count
+      counter.text = if (menuOption.count > 0) count.toString() else null
+
+      // Update pagination count
+      if (selectedMenuOption != null && menuOption.itemId == selectedMenuOption?.itemId) {
+        selectedMenuOption!!.count = menuOption.count
+        updatePaginationViews(menuOption.count, registerViewModel.currentPage.value?.plus(1) ?: 1)
+      }
+    }
   }
 
-  private fun updateEntityCounts() {
-    sideMenuOptions().forEach { menuOption ->
-      registerViewModel.viewModelScope.launch(registerViewModel.dispatcher.main()) {
-        var count = registerViewModel.performCount(menuOption)
-        if (count == -1L) count = customEntityCount(menuOption)
-        val counter =
-          registerActivityBinding.navView.menu.findItem(menuOption.itemId).actionView as TextView
-        counter.text = if (count > 0) count.toString() else null
-      }
+  private fun updatePaginationViews(totalRecordsCount: Long, pageNumber: Int) {
+    with(registerActivityBinding) {
+      val pagesCount =
+        ceil(totalRecordsCount.toDouble().div(PaginationUtil.DEFAULT_PAGE_SIZE.toLong())).toLong()
+      pageInfoTextview.text = getString(R.string.str_page_info, pageNumber, pagesCount)
+      if (pageNumber > 1) previousPageButton.show() else previousPageButton.hide(gone = false)
+      if (pageNumber < pagesCount) nextPageButton.show() else nextPageButton.hide(gone = false)
     }
   }
 }
