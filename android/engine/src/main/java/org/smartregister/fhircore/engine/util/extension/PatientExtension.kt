@@ -33,7 +33,7 @@ fun Patient.extractName(): String {
 }
 
 private fun String.toTitleCase() = replaceFirstChar {
-    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+  if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
 }
 
 fun Patient.extractGender() =
