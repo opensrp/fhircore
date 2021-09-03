@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/patient_profile_edit"
+        android:id="@+id/edit_info"
         android:orderInCategory="300"
-        android:title="@string/edit"
-        />
+        android:title="@string/edit_info" />
+    <item
+        android:id="@+id/view_family"
+        android:orderInCategory="300"
+        android:title="@string/view_family" />
+    <item
+        android:id="@+id/view_past_encounters"
+        android:orderInCategory="300"
+        android:title="@string/view_past_encounters" />
+    <item
+        android:id="@+id/remove_this_person"
+        android:orderInCategory="300"
+        android:title="@string/remove_this_person" />
+
 </menu>

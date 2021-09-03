@@ -19,13 +19,17 @@ package org.smartregister.fhircore.anc.ui.anccare.details
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.*
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import java.text.SimpleDateFormat
 import java.util.*
+import java.util.Locale.filter
 
 class AncDetailsViewModel(
     var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
@@ -34,6 +38,7 @@ class AncDetailsViewModel(
 ) : ViewModel() {
 
     val patientDemographics = MutableLiveData<Patient>()
+    val patientCarePlan = MutableLiveData<List<CarePlan>>()
 
     // Todo migrate to PatientRepository to follow repository pattern
     fun fetchDemographics() {
@@ -44,31 +49,17 @@ class AncDetailsViewModel(
             }
     }
 
-//    fun enrollIntoAnc(patientId: String) {
-//        for (i in 1..8) {
-//            val carePlan =
-//                CarePlan().apply {
-//                    this.category.add(
-//                        CodeableConcept().apply {
-//                            this.text = "ANC Visit"
-//                            this.addCoding(Coding("tempsystem", "anc visit code", "anc visit"))
-//                        }
-//                    )
-//                    this.id = QuestionnaireUtils.getUniqueId()
-//                    this.intent = CarePlan.CarePlanIntent.PLAN
-//                    this.period =
-//                        Period().apply {
-//                            this.end = Date(System.currentTimeMillis()+(1000*60*60*24*90L))
-//                            this.start = Date()
-//                        }
-//                    this.status = CarePlan.CarePlanStatus.ACTIVE
-//                    this.subject = QuestionnaireUtils.asPatientReference(patientId)
-//                    this.title = "ANC Visit CP $i"
-//                }
-//
-//            fhirEngine.save(carePlan)
-//        }
-//    }
 
+    // Todo dynamically get carePlan once stored on FHIR and will be migrated to PatientRepository to follow repository pattern
+    fun fetchCarePlan(patientId: String, qJson: String?) {
+        val iParser: IParser = FhirContext.forR4().newJsonParser()
+        if (patientId.isNotEmpty())
+            viewModelScope.launch(dispatcher.io()) {
+                val listCarePlan = arrayListOf<CarePlan>()
+                val carePlan = iParser.parseResource(qJson) as CarePlan
+                listCarePlan.add(carePlan)
+                patientCarePlan.postValue(listCarePlan)
+            }
+    }
 
 }

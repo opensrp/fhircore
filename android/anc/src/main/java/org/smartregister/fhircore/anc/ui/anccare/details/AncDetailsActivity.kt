@@ -16,7 +16,11 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.details
 
+import android.graphics.Color
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -67,7 +71,21 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.profile_menu, menu)
-        return true
+        val mColorFullMenuBtn = menu!!.findItem(R.id.remove_this_person) // extract the menu item here
+        val title = mColorFullMenuBtn.title.toString()
+        if (title != null) {
+            val s = SpannableString(title)
+            with(s) {
+                setSpan(
+                    ForegroundColorSpan(Color.parseColor("#DD0000")),
+                    0,
+                    length,
+                    Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                )
+            } // provide whatever color you want here.
+            mColorFullMenuBtn.title = s
+        }
+        return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
