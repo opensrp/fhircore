@@ -99,9 +99,7 @@ dependencies {
     implementation 'org.opencds.cqf.cql:evaluator:1.2.0'
     implementation 'org.opencds.cqf.cql:evaluator.builder:1.2.0'
     implementation 'org.opencds.cqf.cql:evaluator.dagger:1.2.0'
-    testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+
 
     //Configure Jetpack Compose
     def composeVersion = "1.0.1"
