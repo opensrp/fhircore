@@ -1,4 +1,20 @@
-package org.smartregister.fhircore.engine.ui.components
+/*
+ * Copyright 2021 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.smartregister.fhircore.eir.ui.patient.register.components
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
@@ -7,19 +23,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemsIndexed
+import androidx.paging.compose.items
+import org.smartregister.fhircore.eir.data.model.PatientItem
+import org.smartregister.fhircore.eir.ui.patient.register.PatientRowClickListenerIntent
+import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
+import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 
 @Composable
-fun <O : Any> PaginatedList(
-  pagingItems: LazyPagingItems<O>,
-  itemRow: @Composable (O) -> Unit,
-  modifier: Modifier = Modifier
+fun PatientRegisterList(
+  pagingItems: LazyPagingItems<PatientItem>,
+  modifier: Modifier = Modifier,
+  clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit
 ) {
 
   LazyColumn {
-    itemsIndexed(items = pagingItems, key = { index, _ -> index }) { _, item ->
-      itemRow(item!!)
+    items(pagingItems, key = { it.patientIdentifier }) {
+      PatientRow(it!!, clickListener, modifier = modifier)
       Divider(color = DividerColor, thickness = 1.dp)
     }
 
