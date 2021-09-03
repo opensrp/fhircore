@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.details
 
-import android.content.Intent
-import android.database.DatabaseUtils
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -28,10 +26,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.fhir.FhirEngine
 import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
 import org.smartregister.fhircore.anc.form.config.AncFormConfig
 import org.smartregister.fhircore.engine.util.extension.*
@@ -106,17 +105,18 @@ class AncDetailsFragment private constructor() : Fragment() {
             AncDetailsFragment().apply { arguments = bundle }
     }
 
-    private fun handlePatientDemographics(patient: Patient) {
+    private fun handlePatientDemographics(patient: AncPatientDetailItem) {
         with(patient) {
             val patientDetails =
-                extractName() + ", " + extractGender(requireContext()) + ", " + extractAge()
-            val patientId = "Lavington ID: " + this.identifierFirstRep.value
+                this.patientDetails.name + ", " + this.patientDetails.gender + ", " + this.patientDetails.age
+            val patientId =
+                this.patientDetailsHead.demographics + " ID: " + this.patientDetails.patientIdentifier
             binding.txtViewPatientDetails.text = patientDetails
             binding.txtViewPatientId.text = patientId
         }
     }
 
-    private fun handleCarePlan(immunizations: List<CarePlan>) {
+    private fun handleCarePlan(immunizations: List<CarePlanItem>) {
         when {
             immunizations.isEmpty() -> {
                 binding.txtViewNoCarePlan.visibility = View.VISIBLE
@@ -130,7 +130,7 @@ class AncDetailsFragment private constructor() : Fragment() {
         }
     }
 
-    private fun populateImmunizationList(listCarePlan: List<CarePlan>) {
+    private fun populateImmunizationList(listCarePlan: List<CarePlanItem>) {
         carePlanAdapter.submitList(listCarePlan)
         carePlanAdapter.notifyDataSetChanged()
     }

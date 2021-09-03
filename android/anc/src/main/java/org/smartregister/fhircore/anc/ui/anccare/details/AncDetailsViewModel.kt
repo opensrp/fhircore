@@ -24,12 +24,15 @@ import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.*
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils
+import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import java.text.SimpleDateFormat
+import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractGender
+import org.smartregister.fhircore.engine.util.extension.extractName
 import java.util.*
-import java.util.Locale.filter
 
 class AncDetailsViewModel(
     var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
@@ -37,15 +40,43 @@ class AncDetailsViewModel(
     val patientId: String
 ) : ViewModel() {
 
-    val patientDemographics = MutableLiveData<Patient>()
-    val patientCarePlan = MutableLiveData<List<CarePlan>>()
+    private var address: String = ""
+    private lateinit var ancPatientItemHead: AncPatientItem
+    val patientDemographics = MutableLiveData<AncPatientDetailItem>()
+    val patientCarePlan = MutableLiveData<List<CarePlanItem>>()
 
     // Todo migrate to PatientRepository to follow repository pattern
     fun fetchDemographics() {
         if (patientId.isNotEmpty())
             viewModelScope.launch(dispatcher.io()) {
                 val patient = fhirEngine.load(Patient::class.java, patientId)
-                patientDemographics.postValue(patient)
+                if (patient.link.isNotEmpty()) {
+                    val patientHead = fhirEngine.load(
+                        Patient::class.java,
+                        patient.link[0].other.reference.replace("Patient/", "")
+                    )
+                    if (patientHead.address.isNotEmpty()){
+                        address = patientHead.address[0].country
+                    }
+                    ancPatientItemHead = AncPatientItem(
+                        patientHead.id,
+                        patientHead.extractName(),
+                        patientHead.extractGender(),
+                        patientHead.extractAge(),
+                        address
+                    )
+                } else {
+                        ancPatientItemHead = AncPatientItem()
+                }
+
+                val ancPatientItem = AncPatientItem(
+                    patientId,
+                    patient.extractName(),
+                    patient.extractGender(),
+                    patient.extractAge()
+                )
+                val ancPatientDetailItem = AncPatientDetailItem(ancPatientItem, ancPatientItemHead)
+                patientDemographics.postValue(ancPatientDetailItem)
             }
     }
 
@@ -55,9 +86,9 @@ class AncDetailsViewModel(
         val iParser: IParser = FhirContext.forR4().newJsonParser()
         if (patientId.isNotEmpty())
             viewModelScope.launch(dispatcher.io()) {
-                val listCarePlan = arrayListOf<CarePlan>()
+                val listCarePlan = arrayListOf<CarePlanItem>()
                 val carePlan = iParser.parseResource(qJson) as CarePlan
-                listCarePlan.add(carePlan)
+                listCarePlan.add(CarePlanItem(carePlan.title, carePlan.period.start))
                 patientCarePlan.postValue(listCarePlan)
             }
     }
