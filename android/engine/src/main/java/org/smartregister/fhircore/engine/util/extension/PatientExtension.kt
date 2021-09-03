@@ -16,12 +16,13 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.content.Context
-import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import java.time.Instant
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
+import org.smartregister.fhircore.engine.sdk.PatientExtended
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.parser
 
 fun Patient.extractName(): String {
   if (!hasName()) return ""
@@ -53,10 +54,15 @@ fun Patient.extractAge(): String {
 
 fun Patient.extractAddress(): String {
   if (!hasAddress()) return ""
-  return with(addressFirstRep) { "${district?:""} $city" }
+  return with(addressFirstRep) { "${district ?: ""} $city" }
 }
 
 fun Patient.atRisk(riskCode: String) =
   this.extension.singleOrNull { it.value.toString().contains(riskCode) }?.value?.toString() ?: ""
 
 fun Patient.isPregnant() = this.extension.any { it.value.toString().contains("pregnant", true) }
+
+fun extractExtendedPatient(patient: Patient): PatientExtended {
+  val patientEncoded = parser.encodeResourceToString(patient)
+  return parser.parseResource(PatientExtended::class.java, patientEncoded)
+}
