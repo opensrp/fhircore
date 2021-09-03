@@ -69,7 +69,8 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
   private fun handlePatientDemographics(family: Patient) {
     with(family) {
-      findViewById<TextView>(R.id.familyName).text = name?.firstOrNull()?.given?.firstOrNull()?.value
+      findViewById<TextView>(R.id.familyName).text =
+        name?.firstOrNull()?.given?.firstOrNull()?.value
       findViewById<TextView>(R.id.familySurname).text = name?.firstOrNull()?.family
     }
   }

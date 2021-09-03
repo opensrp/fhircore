@@ -21,7 +21,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
-import org.smartregister.fhircore.engine.util.DateUtils
 
 class FamilyMemberItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val demographics: TextView = itemView.findViewById(R.id.tv_member_demographics)
