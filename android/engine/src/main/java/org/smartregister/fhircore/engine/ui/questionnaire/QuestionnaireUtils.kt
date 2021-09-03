@@ -194,7 +194,7 @@ object QuestionnaireUtils {
   ): Flag? {
     // no risk then no flag
     if (riskAssessment.prediction[0].relativeRisk.equals(0) ||
-      !riskAssessment.prediction[0].hasOutcome()
+        !riskAssessment.prediction[0].hasOutcome()
     ) {
       return null
     }
@@ -342,8 +342,8 @@ object QuestionnaireUtils {
 
         // todo revisit this when calculate expression is working
         if (isRiskObs &&
-          ((obs.hasValueBooleanType() && obs.valueBooleanType.booleanValue()) ||
-                  (obs.hasValueStringType() && obs.hasValue()))
+            ((obs.hasValueBooleanType() && obs.valueBooleanType.booleanValue()) ||
+              (obs.hasValueStringType() && obs.hasValue()))
         ) {
           riskScore++
 

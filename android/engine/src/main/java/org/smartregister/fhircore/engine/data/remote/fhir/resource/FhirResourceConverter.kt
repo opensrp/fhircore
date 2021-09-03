@@ -27,9 +27,9 @@ import retrofit2.Retrofit
 /** Subclass of [Converter.Factory] class used for parsing FHIR [Resource] */
 class FhirConverterFactory(private val parser: IParser) : Converter.Factory() {
   override fun responseBodyConverter(
-      type: Type,
-      annotations: Array<Annotation>,
-      retrofit: Retrofit
+    type: Type,
+    annotations: Array<Annotation>,
+    retrofit: Retrofit
   ): Converter<ResponseBody, *> {
     return FhirConverter(parser)
   }

@@ -73,7 +73,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener 
           bundleOf(
             BUNDLE_KEY_QUESTIONNAIRE to parser.encodeResourceToString(getQuestionnaire()),
             BUNDLE_KEY_QUESTIONNAIRE_RESPONSE to
-                    parser.encodeResourceToString(getQuestionnaireResponse())
+              parser.encodeResourceToString(getQuestionnaireResponse())
           )
       }
         ?: kotlin.run {
@@ -122,9 +122,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener 
     var questionnaireResponse = QuestionnaireResponse()
 
     intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)?.let {
-      val patient = runBlocking {
-        viewModel.fhirEngine.load(Patient::class.java, it)
-      }
+      val patient = runBlocking { viewModel.fhirEngine.load(Patient::class.java, it) }
 
       patient.let {
         questionnaireResponse = runBlocking { ResourceMapper.populate(questionnaire, patient) }
@@ -144,11 +142,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener 
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR = "bypass-sdk-extractor"
 
-    fun getExtrasBundle(
-      clientIdentifier: String,
-      title: String,
-      id: String
-    ) =
+    fun getExtrasBundle(clientIdentifier: String, title: String, id: String) =
       bundleOf(
         Pair(QUESTIONNAIRE_TITLE_KEY, title),
         Pair(QUESTIONNAIRE_PATH_KEY, id),

@@ -104,9 +104,14 @@ dependencies {
     api 'com.jakewharton.timber:timber:5.0.0'
 
     def retrofitVersion = '2.9.0'
+
     api "com.squareup.retrofit2:retrofit:$retrofitVersion"
     api "com.squareup.retrofit2:converter-gson:$retrofitVersion"
     api "com.squareup.retrofit2:retrofit-mock:$retrofitVersion"
+
+    def okhttpVersion = '4.9.1'
+    api "com.squareup.okhttp3:okhttp:$okhttpVersion"
+    api "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutineVersion"
