@@ -21,48 +21,42 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import org.hl7.fhir.r4.model.CarePlan
+import java.util.Date
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.databinding.ItemCareplanBinding
-import java.util.*
 
 /** Subclass of [ListAdapter] used to display careplan for the ANC client */
 class CarePlanAdapter :
-    ListAdapter<CarePlanItem, CarePlanAdapter.PatientCarePlanViewHolder>(
-        ImmunizationItemDiffCallback
-    ) {
+  ListAdapter<CarePlanItem, CarePlanAdapter.PatientCarePlanViewHolder>(
+    ImmunizationItemDiffCallback
+  ) {
 
-    inner class PatientCarePlanViewHolder(private val containerView: ItemCareplanBinding) :
-        RecyclerView.ViewHolder(containerView.root) {
-        fun bindTo(immunizationItem: CarePlanItem) {
-            with(immunizationItem) {
-                val datePassed = this.periodStartDate.before(Date())
-                containerView.carPlanDatePassed = datePassed
-                containerView.carPlanTitle =
-                    if (datePassed) this.title + " Overdue" else this.title
-            }
-        }
+  inner class PatientCarePlanViewHolder(private val containerView: ItemCareplanBinding) :
+    RecyclerView.ViewHolder(containerView.root) {
+    fun bindTo(immunizationItem: CarePlanItem) {
+      with(immunizationItem) {
+        val datePassed = this.periodStartDate.before(Date())
+        containerView.carPlanDatePassed = datePassed
+        containerView.carPlanTitle = if (datePassed) this.title + " Overdue" else this.title
+      }
     }
+  }
 
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PatientCarePlanViewHolder {
+    val inflater = LayoutInflater.from(parent.context)
+    val binding = ItemCareplanBinding.inflate(inflater)
+    return PatientCarePlanViewHolder(binding)
+  }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int
-    ): PatientCarePlanViewHolder {
-        val inflater = LayoutInflater.from(parent.context)
-        val binding = ItemCareplanBinding.inflate(inflater)
-        return PatientCarePlanViewHolder(binding)
-    }
+  override fun onBindViewHolder(holder: PatientCarePlanViewHolder, position: Int) {
+    holder.bindTo(getItem(position))
+  }
 
-    override fun onBindViewHolder(holder: PatientCarePlanViewHolder, position: Int) {
-        holder.bindTo(getItem(position))
-    }
+  object ImmunizationItemDiffCallback : DiffUtil.ItemCallback<CarePlanItem>() {
+    override fun areItemsTheSame(oldItem: CarePlanItem, newItem: CarePlanItem) =
+      oldItem.title == newItem.title
 
-    object ImmunizationItemDiffCallback : DiffUtil.ItemCallback<CarePlanItem>() {
-        override fun areItemsTheSame(oldItem: CarePlanItem, newItem: CarePlanItem) =
-            oldItem.title == newItem.title
-
-        override fun areContentsTheSame(oldItem: CarePlanItem, newItem: CarePlanItem) =
-            oldItem.equals(newItem)
-    }
+    override fun areContentsTheSame(oldItem: CarePlanItem, newItem: CarePlanItem) =
+      oldItem.equals(newItem)
+  }
 }

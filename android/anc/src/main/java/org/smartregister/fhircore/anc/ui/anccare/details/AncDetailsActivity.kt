@@ -23,7 +23,6 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import org.smartregister.fhircore.anc.R
@@ -34,61 +33,54 @@ import org.smartregister.fhircore.engine.util.FormConfigUtil
 
 class AncDetailsActivity : BaseMultiLanguageActivity() {
 
-    private lateinit var patientId: String
+  private lateinit var patientId: String
 
-    private lateinit var activityAncDetailsBinding: ActivityAncDetailsBinding
+  private lateinit var activityAncDetailsBinding: ActivityAncDetailsBinding
 
-    private lateinit var ancFormConfig: AncFormConfig
+  private lateinit var ancFormConfig: AncFormConfig
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        activityAncDetailsBinding =
-            DataBindingUtil.setContentView(this, R.layout.activity_anc_details)
-        setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    activityAncDetailsBinding = DataBindingUtil.setContentView(this, R.layout.activity_anc_details)
+    setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
 
-        if (savedInstanceState == null) {
-            ancFormConfig = FormConfigUtil.loadConfig(AncFormConfig.ANC_DETAIL_VIEW_CONFIG_ID, this)
+    if (savedInstanceState == null) {
+      ancFormConfig = FormConfigUtil.loadConfig(AncFormConfig.ANC_DETAIL_VIEW_CONFIG_ID, this)
 
-            patientId = intent.extras?.getString(AncFormConfig.ANC_ARG_ITEM_ID) ?: ""
+      patientId = intent.extras?.getString(AncFormConfig.ANC_ARG_ITEM_ID) ?: ""
 
-            supportFragmentManager
-                .beginTransaction()
-                .replace(
-                    R.id.container,
-                    AncDetailsFragment.newInstance(
-                        bundleOf(Pair(AncFormConfig.ANC_ARG_ITEM_ID, patientId))
-                    )
-                )
-                .commitNow()
-        }
-
-        activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener {
-            onBackPressed()
-        }
-
-
+      supportFragmentManager
+        .beginTransaction()
+        .replace(
+          R.id.container,
+          AncDetailsFragment.newInstance(bundleOf(Pair(AncFormConfig.ANC_ARG_ITEM_ID, patientId)))
+        )
+        .commitNow()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.profile_menu, menu)
-        val mColorFullMenuBtn = menu!!.findItem(R.id.remove_this_person) // extract the menu item here
-        val title = mColorFullMenuBtn.title.toString()
-        if (title != null) {
-            val s = SpannableString(title)
-            with(s) {
-                setSpan(
-                    ForegroundColorSpan(Color.parseColor("#DD0000")),
-                    0,
-                    length,
-                    Spannable.SPAN_INCLUSIVE_INCLUSIVE
-                )
-            } // provide whatever color you want here.
-            mColorFullMenuBtn.title = s
-        }
-        return super.onCreateOptionsMenu(menu)
-    }
+    activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
+  }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return super.onOptionsItemSelected(item)
+  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    menuInflater.inflate(R.menu.profile_menu, menu)
+    val mColorFullMenuBtn = menu!!.findItem(R.id.remove_this_person) // extract the menu item here
+    val title = mColorFullMenuBtn.title.toString()
+    if (title != null) {
+      val s = SpannableString(title)
+      with(s) {
+        setSpan(
+          ForegroundColorSpan(Color.parseColor("#DD0000")),
+          0,
+          length,
+          Spannable.SPAN_INCLUSIVE_INCLUSIVE
+        )
+      } // provide whatever color you want here.
+      mColorFullMenuBtn.title = s
     }
+    return super.onCreateOptionsMenu(menu)
+  }
+
+  override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    return super.onOptionsItemSelected(item)
+  }
 }
