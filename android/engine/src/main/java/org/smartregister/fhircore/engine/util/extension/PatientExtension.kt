@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.content.Context
 import java.time.Instant
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -36,7 +35,7 @@ private fun String.toTitleCase() = replaceFirstChar {
   if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
 }
 
-fun Patient.extractGender(context: Context) =
+fun Patient.extractGender() =
   when (AdministrativeGender.valueOf(this.gender.name)) {
     AdministrativeGender.MALE -> "M"
     AdministrativeGender.FEMALE -> "F"

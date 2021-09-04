@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.data.model
 
 import androidx.compose.runtime.Stable
+import java.util.Date
 
 @Stable
 data class AncPatientItem(
@@ -27,3 +28,11 @@ data class AncPatientItem(
   val demographics: String = "",
   val atRisk: String = ""
 )
+
+@Stable
+data class AncPatientDetailItem(
+  val patientDetails: AncPatientItem,
+  val patientDetailsHead: AncPatientItem,
+)
+
+@Stable data class CarePlanItem(val title: String, val periodStartDate: Date)
