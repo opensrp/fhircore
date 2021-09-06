@@ -24,7 +24,6 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.AncPatientPaginatedDataSource
 import org.smartregister.fhircore.anc.form.config.AncFormConfig
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.buildQuestionnaireIntent
@@ -40,8 +39,6 @@ class AncRegisterActivity : BaseRegisterActivity() {
 
   private lateinit var ancFormConfig: AncFormConfig
 
-  private val ancItemMapper = AncItemMapper
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     configureViews(registerViewConfigurationOf().apply { appTitle = getString(R.string.app_name) })
@@ -50,7 +47,7 @@ class AncRegisterActivity : BaseRegisterActivity() {
   override fun sideMenuOptions(): List<SideMenuOption> =
     listOf(
       SideMenuOption(
-        itemId = ANC_MENU_OPTION,
+        itemId = R.id.menu_item_anc,
         titleResource = R.string.app_name,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
         opensMainRegister = false
@@ -88,15 +85,5 @@ class AncRegisterActivity : BaseRegisterActivity() {
     }
   }
 
-  override fun supportedFragments(): List<Fragment> {
-    val registerFragment =
-      AncRegisterFragment().apply {
-        paginatedDataSource = AncPatientPaginatedDataSource(fhirEngine, ancItemMapper)
-      }
-    return listOf(registerFragment)
-  }
-
-  companion object {
-    const val ANC_MENU_OPTION = 1000
-  }
+  override fun supportedFragments(): List<Fragment> = listOf(AncRegisterFragment())
 }

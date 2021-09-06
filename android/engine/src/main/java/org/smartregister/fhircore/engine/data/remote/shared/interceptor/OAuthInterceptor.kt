@@ -29,7 +29,7 @@ class OAuthInterceptor(val context: Context) : Interceptor {
     val segments = mutableListOf("protocol", "openid-connect", "token")
     if (!request.url.pathSegments.containsAll(segments)) {
       val token = SecureSharedPreference(context).retrieveSessionToken()
-//      if (token.isNullOrEmpty()) throw IllegalStateException("No session token found")
+      //      if (token.isNullOrEmpty()) throw IllegalStateException("No session token found")
       Timber.i("Passing auth token for %s", request.url.toString())
       request = request.newBuilder().addHeader("Authorization", "Bearer $token").build()
     }

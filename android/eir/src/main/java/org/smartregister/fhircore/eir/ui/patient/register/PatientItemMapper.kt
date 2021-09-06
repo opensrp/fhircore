@@ -29,10 +29,10 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
+import org.smartregister.fhircore.eir.data.model.PatientItem
+import org.smartregister.fhircore.eir.data.model.PatientVaccineStatus
+import org.smartregister.fhircore.eir.data.model.VaccineStatus
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientItem
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.PatientVaccineStatus
-import org.smartregister.fhircore.engine.data.local.repository.patient.model.VaccineStatus
 
 object PatientItemMapper : DomainMapper<Pair<Patient, List<Immunization>>, PatientItem> {
   private val simpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.ENGLISH)
@@ -53,10 +53,6 @@ object PatientItemMapper : DomainMapper<Pair<Patient, List<Immunization>>, Patie
       vaccineStatus = immunizations.getVaccineStatus(),
       atRisk = patient.atRisk()
     )
-  }
-
-  override fun mapFromDomainModel(domainModel: PatientItem): Pair<Patient, List<Immunization>> {
-    return Pair(Patient(), listOf())
   }
 
   private fun Patient.getLastSeen(immunizations: List<Immunization>): String {
