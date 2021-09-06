@@ -18,6 +18,7 @@ package org.smartregister.fhircore.anc.ui.anccare.register
 
 import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.extension.atRisk
@@ -30,7 +31,7 @@ object AncItemMapper : DomainMapper<Patient, AncPatientItem> {
 
   override fun mapToDomainModel(dto: Patient): AncPatientItem {
     val name = dto.extractName()
-    val gender = dto.extractGender().first()
+    val gender = dto.extractGender(AncApplication.getContext()).first()
     val age = dto.extractAge()
     return AncPatientItem(
       patientIdentifier = dto.logicalId,

@@ -63,6 +63,10 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
 
   override fun onCreateOptionsMenu(menu: Menu?): Boolean {
     menuInflater.inflate(R.menu.profile_menu, menu)
+    return super.onCreateOptionsMenu(menu)
+  }
+
+  override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
     val mColorFullMenuBtn = menu!!.findItem(R.id.remove_this_person) // extract the menu item here
     val title = mColorFullMenuBtn.title.toString()
     if (title != null) {
@@ -77,7 +81,7 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
       } // provide whatever color you want here.
       mColorFullMenuBtn.title = s
     }
-    return super.onCreateOptionsMenu(menu)
+    return super.onPrepareOptionsMenu(menu)
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {

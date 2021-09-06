@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.data.AncPatientRepository
 import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
@@ -39,6 +40,8 @@ class AncDetailsFragment private constructor() : Fragment() {
   private lateinit var fhirEngine: FhirEngine
 
   lateinit var ancDetailsViewModel: AncDetailsViewModel
+
+  private lateinit var ancPatientRepository: AncPatientRepository
 
   private val carePlanAdapter = CarePlanAdapter()
 
@@ -61,20 +64,29 @@ class AncDetailsFragment private constructor() : Fragment() {
 
     setupViews()
 
+    ancPatientRepository =
+      AncPatientRepository(
+        (requireActivity().application as AncApplication).fhirEngine,
+        AncPatientItemMapper
+      )
+
     ancDetailsViewModel =
       ViewModelProvider(
         this,
-        AncDetailsViewModel(fhirEngine = fhirEngine, patientId = patientId).createFactory()
+        AncDetailsViewModel(ancPatientRepository, patientId = patientId).createFactory()
       )[AncDetailsViewModel::class.java]
 
     binding.txtViewPatientId.text = patientId
 
-    ancDetailsViewModel.patientDemographics.observe(
-      viewLifecycleOwner,
-      this::handlePatientDemographics
-    )
+    ancDetailsViewModel
+      .fetchDemographics()
+      .observe(viewLifecycleOwner, this::handlePatientDemographics)
 
-    ancDetailsViewModel.patientCarePlan.observe(viewLifecycleOwner, this::handleCarePlan)
+    ancDetailsViewModel
+      .fetchCarePlan(
+        context?.assets?.open("careplan_sample.json")?.bufferedReader().use { it?.readText() }
+      )
+      .observe(viewLifecycleOwner, this::handleCarePlan)
   }
 
   private fun setupViews() {
@@ -86,13 +98,6 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   override fun onResume() {
     super.onResume()
-    ancDetailsViewModel.run {
-      fetchDemographics()
-      fetchCarePlan(
-        patientId,
-        context?.assets?.open("careplan_sample.json")?.bufferedReader().use { it?.readText() }
-      )
-    }
   }
 
   companion object {
@@ -130,6 +135,5 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   private fun populateImmunizationList(listCarePlan: List<CarePlanItem>) {
     carePlanAdapter.submitList(listCarePlan)
-    carePlanAdapter.notifyDataSetChanged()
   }
 }

@@ -33,8 +33,8 @@ class CarePlanAdapter :
 
   inner class PatientCarePlanViewHolder(private val containerView: ItemCareplanBinding) :
     RecyclerView.ViewHolder(containerView.root) {
-    fun bindTo(immunizationItem: CarePlanItem) {
-      with(immunizationItem) {
+    fun bindTo(carePlanItem: CarePlanItem) {
+      with(carePlanItem) {
         val datePassed = this.periodStartDate.before(Date())
         containerView.carPlanDatePassed = datePassed
         containerView.carPlanTitle = if (datePassed) this.title + " Overdue" else this.title

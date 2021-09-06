@@ -31,8 +31,8 @@ data class AncPatientItem(
 
 @Stable
 data class AncPatientDetailItem(
-  val patientDetails: AncPatientItem,
-  val patientDetailsHead: AncPatientItem,
+  val patientDetails: AncPatientItem = AncPatientItem(),
+  val patientDetailsHead: AncPatientItem = AncPatientItem(),
 )
 
 @Stable data class CarePlanItem(val title: String, val periodStartDate: Date)
