@@ -27,17 +27,18 @@ interface RegisterRepository<I : Any, O> {
 
   val domainMapper: DomainMapper<I, O>
 
-  val defaultPageSize: Int
-    get() = PaginationUtil.DEFAULT_PAGE_SIZE
-
   val fhirEngine: FhirEngine
 
   /**
-   * Method to read data from the local database. This method will return paginated data for the run
+   * Read data from the local database. This method will return paginated data for the executed
    * [query]
    */
   suspend fun loadData(
     query: String = "",
     pageNumber: Int,
+    loadAll: Boolean
   ): List<O>
+
+  /** Return the total count of all records for the register */
+  suspend fun countAll(): Long
 }

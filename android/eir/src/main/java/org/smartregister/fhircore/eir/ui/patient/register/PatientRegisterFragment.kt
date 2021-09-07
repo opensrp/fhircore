@@ -17,10 +17,10 @@
 package org.smartregister.fhircore.eir.ui.patient.register
 
 import android.content.Intent
-import android.os.Bundle
-import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -35,6 +35,7 @@ import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.eir.ui.patient.register.components.PatientRegisterList
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
+import org.smartregister.fhircore.engine.ui.components.PaginatedRegister
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
@@ -43,32 +44,6 @@ import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class PatientRegisterFragment :
   ComposeRegisterFragment<Pair<Patient, List<Immunization>>, PatientItem>() {
-
-  override lateinit var registerDataViewModel:
-    RegisterDataViewModel<Pair<Patient, List<Immunization>>, PatientItem>
-
-  private lateinit var patientRepository: PatientRepository
-
-  @Suppress("UNCHECKED_CAST")
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    super.onViewCreated(view, savedInstanceState)
-
-    patientRepository =
-      PatientRepository(
-        (requireActivity().application as EirApplication).fhirEngine,
-        PatientItemMapper
-      )
-    registerDataViewModel =
-      ViewModelProvider(
-        requireActivity(),
-        RegisterDataViewModel(
-            application = requireActivity().application,
-            registerRepository = patientRepository
-          )
-          .createFactory()
-      )[RegisterDataViewModel::class.java] as
-        RegisterDataViewModel<Pair<Patient, List<Immunization>>, PatientItem>
-  }
 
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
@@ -81,10 +56,23 @@ class PatientRegisterFragment :
   @Composable
   override fun ConstructRegisterList() {
     val registerData = registerDataViewModel.registerData.collectAsState(emptyFlow())
-    PatientRegisterList(
-      pagingItems = registerData.value.collectAsLazyPagingItems(),
-      modifier = Modifier,
-      clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
+    val pagingItems = registerData.value.collectAsLazyPagingItems()
+    val showResults by registerDataViewModel.showResultsCount.observeAsState(false)
+
+    PaginatedRegister(
+      showResultsCount = showResults,
+      resultCount = pagingItems.itemCount,
+      body = {
+        PatientRegisterList(
+          pagingItems = pagingItems,
+          modifier = Modifier,
+          clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
+        )
+      },
+      currentPage = registerDataViewModel.currentPage(),
+      pagesCount = registerDataViewModel.countPages(),
+      previousButtonClickListener = { registerDataViewModel.previousPage() },
+      nextButtonClickListener = { registerDataViewModel.nextPage() }
     )
   }
 
@@ -118,5 +106,24 @@ class PatientRegisterFragment :
         else return true
       }
     }
+  }
+
+  @Suppress("UNCHECKED_CAST")
+  override fun initializeRegisterDataViewModel():
+    RegisterDataViewModel<Pair<Patient, List<Immunization>>, PatientItem> {
+    val patientRepository =
+      PatientRepository(
+        (requireActivity().application as EirApplication).fhirEngine,
+        PatientItemMapper
+      )
+    return ViewModelProvider(
+      requireActivity(),
+      RegisterDataViewModel(
+          application = requireActivity().application,
+          registerRepository = patientRepository
+        )
+        .createFactory()
+    )[RegisterDataViewModel::class.java] as
+      RegisterDataViewModel<Pair<Patient, List<Immunization>>, PatientItem>
   }
 }

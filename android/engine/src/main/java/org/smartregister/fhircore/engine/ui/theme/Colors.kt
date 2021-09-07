@@ -22,7 +22,7 @@ import androidx.compose.ui.graphics.Color
 
 val DividerColor = Color.LightGray
 val SubtitleTextColor = Color(0xFF7A7A7A)
-val LighterGreyColor = Color(0xFFAEAEAE)
+val GreyTextColor = Color(0xFF7A7A7A)
 val SuccessColor = Color(0xFF1DB11B)
 val OverdueColor = Color(0xFFFF333F)
 val WarningColor = Color(0xFFFFA500)

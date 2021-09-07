@@ -21,6 +21,7 @@ import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
+import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.Result
 import com.google.android.fhir.sync.Sync
@@ -55,7 +56,7 @@ fun Application.buildDatasource(
   )
 }
 
-suspend fun FhirEngine.searchPatients(query: String, pageNumber: Int) =
+suspend fun FhirEngine.searchPatients(query: String, pageNumber: Int, loadAll: Boolean = false) =
   this.search<Patient> {
     filter(Patient.ACTIVE, true)
     if (query.isNotBlank()) {
@@ -65,6 +66,11 @@ suspend fun FhirEngine.searchPatients(query: String, pageNumber: Int) =
       }
     }
     sort(Patient.NAME, Order.ASCENDING)
-    count = PaginationUtil.DEFAULT_PAGE_SIZE
+    count =
+      if (loadAll) this@searchPatients.countActivePatients().toInt()
+      else PaginationUtil.DEFAULT_PAGE_SIZE
     from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
   }
+
+suspend fun FhirEngine.countActivePatients(): Long =
+  this.count<Patient> { filter(Patient.ACTIVE, true) }

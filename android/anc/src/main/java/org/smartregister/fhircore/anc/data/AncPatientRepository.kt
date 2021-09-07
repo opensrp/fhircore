@@ -24,6 +24,7 @@ import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.searchPatients
 
 class AncPatientRepository(
@@ -35,10 +36,18 @@ class AncPatientRepository(
   override suspend fun loadData(
     query: String,
     pageNumber: Int,
+    loadAll: Boolean
   ): List<AncPatientItem> {
     return withContext(dispatcherProvider.io()) {
-      val patients = fhirEngine.searchPatients(query, pageNumber)
+      val patients = fhirEngine.searchPatients(
+        query = query,
+        pageNumber = pageNumber,
+        loadAll = loadAll
+      )
       patients.map { domainMapper.mapToDomainModel(it) }
     }
   }
+
+  override suspend fun countAll(): Long =
+    withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
 }

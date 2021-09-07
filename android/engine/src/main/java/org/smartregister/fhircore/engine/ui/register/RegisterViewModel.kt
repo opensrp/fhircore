@@ -50,16 +50,17 @@ class RegisterViewModel(
   val dispatcher: DispatcherProvider = DefaultDispatcherProvider
 ) : AndroidViewModel(application) {
 
+  private val _searchActive = MutableLiveData(false)
+  val searchActive
+    get() = _searchActive
+
   private val _filterValue = MutableLiveData<Pair<RegisterFilterType, Any>>()
   val filterValue
     get() = _filterValue
 
-  private val _currentPage = MutableLiveData(0)
-  val currentPage
-    get() = _currentPage
-
   private val applicationConfiguration =
     (getApplication<Application>() as ConfigurableApplication).applicationConfiguration
+
   private val fhirEngine = (application as ConfigurableApplication).fhirEngine
 
   lateinit var languages: List<Language>
@@ -71,7 +72,9 @@ class RegisterViewModel(
       SharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
         ?: Locale.ENGLISH.toLanguageTag()
     )
+
   val registerViewConfiguration = MutableLiveData(registerViewConfiguration)
+
   fun updateViewConfigurations(registerViewConfiguration: RegisterViewConfiguration) {
     this.registerViewConfiguration.value = registerViewConfiguration
   }
@@ -115,11 +118,7 @@ class RegisterViewModel(
     _filterValue.value = Pair(registerFilterType, newValue)
   }
 
-  fun backToPreviousPage() {
-    if (_currentPage.value!! > 0) _currentPage.value = _currentPage.value?.minus(1)
-  }
-
-  fun nextPage() {
-    _currentPage.value = _currentPage.value?.plus(1)
+  fun updateSearch(searchActive: Boolean) {
+    _searchActive.value = searchActive
   }
 }

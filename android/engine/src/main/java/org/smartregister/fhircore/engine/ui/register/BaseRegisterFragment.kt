@@ -28,7 +28,7 @@ import org.smartregister.fhircore.engine.util.ListenerIntent
 
 abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
 
-  abstract val registerDataViewModel: RegisterDataViewModel<I, O>
+  protected lateinit var registerDataViewModel: RegisterDataViewModel<I, O>
 
   protected val registerViewModel by activityViewModels<RegisterViewModel>()
 
@@ -68,11 +68,25 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
       }
     )
 
-    registerViewModel.currentPage.observe(
+    registerViewModel.searchActive.observe(
       viewLifecycleOwner,
-      { registerDataViewModel.loadPageData(it) }
+      { searchActive ->
+        if (!searchActive) {
+          registerDataViewModel.currentPage.value?.let { registerDataViewModel.loadPageData(it) }
+        }
+        registerDataViewModel.updateShowResultsCount(searchActive)
+      }
     )
+
+    registerDataViewModel =
+      initializeRegisterDataViewModel().apply {
+        this.currentPage.observe(viewLifecycleOwner, { registerDataViewModel.loadPageData(it) })
+      }
   }
+
+  /** Initialize the [RegisterDataViewModel] class */
+  @Suppress("UNCHECKED_CAST")
+  abstract fun initializeRegisterDataViewModel(): RegisterDataViewModel<I, O>
 
   /**
    * Generic function to perform any filtering of type [registerFilterType] on the [data]. Returns

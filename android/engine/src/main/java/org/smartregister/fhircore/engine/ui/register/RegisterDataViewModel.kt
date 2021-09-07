@@ -18,11 +18,13 @@ package org.smartregister.fhircore.engine.ui.register
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.filter
+import kotlin.math.ceil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -41,10 +43,25 @@ class RegisterDataViewModel<I : Any, O : Any>(
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : AndroidViewModel(application) {
 
-  private val originalData: MutableStateFlow<Flow<PagingData<O>>> =
-    MutableStateFlow(getPagingData(0))
+  private val _showResultsCount = MutableLiveData(false)
+  val showResultsCount
+    get() = _showResultsCount
+
+  private val _totalRecordsCount = MutableLiveData(1L)
+
+  private val _currentPage = MutableLiveData(0)
+  val currentPage
+    get() = _currentPage
+
+  private val allRegisterData: MutableStateFlow<Flow<PagingData<O>>> =
+    MutableStateFlow(getPagingData(currentPage = 0, loadAll = true))
 
   var registerData: MutableStateFlow<Flow<PagingData<O>>> = MutableStateFlow(emptyFlow())
+
+  init {
+    updateShowResultsCount(false)
+    viewModelScope.launch { _totalRecordsCount.postValue(registerRepository.countAll()) }
+  }
 
   /**
    * Perform filter on the paginated data by invoking the [registerFilter] lambda, passing
@@ -58,7 +75,7 @@ class RegisterDataViewModel<I : Any, O : Any>(
   ) {
     viewModelScope.launch(dispatcherProvider.io()) {
       registerData.value =
-        originalData.value.map { pagingData: PagingData<O> ->
+        allRegisterData.value.map { pagingData: PagingData<O> ->
           pagingData.filter { registerFilter(registerFilterType, it, filterValue) }
         }
     }
@@ -66,28 +83,43 @@ class RegisterDataViewModel<I : Any, O : Any>(
 
   fun loadPageData(currentPage: Int) {
     viewModelScope.launch(dispatcherProvider.io()) {
-      registerData.run { value = getPagingData(currentPage) }
+      registerData.run { value = getPagingData(currentPage = currentPage, loadAll = false) }
     }
   }
 
-  private fun getPagingData(currentPage: Int) =
+  private fun getPagingData(currentPage: Int, loadAll: Boolean) =
     Pager(
         config =
           PagingConfig(
             pageSize = PaginationUtil.DEFAULT_PAGE_SIZE,
-            initialLoadSize = PaginationUtil.DEFAULT_INITIAL_LOAD_SIZE
+            initialLoadSize = PaginationUtil.DEFAULT_INITIAL_LOAD_SIZE,
           ),
         pagingSourceFactory = {
-          paginatedDataSourceInstance().apply { this.currentPage = currentPage }
+          PaginatedDataSource(registerRepository).apply {
+            this.loadAll = loadAll
+            this.currentPage = currentPage
+          }
         }
       )
       .flow
 
-  /**
-   * Extend function so as to ensure that the pagingSourceFactory passed to Pager always returns a
-   * new instance of [PaginatedDataSource]
-   */
-  private fun paginatedDataSourceInstance(): PaginatedDataSource<I, O> {
-    return PaginatedDataSource(registerRepository)
+  fun previousPage() {
+    this._currentPage.value?.let { if (it > 0) _currentPage.value = it.minus(1) }
+  }
+
+  fun nextPage() {
+    this._currentPage.value = this._currentPage.value?.plus(1)
+  }
+
+  fun currentPage() = this.currentPage.value?.plus(1) ?: 1
+
+  fun countPages() =
+    _totalRecordsCount.value?.toDouble()?.div(PaginationUtil.DEFAULT_PAGE_SIZE.toLong())?.let {
+      ceil(it).toInt()
+    }
+      ?: 1
+
+  fun updateShowResultsCount(showResult: Boolean) {
+    this._showResultsCount.value = showResult
   }
 }

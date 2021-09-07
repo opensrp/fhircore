@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.anc.ui.anccare.register
 
 import android.content.Intent
-import android.os.Bundle
-import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
@@ -40,30 +38,6 @@ import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
-
-  override lateinit var registerDataViewModel: RegisterDataViewModel<Patient, AncPatientItem>
-
-  private lateinit var ancPatientRepository: AncPatientRepository
-
-  @Suppress("UNCHECKED_CAST")
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    super.onViewCreated(view, savedInstanceState)
-    ancPatientRepository =
-      AncPatientRepository(
-        (requireActivity().application as AncApplication).fhirEngine,
-        AncItemMapper
-      )
-    registerDataViewModel =
-      ViewModelProvider(
-        requireActivity(),
-        RegisterDataViewModel(
-            application = requireActivity().application,
-            registerRepository = ancPatientRepository
-          )
-          .createFactory()
-      )[RegisterDataViewModel::class.java] as
-        RegisterDataViewModel<Patient, AncPatientItem>
-  }
 
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
@@ -114,5 +88,23 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
         return false // todo
       }
     }
+  }
+
+  @Suppress("UNCHECKED_CAST")
+  override fun initializeRegisterDataViewModel(): RegisterDataViewModel<Patient, AncPatientItem> {
+    val ancPatientRepository =
+      AncPatientRepository(
+        (requireActivity().application as AncApplication).fhirEngine,
+        AncItemMapper
+      )
+    return ViewModelProvider(
+      requireActivity(),
+      RegisterDataViewModel(
+          application = requireActivity().application,
+          registerRepository = ancPatientRepository
+        )
+        .createFactory()
+    )[RegisterDataViewModel::class.java] as
+      RegisterDataViewModel<Patient, AncPatientItem>
   }
 }

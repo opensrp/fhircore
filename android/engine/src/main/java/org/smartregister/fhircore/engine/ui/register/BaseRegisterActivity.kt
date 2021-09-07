@@ -39,7 +39,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.FhirEngine
 import com.google.android.material.navigation.NavigationView
 import java.util.Locale
-import kotlin.math.ceil
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.BR
 import org.smartregister.fhircore.engine.R
@@ -47,7 +46,6 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplicati
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
@@ -61,10 +59,8 @@ import org.smartregister.fhircore.engine.util.extension.addOnDrawableClickListen
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.getDrawable
-import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
-import org.smartregister.fhircore.engine.util.extension.show
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.toggleVisibility
 
@@ -106,14 +102,6 @@ abstract class BaseRegisterActivity :
       )[RegisterViewModel::class.java]
 
     registerViewModel.registerViewConfiguration.observe(this, this::setupConfigurableViews)
-    registerViewModel.currentPage.observe(
-      this,
-      { currentPage ->
-        selectedMenuOption?.count?.let { recordsCount ->
-          updatePaginationViews(recordsCount, currentPage + 1)
-        }
-      }
-    )
 
     registerViewModel.run {
       loadLanguages()
@@ -179,16 +167,6 @@ abstract class BaseRegisterActivity :
 
     setupSearchView()
     setupDueButtonView()
-    setupPagination()
-  }
-
-  private fun setupPagination() {
-    with(registerActivityBinding) {
-      previousPageButton.setOnClickListener {
-        this@BaseRegisterActivity.registerViewModel.backToPreviousPage()
-      }
-      nextPageButton.setOnClickListener { this@BaseRegisterActivity.registerViewModel.nextPage() }
-    }
   }
 
   @SuppressLint("ClickableViewAccessibility")
@@ -197,6 +175,7 @@ abstract class BaseRegisterActivity :
       editTextSearch.run {
         doAfterTextChanged { editable: Editable? ->
           if (editable?.isEmpty() == true) {
+            registerViewModel.updateSearch(false)
             setOnTouchListener(null)
             setCompoundDrawablesWithIntrinsicBounds(
               this.getDrawable(R.drawable.ic_search),
@@ -205,13 +184,17 @@ abstract class BaseRegisterActivity :
               null
             )
           } else {
+            registerViewModel.updateSearch(true)
             setCompoundDrawablesWithIntrinsicBounds(
               null,
               null,
               getDrawable(R.drawable.ic_cancel),
               null
             )
-            this.addOnDrawableClickListener(DrawablePosition.DRAWABLE_RIGHT) { editable?.clear() }
+            this.addOnDrawableClickListener(DrawablePosition.DRAWABLE_RIGHT) {
+              editable?.clear()
+              registerViewModel.updateSearch(false)
+            }
           }
         }
         addTextChangedListener(
@@ -245,8 +228,13 @@ abstract class BaseRegisterActivity :
   private fun setupDueButtonView() {
     with(registerActivityBinding.toolbarLayout) {
       btnShowOverdue.setOnCheckedChangeListener { _, isChecked ->
-        if (isChecked) registerViewModel.updateFilterValue(RegisterFilterType.OVERDUE_FILTER, true)
-        else registerViewModel.updateFilterValue(RegisterFilterType.OVERDUE_FILTER, false)
+        if (isChecked) {
+          registerViewModel.updateFilterValue(RegisterFilterType.OVERDUE_FILTER, true)
+          registerViewModel.updateSearch(true)
+        } else {
+          registerViewModel.updateFilterValue(RegisterFilterType.OVERDUE_FILTER, false)
+          registerViewModel.updateSearch(false)
+        }
       }
     }
   }
@@ -425,21 +413,9 @@ abstract class BaseRegisterActivity :
       menuOption.count = count
       counter.text = if (menuOption.count > 0) count.toString() else null
 
-      // Update pagination count
       if (selectedMenuOption != null && menuOption.itemId == selectedMenuOption?.itemId) {
         selectedMenuOption!!.count = menuOption.count
-        updatePaginationViews(menuOption.count, registerViewModel.currentPage.value?.plus(1) ?: 1)
       }
-    }
-  }
-
-  private fun updatePaginationViews(totalRecordsCount: Long, pageNumber: Int) {
-    with(registerActivityBinding) {
-      val pagesCount =
-        ceil(totalRecordsCount.toDouble().div(PaginationUtil.DEFAULT_PAGE_SIZE.toLong())).toLong()
-      pageInfoTextview.text = getString(R.string.str_page_info, pageNumber, pagesCount)
-      if (pageNumber > 1) previousPageButton.show() else previousPageButton.hide(gone = false)
-      if (pageNumber < pagesCount) nextPageButton.show() else nextPageButton.hide(gone = false)
     }
   }
 }
