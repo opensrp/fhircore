@@ -27,7 +27,7 @@ import org.smartregister.fhircore.engine.configuration.app.applicationConfigurat
 
 class AncAuthenticationServiceTest : RobolectricTest() {
 
-  private lateinit var eirAuthenticationService: AncAuthenticationService
+  private lateinit var ancAuthenticationService: AncAuthenticationService
 
   @Before
   fun setUp() {
@@ -41,27 +41,27 @@ class AncAuthenticationServiceTest : RobolectricTest() {
         languages = listOf("en", "sw")
       }
     )
-    eirAuthenticationService = AncAuthenticationService(ApplicationProvider.getApplicationContext())
+    ancAuthenticationService = AncAuthenticationService(ApplicationProvider.getApplicationContext())
   }
 
   @Test
   fun testThatConfigsAreNotNull() {
-    Assert.assertNotNull(eirAuthenticationService.getApplicationConfigurations())
+    Assert.assertNotNull(ancAuthenticationService.getApplicationConfigurations())
 
-    Assert.assertNotNull(eirAuthenticationService.clientId())
-    Assert.assertEquals("clientId", eirAuthenticationService.clientId())
+    Assert.assertNotNull(ancAuthenticationService.clientId())
+    Assert.assertEquals("clientId", ancAuthenticationService.clientId())
 
-    Assert.assertNotNull(eirAuthenticationService.clientSecret())
-    Assert.assertEquals("clientSecret", eirAuthenticationService.clientSecret())
+    Assert.assertNotNull(ancAuthenticationService.clientSecret())
+    Assert.assertEquals("clientSecret", ancAuthenticationService.clientSecret())
 
-    Assert.assertNotNull(eirAuthenticationService.providerScope())
-    Assert.assertEquals("openid", eirAuthenticationService.providerScope())
+    Assert.assertNotNull(ancAuthenticationService.providerScope())
+    Assert.assertEquals("openid", ancAuthenticationService.providerScope())
 
     Assert.assertEquals(
-      eirAuthenticationService.getLoginActivityClass().simpleName,
+      ancAuthenticationService.getLoginActivityClass().simpleName,
       LoginActivity::class.simpleName
     )
 
-    Assert.assertEquals("org.smartregister.fhircore.anc", eirAuthenticationService.getAccountType())
+    Assert.assertEquals("org.smartregister.fhircore.anc", ancAuthenticationService.getAccountType())
   }
 }

@@ -33,7 +33,7 @@ import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 @Ignore("Fails automated execution but works locally") // TODO fix
 class AncFhirSyncWorkerTest : RobolectricTest() {
 
-  private lateinit var eirFhirSyncWorker: AncFhirSyncWorker
+  private lateinit var ancFhirSyncWorker: AncFhirSyncWorker
 
   @Before
   fun setUp() {
@@ -41,17 +41,17 @@ class AncFhirSyncWorkerTest : RobolectricTest() {
     val workerParam = mockk<WorkerParameters>()
     every { workerParam.taskExecutor } returns WorkManagerTaskExecutor(mockk())
 
-    eirFhirSyncWorker = AncFhirSyncWorker(AncApplication.getContext(), workerParam)
+    ancFhirSyncWorker = AncFhirSyncWorker(AncApplication.getContext(), workerParam)
   }
 
   @Test
   fun testGetFhirEngineShouldReturnNonNullFhirEngine() {
-    Assert.assertNotNull(eirFhirSyncWorker.getFhirEngine())
+    Assert.assertNotNull(ancFhirSyncWorker.getFhirEngine())
   }
 
   @Test
   fun testGetSyncDataReturnMapOfConfiguredSyncItems() {
-    val data = eirFhirSyncWorker.getSyncData()
+    val data = ancFhirSyncWorker.getSyncData()
     Assert.assertEquals(data.size, 5)
     Assert.assertTrue(data.containsKey(ResourceType.Patient))
     Assert.assertTrue(data.containsKey(ResourceType.Immunization))
@@ -61,6 +61,6 @@ class AncFhirSyncWorkerTest : RobolectricTest() {
 
   @Test
   fun testGetDataSourceReturnsDataSource() {
-    Assert.assertNotNull(eirFhirSyncWorker.getDataSource())
+    Assert.assertNotNull(ancFhirSyncWorker.getDataSource())
   }
 }
