@@ -28,6 +28,7 @@ import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
 import org.robolectric.shadows.ShadowApplication
 import org.smartregister.fhircore.eir.EirApplication
+import java.time.OffsetDateTime
 
 @Implements(EirApplication::class)
 class EirApplicationShadow : ShadowApplication() {
@@ -37,6 +38,10 @@ class EirApplicationShadow : ShadowApplication() {
   inner class FhirEngineImpl : FhirEngine {
     override suspend fun count(search: Search): Long {
       return -1
+    }
+
+    override suspend fun getLastSyncTimeStamp(): OffsetDateTime? {
+      return OffsetDateTime.now()
     }
 
     override suspend fun <R : Resource> load(clazz: Class<R>, id: String): R {

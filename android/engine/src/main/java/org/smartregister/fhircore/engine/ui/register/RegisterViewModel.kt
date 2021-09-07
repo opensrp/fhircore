@@ -23,9 +23,26 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import com.google.android.fhir.search.count
+import com.google.android.fhir.sync.Result
+import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.Sync
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.consume
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.produceIn
+import kotlinx.coroutines.flow.shareIn
 import java.util.Locale
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.checkerframework.checker.units.qual.s
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
@@ -64,7 +81,15 @@ class RegisterViewModel(
 
   lateinit var languages: List<Language>
 
-  val syncStatus = MutableLiveData(SyncStatus.NOT_SYNCING)
+  val sharedSyncStatus = MutableSharedFlow<State>()
+
+  init {
+    viewModelScope.launch {
+      Sync.basicSyncJob(application).stateFlow().collect {
+        sharedSyncStatus.tryEmit(it)
+      }
+    }
+  }
 
   var selectedLanguage =
     MutableLiveData(
@@ -83,13 +108,7 @@ class RegisterViewModel(
 
   fun runSync() =
     viewModelScope.launch(dispatcher.io()) {
-      try {
-        getApplication<Application>().runSync()
-        syncStatus.postValue(SyncStatus.COMPLETE)
-      } catch (exception: Exception) {
-        Timber.e("Error syncing data", exception)
-        syncStatus.postValue(SyncStatus.FAILED)
-      }
+      getApplication<Application>().runSync(sharedSyncStatus)
     }
 
   suspend fun performCount(sideMenuOption: SideMenuOption): Long {

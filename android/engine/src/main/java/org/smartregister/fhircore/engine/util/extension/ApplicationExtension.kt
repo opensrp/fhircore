@@ -17,34 +17,41 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Application
+import android.os.Build
+import androidx.annotation.RequiresApi
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
-import com.google.android.fhir.sync.Result
+import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.Sync
+import kotlinx.coroutines.flow.MutableSharedFlow
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import java.time.format.DateTimeFormatter
 
-suspend fun Application.runSync(): Result {
+suspend fun Application.runSync(flow: MutableSharedFlow<State>? = null) {
   if (this !is ConfigurableApplication)
     throw (IllegalStateException("Application should extend ConfigurableApplication interface"))
-  val dataSource =
-    FhirResourceService.create(
-      FhirContext.forR4().newJsonParser(),
-      applicationContext,
-      this.applicationConfiguration
+  val dataSource = buildDatasource(this.applicationConfiguration)
+
+  Sync.basicSyncJob(this)
+    .run(
+      fhirEngine = this.fhirEngine,
+      dataSource = dataSource,
+      resourceSyncParams = resourceSyncParams,
+      subscribeTo = flow
     )
-  return Sync.oneTimeSync(
-    fhirEngine = (this as ConfigurableApplication).fhirEngine,
-    dataSource = FhirResourceDataSource(dataSource),
-    resourceSyncParams = resourceSyncParams
-  )
+}
+
+fun Application.lastSyncDateTime(): String {
+  val lastSyncDate = Sync.basicSyncJob(this).lastSyncTimestamp()
+  return if (lastSyncDate == null) "" else lastSyncDate.format(DateTimeFormatter.RFC_1123_DATE_TIME)
 }
 
 fun Application.buildDatasource(

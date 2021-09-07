@@ -37,7 +37,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.Sync
 import com.google.android.material.navigation.NavigationView
+import kotlinx.coroutines.flow.collect
 import java.util.Locale
 import kotlin.math.ceil
 import kotlinx.coroutines.launch
@@ -62,6 +65,7 @@ import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.getDrawable
 import org.smartregister.fhircore.engine.util.extension.hide
+import org.smartregister.fhircore.engine.util.extension.lastSyncDateTime
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.show
@@ -121,19 +125,17 @@ abstract class BaseRegisterActivity :
         this@BaseRegisterActivity,
         { updateLanguage(Language(it, Locale.forLanguageTag(it).displayName)) }
       )
-      syncStatus.observe(
-        this@BaseRegisterActivity,
-        {
-          when (it) {
-            SyncStatus.COMPLETE -> {
-              showToast(getString(R.string.sync_completed))
-              updateEntityCounts()
-            }
-            SyncStatus.FAILED -> showToast(getString(R.string.sync_failed))
-            else -> return@observe
+
+      lifecycleScope.launch {
+        sharedSyncStatus.collect {
+          when(it) {
+            is State.Started -> showToast(getString(R.string.syncing))
+            is State.Failed -> showToast(getString(R.string.sync_failed))
+            is State.Finished -> showToast(getString(R.string.sync_completed))
           }
+          setLastSyncDateText(application.lastSyncDateTime())
         }
-      )
+      }
     }
 
     registerActivityBinding = DataBindingUtil.setContentView(this, R.layout.base_register_activity)
@@ -152,6 +154,10 @@ abstract class BaseRegisterActivity :
 
   private fun updateEntityCounts() = sideMenuOptions().forEach { updateCount(it) }
 
+  private fun setLastSyncDateText(lastSyncDate: String){
+    registerActivityBinding.tvLastSyncTimestamp.text = lastSyncDate
+  }
+
   private fun setUpViews() {
     setupSideMenu()
     with(registerActivityBinding) {
@@ -167,8 +173,9 @@ abstract class BaseRegisterActivity :
         )
     }
 
+    setLastSyncDateText(application.lastSyncDateTime())
+
     registerActivityBinding.tvSync.setOnClickListener {
-      showToast(getString(R.string.syncing))
       manipulateDrawer(open = false)
       registerViewModel.runSync()
     }
