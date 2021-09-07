@@ -253,7 +253,10 @@ abstract class BaseRegisterActivity :
 
   private fun setupSideMenu() {
     sideMenuOptionMap = sideMenuOptions().associateBy { it.itemId }
-    if (sideMenuOptionMap.size == 1) selectedMenuOption = sideMenuOptionMap.values.elementAt(0)
+    sideMenuOptionMap.values.firstOrNull { it.opensMainRegister }?.let {
+      selectedMenuOption = sideMenuOptionMap.values.elementAt(0)
+    }
+
     val menu = registerActivityBinding.navView.menu
 
     sideMenuOptions().forEach { menuOption ->
@@ -324,10 +327,6 @@ abstract class BaseRegisterActivity :
     updateRegisterTitle()
 
     when (item.itemId) {
-      mainRegisterSideMenuOption?.itemId -> {
-        registerActivityBinding.listPager.currentItem = 0
-        manipulateDrawer(open = false)
-      }
       R.id.menu_item_language -> renderSelectLanguageDialog(this)
       R.id.menu_item_logout -> {
         configurableApplication().authenticationService.logout(AccountManager.get(this))
@@ -410,7 +409,7 @@ abstract class BaseRegisterActivity :
    * the class type of the entity specified in [sideMenuOption]. This is useful for complex count
    * queries
    */
-  protected open fun customEntityCount(sideMenuOption: SideMenuOption): Long = 0
+  protected open fun customEntityCount(sideMenuOption: SideMenuOption): Long = -1
 
   override fun configurableApplication(): ConfigurableApplication {
     return application as ConfigurableApplication
@@ -418,8 +417,8 @@ abstract class BaseRegisterActivity :
 
   private fun updateCount(menuOption: SideMenuOption) {
     lifecycleScope.launch(registerViewModel.dispatcher.main()) {
-      var count: Long = registerViewModel.performCount(menuOption)
-      if (count == -1L) count = customEntityCount(menuOption)
+      var count: Long = customEntityCount(menuOption)
+      if (count == -1L) count = registerViewModel.performCount(menuOption)
       val counter =
         registerActivityBinding.navView.menu.findItem(menuOption.itemId).actionView as TextView
       menuOption.count = count

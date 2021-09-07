@@ -19,15 +19,16 @@ package org.smartregister.fhircore.anc.ui.family.register
 import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.codesystems.RequestStatus
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
+import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.isPregnant
+import org.smartregister.fhircore.engine.util.extension.overdue
 
 data class Family(val head: Patient, val members: List<Patient>, val servicesDue: List<CarePlan>)
 
@@ -46,10 +47,8 @@ object FamilyItemMapper : DomainMapper<Family, FamilyItem> {
       address = head.extractAddress(),
       isPregnant = head.isPregnant(),
       members = members.map { toFamilyMemberItem(it) },
-      servicesDue =
-        servicesDue.filter { it.status.equals(RequestStatus.ACTIVE) && it.period.hasStart() }.size,
-      servicesOverdue =
-        servicesDue.filter { it.status.equals(RequestStatus.ACTIVE) && it.period.hasEnd() }.size
+      servicesDue = servicesDue.filter { it.due() }.size,
+      servicesOverdue = servicesDue.filter { it.overdue() }.size
     )
   }
 

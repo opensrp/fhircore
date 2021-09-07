@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.anc
 
 import android.app.Application
-import androidx.work.Constraints
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineBuilder
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
@@ -52,18 +51,11 @@ class AncApplication : Application(), ConfigurableApplication {
         ResourceType.Patient to emptyMap(),
         ResourceType.Questionnaire to emptyMap(),
         ResourceType.StructureMap to mapOf(),
-        ResourceType.RelatedPerson to mapOf()
+        ResourceType.RelatedPerson to mapOf(),
+        ResourceType.CarePlan to mapOf()
       )
 
   private fun constructFhirEngine(): FhirEngine {
-    Sync.periodicSync<AncFhirSyncWorker>(
-      this,
-      PeriodicSyncConfiguration(
-        syncConstraints = Constraints.Builder().build(),
-        repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
-      )
-    )
-
     return FhirEngineBuilder(this).build()
   }
 
@@ -95,5 +87,15 @@ class AncApplication : Application(), ConfigurableApplication {
     private lateinit var ancApplication: AncApplication
 
     fun getContext() = ancApplication
+
+    // Make sure that it is called only from one place in app and is done after login
+    fun schedulePolling() =
+      Sync.basicSyncJob(ancApplication)
+        .poll(
+          PeriodicSyncConfiguration(
+            repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
+          ),
+          AncFhirSyncWorker::class.java
+        )
   }
 }

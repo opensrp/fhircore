@@ -63,7 +63,7 @@ interface FhirResourceService {
       applicationConfiguration: ApplicationConfiguration
     ): FhirResourceService {
       val logger = HttpLoggingInterceptor()
-      logger.level = HttpLoggingInterceptor.Level.BODY
+      logger.level = HttpLoggingInterceptor.Level.BASIC
 
       val oauthInterceptor = OAuthInterceptor(context)
 

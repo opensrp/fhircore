@@ -1,6 +1,17 @@
 <resources>
     <string name="app_name">ANC</string>
+    <string name="sync_wait_message">Wait while syncing data</string>
+
     <string name="menu_anc">ANC</string>
     <string name="menu_family">Family</string>
+
+    <string name="family_register_message_alert">Register another member in family?</string>
+
+    <string name="family_register_button_title">Register New Family</string>
+    <string name="family_register_ok_title">Yes</string>
+    <string name="family_register_cancel_title">No</string>
+
+    <string name="anc_record_visit_button_title">+ Anc Visit</string>
+
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.anc</string>
 </resources>

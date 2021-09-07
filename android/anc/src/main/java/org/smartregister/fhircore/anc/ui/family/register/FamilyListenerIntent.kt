@@ -18,6 +18,6 @@ package org.smartregister.fhircore.anc.ui.family.register
 
 import org.smartregister.fhircore.engine.util.ListenerIntent
 
-open class FamilyListenerIntent : ListenerIntent
+sealed class FamilyListenerIntent : ListenerIntent
 
 object OpenFamilyProfile : FamilyListenerIntent()

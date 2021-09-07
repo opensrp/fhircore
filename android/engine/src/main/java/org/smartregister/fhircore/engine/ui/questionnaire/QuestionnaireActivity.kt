@@ -86,31 +86,38 @@ class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener 
 
     findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
 
-    // todo bypass the structure map
+    // TODO https://github.com/opensrp/fhircore/issues/403 bypass the structure map util fixed
     intent.putExtra(QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR, "true")
   }
 
   fun saveExtractedResources(questionnaireResponse: QuestionnaireResponse) {
-    viewModel.saveExtractedResources(
-      this@QuestionnaireActivity,
-      intent,
-      viewModel.questionnaire,
-      questionnaireResponse
-    )
+    val assignedPatientId =
+      viewModel.saveExtractedResources(
+        this@QuestionnaireActivity,
+        intent,
+        viewModel.questionnaire,
+        questionnaireResponse
+      )
 
-    val intent = Intent()
-    intent.putExtra(
+    val result = Intent()
+    result.putExtra(
       QUESTIONNAIRE_ARG_RESPONSE_KEY,
       parser.encodeResourceToString(questionnaireResponse)
     )
+    result.putExtra(
+      QUESTIONNAIRE_ARG_RELATED_PATIENT_KEY,
+      intent.getStringExtra(QUESTIONNAIRE_ARG_RELATED_PATIENT_KEY)
+    )
+    result.putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, assignedPatientId)
 
-    setResult(RESULT_OK, intent)
+    setResult(RESULT_OK, result)
     finish()
   }
 
   private fun getQuestionnaire(): Questionnaire {
     val questionnaire = viewModel.questionnaire
-    // TODO: Handle Pre Assigned Id Dynamically
+    // TODO: https://github.com/opensrp/fhircore/issues/472
+    // Handle Pre Assigned Id Dynamically after above is fixed
     /*intent.getStringExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID)?.let {
       setBarcode(questionnaire, it, true)
     }*/
@@ -140,6 +147,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener 
     const val QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID = "questionnaire_preassigned_item_id"
     const val QUESTIONNAIRE_ARG_RESPONSE_KEY = "questionnaire_response_item_id"
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
+    const val QUESTIONNAIRE_ARG_RELATED_PATIENT_KEY = "patient-related-person"
     const val QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR = "bypass-sdk-extractor"
 
     fun getExtrasBundle(clientIdentifier: String, title: String, id: String) =

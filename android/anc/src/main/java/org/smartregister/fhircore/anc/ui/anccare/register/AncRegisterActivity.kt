@@ -16,8 +16,10 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.register
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -25,7 +27,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.form.config.AncFormConfig
+import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
+import org.smartregister.fhircore.engine.sdk.PatientExtended
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.buildQuestionnaireIntent
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
@@ -43,20 +47,40 @@ class AncRegisterActivity : BaseRegisterActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    configureViews(registerViewConfigurationOf().apply { appTitle = getString(R.string.app_name) })
+    configureViews(registerViewConfigurationOf().apply {
+      appTitle = getString(R.string.app_name)
+      showScanQRCode = false
+      showNewClientButton = false
+    })
+
+    viewsUpdate()
   }
 
-  override fun sideMenuOptions(): List<SideMenuOption> =
-    listOf(
-      SideMenuOption(
-        itemId = R.id.menu_item_anc,
-        titleResource = R.string.app_name,
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
-        opensMainRegister = false
-      )
+  private fun viewsUpdate(){
+    findViewById<View>(R.id.btn_register_new_client).visibility = View.INVISIBLE
+  }
+
+  override fun sideMenuOptions(): List<SideMenuOption> = listOf(
+    SideMenuOption(
+      itemId = R.id.menu_item_family,
+      titleResource = R.string.menu_family,
+      iconResource = ContextCompat.getDrawable(this, R.drawable.ic_hamburger)!!,
+      opensMainRegister = false
+    ),
+    SideMenuOption(
+      itemId = R.id.menu_item_anc,
+      titleResource = R.string.menu_anc,
+      iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
+      opensMainRegister = true,
+      searchFilterLambda = { search -> search.filter(PatientExtended.TAG){value = "Pregnant"} }
     )
+  )
 
   override fun onSideMenuOptionSelected(item: MenuItem): Boolean {
+    when(item.itemId){
+      R.id.menu_item_family -> startActivity(Intent(this, FamilyRegisterActivity::class.java))
+      R.id.menu_item_anc -> startActivity(Intent(this, AncRegisterActivity::class.java))
+    }
     return true
   }
 

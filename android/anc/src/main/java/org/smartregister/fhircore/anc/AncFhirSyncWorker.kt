@@ -18,8 +18,11 @@ package org.smartregister.fhircore.anc
 
 import android.content.Context
 import androidx.work.WorkerParameters
+import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.FhirSyncWorker
+import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.util.extension.buildDatasource
+import org.smartregister.fhircore.engine.util.extension.extractExtendedPatient
 
 class AncFhirSyncWorker(appContext: Context, workerParams: WorkerParameters) :
   FhirSyncWorker(appContext, workerParams) {
@@ -31,4 +34,30 @@ class AncFhirSyncWorker(appContext: Context, workerParams: WorkerParameters) :
       .buildDatasource(AncApplication.getContext().applicationConfiguration)
 
   override fun getFhirEngine() = AncApplication.getContext().fhirEngine
+
+  override suspend fun doWork(): Result {
+    val result = super.doWork()
+
+    forcePatientIndexes()
+
+    return result
+  }
+
+  companion object {
+    // todo remove this once we have following done
+    // https://github.com/google/android-fhir/issues/735
+    // this is to reindex patients for tags for family, and anc
+    suspend fun forcePatientIndexes(){
+      val engine = AncApplication.getContext().fhirEngine
+      engine.search<Patient> {
+        filter(Patient.ACTIVE, true)
+      }.forEach {
+        if (it.meta.hasTag() && (it.meta.tagFirstRep.display.contains("Family")
+                  || it.meta.tagFirstRep.display.contains("Pregnant"))){
+          val extendedPatient = it.extractExtendedPatient()
+          engine.save(extendedPatient)
+        }
+      }
+    }
+  }
 }

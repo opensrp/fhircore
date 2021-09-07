@@ -129,7 +129,7 @@ dependencies {
         exclude group: 'com.sun.activation', module: 'javax.activation'
     }
 
-    implementation('com.google.android.fhir:engine:0.1.0-alpha03') {
+    implementation('org.smartregister:engine:0.1.0-alpha03-preview-3-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'

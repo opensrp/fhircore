@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.data.model
+package org.smartregister.fhircore.engine.util.extension
 
-import androidx.compose.runtime.Stable
+import java.util.Date
+import org.hl7.fhir.r4.model.CarePlan
 
-enum class AncVisitStatus{DUE, OVERDUE, PLANNED}
+fun CarePlan.started() = period.start.before(Date())
 
-@Stable
-data class AncPatientItem(
-  val patientIdentifier: String = "",
-  val name: String = "",
-  val gender: String = "",
-  val age: String = "",
-  val demographics: String = "",
-  val atRisk: String = "",
-  val address: String = "",
-  val visitStatus: AncVisitStatus = AncVisitStatus.PLANNED
-)
+fun CarePlan.ended() = period.end.before(Date())
+
+fun CarePlan.due() = status.equals(CarePlan.CarePlanStatus.ACTIVE) && started() && !ended()
+
+fun CarePlan.overdue() = status.equals(CarePlan.CarePlanStatus.ACTIVE) && ended()

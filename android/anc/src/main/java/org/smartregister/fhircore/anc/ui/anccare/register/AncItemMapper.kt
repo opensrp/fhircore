@@ -17,28 +17,43 @@
 package org.smartregister.fhircore.anc.ui.anccare.register
 
 import com.google.android.fhir.logicalId
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.AncVisitStatus
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.extension.atRisk
+import org.smartregister.fhircore.engine.util.extension.due
+import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.overdue
 
-object AncItemMapper : DomainMapper<Patient, AncPatientItem> {
+data class Anc(val patient: Patient, val head: Patient?, val carePlans: List<CarePlan>)
+
+object AncItemMapper : DomainMapper<Anc, AncPatientItem> {
   private const val RISK = "risk"
 
-  override fun mapToDomainModel(dto: Patient): AncPatientItem {
-    val name = dto.extractName()
-    val gender = dto.extractGender().first()
-    val age = dto.extractAge()
+  override fun mapToDomainModel(dto: Anc): AncPatientItem {
+    val patient = dto.patient
+    val name = patient.extractName()
+    val gender = patient.extractGender().first()
+    val age = patient.extractAge()
+    var visitStatus = AncVisitStatus.PLANNED
+
+    if (dto.carePlans.any { it.overdue() }) visitStatus = AncVisitStatus.OVERDUE
+    else if (dto.carePlans.any { it.due() }) visitStatus = AncVisitStatus.DUE
+
     return AncPatientItem(
-      patientIdentifier = dto.logicalId,
+      patientIdentifier = patient.logicalId,
       name = name,
       gender = gender.toString(),
       age = age,
       demographics = "$name, $gender, $age",
-      atRisk = dto.atRisk(RISK)
+      atRisk = patient.atRisk(RISK),
+      address = if (dto.head == null) patient.extractAddress() else dto.head.extractAddress(),
+      visitStatus = visitStatus
     )
   }
 }

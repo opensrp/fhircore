@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.Intent
 import ca.uhn.fhir.context.FhirContext
 import java.util.UUID
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
@@ -35,9 +36,11 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_TITLE_KEY
+import org.smartregister.fhircore.engine.util.extension.find
 
 object QuestionnaireUtils {
-  private val parser = FhirContext.forR4().newJsonParser()
+  val parser = FhirContext.forR4().newJsonParser()
+  private const val flaggableKey = "flag-detail"
 
   fun buildQuestionnaireIntent(
     context: Context,
@@ -57,44 +60,21 @@ object QuestionnaireUtils {
     }
   }
 
+  fun asPatientReference(id: String): Reference {
+    return Reference().apply { this.reference = "Patient/$id" }
+  }
+
   fun asQuestionnaireResponse(questionnaireResponse: String): QuestionnaireResponse {
     return parser.parseResource(questionnaireResponse) as QuestionnaireResponse
   }
 
-  private fun asQuestionnaireItem(
-    item: Questionnaire.QuestionnaireItemComponent,
-    linkId: String
-  ): Questionnaire.QuestionnaireItemComponent? {
-    if (item.linkId.contentEquals(linkId)) {
-      return item
-    }
-
-    item.item.forEach {
-      val res = asQuestionnaireItem(it, linkId)
-      if (res != null) {
-        return res
-      }
-    }
-    return null
-  }
-
-  private fun asQuestionnaireItem(
-    questionnaire: Questionnaire,
-    linkId: String
-  ): Questionnaire.QuestionnaireItemComponent? {
-    questionnaire.item.forEach {
-      val res = asQuestionnaireItem(it, linkId)
-      if (res != null) {
-        return res
-      }
-    }
-    return null
-  }
-
   fun asCodeableConcept(linkId: String, q: Questionnaire): CodeableConcept {
-    return CodeableConcept().apply {
-      val qit = asQuestionnaireItem(q, linkId)!!
+    val qit = q.find(linkId)!!
+    return asCodeableConcept(qit)
+  }
 
+  fun asCodeableConcept(qit: Questionnaire.QuestionnaireItemComponent): CodeableConcept {
+    return CodeableConcept().apply {
       this.text = qit.text
       this.coding = qit.code
 
@@ -103,6 +83,12 @@ object QuestionnaireUtils {
         this.system = qit.definition
       }
     }
+  }
+
+  fun asCodeableConcept(
+    qit: QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent
+  ): CodeableConcept {
+    return CodeableConcept().apply { this.addCoding(qit.valueCoding) }
   }
 
   fun asObs(
@@ -116,12 +102,13 @@ object QuestionnaireUtils {
     obs.code = asCodeableConcept(qr.linkId, questionnaire)
     obs.status = Observation.ObservationStatus.FINAL
     obs.value = if (qr.hasAnswer()) qr.answer[0].value else null
-    obs.subject = Reference().apply { this.reference = "Patient/" + subject.id }
+    obs.subject = asPatientReference(subject.id)
 
     return obs
   }
 
-  // todo revisit this logic when ResourceMapper is stable
+  // TODO https://github.com/opensrp/fhircore/issues/403
+  // change when above supports this
   fun extractObservations(
     questionnaireResponse: QuestionnaireResponse,
     questionnaire: Questionnaire,
@@ -159,142 +146,118 @@ object QuestionnaireUtils {
     return observations
   }
 
-  private fun flaggableFor(
-    selectedFlagCode: CodeableConcept,
-    questionnaireResponse: QuestionnaireResponse,
-    questionnaire: Questionnaire
-  ): Questionnaire.QuestionnaireItemComponent? {
-    // is allowed for flagging with extension
-    val flaggable = itemWithExtension(questionnaire, "flag-detail")
-
-    // flag code of selected answer must match with given extension and there should only be one
-    // flag of a type/code
-    return flaggable.firstOrNull {
-      val qrItem = itemWithLinkId(questionnaireResponse, it.linkId)
-
-      doesIntersect(selectedFlagCode.coding, qrItem!!.answer.map { ans -> ans.valueCoding })
-    }
+  fun extractFlagExtension(item: Questionnaire.QuestionnaireItemComponent): Extension? {
+    return item.extension.firstOrNull { it.url.contains(flaggableKey) }
   }
 
   fun extractFlagExtension(
-    flag: Flag,
+    code: Coding,
+    item: Questionnaire.QuestionnaireItemComponent
+  ): Extension? {
+    return item.extension.firstOrNull {
+      it.url.contains(flaggableKey) &&
+        (it.value.toString().contains(code.display) || code.display.contains(it.value.toString()))
+    }
+  }
+
+  fun extractFlaggables(
+    items: List<Questionnaire.QuestionnaireItemComponent>,
+    target: MutableList<Questionnaire.QuestionnaireItemComponent>
+  ) {
+    items.forEach { qi ->
+      qi.extension.firstOrNull { it.url.contains(flaggableKey) }?.let { target.add(qi) }
+
+      if (qi.item.isNotEmpty()) {
+        extractFlaggables(qi.item, target)
+      }
+    }
+  }
+
+  fun extractFlags(
+    questionnaireResponse: QuestionnaireResponse,
+    questionnaire: Questionnaire,
+    patient: Patient
+  ): MutableList<Pair<Flag, Extension>> {
+    val flaggableItems = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
+
+    extractFlaggables(questionnaire.item, flaggableItems)
+
+    val flags = mutableListOf<Pair<Flag, Extension>>()
+
+    flaggableItems.forEach { qi ->
+      // only add flags where answer is true or answer code matches flag value
+      questionnaireResponse.find(qi.linkId)?.answer?.firstOrNull { it.hasValue() }?.let {
+        val flag = Flag()
+        flag.id = getUniqueId()
+        flag.status = Flag.FlagStatus.ACTIVE
+        flag.subject = asPatientReference(patient.id)
+        // todo simplify
+        if (it.hasValueCoding() && extractFlagExtension(it.valueCoding, qi) != null) {
+          flag.code = asCodeableConcept(it)
+          val ext = extractFlagExtension(it.valueCoding, qi)
+
+          flags.add(Pair(flag, ext!!))
+        } else if (it.hasValueBooleanType() && it.valueBooleanType.booleanValue()) {
+          flag.code = asCodeableConcept(qi)
+
+          val ext = extractFlagExtension(qi)
+
+          flags.add(Pair(flag, ext!!))
+        }
+      }
+    }
+
+    return flags
+  }
+
+  fun extractTags(
     questionnaireResponse: QuestionnaireResponse,
     questionnaire: Questionnaire
-  ): Extension? {
-    // flag code must match with given extension
-    val item = flaggableFor(flag.code, questionnaireResponse, questionnaire) ?: return null
+  ): MutableList<Coding> {
+    val taggable = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
 
-    return item.extension.single { it.url.contains("flag-detail") }
-  }
+    itemsWithDefinition("Patient.meta.tag", questionnaire.item, taggable)
 
-  fun extractFlag(
-    questionnaireResponse: QuestionnaireResponse,
-    questionnaire: Questionnaire,
-    riskAssessment: RiskAssessment
-  ): Flag? {
-    // no risk then no flag
-    if (riskAssessment.prediction[0].relativeRisk.equals(0) ||
-        !riskAssessment.prediction[0].hasOutcome()
-    ) {
-      return null
+    val tags = mutableListOf<Coding>()
+
+    taggable.forEach { qi ->
+      // only add flags where answer is true or answer code matches flag value
+      questionnaireResponse
+        .find(qi.linkId)
+        ?.answer
+        ?.firstOrNull { it.hasValue() }
+        ?.let {
+          when (it.value) {
+            is Coding -> it.valueCoding // for coding tag with any option selected by user
+            is BooleanType -> qi.code[0] // for boolean tag wih question code if true
+            else -> null
+          }
+        }
+        ?.let { tags.add(it) }
     }
 
-    val code = riskAssessment.prediction[0].outcome
-
-    // if no flagging is needed return
-    flaggableFor(code, questionnaireResponse, questionnaire) ?: return null
-
-    val flag = Flag()
-    flag.id = getUniqueId()
-    flag.status = Flag.FlagStatus.ACTIVE
-    flag.code = code
-    flag.subject = riskAssessment.subject
-
-    return flag
+    return tags
   }
 
-  private fun itemWithDefinition(
-    item: Questionnaire.QuestionnaireItemComponent,
-    definition: String
-  ): Questionnaire.QuestionnaireItemComponent? {
-    if (item.definition?.contains(definition) == true) {
-      return item
-    }
+  private fun itemsWithDefinition(
+    definition: String,
+    items: List<Questionnaire.QuestionnaireItemComponent>,
+    target: MutableList<Questionnaire.QuestionnaireItemComponent>
+  ) {
+    items.forEach {
+      if (it.definition?.contains(definition, true) == true) {
+        target.add(it)
+      }
 
-    item.item.forEach {
-      val qit = itemWithDefinition(it, definition)
-      if (qit != null) return qit
-    }
-
-    return null
-  }
-
-  private fun itemWithDefinition(
-    questionnaire: Questionnaire,
-    definition: String
-  ): List<Questionnaire.QuestionnaireItemComponent> {
-    return questionnaire.item.mapNotNull { itemWithDefinition(it, definition) }
-  }
-
-  private fun itemWithExtension(
-    item: Questionnaire.QuestionnaireItemComponent,
-    extension: String
-  ): Questionnaire.QuestionnaireItemComponent? {
-    if (item.extension.singleOrNull { ro -> ro.url.contains(extension) } != null) {
-      return item
-    }
-
-    for (i in item.item) {
-      val qit = itemWithExtension(i, extension)
-      if (qit != null) {
-        return qit
+      if (it.item.isNotEmpty()) {
+        itemsWithDefinition(definition, it.item, target)
       }
     }
-
-    return null
-  }
-
-  private fun itemWithExtension(
-    questionnaire: Questionnaire,
-    extension: String
-  ): List<Questionnaire.QuestionnaireItemComponent> {
-    return questionnaire.item.mapNotNull { itemWithExtension(it, extension) }
-  }
-
-  private fun itemWithLinkId(
-    item: QuestionnaireResponse.QuestionnaireResponseItemComponent,
-    linkId: String
-  ): QuestionnaireResponse.QuestionnaireResponseItemComponent? {
-    if (item.linkId.contentEquals(linkId)) {
-      return item
-    }
-
-    for (i in item.item) {
-      val qit = itemWithLinkId(i, linkId)
-      if (qit != null) {
-        return qit
-      }
-    }
-
-    return null
-  }
-
-  private fun itemWithLinkId(
-    questionnaireResponse: QuestionnaireResponse,
-    linkId: String
-  ): QuestionnaireResponse.QuestionnaireResponseItemComponent? {
-    return questionnaireResponse.item.mapNotNull { itemWithLinkId(it, linkId) }.firstOrNull()
   }
 
   fun valueStringWithLinkId(questionnaireResponse: QuestionnaireResponse, linkId: String): String? {
-    val ans = itemWithLinkId(questionnaireResponse, linkId)?.answerFirstRep
+    val ans = questionnaireResponse.find(linkId)?.answerFirstRep
     return ans?.valueStringType?.asStringValue()
-  }
-
-  private fun doesIntersect(codingList: List<Coding>, other: List<Coding>): Boolean {
-    val codes = codingList.map { it.code }
-
-    return other.any { codes.contains(it.code) }
   }
 
   private fun getItem(
@@ -321,14 +284,20 @@ object QuestionnaireUtils {
     return null
   }
 
-  // only one risk per questionnaire supported for now //todo
+  // TODO https://github.com/opensrp/fhircore/issues/403
+  // change when calculated expression is working OR above issue supports this
   fun extractRiskAssessment(
     observations: List<Observation>,
     questionnaireResponse: QuestionnaireResponse,
     questionnaire: Questionnaire
   ): RiskAssessment? {
-    val qItem = itemWithDefinition(questionnaire, "RiskAssessment").firstOrNull() ?: return null
-    var qrItem = itemWithLinkId(questionnaireResponse, qItem.linkId)
+    val risks = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
+    itemsWithDefinition("RiskAssessment", questionnaire.item, risks)
+
+    if (risks.isEmpty()) return null
+
+    val qItem = risks[0]
+    val qrItem = questionnaireResponse.find(qItem.linkId)
 
     var riskScore = 0
     val risk = RiskAssessment()
@@ -340,7 +309,6 @@ object QuestionnaireUtils {
         val isRiskObs =
           qObs.extension.singleOrNull { ro -> ro.url.contains("RiskAssessment") } != null
 
-        // todo revisit this when calculate expression is working
         if (isRiskObs &&
             ((obs.hasValueBooleanType() && obs.valueBooleanType.booleanValue()) ||
               (obs.hasValueStringType() && obs.hasValue()))
@@ -360,7 +328,6 @@ object QuestionnaireUtils {
     risk.addPrediction().apply {
       this.relativeRisk = riskScore.toBigDecimal()
 
-      // todo change when calculated expression is working
       if (qrItem.hasAnswer() && riskScore > 0) {
         this.outcome =
           CodeableConcept().apply {
@@ -373,7 +340,7 @@ object QuestionnaireUtils {
     return risk
   }
 
-  private fun getUniqueId(): String {
+  fun getUniqueId(): String {
     return UUID.randomUUID().toString()
   }
 }

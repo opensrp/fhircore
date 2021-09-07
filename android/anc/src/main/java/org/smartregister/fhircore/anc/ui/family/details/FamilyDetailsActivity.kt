@@ -16,8 +16,11 @@
 
 package org.smartregister.fhircore.anc.ui.family.details
 
+import android.os.Bundle
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 
 class FamilyDetailsActivity : BaseMultiLanguageActivity() {
-  // todo owais working on it
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+  }
 }

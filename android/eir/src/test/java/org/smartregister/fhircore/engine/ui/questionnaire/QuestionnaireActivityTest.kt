@@ -186,7 +186,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val questionnaireResponse = QuestionnaireResponse()
     questionnaireResponse.addItem().linkId = "test_field_i"
 
-    // todo app temporarily bypass it so enable
     questionnaireActivity.intent.removeExtra(QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR)
 
     questionnaireActivity.saveExtractedResources(questionnaireResponse)

@@ -41,6 +41,7 @@ suspend fun Application.runSync(): Result {
       this.applicationConfiguration
     )
   return Sync.oneTimeSync(
+    context = this,
     fhirEngine = (this as ConfigurableApplication).fhirEngine,
     dataSource = FhirResourceDataSource(dataSource),
     resourceSyncParams = resourceSyncParams

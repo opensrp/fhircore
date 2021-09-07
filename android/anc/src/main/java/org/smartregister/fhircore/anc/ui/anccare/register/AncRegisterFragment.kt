@@ -39,9 +39,9 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
-class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
+class AncRegisterFragment : ComposeRegisterFragment<Anc, AncPatientItem>() {
 
-  override lateinit var registerDataViewModel: RegisterDataViewModel<Patient, AncPatientItem>
+  override lateinit var registerDataViewModel: RegisterDataViewModel<Anc, AncPatientItem>
 
   private lateinit var ancPatientRepository: AncPatientRepository
 
@@ -62,7 +62,7 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
           )
           .createFactory()
       )[RegisterDataViewModel::class.java] as
-        RegisterDataViewModel<Patient, AncPatientItem>
+        RegisterDataViewModel<Anc, AncPatientItem>
   }
 
   override fun navigateToDetails(uniqueIdentifier: String) {
@@ -87,13 +87,13 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
     if (listenerIntent is AncRowClickListenerIntent) {
       when (listenerIntent) {
         OpenPatientProfile -> navigateToDetails(data.patientIdentifier)
-        RecordAncVisit ->
-          startActivity(
+        /* RecordAncVisit ->
+          todo startActivity(
             Intent(requireContext(), QuestionnaireActivity::class.java)
               .putExtras(
                 QuestionnaireActivity.getExtrasBundle(data.patientIdentifier, "???", "???")
               )
-          )
+          )*/
       }
     }
   }

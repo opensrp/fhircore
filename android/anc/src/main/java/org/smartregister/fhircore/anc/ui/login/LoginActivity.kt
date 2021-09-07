@@ -27,7 +27,7 @@ import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
 class LoginActivity : BaseLoginActivity() {
 
   override fun navigateToHome() {
-    val intent = Intent(this, FamilyRegisterActivity::class.java)
+    val intent = Intent(this, SplashActivity::class.java)
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     startActivity(intent)
     finish()

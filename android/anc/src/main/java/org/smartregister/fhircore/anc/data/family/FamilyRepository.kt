@@ -17,17 +17,21 @@
 package org.smartregister.fhircore.anc.data.family
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.anc.data.AncPatientRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
+import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.Family
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
+import org.smartregister.fhircore.engine.sdk.PatientExtended
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
@@ -36,43 +40,46 @@ class FamilyRepository(
   override val domainMapper: DomainMapper<Family, FamilyItem>,
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : RegisterRepository<Family, FamilyItem> {
+  override val defaultPageSize: Int
+    get() = 2000
+
+  private val ancRepository = AncPatientRepository(fhirEngine, AncItemMapper)
 
   override suspend fun loadData(query: String, pageNumber: Int): List<FamilyItem> {
     return withContext(dispatcherProvider.io()) {
       val patients =
         fhirEngine.search<Patient> {
-          filter(Patient.ADDRESS_CITY) {
-            modifier = StringFilterModifier.CONTAINS
-            value = "NAIROBI"
+          filter(PatientExtended.TAG) {
+            this.value = "Family"
+            this.modifier = StringFilterModifier.CONTAINS
           }
+
           if (query.isNotEmpty() && query.isNotBlank()) {
             filter(Patient.NAME) {
-              modifier = StringFilterModifier.CONTAINS
               value = query.trim()
+              modifier = StringFilterModifier.CONTAINS
             }
           }
           sort(Patient.NAME, Order.ASCENDING)
-          count = 500 // todo defaultPageSize
+          count = defaultPageSize
           from = pageNumber * defaultPageSize
         }
 
-      patients
-        .filter { // todo
-          it.extension.any { it.value.toString().contains("family", true) }
-        }
-        .map { p ->
-          val carePlans = searchCarePlan(p.id).toMutableList()
+      patients.map { p ->
+        val carePlans = ancRepository.searchCarePlan(p.logicalId).toMutableList()
+        val members =
+          fhirEngine.search<Patient> {
+            filter(Patient.LINK) { this.value = "Patient/" + p.logicalId }
+          }
 
-          val members = fhirEngine.search<Patient> { filter(Patient.LINK) { this.value = p.id } }
+        members.forEach { carePlans.addAll(ancRepository.searchCarePlan(it.logicalId)) }
 
-          members.forEach { carePlans.addAll(searchCarePlan(it.id)) }
-
-          FamilyItemMapper.mapToDomainModel(Family(p, members, carePlans))
-        }
+        FamilyItemMapper.mapToDomainModel(Family(p, members, carePlans))
+      }
     }
   }
 
-  private suspend fun searchCarePlan(id: String): List<CarePlan> {
-    return fhirEngine.search { filter(CarePlan.PATIENT) { this.value = id } }
+  suspend fun enrollIntoAnc(patientId: String) {
+    ancRepository.enrollIntoAnc(patientId)
   }
 }
