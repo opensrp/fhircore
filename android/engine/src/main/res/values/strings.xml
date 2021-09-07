@@ -22,7 +22,6 @@
     <string name="logout_user">Log out as %1$s</string>
     <string name="sync_completed">Sync complete</string>
     <string name="syncing">Syncing&#8230;</string>
-    <string name="syncing_entity">Syncing %1$s</string>
     <string name="sync_failed">Sync failed. Check internet connection or try again later.</string>
     <string name="try_again">Try again</string>
     <string name="status_vaccinated">Vaccinated</string>
