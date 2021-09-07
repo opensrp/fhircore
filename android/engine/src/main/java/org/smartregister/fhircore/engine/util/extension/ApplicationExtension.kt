@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Application
-import android.os.Build
-import androidx.annotation.RequiresApi
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Order
@@ -33,7 +31,6 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplicati
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import java.time.format.DateTimeFormatter
 
 suspend fun Application.runSync(flow: MutableSharedFlow<State>? = null) {
   if (this !is ConfigurableApplication)
@@ -51,7 +48,7 @@ suspend fun Application.runSync(flow: MutableSharedFlow<State>? = null) {
 
 fun Application.lastSyncDateTime(): String {
   val lastSyncDate = Sync.basicSyncJob(this).lastSyncTimestamp()
-  return if (lastSyncDate == null) "" else lastSyncDate.format(DateTimeFormatter.RFC_1123_DATE_TIME)
+  return if (lastSyncDate == null) "" else lastSyncDate.asString()
 }
 
 fun Application.buildDatasource(

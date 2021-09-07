@@ -23,12 +23,12 @@ import com.google.android.fhir.db.impl.dao.LocalChangeToken
 import com.google.android.fhir.db.impl.dao.SquashedLocalChange
 import com.google.android.fhir.search.ReferenceFilter
 import com.google.android.fhir.search.Search
+import java.time.OffsetDateTime
 import org.hl7.fhir.r4.model.Resource
 import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
 import org.robolectric.shadows.ShadowApplication
 import org.smartregister.fhircore.eir.EirApplication
-import java.time.OffsetDateTime
 
 @Implements(EirApplication::class)
 class EirApplicationShadow : ShadowApplication() {
