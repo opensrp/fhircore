@@ -131,14 +131,17 @@ abstract class BaseRegisterActivity :
           Timber.i("Sync state received is $it")
 
           when (it) {
-            is State.Started -> showToast(getString(R.string.syncing))
+            is State.Started -> {
+              showToast(getString(R.string.syncing))
+              updateSyncViews("", it)
+            }
             is State.Failed -> {
               showToast(getString(R.string.sync_failed))
-              updateLastSyncDateView(it.result.timestamp.asString())
+              updateSyncViews(it.result.timestamp.asString(), it)
             }
             is State.Finished -> {
               showToast(getString(R.string.sync_completed))
-              updateLastSyncDateView(it.result.timestamp.asString())
+              updateSyncViews(it.result.timestamp.asString(), it)
             }
           }
         }
@@ -161,9 +164,17 @@ abstract class BaseRegisterActivity :
 
   private fun updateEntityCounts() = sideMenuOptions().forEach { updateCount(it) }
 
-  private fun updateLastSyncDateView(lastSyncDate: String) {
+  private fun updateSyncViews(lastSyncDate: String, state: State? = null) {
     Timber.i("Updating last sync date $lastSyncDate")
     registerActivityBinding.tvLastSyncTimestamp.text = lastSyncDate
+
+    if (state is State.Started) {
+      registerActivityBinding.progressSync.show()
+      registerActivityBinding.containerProgressSync.setBackgroundResource(0)
+    } else if (state == null || state is State.Finished || state is State.Failed) {
+      registerActivityBinding.progressSync.hide()
+      registerActivityBinding.containerProgressSync.setBackgroundResource(R.drawable.ic_sync)
+    }
   }
 
   private fun setUpViews() {
@@ -181,10 +192,11 @@ abstract class BaseRegisterActivity :
         )
     }
 
-    updateLastSyncDateView(application.lastSyncDateTime())
+    updateSyncViews(application.lastSyncDateTime())
 
-    registerActivityBinding.tvSync.setOnClickListener {
+    registerActivityBinding.containerProgressSync.setOnClickListener {
       manipulateDrawer(open = false)
+      updateSyncViews("", State.Started)
       registerViewModel.runSync()
     }
 
