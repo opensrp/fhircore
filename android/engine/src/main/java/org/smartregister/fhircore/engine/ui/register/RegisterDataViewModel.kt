@@ -59,7 +59,6 @@ class RegisterDataViewModel<I : Any, O : Any>(
   var registerData: MutableStateFlow<Flow<PagingData<O>>> = MutableStateFlow(emptyFlow())
 
   init {
-    updateShowResultsCount(false)
     viewModelScope.launch { _totalRecordsCount.postValue(registerRepository.countAll()) }
   }
 
@@ -119,7 +118,11 @@ class RegisterDataViewModel<I : Any, O : Any>(
     }
       ?: 1
 
-  fun updateShowResultsCount(showResult: Boolean) {
-    this._showResultsCount.value = showResult
+  fun showResultsCount(showResultsCount: Boolean) {
+    this._showResultsCount.postValue(showResultsCount)
+  }
+
+  fun reloadCurrentPageData() {
+    _currentPage.value?.let { loadPageData(it) }
   }
 }

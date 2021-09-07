@@ -33,11 +33,7 @@ interface RegisterRepository<I : Any, O> {
    * Read data from the local database. This method will return paginated data for the executed
    * [query]
    */
-  suspend fun loadData(
-    query: String = "",
-    pageNumber: Int,
-    loadAll: Boolean
-  ): List<O>
+  suspend fun loadData(query: String = "", pageNumber: Int, loadAll: Boolean = false): List<O>
 
   /** Return the total count of all records for the register */
   suspend fun countAll(): Long

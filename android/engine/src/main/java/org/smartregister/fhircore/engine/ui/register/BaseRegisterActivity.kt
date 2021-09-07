@@ -48,11 +48,11 @@ import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfigur
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
+import org.smartregister.fhircore.engine.sync.SyncStatus
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
-import org.smartregister.fhircore.engine.ui.register.model.SyncStatus
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.DrawablePosition
 import org.smartregister.fhircore.engine.util.extension.addOnDrawableClickListener
@@ -109,19 +109,6 @@ abstract class BaseRegisterActivity :
         this@BaseRegisterActivity,
         { updateLanguage(Language(it, Locale.forLanguageTag(it).displayName)) }
       )
-      syncStatus.observe(
-        this@BaseRegisterActivity,
-        {
-          when (it) {
-            SyncStatus.COMPLETE -> {
-              showToast(getString(R.string.sync_completed))
-              updateEntityCounts()
-            }
-            SyncStatus.FAILED -> showToast(getString(R.string.sync_failed))
-            else -> return@observe
-          }
-        }
-      )
     }
 
     registerActivityBinding = DataBindingUtil.setContentView(this, R.layout.base_register_activity)
@@ -136,6 +123,16 @@ abstract class BaseRegisterActivity :
     fhirEngine = (application as ConfigurableApplication).fhirEngine
 
     setUpViews()
+  }
+
+  private fun handleSyncStatus(it: SyncStatus) {
+    when (it) {
+      SyncStatus.COMPLETE -> {
+        showToast(getString(R.string.sync_completed))
+        updateEntityCounts()
+      }
+      SyncStatus.FAILED -> showToast(getString(R.string.sync_failed))
+    }
   }
 
   private fun updateEntityCounts() = sideMenuOptions().forEach { updateCount(it) }
@@ -175,7 +172,6 @@ abstract class BaseRegisterActivity :
       editTextSearch.run {
         doAfterTextChanged { editable: Editable? ->
           if (editable?.isEmpty() == true) {
-            registerViewModel.updateSearch(false)
             setOnTouchListener(null)
             setCompoundDrawablesWithIntrinsicBounds(
               this.getDrawable(R.drawable.ic_search),
@@ -184,7 +180,6 @@ abstract class BaseRegisterActivity :
               null
             )
           } else {
-            registerViewModel.updateSearch(true)
             setCompoundDrawablesWithIntrinsicBounds(
               null,
               null,
@@ -193,7 +188,7 @@ abstract class BaseRegisterActivity :
             )
             this.addOnDrawableClickListener(DrawablePosition.DRAWABLE_RIGHT) {
               editable?.clear()
-              registerViewModel.updateSearch(false)
+              registerViewModel.updateFilterValue(RegisterFilterType.SEARCH_FILTER, null)
             }
           }
         }
@@ -211,14 +206,14 @@ abstract class BaseRegisterActivity :
               start: Int,
               before: Int,
               count: Int
-            ) {
+            ) {}
+
+            override fun afterTextChanged(editable: Editable?) {
               registerViewModel.updateFilterValue(
                 RegisterFilterType.SEARCH_FILTER,
-                charSequence.toString()
+                if (editable.isNullOrEmpty()) null else editable.toString()
               )
             }
-
-            override fun afterTextChanged(s: Editable?) {}
           }
         )
       }
@@ -230,10 +225,8 @@ abstract class BaseRegisterActivity :
       btnShowOverdue.setOnCheckedChangeListener { _, isChecked ->
         if (isChecked) {
           registerViewModel.updateFilterValue(RegisterFilterType.OVERDUE_FILTER, true)
-          registerViewModel.updateSearch(true)
         } else {
-          registerViewModel.updateFilterValue(RegisterFilterType.OVERDUE_FILTER, false)
-          registerViewModel.updateSearch(false)
+          registerViewModel.updateFilterValue(RegisterFilterType.OVERDUE_FILTER, null)
         }
       }
     }

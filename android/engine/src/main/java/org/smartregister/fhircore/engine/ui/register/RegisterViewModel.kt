@@ -32,7 +32,6 @@ import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfigur
 import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
-import org.smartregister.fhircore.engine.ui.register.model.SyncStatus
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -50,11 +49,7 @@ class RegisterViewModel(
   val dispatcher: DispatcherProvider = DefaultDispatcherProvider
 ) : AndroidViewModel(application) {
 
-  private val _searchActive = MutableLiveData(false)
-  val searchActive
-    get() = _searchActive
-
-  private val _filterValue = MutableLiveData<Pair<RegisterFilterType, Any>>()
+  private val _filterValue = MutableLiveData<Pair<RegisterFilterType, Any?>>()
   val filterValue
     get() = _filterValue
 
@@ -64,8 +59,6 @@ class RegisterViewModel(
   private val fhirEngine = (application as ConfigurableApplication).fhirEngine
 
   lateinit var languages: List<Language>
-
-  val syncStatus = MutableLiveData(SyncStatus.NOT_SYNCING)
 
   var selectedLanguage =
     MutableLiveData(
@@ -88,10 +81,8 @@ class RegisterViewModel(
     viewModelScope.launch(dispatcher.io()) {
       try {
         getApplication<Application>().runSync()
-        syncStatus.postValue(SyncStatus.COMPLETE)
       } catch (exception: Exception) {
         Timber.e("Error syncing data", exception)
-        syncStatus.postValue(SyncStatus.FAILED)
       }
     }
 
@@ -114,11 +105,11 @@ class RegisterViewModel(
     return -1
   }
 
-  fun updateFilterValue(registerFilterType: RegisterFilterType, newValue: Any) {
+  /**
+   * Update [_filterValue]. Null means filtering has been reset therefore data for the current page
+   * will be loaded instead
+   */
+  fun updateFilterValue(registerFilterType: RegisterFilterType, newValue: Any?) {
     _filterValue.value = Pair(registerFilterType, newValue)
-  }
-
-  fun updateSearch(searchActive: Boolean) {
-    _searchActive.value = searchActive
   }
 }

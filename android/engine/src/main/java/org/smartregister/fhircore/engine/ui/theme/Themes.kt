@@ -22,7 +22,7 @@ import androidx.compose.runtime.Composable
 
 /**
  * TODO fix issue with ktfmt formatting annotated high order functions. Current workaround below:
- *  lambda in this format content: (@Composable() () -> Unit) to allow spotlessApply
+ * lambda in this format content: (@Composable() () -> Unit) to allow spotlessApply
  */
 @Composable
 fun AppTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: (@Composable() () -> Unit)) {

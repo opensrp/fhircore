@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.smartregister.fhircore.engine.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.paging.LoadState
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 
@@ -128,6 +145,7 @@ fun SearchFooterPreviewWithZeroResults() {
  */
 @Composable
 fun PaginatedRegister(
+  loadState: LoadState,
   showResultsCount: Boolean,
   resultCount: Int,
   body: (@Composable() () -> Unit),
@@ -145,12 +163,14 @@ fun PaginatedRegister(
       contentAlignment = Alignment.TopCenter,
       modifier = modifier.weight(1f).padding(4.dp).fillMaxSize()
     ) {
-      if (resultCount == 0 && showResultsCount) {
-        NoResults(modifier = modifier)
-      } else if (resultCount == 0 && !showResultsCount) {
+      if (loadState == LoadState.Loading) {
         CircularProgressBar()
       } else {
-        body()
+        if (resultCount == 0 && showResultsCount) {
+          NoResults(modifier = modifier)
+        } else {
+          body()
+        }
       }
     }
     if (!showResultsCount) {
@@ -196,6 +216,7 @@ fun NoResultsPreview() {
 @Preview(showBackground = true)
 fun PaginatedRegisterPreviewWithResults() {
   PaginatedRegister(
+    loadState = LoadState.Loading,
     showResultsCount = true,
     resultCount = 0,
     body = { Text(text = "Something cool") },
@@ -210,6 +231,7 @@ fun PaginatedRegisterPreviewWithResults() {
 @Preview(showBackground = true)
 fun PaginatedRegisterPreviewWithoutResults() {
   PaginatedRegister(
+    loadState = LoadState.Loading,
     showResultsCount = false,
     resultCount = 0,
     body = { Text(text = "Something cool") },

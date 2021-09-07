@@ -57,10 +57,11 @@ class PatientRegisterFragment :
   override fun ConstructRegisterList() {
     val registerData = registerDataViewModel.registerData.collectAsState(emptyFlow())
     val pagingItems = registerData.value.collectAsLazyPagingItems()
-    val showResults by registerDataViewModel.showResultsCount.observeAsState(false)
+    val showResultsCount by registerDataViewModel.showResultsCount.observeAsState(false)
 
     PaginatedRegister(
-      showResultsCount = showResults,
+      loadState = pagingItems.loadState.refresh,
+      showResultsCount = showResultsCount,
       resultCount = pagingItems.itemCount,
       body = {
         PatientRegisterList(

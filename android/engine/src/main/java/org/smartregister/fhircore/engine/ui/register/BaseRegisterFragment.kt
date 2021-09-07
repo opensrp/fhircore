@@ -59,22 +59,22 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
       {
         lifecycleScope.launch(Dispatchers.Main) {
           val (registerFilterType, value) = it
-          registerDataViewModel.filterRegisterData(
-            registerFilterType = registerFilterType,
-            filterValue = value,
-            registerFilter = this@BaseRegisterFragment::performFilter
-          )
+          if (value != null) {
+            registerDataViewModel.run {
+              showResultsCount(true)
+              filterRegisterData(
+                registerFilterType = registerFilterType,
+                filterValue = value,
+                registerFilter = this@BaseRegisterFragment::performFilter
+              )
+            }
+          } else {
+            registerDataViewModel.run {
+              showResultsCount(false)
+              reloadCurrentPageData()
+            }
+          }
         }
-      }
-    )
-
-    registerViewModel.searchActive.observe(
-      viewLifecycleOwner,
-      { searchActive ->
-        if (!searchActive) {
-          registerDataViewModel.currentPage.value?.let { registerDataViewModel.loadPageData(it) }
-        }
-        registerDataViewModel.updateShowResultsCount(searchActive)
       }
     )
 
