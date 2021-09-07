@@ -100,9 +100,6 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
           data.name.contains(value.toString(), ignoreCase = true) ||
             data.id.contentEquals(value.toString())
       }
-      RegisterFilterType.OVERDUE_FILTER -> {
-        return false // todo
-      }
     }
   }
 }
