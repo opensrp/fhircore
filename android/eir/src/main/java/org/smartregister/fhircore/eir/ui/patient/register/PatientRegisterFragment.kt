@@ -18,13 +18,9 @@ package org.smartregister.fhircore.eir.ui.patient.register
 
 import android.content.Intent
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
-import androidx.paging.compose.collectAsLazyPagingItems
-import kotlinx.coroutines.flow.emptyFlow
+import androidx.paging.compose.LazyPagingItems
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.EirApplication
@@ -35,7 +31,6 @@ import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.eir.ui.patient.register.components.PatientRegisterList
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
-import org.smartregister.fhircore.engine.ui.components.PaginatedRegister
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
@@ -54,26 +49,11 @@ class PatientRegisterFragment :
   }
 
   @Composable
-  override fun ConstructRegisterList() {
-    val registerData = registerDataViewModel.registerData.collectAsState(emptyFlow())
-    val pagingItems = registerData.value.collectAsLazyPagingItems()
-    val showResultsCount by registerDataViewModel.showResultsCount.observeAsState(false)
-
-    PaginatedRegister(
-      loadState = pagingItems.loadState.refresh,
-      showResultsCount = showResultsCount,
-      resultCount = pagingItems.itemCount,
-      body = {
-        PatientRegisterList(
-          pagingItems = pagingItems,
-          modifier = Modifier,
-          clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
-        )
-      },
-      currentPage = registerDataViewModel.currentPage(),
-      pagesCount = registerDataViewModel.countPages(),
-      previousButtonClickListener = { registerDataViewModel.previousPage() },
-      nextButtonClickListener = { registerDataViewModel.nextPage() }
+  override fun ConstructRegisterList(pagingItems: LazyPagingItems<PatientItem>) {
+    PatientRegisterList(
+      pagingItems = pagingItems,
+      modifier = Modifier,
+      clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
     )
   }
 

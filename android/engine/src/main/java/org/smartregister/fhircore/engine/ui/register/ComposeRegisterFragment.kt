@@ -20,7 +20,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.ComposeView
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import kotlinx.coroutines.flow.emptyFlow
+import org.smartregister.fhircore.engine.ui.components.PaginatedRegister
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 abstract class ComposeRegisterFragment<I : Any, O : Any> : BaseRegisterFragment<I, O>() {
@@ -29,7 +36,26 @@ abstract class ComposeRegisterFragment<I : Any, O : Any> : BaseRegisterFragment<
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
-  ) = ComposeView(requireContext()).apply { setContent { AppTheme { ConstructRegisterList() } } }
+  ) =
+    ComposeView(requireContext()).apply {
+      setContent {
+        AppTheme {
+          val registerData = registerDataViewModel.registerData.collectAsState(emptyFlow())
+          val pagingItems = registerData.value.collectAsLazyPagingItems()
+          val showResultsCount by registerDataViewModel.showResultsCount.observeAsState(false)
+          PaginatedRegister(
+            loadState = pagingItems.loadState.refresh,
+            showResultsCount = showResultsCount,
+            resultCount = pagingItems.itemCount,
+            body = { ConstructRegisterList(pagingItems) },
+            currentPage = registerDataViewModel.currentPage(),
+            pagesCount = registerDataViewModel.countPages(),
+            previousButtonClickListener = { registerDataViewModel.previousPage() },
+            nextButtonClickListener = { registerDataViewModel.nextPage() }
+          )
+        }
+      }
+    }
 
-  @Composable abstract fun ConstructRegisterList()
+  @Composable abstract fun ConstructRegisterList(pagingItems: LazyPagingItems<O>)
 }

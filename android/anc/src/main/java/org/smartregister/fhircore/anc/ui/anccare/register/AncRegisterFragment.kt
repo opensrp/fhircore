@@ -18,11 +18,9 @@ package org.smartregister.fhircore.anc.ui.anccare.register
 
 import android.content.Intent
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
-import androidx.paging.compose.collectAsLazyPagingItems
-import kotlinx.coroutines.flow.emptyFlow
+import androidx.paging.compose.LazyPagingItems
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.AncPatientRepository
@@ -48,10 +46,9 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
   }
 
   @Composable
-  override fun ConstructRegisterList() {
-    val registerData = registerDataViewModel.registerData.collectAsState(emptyFlow())
+  override fun ConstructRegisterList(pagingItems: LazyPagingItems<AncPatientItem>) {
     AncPatientList(
-      pagingItems = registerData.value.collectAsLazyPagingItems(),
+      pagingItems = pagingItems,
       modifier = Modifier,
       clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
     )
