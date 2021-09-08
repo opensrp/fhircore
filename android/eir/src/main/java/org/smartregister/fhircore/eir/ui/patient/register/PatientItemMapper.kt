@@ -16,27 +16,25 @@
 
 package org.smartregister.fhircore.eir.ui.patient.register
 
-import android.content.Context
 import com.google.android.fhir.logicalId
 import java.text.SimpleDateFormat
-import java.time.Instant
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.smartregister.fhircore.eir.EirApplication
-import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.data.model.PatientItem
 import org.smartregister.fhircore.eir.data.model.PatientVaccineStatus
 import org.smartregister.fhircore.eir.data.model.VaccineStatus
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
+import org.smartregister.fhircore.engine.util.extension.atRisk
+import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractGender
+import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.getLastSeen
 
 object PatientItemMapper : DomainMapper<Pair<Patient, List<Immunization>>, PatientItem> {
-  private val simpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.ENGLISH)
-  private const val RISK = "risk"
 
   override fun mapToDomainModel(dto: Pair<Patient, List<Immunization>>): PatientItem {
     val (patient, immunizations) = dto
@@ -55,43 +53,6 @@ object PatientItemMapper : DomainMapper<Pair<Patient, List<Immunization>>, Patie
     )
   }
 
-  private fun Patient.getLastSeen(immunizations: List<Immunization>): String {
-    return immunizations
-      .maxByOrNull { it.protocolApplied.first().doseNumberPositiveIntType.value }
-      ?.occurrenceDateTimeType
-      ?.toHumanDisplay()
-      ?: this.meta?.lastUpdated.makeItReadable()
-  }
-  private fun Date?.makeItReadable() = if (this != null) simpleDateFormat.format(this) else ""
-
-  fun Patient.extractName(): String {
-    if (!hasName()) return ""
-    val humanName = this.name.firstOrNull()
-    return if (humanName != null) {
-      "${humanName.given.joinToString(" ")
-      { it.toString().trim().toTitleCase() }} ${humanName.family?.toTitleCase() ?: ""}"
-    } else ""
-  }
-
-  private fun String.toTitleCase() = replaceFirstChar {
-    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-  }
-
-  fun Patient.extractGender(context: Context) =
-    when (AdministrativeGender.valueOf(this.gender.name)) {
-      AdministrativeGender.MALE -> context.getString(R.string.male)
-      AdministrativeGender.FEMALE -> context.getString(R.string.female)
-      AdministrativeGender.OTHER -> context.getString(R.string.other)
-      AdministrativeGender.UNKNOWN -> context.getString(R.string.unknown)
-      AdministrativeGender.NULL -> ""
-    }
-
-  fun Patient.extractAge(): String {
-    if (!hasBirthDate()) return ""
-    val ageDiffMilli = Instant.now().toEpochMilli() - this.birthDate.time
-    return (TimeUnit.DAYS.convert(ageDiffMilli, TimeUnit.MILLISECONDS) / 365).toString()
-  }
-
   private fun List<Immunization>.getVaccineStatus(): PatientVaccineStatus {
     val calendar: Calendar = Calendar.getInstance()
     calendar.add(Calendar.DATE, -28)
@@ -107,7 +68,4 @@ object PatientItemMapper : DomainMapper<Pair<Patient, List<Immunization>>, Patie
       date = if (this.isNotEmpty()) formatter.format(this[0].recorded) else ""
     )
   }
-
-  private fun Patient.atRisk() =
-    this.extension.singleOrNull { it.value.toString().contains(RISK) }?.value?.toString() ?: ""
 }

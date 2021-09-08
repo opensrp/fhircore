@@ -27,7 +27,6 @@ import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 
 object AncItemMapper : DomainMapper<Patient, AncPatientItem> {
-  private const val RISK = "risk"
 
   override fun mapToDomainModel(dto: Patient): AncPatientItem {
     val name = dto.extractName()
@@ -39,7 +38,7 @@ object AncItemMapper : DomainMapper<Patient, AncPatientItem> {
       gender = gender.toString(),
       age = age,
       demographics = "$name, $gender, $age",
-      atRisk = dto.atRisk(RISK)
+      atRisk = dto.atRisk()
     )
   }
 }

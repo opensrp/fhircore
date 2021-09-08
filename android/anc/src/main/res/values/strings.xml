@@ -22,9 +22,4 @@
     <string name="last_seen">Last Seen</string>
     <string name="no_care_plan">No care plan</string>
     <string name="no_services_scheduled">No services scheduled</string>
-
-    <string name="male">Male</string>
-    <string name="female">Female</string>
-    <string name="other">Other</string>
-    <string name="unknown">Unknown</string>
 </resources>

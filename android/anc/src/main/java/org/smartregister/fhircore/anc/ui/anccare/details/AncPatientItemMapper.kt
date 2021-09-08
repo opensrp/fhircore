@@ -16,20 +16,17 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.details
 
-import android.content.Context
 import com.google.android.fhir.logicalId
-import java.time.Instant
-import java.util.Locale
-import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
+import org.smartregister.fhircore.engine.util.extension.atRisk
+import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractGender
+import org.smartregister.fhircore.engine.util.extension.extractName
 
 object AncPatientItemMapper : DomainMapper<Patient, AncPatientItem> {
-  private const val RISK = "risk"
 
   override fun mapToDomainModel(dto: Patient): AncPatientItem {
     val name = dto.extractName()
@@ -44,37 +41,4 @@ object AncPatientItemMapper : DomainMapper<Patient, AncPatientItem> {
       atRisk = dto.atRisk()
     )
   }
-
-  fun Patient.extractName(): String {
-    if (!hasName()) return ""
-    val humanName = this.name.firstOrNull()
-    return if (humanName != null) {
-      "${
-      humanName.given.joinToString(" ")
-      { it.toString().trim().toTitleCase() }
-      } ${humanName.family?.toTitleCase() ?: ""}"
-    } else ""
-  }
-
-  private fun String.toTitleCase() = replaceFirstChar {
-    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-  }
-
-  fun Patient.extractGender(context: Context) =
-    when (AdministrativeGender.valueOf(this.gender.name)) {
-      AdministrativeGender.MALE -> context.getString(R.string.male)
-      AdministrativeGender.FEMALE -> context.getString(R.string.female)
-      AdministrativeGender.OTHER -> context.getString(R.string.other)
-      AdministrativeGender.UNKNOWN -> context.getString(R.string.unknown)
-      AdministrativeGender.NULL -> ""
-    }
-
-  fun Patient.extractAge(): String {
-    if (!hasBirthDate()) return ""
-    val ageDiffMilli = Instant.now().toEpochMilli() - this.birthDate.time
-    return (TimeUnit.DAYS.convert(ageDiffMilli, TimeUnit.MILLISECONDS) / 365).toString()
-  }
-
-  private fun Patient.atRisk() =
-    this.extension.singleOrNull { it.value.toString().contains(RISK) }?.value?.toString() ?: ""
 }
