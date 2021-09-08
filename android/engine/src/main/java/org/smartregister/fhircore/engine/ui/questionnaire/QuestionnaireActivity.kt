@@ -85,9 +85,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener 
     }
 
     findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
-
-    // todo bypass the structure map
-    intent.putExtra(QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR, "true")
   }
 
   fun saveExtractedResources(questionnaireResponse: QuestionnaireResponse) {
@@ -140,7 +137,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener 
     const val QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID = "questionnaire_preassigned_item_id"
     const val QUESTIONNAIRE_ARG_RESPONSE_KEY = "questionnaire_response_item_id"
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
-    const val QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR = "bypass-sdk-extractor"
 
     fun getExtrasBundle(clientIdentifier: String, title: String, id: String) =
       bundleOf(
@@ -151,8 +147,11 @@ class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener 
   }
 
   override fun onClick(v: View?) {
-    val questionnaireFragment =
-      supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
-    saveExtractedResources(questionnaireFragment.getQuestionnaireResponse())
+    if (v != null && v.id == R.id.btn_save_client_info) {
+      val questionnaireFragment =
+        supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
+          QuestionnaireFragment
+      saveExtractedResources(questionnaireFragment.getQuestionnaireResponse())
+    }
   }
 }
