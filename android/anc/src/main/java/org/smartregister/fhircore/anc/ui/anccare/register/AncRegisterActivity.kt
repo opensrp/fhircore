@@ -42,7 +42,8 @@ class AncRegisterActivity : BaseRegisterActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     configureViews(
-      registerViewConfigurationOf(showScanQRCode = false).apply {
+      registerViewConfigurationOf().apply {
+        showScanQRCode = false
         appTitle = getString(R.string.app_name)
       }
     )
@@ -54,7 +55,7 @@ class AncRegisterActivity : BaseRegisterActivity() {
         itemId = R.id.menu_item_anc,
         titleResource = R.string.app_name,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
-        opensMainRegister = false
+        opensMainRegister = true,
       )
     )
 

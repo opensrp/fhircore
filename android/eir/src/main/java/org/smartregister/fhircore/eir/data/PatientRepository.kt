@@ -42,11 +42,8 @@ class PatientRepository(
     loadAll: Boolean
   ): List<PatientItem> {
     return withContext(dispatcherProvider.io()) {
-      val patients = fhirEngine.searchActivePatients(
-        query = query,
-        pageNumber = pageNumber,
-        loadAll = loadAll
-      )
+      val patients =
+        fhirEngine.searchActivePatients(query = query, pageNumber = pageNumber, loadAll = loadAll)
 
       // Fetch immunization data for patient
       val patientImmunizations = mutableListOf<Pair<Patient, List<Immunization>>>()

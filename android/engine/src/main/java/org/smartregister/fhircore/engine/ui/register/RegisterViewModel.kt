@@ -21,21 +21,16 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
-import com.google.android.fhir.search.count
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.Sync
 import java.util.Locale
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
-import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -59,8 +54,6 @@ class RegisterViewModel(
 
   private val applicationConfiguration =
     (getApplication<Application>() as ConfigurableApplication).applicationConfiguration
-
-  private val fhirEngine = (application as ConfigurableApplication).fhirEngine
 
   lateinit var languages: List<Language>
 
@@ -97,25 +90,6 @@ class RegisterViewModel(
         Timber.e("Error syncing data", exception)
       }
     }
-
-  suspend fun performCount(sideMenuOption: SideMenuOption): Long {
-    if (sideMenuOption.countForResource &&
-        sideMenuOption.entityTypePatient &&
-        sideMenuOption.showCount
-    ) {
-      return try {
-        withContext(dispatcher.io()) {
-            val count = fhirEngine.count<Patient> { sideMenuOption.searchFilterLambda }.toInt()
-            Timber.d("Loaded %s clients from db", count)
-            count
-          }
-          .toLong()
-      } catch (resourceNotFoundException: ResourceNotFoundException) {
-        -1
-      }
-    }
-    return -1
-  }
 
   /**
    * Update [_filterValue]. Null means filtering has been reset therefore data for the current page

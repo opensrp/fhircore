@@ -59,6 +59,7 @@ import org.smartregister.fhircore.engine.util.extension.DrawablePosition
 import org.smartregister.fhircore.engine.util.extension.addOnDrawableClickListener
 import org.smartregister.fhircore.engine.util.extension.asString
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
+import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.getDrawable
 import org.smartregister.fhircore.engine.util.extension.hide
@@ -423,28 +424,27 @@ abstract class BaseRegisterActivity :
    */
   abstract fun supportedFragments(): List<Fragment>
 
-  /**
-   * Implement [customEntityCount] to count other resource types other than Patient resource. Use
-   * the class type of the entity specified in [sideMenuOption]. This is useful for complex count
-   * queries
-   */
-  protected open fun customEntityCount(sideMenuOption: SideMenuOption): Long = 0
-
   override fun configurableApplication(): ConfigurableApplication {
     return application as ConfigurableApplication
   }
 
-  private fun updateCount(menuOption: SideMenuOption) {
+  private fun updateCount(sideMenuOption: SideMenuOption) {
     lifecycleScope.launch(registerViewModel.dispatcher.main()) {
-      var count: Long = registerViewModel.performCount(menuOption)
-      if (count == -1L) count = customEntityCount(menuOption)
-      val counter =
-        registerActivityBinding.navView.menu.findItem(menuOption.itemId).actionView as TextView
-      menuOption.count = count
-      counter.text = if (menuOption.count > 0) count.toString() else null
-
-      if (selectedMenuOption != null && menuOption.itemId == selectedMenuOption?.itemId) {
-        selectedMenuOption!!.count = menuOption.count
+      val count = sideMenuOption.countMethod()
+      if (count == -1L) {
+        sideMenuOption.count =
+          (application as ConfigurableApplication).fhirEngine.countActivePatients()
+      } else {
+        sideMenuOption.count = count
+      }
+      with(sideMenuOption) {
+        val counter =
+          registerActivityBinding.navView.menu.findItem(sideMenuOption.itemId).actionView as
+            TextView
+        counter.text = if (this.count > 0) this.count.toString() else null
+        if (selectedMenuOption != null && this.itemId == selectedMenuOption?.itemId) {
+          selectedMenuOption?.count = this.count
+        }
       }
     }
   }

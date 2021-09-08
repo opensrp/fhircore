@@ -50,7 +50,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         itemId = R.id.menu_item_covax,
         titleResource = R.string.client_list_title_covax,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
-        opensMainRegister = false
+        opensMainRegister = true,
       )
     )
 

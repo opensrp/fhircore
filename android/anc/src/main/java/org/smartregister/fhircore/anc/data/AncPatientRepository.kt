@@ -49,11 +49,8 @@ class AncPatientRepository(
     loadAll: Boolean
   ): List<AncPatientItem> {
     return withContext(dispatcherProvider.io()) {
-      val patients = fhirEngine.searchActivePatients(
-        query = query,
-        pageNumber = pageNumber,
-        loadAll = loadAll
-      )
+      val patients =
+        fhirEngine.searchActivePatients(query = query, pageNumber = pageNumber, loadAll = loadAll)
       patients.map { domainMapper.mapToDomainModel(it) }
     }
   }
