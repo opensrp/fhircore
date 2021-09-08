@@ -36,36 +36,35 @@ import org.smartregister.fhircore.engine.util.extension.getLastSeen
 
 object PatientItemMapper : DomainMapper<Pair<Patient, List<Immunization>>, PatientItem> {
 
-  override fun mapToDomainModel(dto: Pair<Patient, List<Immunization>>): PatientItem {
-    val (patient, immunizations) = dto
-    val name = patient.extractName()
-    val gender = patient.extractGender(EirApplication.getContext()).first()
-    val age = patient.extractAge()
-    return PatientItem(
-      patientIdentifier = patient.logicalId,
-      name = name,
-      gender = gender.toString(),
-      age = age,
-      demographics = "$name, $gender, $age",
-      lastSeen = patient.getLastSeen(immunizations),
-      vaccineStatus = immunizations.getVaccineStatus(),
-      atRisk = patient.atRisk()
-    )
-  }
+    override fun mapToDomainModel(dto: Pair<Patient, List<Immunization>>): PatientItem {
+        val (patient, immunizations) = dto
+        val name = patient.extractName()
+        val gender = patient.extractGender(EirApplication.getContext()).first()
+        val age = patient.extractAge()
+        return PatientItem(
+            patientIdentifier = patient.logicalId,
+            name = name,
+            gender = gender.toString(),
+            age = age,
+            demographics = "$name, $gender, $age",
+            lastSeen = patient.getLastSeen(immunizations),
+            vaccineStatus = immunizations.getVaccineStatus(),
+            atRisk = patient.atRisk()
+        )
+    }
 
-  private fun List<Immunization>.getVaccineStatus(): PatientVaccineStatus {
-    val calendar: Calendar = Calendar.getInstance()
-    calendar.add(Calendar.DATE, -28)
-    val overDueStart: Date = calendar.time
-    val formatter = SimpleDateFormat("dd-MM-yy", Locale.US)
-    val computedStatus =
-      if (this.size >= 2) VaccineStatus.VACCINATED
-      else if (this.size == 1 && this[0].recorded.before(overDueStart)) VaccineStatus.OVERDUE
-      else if (this.size == 1) VaccineStatus.PARTIAL else VaccineStatus.DUE
+    private fun List<Immunization>.getVaccineStatus(): PatientVaccineStatus {
+        val calendar: Calendar = Calendar.getInstance()
+        calendar.add(Calendar.DATE, -28)
+        val overDueStart: Date = calendar.time
+        val formatter = SimpleDateFormat("dd-MM-yy", Locale.US)
+        val computedStatus =
+            if (this.size >= 2) VaccineStatus.VACCINATED
+            else if (this.size == 1 && this[0].recorded.before(overDueStart)) VaccineStatus.OVERDUE
+            else if (this.size == 1) VaccineStatus.PARTIAL else VaccineStatus.DUE
 
-    return PatientVaccineStatus(
-      status = computedStatus,
-      date = if (this.isNotEmpty()) formatter.format(this[0].recorded) else ""
-    )
-  }
+        val date = if (this.isNotEmpty()) this[0].recorded else null
+        val dateUpToDate = if (date == null) "" else formatter.format(date)
+        return PatientVaccineStatus(status = computedStatus, date = dateUpToDate)
+    }
 }
