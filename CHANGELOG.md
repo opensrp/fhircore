@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC register
 - Load Questionnaire from DB
 - Search by WHO identifier
+- Sync progress loader and datetime
 
 ### Fixed
 
@@ -35,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Reduce font size and spacing on patient list screen
 - removed covax prefix and postfix in general use-case
+- Changed patient registration extraction to use StructureMap-based extraction
 
 ## [0.0.3] - 2021-05-24
 ### Added

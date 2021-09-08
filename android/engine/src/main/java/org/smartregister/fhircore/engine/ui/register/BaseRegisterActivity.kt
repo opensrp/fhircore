@@ -37,8 +37,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.State
 import com.google.android.material.navigation.NavigationView
 import java.util.Locale
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.BR
 import org.smartregister.fhircore.engine.R
@@ -48,7 +50,6 @@ import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfigur
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
-import org.smartregister.fhircore.engine.sync.SyncStatus
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
@@ -56,13 +57,18 @@ import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.DrawablePosition
 import org.smartregister.fhircore.engine.util.extension.addOnDrawableClickListener
+import org.smartregister.fhircore.engine.util.extension.asString
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.getDrawable
+import org.smartregister.fhircore.engine.util.extension.hide
+import org.smartregister.fhircore.engine.util.extension.lastSyncDateTime
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
+import org.smartregister.fhircore.engine.util.extension.show
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.toggleVisibility
+import timber.log.Timber
 
 abstract class BaseRegisterActivity :
   BaseMultiLanguageActivity(),
@@ -109,6 +115,33 @@ abstract class BaseRegisterActivity :
         this@BaseRegisterActivity,
         { updateLanguage(Language(it, Locale.forLanguageTag(it).displayName)) }
       )
+
+      lifecycleScope.launch {
+        sharedSyncStatus.collect { state ->
+          Timber.i("Sync state received is $state")
+          when (state) {
+            is State.Started -> {
+              showToast(getString(R.string.syncing))
+              updateSyncViews("", state)
+            }
+            is State.Failed -> {
+              showToast(getString(R.string.sync_failed))
+              updateSyncViews(state.result.timestamp.asString(), state)
+            }
+            is State.Finished -> {
+              showToast(getString(R.string.sync_completed))
+              updateSyncViews(state.result.timestamp.asString(), state)
+            }
+            is State.InProgress -> {
+              Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
+            }
+            is State.Glitch ->
+              state.exceptions.forEach {
+                Timber.e("Experienced Glitch for ${it.resourceType.name}", it.exception)
+              }
+          }
+        }
+      }
     }
 
     registerActivityBinding = DataBindingUtil.setContentView(this, R.layout.base_register_activity)
@@ -125,17 +158,19 @@ abstract class BaseRegisterActivity :
     setUpViews()
   }
 
-  private fun handleSyncStatus(it: SyncStatus) {
-    when (it) {
-      SyncStatus.COMPLETE -> {
-        showToast(getString(R.string.sync_completed))
-        updateEntityCounts()
-      }
-      SyncStatus.FAILED -> showToast(getString(R.string.sync_failed))
+  private fun updateSyncViews(lastSyncDate: String, state: State? = null) {
+    Timber.i("Updating last sync date $lastSyncDate")
+    registerActivityBinding.tvLastSyncTimestamp.text = lastSyncDate
+
+    if (state is State.Started) {
+      registerActivityBinding.progressSync.show()
+      registerActivityBinding.containerProgressSync.setBackgroundResource(0)
+    } else if (state == null || state is State.Finished || state is State.Failed) {
+      registerActivityBinding.progressSync.hide()
+      registerActivityBinding.containerProgressSync.setBackgroundResource(R.drawable.ic_sync)
+      sideMenuOptions().forEach { updateCount(it) }
     }
   }
-
-  private fun updateEntityCounts() = sideMenuOptions().forEach { updateCount(it) }
 
   private fun setUpViews() {
     setupSideMenu()
@@ -152,9 +187,11 @@ abstract class BaseRegisterActivity :
         )
     }
 
-    registerActivityBinding.tvSync.setOnClickListener {
-      showToast(getString(R.string.syncing))
+    updateSyncViews(application.lastSyncDateTime())
+
+    registerActivityBinding.containerProgressSync.setOnClickListener {
       manipulateDrawer(open = false)
+      updateSyncViews("", State.Started)
       registerViewModel.runSync()
     }
 

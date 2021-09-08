@@ -23,7 +23,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import com.google.android.fhir.search.count
+import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.Sync
 import java.util.Locale
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
@@ -60,6 +64,14 @@ class RegisterViewModel(
 
   lateinit var languages: List<Language>
 
+  val sharedSyncStatus = MutableSharedFlow<State>()
+
+  init {
+    viewModelScope.launch {
+      Sync.basicSyncJob(application).stateFlow().collect { sharedSyncStatus.tryEmit(it) }
+    }
+  }
+
   var selectedLanguage =
     MutableLiveData(
       SharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
@@ -80,7 +92,7 @@ class RegisterViewModel(
   fun runSync() =
     viewModelScope.launch(dispatcher.io()) {
       try {
-        getApplication<Application>().runSync()
+        getApplication<Application>().runSync(sharedSyncStatus)
       } catch (exception: Exception) {
         Timber.e("Error syncing data", exception)
       }
