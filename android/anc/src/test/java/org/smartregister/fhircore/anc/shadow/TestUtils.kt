@@ -14,25 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.data.model
+package org.smartregister.fhircore.anc.shadow
 
-import androidx.compose.runtime.Stable
-import java.util.Date
+import android.content.Context
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
+import org.hl7.fhir.r4.model.CarePlan
 
-@Stable
-data class AncPatientItem(
-  var patientIdentifier: String = "",
-  var name: String = "",
-  var gender: String = "",
-  var age: String = "",
-  var demographics: String = "",
-  var atRisk: String = ""
-)
+object TestUtils {
+  private val iParser: IParser = FhirContext.forR4().newJsonParser()
 
-@Stable
-data class AncPatientDetailItem(
-  var patientDetails: AncPatientItem = AncPatientItem(),
-  var patientDetailsHead: AncPatientItem = AncPatientItem(),
-)
-
-@Stable data class CarePlanItem(var title: String, var periodStartDate: Date)
+  fun loadCarePlan(context: Context, carePLan: String): CarePlan {
+    val cJson = context.assets.open(carePLan).bufferedReader().use { it.readText() }
+    return iParser.parseResource(cJson) as CarePlan
+  }
+}

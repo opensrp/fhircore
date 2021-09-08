@@ -41,7 +41,11 @@ class AncRegisterActivity : BaseRegisterActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    configureViews(registerViewConfigurationOf().apply { appTitle = getString(R.string.app_name) })
+    configureViews(
+      registerViewConfigurationOf(showScanQRCode = false).apply {
+        appTitle = getString(R.string.app_name)
+      }
+    )
   }
 
   override fun sideMenuOptions(): List<SideMenuOption> =
