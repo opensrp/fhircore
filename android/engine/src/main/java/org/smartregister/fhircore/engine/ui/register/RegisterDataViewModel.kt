@@ -43,6 +43,10 @@ class RegisterDataViewModel<I : Any, O : Any>(
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : AndroidViewModel(application) {
 
+  private val _showLoader = MutableLiveData(false)
+  val showLoader
+    get() = _showLoader
+
   private val _showResultsCount = MutableLiveData(false)
   val showResultsCount
     get() = _showResultsCount
@@ -120,6 +124,10 @@ class RegisterDataViewModel<I : Any, O : Any>(
 
   fun showResultsCount(showResultsCount: Boolean) {
     this._showResultsCount.postValue(showResultsCount)
+  }
+
+  fun setShowLoader(showLoader: Boolean) {
+    this._showLoader.postValue(showLoader)
   }
 
   fun reloadCurrentPageData(refreshTotalRecordsCount: Boolean = false) {

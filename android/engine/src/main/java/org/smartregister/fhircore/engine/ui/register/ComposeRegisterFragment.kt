@@ -23,10 +23,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
+import org.smartregister.fhircore.engine.ui.components.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.PaginatedRegister
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
@@ -43,6 +45,9 @@ abstract class ComposeRegisterFragment<I : Any, O : Any> : BaseRegisterFragment<
           val registerData = registerDataViewModel.registerData.collectAsState(emptyFlow())
           val pagingItems = registerData.value.collectAsLazyPagingItems()
           val showResultsCount by registerDataViewModel.showResultsCount.observeAsState(false)
+          val showLoader by registerDataViewModel.showLoader.observeAsState(false)
+
+          if (showLoader) LoaderDialog(modifier = Modifier)
           PaginatedRegister(
             loadState = pagingItems.loadState.refresh,
             showResultsCount = showResultsCount,

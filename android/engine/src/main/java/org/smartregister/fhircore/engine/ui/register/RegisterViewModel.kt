@@ -46,6 +46,10 @@ class RegisterViewModel(
   val dispatcher: DispatcherProvider = DefaultDispatcherProvider
 ) : AndroidViewModel(application) {
 
+  private val _syncing: MutableLiveData<Boolean> = MutableLiveData(false)
+  val syncing
+    get() = _syncing
+
   private val _refreshRegisterData: MutableLiveData<Boolean> = MutableLiveData(false)
   val refreshRegisterData
     get() = _refreshRegisterData
@@ -101,5 +105,9 @@ class RegisterViewModel(
    */
   fun setRefreshRegisterData(refreshData: Boolean) {
     _refreshRegisterData.value = refreshData
+  }
+
+  fun setSyncing(syncing: Boolean) {
+    _syncing.value = syncing
   }
 }

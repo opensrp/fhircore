@@ -33,7 +33,7 @@ fun CircularProgressBar(modifier: Modifier = Modifier) {
     modifier = modifier.padding(8.dp),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
-  ) { CircularProgressIndicator(modifier = modifier.size(20.dp), strokeWidth = 2.dp) }
+  ) { CircularProgressIndicator(modifier = modifier.size(24.dp), strokeWidth = 2.dp) }
 }
 
 @Preview(showBackground = true)

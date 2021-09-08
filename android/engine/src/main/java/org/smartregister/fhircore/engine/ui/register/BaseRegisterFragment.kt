@@ -86,8 +86,10 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
             setRefreshRegisterData(false)
             registerDataViewModel.reloadCurrentPageData(refreshTotalRecordsCount = true)
           }
+          registerDataViewModel.setShowLoader(false)
         }
       )
+      syncing.observe(viewLifecycleOwner, { registerDataViewModel.setShowLoader(it) })
     }
 
     registerDataViewModel =

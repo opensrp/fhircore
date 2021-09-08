@@ -87,9 +87,7 @@ class EirApplication : Application(), ConfigurableApplication {
           ),
           EirFhirSyncWorker::class.java
         )
-        .collect {
-          this@EirApplication.syncBroadcaster.broadcastSync(state = it)
-        }
+        .collect { this@EirApplication.syncBroadcaster.broadcastSync(state = it) }
     }
     return FhirEngineBuilder(this).build()
   }

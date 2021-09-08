@@ -164,6 +164,7 @@ abstract class BaseRegisterActivity :
       btnRegisterNewClient.setOnClickListener { registerClient() }
       containerProgressSync.setOnClickListener {
         progressSync.show()
+        manipulateDrawer(false)
         this@BaseRegisterActivity.registerViewModel.runSync()
       }
     }
@@ -304,15 +305,18 @@ abstract class BaseRegisterActivity :
       is State.Failed -> {
         showToast(getString(R.string.sync_failed))
         registerActivityBinding.updateSyncStatus(state)
+        this.registerViewModel.setSyncing(false)
       }
       is State.Finished -> {
         showToast(getString(R.string.sync_completed))
         registerActivityBinding.updateSyncStatus(state)
         sideMenuOptions().forEach { updateCount(it) }
         manipulateDrawer(open = false)
+        this.registerViewModel.setSyncing(false)
         this.registerViewModel.setRefreshRegisterData(true)
       }
       is State.InProgress -> {
+        this.registerViewModel.setSyncing(true)
         registerActivityBinding.updateSyncStatus(state)
         Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
       }
