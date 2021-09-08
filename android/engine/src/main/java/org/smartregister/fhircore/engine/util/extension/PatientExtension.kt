@@ -54,7 +54,6 @@ fun Patient.extractGender(context: Context) =
     AdministrativeGender.NULL -> ""
   }
 
-
 fun Patient.extractAge(): String {
   if (!hasBirthDate()) return ""
   val ageDiffMilli = Instant.now().toEpochMilli() - this.birthDate.time
@@ -63,7 +62,6 @@ fun Patient.extractAge(): String {
 
 fun Patient.atRisk() =
   this.extension.singleOrNull { it.value.toString().contains(RISK) }?.value?.toString() ?: ""
-
 
 fun Patient.getLastSeen(immunizations: List<Immunization>): String {
   return immunizations
