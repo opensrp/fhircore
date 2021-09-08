@@ -302,7 +302,7 @@ abstract class BaseRegisterActivity :
         showToast(getString(R.string.syncing))
         registerActivityBinding.updateSyncStatus(state)
       }
-      is State.Failed -> {
+      is State.Failed, is State.Glitch -> {
         showToast(getString(R.string.sync_failed))
         registerActivityBinding.updateSyncStatus(state)
         this.registerViewModel.setSyncing(false)
@@ -320,7 +320,6 @@ abstract class BaseRegisterActivity :
         registerActivityBinding.updateSyncStatus(state)
         Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
       }
-      else -> return
     }
   }
 
