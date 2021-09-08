@@ -1,0 +1,15 @@
+apply plugin: "com.github.kt3k.coveralls"
+apply plugin: 'jacoco'
+
+jacoco {
+    toolVersion = versions.jacoco_tool
+}
+
+coveralls {
+    sourceDirs = ["$project.projectDir/src/main/java"]
+    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoTestReportRelease/jacocoTestReportRelease.xml"
+}
+
+tasks.coveralls {
+    dependsOn 'jacocoTestReport'
+}

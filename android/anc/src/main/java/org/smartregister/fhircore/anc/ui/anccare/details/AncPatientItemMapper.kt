@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.anccare.register
+package org.smartregister.fhircore.anc.ui.anccare.details
 
 import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.Patient
@@ -26,7 +26,7 @@ import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 
-object AncItemMapper : DomainMapper<Patient, AncPatientItem> {
+object AncPatientItemMapper : DomainMapper<Patient, AncPatientItem> {
 
   override fun mapToDomainModel(dto: Patient): AncPatientItem {
     val name = dto.extractName()
