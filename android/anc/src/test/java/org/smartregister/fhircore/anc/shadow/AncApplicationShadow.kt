@@ -41,7 +41,7 @@ class AncApplicationShadow : ShadowApplication() {
     }
 
     override suspend fun getLastSyncTimeStamp(): OffsetDateTime? {
-      TODO("Not yet implemented")
+      return null
     }
 
     override suspend fun <R : Resource> load(clazz: Class<R>, id: String): R {
