@@ -60,7 +60,11 @@ fun Application.buildDatasource(
   )
 }
 
-suspend fun FhirEngine.searchPatients(query: String, pageNumber: Int, loadAll: Boolean = false) =
+suspend fun FhirEngine.searchActivePatients(
+  query: String,
+  pageNumber: Int,
+  loadAll: Boolean = false
+) =
   this.search<Patient> {
     filter(Patient.ACTIVE, true)
     if (query.isNotBlank()) {
@@ -71,7 +75,7 @@ suspend fun FhirEngine.searchPatients(query: String, pageNumber: Int, loadAll: B
     }
     sort(Patient.NAME, Order.ASCENDING)
     count =
-      if (loadAll) this@searchPatients.countActivePatients().toInt()
+      if (loadAll) this@searchActivePatients.countActivePatients().toInt()
       else PaginationUtil.DEFAULT_PAGE_SIZE
     from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
   }

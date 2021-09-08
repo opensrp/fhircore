@@ -34,9 +34,8 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
 class AncApplication : Application(), ConfigurableApplication {
-  override val applicationConfiguration: ApplicationConfiguration by lazy {
-    constructConfiguration()
-  }
+
+  override lateinit var applicationConfiguration: ApplicationConfiguration
 
   override val authenticationService: AuthenticationService
     get() = AncAuthenticationService(applicationContext)
@@ -67,24 +66,23 @@ class AncApplication : Application(), ConfigurableApplication {
     return FhirEngineBuilder(this).build()
   }
 
-  private fun constructConfiguration(): ApplicationConfiguration {
-    return applicationConfigurationOf(
-      oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL,
-      fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL,
-      clientId = BuildConfig.OAUTH_CIENT_ID,
-      clientSecret = BuildConfig.OAUTH_CLIENT_SECRET,
-      languages = listOf("en", "sw")
-    )
-  }
-
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
-    throw UnsupportedOperationException("Can not override existing configuration")
+    this.applicationConfiguration = applicationConfiguration
   }
 
   override fun onCreate() {
     super.onCreate()
     SharedPreferencesHelper.init(this)
     ancApplication = this
+    configureApplication(
+      applicationConfigurationOf(
+        oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL,
+        fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL,
+        clientId = BuildConfig.OAUTH_CIENT_ID,
+        clientSecret = BuildConfig.OAUTH_CLIENT_SECRET,
+        languages = listOf("en", "sw")
+      )
+    )
 
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())

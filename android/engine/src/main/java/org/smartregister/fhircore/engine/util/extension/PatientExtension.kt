@@ -17,18 +17,27 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.content.Context
+import java.text.SimpleDateFormat
 import java.time.Instant
+import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
+import org.smartregister.fhircore.engine.R
+
+private const val RISK = "risk"
+private val simpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.ENGLISH)
 
 fun Patient.extractName(): String {
   if (!hasName()) return ""
   val humanName = this.name.firstOrNull()
   return if (humanName != null) {
-    "${humanName.given.joinToString(" ")
-    { it.toString().trim().toTitleCase() }} ${humanName.family?.toTitleCase() ?: ""}"
+    "${
+    humanName.given.joinToString(" ")
+    { it.toString().trim().toTitleCase() }
+    } ${humanName.family?.toTitleCase() ?: ""}"
   } else ""
 }
 
@@ -38,10 +47,10 @@ private fun String.toTitleCase() = replaceFirstChar {
 
 fun Patient.extractGender(context: Context) =
   when (AdministrativeGender.valueOf(this.gender.name)) {
-    AdministrativeGender.MALE -> "M"
-    AdministrativeGender.FEMALE -> "F"
-    AdministrativeGender.OTHER -> "O"
-    AdministrativeGender.UNKNOWN -> "U"
+    AdministrativeGender.MALE -> context.getString(R.string.male)
+    AdministrativeGender.FEMALE -> context.getString(R.string.female)
+    AdministrativeGender.OTHER -> context.getString(R.string.other)
+    AdministrativeGender.UNKNOWN -> context.getString(R.string.unknown)
     AdministrativeGender.NULL -> ""
   }
 
@@ -51,5 +60,15 @@ fun Patient.extractAge(): String {
   return (TimeUnit.DAYS.convert(ageDiffMilli, TimeUnit.MILLISECONDS) / 365).toString()
 }
 
-fun Patient.atRisk(riskCode: String) =
-  this.extension.singleOrNull { it.value.toString().contains(riskCode) }?.value?.toString() ?: ""
+fun Patient.atRisk() =
+  this.extension.singleOrNull { it.value.toString().contains(RISK) }?.value?.toString() ?: ""
+
+fun Patient.getLastSeen(immunizations: List<Immunization>): String {
+  return immunizations
+    .maxByOrNull { it.protocolApplied.first().doseNumberPositiveIntType.value }
+    ?.occurrenceDateTimeType
+    ?.toHumanDisplay()
+    ?: this.meta?.lastUpdated.makeItReadable()
+}
+
+private fun Date?.makeItReadable() = if (this != null) simpleDateFormat.format(this) else ""

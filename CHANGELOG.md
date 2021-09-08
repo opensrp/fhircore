@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Load Questionnaire from DB
 - Search by WHO identifier
 - Sync progress loader and datetime
+- ANC details activity
 
 ### Fixed
 

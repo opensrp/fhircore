@@ -28,7 +28,7 @@ import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
-import org.smartregister.fhircore.engine.util.extension.searchPatients
+import org.smartregister.fhircore.engine.util.extension.searchActivePatients
 
 class PatientRepository(
   override val fhirEngine: FhirEngine,
@@ -42,7 +42,7 @@ class PatientRepository(
     loadAll: Boolean
   ): List<PatientItem> {
     return withContext(dispatcherProvider.io()) {
-      val patients = fhirEngine.searchPatients(
+      val patients = fhirEngine.searchActivePatients(
         query = query,
         pageNumber = pageNumber,
         loadAll = loadAll
