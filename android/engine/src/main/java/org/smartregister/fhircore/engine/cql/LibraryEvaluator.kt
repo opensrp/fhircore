@@ -38,7 +38,7 @@ import java.util.*
  * It borrows code from https://github.com/DBCG/CqlEvaluatorSampleApp
  * See also https://www.hl7.org/fhir/
  */
-class Evaluator {
+class LibraryEvaluator {
     var fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
     var adapterFactory = AdapterFactory()
     var fhirTypeConverter: FhirTypeConverter? = null
