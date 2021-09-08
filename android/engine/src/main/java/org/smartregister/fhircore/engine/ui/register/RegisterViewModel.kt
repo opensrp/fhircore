@@ -23,7 +23,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import com.google.android.fhir.search.count
+import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.Sync
 import java.util.Locale
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
@@ -32,7 +36,6 @@ import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfigur
 import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
-import org.smartregister.fhircore.engine.ui.register.model.SyncStatus
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -64,7 +67,13 @@ class RegisterViewModel(
 
   lateinit var languages: List<Language>
 
-  val syncStatus = MutableLiveData(SyncStatus.NOT_SYNCING)
+  val sharedSyncStatus = MutableSharedFlow<State>()
+
+  init {
+    viewModelScope.launch {
+      Sync.basicSyncJob(application).stateFlow().collect { sharedSyncStatus.tryEmit(it) }
+    }
+  }
 
   var selectedLanguage =
     MutableLiveData(
@@ -83,13 +92,7 @@ class RegisterViewModel(
 
   fun runSync() =
     viewModelScope.launch(dispatcher.io()) {
-      try {
-        getApplication<Application>().runSync()
-        syncStatus.postValue(SyncStatus.COMPLETE)
-      } catch (exception: Exception) {
-        Timber.e("Error syncing data", exception)
-        syncStatus.postValue(SyncStatus.FAILED)
-      }
+      getApplication<Application>().runSync(sharedSyncStatus)
     }
 
   suspend fun performCount(sideMenuOption: SideMenuOption): Long {

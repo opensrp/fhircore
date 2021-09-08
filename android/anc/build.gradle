@@ -1,8 +1,13 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-kapt'
+    id 'de.mannodermaus.android-junit5'
+    id 'kotlin-android-extensions'
+    id 'org.jetbrains.dokka'
     id 'org.jetbrains.kotlin.plugin.serialization'
 }
+apply from: "code.coverage.gradle"
 
 Properties props = new Properties()
 
@@ -22,13 +27,21 @@ if (rootProject.file("local.properties").exists()) {
 
 android {
     compileSdkVersion 30
+
     dataBinding {
         enabled true
     }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
     defaultConfig {
         applicationId "org.smartregister.fhircore.anc"
-        minSdkVersion sdk_versions.min_sdk
-        targetSdkVersion sdk_versions.target_sdk
+        minSdkVersion 21
+        targetSdkVersion 30
         versionCode 1
         versionName "0.0.1"
         multiDexEnabled true
@@ -45,6 +58,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            testCoverageEnabled true
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -53,6 +69,7 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true
     }
     kotlinOptions {
         jvmTarget = '1.8'
@@ -86,9 +103,25 @@ android {
         exclude 'META-INF/sun-jaxb.episode'
         exclude("META-INF/*.kotlin_module")
     }
+
+    testOptions {
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
+        animationsDisabled true
+        unitTests {
+            returnDefaultValues = true
+            includeAndroidResources = true
+        }
+        unitTests.all {
+            jacoco {
+                includeNoLocationClasses = true
+                excludes = ['jdk.internal.*']
+            }
+        }
+    }
 }
 
 dependencies {
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:1.1.5"
     implementation(project(":engine"))
     implementation 'androidx.core:core-ktx:1.6.0'
     implementation 'androidx.appcompat:appcompat:1.3.1'
@@ -96,9 +129,26 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.3.5'
     implementation 'androidx.navigation:navigation-ui-ktx:2.3.5'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
+    androidTestImplementation deps.atsl.ext_junit
+    androidTestImplementation deps.atsl.espresso
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2'
+
+
+
+    testImplementation deps.junit5_api
+    testRuntimeOnly deps.junit5_engine
+    testRuntimeOnly deps.junit5_engine_vintage
+    testImplementation deps.robolectric
+    testImplementation deps.atsl.ext_junit
+    testImplementation deps.atsl.ext_junit_ktx
+    testImplementation deps.coroutines.test
+    testImplementation deps.androidx.core_test
+    debugImplementation deps.fragment_testing
+    releaseImplementation deps.fragment_testing
+    testImplementation deps.mockk
+
+    androidTestImplementation deps.atsl.ext_junit
+    androidTestImplementation deps.atsl.espresso
     implementation deps.work.runtime
 }
