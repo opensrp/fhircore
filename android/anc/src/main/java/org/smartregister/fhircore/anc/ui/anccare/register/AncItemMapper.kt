@@ -42,8 +42,4 @@ object AncItemMapper : DomainMapper<Patient, AncPatientItem> {
       atRisk = dto.atRisk(RISK)
     )
   }
-
-  override fun mapFromDomainModel(domainModel: AncPatientItem): Patient {
-    throw UnsupportedOperationException()
-  }
 }

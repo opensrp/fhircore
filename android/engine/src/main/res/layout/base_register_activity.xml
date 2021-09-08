@@ -51,11 +51,52 @@
                     android:id="@+id/list_pager"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_above="@id/btn_register_new_client"
+                    android:layout_above="@id/pagination_section"
                     android:layout_below="@id/base_register_toolbar"
                     android:layout_marginBottom="15dp">
 
                 </androidx.viewpager2.widget.ViewPager2>
+
+                <LinearLayout
+                    android:id="@+id/pagination_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@+id/btn_register_new_client"
+                    android:orientation="horizontal"
+                    android:padding="8dp">
+
+                    <Button
+                        android:id="@+id/previous_page_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/transparent_blue_background"
+                        android:clickable="true"
+                        android:drawableLeft="@drawable/ic_chevron_left"
+                        android:focusable="true"
+                        android:text="@string/str_previous"
+                        android:textColor="?attr/colorPrimary" />
+
+                    <TextView
+                        android:id="@+id/page_info_textview"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/str_page_info"
+                        android:textAlignment="center"
+                        android:textColor="@color/grey_text_color" />
+
+                    <Button
+                        android:id="@+id/next_page_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/transparent_blue_background"
+                        android:clickable="true"
+                        android:drawableRight="@drawable/ic_chevron_right"
+                        android:focusable="true"
+                        android:text="@string/str_next"
+                        android:textColor="?attr/colorPrimary" />
+                </LinearLayout>
 
                 <Button
                     android:id="@+id/btn_register_new_client"
@@ -102,19 +143,22 @@
                     android:paddingTop="15dp"
                     android:paddingBottom="15dp">
 
-                    <TextView
-                        android:id="@+id/tv_sync"
-                        android:layout_width="0dp"
+                    <LinearLayout
+                        android:id="@+id/container_progress_sync"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:drawablePadding="10dp"
-                        android:gravity="center_vertical"
-                        android:paddingStart="15dp"
-                        android:text="@string/sync"
-                        android:textAllCaps="false"
-                        android:textColor="@color/white"
-                        android:textSize="19sp"
-                        app:drawableStartCompat="@drawable/ic_sync" />
+                        android:background="@drawable/ic_sync"
+                        android:layout_marginStart="10dp">
+                        <ProgressBar
+                            android:id="@+id/progress_sync"
+                            android:indeterminate="true"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:drawablePadding="10dp"
+                            android:gravity="center_vertical"/>
+                    </LinearLayout>
+
 
                     <TextView
                         android:id="@+id/tv_last_sync_timestamp"
