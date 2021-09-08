@@ -24,8 +24,8 @@ import org.hl7.fhir.r4.model.CarePlan
 object TestUtils {
   private val iParser: IParser = FhirContext.forR4().newJsonParser()
 
-  fun loadCarePlan(context: Context, questionnaire: String): CarePlan {
-    val qJson = context.assets.open(questionnaire).bufferedReader().use { it.readText() }
-    return iParser.parseResource(qJson) as CarePlan
+  fun loadCarePlan(context: Context, carePLan: String): CarePlan {
+    val cJson = context.assets.open(carePLan).bufferedReader().use { it.readText() }
+    return iParser.parseResource(cJson) as CarePlan
   }
 }
