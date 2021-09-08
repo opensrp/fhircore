@@ -72,13 +72,14 @@ class EirApplication : Application(), ConfigurableApplication {
   }
 
   private fun constructFhirEngine(): FhirEngine {
-    Sync.periodicSync<EirFhirSyncWorker>(
-      this,
-      PeriodicSyncConfiguration(
-        syncConstraints = Constraints.Builder().build(),
-        repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
+    getSyncJob()
+      .poll(
+        PeriodicSyncConfiguration(
+          syncConstraints = Constraints.Builder().build(),
+          repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
+        ),
+        EirFhirSyncWorker::class.java
       )
-    )
 
     return FhirEngineBuilder(this).build()
   }
@@ -88,6 +89,8 @@ class EirApplication : Application(), ConfigurableApplication {
     private lateinit var eirApplication: EirApplication
 
     fun getContext() = eirApplication
+
+    fun getSyncJob() = Sync.basicSyncJob(eirApplication)
   }
 
   override val secureSharedPreference: SecureSharedPreference
