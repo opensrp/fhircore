@@ -63,7 +63,6 @@ import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.getDrawable
 import org.smartregister.fhircore.engine.util.extension.hide
-import org.smartregister.fhircore.engine.util.extension.lastSyncDateTime
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.show
@@ -138,7 +137,10 @@ abstract class BaseRegisterActivity :
             }
             is State.Glitch ->
               state.exceptions.forEach {
-                Timber.e("Experienced Glitch for ${it.resourceType.name}", it.exception)
+                Timber.e(
+                  "Experienced glitch when syncing data for resource type ${it.resourceType.name}",
+                  it.exception
+                )
               }
           }
         }
@@ -159,18 +161,32 @@ abstract class BaseRegisterActivity :
     setUpViews()
   }
 
-  private fun updateSyncViews(lastSyncDate: String, state: State? = null) {
+  private fun updateSyncViews(lastSyncDate: String, state: State) {
     Timber.i("Updating last sync date $lastSyncDate")
     registerActivityBinding.tvLastSyncTimestamp.text = lastSyncDate
-
-    if (state is State.Started) {
-      registerActivityBinding.progressSync.show()
-      registerActivityBinding.containerProgressSync.setBackgroundResource(0)
-    } else if (state == null || state is State.Finished || state is State.Failed) {
-      registerActivityBinding.progressSync.hide()
-      registerActivityBinding.containerProgressSync.setBackgroundResource(R.drawable.ic_sync)
-      sideMenuOptions().forEach { updateCount(it) }
+    with(registerActivityBinding) {
+      when (state) {
+        is State.Started -> {
+          progressSync.show()
+          containerProgressSync.setBackgroundResource(0)
+        }
+        is State.Finished -> {
+          updateSyncImage()
+          sideMenuOptions().forEach { updateCount(it) }
+          manipulateDrawer(open = false)
+          this@BaseRegisterActivity.registerViewModel.setRefreshRegisterData(true)
+        }
+        is State.Failed -> {
+          updateSyncImage()
+        }
+        else -> updateSyncImage()
+      }
     }
+  }
+
+  private fun BaseRegisterActivityBinding.updateSyncImage() {
+    progressSync.hide()
+    containerProgressSync.setBackgroundResource(R.drawable.ic_sync)
   }
 
   private fun setUpViews() {
@@ -188,10 +204,7 @@ abstract class BaseRegisterActivity :
         )
     }
 
-    updateSyncViews(application.lastSyncDateTime())
-
     registerActivityBinding.containerProgressSync.setOnClickListener {
-      manipulateDrawer(open = false)
       updateSyncViews("", State.Started)
       registerViewModel.runSync()
     }

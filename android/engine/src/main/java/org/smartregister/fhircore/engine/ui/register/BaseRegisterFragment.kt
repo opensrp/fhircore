@@ -78,6 +78,18 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
       }
     )
 
+    registerViewModel.run {
+      refreshRegisterData.observe(
+        viewLifecycleOwner,
+        { refreshData ->
+          if (refreshData) {
+            setRefreshRegisterData(false)
+            registerDataViewModel.reloadCurrentPageData()
+          }
+        }
+      )
+    }
+
     registerDataViewModel =
       initializeRegisterDataViewModel().apply {
         this.currentPage.observe(viewLifecycleOwner, { registerDataViewModel.loadPageData(it) })

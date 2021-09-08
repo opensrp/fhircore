@@ -22,10 +22,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.sync.State
-import com.google.android.fhir.sync.Sync
 import java.util.Locale
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
@@ -48,6 +46,10 @@ class RegisterViewModel(
   val dispatcher: DispatcherProvider = DefaultDispatcherProvider
 ) : AndroidViewModel(application) {
 
+  private val _refreshRegisterData: MutableLiveData<Boolean> = MutableLiveData(false)
+  val refreshRegisterData
+    get() = _refreshRegisterData
+
   private val _filterValue = MutableLiveData<Pair<RegisterFilterType, Any?>>()
   val filterValue
     get() = _filterValue
@@ -58,12 +60,6 @@ class RegisterViewModel(
   lateinit var languages: List<Language>
 
   val sharedSyncStatus = MutableSharedFlow<State>()
-
-  init {
-    viewModelScope.launch {
-      Sync.basicSyncJob(application).stateFlow().collect { sharedSyncStatus.tryEmit(it) }
-    }
-  }
 
   var selectedLanguage =
     MutableLiveData(
@@ -97,5 +93,13 @@ class RegisterViewModel(
    */
   fun updateFilterValue(registerFilterType: RegisterFilterType, newValue: Any?) {
     _filterValue.value = Pair(registerFilterType, newValue)
+  }
+
+  /**
+   * Set [_refreshRegisterData]. Reloads the data on the register fragment when true, ignored
+   * otherwise
+   */
+  fun setRefreshRegisterData(refreshData: Boolean) {
+    _refreshRegisterData.value = refreshData
   }
 }
