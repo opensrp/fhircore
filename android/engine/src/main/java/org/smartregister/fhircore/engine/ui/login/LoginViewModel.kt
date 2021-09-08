@@ -26,6 +26,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.sync.State
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import org.smartregister.fhircore.engine.auth.AuthCredentials
@@ -49,6 +51,8 @@ class LoginViewModel(
   loginViewConfiguration: LoginViewConfiguration,
   private val dispatcher: DispatcherProvider = DefaultDispatcherProvider
 ) : AndroidViewModel(application), AccountManagerCallback<Bundle> {
+
+  val sharedSyncStatus = MutableSharedFlow<State>()
 
   private val accountManager = AccountManager.get(application)
 

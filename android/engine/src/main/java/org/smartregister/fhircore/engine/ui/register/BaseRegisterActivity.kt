@@ -50,6 +50,7 @@ import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfigur
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
+import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
@@ -73,7 +74,8 @@ import timber.log.Timber
 abstract class BaseRegisterActivity :
   BaseMultiLanguageActivity(),
   NavigationView.OnNavigationItemSelectedListener,
-  ConfigurableView<RegisterViewConfiguration> {
+  ConfigurableView<RegisterViewConfiguration>,
+  OnSyncListener {
 
   private lateinit var registerViewModel: RegisterViewModel
 
@@ -96,6 +98,7 @@ abstract class BaseRegisterActivity :
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     application.assertIsConfigurable()
+    (application as ConfigurableApplication).syncBroadcaster.registerSyncListener(this)
 
     registerViewModel =
       ViewModelProvider(
@@ -116,35 +119,7 @@ abstract class BaseRegisterActivity :
         { updateLanguage(Language(it, Locale.forLanguageTag(it).displayName)) }
       )
 
-      lifecycleScope.launch {
-        sharedSyncStatus.collect { state ->
-          Timber.i("Sync state received is $state")
-          when (state) {
-            is State.Started -> {
-              showToast(getString(R.string.syncing))
-              updateSyncViews("", state)
-            }
-            is State.Failed -> {
-              showToast(getString(R.string.sync_failed))
-              updateSyncViews(state.result.timestamp.asString(), state)
-            }
-            is State.Finished -> {
-              showToast(getString(R.string.sync_completed))
-              updateSyncViews(state.result.timestamp.asString(), state)
-            }
-            is State.InProgress -> {
-              Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
-            }
-            is State.Glitch ->
-              state.exceptions.forEach {
-                Timber.e(
-                  "Experienced glitch when syncing data for resource type ${it.resourceType.name}",
-                  it.exception
-                )
-              }
-          }
-        }
-      }
+      lifecycleScope.launch { sharedSyncStatus.collect { state -> onSync(state) } }
     }
 
     registerActivityBinding = DataBindingUtil.setContentView(this, R.layout.base_register_activity)
@@ -161,32 +136,25 @@ abstract class BaseRegisterActivity :
     setUpViews()
   }
 
-  private fun updateSyncViews(lastSyncDate: String, state: State) {
-    Timber.i("Updating last sync date $lastSyncDate")
-    registerActivityBinding.tvLastSyncTimestamp.text = lastSyncDate
-    with(registerActivityBinding) {
-      when (state) {
-        is State.Started -> {
-          progressSync.show()
-          containerProgressSync.setBackgroundResource(0)
-        }
-        is State.Finished -> {
-          updateSyncImage()
-          sideMenuOptions().forEach { updateCount(it) }
-          manipulateDrawer(open = false)
-          this@BaseRegisterActivity.registerViewModel.setRefreshRegisterData(true)
-        }
-        is State.Failed -> {
-          updateSyncImage()
-        }
-        else -> updateSyncImage()
+  private fun BaseRegisterActivityBinding.updateSyncStatus(state: State) {
+    when (state) {
+      is State.Started, is State.InProgress -> {
+        tvLastSyncTimestamp.text = getString(R.string.syncing_in_progress)
+        containerProgressSync.background = null
+        progressSync.show()
       }
+      is State.Finished -> {
+        progressSync.hide()
+        tvLastSyncTimestamp.text = state.result.timestamp.asString()
+        containerProgressSync.background = containerProgressSync.getDrawable(R.drawable.ic_sync)
+      }
+      is State.Failed -> {
+        progressSync.hide()
+        tvLastSyncTimestamp.text = getString(R.string.syncing_failed)
+        containerProgressSync.background = containerProgressSync.getDrawable(R.drawable.ic_sync)
+      }
+      else -> return
     }
-  }
-
-  private fun BaseRegisterActivityBinding.updateSyncImage() {
-    progressSync.hide()
-    containerProgressSync.setBackgroundResource(R.drawable.ic_sync)
   }
 
   private fun setUpViews() {
@@ -194,6 +162,10 @@ abstract class BaseRegisterActivity :
     with(registerActivityBinding) {
       toolbarLayout.btnDrawerMenu.setOnClickListener { manipulateDrawer(open = true) }
       btnRegisterNewClient.setOnClickListener { registerClient() }
+      containerProgressSync.setOnClickListener {
+        progressSync.show()
+        this@BaseRegisterActivity.registerViewModel.runSync()
+      }
     }
     registerActivityBinding.navView.apply {
       setNavigationItemSelectedListener(this@BaseRegisterActivity)
@@ -202,11 +174,6 @@ abstract class BaseRegisterActivity :
           R.string.logout_user,
           configurableApplication().secureSharedPreference.retrieveSessionUsername()
         )
-    }
-
-    registerActivityBinding.containerProgressSync.setOnClickListener {
-      updateSyncViews("", State.Started)
-      registerViewModel.runSync()
     }
 
     // Setup view pager
@@ -324,6 +291,32 @@ abstract class BaseRegisterActivity :
     with(registerActivityBinding) {
       if (open) drawerLayout.openDrawer(GravityCompat.START)
       else drawerLayout.closeDrawer(GravityCompat.START)
+    }
+  }
+
+  override fun onSync(state: State) {
+    Timber.i("Sync state received is $state")
+    when (state) {
+      is State.Started -> {
+        showToast(getString(R.string.syncing))
+        registerActivityBinding.updateSyncStatus(state)
+      }
+      is State.Failed -> {
+        showToast(getString(R.string.sync_failed))
+        registerActivityBinding.updateSyncStatus(state)
+      }
+      is State.Finished -> {
+        showToast(getString(R.string.sync_completed))
+        registerActivityBinding.updateSyncStatus(state)
+        sideMenuOptions().forEach { updateCount(it) }
+        manipulateDrawer(open = false)
+        this.registerViewModel.setRefreshRegisterData(true)
+      }
+      is State.InProgress -> {
+        registerActivityBinding.updateSyncStatus(state)
+        Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
+      }
+      else -> return
     }
   }
 

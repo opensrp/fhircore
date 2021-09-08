@@ -84,7 +84,7 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
         { refreshData ->
           if (refreshData) {
             setRefreshRegisterData(false)
-            registerDataViewModel.reloadCurrentPageData()
+            registerDataViewModel.reloadCurrentPageData(refreshTotalRecordsCount = true)
           }
         }
       )

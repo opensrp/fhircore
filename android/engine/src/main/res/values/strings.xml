@@ -22,6 +22,7 @@
     <string name="logout_user">Log out as %1$s</string>
     <string name="sync_completed">Sync complete</string>
     <string name="syncing">Syncing&#8230;</string>
+    <string name="syncing_initiated">Sync initiated&#8230;</string>
     <string name="sync_failed">Sync failed. Check internet connection or try again later.</string>
     <string name="try_again">Try again</string>
     <string name="status_vaccinated">Vaccinated</string>
@@ -42,4 +43,6 @@
     <string name="female">Female</string>
     <string name="other">Other</string>
     <string name="unknown">Unknown</string>
+    <string name="syncing_failed">Sync failed</string>
+    <string name="syncing_in_progress">Sync in progress</string>
 </resources>

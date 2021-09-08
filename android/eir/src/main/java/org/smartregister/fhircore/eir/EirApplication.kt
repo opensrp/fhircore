@@ -24,16 +24,22 @@ import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.Sync
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
 class EirApplication : Application(), ConfigurableApplication {
+
+  private val defaultDispatcherProvider = DefaultDispatcherProvider
 
   override lateinit var applicationConfiguration: ApplicationConfiguration
 
@@ -72,15 +78,19 @@ class EirApplication : Application(), ConfigurableApplication {
   }
 
   private fun constructFhirEngine(): FhirEngine {
-    getSyncJob()
-      .poll(
-        PeriodicSyncConfiguration(
-          syncConstraints = Constraints.Builder().build(),
-          repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
-        ),
-        EirFhirSyncWorker::class.java
-      )
-
+    CoroutineScope(defaultDispatcherProvider.main()).launch {
+      getSyncJob()
+        .poll(
+          PeriodicSyncConfiguration(
+            syncConstraints = Constraints.Builder().build(),
+            repeat = RepeatInterval(interval = 30, timeUnit = TimeUnit.MINUTES)
+          ),
+          EirFhirSyncWorker::class.java
+        )
+        .collect {
+          this@EirApplication.syncBroadcaster.broadcastSync(state = it)
+        }
+    }
     return FhirEngineBuilder(this).build()
   }
 

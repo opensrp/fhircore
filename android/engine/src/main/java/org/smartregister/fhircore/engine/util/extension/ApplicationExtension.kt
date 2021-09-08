@@ -33,17 +33,17 @@ import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 
-suspend fun Application.runSync(flow: MutableSharedFlow<State>? = null) {
+suspend fun Application.runSync(syncStateFlow: MutableSharedFlow<State>? = null) {
   if (this !is ConfigurableApplication)
     throw (IllegalStateException("Application should extend ConfigurableApplication interface"))
   val dataSource = buildDatasource(this.applicationConfiguration)
 
   Sync.basicSyncJob(this)
     .run(
-      fhirEngine = this.fhirEngine,
+      fhirEngine = fhirEngine,
       dataSource = dataSource,
       resourceSyncParams = resourceSyncParams,
-      subscribeTo = flow
+      subscribeTo = syncStateFlow
     )
 }
 

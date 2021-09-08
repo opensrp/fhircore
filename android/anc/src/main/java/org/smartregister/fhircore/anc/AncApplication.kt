@@ -24,16 +24,22 @@ import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.Sync
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
 class AncApplication : Application(), ConfigurableApplication {
+
+  private val defaultDispatcherProvider = DefaultDispatcherProvider
 
   override lateinit var applicationConfiguration: ApplicationConfiguration
 
@@ -55,14 +61,17 @@ class AncApplication : Application(), ConfigurableApplication {
       )
 
   private fun constructFhirEngine(): FhirEngine {
-    Sync.periodicSync<AncFhirSyncWorker>(
-      this,
-      PeriodicSyncConfiguration(
-        syncConstraints = Constraints.Builder().build(),
-        repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
-      )
-    )
-
+    CoroutineScope(defaultDispatcherProvider.main()).launch {
+      getSyncJob()
+        .poll(
+          PeriodicSyncConfiguration(
+            syncConstraints = Constraints.Builder().build(),
+            repeat = RepeatInterval(interval = 30, timeUnit = TimeUnit.MINUTES)
+          ),
+          AncFhirSyncWorker::class.java
+        )
+        .collect { this@AncApplication.syncBroadcaster.broadcastSync(state = it) }
+    }
     return FhirEngineBuilder(this).build()
   }
 
@@ -93,5 +102,7 @@ class AncApplication : Application(), ConfigurableApplication {
     private lateinit var ancApplication: AncApplication
 
     fun getContext() = ancApplication
+
+    fun getSyncJob() = Sync.basicSyncJob(ancApplication)
   }
 }
