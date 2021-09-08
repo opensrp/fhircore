@@ -23,6 +23,7 @@ import com.google.android.fhir.db.impl.dao.LocalChangeToken
 import com.google.android.fhir.db.impl.dao.SquashedLocalChange
 import com.google.android.fhir.search.ReferenceFilter
 import com.google.android.fhir.search.Search
+import java.time.OffsetDateTime
 import org.hl7.fhir.r4.model.Resource
 import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
@@ -37,6 +38,10 @@ class EirApplicationShadow : ShadowApplication() {
   inner class FhirEngineImpl : FhirEngine {
     override suspend fun count(search: Search): Long {
       return -1
+    }
+
+    override suspend fun getLastSyncTimeStamp(): OffsetDateTime? {
+      return OffsetDateTime.now()
     }
 
     override suspend fun <R : Resource> load(clazz: Class<R>, id: String): R {
