@@ -19,8 +19,6 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 import android.content.Context
 import android.content.Intent
 import ca.uhn.fhir.context.FhirContext
-import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID
@@ -51,5 +49,4 @@ object QuestionnaireUtils {
   fun asQuestionnaireResponse(questionnaireResponse: String): QuestionnaireResponse {
     return parser.parseResource(questionnaireResponse) as QuestionnaireResponse
   }
-
 }

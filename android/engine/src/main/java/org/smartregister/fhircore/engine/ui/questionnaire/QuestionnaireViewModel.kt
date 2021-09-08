@@ -24,12 +24,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.utilities.SimpleWorkerContextProvider
-import java.util.UUID
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
@@ -83,28 +81,28 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     return structureMap
   }
 
-    fun saveExtractedResources(
-        context: Context,
-        intent: Intent,
-        questionnaire: Questionnaire,
-        questionnaireResponse: QuestionnaireResponse
-    ) {
-        var bundle: Bundle
+  fun saveExtractedResources(
+    context: Context,
+    intent: Intent,
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse
+  ) {
+    var bundle: Bundle
 
-        viewModelScope.launch {
-            val contextR4 = SimpleWorkerContextProvider.loadSimpleWorkerContext(getApplication())
+    viewModelScope.launch {
+      val contextR4 = SimpleWorkerContextProvider.loadSimpleWorkerContext(getApplication())
 
-            val outputs: MutableList<Base> = ArrayList()
-            val transformSupportServices = TransformSupportServices(outputs, contextR4)
+      val outputs: MutableList<Base> = ArrayList()
+      val transformSupportServices = TransformSupportServices(outputs, contextR4)
 
-            bundle =
-                ResourceMapper.extract(
-                    questionnaire,
-                    questionnaireResponse,
-                    getStructureMapProvider(context),
-                    context,
-                    transformSupportServices
-                )
+      bundle =
+        ResourceMapper.extract(
+          questionnaire,
+          questionnaireResponse,
+          getStructureMapProvider(context),
+          context,
+          transformSupportServices
+        )
 
       // todo Assign Encounter , Observation etc their separate Ids with reference to Patient Id
       val resourceId = intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
@@ -118,6 +116,6 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
       structureMapProvider = { structureMapUrl: String -> fetchStructureMap(structureMapUrl) }
     }
 
-        return structureMapProvider!!
-    }
+    return structureMapProvider!!
+  }
 }
