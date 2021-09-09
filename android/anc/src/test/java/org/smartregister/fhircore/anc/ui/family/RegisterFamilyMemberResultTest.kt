@@ -19,7 +19,6 @@ package org.smartregister.fhircore.anc.ui.family
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -49,16 +48,17 @@ class RegisterFamilyMemberResultTest : RobolectricTest() {
   fun setUp() {
     context = ApplicationProvider.getApplicationContext()
     activityResultContract = RegisterFamilyMemberResult()
-    familyFormConfig = FormConfigUtil.loadConfig(
-      FamilyFormConfig.FAMILY_REGISTER_CONFIG_ID,
-      context
-    )
+    familyFormConfig =
+      FormConfigUtil.loadConfig(FamilyFormConfig.FAMILY_REGISTER_CONFIG_ID, context)
   }
 
   @Test
   fun testCreateIntentShouldReturnIntentWithRightValues() {
     val result =
-      activityResultContract.createIntent(context, RegisterFamilyMemberInput("123", familyFormConfig))
+      activityResultContract.createIntent(
+        context,
+        RegisterFamilyMemberInput("123", familyFormConfig)
+      )
 
     assertEquals(
       familyFormConfig.memberRegistrationQuestionnaireTitle,
@@ -81,12 +81,7 @@ class RegisterFamilyMemberResultTest : RobolectricTest() {
         .bufferedReader()
         .use { it.readText() }
 
-    val intent =
-      Intent().apply {
-        putExtra(
-            QUESTIONNAIRE_ARG_RESPONSE_KEY, qrJson
-        )
-      }
+    val intent = Intent().apply { putExtra(QUESTIONNAIRE_ARG_RESPONSE_KEY, qrJson) }
 
     val result = activityResultContract.parseResult(Activity.RESULT_OK, intent)!!
 

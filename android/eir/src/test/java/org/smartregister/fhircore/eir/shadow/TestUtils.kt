@@ -27,7 +27,6 @@ import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils
 
 object TestUtils {
   private val iParser: IParser = FhirContext.forR4().newJsonParser()

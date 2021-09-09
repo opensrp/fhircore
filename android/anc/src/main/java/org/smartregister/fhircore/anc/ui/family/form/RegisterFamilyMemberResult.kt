@@ -21,27 +21,30 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_RESPONSE_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_BYPASS_EXTRACTOR_KEY
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.buildQuestionnaireIntent
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.parser
 
-data class RegisterFamilyMemberInput(val preAssignedId: String, val familyFormConfig: FamilyFormConfig)
+data class RegisterFamilyMemberInput(
+  val preAssignedId: String,
+  val familyFormConfig: FamilyFormConfig
+)
+
 data class RegisterFamilyMemberOutput(val questionnaireResponse: QuestionnaireResponse)
 
-class RegisterFamilyMemberResult : ActivityResultContract<RegisterFamilyMemberInput, RegisterFamilyMemberOutput?>() {
+class RegisterFamilyMemberResult :
+  ActivityResultContract<RegisterFamilyMemberInput, RegisterFamilyMemberOutput?>() {
 
   override fun createIntent(context: Context, input: RegisterFamilyMemberInput): Intent {
     return buildQuestionnaireIntent(
-      context,
-      input.familyFormConfig.memberRegistrationQuestionnaireTitle,
-      input.familyFormConfig.memberRegistrationQuestionnaireId,
-      input.preAssignedId,
-      true
-    ).putExtra(QUESTIONNAIRE_BYPASS_EXTRACTOR_KEY, true)
+        context,
+        input.familyFormConfig.memberRegistrationQuestionnaireTitle,
+        input.familyFormConfig.memberRegistrationQuestionnaireId,
+        input.preAssignedId,
+        true
+      )
+      .putExtra(QUESTIONNAIRE_BYPASS_EXTRACTOR_KEY, true)
   }
 
   override fun parseResult(resultCode: Int, intent: Intent?): RegisterFamilyMemberOutput? {

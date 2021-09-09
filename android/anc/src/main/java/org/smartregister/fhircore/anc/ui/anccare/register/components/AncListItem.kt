@@ -39,9 +39,9 @@ import org.smartregister.fhircore.engine.ui.theme.WarningColor
 
 @Composable
 fun AncRow(
-    ancPatientItem: AncPatientItem,
-    clickListener: (AncRowClickListenerIntent, AncPatientItem) -> Unit,
-    modifier: Modifier = Modifier,
+  ancPatientItem: AncPatientItem,
+  clickListener: (AncRowClickListenerIntent, AncPatientItem) -> Unit,
+  modifier: Modifier = Modifier,
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,

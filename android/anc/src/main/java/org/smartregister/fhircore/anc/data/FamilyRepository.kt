@@ -32,8 +32,8 @@ import org.smartregister.fhircore.engine.util.extension.find
 
 // TODO add own item mapper with https://github.com/opensrp/fhircore/issues/276
 class FamilyRepository(
-    override val fhirEngine: FhirEngine,
-    override val domainMapper: DomainMapper<Patient, AncPatientItem>
+  override val fhirEngine: FhirEngine,
+  override val domainMapper: DomainMapper<Patient, AncPatientItem>
 ) : RegisterRepository<Patient, AncPatientItem> {
 
   private val ancPatientRepository = AncPatientRepository(fhirEngine, AncItemMapper)
@@ -51,14 +51,20 @@ class FamilyRepository(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ) {
-    val patient = ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
+    val patient =
+      ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
     patient.id = getUniqueId()
     fhirEngine.save(patient)
 
     // TODO https://github.com/opensrp/fhircore/issues/525
     // use ResourceMapper when supported by SDK
     val target = mutableListOf<Observation>()
-    QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire.item, patient, target)
+    QuestionnaireUtils.extractObservations(
+      questionnaireResponse,
+      questionnaire.item,
+      patient,
+      target
+    )
     target.forEach { fhirEngine.save(it) }
 
     val pregnantItem = questionnaireResponse.find("is_pregnant")

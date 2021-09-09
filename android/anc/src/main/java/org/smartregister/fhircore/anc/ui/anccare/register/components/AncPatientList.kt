@@ -32,9 +32,9 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 
 @Composable
 fun AncPatientList(
-    pagingItems: LazyPagingItems<AncPatientItem>,
-    modifier: Modifier = Modifier,
-    clickListener: (AncRowClickListenerIntent, AncPatientItem) -> Unit
+  pagingItems: LazyPagingItems<AncPatientItem>,
+  modifier: Modifier = Modifier,
+  clickListener: (AncRowClickListenerIntent, AncPatientItem) -> Unit
 ) {
 
   LazyColumn {

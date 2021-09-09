@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Application
-import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Order
@@ -58,7 +57,8 @@ fun Application.lastSyncDateTime(): String {
 fun <T> Application.loadConfig(id: String, clazz: Class<T>): T {
   val json = assets.open(id).bufferedReader().use { it.readText() }
 
-  return if (Resource::class.java.isAssignableFrom(clazz)) FhirContext.forR4().newJsonParser().parseResource(json) as T
+  return if (Resource::class.java.isAssignableFrom(clazz))
+    FhirContext.forR4().newJsonParser().parseResource(json) as T
   else Gson().fromJson(json, clazz)
 }
 

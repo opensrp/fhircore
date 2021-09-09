@@ -19,25 +19,20 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 import android.content.Context
 import android.content.Intent
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.support.DefaultProfileValidationSupport
-import org.hl7.fhir.r4.hapi.ctx.HapiWorkerContext
+import java.util.UUID
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_TITLE_KEY
 import org.smartregister.fhircore.engine.util.extension.find
-import java.util.UUID
 
 object QuestionnaireUtils {
   val parser = FhirContext.forR4().newJsonParser()
@@ -75,13 +70,17 @@ object QuestionnaireUtils {
   // https://github.com/opensrp/fhircore/issues/525
   // use ResourceMapper when supported by SDK
   // DO NOT remove unless you know what you are doing
-  fun extractObservations(questionnaireResponse: QuestionnaireResponse,
-                          items: List<Questionnaire.QuestionnaireItemComponent>,
-                          subject: Resource,
-                          target: MutableList<Observation>){
+  fun extractObservations(
+    questionnaireResponse: QuestionnaireResponse,
+    items: List<Questionnaire.QuestionnaireItemComponent>,
+    subject: Resource,
+    target: MutableList<Observation>
+  ) {
     items.forEach {
       val response = questionnaireResponse.find(it.linkId)!!
-      if (it.isExtractableObservation == true && (response.hasAnswer() || it.type == Questionnaire.QuestionnaireItemType.GROUP)) {
+      if (it.isExtractableObservation == true &&
+          (response.hasAnswer() || it.type == Questionnaire.QuestionnaireItemType.GROUP)
+      ) {
         target.add(response.asObservation(it, subject.asReference()))
       }
 
@@ -96,9 +95,7 @@ object QuestionnaireUtils {
   fun Resource.asReference(): Reference {
     val referenceValue = "${fhirType()}/$id"
 
-    return Reference().apply {
-      this.reference = referenceValue
-    }
+    return Reference().apply { this.reference = referenceValue }
   }
 
   fun Questionnaire.QuestionnaireItemComponent.asCodeableConcept(): CodeableConcept {

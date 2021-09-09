@@ -73,11 +73,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         it?.run { handleRegisterFamilyMemberResult(it) }
       }
 
-    familyRepository =
-      FamilyRepository(
-        (application as AncApplication).fhirEngine,
-        AncItemMapper
-      )
+    familyRepository = FamilyRepository((application as AncApplication).fhirEngine, AncItemMapper)
   }
 
   override fun sideMenuOptions(): List<SideMenuOption> =
@@ -114,7 +110,8 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
 
   internal fun handleRegisterFamilyMemberResult(output: RegisterFamilyMemberOutput) {
     lifecycleScope.launch {
-      val questionnaire = viewModel.loadQuestionnaire(familyFormConfig.memberRegistrationQuestionnaireId)
+      val questionnaire =
+        viewModel.loadQuestionnaire(familyFormConfig.memberRegistrationQuestionnaireId)
       familyRepository.postProcessFamilyMember(questionnaire, output.questionnaireResponse)
     }
   }

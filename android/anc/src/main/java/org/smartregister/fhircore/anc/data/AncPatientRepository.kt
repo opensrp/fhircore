@@ -20,6 +20,7 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
+import java.util.Date
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
@@ -44,7 +45,6 @@ import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.loadConfig
 import org.smartregister.fhircore.engine.util.extension.searchPatients
-import java.util.Date
 
 class AncPatientRepository(
   override val fhirEngine: FhirEngine,
@@ -113,7 +113,7 @@ class AncPatientRepository(
     return listCarePlan
   }
 
-  suspend fun enrollIntoAnc(patient: Patient){
+  suspend fun enrollIntoAnc(patient: Patient) {
     val pregnancyCondition = loadConfig(Template.PREGNANCY_CONDITION, Condition::class.java)
     pregnancyCondition.apply {
       this.id = getUniqueId()
@@ -122,14 +122,13 @@ class AncPatientRepository(
     }
     fhirEngine.save(pregnancyCondition)
 
-    val pregnancyEpisodeOfCase = loadConfig(Template.PREGNANCY_EPISODE_OF_CARE, EpisodeOfCare::class.java)
+    val pregnancyEpisodeOfCase =
+      loadConfig(Template.PREGNANCY_EPISODE_OF_CARE, EpisodeOfCare::class.java)
     pregnancyEpisodeOfCase.apply {
       this.id = getUniqueId()
       this.patient = patient.asReference()
       this.diagnosis[0].condition = pregnancyCondition.asReference()
-      this.period = Period().apply {
-        this@apply.start = Date()
-      }
+      this.period = Period().apply { this@apply.start = Date() }
       this.status = EpisodeOfCare.EpisodeOfCareStatus.ACTIVE
     }
     fhirEngine.save(pregnancyEpisodeOfCase)
@@ -140,18 +139,17 @@ class AncPatientRepository(
       this.status = Encounter.EncounterStatus.INPROGRESS
       this.subject = patient.asReference()
       this.episodeOfCare = listOf(pregnancyEpisodeOfCase.asReference())
-      this.period = Period().apply {
-        this@apply.start = Date()
-      }
+      this.period = Period().apply { this@apply.start = Date() }
       this.diagnosis[0].condition = pregnancyCondition.asReference()
     }
     fhirEngine.save(pregnancyEncounter)
 
-    val pregnancyGoal = Goal().apply {
-      this.id = getUniqueId()
-      this.lifecycleStatus = Goal.GoalLifecycleStatus.ACTIVE
-      this.subject = patient.asReference()
-    }
+    val pregnancyGoal =
+      Goal().apply {
+        this.id = getUniqueId()
+        this.lifecycleStatus = Goal.GoalLifecycleStatus.ACTIVE
+        this.subject = patient.asReference()
+      }
     fhirEngine.save(pregnancyGoal)
   }
 

@@ -20,10 +20,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
-import com.ibm.icu.impl.duration.impl.Utils
-import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert.assertEquals
@@ -92,14 +89,23 @@ class QuestionnaireUtilsTest : RobolectricTest() {
   }
 
   @Test
-  fun testExtractObservations(){
+  fun testExtractObservations() {
     val questionnaire = TestUtils.loadQuestionnaire(context, "sample_anc_service_enrollment.json")
-    val questionnaireResponse = TestUtils.loadQuestionnaireResponse(context, "sample_anc_service_enrollment_questionnaireresponse.json")
+    val questionnaireResponse =
+      TestUtils.loadQuestionnaireResponse(
+        context,
+        "sample_anc_service_enrollment_questionnaireresponse.json"
+      )
 
     val target = mutableListOf<Observation>()
     val patient = TestUtils.TEST_PATIENT_1
 
-    QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire.item, patient, target)
+    QuestionnaireUtils.extractObservations(
+      questionnaireResponse,
+      questionnaire.item,
+      patient,
+      target
+    )
 
     val gaObs = target[1]
     assertEquals(4, target.size)

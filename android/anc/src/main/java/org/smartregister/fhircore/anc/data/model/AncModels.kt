@@ -31,8 +31,8 @@ data class AncPatientItem(
 
 @Stable
 data class AncPatientDetailItem(
-    var patientDetails: AncPatientItem = AncPatientItem(),
-    var patientDetailsHead: AncPatientItem = AncPatientItem(),
+  var patientDetails: AncPatientItem = AncPatientItem(),
+  var patientDetailsHead: AncPatientItem = AncPatientItem(),
 )
 
 @Stable data class CarePlanItem(var title: String, var periodStartDate: Date)

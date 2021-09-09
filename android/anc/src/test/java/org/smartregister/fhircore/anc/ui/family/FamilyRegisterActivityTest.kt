@@ -19,43 +19,40 @@ package org.smartregister.fhircore.anc.ui.family
 import android.app.Activity
 import android.view.MenuInflater
 import androidx.activity.result.ActivityResultLauncher
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.spyk
-import io.mockk.verify
-import org.junit.Assert
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Before
-import org.junit.Test
-import org.robolectric.Robolectric
-import org.robolectric.annotation.Config
-import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
-import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
-import org.smartregister.fhircore.anc.ui.family.form.RegisterFamilyMemberInput
-import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
-
 import com.google.android.fhir.sync.Sync
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
+import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.runs
+import io.mockk.spyk
 import io.mockk.unmockkObject
+import io.mockk.verify
+import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.After
+import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Before
 import org.junit.BeforeClass
+import org.junit.Test
+import org.robolectric.Robolectric
+import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.AncApplication
+import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.data.FamilyRepository
+import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
+import org.smartregister.fhircore.anc.ui.family.form.RegisterFamilyMemberInput
 import org.smartregister.fhircore.anc.ui.family.form.RegisterFamilyMemberOutput
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
-import java.time.OffsetDateTime
-
+import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 
 @Config(shadows = [AncApplicationShadow::class])
 internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
@@ -76,7 +73,7 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
   }
 
   @After
-  fun cleanup(){
+  fun cleanup() {
     unmockkObject(Sync)
   }
 
@@ -94,9 +91,7 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
 
     familyRegisterActivity.registerClient()
 
-    verify {
-      activityResult.launch(any())
-    }
+    verify { activityResult.launch(any()) }
   }
 
   @Test
@@ -110,12 +105,11 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
 
     familyRegisterActivity.familyRepository = familyRepository
 
-    familyRegisterActivity.handleRegisterFamilyMemberResult(RegisterFamilyMemberOutput(
-      QuestionnaireResponse()))
+    familyRegisterActivity.handleRegisterFamilyMemberResult(
+      RegisterFamilyMemberOutput(QuestionnaireResponse())
+    )
 
-    coVerify(timeout = 2000) {
-      familyRepository.postProcessFamilyMember(any(), any())
-    }
+    coVerify(timeout = 2000) { familyRepository.postProcessFamilyMember(any(), any()) }
   }
 
   @Test

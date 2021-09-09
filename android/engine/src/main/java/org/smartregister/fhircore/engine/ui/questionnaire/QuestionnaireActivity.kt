@@ -89,12 +89,12 @@ class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener 
 
   fun saveExtractedResources(questionnaireResponse: QuestionnaireResponse) {
     if (!intent.getBooleanExtra(QUESTIONNAIRE_BYPASS_EXTRACTOR_KEY, false))
-    viewModel.saveExtractedResources(
-      this@QuestionnaireActivity,
-      intent,
-      viewModel.questionnaire,
-      questionnaireResponse
-    )
+      viewModel.saveExtractedResources(
+        this@QuestionnaireActivity,
+        intent,
+        viewModel.questionnaire,
+        questionnaireResponse
+      )
 
     val intent = Intent()
     intent.putExtra(
