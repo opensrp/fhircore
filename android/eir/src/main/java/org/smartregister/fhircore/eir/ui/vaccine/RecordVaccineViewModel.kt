@@ -36,7 +36,7 @@ class RecordVaccineViewModel(
 
   fun getVaccineSummary(logicalId: String): LiveData<PatientVaccineSummary> {
     val mutableLiveData: MutableLiveData<PatientVaccineSummary> = MutableLiveData()
-    viewModelScope.launch(dispatcherProvider.io()) {
+    viewModelScope.launch(dispatcherProvider.main()) {
       val immunizations = patientRepository.getPatientImmunizations(logicalId = logicalId)
       if (!immunizations.isNullOrEmpty()) {
         val immunization = immunizations.first()
