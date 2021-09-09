@@ -60,7 +60,13 @@ class QuestionnaireUtilsTest : RobolectricTest() {
   @Test
   fun testBuildQuestionnaireIntent_shouldReturnIntentWithExtrasWithPatientId() {
     val result =
-      QuestionnaireUtils.buildQuestionnaireIntent(context, "My Q title", "my-q-id", "12345", false)
+      QuestionnaireUtils.buildQuestionnaireIntent<QuestionnaireActivity>(
+        context = context,
+        questionnaireTitle = "My Q title",
+        questionnaireId = "my-q-id",
+        patientId = "12345",
+        isNewPatient = false
+      )
 
     assertEquals(QuestionnaireActivity::class.java.name, result.component!!.className)
 
@@ -75,7 +81,13 @@ class QuestionnaireUtilsTest : RobolectricTest() {
   @Test
   fun testBuildQuestionnaireIntent_shouldReturnIntentWithExtrasWithNewPatient() {
     val result =
-      QuestionnaireUtils.buildQuestionnaireIntent(context, "My Q title", "my-q-id", "12345", true)
+      QuestionnaireUtils.buildQuestionnaireIntent<QuestionnaireActivity>(
+        context = context,
+        questionnaireTitle = "My Q title",
+        questionnaireId = "my-q-id",
+        patientId = "12345",
+        isNewPatient = true
+      )
 
     assertEquals(QuestionnaireActivity::class.java.name, result.component!!.className)
 

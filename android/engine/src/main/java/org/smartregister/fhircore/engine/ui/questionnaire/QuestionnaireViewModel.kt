@@ -18,104 +18,86 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.app.Application
 import android.content.Context
-import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
-import com.google.android.fhir.datacapture.utilities.SimpleWorkerContextProvider
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Base
-import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
-import org.smartregister.fhircore.helper.TransformSupportServices
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
-class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
-  AndroidViewModel(application) {
+class QuestionnaireViewModel(
+  application: Application,
+  private val questionnaireConfig: QuestionnaireConfig
+) : AndroidViewModel(application) {
+
+  private val defaultRepository: DefaultRepository =
+    DefaultRepository(
+      (application as ConfigurableApplication).fhirEngine,
+    )
 
   var structureMapProvider: (suspend (String) -> StructureMap?)? = null
-  val fhirEngine = (application as ConfigurableApplication).fhirEngine
 
-  val questionnaire: Questionnaire
-    get() {
-      val id: String = state[QuestionnaireActivity.QUESTIONNAIRE_PATH_KEY]!!
-      return loadQuestionnaire(id)
-    }
-
-  fun loadQuestionnaire(id: String): Questionnaire {
-    return runBlocking { fhirEngine.load(Questionnaire::class.java, id) }
-  }
-
-  fun saveResource(resource: Resource) {
-    viewModelScope.launch { fhirEngine.save(resource) }
-  }
-
-  fun saveBundleResources(bundle: Bundle, resourceId: String? = null) {
-    if (!bundle.isEmpty) {
-      bundle.entry.forEach { bundleEntry ->
-        if (resourceId != null && bundleEntry.hasResource()) {
-          bundleEntry.resource.id = resourceId
-        }
-
-        saveResource(bundleEntry.resource)
-      }
-    }
-  }
+  suspend fun loadQuestionnaire(): Questionnaire? =
+    defaultRepository.loadResource(questionnaireConfig.identifier)
 
   fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
-    runBlocking {
-      launch {
-        val structureMapId = structureMapUrl?.substringAfterLast("/")
-        if (structureMapId != null) {
-          structureMap = fhirEngine.load(StructureMap::class.java, structureMapId)
-        }
+    viewModelScope.launch {
+      structureMapUrl?.substringAfterLast("/")?.run {
+        structureMap = defaultRepository.loadResource(this)
       }
     }
-
     return structureMap
   }
 
   fun saveExtractedResources(
+    resourceId: String?,
     context: Context,
-    intent: Intent,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ) {
-    var bundle: Bundle
-
     viewModelScope.launch {
-      val contextR4 = SimpleWorkerContextProvider.loadSimpleWorkerContext(getApplication())
-
-      val outputs: MutableList<Base> = ArrayList()
-      val transformSupportServices = TransformSupportServices(outputs, contextR4)
-
-      bundle =
+      val contextR4 =
+        (getApplication<Application>() as ConfigurableApplication).workerContextProvider
+      val transformSupportServices = TransformSupportServices(mutableListOf(), contextR4)
+      val bundle =
         ResourceMapper.extract(
-          questionnaire,
-          questionnaireResponse,
-          getStructureMapProvider(context),
-          context,
-          transformSupportServices
+          questionnaire = questionnaire,
+          questionnaireResponse = questionnaireResponse,
+          structureMapProvider = retrieveStructureMapProvider(),
+          context = context,
+          transformSupportServices = transformSupportServices
         )
 
-      // todo Assign Encounter , Observation etc their separate Ids with reference to Patient Id
-      val resourceId = intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
-
-      saveBundleResources(bundle, resourceId)
+      if (!bundle.isEmpty) {
+        bundle.entry.forEach { bundleEntry ->
+          if (resourceId != null && bundleEntry.hasResource()) {
+            bundleEntry.resource.id = resourceId
+          }
+          defaultRepository.save(bundleEntry.resource)
+        }
+      }
     }
   }
 
-  fun getStructureMapProvider(context: Context): (suspend (String) -> StructureMap?) {
+  fun retrieveStructureMapProvider(): (suspend (String) -> StructureMap?) {
     if (structureMapProvider == null) {
       structureMapProvider = { structureMapUrl: String -> fetchStructureMap(structureMapUrl) }
     }
-
     return structureMapProvider!!
+  }
+
+  suspend fun loadPatient(patientId: String): Patient? {
+    return defaultRepository.loadResource(patientId)
+  }
+
+  fun saveResource(resource: Resource) {
+    viewModelScope.launch { defaultRepository.save(resource = resource) }
   }
 }

@@ -25,10 +25,8 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.AncPatientRepository
 import org.smartregister.fhircore.anc.data.model.AncPatientItem
-import org.smartregister.fhircore.anc.form.config.AncFormConfig
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
 import org.smartregister.fhircore.anc.ui.anccare.register.components.AncPatientList
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
@@ -40,7 +38,7 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
       Intent(requireActivity(), AncDetailsActivity::class.java).apply {
-        putExtra(AncFormConfig.ANC_ARG_ITEM_ID, uniqueIdentifier)
+        // TODO Add patient identifier
       }
     )
   }
@@ -58,13 +56,6 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
     if (listenerIntent is AncRowClickListenerIntent) {
       when (listenerIntent) {
         OpenPatientProfile -> navigateToDetails(data.patientIdentifier)
-        RecordAncVisit ->
-          startActivity(
-            Intent(requireContext(), QuestionnaireActivity::class.java)
-              .putExtras(
-                QuestionnaireActivity.getExtrasBundle(data.patientIdentifier, "???", "???")
-              )
-          )
       }
     }
   }

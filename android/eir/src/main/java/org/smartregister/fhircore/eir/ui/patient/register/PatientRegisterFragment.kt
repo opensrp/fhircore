@@ -27,10 +27,11 @@ import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientItem
 import org.smartregister.fhircore.eir.data.model.VaccineStatus
-import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.eir.ui.patient.register.components.PatientRegisterList
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
+import org.smartregister.fhircore.eir.util.RECORD_VACCINE_FORM
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
@@ -43,7 +44,7 @@ class PatientRegisterFragment :
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
       Intent(requireActivity(), PatientDetailsActivity::class.java).apply {
-        putExtra(QuestionnaireFormConfig.COVAX_ARG_ITEM_ID, uniqueIdentifier)
+        putExtras(PatientDetailsActivity.requiredIntentArgs(uniqueIdentifier))
       }
     )
   }
@@ -61,11 +62,17 @@ class PatientRegisterFragment :
     if (listenerIntent is PatientRowClickListenerIntent) {
       when (listenerIntent) {
         OpenPatientProfile -> navigateToDetails(data.patientIdentifier)
-        RecordPatientVaccine ->
+        RecordPatientVaccine -> {
           startActivity(
             Intent(requireContext(), RecordVaccineActivity::class.java)
-              .putExtras(RecordVaccineActivity.getExtraBundles(patientId = data.patientIdentifier))
+              .putExtras(
+                QuestionnaireActivity.requiredIntentArgs(
+                  clientIdentifier = data.patientIdentifier,
+                  form = RECORD_VACCINE_FORM
+                )
+              )
           )
+        }
       }
     }
   }

@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.configuration.app
 
 import com.google.android.fhir.FhirEngine
+import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -53,6 +54,8 @@ interface ConfigurableApplication {
 
   val syncBroadcaster: SyncBroadcaster
     get() = SyncBroadcaster
+
+  val workerContextProvider: SimpleWorkerContext
 
   /** Provide [applicationConfiguration] for the Application */
   fun configureApplication(applicationConfiguration: ApplicationConfiguration)

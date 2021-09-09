@@ -20,6 +20,7 @@ import android.accounts.AccountManager
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -52,6 +53,7 @@ import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
@@ -421,10 +423,17 @@ abstract class BaseRegisterActivity :
    */
   abstract fun onSideMenuOptionSelected(item: MenuItem): Boolean
 
-  /**
-   * Abstract method to be implemented by the subclass to provide action for registering new client
-   */
-  abstract fun registerClient()
+  protected open fun registerClient() {
+    startActivity(
+      Intent(this, QuestionnaireActivity::class.java)
+        .putExtras(
+          QuestionnaireActivity.requiredIntentArgs(
+            clientIdentifier = null,
+            form = registerViewModel.registerViewConfiguration.value?.registrationForm!!
+          )
+        )
+    )
+  }
 
   /**
    * Implement this method to provide the view pager with a list of [Fragment]. App will throw an

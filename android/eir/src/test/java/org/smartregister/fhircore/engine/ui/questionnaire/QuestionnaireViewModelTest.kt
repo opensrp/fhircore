@@ -203,7 +203,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.saveExtractedResources(
       ApplicationProvider.getApplicationContext(),
-      intent,
       questionnaire,
       questionnaireResponse
     )
@@ -241,16 +240,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun `getStructureMapProvider() should return valid provider`() {
     Assert.assertNull(questionnaireViewModel.structureMapProvider)
 
-    Assert.assertNotNull(
-      questionnaireViewModel.getStructureMapProvider(ApplicationProvider.getApplicationContext())
-    )
+    Assert.assertNotNull(questionnaireViewModel.retrieveStructureMapProvider())
   }
 
   @Test
   fun `structureMapProvider should call fetchStructureMap()`() {
     val resourceUrl = "https://fhir.org/StructureMap/89"
-    val structureMapProvider =
-      questionnaireViewModel.getStructureMapProvider(ApplicationProvider.getApplicationContext())
+    val structureMapProvider = questionnaireViewModel.retrieveStructureMapProvider()
 
     every { questionnaireViewModel.fetchStructureMap(any()) } returns StructureMap()
 

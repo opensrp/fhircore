@@ -31,7 +31,6 @@ import org.smartregister.fhircore.anc.data.AncPatientRepository
 import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
-import org.smartregister.fhircore.anc.form.config.AncFormConfig
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class AncDetailsFragment private constructor() : Fragment() {

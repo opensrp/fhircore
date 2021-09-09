@@ -55,10 +55,10 @@ import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
-import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig.Companion.COVAX_ARG_ITEM_ID
-import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig.Companion.COVAX_DETAIL_VIEW_CONFIG_ID
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig.Companion.ARG_ITEM_ID
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig.Companion.FORM_CONFIG_ID
 import org.smartregister.fhircore.engine.util.DateUtils
 
 @Config(shadows = [EirApplicationShadow::class])
@@ -86,8 +86,8 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
     val intent =
       Intent().apply {
-        putExtra(COVAX_DETAIL_VIEW_CONFIG_ID, "covax_client_register_config.json")
-        putExtra(COVAX_ARG_ITEM_ID, "test_patient_id")
+        putExtra(FORM_CONFIG_ID, "covax_client_register_config.json")
+        putExtra(ARG_ITEM_ID, "test_patient_id")
       }
 
     recordVaccineActivity =

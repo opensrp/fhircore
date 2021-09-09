@@ -20,24 +20,12 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.form.config.AncFormConfig
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.buildQuestionnaireIntent
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.FormConfigUtil
 
 class AncRegisterActivity : BaseRegisterActivity() {
-
-  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
-
-  private lateinit var ancFormConfig: AncFormConfig
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -45,6 +33,7 @@ class AncRegisterActivity : BaseRegisterActivity() {
       registerViewConfigurationOf().apply {
         showScanQRCode = false
         appTitle = getString(R.string.app_name)
+        registrationForm = "anc-patient-registration"
       }
     )
   }
@@ -61,33 +50,6 @@ class AncRegisterActivity : BaseRegisterActivity() {
 
   override fun onSideMenuOptionSelected(item: MenuItem): Boolean {
     return true
-  }
-
-  override fun registerClient() {
-    lifecycleScope.launch {
-      ancFormConfig =
-        withContext(dispatcherProvider.io()) {
-          FormConfigUtil.loadConfig(
-            AncFormConfig.ANC_DETAIL_VIEW_CONFIG_ID,
-            this@AncRegisterActivity
-          )
-        }
-
-      with(ancFormConfig) {
-        val questionnaireId = registrationQuestionnaireIdentifier
-        val questionnaireTitle = registrationQuestionnaireTitle
-
-        startActivity(
-          buildQuestionnaireIntent(
-            context = this@AncRegisterActivity,
-            questionnaireTitle = questionnaireTitle,
-            questionnaireId = questionnaireId,
-            patientId = null,
-            isNewPatient = true
-          )
-        )
-      }
-    }
   }
 
   override fun supportedFragments(): List<Fragment> = listOf(AncRegisterFragment())

@@ -172,14 +172,11 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     ReflectionHelpers.setField(questionnaireActivity, "viewModel\$delegate", lazy { viewModel })
     val questionnaireResponse = QuestionnaireResponse()
 
-    every { viewModel.saveExtractedResources(any(), intent, any(), questionnaireResponse) } just
-      runs
+    every { viewModel.saveExtractedResources(any(), any(), questionnaireResponse) } just runs
 
     questionnaireActivity.saveExtractedResources(questionnaireResponse)
 
-    verify(exactly = 1) {
-      viewModel.saveExtractedResources(any(), intent, any(), questionnaireResponse)
-    }
+    verify(exactly = 1) { viewModel.saveExtractedResources(any(), any(), questionnaireResponse) }
     verify { questionnaireActivity.finish() }
   }
 

@@ -19,19 +19,25 @@ package org.smartregister.fhircore.engine.util.extension
 import android.app.Application
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.utilities.SimpleWorkerContextProvider
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.Sync
+import java.io.IOException
 import kotlinx.coroutines.flow.MutableSharedFlow
+import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import timber.log.Timber
 
 suspend fun Application.runSync(syncStateFlow: MutableSharedFlow<State>? = null) {
   if (this !is ConfigurableApplication)
@@ -82,3 +88,20 @@ suspend fun FhirEngine.searchActivePatients(
 
 suspend fun FhirEngine.countActivePatients(): Long =
   this.count<Patient> { filter(Patient.ACTIVE, true) }
+
+suspend inline fun <reified T : Resource> FhirEngine.loadResource(structureMapId: String): T? {
+  return try {
+    this@loadResource.load(T::class.java, structureMapId)
+  } catch (resourceNotFoundException: ResourceNotFoundException) {
+    null
+  }
+}
+
+suspend fun Application.initializeWorkerContext(): SimpleWorkerContext? {
+  return try {
+    SimpleWorkerContextProvider.loadSimpleWorkerContext(this@initializeWorkerContext)
+  } catch (ioException: IOException) {
+    Timber.e(ioException)
+    null
+  }
+}

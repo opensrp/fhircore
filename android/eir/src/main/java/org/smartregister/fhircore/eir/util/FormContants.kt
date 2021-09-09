@@ -14,20 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.eir.form.config
+package org.smartregister.fhircore.eir.util
 
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class QuestionnaireFormConfig(
-  val registerTitle: String,
-  val registrationQuestionnaireIdentifier: String,
-  val registrationQuestionnaireTitle: String,
-  val vaccineQuestionnaireIdentifier: String,
-  val vaccineQuestionnaireTitle: String,
-) {
-  companion object {
-    const val COVAX_DETAIL_VIEW_CONFIG_ID = "covax_client_register_config.json"
-    const val COVAX_ARG_ITEM_ID = "covax_client_item_id"
-  }
-}
+const val RECORD_VACCINE_FORM = "record-vaccine"
+const val PATIENT_REGISTRATION = "patient-registration"
