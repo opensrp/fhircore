@@ -34,7 +34,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -132,7 +131,6 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   }
 
   @Test
-  @Ignore("Fails automated execution but works locally") // TODO need to fix
   fun testThatDemographicViewsAreUpdated() {
     coroutinesTestRule.runBlockingTest {
       val ancPatientDetailItem = patientDetailsViewModel.fetchDemographics().value
