@@ -42,11 +42,11 @@ import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.eir.ui.adverseevent.AdverseEventActivity
-import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper.extractAge
-import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper.extractGender
-import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper.extractName
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractGender
+import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.engine.util.extension.show
 

@@ -1,0 +1,59 @@
+{
+  "resourceType": "CarePlan",
+  "id": "26A9EAF2-9CB1-4C62-8AE4-AC77009CC884",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2021-08-05T07:56:32.007+00:00",
+    "source": "#vTUTQUs8VALT5HvA"
+  },
+  "status": "active",
+  "intent": "plan",
+  "category": [ {
+    "coding": [ {
+      "system": "http://snomed.info/sct",
+      "code": "734163000",
+      "display": "Care plan"
+    } ]
+  } ],
+  "title": "Initial:Manual Entry",
+  "subject": {
+    "reference": "Patient/11D5ABF8-A830-464A-80DA-AB590114A32D",
+    "type": "Patient",
+    "display": "Darren Rice"
+  },
+  "encounter": {
+    "reference": "Encounter/3C37877F-43F3-4397-96A8-AB890159A9EA",
+    "type": "Encounter"
+  },
+  "period": {
+    "start": "2020-11-30T00:00:00Z",
+    "end": "2021-11-30T00:00:00Z"
+  },
+  "created": "2020-11-18T00:00:00Z",
+  "author": {
+    "reference": "Practitioner/8AB2DF0B-C6F6-4632-BB70-AB590114A722",
+    "display": "George Parker"
+  },
+  "supportingInfo": [ {
+    "reference": "Patient/11D5ABF8-A830-464A-80DA-AB590114A32D",
+    "type": "Patient"
+  }, {
+    "reference": "Organization/462E0498-B41D-49E3-9CB5-AB590114A3B1",
+    "type": "Organization"
+  }, {
+    "reference": "Practitioner/8AB2DF0B-C6F6-4632-BB70-AB590114A722",
+    "type": "Practitioner"
+  }, {
+    "reference": "EpisodeOfCare/3C37877F-43F3-4397-96A8-AB890159A9EA",
+    "type": "EpisodeOfCare"
+  }, {
+    "reference": "Encounter/3C37877F-43F3-4397-96A8-AB890159A9EA",
+    "type": "Encounter"
+  }, {
+    "reference": "Coverage/5E50370B-0715-4041-BA95-AC5900F0C92F",
+    "type": "Coverage"
+  }, {
+    "reference": "Questionnaire/PersonCenteredPlanningQuestionnaire",
+    "type": "Questionnaire"
+  } ]
+}

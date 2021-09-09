@@ -23,16 +23,17 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
-import java.util.UUID
+import com.google.android.fhir.datacapture.utilities.SimpleWorkerContextProvider
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.helper.TransformSupportServices
 
 class QuestionnaireViewModel(application: Application, private val state: SavedStateHandle) :
   AndroidViewModel(application) {
@@ -86,23 +87,21 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ) {
-
-    // todo remove if below to turn below login on, when structure-map has obs and flag and
-    // risk-assessment as well
-    if (intent.hasExtra(QuestionnaireActivity.QUESTIONNAIRE_BYPASS_SDK_EXTRACTOR)) {
-      saveParsedResource(questionnaireResponse, questionnaire)
-      return
-    }
-
     var bundle: Bundle
 
     viewModelScope.launch {
+      val contextR4 = SimpleWorkerContextProvider.loadSimpleWorkerContext(getApplication())
+
+      val outputs: MutableList<Base> = ArrayList()
+      val transformSupportServices = TransformSupportServices(outputs, contextR4)
+
       bundle =
         ResourceMapper.extract(
           questionnaire,
           questionnaireResponse,
           getStructureMapProvider(context),
-          context
+          context,
+          transformSupportServices
         )
 
       // todo Assign Encounter , Observation etc their separate Ids with reference to Patient Id
@@ -118,57 +117,5 @@ class QuestionnaireViewModel(application: Application, private val state: SavedS
     }
 
     return structureMapProvider!!
-  }
-
-  fun saveParsedResource(
-    questionnaireResponse: QuestionnaireResponse,
-    questionnaire: Questionnaire
-  ) {
-    if (!questionnaire.hasSubjectType("Patient")) return
-
-    viewModelScope.launch {
-      val patient =
-        ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
-
-      val barcode =
-        QuestionnaireUtils.valueStringWithLinkId(
-          questionnaireResponse,
-          QuestionnaireActivity.QUESTIONNAIRE_ARG_BARCODE_KEY
-        )
-
-      patient.id = barcode ?: UUID.randomUUID().toString().lowercase()
-
-      saveResource(patient)
-
-      // only one level of nesting per obs group is supported by fhircore for now
-      val observations =
-        QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire, patient)
-
-      observations.forEach { saveResource(it) }
-
-      // only one risk assessment per questionnaire is supported by fhircore for now
-      val riskAssessment =
-        QuestionnaireUtils.extractRiskAssessment(observations, questionnaireResponse, questionnaire)
-
-      if (riskAssessment != null) {
-        saveResource(riskAssessment)
-
-        val flag =
-          QuestionnaireUtils.extractFlag(questionnaireResponse, questionnaire, riskAssessment)
-
-        if (flag != null) {
-          saveResource(flag)
-
-          // todo remove this when sync is implemented
-          val ext =
-            QuestionnaireUtils.extractFlagExtension(flag, questionnaireResponse, questionnaire)
-          if (ext != null) {
-            patient.addExtension(ext)
-          }
-
-          saveResource(patient)
-        }
-      }
-    }
   }
 }
