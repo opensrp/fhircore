@@ -318,9 +318,10 @@ abstract class BaseRegisterActivity :
         this.registerViewModel.setRefreshRegisterData(true)
       }
       is State.InProgress -> {
-        this.registerViewModel.setSyncing(true)
-        registerActivityBinding.updateSyncStatus(state)
         Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
+        // TODO fix issue where state is not updating from in progress
+        // this.registerViewModel.setSyncing(true)
+        registerActivityBinding.updateSyncStatus(state)
       }
     }
   }

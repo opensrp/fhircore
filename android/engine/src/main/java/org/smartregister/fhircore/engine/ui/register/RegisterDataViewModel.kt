@@ -86,7 +86,9 @@ class RegisterDataViewModel<I : Any, O : Any>(
 
   fun loadPageData(currentPage: Int) {
     viewModelScope.launch(dispatcherProvider.io()) {
-      registerData.run { value = getPagingData(currentPage = currentPage, loadAll = false) }
+      registerData.run {
+        value = getPagingData(currentPage = currentPage, loadAll = false)
+      }
     }
   }
 
@@ -131,6 +133,7 @@ class RegisterDataViewModel<I : Any, O : Any>(
   }
 
   fun reloadCurrentPageData(refreshTotalRecordsCount: Boolean = false) {
+    setShowLoader(false)
     _currentPage.value?.let { loadPageData(it) }
     if (refreshTotalRecordsCount) {
       viewModelScope.launch { _totalRecordsCount.postValue(registerRepository.countAll()) }
