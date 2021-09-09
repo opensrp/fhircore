@@ -26,13 +26,20 @@ import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils
 
 object TestUtils {
   private val iParser: IParser = FhirContext.forR4().newJsonParser()
 
-  fun loadQuestionnaire(context: Context, questionnaire: String): Questionnaire {
-    val qJson = context.assets.open(questionnaire).bufferedReader().use { it.readText() }
+  fun loadQuestionnaire(context: Context, id: String): Questionnaire {
+    val qJson = context.assets.open(id).bufferedReader().use { it.readText() }
     return iParser.parseResource(qJson) as Questionnaire
+  }
+
+  fun loadQuestionnaireResponse(context: Context, id: String): QuestionnaireResponse {
+    val qrJson = context.assets.open(id).bufferedReader().use { it.readText() }
+    return iParser.parseResource(qrJson) as QuestionnaireResponse
   }
 
   val TEST_PATIENT_1 =

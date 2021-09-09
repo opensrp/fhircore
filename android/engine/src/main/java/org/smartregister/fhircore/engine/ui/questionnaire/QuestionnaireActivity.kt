@@ -88,6 +88,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener 
   }
 
   fun saveExtractedResources(questionnaireResponse: QuestionnaireResponse) {
+    if (!intent.getBooleanExtra(QUESTIONNAIRE_BYPASS_EXTRACTOR_KEY, false))
     viewModel.saveExtractedResources(
       this@QuestionnaireActivity,
       intent,
@@ -136,6 +137,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener 
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
     const val QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID = "questionnaire_preassigned_item_id"
     const val QUESTIONNAIRE_ARG_RESPONSE_KEY = "questionnaire_response_item_id"
+    const val QUESTIONNAIRE_BYPASS_EXTRACTOR_KEY = "questionnaire_bypass_extractor_item_id"
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
 
     fun getExtrasBundle(clientIdentifier: String, title: String, id: String) =

@@ -20,7 +20,10 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
+import com.ibm.icu.impl.duration.impl.Utils
 import org.hl7.fhir.r4.model.BooleanType
+import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert.assertEquals
@@ -30,6 +33,7 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
+import org.smartregister.fhircore.eir.shadow.TestUtils
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
@@ -87,18 +91,21 @@ class QuestionnaireUtilsTest : RobolectricTest() {
     assertNull(result.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY))
   }
 
-  private fun getQuestionnaireResponseItem(
-    linkId: String
-  ): QuestionnaireResponse.QuestionnaireResponseItemComponent {
-    // comorbidities section is on 2 index
-    return questionnaireResponse.item[2].item.single { it.linkId!!.contentEquals(linkId) }
-  }
+  @Test
+  fun testExtractObservations(){
+    val questionnaire = TestUtils.loadQuestionnaire(context, "sample_anc_service_enrollment.json")
+    val questionnaireResponse = TestUtils.loadQuestionnaireResponse(context, "sample_anc_service_enrollment_questionnaireresponse.json")
 
-  private fun setResponsesToTrue(vararg linkIds: String) {
-    linkIds.forEach { getQuestionnaireResponseItem(it).addAnswer().value = BooleanType(true) }
-  }
+    val target = mutableListOf<Observation>()
+    val patient = TestUtils.TEST_PATIENT_1
 
-  private fun setResponsesToFalse(vararg linkIds: String) {
-    linkIds.forEach { getQuestionnaireResponseItem(it).addAnswer().value = BooleanType(false) }
+    QuestionnaireUtils.extractObservations(questionnaireResponse, questionnaire.item, patient, target)
+
+    val gaObs = target[1]
+    assertEquals(4, target.size)
+    assertEquals("Fetal gestational age", gaObs.code.coding[0].display)
+    assertEquals("57036006", gaObs.code.coding[0].code)
+    assertEquals("Patient/test_patient_1_id", gaObs.subject.reference)
+    assertEquals(5, gaObs.valueIntegerType.value)
   }
 }

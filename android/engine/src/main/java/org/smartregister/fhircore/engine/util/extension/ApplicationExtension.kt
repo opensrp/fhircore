@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Application
+import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Order
@@ -24,8 +25,11 @@ import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.Sync
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableSharedFlow
+import org.apache.commons.lang3.Validate.isAssignableFrom
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
@@ -49,6 +53,13 @@ suspend fun Application.runSync(flow: MutableSharedFlow<State>? = null) {
 fun Application.lastSyncDateTime(): String {
   val lastSyncDate = Sync.basicSyncJob(this).lastSyncTimestamp()
   return if (lastSyncDate == null) "" else lastSyncDate.asString()
+}
+
+fun <T> Application.loadConfig(id: String, clazz: Class<T>): T {
+  val json = assets.open(id).bufferedReader().use { it.readText() }
+
+  return if (Resource::class.java.isAssignableFrom(clazz)) FhirContext.forR4().newJsonParser().parseResource(json) as T
+  else Gson().fromJson(json, clazz)
 }
 
 fun Application.buildDatasource(

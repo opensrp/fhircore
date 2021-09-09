@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.register
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
@@ -25,6 +26,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.form.config.AncFormConfig
+import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.buildQuestionnaireIntent
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
@@ -55,10 +57,20 @@ class AncRegisterActivity : BaseRegisterActivity() {
         titleResource = R.string.app_name,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
         opensMainRegister = false
+      ),
+      SideMenuOption(
+        itemId = R.id.menu_item_family,
+        titleResource = R.string.family_register_title,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
+        opensMainRegister = false
       )
     )
 
   override fun onSideMenuOptionSelected(item: MenuItem): Boolean {
+    when (item.itemId) {
+      R.id.menu_item_family -> startActivity(Intent(this, FamilyRegisterActivity::class.java))
+      R.id.menu_item_anc -> startActivity(Intent(this, AncRegisterActivity::class.java))
+    }
     return true
   }
 

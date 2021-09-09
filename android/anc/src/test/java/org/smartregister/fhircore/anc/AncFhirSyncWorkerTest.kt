@@ -52,7 +52,6 @@ class AncFhirSyncWorkerTest : RobolectricTest() {
     val data = ancFhirSyncWorker.getSyncData()
     Assert.assertEquals(4, data.size)
     Assert.assertTrue(data.containsKey(ResourceType.Patient))
-    Assert.assertTrue(data.containsKey(ResourceType.Immunization))
     Assert.assertTrue(data.containsKey(ResourceType.StructureMap))
     Assert.assertTrue(data.containsKey(ResourceType.RelatedPerson))
   }

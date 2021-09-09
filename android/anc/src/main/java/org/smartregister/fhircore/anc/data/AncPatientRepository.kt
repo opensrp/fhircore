@@ -22,19 +22,29 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.EpisodeOfCare
+import org.hl7.fhir.r4.model.Goal
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Period
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.asReference
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.getUniqueId
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.loadConfig
 import org.smartregister.fhircore.engine.util.extension.searchPatients
+import java.util.Date
 
 class AncPatientRepository(
   override val fhirEngine: FhirEngine,
@@ -101,5 +111,59 @@ class AncPatientRepository(
         listCarePlan.add(CarePlanItem(carePlan.title, carePlan.period.start))
       }
     return listCarePlan
+  }
+
+  suspend fun enrollIntoAnc(patient: Patient){
+    val pregnancyCondition = loadConfig(Template.PREGNANCY_CONDITION, Condition::class.java)
+    pregnancyCondition.apply {
+      this.id = getUniqueId()
+      this.subject = patient.asReference()
+      this.onset = DateTimeType.now()
+    }
+    fhirEngine.save(pregnancyCondition)
+
+    val pregnancyEpisodeOfCase = loadConfig(Template.PREGNANCY_EPISODE_OF_CARE, EpisodeOfCare::class.java)
+    pregnancyEpisodeOfCase.apply {
+      this.id = getUniqueId()
+      this.patient = patient.asReference()
+      this.diagnosis[0].condition = pregnancyCondition.asReference()
+      this.period = Period().apply {
+        this@apply.start = Date()
+      }
+      this.status = EpisodeOfCare.EpisodeOfCareStatus.ACTIVE
+    }
+    fhirEngine.save(pregnancyEpisodeOfCase)
+
+    val pregnancyEncounter = loadConfig(Template.PREGNANCY_FIRST_ENCOUNTER, Encounter::class.java)
+    pregnancyEncounter.apply {
+      this.id = getUniqueId()
+      this.status = Encounter.EncounterStatus.INPROGRESS
+      this.subject = patient.asReference()
+      this.episodeOfCare = listOf(pregnancyEpisodeOfCase.asReference())
+      this.period = Period().apply {
+        this@apply.start = Date()
+      }
+      this.diagnosis[0].condition = pregnancyCondition.asReference()
+    }
+    fhirEngine.save(pregnancyEncounter)
+
+    val pregnancyGoal = Goal().apply {
+      this.id = getUniqueId()
+      this.lifecycleStatus = Goal.GoalLifecycleStatus.ACTIVE
+      this.subject = patient.asReference()
+    }
+    fhirEngine.save(pregnancyGoal)
+  }
+
+  private fun <T : Any?> loadConfig(id: String, clazz: Class<T>): T {
+    return AncApplication.getContext().loadConfig(id, clazz)
+  }
+
+  companion object {
+    object Template {
+      const val PREGNANCY_CONDITION = "pregnancy_condition_template.json"
+      const val PREGNANCY_EPISODE_OF_CARE = "pregnancy_episode_of_care_template.json"
+      const val PREGNANCY_FIRST_ENCOUNTER = "pregnancy_first_encounter_template.json"
+    }
   }
 }
