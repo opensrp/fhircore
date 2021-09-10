@@ -30,7 +30,7 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
-import org.smartregister.fhircore.engine.helper.TransformSupportServices
+import org.smartregister.fhircore.helper.TransformSupportServices
 
 /**
  * Provides a playground for quickly testing and authoring questionnaire and the respective

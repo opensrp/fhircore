@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.helper
+package org.smartregister.fhircore.helper
 
 import kotlin.Throws
 import org.hl7.fhir.exceptions.FHIRException
