@@ -71,8 +71,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_questionnaire)
     application.assertIsConfigurable()
-    if (!intent.hasExtra(QUESTIONNAIRE_ARG_PATIENT_KEY) && !intent.hasExtra(QUESTIONNAIRE_ARG_FORM)
-    ) {
+    if (!intent.hasExtra(QUESTIONNAIRE_ARG_FORM)) {
       showToast(getString(R.string.error_loading_form))
       finish()
     }
@@ -192,7 +191,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_PATH_KEY = "questionnaire_path_key"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire_fragment_tag"
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
-    private const val QUESTIONNAIRE_ARG_FORM = "questionnaire_form"
+    const val QUESTIONNAIRE_ARG_FORM = "questionnaire_form"
     private const val FORM_CONFIGURATIONS = "form_configurations.json"
 
     fun requiredIntentArgs(clientIdentifier: String?, form: String) =

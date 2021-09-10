@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">ANC</string>
+    <string name="anc_register_title">ANC</string>
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.anc</string>
     <string name="back_to_anc_clients">Back to ANC Clients</string>
     <string name="edit">Edit</string>
@@ -22,4 +23,7 @@
     <string name="last_seen">Last Seen</string>
     <string name="no_care_plan">No care plan</string>
     <string name="no_services_scheduled">No services scheduled</string>
+
+    <string name="family_register_title">Family</string>
+
 </resources>
