@@ -19,8 +19,10 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Patient
@@ -37,6 +39,8 @@ class QuestionnaireViewModel(
   private val questionnaireConfig: QuestionnaireConfig
 ) : AndroidViewModel(application) {
 
+  val extractionProgress = MutableLiveData<Boolean>()
+
   private val defaultRepository: DefaultRepository =
     DefaultRepository(
       (application as ConfigurableApplication).fhirEngine,
@@ -47,12 +51,10 @@ class QuestionnaireViewModel(
   suspend fun loadQuestionnaire(): Questionnaire? =
     defaultRepository.loadResource(questionnaireConfig.identifier)
 
-  fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
+  suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
-    viewModelScope.launch {
-      structureMapUrl?.substringAfterLast("/")?.run {
-        structureMap = defaultRepository.loadResource(this)
-      }
+    structureMapUrl?.substringAfterLast("/")?.run {
+      structureMap = defaultRepository.loadResource(this)
     }
     return structureMap
   }
@@ -90,6 +92,8 @@ class QuestionnaireViewModel(
           defaultRepository.save(bundleEntry.resource)
         }
       }
+
+      viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
     }
   }
 
