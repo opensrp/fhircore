@@ -27,6 +27,7 @@ import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.Sync
+import com.google.gson.Gson
 import java.io.IOException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.hl7.fhir.r4.context.SimpleWorkerContext
@@ -56,6 +57,14 @@ suspend fun Application.runSync(syncStateFlow: MutableSharedFlow<State>? = null)
 fun Application.lastSyncDateTime(): String {
   val lastSyncDate = Sync.basicSyncJob(this).lastSyncTimestamp()
   return lastSyncDate?.asString() ?: ""
+}
+
+fun <T> Application.loadConfig(id: String, clazz: Class<T>): T {
+  val json = assets.open(id).bufferedReader().use { it.readText() }
+
+  return if (Resource::class.java.isAssignableFrom(clazz))
+    FhirContext.forR4().newJsonParser().parseResource(json) as T
+  else Gson().fromJson(json, clazz)
 }
 
 fun Application.buildDatasource(
