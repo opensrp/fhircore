@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.anc.sdk
 
-import ca.uhn.fhir.context.FhirContext
 import java.util.UUID
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -29,7 +28,6 @@ import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.util.extension.find
 
 object QuestionnaireUtils {
-  val parser = FhirContext.forR4().newJsonParser()
   private const val ITEM_CONTEXT_EXTENSION_URL: String =
     "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract"
   private val Questionnaire.QuestionnaireItemComponent.isExtractableObservation: Boolean?
