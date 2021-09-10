@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.engine.ui.register.model
 
 import android.graphics.drawable.Drawable
-import com.google.android.fhir.search.Search
-import org.hl7.fhir.r4.model.Patient
 
 /**
  * @property itemId Unique number used to identify the menu item.
@@ -26,12 +24,11 @@ import org.hl7.fhir.r4.model.Patient
  * @property iconResource Android drawable resource used as icon for menu option
  * @property opensMainRegister Use current option to open the main the register
  * @property count The current count for the menu item. Default is 0
- * @property showCount Show clients count against the menu option
- * @property countForResource Indicate whether the count should be for FHIR resource
- * @property entityTypePatient Indicate whether the resource is Patient. Provide custom count
- * queries for resources other than Patient
- * @property searchFilterLambda Filter applied to the the counted entities. Default to filtering
- * only active Patients
+ * @property showCount Show clients count against the menu option queries for resources other than
+ * Patient
+ * @property countMethod High order function used to return count for the menu option. Defaults to
+ * returning -1. -1 is used to determine whether to count active patients or not. Override to
+ * provide custom count implementation for instance calling a view model method to perform the count
  */
 data class SideMenuOption(
   val itemId: Int,
@@ -40,7 +37,5 @@ data class SideMenuOption(
   val opensMainRegister: Boolean = false,
   var count: Long = 0,
   val showCount: Boolean = true,
-  val countForResource: Boolean = true,
-  val entityTypePatient: Boolean = true,
-  val searchFilterLambda: (Search) -> Unit = { search -> search.filter(Patient.ACTIVE, true) }
+  val countMethod: () -> Long = { -1 }
 )

@@ -24,7 +24,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.anccare.register.AncRegisterActivity" />
+        <activity
+            android:name=".ui.anccare.register.AncRegisterActivity"
+            android:windowSoftInputMode="adjustPan" />
         <activity android:name=".ui.anccare.details.AncDetailsActivity" />
         <activity android:name="org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity" />
 

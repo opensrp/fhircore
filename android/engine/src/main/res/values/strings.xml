@@ -22,6 +22,7 @@
     <string name="logout_user">Log out as %1$s</string>
     <string name="sync_completed">Sync complete</string>
     <string name="syncing">Syncing&#8230;</string>
+    <string name="syncing_initiated">Sync initiated&#8230;</string>
     <string name="sync_failed">Sync failed. Check internet connection or try again later.</string>
     <string name="try_again">Try again</string>
     <string name="status_vaccinated">Vaccinated</string>
@@ -32,11 +33,19 @@
     <string name="date_last_seen">Last seen %1$s</string>
     <string name="str_save">Save</string>
     <string name="login_error">Login error: %1$s</string>
-    <string name="str_next">Next</string>
-    <string name="str_previous">Previous</string>
+    <string name="str_next">NEXT</string>
+    <string name="str_previous">PREVIOUS</string>
     <string name="str_page_info">Page %1$d of %2$d</string>
+    <string name="search_result">%1$d RESULT(S)</string>
+    <string name="no_results">No results</string>
+    <string name="no_results_message">Sorry we can\'t find person with the provided name or ID</string>
     <string name="male">Male</string>
     <string name="female">Female</string>
     <string name="other">Other</string>
     <string name="unknown">Unknown</string>
+    <string name="syncing_failed">Sync failed</string>
+    <string name="syncing_in_progress">Sync in progress</string>
+    <string name="loading">Loading</string>
+    <string name="error_loading_form">Error loading form</string>
+    <string name="error_saving_form">Error encountered cannot save form</string>
 </resources>
