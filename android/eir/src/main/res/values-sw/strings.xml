@@ -5,9 +5,10 @@
     <string name="title_patient_detail">Sampuli ya Mgonjwa</string>
     <string name="menu_about">Kuhusu Injini ya FHIR</string>
     <string name="menu_load_resource">Pakia CQL</string>
-    <string name="add_patient">Ongeza Mgonjwa</string>
+    <string name="add_client">Ongeza Mteja</string>
     <string name="menu_sync_resources">Sinki</string>
-    <string name="menu_clients_list_title">Wateja wa COVAX</string>
+    <string name="client_list_title_covax">Wateja wa COVAX</string>
+    <string name="client_list_title_anc">ANC clients</string>
     <string name="language">Lugha</string>
     <string name="empty_client_list_message_title">Hakuna Matokeo</string>
     <string name="empty_client_list_message_details">Pole, hatukupata mteja kwa hilo Jina wala ID</string>
@@ -17,25 +18,21 @@
     <string name="str_next">Ijayo &gt;&gt;</string>
     <string name="str_previous">&lt;&lt; Iliyopita</string>
     <string name="str_page_info">Ukurasa %1$d of %2$d</string>
-
     <string name="immunization_brief_text">"Amepokea %1$s dozi %2$d"</string>
     <string name="immunization_next_dose_text">"Dozi %1$d kuanzia %2$s"</string>
     <string name="immunization_next_overdue_dose_text">"Dozi %1$d imechelewa %2$s"</string>
-
     <string name="status_vaccinated">Amechanjwa</string>
     <string name="status_overdue">Imechelewa</string>
     <string name="status_received_vaccine">Chanjo %1$d \n%2$s</string>
     <string name="view_vaccine_certificate">"Angalia cheti cha chanjo"</string>
     <string name="fully_vaccinated">"Chanjo kamili"</string>
-
     <string name="edit">Hariri</string>
     <string name="select_language">Chagua Lugha</string>
-    <string name="register_new_patient">Sajilisha mgonjwa</string>
+    <string name="register_new_client">Sajilisha mteja</string>
     <string name="sync">Sinki</string>
     <string name="record_vaccine">Rekodi Chanjo</string>
     <string name="no_vaccine_received">Hakuna chanjo iliyopokelewa</string>
     <string name="view_registration_details">Ona Maelezo ya Usajili</string>
-    <string name="client">Wateja wa COVAX</string>
     <string name="show_overdue">Onyesha waliochelewa</string>
     <string name="record_vaccine_nl">Rekodi\nChanjo</string>
     <string name="client_info">Maelezo ya mteja</string>
@@ -59,4 +56,21 @@
     <string name="scan_bar_code">SOMA BARCODE</string>
     <string name="at_risk">Hatarini</string>
     <string name="syncing">Inasawazisha&#8230;</string>
+    <string name="vaccine">Chanjo</string>
+    <string name="provider">Muuguzi</string>
+    <string name="vaccine_certificate">Cheti cha chanjo</string>
+    <string name="immune">Ana kinga</string>
+    <string name="not_immune">Hana Kinga</string>
+    <string name="male">Kiume</string>
+    <string name="female">Kike</string>
+    <string name="other">Nyingine</string>
+    <string name="unknown">Haijulikani</string>
+    <string name="age">Umri %1$s</string>
+    <string name="immunization_given">kipimo cha %1$s: %2$s</string>
+    <string name="immunization_due">kipimo cha %1$s kutokana na %2$s </string>
+    <string name="immunization_overdue">kipimo cha %1$s kimepita %2$s</string>
+    <string name="show_qr_code">Show QR Code</string>
+    <string name="report_adverse_event">Report Adverse Event</string>
+    <string name="covax_app" translatable="false">Covax</string>
+    <string name="check">Tick</string>
 </resources>
