@@ -20,6 +20,7 @@ import android.accounts.AccountManager
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -40,7 +41,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
 import com.google.android.material.navigation.NavigationView
 import java.util.Locale
-import kotlin.math.ceil
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.BR
@@ -49,10 +49,11 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplicati
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
-import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
+import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
@@ -61,10 +62,10 @@ import org.smartregister.fhircore.engine.util.extension.DrawablePosition
 import org.smartregister.fhircore.engine.util.extension.addOnDrawableClickListener
 import org.smartregister.fhircore.engine.util.extension.asString
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
+import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.getDrawable
 import org.smartregister.fhircore.engine.util.extension.hide
-import org.smartregister.fhircore.engine.util.extension.lastSyncDateTime
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.show
@@ -75,7 +76,8 @@ import timber.log.Timber
 abstract class BaseRegisterActivity :
   BaseMultiLanguageActivity(),
   NavigationView.OnNavigationItemSelectedListener,
-  ConfigurableView<RegisterViewConfiguration> {
+  ConfigurableView<RegisterViewConfiguration>,
+  OnSyncListener {
 
   private lateinit var registerViewModel: RegisterViewModel
 
@@ -98,6 +100,7 @@ abstract class BaseRegisterActivity :
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     application.assertIsConfigurable()
+    (application as ConfigurableApplication).syncBroadcaster.registerSyncListener(this)
 
     registerViewModel =
       ViewModelProvider(
@@ -110,14 +113,6 @@ abstract class BaseRegisterActivity :
       )[RegisterViewModel::class.java]
 
     registerViewModel.registerViewConfiguration.observe(this, this::setupConfigurableViews)
-    registerViewModel.currentPage.observe(
-      this,
-      { currentPage ->
-        selectedMenuOption?.count?.let { recordsCount ->
-          updatePaginationViews(recordsCount, currentPage + 1)
-        }
-      }
-    )
 
     registerViewModel.run {
       loadLanguages()
@@ -126,26 +121,7 @@ abstract class BaseRegisterActivity :
         { updateLanguage(Language(it, Locale.forLanguageTag(it).displayName)) }
       )
 
-      lifecycleScope.launch {
-        sharedSyncStatus.collect {
-          Timber.i("Sync state received is $it")
-
-          when (it) {
-            is State.Started -> {
-              showToast(getString(R.string.syncing))
-              updateSyncViews("", it)
-            }
-            is State.Failed -> {
-              showToast(getString(R.string.sync_failed))
-              updateSyncViews(it.result.timestamp.asString(), it)
-            }
-            is State.Finished -> {
-              showToast(getString(R.string.sync_completed))
-              updateSyncViews(it.result.timestamp.asString(), it)
-            }
-          }
-        }
-      }
+      lifecycleScope.launch { sharedSyncStatus.collect { state -> onSync(state) } }
     }
 
     registerActivityBinding = DataBindingUtil.setContentView(this, R.layout.base_register_activity)
@@ -162,18 +138,24 @@ abstract class BaseRegisterActivity :
     setUpViews()
   }
 
-  private fun updateEntityCounts() = sideMenuOptions().forEach { updateCount(it) }
-
-  private fun updateSyncViews(lastSyncDate: String, state: State? = null) {
-    Timber.i("Updating last sync date $lastSyncDate")
-    registerActivityBinding.tvLastSyncTimestamp.text = lastSyncDate
-
-    if (state is State.Started) {
-      registerActivityBinding.progressSync.show()
-      registerActivityBinding.containerProgressSync.setBackgroundResource(0)
-    } else if (state == null || state is State.Finished || state is State.Failed) {
-      registerActivityBinding.progressSync.hide()
-      registerActivityBinding.containerProgressSync.setBackgroundResource(R.drawable.ic_sync)
+  private fun BaseRegisterActivityBinding.updateSyncStatus(state: State) {
+    when (state) {
+      is State.Started, is State.InProgress -> {
+        tvLastSyncTimestamp.text = getString(R.string.syncing_in_progress)
+        containerProgressSync.background = null
+        progressSync.show()
+      }
+      is State.Finished -> {
+        progressSync.hide()
+        tvLastSyncTimestamp.text = state.result.timestamp.asString()
+        containerProgressSync.background = containerProgressSync.getDrawable(R.drawable.ic_sync)
+      }
+      is State.Failed -> {
+        progressSync.hide()
+        tvLastSyncTimestamp.text = getString(R.string.syncing_failed)
+        containerProgressSync.background = containerProgressSync.getDrawable(R.drawable.ic_sync)
+      }
+      else -> return
     }
   }
 
@@ -182,6 +164,11 @@ abstract class BaseRegisterActivity :
     with(registerActivityBinding) {
       toolbarLayout.btnDrawerMenu.setOnClickListener { manipulateDrawer(open = true) }
       btnRegisterNewClient.setOnClickListener { registerClient() }
+      containerProgressSync.setOnClickListener {
+        progressSync.show()
+        manipulateDrawer(false)
+        this@BaseRegisterActivity.registerViewModel.runSync()
+      }
     }
     registerActivityBinding.navView.apply {
       setNavigationItemSelectedListener(this@BaseRegisterActivity)
@@ -192,30 +179,12 @@ abstract class BaseRegisterActivity :
         )
     }
 
-    updateSyncViews(application.lastSyncDateTime())
-
-    registerActivityBinding.containerProgressSync.setOnClickListener {
-      manipulateDrawer(open = false)
-      updateSyncViews("", State.Started)
-      registerViewModel.runSync()
-    }
-
     // Setup view pager
     registerPagerAdapter = RegisterPagerAdapter(this, supportedFragments = supportedFragments())
     registerActivityBinding.listPager.adapter = registerPagerAdapter
 
     setupSearchView()
     setupDueButtonView()
-    setupPagination()
-  }
-
-  private fun setupPagination() {
-    with(registerActivityBinding) {
-      previousPageButton.setOnClickListener {
-        this@BaseRegisterActivity.registerViewModel.backToPreviousPage()
-      }
-      nextPageButton.setOnClickListener { this@BaseRegisterActivity.registerViewModel.nextPage() }
-    }
   }
 
   @SuppressLint("ClickableViewAccessibility")
@@ -238,7 +207,10 @@ abstract class BaseRegisterActivity :
               getDrawable(R.drawable.ic_cancel),
               null
             )
-            this.addOnDrawableClickListener(DrawablePosition.DRAWABLE_RIGHT) { editable?.clear() }
+            this.addOnDrawableClickListener(DrawablePosition.DRAWABLE_RIGHT) {
+              editable?.clear()
+              registerViewModel.updateFilterValue(RegisterFilterType.SEARCH_FILTER, null)
+            }
           }
         }
         addTextChangedListener(
@@ -255,14 +227,14 @@ abstract class BaseRegisterActivity :
               start: Int,
               before: Int,
               count: Int
-            ) {
+            ) {}
+
+            override fun afterTextChanged(editable: Editable?) {
               registerViewModel.updateFilterValue(
                 RegisterFilterType.SEARCH_FILTER,
-                charSequence.toString()
+                if (editable.isNullOrEmpty()) null else editable.toString()
               )
             }
-
-            override fun afterTextChanged(s: Editable?) {}
           }
         )
       }
@@ -272,8 +244,11 @@ abstract class BaseRegisterActivity :
   private fun setupDueButtonView() {
     with(registerActivityBinding.toolbarLayout) {
       btnShowOverdue.setOnCheckedChangeListener { _, isChecked ->
-        if (isChecked) registerViewModel.updateFilterValue(RegisterFilterType.OVERDUE_FILTER, true)
-        else registerViewModel.updateFilterValue(RegisterFilterType.OVERDUE_FILTER, false)
+        if (isChecked) {
+          registerViewModel.updateFilterValue(RegisterFilterType.OVERDUE_FILTER, true)
+        } else {
+          registerViewModel.updateFilterValue(RegisterFilterType.OVERDUE_FILTER, null)
+        }
       }
     }
   }
@@ -319,6 +294,35 @@ abstract class BaseRegisterActivity :
     with(registerActivityBinding) {
       if (open) drawerLayout.openDrawer(GravityCompat.START)
       else drawerLayout.closeDrawer(GravityCompat.START)
+    }
+  }
+
+  override fun onSync(state: State) {
+    Timber.i("Sync state received is $state")
+    when (state) {
+      is State.Started -> {
+        showToast(getString(R.string.syncing))
+        registerActivityBinding.updateSyncStatus(state)
+      }
+      is State.Failed, is State.Glitch -> {
+        showToast(getString(R.string.sync_failed))
+        registerActivityBinding.updateSyncStatus(state)
+        this.registerViewModel.setSyncing(false)
+      }
+      is State.Finished -> {
+        showToast(getString(R.string.sync_completed))
+        registerActivityBinding.updateSyncStatus(state)
+        sideMenuOptions().forEach { updateCount(it) }
+        manipulateDrawer(open = false)
+        this.registerViewModel.setSyncing(false)
+        this.registerViewModel.setRefreshRegisterData(true)
+      }
+      is State.InProgress -> {
+        Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
+        // TODO fix issue where state is not updating from in progress
+        // this.registerViewModel.setSyncing(true)
+        registerActivityBinding.updateSyncStatus(state)
+      }
     }
   }
 
@@ -420,10 +424,17 @@ abstract class BaseRegisterActivity :
    */
   abstract fun onSideMenuOptionSelected(item: MenuItem): Boolean
 
-  /**
-   * Abstract method to be implemented by the subclass to provide action for registering new client
-   */
-  abstract fun registerClient()
+  protected open fun registerClient() {
+    startActivity(
+      Intent(this, QuestionnaireActivity::class.java)
+        .putExtras(
+          QuestionnaireActivity.requiredIntentArgs(
+            clientIdentifier = null,
+            form = registerViewModel.registerViewConfiguration.value?.registrationForm!!
+          )
+        )
+    )
+  }
 
   /**
    * Implement this method to provide the view pager with a list of [Fragment]. App will throw an
@@ -432,41 +443,28 @@ abstract class BaseRegisterActivity :
    */
   abstract fun supportedFragments(): List<Fragment>
 
-  /**
-   * Implement [customEntityCount] to count other resource types other than Patient resource. Use
-   * the class type of the entity specified in [sideMenuOption]. This is useful for complex count
-   * queries
-   */
-  protected open fun customEntityCount(sideMenuOption: SideMenuOption): Long = 0
-
   override fun configurableApplication(): ConfigurableApplication {
     return application as ConfigurableApplication
   }
 
-  private fun updateCount(menuOption: SideMenuOption) {
+  private fun updateCount(sideMenuOption: SideMenuOption) {
     lifecycleScope.launch(registerViewModel.dispatcher.main()) {
-      var count: Long = registerViewModel.performCount(menuOption)
-      if (count == -1L) count = customEntityCount(menuOption)
-      val counter =
-        registerActivityBinding.navView.menu.findItem(menuOption.itemId).actionView as TextView
-      menuOption.count = count
-      counter.text = if (menuOption.count > 0) count.toString() else null
-
-      // Update pagination count
-      if (selectedMenuOption != null && menuOption.itemId == selectedMenuOption?.itemId) {
-        selectedMenuOption!!.count = menuOption.count
-        updatePaginationViews(menuOption.count, registerViewModel.currentPage.value?.plus(1) ?: 1)
+      val count = sideMenuOption.countMethod()
+      if (count == -1L) {
+        sideMenuOption.count =
+          (application as ConfigurableApplication).fhirEngine.countActivePatients()
+      } else {
+        sideMenuOption.count = count
       }
-    }
-  }
-
-  private fun updatePaginationViews(totalRecordsCount: Long, pageNumber: Int) {
-    with(registerActivityBinding) {
-      val pagesCount =
-        ceil(totalRecordsCount.toDouble().div(PaginationUtil.DEFAULT_PAGE_SIZE.toLong())).toLong()
-      pageInfoTextview.text = getString(R.string.str_page_info, pageNumber, pagesCount)
-      if (pageNumber > 1) previousPageButton.show() else previousPageButton.hide(gone = false)
-      if (pageNumber < pagesCount) nextPageButton.show() else nextPageButton.hide(gone = false)
+      with(sideMenuOption) {
+        val counter =
+          registerActivityBinding.navView.menu.findItem(sideMenuOption.itemId).actionView as
+            TextView
+        counter.text = if (this.count > 0) this.count.toString() else null
+        if (selectedMenuOption != null && this.itemId == selectedMenuOption?.itemId) {
+          selectedMenuOption?.count = this.count
+        }
+      }
     }
   }
 }

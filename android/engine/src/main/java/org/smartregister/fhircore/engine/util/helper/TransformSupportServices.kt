@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.helper
+package org.smartregister.fhircore.engine.util.helper
 
-import kotlin.Throws
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base

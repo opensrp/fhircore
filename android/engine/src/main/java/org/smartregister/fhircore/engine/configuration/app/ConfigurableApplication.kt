@@ -17,8 +17,10 @@
 package org.smartregister.fhircore.engine.configuration.app
 
 import com.google.android.fhir.FhirEngine
+import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
 /**
@@ -35,6 +37,8 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
  * encrypted shared preference data
  * @property resourceSyncParams Set [FhirEngine] resource sync params needed for syncing data from
  * the server
+ * @property syncBroadcaster Set a singleton of [SyncBroadcaster] that reacts to FHIR sync
+ * application level states
  */
 interface ConfigurableApplication {
 
@@ -47,6 +51,11 @@ interface ConfigurableApplication {
   val secureSharedPreference: SecureSharedPreference
 
   val resourceSyncParams: Map<ResourceType, Map<String, String>>
+
+  val syncBroadcaster: SyncBroadcaster
+    get() = SyncBroadcaster
+
+  val workerContextProvider: SimpleWorkerContext
 
   /** Provide [applicationConfiguration] for the Application */
   fun configureApplication(applicationConfiguration: ApplicationConfiguration)
