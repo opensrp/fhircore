@@ -46,7 +46,7 @@ class RecordVaccineViewModel(
             initialDose = immunization.vaccineCode.coding.first().code
           )
         )
-      }
+      } else mutableLiveData.postValue(PatientVaccineSummary(doseNumber = 0, initialDose = ""))
     }
     return mutableLiveData
   }

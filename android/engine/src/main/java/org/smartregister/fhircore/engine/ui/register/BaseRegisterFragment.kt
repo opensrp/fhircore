@@ -28,7 +28,7 @@ import org.smartregister.fhircore.engine.util.ListenerIntent
 
 abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
 
-  abstract val registerDataViewModel: RegisterDataViewModel<I, O>
+  protected lateinit var registerDataViewModel: RegisterDataViewModel<I, O>
 
   protected val registerViewModel by activityViewModels<RegisterViewModel>()
 
@@ -59,20 +59,48 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
       {
         lifecycleScope.launch(Dispatchers.Main) {
           val (registerFilterType, value) = it
-          registerDataViewModel.filterRegisterData(
-            registerFilterType = registerFilterType,
-            filterValue = value,
-            registerFilter = this@BaseRegisterFragment::performFilter
-          )
+          if (value != null) {
+            registerDataViewModel.run {
+              showResultsCount(true)
+              filterRegisterData(
+                registerFilterType = registerFilterType,
+                filterValue = value,
+                registerFilter = this@BaseRegisterFragment::performFilter
+              )
+            }
+          } else {
+            registerDataViewModel.run {
+              showResultsCount(false)
+              reloadCurrentPageData()
+            }
+          }
         }
       }
     )
 
-    registerViewModel.currentPage.observe(
-      viewLifecycleOwner,
-      { registerDataViewModel.loadPageData(it) }
-    )
+    registerViewModel.run {
+      refreshRegisterData.observe(
+        viewLifecycleOwner,
+        { refreshData ->
+          if (refreshData) {
+            setRefreshRegisterData(false)
+            registerDataViewModel.reloadCurrentPageData(refreshTotalRecordsCount = true)
+          }
+          registerDataViewModel.setShowLoader(false)
+        }
+      )
+      syncing.observe(viewLifecycleOwner, { registerDataViewModel.setShowLoader(it) })
+    }
+
+    registerDataViewModel =
+      initializeRegisterDataViewModel().apply {
+        this.currentPage.observe(viewLifecycleOwner, { registerDataViewModel.loadPageData(it) })
+      }
   }
+
+  /** Initialize the [RegisterDataViewModel] class */
+  @Suppress("UNCHECKED_CAST")
+  abstract fun initializeRegisterDataViewModel(): RegisterDataViewModel<I, O>
 
   /**
    * Generic function to perform any filtering of type [registerFilterType] on the [data]. Returns

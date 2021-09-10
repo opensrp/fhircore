@@ -19,12 +19,8 @@ package org.smartregister.fhircore.anc.ui.family.register
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.FamilyRepository
@@ -32,26 +28,18 @@ import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterActivity
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConfig
-import org.smartregister.fhircore.anc.ui.family.form.RegisterFamilyMemberInput
-import org.smartregister.fhircore.anc.ui.family.form.RegisterFamilyMemberOutput
-import org.smartregister.fhircore.anc.ui.family.form.RegisterFamilyMemberResult
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.getUniqueId
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.FormConfigUtil
 
 class FamilyRegisterActivity : BaseRegisterActivity() {
 
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 
-  internal lateinit var familyFormConfig: FamilyFormConfig
-  internal val viewModel by viewModels<QuestionnaireViewModel>()
-
-  internal lateinit var familyMemberRegistration: ActivityResultLauncher<RegisterFamilyMemberInput>
   internal lateinit var familyRepository: FamilyRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,17 +49,6 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         appTitle = getString(R.string.family_register_title)
       }
     )
-
-    familyFormConfig =
-      FormConfigUtil.loadConfig(
-        FamilyFormConfig.FAMILY_REGISTER_CONFIG_ID,
-        this@FamilyRegisterActivity
-      )
-
-    familyMemberRegistration =
-      registerForActivityResult(RegisterFamilyMemberResult()) {
-        it?.run { handleRegisterFamilyMemberResult(it) }
-      }
 
     familyRepository = FamilyRepository((application as AncApplication).fhirEngine, AncItemMapper)
   }
@@ -100,19 +77,18 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
     return true
   }
 
-  // TODO change to family registration with https://github.com/opensrp/fhircore/issues/276
   override fun registerClient() {
-    familyMemberRegistration.launch(RegisterFamilyMemberInput(getUniqueId(), familyFormConfig))
+    startActivity(
+      Intent(this, FamilyQuestionnaireActivity::class.java)
+        .putExtras(
+          QuestionnaireActivity.requiredIntentArgs(
+            clientIdentifier = null,
+            form = FamilyFormConfig.FAMILY_MEMBER_REGISTER_FORM
+          )
+        )
+    )
   }
 
   // TODO add family fragment with https://github.com/opensrp/fhircore/issues/276
   override fun supportedFragments(): List<Fragment> = listOf(AncRegisterFragment())
-
-  internal fun handleRegisterFamilyMemberResult(output: RegisterFamilyMemberOutput) {
-    lifecycleScope.launch {
-      val questionnaire =
-        viewModel.loadQuestionnaire(familyFormConfig.memberRegistrationQuestionnaireId)
-      familyRepository.postProcessFamilyMember(questionnaire, output.questionnaireResponse)
-    }
-  }
 }

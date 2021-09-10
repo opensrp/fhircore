@@ -34,17 +34,18 @@ import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
+import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
+import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.asReference
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.getUniqueId
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.loadConfig
-import org.smartregister.fhircore.engine.util.extension.searchPatients
+import org.smartregister.fhircore.engine.util.extension.searchActivePatients
 
 class AncPatientRepository(
   override val fhirEngine: FhirEngine,
@@ -55,12 +56,17 @@ class AncPatientRepository(
   override suspend fun loadData(
     query: String,
     pageNumber: Int,
+    loadAll: Boolean
   ): List<AncPatientItem> {
     return withContext(dispatcherProvider.io()) {
-      val patients = fhirEngine.searchPatients(query, pageNumber)
+      val patients =
+        fhirEngine.searchActivePatients(query = query, pageNumber = pageNumber, loadAll = loadAll)
       patients.map { domainMapper.mapToDomainModel(it) }
     }
   }
+
+  override suspend fun countAll(): Long =
+    withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
 
   suspend fun fetchDemographics(patientId: String): AncPatientDetailItem {
     var ancPatientDetailItem = AncPatientDetailItem()

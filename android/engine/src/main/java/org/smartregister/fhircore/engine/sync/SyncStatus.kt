@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.register.model
+package org.smartregister.fhircore.engine.sync
 
 enum class SyncStatus {
-  NOT_SYNCING,
   COMPLETE,
   FAILED
 }

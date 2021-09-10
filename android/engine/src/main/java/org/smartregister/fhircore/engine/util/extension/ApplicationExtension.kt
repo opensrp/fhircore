@@ -19,14 +19,18 @@ package org.smartregister.fhircore.engine.util.extension
 import android.app.Application
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.utilities.SimpleWorkerContextProvider
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
+import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.Sync
 import com.google.gson.Gson
+import java.io.IOException
 import kotlinx.coroutines.flow.MutableSharedFlow
-import org.apache.commons.lang3.Validate.isAssignableFrom
+import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -34,24 +38,25 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplicati
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import timber.log.Timber
 
-suspend fun Application.runSync(flow: MutableSharedFlow<State>? = null) {
+suspend fun Application.runSync(syncStateFlow: MutableSharedFlow<State>? = null) {
   if (this !is ConfigurableApplication)
     throw (IllegalStateException("Application should extend ConfigurableApplication interface"))
   val dataSource = buildDatasource(this.applicationConfiguration)
 
   Sync.basicSyncJob(this)
     .run(
-      fhirEngine = this.fhirEngine,
+      fhirEngine = fhirEngine,
       dataSource = dataSource,
       resourceSyncParams = resourceSyncParams,
-      subscribeTo = flow
+      subscribeTo = syncStateFlow
     )
 }
 
 fun Application.lastSyncDateTime(): String {
   val lastSyncDate = Sync.basicSyncJob(this).lastSyncTimestamp()
-  return if (lastSyncDate == null) "" else lastSyncDate.asString()
+  return lastSyncDate?.asString() ?: ""
 }
 
 fun <T> Application.loadConfig(id: String, clazz: Class<T>): T {
@@ -70,7 +75,11 @@ fun Application.buildDatasource(
   )
 }
 
-suspend fun FhirEngine.searchPatients(query: String, pageNumber: Int) =
+suspend fun FhirEngine.searchActivePatients(
+  query: String,
+  pageNumber: Int,
+  loadAll: Boolean = false
+) =
   this.search<Patient> {
     filter(Patient.ACTIVE, true)
     if (query.isNotBlank()) {
@@ -80,6 +89,28 @@ suspend fun FhirEngine.searchPatients(query: String, pageNumber: Int) =
       }
     }
     sort(Patient.NAME, Order.ASCENDING)
-    count = PaginationUtil.DEFAULT_PAGE_SIZE
+    count =
+      if (loadAll) this@searchActivePatients.countActivePatients().toInt()
+      else PaginationUtil.DEFAULT_PAGE_SIZE
     from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
   }
+
+suspend fun FhirEngine.countActivePatients(): Long =
+  this.count<Patient> { filter(Patient.ACTIVE, true) }
+
+suspend inline fun <reified T : Resource> FhirEngine.loadResource(structureMapId: String): T? {
+  return try {
+    this@loadResource.load(T::class.java, structureMapId)
+  } catch (resourceNotFoundException: ResourceNotFoundException) {
+    null
+  }
+}
+
+suspend fun Application.initializeWorkerContext(): SimpleWorkerContext? {
+  return try {
+    SimpleWorkerContextProvider.loadSimpleWorkerContext(this@initializeWorkerContext)
+  } catch (ioException: IOException) {
+    Timber.e(ioException)
+    null
+  }
+}

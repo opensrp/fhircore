@@ -24,22 +24,29 @@ import androidx.paging.PagingState
  * [RegisterRepository] to load data to the [PagingSource]. Value type [I] represents the Data
  * Transfer Object (DTO) like a FHIR Patient Resource. [O] represents the output type of
  * [RegisterRepository] data. [I] is transformed into [O] using a [DomainMapper]
+ *
+ * @property currentPage Set the current page to load data for (database table offset)
+ * @property query Current database query, default empty
+ * @property loadAll Indicate whether to load all data incrementally in the background
  */
 class PaginatedDataSource<I : Any, O : Any>(
   private val registerRepository: RegisterRepository<I, O>
 ) : PagingSource<Int, O>() {
 
   var currentPage: Int = 0
+
   var query: String = ""
 
+  var loadAll: Boolean = false
+
   /**
-   * Load data for the [currentPage]. nextKey and prevKey for [params] are both set to null to
+   * To load data for the [currentPage], nextKey and prevKey for [params] are both set to null to
    * prevent automatic loading of by the [PagingSource]. This is done in order to explicitly allow
    * loading of data by manually clicking navigation previous or next buttons.
    *
-   * For infinite scroll (automatically loading data via the paging source in the background). You
-   * may need to override this method [load] and set the prevKey and nextKey values of [params] to
-   * something like this (Checking if data is not empty prevents querying for more results):
+   * To load all data (by automatically paginating the results in the background), [loadAll] has to
+   * be set to true (Checking if data is not empty prevents querying for more results when there is
+   * none):
    *
    * prevKey = if (pageNumber == 0) null else pageNumber - 1
    *
@@ -48,11 +55,15 @@ class PaginatedDataSource<I : Any, O : Any>(
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, O> {
     return try {
       val pageNumber = params.key ?: currentPage
-      LoadResult.Page(
-        data = registerRepository.loadData(query = query, pageNumber = pageNumber),
-        prevKey = null,
-        nextKey = null
-      )
+      val data =
+        registerRepository.loadData(query = query, pageNumber = pageNumber, loadAll = loadAll)
+      val prevKey =
+        when {
+          loadAll -> if (pageNumber == 0) null else pageNumber - 1
+          else -> null
+        }
+
+      LoadResult.Page(data = data, prevKey = prevKey, nextKey = null)
     } catch (exception: Exception) {
       LoadResult.Error(exception)
     }

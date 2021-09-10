@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.questionnaire
+package org.smartregister.fhircore.anc.sdk
 
-import android.content.Context
-import android.content.Intent
 import ca.uhn.fhir.context.FhirContext
 import java.util.UUID
 import org.hl7.fhir.r4.model.BooleanType
@@ -28,10 +26,6 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_TITLE_KEY
 import org.smartregister.fhircore.engine.util.extension.find
 
 object QuestionnaireUtils {
@@ -44,28 +38,6 @@ object QuestionnaireUtils {
         (it.value as BooleanType).booleanValue()
       }
     }
-
-  fun buildQuestionnaireIntent(
-    context: Context,
-    questionnaireTitle: String,
-    questionnaireId: String,
-    patientId: String?,
-    isNewPatient: Boolean
-  ): Intent {
-    return Intent(context, QuestionnaireActivity::class.java).apply {
-      putExtra(QUESTIONNAIRE_TITLE_KEY, questionnaireTitle)
-      putExtra(QUESTIONNAIRE_PATH_KEY, questionnaireId)
-
-      patientId?.let {
-        if (isNewPatient) putExtra(QUESTIONNAIRE_ARG_PRE_ASSIGNED_ID, patientId)
-        else putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
-      }
-    }
-  }
-
-  fun asQuestionnaireResponse(questionnaireResponse: String): QuestionnaireResponse {
-    return parser.parseResource(questionnaireResponse) as QuestionnaireResponse
-  }
 
   // https://github.com/opensrp/fhircore/issues/525
   // use ResourceMapper when supported by SDK

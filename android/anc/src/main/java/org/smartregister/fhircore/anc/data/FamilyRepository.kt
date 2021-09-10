@@ -23,14 +23,13 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils
+import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.getUniqueId
 import org.smartregister.fhircore.engine.util.extension.find
 
-// TODO add own item mapper with https://github.com/opensrp/fhircore/issues/276
 class FamilyRepository(
   override val fhirEngine: FhirEngine,
   override val domainMapper: DomainMapper<Patient, AncPatientItem>
@@ -38,15 +37,18 @@ class FamilyRepository(
 
   private val ancPatientRepository = AncPatientRepository(fhirEngine, AncItemMapper)
 
-  // would be done with https://github.com/opensrp/fhircore/issues/276
   override suspend fun loadData(
     query: String,
     pageNumber: Int,
+    loadAll: Boolean
   ): List<AncPatientItem> {
-    return listOf()
+    TODO("https://github.com/opensrp/fhircore/issues/276")
   }
 
-  // TODO refactor when Elle is done with questionnaire refactor
+  override suspend fun countAll(): Long {
+    TODO("https://github.com/opensrp/fhircore/issues/276")
+  }
+
   suspend fun postProcessFamilyMember(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse

@@ -18,23 +18,14 @@ package org.smartregister.fhircore.anc.ui.family
 
 import android.app.Activity
 import android.view.MenuInflater
-import androidx.activity.result.ActivityResultLauncher
 import com.google.android.fhir.sync.Sync
-import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkObject
-import io.mockk.verify
 import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.After
 import org.junit.Assert
 import org.junit.Assert.assertEquals
@@ -44,14 +35,10 @@ import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
-import org.smartregister.fhircore.anc.data.FamilyRepository
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
-import org.smartregister.fhircore.anc.ui.family.form.RegisterFamilyMemberInput
-import org.smartregister.fhircore.anc.ui.family.form.RegisterFamilyMemberOutput
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 
 @Config(shadows = [AncApplicationShadow::class])
@@ -80,36 +67,6 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
   @Test
   fun testActivityShouldNotNull() {
     assertNotNull(familyRegisterActivity)
-  }
-
-  @Test
-  fun testRegisterClientLaunchesFamilyMemberQuestionnaire() {
-    val activityResult = mockk<ActivityResultLauncher<RegisterFamilyMemberInput>>()
-    every { activityResult.launch(any()) } just runs
-
-    familyRegisterActivity.familyMemberRegistration = activityResult
-
-    familyRegisterActivity.registerClient()
-
-    verify { activityResult.launch(any()) }
-  }
-
-  @Test
-  fun testHandleFamilyMemberRegistrationShouldCallPostProcessFamilyMember() {
-    val familyRepository = mockk<FamilyRepository>()
-    coEvery { familyRepository.postProcessFamilyMember(any(), any()) } just runs
-
-    runBlocking {
-      AncApplication.getContext().fhirEngine.save(Questionnaire().apply { id = "1832" })
-    }
-
-    familyRegisterActivity.familyRepository = familyRepository
-
-    familyRegisterActivity.handleRegisterFamilyMemberResult(
-      RegisterFamilyMemberOutput(QuestionnaireResponse())
-    )
-
-    coVerify(timeout = 2000) { familyRepository.postProcessFamilyMember(any(), any()) }
   }
 
   @Test
