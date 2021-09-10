@@ -30,7 +30,7 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
-import org.smartregister.fhircore.helper.TransformSupportServices
+import org.smartregister.fhircore.engine.helper.TransformSupportServices
 
 /**
  * Provides a playground for quickly testing and authoring questionnaire and the respective
@@ -50,7 +50,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     contextR4.isCanRunWithoutTerminology = true
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
-    val map = scu.parse(fhirMapToConvert, "PatientRegistration")
+    val map = scu.parse(fhirMapToConvertForAdverseEvents, "AdverseEvent")
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
@@ -72,7 +72,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val transformSupportServices = TransformSupportServices(outputs, contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val map = scu.parse(fhirMapToConvert, "PatientRegistration")
+    val map = scu.parse(fhirMapToConvertForAdverseEvents, "AdverseEvent")
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
@@ -82,7 +82,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val targetResource = Bundle()
 
     val baseElement =
-      iParser.parseResource(QuestionnaireResponse::class.java, questionnaireResponse)
+      iParser.parseResource(QuestionnaireResponse::class.java, questionnaireResponseForAdverseEvent)
 
     scu.transform(contextR4, baseElement, map, targetResource)
 
@@ -979,4 +979,177 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
     } "rule_erao_9";
 }
     """.trimIndent()
+
+  @Language("Json")
+  private val questionnaireResponseForAdverseEvent = """ 
+    {"resourceType":"QuestionnaireResponse","item":[{"linkId":"adverse-event-reaction","item":[{"linkId":"adverse-event-codes","answer":[{"valueCoding":{"system":"https://www.snomed.org","code":"39579001","display":"Anaphylaxis"}}]},{"linkId":"adverse-event-date","answer":[{"valueDateTime":"2021-09-08T14:47:00+05:00"}]}]}]}
+  """.trimIndent()
+
+  @Language("Json")
+  private val questionnaireForAdverseEvent = """
+{
+  "resourceType": "Questionnaire",
+  "id": "immunization-adverse-events-reaction",
+  "status": "active",
+  "date": "2020-11-18T07:24:47.111Z",
+  "subjectType": [
+    "Immunization"
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap"
+    }
+  ],
+  "item": [
+    {
+      "linkId": "adverse-event-reaction",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "adverse-event-codes",
+          "type": "choice",
+          "text": "Select adverse reaction",
+          "_text": {
+            "extension": [
+              {
+                "extension": [
+                  {
+                    "url": "lang",
+                    "valueCode": "sw"
+                  },
+                  {
+                    "url": "content",
+                    "valueString": "Chagua athari mbaya"
+                  }
+                ],
+                "url": "http://hl7.org/fhir/StructureDefinition/translation"
+              }
+            ]
+          },
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button",
+                    "display": "Radio Button"
+                  }
+                ]
+              }
+            }
+          ],
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "39579001",
+                "display": "Anaphylaxis",
+                "system": "https://www.snomed.org"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "75753009",
+                "display": "Blood clots",
+                "system": "https://www.snomed.org"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "50920009",
+                "display": "Myocarditis",
+                "system": "https://www.snomed.org"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "3238004",
+                "display": "Pericarditis",
+                "system": "https://www.snomed.org"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "111588002",
+                "display": "Heparin-induced thrombocytopenia (disorder) Thrombosis (disorder)",
+                "system": "https://www.snomed.org"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "Other",
+                "display": "Other",
+                "system": "https://www.snomed.org"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "adverse-event-date",
+          "type": "dateTime",
+          "required": true,
+          "text": "DateTime of reaction",
+          "_text": {
+            "extension": [
+              {
+                "extension": [
+                  {
+                    "url": "lang",
+                    "valueCode": "sw"
+                  },
+                  {
+                    "url": "content",
+                    "valueString": "Tarehe ya athari mbaya"
+                  }
+                ],
+                "url": "http://hl7.org/fhir/StructureDefinition/translation"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+""".trimIndent()
+
+  private val fhirMapToConvertForAdverseEvents = """
+    map "http://hl7.org/fhir/StructureMap/AdverseReaction" = 'AdverseReaction'
+
+      uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+      uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+      uses "http://hl7.org/fhir/StructureDefinition/Observation" as source
+      uses "http://hl7.org/fhir/StructureDefinition/Immunization" as target
+
+      group AdverseReaction(source src : QuestionnaireResponse, target bundle: Bundle) {
+          src -> bundle.id = uuid() "rule_c";
+          src -> bundle.type = 'collection' "rule_b";
+          src -> bundle.entry as entry, entry.resource = create('Immunization') as immunization then
+              ExtractImmunization(src, bundle, immunization) "rule_i";
+      }
+
+      group ExtractImmunization(source src: QuestionnaireResponse, target bundle: Bundle, target immunization: Immunization) {
+          src.id as srcId -> immunization.id = srcId "rule_j";
+
+              src.item as item where(linkId = 'adverse-event-reaction') -> immunization.reaction = create('Immunization_Reaction') as immunizationReaction then {
+                item.item as inner_item where (linkId = 'adverse-event-date') then {
+              inner_item.answer first as ans then {
+                ans.value as val -> immunizationReaction.date = val "rule_a";
+              };
+            };
+          
+            
+            item.item as reaction_detail_item where (linkId = 'adverse-event-codes') -> bundle.entry as entry, entry.resource = create('Observation') as observation then {
+              reaction_detail_item -> observation.id = uuid() "rule_obs_1";
+              reaction_detail_item.answer as reactionAns -> observation.code = create('CodeableConcept') as codeableConcept then {
+                reactionAns.value as reactionAnsValue -> codeableConcept.coding = reactionAnsValue "rule_obs_2_2";
+              } "rule_ob_2";
+
+             src -> immunizationReaction.detail = reference(observation) "rule_obs_3";
+            };
+          };
+      };
+  
+  """.trimIndent()
 }

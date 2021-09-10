@@ -98,9 +98,9 @@
         },
         {
           "linkId": "adverse-event-date",
-          "type": "date",
+          "type": "dateTime",
           "required": true,
-          "text": "Date of adverse reaction",
+          "text": "DateTime of reaction",
           "_text": {
             "extension": [
               {
