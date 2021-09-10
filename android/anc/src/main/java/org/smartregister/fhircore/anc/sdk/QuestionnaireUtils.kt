@@ -87,14 +87,13 @@ object QuestionnaireUtils {
     questionnaireItemComponent: Questionnaire.QuestionnaireItemComponent,
     subject: Reference
   ): Observation {
-    val obs = Observation()
-    obs.id = getUniqueId()
-    obs.effective = DateTimeType.now()
-    obs.code = questionnaireItemComponent.asCodeableConcept()
-    obs.status = Observation.ObservationStatus.FINAL
-    obs.value = if (this.hasAnswer()) this.answer[0].value else null
-    obs.subject = subject
-
-    return obs
+    return Observation().apply {
+      this.id = getUniqueId()
+      this.effective = DateTimeType.now()
+      this.code = questionnaireItemComponent.asCodeableConcept()
+      this.status = Observation.ObservationStatus.FINAL
+      this.value = answer?.firstOrNull()?.value
+      this.subject = subject
+    }
   }
 }
