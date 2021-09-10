@@ -52,7 +52,6 @@ fun PatientRegisterList(
           item {
             ErrorMessage(
               message = loadStateError.error.localizedMessage!!,
-              modifier = modifier.fillParentMaxSize(),
               onClickRetry = { retry() }
             )
           }
