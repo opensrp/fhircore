@@ -55,7 +55,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   private lateinit var questionnaireConfig: QuestionnaireConfig
 
-  protected lateinit var questionnaireViewModel: QuestionnaireViewModel
+  lateinit var questionnaireViewModel: QuestionnaireViewModel
 
   protected var questionnaire: Questionnaire? = null
 

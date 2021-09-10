@@ -22,6 +22,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -75,6 +76,12 @@ class QuestionnaireViewModel(
           transformSupportServices = transformSupportServices
         )
 
+      saveBundleResources(bundle, resourceId)
+    }
+  }
+
+  fun saveBundleResources(bundle: Bundle, resourceId: String?) {
+    viewModelScope.launch {
       if (!bundle.isEmpty) {
         bundle.entry.forEach { bundleEntry ->
           if (resourceId != null && bundleEntry.hasResource()) {
