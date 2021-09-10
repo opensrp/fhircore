@@ -86,9 +86,7 @@ class RegisterDataViewModel<I : Any, O : Any>(
 
   fun loadPageData(currentPage: Int) {
     viewModelScope.launch(dispatcherProvider.io()) {
-      registerData.run {
-        value = getPagingData(currentPage = currentPage, loadAll = false)
-      }
+      registerData.run { value = getPagingData(currentPage = currentPage, loadAll = false) }
     }
   }
 
