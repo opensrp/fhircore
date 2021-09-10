@@ -138,6 +138,11 @@ abstract class BaseRegisterActivity :
     setUpViews()
   }
 
+  override fun onResume() {
+    super.onResume()
+    sideMenuOptions().forEach { updateCount(it) }
+  }
+
   private fun BaseRegisterActivityBinding.updateSyncStatus(state: State) {
     when (state) {
       is State.Started, is State.InProgress -> {
@@ -268,7 +273,6 @@ abstract class BaseRegisterActivity :
         mainRegisterSideMenuOption = sideMenuOptionMap[menuOption.itemId]
         selectedMenuOption = mainRegisterSideMenuOption
       }
-      updateCount(menuOption)
     }
 
     // Add language and logout menu items
