@@ -1,0 +1,93 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "anc_service_enrollment",
+  "language": "en",
+  "status": "active",
+  "subjectType": [
+    "Patient"
+  ],
+  "code": [
+    {
+      "system": "https://www.snomed.org",
+      "code": "424525001",
+      "display": "Antenatal care"
+    }
+  ],
+  "item": [
+    {
+      "linkId": "edd",
+      "type": "date",
+      "required": true,
+      "text": "Estimated date of delivery (EDD)",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "code": [
+        {
+          "system": "https://www.snomed.org",
+          "code": "161714006",
+          "display": "Estimated date of delivery"
+        }
+      ]
+    },
+    {
+      "linkId": "gestational_age",
+      "type": "integer",
+      "required": true,
+      "text": "Gestational age (GA)",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "code": [
+        {
+          "system": "https://www.snomed.org",
+          "code": "57036006",
+          "display": "Fetal gestational age"
+        }
+      ]
+    },
+    {
+      "linkId": "number_of_fetuses",
+      "type": "integer",
+      "required": true,
+      "text": "Number of fetuses",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "code": [
+        {
+          "system": "https://www.snomed.org",
+          "code": "246435002",
+          "display": "Number of fetuses"
+        }
+      ]
+    },
+    {
+      "linkId": "risks",
+      "type": "integer",
+      "text": "Risks",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "code": [
+        {
+          "system": "https://www.snomed.org",
+          "code": "199312002",
+          "display": "Pregnancy risk"
+        }
+      ]
+    }
+  ]
+}
