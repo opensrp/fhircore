@@ -20,7 +20,6 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.work.Configuration
 import androidx.work.WorkManager
 import org.junit.Assert
-import org.junit.Ignore
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
@@ -28,7 +27,6 @@ import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 
 @Config(shadows = [AncApplicationShadow::class])
-@Ignore("Fails automated execution but works locally") // TODO Fix
 class AncApplicationTest : RobolectricTest() {
 
   @Test

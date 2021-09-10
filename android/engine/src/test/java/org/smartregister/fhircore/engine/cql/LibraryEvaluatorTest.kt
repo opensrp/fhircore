@@ -24,9 +24,10 @@ import java.io.InputStreamReader
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import timber.log.Timber
 
 class LibraryEvaluatorTest {
-  var libraryEvaluator: LibraryEvaluator? = null
+  var evaluator: LibraryEvaluator? = null
   var libraryData = ""
   var helperData = ""
   var valueSetData = ""
@@ -44,15 +45,15 @@ class LibraryEvaluatorTest {
       testData = readJsonFile(ASSET_BASE_PATH + "patient.json")
       result = readJsonFile(ASSET_BASE_PATH + "result.json")
     } catch (e: IOException) {
-      e.printStackTrace()
+      Timber.e(e, e.message);
     }
   }
 
   @Test
   fun runCql() {
-    libraryEvaluator = LibraryEvaluator()
+    evaluator = LibraryEvaluator()
     val auxResult =
-      libraryEvaluator!!.runCql(
+      evaluator!!.runCql(
         libraryData,
         helperData,
         valueSetData,

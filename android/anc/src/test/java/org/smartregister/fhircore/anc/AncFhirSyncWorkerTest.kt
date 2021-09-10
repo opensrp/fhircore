@@ -23,14 +23,12 @@ import io.mockk.mockk
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 
 @Config(shadows = [AncApplicationShadow::class])
-@Ignore("Fails automated execution but works locally") // TODO fix
 class AncFhirSyncWorkerTest : RobolectricTest() {
 
   private lateinit var ancFhirSyncWorker: AncFhirSyncWorker
@@ -52,7 +50,7 @@ class AncFhirSyncWorkerTest : RobolectricTest() {
   @Test
   fun testGetSyncDataReturnMapOfConfiguredSyncItems() {
     val data = ancFhirSyncWorker.getSyncData()
-    Assert.assertEquals(data.size, 5)
+    Assert.assertEquals(4, data.size)
     Assert.assertTrue(data.containsKey(ResourceType.Patient))
     Assert.assertTrue(data.containsKey(ResourceType.Immunization))
     Assert.assertTrue(data.containsKey(ResourceType.StructureMap))

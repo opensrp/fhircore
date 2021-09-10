@@ -87,7 +87,6 @@ dependencies {
     implementation "androidx.cardview:cardview:1.0.0"
     implementation 'joda-time:joda-time:2.10.6'
     implementation 'androidx.paging:paging-runtime-ktx:3.0.1'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.19.0'
 
     //CQL
     implementation group: 'xerces', name: 'xercesImpl', version: '2.11.0'
