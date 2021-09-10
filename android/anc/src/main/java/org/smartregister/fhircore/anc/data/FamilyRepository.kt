@@ -69,8 +69,12 @@ class FamilyRepository(
     )
     target.forEach { fhirEngine.save(it) }
 
-    val pregnantItem = questionnaireResponse.find("is_pregnant")
-    if (pregnantItem?.hasAnswer() == true && pregnantItem.answer[0].valueBooleanType.booleanValue())
+    val pregnantItem = questionnaireResponse.find(IS_PREGNANT_KEY)
+    if (pregnantItem?.answer?.firstOrNull()?.valueBooleanType?.booleanValue() == true)
       ancPatientRepository.enrollIntoAnc(patient)
+  }
+
+  companion object {
+    const val IS_PREGNANT_KEY = "is_pregnant"
   }
 }

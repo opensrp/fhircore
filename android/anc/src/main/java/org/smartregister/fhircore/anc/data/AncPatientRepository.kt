@@ -30,6 +30,7 @@ import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Goal
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.model.AncPatientItem
@@ -133,7 +134,7 @@ class AncPatientRepository(
     pregnancyEpisodeOfCase.apply {
       this.id = getUniqueId()
       this.patient = patient.asReference()
-      this.diagnosis[0].condition = pregnancyCondition.asReference()
+      this.diagnosisFirstRep.condition = pregnancyCondition.asReference()
       this.period = Period().apply { this@apply.start = Date() }
       this.status = EpisodeOfCare.EpisodeOfCareStatus.ACTIVE
     }
@@ -146,7 +147,7 @@ class AncPatientRepository(
       this.subject = patient.asReference()
       this.episodeOfCare = listOf(pregnancyEpisodeOfCase.asReference())
       this.period = Period().apply { this@apply.start = Date() }
-      this.diagnosis[0].condition = pregnancyCondition.asReference()
+      this.diagnosisFirstRep.condition = pregnancyCondition.asReference()
     }
     fhirEngine.save(pregnancyEncounter)
 
@@ -159,7 +160,7 @@ class AncPatientRepository(
     fhirEngine.save(pregnancyGoal)
   }
 
-  private fun <T : Any?> loadConfig(id: String, clazz: Class<T>): T {
+  private fun <T : Resource> loadConfig(id: String, clazz: Class<T>): T {
     return AncApplication.getContext().loadConfig(id, clazz)
   }
 
