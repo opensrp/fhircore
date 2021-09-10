@@ -39,7 +39,7 @@ object PatientItemMapper : DomainMapper<Pair<Patient, List<Immunization>>, Patie
   override fun mapToDomainModel(dto: Pair<Patient, List<Immunization>>): PatientItem {
     val (patient, immunizations) = dto
     val name = patient.extractName()
-    val gender = patient.extractGender(EirApplication.getContext()).first()
+    val gender = patient.extractGender(EirApplication.getContext())?.first() ?: ""
     val age = patient.extractAge()
     return PatientItem(
       patientIdentifier = patient.logicalId,

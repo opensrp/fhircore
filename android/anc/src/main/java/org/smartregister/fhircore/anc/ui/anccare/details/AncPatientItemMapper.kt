@@ -30,7 +30,7 @@ object AncPatientItemMapper : DomainMapper<Patient, AncPatientItem> {
 
   override fun mapToDomainModel(dto: Patient): AncPatientItem {
     val name = dto.extractName()
-    val gender = dto.extractGender(AncApplication.getContext()).first()
+    val gender = dto.extractGender(AncApplication.getContext())?.first() ?: ""
     val age = dto.extractAge()
     return AncPatientItem(
       patientIdentifier = dto.logicalId,

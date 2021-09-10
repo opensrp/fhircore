@@ -87,11 +87,11 @@ class AncPatientRepository(
           }
           ancPatientItemHead =
             AncPatientItem(
-              patient.logicalId,
-              patientHead.extractName(),
-              patientHead.extractGender(AncApplication.getContext()),
-              patientHead.extractAge(),
-              address
+              patientIdentifier = patient.logicalId,
+              name = patientHead.extractName(),
+              gender = patientHead.extractGender(AncApplication.getContext()) ?: "",
+              age = patientHead.extractAge(),
+              demographics = address
             )
         } else {
           ancPatientItemHead = AncPatientItem()
@@ -99,10 +99,10 @@ class AncPatientRepository(
 
         val ancPatientItem =
           AncPatientItem(
-            patient.logicalId,
-            patient.extractName(),
-            patient.extractGender(AncApplication.getContext()),
-            patient.extractAge()
+            patientIdentifier = patient.logicalId,
+            name = patient.extractName(),
+            gender = patient.extractGender(AncApplication.getContext()) ?: "",
+            age = patient.extractAge()
           )
         ancPatientDetailItem = AncPatientDetailItem(ancPatientItem, ancPatientItemHead)
       }
