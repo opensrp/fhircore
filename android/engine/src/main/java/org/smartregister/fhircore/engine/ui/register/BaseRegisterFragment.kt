@@ -98,6 +98,11 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
       }
   }
 
+  override fun onResume() {
+    super.onResume()
+    registerDataViewModel.reloadCurrentPageData(refreshTotalRecordsCount = true)
+  }
+
   /** Initialize the [RegisterDataViewModel] class */
   @Suppress("UNCHECKED_CAST")
   abstract fun initializeRegisterDataViewModel(): RegisterDataViewModel<I, O>
