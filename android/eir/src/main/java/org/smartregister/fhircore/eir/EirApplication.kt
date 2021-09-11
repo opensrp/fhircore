@@ -19,7 +19,7 @@ package org.smartregister.fhircore.eir
 import android.app.Application
 import androidx.work.Constraints
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.FhirEngineBuilder
+import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.Sync
@@ -97,7 +97,7 @@ class EirApplication : Application(), ConfigurableApplication {
         )
         .collect { this@EirApplication.syncBroadcaster.broadcastSync(state = it) }
     }
-    return FhirEngineBuilder(this).build()
+    return FhirEngineProvider.getInstance(this)
   }
 
   companion object {

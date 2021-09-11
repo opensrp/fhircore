@@ -43,7 +43,6 @@ import com.google.android.material.navigation.NavigationView
 import java.util.Locale
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.engine.BR
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableView
@@ -57,6 +56,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
+import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.DrawablePosition
 import org.smartregister.fhircore.engine.util.extension.addOnDrawableClickListener
@@ -114,6 +114,16 @@ abstract class BaseRegisterActivity :
 
     registerViewModel.registerViewConfiguration.observe(this, this::setupConfigurableViews)
 
+    registerViewModel.lastSyncTimestamp.observe(
+      this,
+      { syncTimeStamp ->
+        if (!syncTimeStamp.isNullOrEmpty()) {
+          SharedPreferencesHelper.write(LAST_SYNC_TIMESTAMP, syncTimeStamp)
+        }
+        registerActivityBinding.btnRegisterNewClient.isEnabled = !syncTimeStamp.isNullOrEmpty()
+      }
+    )
+
     registerViewModel.run {
       loadLanguages()
       selectedLanguage.observe(
@@ -125,10 +135,7 @@ abstract class BaseRegisterActivity :
     }
 
     registerActivityBinding = DataBindingUtil.setContentView(this, R.layout.base_register_activity)
-    registerActivityBinding.apply {
-      this.setVariable(BR.registerViewModel, registerViewModel)
-      this.lifecycleOwner = this@BaseRegisterActivity
-    }
+    registerActivityBinding.lifecycleOwner = this
 
     drawerMenuHeaderBinding =
       DataBindingUtil.bind(registerActivityBinding.navView.getHeaderView(0))!!
@@ -152,15 +159,23 @@ abstract class BaseRegisterActivity :
       }
       is State.Finished -> {
         progressSync.hide()
-        tvLastSyncTimestamp.text = state.result.timestamp.asString()
+        val syncTimestamp = state.result.timestamp.asString()
+        tvLastSyncTimestamp.text = syncTimestamp
+        registerViewModel.setLastSyncTimestamp(syncTimestamp)
         containerProgressSync.background = containerProgressSync.getDrawable(R.drawable.ic_sync)
       }
       is State.Failed -> {
         progressSync.hide()
-        tvLastSyncTimestamp.text = getString(R.string.syncing_failed)
+        tvLastSyncTimestamp.text =
+          SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, getString(R.string.syncing_failed))
         containerProgressSync.background = containerProgressSync.getDrawable(R.drawable.ic_sync)
       }
-      else -> return
+      is State.Glitch -> {
+        progressSync.hide()
+        tvLastSyncTimestamp.text =
+          SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, getString(R.string.syncing_retry))
+        containerProgressSync.background = containerProgressSync.getDrawable(R.drawable.ic_sync)
+      }
     }
   }
 
@@ -190,6 +205,9 @@ abstract class BaseRegisterActivity :
 
     setupSearchView()
     setupDueButtonView()
+
+    val lastSyncTimestamp = SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, "")
+    lastSyncTimestamp?.let { registerViewModel.setLastSyncTimestamp(it) }
   }
 
   @SuppressLint("ClickableViewAccessibility")
@@ -311,20 +329,17 @@ abstract class BaseRegisterActivity :
       is State.Failed, is State.Glitch -> {
         showToast(getString(R.string.sync_failed))
         registerActivityBinding.updateSyncStatus(state)
-        this.registerViewModel.setSyncing(false)
+        this.registerViewModel.setRefreshRegisterData(true)
       }
       is State.Finished -> {
         showToast(getString(R.string.sync_completed))
         registerActivityBinding.updateSyncStatus(state)
         sideMenuOptions().forEach { updateCount(it) }
         manipulateDrawer(open = false)
-        this.registerViewModel.setSyncing(false)
         this.registerViewModel.setRefreshRegisterData(true)
       }
       is State.InProgress -> {
         Timber.d("Syncing in progress: Resource type ${state.resourceType?.name}")
-        // TODO fix issue where state is not updating from in progress
-        // this.registerViewModel.setSyncing(true)
         registerActivityBinding.updateSyncStatus(state)
       }
     }

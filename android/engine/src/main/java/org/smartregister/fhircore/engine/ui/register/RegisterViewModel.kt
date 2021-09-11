@@ -46,9 +46,9 @@ class RegisterViewModel(
   val dispatcher: DispatcherProvider = DefaultDispatcherProvider
 ) : AndroidViewModel(application) {
 
-  private val _syncing: MutableLiveData<Boolean> = MutableLiveData(false)
-  val syncing
-    get() = _syncing
+  private val _lastSyncTimestamp = MutableLiveData("")
+  val lastSyncTimestamp
+    get() = _lastSyncTimestamp
 
   private val _refreshRegisterData: MutableLiveData<Boolean> = MutableLiveData(false)
   val refreshRegisterData
@@ -107,7 +107,7 @@ class RegisterViewModel(
     _refreshRegisterData.value = refreshData
   }
 
-  fun setSyncing(syncing: Boolean) {
-    _syncing.value = syncing
+  fun setLastSyncTimestamp(lastSyncTimestamp: String) {
+    _lastSyncTimestamp.value = lastSyncTimestamp
   }
 }
