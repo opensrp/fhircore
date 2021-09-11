@@ -28,6 +28,7 @@ import java.io.InputStream
 import org.apache.commons.lang3.tuple.Pair
 import org.cqframework.cql.cql2elm.CqlTranslatorOptions
 import org.cqframework.cql.cql2elm.ModelManager
+import org.cqframework.cql.elm.execution.Library
 import org.cqframework.cql.elm.execution.VersionedIdentifier
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
@@ -128,7 +129,16 @@ class LibraryEvaluator {
             ModelManager(),
             listOf(contentProvider),
             CqlTranslatorOptions.defaultOptions()
-          ) {},
+          ) {
+              // This is a hack needed to circumvent a bug that's currently present in the cql-engine.
+              // By default, the LibraryLoader checks to ensure that the same translator options are used to for all libraries,
+              // And it will re-translate if possible. Since translating CQL is not currently possible
+              // on Android (some changes to the way ModelInfos are loaded is needed) the library loader just needs to load libraries
+              // regardless of whether the options match.
+              override fun translatorOptionsMatch(library: Library): Boolean {
+              return true
+          }
+        },
         object : HashMap<String?, DataProvider?>() {
           init {
             put(

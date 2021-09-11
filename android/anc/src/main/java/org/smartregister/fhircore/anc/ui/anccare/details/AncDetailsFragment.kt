@@ -24,6 +24,9 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
+import ca.uhn.fhir.parser.JsonParser
 import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
@@ -32,6 +35,9 @@ import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
 import org.smartregister.fhircore.anc.form.config.AncFormConfig
+import org.smartregister.fhircore.engine.cql.LibraryEvaluator
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class AncDetailsFragment private constructor() : Fragment() {
@@ -47,6 +53,17 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   lateinit var binding: FragmentAncDetailsBinding
 
+  lateinit var parser: IParser
+
+  lateinit var fhirResourceService: FhirResourceService
+
+  lateinit var fhirResourceDataSource:FhirResourceDataSource
+
+  lateinit var cqlLibraryDataViewModel: AncDetailsViewModel
+
+  lateinit var libraryEvaluator:LibraryEvaluator
+
+
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
@@ -58,6 +75,17 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
+
+    libraryEvaluator= LibraryEvaluator()
+    parser= FhirContext.forR4().newJsonParser()
+    fhirResourceService = FhirResourceService.create(
+      parser,
+      activity?.applicationContext!!,
+      AncApplication.getContext().applicationConfiguration
+    )
+
+    fhirResourceDataSource= FhirResourceDataSource(fhirResourceService)
+
     patientId = arguments?.getString(AncFormConfig.ANC_ARG_ITEM_ID) ?: ""
 
     fhirEngine = AncApplication.getContext().fhirEngine
@@ -87,6 +115,22 @@ class AncDetailsFragment private constructor() : Fragment() {
         context?.assets?.open("careplan_sample.json")?.bufferedReader().use { it?.readText() }
       )
       .observe(viewLifecycleOwner, this::handleCarePlan)
+
+    cqlLibraryDataViewModel.
+    fetchCQLLibraryData(parser,fhirResourceDataSource)
+      .observe(viewLifecycleOwner, this::handleLoadCQLLibrary)
+
+    cqlLibraryDataViewModel.
+    fetchCQLFhirHelperData(parser,fhirResourceDataSource)
+      .observe(viewLifecycleOwner, this::handleLoadCQLFhirHelperLibrary)
+
+    cqlLibraryDataViewModel.
+    fetchCQLValueSetData(parser,fhirResourceDataSource)
+      .observe(viewLifecycleOwner, this::handleLoadCQLValueSet)
+
+    cqlLibraryDataViewModel.
+    fetchCQLPatientData(parser,fhirResourceDataSource)
+      .observe(viewLifecycleOwner, this::handleLoadCQLPatient)
   }
 
   private fun setupViews() {
@@ -135,5 +179,21 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   private fun populateImmunizationList(listCarePlan: List<CarePlanItem>) {
     carePlanAdapter.submitList(listCarePlan)
+  }
+
+  private fun handleLoadCQLLibrary(cqlLibrary: String) {
+
+  }
+
+  private fun handleLoadCQLFhirHelperLibrary(cqlLibrary: String) {
+
+  }
+
+  private fun handleLoadCQLValueSet(cqlLibrary: String) {
+
+  }
+
+  private fun handleLoadCQLPatient(cqlLibrary: String) {
+
   }
 }
