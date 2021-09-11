@@ -146,11 +146,11 @@
 
 
                 <TextView
-                    android:id="@+id/qwe"
+                    android:id="@+id/textView_EvaluateCQLHeader"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="EVALUATE"
+                    android:text="@string/text_view_evaluate_cql_header"
                     android:textAllCaps="true"
                     android:textColor="@color/darkGrayText"
                     android:textSize="18sp"
@@ -159,7 +159,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/cardView_carePlan" />
 
                 <androidx.cardview.widget.CardView
-                    android:id="@+id/text"
+                    android:id="@+id/cardView_CQLSection"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -173,43 +173,43 @@
                     app:cardCornerRadius="6dp"
                     app:cardElevation="3dp"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/qwe">
+                    app:layout_constraintTop_toBottomOf="@+id/textView_EvaluateCQLHeader">
 
                     <LinearLayout
-                        android:id="@+id/layout1"
+                        android:id="@+id/linearLayout_CQLBody"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical">
 
                         <LinearLayout
-                        android:id="@+id/layout12"
+                        android:id="@+id/linearLayout_CQLButtons"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
-                        <Button android:id="@+id/button"
+                        <Button android:id="@+id/button_CQLMeasure"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Measure"
+                            android:text="@string/button_cql_measure_report"
                             android:layout_weight="1"
                             android:layout_marginRight="1dp"/>
-                        <Button android:id="@+id/button2"
+
+                        <Button android:id="@+id/button_CQLEvaluate"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="CQL "
+                            android:text="@string/button_cql_evaluate"
                             android:layout_weight="1"
                             android:layout_marginLeft="1dp"/>
                     </LinearLayout>
-                        <TextView
-                            android:id="@+id/txtv2"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
-                            android:text=""
-                            android:textAllCaps="true"
-                            android:textColor="@color/darkGrayText"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            app:layout_constraintLeft_toLeftOf="parent" />
+                    <TextView
+                        android:id="@+id/textView_CQLResults"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textAllCaps="true"
+                        android:textColor="@color/darkGrayText"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        app:layout_constraintLeft_toLeftOf="parent" />
                     </LinearLayout>
 
                 </androidx.cardview.widget.CardView>
@@ -226,7 +226,7 @@
                     android:textSize="18sp"
                     android:textStyle="bold"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/text" />
+                    app:layout_constraintTop_toBottomOf="@+id/cardView_CQLSection" />
 
 
                 <TextView
@@ -241,7 +241,7 @@
                     android:layout_marginRight="8dp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/imageView_ANCOverviewSeeAllArrow"
-                    app:layout_constraintTop_toBottomOf="@+id/text" />
+                    app:layout_constraintTop_toBottomOf="@+id/cardView_CQLSection" />
 
                 <ImageView
                     android:id="@+id/imageView_ANCOverviewSeeAllArrow"

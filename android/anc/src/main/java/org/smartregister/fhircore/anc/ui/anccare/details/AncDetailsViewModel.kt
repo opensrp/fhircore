@@ -91,7 +91,7 @@ class AncDetailsViewModel(
     var valueSetData=MutableLiveData<String>();
     viewModelScope.launch(dispatcher.io()) {
       val auxCQLValueSetData = parser.encodeResourceToString(
-        fhirResourceDataSource.loadData(VALUE_SET_URL).entry[0].resource
+        fhirResourceDataSource.loadData(VALUE_SET_URL)
       )
       valueSetData.postValue(auxCQLValueSetData)
     }
@@ -104,7 +104,7 @@ class AncDetailsViewModel(
     var patientData=MutableLiveData<String>();
     viewModelScope.launch(dispatcher.io()) {
       val auxCQLPatientData = parser.encodeResourceToString(
-        fhirResourceDataSource.loadData(PATIENT_URL).entry[0].resource
+        fhirResourceDataSource.loadData(PATIENT_URL)
       )
       patientData.postValue(auxCQLPatientData)
     }

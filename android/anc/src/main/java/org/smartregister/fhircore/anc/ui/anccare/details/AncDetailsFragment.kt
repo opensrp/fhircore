@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.ui.anccare.details
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,8 +27,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
-import ca.uhn.fhir.parser.JsonParser
 import com.google.android.fhir.FhirEngine
+import kotlinx.android.synthetic.main.fragment_anc_details.*
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.AncPatientRepository
@@ -59,10 +60,15 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   lateinit var fhirResourceDataSource:FhirResourceDataSource
 
-  lateinit var cqlLibraryDataViewModel: AncDetailsViewModel
-
   lateinit var libraryEvaluator:LibraryEvaluator
 
+  var libraryData=""
+  var helperData=""
+  var valueSetData=""
+  var testData=""
+  val evaluatorId = "ANCRecommendationA2"
+  val contextCQL = "patient"
+  val contextLabel = "mom-with-anemia"
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -75,7 +81,6 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-
     libraryEvaluator= LibraryEvaluator()
     parser= FhirContext.forR4().newJsonParser()
     fhirResourceService = FhirResourceService.create(
@@ -116,21 +121,8 @@ class AncDetailsFragment private constructor() : Fragment() {
       )
       .observe(viewLifecycleOwner, this::handleCarePlan)
 
-    cqlLibraryDataViewModel.
-    fetchCQLLibraryData(parser,fhirResourceDataSource)
-      .observe(viewLifecycleOwner, this::handleLoadCQLLibrary)
+    buttonCQLSetOnClickListener()
 
-    cqlLibraryDataViewModel.
-    fetchCQLFhirHelperData(parser,fhirResourceDataSource)
-      .observe(viewLifecycleOwner, this::handleLoadCQLFhirHelperLibrary)
-
-    cqlLibraryDataViewModel.
-    fetchCQLValueSetData(parser,fhirResourceDataSource)
-      .observe(viewLifecycleOwner, this::handleLoadCQLValueSet)
-
-    cqlLibraryDataViewModel.
-    fetchCQLPatientData(parser,fhirResourceDataSource)
-      .observe(viewLifecycleOwner, this::handleLoadCQLPatient)
   }
 
   private fun setupViews() {
@@ -152,10 +144,10 @@ class AncDetailsFragment private constructor() : Fragment() {
     with(patient) {
       val patientDetails =
         this.patientDetails.name +
-          ", " +
-          this.patientDetails.gender +
-          ", " +
-          this.patientDetails.age
+                ", " +
+                this.patientDetails.gender +
+                ", " +
+                this.patientDetails.age
       val patientId =
         this.patientDetailsHead.demographics + " ID: " + this.patientDetails.patientIdentifier
       binding.txtViewPatientDetails.text = patientDetails
@@ -181,19 +173,65 @@ class AncDetailsFragment private constructor() : Fragment() {
     carePlanAdapter.submitList(listCarePlan)
   }
 
-  private fun handleLoadCQLLibrary(cqlLibrary: String) {
-
+  private fun buttonCQLSetOnClickListener()
+  {
+    button_CQLEvaluate.setOnClickListener {
+      loadCQLLibraryData()
+    }
   }
 
-  private fun handleLoadCQLFhirHelperLibrary(cqlLibrary: String) {
-
+  private fun loadCQLLibraryData(){
+    ancDetailsViewModel
+      .fetchCQLLibraryData(parser, fhirResourceDataSource)
+      .observe(viewLifecycleOwner, this::handleCQLLibraryData)
   }
 
-  private fun handleLoadCQLValueSet(cqlLibrary: String) {
-
+  private fun loadCQLHelperData(){
+    ancDetailsViewModel
+      .fetchCQLFhirHelperData(parser, fhirResourceDataSource)
+      .observe(viewLifecycleOwner, this::handleCQLHelperData)
   }
 
-  private fun handleLoadCQLPatient(cqlLibrary: String) {
-
+  private fun loadCQLValueSetData(){
+    ancDetailsViewModel
+      .fetchCQLValueSetData(parser, fhirResourceDataSource)
+      .observe(viewLifecycleOwner, this::handleCQLValueSetData)
   }
+
+  private fun loadCQLPatientData(){
+    ancDetailsViewModel
+      .fetchCQLPatientData(parser, fhirResourceDataSource)
+      .observe(viewLifecycleOwner, this::handleCQLPatientData)
+  }
+
+
+  private fun handleCQLLibraryData(auxLibraryData:String){
+    libraryData=auxLibraryData;
+    loadCQLHelperData()
+  }
+
+  private fun handleCQLHelperData(auxHelperData:String){
+    helperData=auxHelperData;
+    loadCQLValueSetData()
+  }
+
+  private fun handleCQLValueSetData(auxValueSetData: String){
+    valueSetData=auxValueSetData
+    loadCQLPatientData()
+  }
+
+  private fun handleCQLPatientData(auxPatientData: String){
+    testData=auxPatientData
+    val parameters = libraryEvaluator.runCql(
+      libraryData,
+      helperData,
+      valueSetData,
+      testData,
+      evaluatorId,
+      contextCQL,
+      contextLabel
+    )
+  }
+
+
 }
