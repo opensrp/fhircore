@@ -131,7 +131,6 @@ class RegisterDataViewModel<I : Any, O : Any>(
   }
 
   fun reloadCurrentPageData(refreshTotalRecordsCount: Boolean = false) {
-    setShowLoader(false)
     _currentPage.value?.let { loadPageData(it) }
     if (refreshTotalRecordsCount) {
       viewModelScope.launch { _totalRecordsCount.postValue(registerRepository.countAll()) }
