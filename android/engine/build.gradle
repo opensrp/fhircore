@@ -82,7 +82,7 @@ dependencies {
         exclude group: 'com.sun.activation', module: 'javax.activation'
     }
 
-    api('org.smartregister:engine:0.1.0-alpha03-preview-3-SNAPSHOT') {
+    api('org.smartregister:engine:0.1.0-alpha04-preview-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'

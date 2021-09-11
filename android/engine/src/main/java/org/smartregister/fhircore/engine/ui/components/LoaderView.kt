@@ -39,37 +39,40 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import org.smartregister.fhircore.engine.R
 
+/** TODO Only show loader for first time sync. It's disabled for now. Remove condition, Line 45 */
 @Composable
 fun LoaderDialog(modifier: Modifier = Modifier) {
-  val openDialog = remember { mutableStateOf(true) }
-  if (openDialog.value) {
-    Dialog(onDismissRequest = { openDialog.value = false }) {
-      Box(Modifier.size(240.dp, 180.dp)) {
-        Column(
-          modifier = modifier.padding(8.dp),
-          verticalArrangement = Arrangement.Center,
-          horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-          Surface(
-            color = Color.Black.copy(alpha = 0.88f),
-            modifier = modifier.fillMaxSize(),
-            shape = RoundedCornerShape(8)
+  if (false) {
+    val openDialog = remember { mutableStateOf(true) }
+    if (openDialog.value) {
+      Dialog(onDismissRequest = { openDialog.value = true }) {
+        Box(Modifier.size(240.dp, 180.dp)) {
+          Column(
+            modifier = modifier.padding(8.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
           ) {
-            Column(
-              verticalArrangement = Arrangement.Center,
-              horizontalAlignment = Alignment.CenterHorizontally
+            Surface(
+              color = Color.Black.copy(alpha = 0.56f),
+              modifier = modifier.fillMaxSize(),
+              shape = RoundedCornerShape(8)
             ) {
-              CircularProgressIndicator(
-                color = Color.White,
-                strokeWidth = 4.dp,
-                modifier = modifier.size(32.dp),
-              )
-              Text(
-                fontSize = 16.sp,
-                color = Color.White,
-                text = stringResource(id = R.string.loading),
-                modifier = modifier.padding(vertical = 16.dp),
-              )
+              Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+              ) {
+                CircularProgressIndicator(
+                  color = Color.White,
+                  strokeWidth = 4.dp,
+                  modifier = modifier.size(32.dp),
+                )
+                Text(
+                  fontSize = 16.sp,
+                  color = Color.White,
+                  text = stringResource(id = R.string.syncing),
+                  modifier = modifier.padding(vertical = 16.dp),
+                )
+              }
             }
           }
         }
