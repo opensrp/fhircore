@@ -8,5 +8,10 @@
     "form": "family-member-registration",
     "title": "Add Family Member",
     "identifier": "1832"
+  },
+  {
+    "form": "non-anc-patient-vital-signs",
+    "identifier": "1918",
+    "title": "Add Vital Signs "
   }
 ]

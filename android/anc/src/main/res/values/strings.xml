@@ -24,5 +24,9 @@
     <string name="no_care_plan">No care plan</string>
     <string name="no_services_scheduled">No services scheduled</string>
     <string name="family_register_title">Family</string>
+    <string name="mark_as_anc_client">Mark as ANC client</string>
+    <string name="add_vitals">Add Vitals</string>
+    <string name="add_conditions">Add Conditions</string>
+    <string name="bmi_widget">BMI Widget</string>
 
 </resources>

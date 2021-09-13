@@ -169,6 +169,7 @@ class AncPatientRepository(
       const val PREGNANCY_CONDITION = "pregnancy_condition_template.json"
       const val PREGNANCY_EPISODE_OF_CARE = "pregnancy_episode_of_care_template.json"
       const val PREGNANCY_FIRST_ENCOUNTER = "pregnancy_first_encounter_template.json"
+      const val ANC_VITAL_SIGNS = "vital_signs_questionnaire.json"
     }
   }
 }

@@ -1,0 +1,38 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "vital-sign-observation-sample",
+  "status": "active",
+  "date": "2020-11-18T07:24:47.111Z",
+  "name": "vital-sign",
+  "title": "Vital Sign",
+  "subjectType": [
+    "Observation"
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/383"
+    }
+  ],
+  "item": [
+    {
+      "linkId": "vital-signs-body-wight",
+      "definition": "http://acme.org/devices/clinical-codes",
+      "text": "Body Weight (lb)",
+      "type": "decimal"
+    },
+    {
+      "linkId": "vital-signs-height",
+      "definition": "http://acme.org/devices/clinical-codes",
+      "text": "Height (cm)",
+      "type": "decimal"
+    },
+    {
+      "linkId": "vital-signs-blood-oxygen-level",
+      "definition": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+      "text": "Oxygen saturation in Arterial blood",
+      "type": "integer",
+      "maxLength": 99
+    }
+  ]
+}
