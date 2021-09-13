@@ -30,6 +30,10 @@ import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -139,10 +143,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   override fun onClick(view: View) {
     if (view.id == R.id.btn_save_client_info) {
-      val questionnaireFragment =
-        supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
-          QuestionnaireFragment
-      handleQuestionnaireResponse(questionnaireFragment.getQuestionnaireResponse())
+      handleQuestionnaireResponse(getQuestionnaireResponse())
     } else {
       showToast(getString(R.string.error_saving_form))
     }
@@ -184,6 +185,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       }
 
     return dialogBuilder.create().apply { show() }
+  }
+
+  private fun getQuestionnaireResponse(): QuestionnaireResponse {
+    val questionnaireFragment =
+      supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
+          QuestionnaireFragment
+    return questionnaireFragment.getQuestionnaireResponse()
   }
 
   companion object {

@@ -41,7 +41,7 @@ class QuestionnaireViewModel(
 
   val extractionProgress = MutableLiveData<Boolean>()
 
-  private val defaultRepository: DefaultRepository =
+  private var defaultRepository: DefaultRepository =
     DefaultRepository(
       (application as ConfigurableApplication).fhirEngine,
     )

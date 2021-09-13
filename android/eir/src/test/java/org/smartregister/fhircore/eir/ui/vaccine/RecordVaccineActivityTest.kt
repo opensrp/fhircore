@@ -43,7 +43,6 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -57,6 +56,7 @@ import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
+import org.smartregister.fhircore.eir.util.RECORD_VACCINE_FORM
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.DateUtils
 
@@ -75,6 +75,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
     val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.load(Patient::class.java, "test_patient_id") } returns
       TestUtils.TEST_PATIENT_1
+
     coEvery { fhirEngine.search<Immunization>(any()) } returns listOf()
     coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns Questionnaire()
     ReflectionHelpers.setField(
@@ -86,6 +87,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
     val intent =
       Intent().apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "test_patient_id")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, RECORD_VACCINE_FORM)
       }
 
     recordVaccineActivity =
@@ -93,9 +95,6 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  @Ignore(
-    "Fix Could not copy archived package [packages.fhir.org-hl7.fhir.r4.core-4.0.1.tgz] to app private storage"
-  )
   fun testVerifyRecordedVaccineSavedDialogProperty() {
     coroutinesTestRule.runBlockingTest {
       val patientRepository = mockk<PatientRepository>()
@@ -135,7 +134,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
       ReflectionHelpers.callInstanceMethod<Any>(
         recordVaccineActivity,
-        "handleImmunizationResult",
+        "handleQuestionnaireResponse",
         ReflectionHelpers.ClassParameter.from(
           QuestionnaireResponse::class.java,
           questionnaireResponse
@@ -156,9 +155,6 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  @Ignore(
-    "Fix Could not copy archived package [packages.fhir.org-hl7.fhir.r4.core-4.0.1.tgz] to app private storage"
-  )
   fun testShowVaccineRecordDialogVerifyAllOptions() {
     coroutinesTestRule.runBlockingTest {
       var vaccineSummary = patientVaccineSummaryOf(1, "vaccineA")
@@ -229,6 +225,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
       Assert.assertEquals("Second vaccine dose should be same as first", dialog.message)
     }
   }
+
   private fun patientVaccineSummaryOf(
     doseNumber: Int = 1,
     initialDose: String,
