@@ -40,6 +40,10 @@ import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import org.hl7.fhir.r4.model.Parameters
+import org.json.JSONObject
+
+
 
 class AncDetailsFragment private constructor() : Fragment() {
 
@@ -231,6 +235,10 @@ class AncDetailsFragment private constructor() : Fragment() {
       contextCQL,
       contextLabel
     )
+    Log.i("parameters: ",parameters)
+    val jsonObject = JSONObject(parameters)
+    textView_CQLResults.text=jsonObject.toString(4)
+    textView_CQLResults.visibility=View.VISIBLE
   }
 
 
