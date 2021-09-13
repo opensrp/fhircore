@@ -62,7 +62,7 @@ class QuestionnaireViewModel(
 
   //fun populateQuestionnaireResponse()
 
-  fun saveExtractedResources(
+  fun extractAndSaveResources(
     resourceId: String?,
     context: Context,
     questionnaire: Questionnaire,
@@ -92,7 +92,7 @@ class QuestionnaireViewModel(
           if (resourceId != null && bundleEntry.hasResource()) {
             bundleEntry.resource.id = resourceId
           }
-          defaultRepository.save(bundleEntry.resource)
+          defaultRepository.addOrUpdate(bundleEntry.resource)
         }
       }
 

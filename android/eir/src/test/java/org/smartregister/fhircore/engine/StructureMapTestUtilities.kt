@@ -153,16 +153,10 @@ class StructureMapTestUtilities : RobolectricTest() {
     """
       {
         "resourceType": "Questionnaire",
-        "id": "1452",
-        "meta": {
-          "versionId": "2",
-          "lastUpdated": "2021-08-16T22:41:37.890+00:00",
-          "source": "#SD4iNdKeaQb71nEF"
-        },
         "extension": [
           {
             "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
-            "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/1453"
+            "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/1902"
           }
         ],
         "status": "active",
@@ -180,7 +174,7 @@ class StructureMapTestUtilities : RobolectricTest() {
                 "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
                 "valueExpression": {
                   "language": "text/fhirpath",
-                  "expression": "Patient.id"
+                  "expression": "Patient.id.value"
                 }
               }
             ]
@@ -531,24 +525,6 @@ class StructureMapTestUtilities : RobolectricTest() {
             "text": "Related person",
             "type": "group",
             "item": [
-              {
-                "linkId": "RP-id",
-                "text": "Related person id",
-                "type": "text",
-                "extension": [
-                  {
-                    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-                    "valueBoolean": true
-                  },
-                  {
-                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-                    "valueExpression": {
-                      "language": "text/fhirpath",
-                      "expression": "RelatedPerson.id"
-                    }
-                  }
-                ]
-              },
               {
                 "linkId": "RP-family-name",
                 "text": "Family name",

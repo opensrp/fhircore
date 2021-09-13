@@ -1,0 +1,31 @@
+package org.smartregister.fhircore.engine.util.extension
+
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
+import org.hl7.fhir.r4.model.Resource
+import org.json.JSONException
+import org.json.JSONObject
+
+/** Created by Ephraim Kigamba - nek.eam@gmail.com on 13-09-2021. */
+fun Resource.toJson(parser: IParser = FhirContext.forR4().newJsonParser()): String =
+  parser.encodeResourceToString(this)
+
+inline fun <reified T : Resource> T.updateFrom(updatedResource: Resource): T {
+  val jsonParser = FhirContext.forR4().newJsonParser()
+  val stringJson = toJson(jsonParser)
+  val originalResourceJson = JSONObject(stringJson)
+
+  originalResourceJson.updateFrom(JSONObject(updatedResource.toJson(jsonParser)))
+  return jsonParser.parseResource(T::class.java, originalResourceJson.toString())
+}
+
+@Throws(JSONException::class)
+fun JSONObject.updateFrom(updated: JSONObject) {
+  val keys =
+    mutableListOf<String>().apply {
+      keys().forEach { add(it) }
+      updated.keys().forEach { add(it) }
+    }
+
+  keys.forEach { key -> updated.opt(key)?.run { put(key, this) } }
+}

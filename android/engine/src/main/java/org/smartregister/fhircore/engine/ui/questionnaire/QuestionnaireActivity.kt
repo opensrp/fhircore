@@ -120,7 +120,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                 clientIdentifier == null ->
                   bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
                 clientIdentifier != null -> {
-                  val parsedQuestionnaireResponse = getQuestionnaireResponse(questionnaire!!)
+                  val parsedQuestionnaireResponse = parser.encodeResourceToString(getQuestionnaireResponse(questionnaire!!))
                   bundleOf(
                     Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire),
                     Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
@@ -166,7 +166,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         }
       )
 
-      questionnaireViewModel.saveExtractedResources(
+      questionnaireViewModel.extractAndSaveResources(
         context = this@QuestionnaireActivity,
         questionnaire = questionnaire!!,
         questionnaireResponse = questionnaireResponse,
