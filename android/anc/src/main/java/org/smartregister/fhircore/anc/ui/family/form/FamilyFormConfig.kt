@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.register.model
+package org.smartregister.fhircore.anc.ui.family.form
 
-enum class SyncStatus {
-  NOT_SYNCING,
-  COMPLETE,
-  FAILED
+import kotlinx.serialization.Serializable
+
+@Serializable
+object FamilyFormConfig {
+  const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
 }

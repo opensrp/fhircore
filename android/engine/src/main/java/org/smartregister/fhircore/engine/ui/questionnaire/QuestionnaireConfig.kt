@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.form.config
+package org.smartregister.fhircore.engine.ui.questionnaire
 
 import kotlinx.serialization.Serializable
 
+/**
+ * Data class to represent a form configuration. Questionnaires are synced from the server
+ * @property form A unique name for the form as declared in the `form_configurations.json file`
+ * @property title The title of the form
+ * @property identifier Represents the identifier as synced from the server
+ */
 @Serializable
-data class AncFormConfig(
-  val registerTitle: String,
-  val registrationQuestionnaireIdentifier: String,
-  val registrationQuestionnaireTitle: String,
-  val pregnancyLogQuestionnaireIdentifier: String,
-  val pregnancyLogQuestionnaireTitle: String,
-) {
-  companion object {
-    const val ANC_DETAIL_VIEW_CONFIG_ID = "anc_client_register_config.json"
-    const val ANC_ARG_ITEM_ID = "anc_client_item_id"
-  }
-}
+data class QuestionnaireConfig(val form: String, val title: String, val identifier: String)

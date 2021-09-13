@@ -34,6 +34,7 @@ data class RegisterViewConfiguration(
   var switchLanguages: Boolean = true,
   var showScanQRCode: Boolean = true,
   var showNewClientButton: Boolean = true,
+  var registrationForm: String = "patient-registration",
 ) : Configuration
 
 /**
@@ -49,6 +50,7 @@ data class RegisterViewConfiguration(
  * @param switchLanguages Hides or shows the language picker menu option
  * @param showScanQRCode Hides or shows the scan QR code button
  * @param showNewClientButton Hides or shows the button for register new client
+ * @param registrationForm Name of questionnaire form used for registration
  */
 @Stable
 fun Context.registerViewConfigurationOf(
@@ -61,7 +63,8 @@ fun Context.registerViewConfigurationOf(
   switchLanguages: Boolean = true,
   showScanQRCode: Boolean = true,
   showNewClientButton: Boolean = true,
-  languages: List<String> = listOf("en")
+  languages: List<String> = listOf("en"),
+  registrationForm: String = "patient-registration"
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
     appTitle = appTitle,
@@ -73,5 +76,6 @@ fun Context.registerViewConfigurationOf(
     switchLanguages = switchLanguages,
     showScanQRCode = showScanQRCode,
     showNewClientButton = showNewClientButton,
+    registrationForm = registrationForm,
   )
 }

@@ -19,21 +19,31 @@ package org.smartregister.fhircore.eir
 import android.app.Application
 import androidx.work.Constraints
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.FhirEngineBuilder
+import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.Sync
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
 import timber.log.Timber
 
 class EirApplication : Application(), ConfigurableApplication {
+
+  private val defaultDispatcherProvider = DefaultDispatcherProvider
+
+  override lateinit var workerContextProvider: SimpleWorkerContext
 
   override lateinit var applicationConfiguration: ApplicationConfiguration
 
@@ -69,19 +79,25 @@ class EirApplication : Application(), ConfigurableApplication {
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
+
+    CoroutineScope(defaultDispatcherProvider.io()).launch {
+      workerContextProvider = this@EirApplication.initializeWorkerContext()!!
+    }
   }
 
   private fun constructFhirEngine(): FhirEngine {
-    getSyncJob()
-      .poll(
-        PeriodicSyncConfiguration(
-          syncConstraints = Constraints.Builder().build(),
-          repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
-        ),
-        EirFhirSyncWorker::class.java
-      )
-
-    return FhirEngineBuilder(this).build()
+    CoroutineScope(defaultDispatcherProvider.main()).launch {
+      getSyncJob()
+        .poll(
+          PeriodicSyncConfiguration(
+            syncConstraints = Constraints.Builder().build(),
+            repeat = RepeatInterval(interval = 30, timeUnit = TimeUnit.MINUTES)
+          ),
+          EirFhirSyncWorker::class.java
+        )
+        .collect { this@EirApplication.syncBroadcaster.broadcastSync(state = it) }
+    }
+    return FhirEngineProvider.getInstance(this)
   }
 
   companion object {

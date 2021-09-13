@@ -40,9 +40,11 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
+import org.smartregister.fhircore.eir.util.ADVERSE_EVENT_FORM
 import org.smartregister.fhircore.eir.ui.adverseevent.AdverseEventActivity
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
+import org.smartregister.fhircore.eir.util.RECORD_VACCINE_FORM
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
@@ -66,7 +68,7 @@ class PatientDetailsFragment private constructor() : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    val patientId = arguments?.getString(QuestionnaireFormConfig.COVAX_ARG_ITEM_ID) ?: ""
+    val patientId = arguments?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
     setupViews(patientId)
 
@@ -106,14 +108,23 @@ class PatientDetailsFragment private constructor() : Fragment() {
     recordVaccineButton.setOnClickListener {
       startActivity(
         Intent(requireContext(), RecordVaccineActivity::class.java)
-          .putExtras(RecordVaccineActivity.getExtraBundles(patientId = patientId))
+          .putExtras(
+            QuestionnaireActivity.requiredIntentArgs(
+              clientIdentifier = patientId,
+              form = RECORD_VACCINE_FORM
+            )
+          )
       )
     }
 
     reportAdverseEventButton.setOnClickListener {
       startActivity(
         Intent(requireContext(), AdverseEventActivity::class.java)
-          .putExtras(AdverseEventActivity.getExtraBundles(patientId = patientId))
+          .putExtras(QuestionnaireActivity.requiredIntentArgs(
+            clientIdentifier = patientId,
+            form = ADVERSE_EVENT_FORM
+          )
+          )
       )
     }
   }

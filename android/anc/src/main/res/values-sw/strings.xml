@@ -1,0 +1,25 @@
+<resources>
+    <string name="back_to_anc_clients">Rudi kwa wateja wa ANC</string>
+    <string name="edit">Hariri</string>
+    <string name="edit_info">Hariri maelezo</string>
+    <string name="mark_as_ANC_client">Alamisha kama mteja wa ANC</string>
+    <string name="view_family">Angalia Familia</string>
+    <string name="view_past_encounters">Tazama mikutano ya zamani</string>
+    <string name="remove_this_person">Ondoa mtu huyu</string>
+    <string name="care_plan">Mpango wa huduma</string>
+    <string name="see_all">Ona wote</string>
+    <string name="anc_overview">Muhtasari wa ANC</string>
+    <string name="anc_visit_overdue">Ziara ya ANC imeptiwa na wakati</string>
+    <string name="edd">EDD</string>
+    <string name="ga">GA</string>
+    <string name="no_of_fetuses">Idaji ya kijusi</string>
+    <string name="risks">Hatari</string>
+    <string name="anc_facility_visit">Ziara ya kituo cha ANC</string>
+    <string name="anc_home_visit">Ziara ya ANC nyumbani</string>
+    <string name="upcoming_services">Huduma zijazo</string>
+    <string name="last_seen">Mara ya mwisho kuonekana</string>
+    <string name="no_care_plan">Hana mpango wa huduma</string>
+    <string name="no_services_scheduled">Hakuna huduma zilizopangwa</string>
+    <string name="family_register_title">Familia</string>
+
+</resources>

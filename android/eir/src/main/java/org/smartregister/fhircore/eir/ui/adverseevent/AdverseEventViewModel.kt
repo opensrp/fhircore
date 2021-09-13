@@ -39,7 +39,7 @@ class AdverseEventViewModel(
       val immunizations = patientRepository.getPatientImmunizations(logicalId = logicalId)
       if (!immunizations.isNullOrEmpty()) {
         mutableLiveData.postValue(immunizations.first())
-      }
+      } else mutableLiveData.postValue(Immunization())
     }
     return mutableLiveData
   }
