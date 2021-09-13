@@ -34,6 +34,7 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -105,6 +106,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
       // Only add the fragment once, when the activity is first created.
       if (savedInstanceState == null && questionnaire != null) {
+        /*
+        TODO: Refactor code and move to QuestionnaireViewModel
+        - Place all database operation to the background thread
+        - Use lifecycleScope in the activity
+        - Pass the DispatcherProvider to the ViewModel
+        */
         val fragment =
           QuestionnaireFragment().apply {
             val parsedQuestionnaire = parser.encodeResourceToString(questionnaire)
@@ -113,19 +120,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                 clientIdentifier == null ->
                   bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
                 clientIdentifier != null -> {
-                  val patient = questionnaireViewModel.loadPatient(clientIdentifier!!)
-                  if (patient != null) {
-                    val parsedQuestionnaireResponse =
-                      parser.encodeResourceToString(
-                        ResourceMapper.populate(questionnaire!!, patient)
-                      )
-                    bundleOf(
-                      Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire),
-                      Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
-                    )
-                  } else {
-                    bundleOf()
-                  }
+                  val parsedQuestionnaireResponse = getQuestionnaireResponse(questionnaire!!)
+                  bundleOf(
+                    Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire),
+                    Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
+                  )
                 }
                 else -> bundleOf()
               }
@@ -186,10 +185,31 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     return dialogBuilder.create().apply { show() }
   }
 
+  private suspend fun getQuestionnaireResponse(
+    questionnaire: Questionnaire
+  ): QuestionnaireResponse {
+    var questionnaireResponse = QuestionnaireResponse()
+
+    intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)?.let {
+      val patient = questionnaireViewModel.loadPatient(it)
+      val relatedPerson: List<RelatedPerson>? = questionnaireViewModel.loadRelatedPerson(it)
+
+      patient?.let {
+        questionnaireResponse =
+          if (relatedPerson?.isNotEmpty() == true && relatedPerson.firstOrNull() != null)
+            ResourceMapper.populate(questionnaire, patient, relatedPerson.first())
+          else ResourceMapper.populate(questionnaire, patient)
+      }
+    }
+
+    return questionnaireResponse
+  }
+
   companion object {
-    const val QUESTIONNAIRE_TITLE_KEY = "questionnaire_title_key"
-    const val QUESTIONNAIRE_PATH_KEY = "questionnaire_path_key"
-    const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire_fragment_tag"
+    const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
+    const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"
+    const val QUESTIONNAIRE_PATH_KEY = "questionnaire-path-key"
+    const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire_form"
     private const val FORM_CONFIGURATIONS = "form_configurations.json"

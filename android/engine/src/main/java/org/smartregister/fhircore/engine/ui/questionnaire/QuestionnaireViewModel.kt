@@ -28,6 +28,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
@@ -58,6 +59,8 @@ class QuestionnaireViewModel(
     }
     return structureMap
   }
+
+  //fun populateQuestionnaireResponse()
 
   fun saveExtractedResources(
     resourceId: String?,
@@ -101,11 +104,16 @@ class QuestionnaireViewModel(
     if (structureMapProvider == null) {
       structureMapProvider = { structureMapUrl: String -> fetchStructureMap(structureMapUrl) }
     }
+
     return structureMapProvider!!
   }
 
   suspend fun loadPatient(patientId: String): Patient? {
     return defaultRepository.loadResource(patientId)
+  }
+
+  suspend fun loadRelatedPerson(patientId: String): List<RelatedPerson>? {
+    return defaultRepository.loadRelatedPersons(patientId)
   }
 
   fun saveResource(resource: Resource) {
