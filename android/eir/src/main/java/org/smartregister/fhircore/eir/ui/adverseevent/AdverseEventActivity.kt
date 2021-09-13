@@ -19,7 +19,6 @@ class AdverseEventActivity : QuestionnaireActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_adverse_event)
 
     adverseEventViewModel =
       ViewModelProvider(
