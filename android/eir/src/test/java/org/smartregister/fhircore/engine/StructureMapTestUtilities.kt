@@ -55,7 +55,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
-    // System.out.println(mapString)
+    System.out.println(mapString)
   }
 
   @Test
@@ -77,7 +77,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
-    // System.out.println(mapString)
+    System.out.println(mapString)
 
     val targetResource = Bundle()
 
@@ -86,7 +86,7 @@ class StructureMapTestUtilities : RobolectricTest() {
 
     scu.transform(contextR4, baseElement, map, targetResource)
 
-    // System.out.println(iParser.encodeResourceToString(targetResource))
+    System.out.println(iParser.encodeResourceToString(targetResource))
   }
 
   @Language("JSON")
