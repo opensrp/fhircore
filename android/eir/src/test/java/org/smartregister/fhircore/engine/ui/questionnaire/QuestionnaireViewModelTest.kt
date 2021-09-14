@@ -31,6 +31,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
@@ -53,7 +54,6 @@ import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
 import org.smartregister.fhircore.shadow.ShadowNpmPackageProvider
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 03-07-2021. */
@@ -196,13 +196,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     every { questionnaireViewModel.saveBundleResources(any(), any()) } just runs
 
-    runBlocking {
-      ReflectionHelpers.setField(
-        context,
-        "workerContextProvider",
-        context.initializeWorkerContext()
-      )
-    }
+    ReflectionHelpers.setField(context, "workerContextProvider", mockk<SimpleWorkerContext>())
+
     questionnaireViewModel.saveExtractedResources(
       "0993ldsfkaljlsnldm",
       ApplicationProvider.getApplicationContext(),
