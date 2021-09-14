@@ -50,7 +50,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     contextR4.isCanRunWithoutTerminology = true
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
-    val map = scu.parse(fhirMapToConvertForAdverseEvents, "AdverseEvent")
+    val map = scu.parse(fhirMapToConvert, "AdverseEvent")
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
@@ -72,7 +72,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val transformSupportServices = TransformSupportServices(outputs, contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val map = scu.parse(fhirMapToConvertForAdverseEvents, "AdverseEvent")
+    val map = scu.parse(fhirMapToConvert, "AdverseEvent")
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
@@ -82,7 +82,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val targetResource = Bundle()
 
     val baseElement =
-      iParser.parseResource(QuestionnaireResponse::class.java, questionnaireResponseForAdverseEvent)
+      iParser.parseResource(QuestionnaireResponse::class.java, questionnaireResponse)
 
     scu.transform(contextR4, baseElement, map, targetResource)
 
