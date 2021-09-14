@@ -107,9 +107,7 @@ suspend inline fun <reified T : Resource> FhirEngine.loadResource(structureMapId
   }
 }
 
-suspend inline fun FhirEngine.loadRelatedPersons(
-  patientId: String
-): List<RelatedPerson>? {
+suspend inline fun FhirEngine.loadRelatedPersons(patientId: String): List<RelatedPerson>? {
   return try {
     this@loadRelatedPersons.search {
       filter(RelatedPerson.PATIENT) { value = "Patient/$patientId" }

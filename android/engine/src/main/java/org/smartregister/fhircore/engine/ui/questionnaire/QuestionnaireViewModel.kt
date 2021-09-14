@@ -60,7 +60,7 @@ class QuestionnaireViewModel(
     return structureMap
   }
 
-  //fun populateQuestionnaireResponse()
+  // fun populateQuestionnaireResponse()
 
   fun extractAndSaveResources(
     resourceId: String?,
