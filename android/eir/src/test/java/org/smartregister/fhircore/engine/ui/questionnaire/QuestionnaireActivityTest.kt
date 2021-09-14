@@ -89,6 +89,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
     questionnaireActivity = controller.create().resume().get()
     questionnaireActivity.questionnaireViewModel = questionnaireViewModel
+    Thread.sleep(2000)
+    questionnaireActivity.supportFragmentManager.executePendingTransactions()
   }
 
   @Test
@@ -98,8 +100,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testVerifyPrePopulatedQuestionnaire() {
-    Thread.sleep(2000)
-    questionnaireActivity.supportFragmentManager.executePendingTransactions()
+
     val response =
       ReflectionHelpers.callInstanceMethod<QuestionnaireResponse>(
         questionnaireActivity,
@@ -142,8 +143,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun `save-button click should call savedExtractedResources()`() {
-    Thread.sleep(2000)
-    questionnaireActivity.supportFragmentManager.executePendingTransactions()
 
     val viewModel = mockk<QuestionnaireViewModel>()
     every { viewModel.extractionProgress } returns MutableLiveData(false)

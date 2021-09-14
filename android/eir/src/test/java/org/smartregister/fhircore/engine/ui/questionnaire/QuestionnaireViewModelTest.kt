@@ -48,6 +48,7 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.eir.EirApplication
+import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
@@ -68,6 +69,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private val resourceId = "my-res-id"
 
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule var coroutineRule = CoroutineTestRule()
 
   @Before
   fun setUp() {
@@ -91,13 +93,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.save<Patient>(any()) } answers {}
 
     ReflectionHelpers.setField(context, "fhirEngine\$delegate", lazy { fhirEngine })
-    runBlocking {
-      ReflectionHelpers.setField(
-        context,
-        "workerContextProvider",
-        context.initializeWorkerContext()
-      )
-    }
 
     defaultRepo = spyk(DefaultRepository(fhirEngine))
     coEvery { defaultRepo.save(any()) } returns Unit
@@ -201,6 +196,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     every { questionnaireViewModel.saveBundleResources(any(), any()) } just runs
 
+    runBlocking {
+      ReflectionHelpers.setField(
+        context,
+        "workerContextProvider",
+        context.initializeWorkerContext()
+      )
+    }
     questionnaireViewModel.saveExtractedResources(
       "0993ldsfkaljlsnldm",
       ApplicationProvider.getApplicationContext(),

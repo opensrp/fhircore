@@ -343,4 +343,205 @@
       },
       "type": "boolean"
     } ]
-  } ] }
+  }, {
+    "extension": [ {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+      "valueCodeableConcept": {
+        "coding": [ {
+          "system": "http://hl7.org/fhir/questionnaire-item-control",
+          "code": "drop-down",
+          "display": "Drop down"
+        } ],
+        "text": "Drop down"
+      }
+    } ],
+    "linkId": "comorbidities",
+    "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+    "code": [ {
+      "system": "https://www.snomed.org",
+      "code": "991381000000107"
+    } ],
+    "text": "Do you have any of the following conditions?",
+    "type": "group",
+    "required": true,
+    "item": [ {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+        "valueBoolean": true
+      } ],
+      "linkId": "diabetes_mellitus",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+      "code": [ {
+        "system": "https://www.snomed.org",
+        "code": "73211009"
+      } ],
+      "text": "Diabetes Mellitus (DM)",
+      "type": "boolean"
+    }, {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+        "valueBoolean": true
+      } ],
+      "linkId": "hypertension",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+      "code": [ {
+        "system": "https://www.snomed.org",
+        "code": "59621000"
+      } ],
+      "text": "HyperTension (HT)",
+      "type": "boolean"
+    }, {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+        "valueBoolean": true
+      } ],
+      "linkId": "ihd",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+      "code": [ {
+        "system": "https://www.snomed.org",
+        "code": "414545008"
+      } ],
+      "text": "Ischemic Heart Disease (IHD / CHD / CCF)",
+      "type": "boolean"
+    }, {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+        "valueBoolean": true
+      } ],
+      "linkId": "tb",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+      "code": [ {
+        "system": "https://www.snomed.org",
+        "code": "56717001"
+      } ],
+      "text": "Tuberculosis (TB)",
+      "type": "boolean"
+    }, {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+        "valueBoolean": true
+      } ],
+      "linkId": "copd",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+      "code": [ {
+        "system": "https://www.snomed.org",
+        "code": "195967001"
+      } ],
+      "text": "Asthma/COPD",
+      "type": "boolean"
+    }, {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+        "valueBoolean": true
+      } ],
+      "linkId": "chronic_kidney_disease",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+      "code": [ {
+        "system": "https://www.snomed.org",
+        "code": "709044004"
+      } ],
+      "text": "Chronic Kidney Disease",
+      "type": "boolean"
+    }, {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+        "valueBoolean": true
+      } ],
+      "linkId": "cancer",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+      "code": [ {
+        "system": "https://www.snomed.org",
+        "code": "363346000"
+      } ],
+      "text": "Cancer",
+      "type": "boolean"
+    }, {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+        "valueBoolean": true
+      } ],
+      "linkId": "others",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+      "code": [ {
+        "system": "https://www.snomed.org",
+        "code": "74964007"
+      } ],
+      "text": "Others",
+      "type": "boolean"
+    }, {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+        "valueBoolean": true
+      } ],
+      "linkId": "other_comorbidities",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
+      "code": [ {
+        "system": "https://www.snomed.org",
+        "code": "38651000000103"
+      } ],
+      "text": "If other, specify: ",
+      "type": "string",
+      "enableWhen": [ {
+        "question": "others",
+        "operator": "=",
+        "answerBoolean": true
+      } ],
+      "enableBehavior": "all"
+    } ]
+  }, {
+    "extension": [ {
+      "url": "http://hl7.org/fhir/StructureDefinition/flag-detail",
+      "valueString": "at risk"
+    } ],
+    "linkId": "risk_assessment",
+    "definition": "http://hl7.org/fhir/StructureDefinition/RiskAssessment",
+    "code": [ {
+      "system": "https://www.snomed.org",
+      "code": "225338004",
+      "display": "Risk Assessment"
+    } ],
+    "text": "Client is at risk for serious illness from COVID-19",
+    "type": "choice",
+    "enableWhen": [ {
+      "question": "others",
+      "operator": "=",
+      "answerBoolean": true
+    }, {
+      "question": "cancer",
+      "operator": "=",
+      "answerBoolean": true
+    }, {
+      "question": "chronic_kidney_disease",
+      "operator": "=",
+      "answerBoolean": true
+    }, {
+      "question": "copd",
+      "operator": "=",
+      "answerBoolean": true
+    }, {
+      "question": "tb",
+      "operator": "=",
+      "answerBoolean": true
+    }, {
+      "question": "ihd",
+      "operator": "=",
+      "answerBoolean": true
+    }, {
+      "question": "hypertension",
+      "operator": "=",
+      "answerBoolean": true
+    }, {
+      "question": "diabetes_mellitus",
+      "operator": "=",
+      "answerBoolean": true
+    } ],
+    "enableBehavior": "any",
+    "initial": [ {
+      "valueCoding": {
+        "system": "https://www.snomed.org",
+        "code": "870577009",
+        "display": "High Risk for COVID-19"
+      }
+    } ]
+  } ]
+}
