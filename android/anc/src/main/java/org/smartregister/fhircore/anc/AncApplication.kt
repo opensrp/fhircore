@@ -65,6 +65,7 @@ class AncApplication : Application(), ConfigurableApplication {
       )
 
   private fun constructFhirEngine(): FhirEngine {
+    schedulePolling()
     return FhirEngineProvider.getInstance(this)
   }
 

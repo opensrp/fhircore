@@ -120,7 +120,8 @@ abstract class BaseRegisterActivity :
         if (!syncTimeStamp.isNullOrEmpty()) {
           SharedPreferencesHelper.write(LAST_SYNC_TIMESTAMP, syncTimeStamp)
         }
-        registerActivityBinding.btnRegisterNewClient.isEnabled = !syncTimeStamp.isNullOrEmpty()
+        // TODO this is blocking the flow and does not allow proceeding if sync fails for any reason
+        // registerActivityBinding.btnRegisterNewClient.isEnabled = !syncTimeStamp.isNullOrEmpty()
       }
     )
 

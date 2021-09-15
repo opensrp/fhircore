@@ -28,7 +28,6 @@
             android:name=".ui.anccare.register.AncRegisterActivity"
             android:windowSoftInputMode="adjustPan" />
         <activity android:name=".ui.family.register.FamilyRegisterActivity" />
-        <activity android:name=".ui.login.SplashActivity"/>
         <activity
             android:name=".ui.family.form.FamilyQuestionnaireActivity"
             android:theme="@style/AppTheme" />

@@ -20,13 +20,14 @@ import android.content.Intent
 import android.os.Bundle
 import org.smartregister.fhircore.anc.BuildConfig
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
 
 class LoginActivity : BaseLoginActivity() {
 
   override fun navigateToHome() {
-    val intent = Intent(this, SplashActivity::class.java)
+    val intent = Intent(this, FamilyRegisterActivity::class.java)
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     startActivity(intent)
     finish()
