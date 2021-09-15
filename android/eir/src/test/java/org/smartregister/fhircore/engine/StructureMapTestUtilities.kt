@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.engine
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
