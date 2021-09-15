@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
+// TODO remove when this is resolved https://github.com/opensrp/fhircore/blob/main/android/engine/src/main/java/org/smartregister/fhircore/engine/ui/components/LoaderView.kt#L42
 class SplashActivity : BaseMultiLanguageActivity() {
   @InternalCoroutinesApi
   override fun onCreate(savedInstanceState: Bundle?) {
