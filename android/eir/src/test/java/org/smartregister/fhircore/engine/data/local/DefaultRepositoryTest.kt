@@ -20,6 +20,8 @@ import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import java.util.Date
+import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.ContactPoint
@@ -33,8 +35,6 @@ import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.shadow.ShadowNpmPackageProvider
-import java.util.Date
-import java.util.UUID
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 15-09-2021. */
 @Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
@@ -66,7 +66,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         telecom = listOf(ContactPoint().apply { value = "12345" })
       }
 
-    val fhirEngine : FhirEngine = mockk()
+    val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.load(Patient::class.java, patient.idElement.idPart) } returns patient
     /*coEvery { fhirEngine.load(Patient::class.java, any()) } returns TestUtils.TEST_PATIENT_1
 
