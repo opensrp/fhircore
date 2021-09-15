@@ -64,11 +64,7 @@ class AncDetailsFragment private constructor() : Fragment() {
 
     setupViews()
 
-    ancPatientRepository =
-      AncPatientRepository(
-        (requireActivity().application as AncApplication).fhirEngine,
-        AncPatientItemMapper
-      )
+    ancPatientRepository = getAncPatientRepository()
 
     ancDetailsViewModel =
       ViewModelProvider(
@@ -131,5 +127,12 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   private fun populateImmunizationList(listCarePlan: List<CarePlanItem>) {
     carePlanAdapter.submitList(listCarePlan)
+  }
+
+  fun getAncPatientRepository(): AncPatientRepository {
+    return AncPatientRepository(
+      (requireActivity().application as AncApplication).fhirEngine,
+      AncPatientItemMapper
+    )
   }
 }

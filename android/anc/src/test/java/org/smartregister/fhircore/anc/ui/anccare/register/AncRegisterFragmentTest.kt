@@ -22,11 +22,14 @@ import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 
+@Config(shadows = [AncApplicationShadow::class])
 class AncRegisterFragmentTest : RobolectricTest() {
 
   private lateinit var registerFragment: AncRegisterFragment

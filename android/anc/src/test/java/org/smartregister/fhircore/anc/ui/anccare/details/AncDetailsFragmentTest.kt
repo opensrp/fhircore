@@ -75,12 +75,14 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
 
     patientRepository = mockk()
 
-    val ancPatientDetailItem = spyk<AncPatientDetailItem>()
+    val ancPatientDetailItem =
+      AncPatientDetailItem().apply {
+        patientDetails = AncPatientItem(patientId, "Mandela Nelson", "M", "26")
+        patientDetailsHead = AncPatientItem()
+      }
 
-    every { ancPatientDetailItem.patientDetails } returns
-      AncPatientItem(patientId, "Mandela Nelson", "M", "26")
-    every { ancPatientDetailItem.patientDetailsHead } returns AncPatientItem()
-    coEvery { patientRepository.fetchDemographics(patientId) } returns ancPatientDetailItem
+    coEvery { patientRepository.fetchDemographics(any()) } returns ancPatientDetailItem
+    coEvery { patientRepository.fetchCarePlan(any(), any()) } returns listOf()
 
     patientDetailsViewModel =
       spyk(
@@ -96,6 +98,7 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
             override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
               val fragment = spyk(AncDetailsFragment.newInstance())
               every { fragment.activity } returns patientDetailsActivity
+              every { fragment.getAncPatientRepository() } returns patientRepository
               fragment.ancDetailsViewModel = patientDetailsViewModel
               return fragment
             }

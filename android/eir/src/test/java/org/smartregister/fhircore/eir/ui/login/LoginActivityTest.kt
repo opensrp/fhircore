@@ -24,10 +24,13 @@ import org.junit.Before
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
+import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.ui.patient.register.PatientRegisterActivity
 
+@Config(shadows = [EirApplicationShadow::class])
 class LoginActivityTest : ActivityRobolectricTest() {
 
   private lateinit var loginActivity: LoginActivity

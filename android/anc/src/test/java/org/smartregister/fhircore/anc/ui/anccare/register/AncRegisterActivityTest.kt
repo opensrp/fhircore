@@ -22,11 +22,14 @@ import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
+import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
 
+@Config(shadows = [AncApplicationShadow::class])
 class AncRegisterActivityTest : ActivityRobolectricTest() {
 
   private lateinit var ancRegisterActivity: AncRegisterActivity

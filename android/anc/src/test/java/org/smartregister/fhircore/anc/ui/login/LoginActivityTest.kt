@@ -24,10 +24,13 @@ import org.junit.Before
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
+import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 
+@Config(shadows = [AncApplicationShadow::class])
 class LoginActivityTest : ActivityRobolectricTest() {
 
   private lateinit var loginActivity: LoginActivity
