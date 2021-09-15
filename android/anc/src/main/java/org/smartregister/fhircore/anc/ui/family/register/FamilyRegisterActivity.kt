@@ -26,7 +26,7 @@ import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.FamilyRepository
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterActivity
-import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConfig
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -85,7 +85,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         .putExtras(
           QuestionnaireActivity.requiredIntentArgs(
             clientIdentifier = null,
-            form = FamilyFormConfig.FAMILY_REGISTER_FORM
+            form = FamilyFormConstants.FAMILY_REGISTER_FORM
           )
         )
     )

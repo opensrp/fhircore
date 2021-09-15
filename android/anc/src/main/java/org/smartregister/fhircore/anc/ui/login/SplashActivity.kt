@@ -29,6 +29,9 @@ import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.asString
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
@@ -47,6 +50,11 @@ class SplashActivity : BaseMultiLanguageActivity() {
 
         when (it) {
           is State.Finished -> {
+            // TODO remove this when sync issue in core is resolved
+            // https://github.com/opensrp/fhircore/issues/540
+            val syncTimestamp = it.result.timestamp.asString()
+            SharedPreferencesHelper.write(LAST_SYNC_TIMESTAMP, syncTimestamp)
+
             showToast(getString(R.string.sync_completed))
             delay(5000)
             startActivity(Intent(this@SplashActivity, FamilyRegisterActivity::class.java))

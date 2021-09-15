@@ -46,8 +46,8 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
 
       val headId =
         when (questionnaireConfig.form) {
-          FamilyFormConfig.FAMILY_REGISTER_FORM -> patientId
-          FamilyFormConfig.FAMILY_MEMBER_REGISTER_FORM -> relatedTo!!
+          FamilyFormConstants.FAMILY_REGISTER_FORM -> patientId
+          FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM -> relatedTo!!
           else -> throw IllegalStateException("Invalid flow of app")
         }
       showAlert(headId)
@@ -77,7 +77,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     val bundle =
       requiredIntentArgs(
         clientIdentifier = null,
-        form = FamilyFormConfig.FAMILY_MEMBER_REGISTER_FORM
+        form = FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
       )
     bundle.putString(QUESTIONNAIRE_RELATED_TO_KEY, headId)
     startActivity(Intent(this, FamilyQuestionnaireActivity::class.java).putExtras(bundle))

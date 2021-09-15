@@ -19,7 +19,7 @@ package org.smartregister.fhircore.anc.ui.family.form
 import kotlinx.serialization.Serializable
 
 @Serializable
-object FamilyFormConfig {
+object FamilyFormConstants {
   const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
   const val FAMILY_REGISTER_FORM = "family-registration"
 }
