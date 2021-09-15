@@ -32,14 +32,9 @@ import org.smartregister.fhircore.engine.configuration.view.registerViewConfigur
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class FamilyRegisterActivity : BaseRegisterActivity() {
-
-  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
-
-  internal lateinit var familyRepository: FamilyRepository
+  private lateinit var familyRepository: FamilyRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
