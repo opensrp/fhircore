@@ -3,9 +3,7 @@
   "registerPrimaryFilterTag": "Family",
   "registrationQuestionnaireIdentifier": "1086",
   "registrationQuestionnaireTitle": "Add Family",
-  "registrationQuestionnaireIdentifier": "sample_family_registration.json",
 
   "memberRegistrationQuestionnaireIdentifier": "1179",
-  "memberRegistrationQuestionnaireTitle": "Add Family Member",
-  "memberRegistrationQuestionnaireIdentifier": "sample_family_member_registration.json"
+  "memberRegistrationQuestionnaireTitle": "Add Family Member"
 }
