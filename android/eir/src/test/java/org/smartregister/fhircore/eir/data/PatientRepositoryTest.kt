@@ -20,12 +20,18 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
 import io.mockk.coEvery
 import io.mockk.mockk
+import java.text.SimpleDateFormat
 import java.util.Date
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -34,7 +40,6 @@ import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.eir.data.model.VaccineStatus
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
-import org.smartregister.fhircore.eir.shadow.TestUtils.TEST_PATIENT_1
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
 
 class PatientRepositoryTest : RobolectricTest() {
@@ -52,8 +57,8 @@ class PatientRepositoryTest : RobolectricTest() {
     } answers
       {
         when (firstArg<Search>().type) {
-          ResourceType.Patient -> listOf(TEST_PATIENT_1)
-          ResourceType.Immunization -> getImmunizationList()
+          ResourceType.Patient -> listOf(getPatient())
+          ResourceType.Immunization -> listOf(getImmunization())
           else -> listOf()
         }
       }
@@ -74,9 +79,9 @@ class PatientRepositoryTest : RobolectricTest() {
         Assert.assertEquals("M", gender)
         Assert.assertEquals("0", age)
         Assert.assertEquals("Jane Mc, M, 0", demographics)
-        Assert.assertEquals("2021-09-14", lastSeen)
+        Assert.assertEquals(SimpleDateFormat("yyyy-MM-dd").format(Date()), lastSeen)
         Assert.assertEquals(VaccineStatus.PARTIAL, vaccineStatus.status)
-        Assert.assertEquals("14-09-21", vaccineStatus.date)
+        Assert.assertEquals(SimpleDateFormat("dd-MM-yy").format(Date()), vaccineStatus.date)
         Assert.assertEquals("", atRisk)
       }
     }
@@ -88,23 +93,46 @@ class PatientRepositoryTest : RobolectricTest() {
     runBlocking { Assert.assertEquals(1, patientRepository.countAll()) }
   }
 
-  private fun getImmunizationList() =
-    listOf(
-      Immunization().apply {
-        recorded = Date()
-        vaccineCode =
-          CodeableConcept().apply {
-            this.text = "vaccineA"
-            this.coding = listOf(Coding("", "vaccineA", "vaccineA"))
+  private fun getPatient(): Patient {
+    return Patient().apply {
+      id = "test_patient_1_id"
+      gender = Enumerations.AdministrativeGender.MALE
+      name =
+        mutableListOf(
+          HumanName().apply {
+            addGiven("jane")
+            family = "Mc"
           }
-        occurrence = DateTimeType.today()
+        )
+      telecom = mutableListOf(ContactPoint().apply { value = "12345678" })
+      address =
+        mutableListOf(
+          Address().apply {
+            city = "Nairobi"
+            country = "Kenya"
+          }
+        )
+      active = true
+      birthDate = Date()
+    }
+  }
 
-        protocolApplied =
-          listOf(
-            Immunization.ImmunizationProtocolAppliedComponent().apply {
-              doseNumber = PositiveIntType(1)
-            }
-          )
-      }
-    )
+  private fun getImmunization(): Immunization {
+    return Immunization().apply {
+      recorded = Date()
+      vaccineCode =
+        CodeableConcept().apply {
+          this.text = "vaccineA"
+          this.coding = listOf(Coding("", "vaccineA", "vaccineA"))
+        }
+      occurrence = DateTimeType.today()
+
+      protocolApplied =
+        listOf(
+          Immunization.ImmunizationProtocolAppliedComponent().apply {
+            doseNumber = PositiveIntType(1)
+          }
+        )
+    }
+  }
 }

@@ -14,66 +14,69 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.eir.ui.patient.register
+package org.smartregister.fhircore.anc.ui.anccare.register
 
 import android.app.Activity
-import androidx.core.content.ContextCompat
 import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.Shadows.shadowOf
 import org.robolectric.fakes.RoboMenuItem
-import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
-import org.smartregister.fhircore.eir.shadow.FakeKeyStore
+import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
+import org.smartregister.fhircore.anc.shadow.FakeKeyStore
 
-class PatientRegisterActivityTest : ActivityRobolectricTest() {
+class AncRegisterActivityTest : ActivityRobolectricTest() {
 
-  private lateinit var patientRegisterActivity: PatientRegisterActivity
+  private lateinit var ancRegisterActivity: AncRegisterActivity
 
   @Before
   fun setUp() {
-    patientRegisterActivity =
-      Robolectric.buildActivity(PatientRegisterActivity::class.java).create().resume().get()
+    ancRegisterActivity =
+      Robolectric.buildActivity(AncRegisterActivity::class.java).create().resume().get()
   }
 
   @Test
-  fun testSideMenuOptionsShouldReturnCovaxMenuOptions() {
-    val menu = patientRegisterActivity.sideMenuOptions()
+  fun testSideMenuOptionsShouldReturnAncMenuOptions() {
+    val menu = ancRegisterActivity.sideMenuOptions()
 
     Assert.assertEquals(1, menu.size)
     with(menu.first()) {
-      Assert.assertEquals(R.id.menu_item_covax, itemId)
-      Assert.assertEquals(R.string.client_list_title_covax, titleResource)
+      Assert.assertEquals(R.id.menu_item_anc, itemId)
+      Assert.assertEquals(R.string.app_name, titleResource)
       Assert.assertTrue(opensMainRegister)
       Assert.assertEquals(
-        shadowOf(ContextCompat.getDrawable(patientRegisterActivity, R.drawable.ic_baby_mother))
+        org.robolectric.Shadows.shadowOf(
+            androidx.core.content.ContextCompat.getDrawable(
+              ancRegisterActivity,
+              R.drawable.ic_baby_mother
+            )
+          )
           .createdFromResId,
-        shadowOf(iconResource).createdFromResId
+        org.robolectric.Shadows.shadowOf(iconResource).createdFromResId
       )
     }
   }
 
   @Test
   fun testOnSideMenuOptionSelectedShouldReturnTrue() {
-    Assert.assertTrue(patientRegisterActivity.onSideMenuOptionSelected(RoboMenuItem()))
+    Assert.assertTrue(ancRegisterActivity.onSideMenuOptionSelected(RoboMenuItem()))
   }
 
   @Test
   fun testSupportedFragmentsShouldReturnPatientRegisterFragmentList() {
-    val fragments = patientRegisterActivity.supportedFragments()
+    val fragments = ancRegisterActivity.supportedFragments()
 
     Assert.assertEquals(1, fragments.size)
     Assert.assertEquals(
-      PatientRegisterFragment::class.java.simpleName,
+      AncRegisterFragment::class.java.simpleName,
       fragments.first().javaClass.simpleName
     )
   }
 
   override fun getActivity(): Activity {
-    return patientRegisterActivity
+    return ancRegisterActivity
   }
 
   companion object {
