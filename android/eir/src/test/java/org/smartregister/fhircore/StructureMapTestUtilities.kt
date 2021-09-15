@@ -18,11 +18,16 @@ package org.smartregister.fhircore
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
 import org.hl7.fhir.utilities.npm.ToolsVersion
 import org.intellij.lang.annotations.Language
@@ -31,6 +36,7 @@ import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import org.smartregister.fhircore.shadow.ShadowNpmPackageProvider
 
 /**
  * Provides a playground for quickly testing and authoring questionnaire and the respective
@@ -38,8 +44,62 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
  *
  * This should be removed at a later point once we have a more clear way of doing this
  */
-@Config(shadows = [EirApplicationShadow::class])
+@Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
 class StructureMapTestUtilities : RobolectricTest() {
+
+  @Test
+  fun testPopulation() {
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val questionnaire = iParser.parseResource(Questionnaire::class.java, questionnaireForAdverseEvent)
+    val patient = iParser.parseResource(Patient::class.java, PATIENT_JSON)
+    val relatedPerson = iParser.parseResource(RelatedPerson::class.java, RELATED_PESRON_JSON)
+
+    var questionnaireResponse: QuestionnaireResponse
+    runBlocking {
+      questionnaireResponse = ResourceMapper.populate(questionnaire, patient, relatedPerson)
+    }
+
+    val expected =
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt u"
+
+    /*try {
+      val `is` = RuntimeEnvironment.application
+          .assets
+          .open("registration_structuremap.txt")
+      val size: Int = `is`.available()
+      val buffer = ByteArray(size)
+      `is`.read(buffer)
+      `is`.close()
+      val fileContents = String(buffer, Charset.forName("UTF-8"))
+
+
+    } catch (e: IOException) {
+      e.printStackTrace()
+    }*/
+
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val outputs: MutableList<Base> = ArrayList()
+    val transformSupportServices = TransformSupportServices(outputs, contextR4)
+
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map = scu.parse(fhirMapToConvertForAdverseEvents, "AdverseEvent")
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+
+    val targetResource = Bundle()
+
+    scu.transform(contextR4, questionnaireResponse, map, targetResource)
+
+    System.out.println(iParser.encodeResourceToString(targetResource))
+  }
 
   @Test
   fun convertFhirMapToJson() {
@@ -50,7 +110,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     contextR4.isCanRunWithoutTerminology = true
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
-    val map = scu.parse(fhirMapToConvert, "AdverseEvent")
+    val map = scu.parse(fhirMapToConvertForAdverseEvents, "AdverseEvent")
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
@@ -72,7 +132,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val transformSupportServices = TransformSupportServices(outputs, contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val map = scu.parse(fhirMapToConvert, "AdverseEvent")
+    val map = scu.parse(fhirMapToConvertForAdverseEvents, "AdverseEvent")
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
@@ -82,7 +142,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val targetResource = Bundle()
 
     val baseElement =
-      iParser.parseResource(QuestionnaireResponse::class.java, questionnaireResponse)
+      iParser.parseResource(QuestionnaireResponse::class.java, questionnaireResponseForAdverseEvent)
 
     scu.transform(contextR4, baseElement, map, targetResource)
 
@@ -94,32 +154,39 @@ class StructureMapTestUtilities : RobolectricTest() {
     """
       {
         "resourceType": "Questionnaire",
-        "id": "client-registration-sample",
-        "status": "active",
-        "date": "2020-11-18T07:24:47.111Z",
-        "subjectType": [
-          "Patient"
-        ],
         "extension": [
           {
             "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
-            "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/383"
+            "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/1902"
           }
         ],
+        "status": "active",
+        "subjectType": [
+          "Patient"
+        ],
+        "date": "2020-11-18T07:24:47.111Z",
         "item": [
           {
             "linkId": "patient-barcode",
-            "definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
             "text": "Barcode",
-            "type": "text"
+            "type": "text",
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "Patient.id.value"
+                }
+              }
+            ]
           },
           {
             "linkId": "PR",
-            "type": "group",
             "text": "Client Info",
             "_text": {
               "extension": [
                 {
+                  "url": "http://hl7.org/fhir/StructureDefinition/translation",
                   "extension": [
                     {
                       "url": "lang",
@@ -129,11 +196,11 @@ class StructureMapTestUtilities : RobolectricTest() {
                       "url": "content",
                       "valueString": "Maelezo ya mteja"
                     }
-                  ],
-                  "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                  ]
                 }
               ]
             },
+            "type": "group",
             "item": [
               {
                 "linkId": "PR-name",
@@ -141,12 +208,11 @@ class StructureMapTestUtilities : RobolectricTest() {
                 "item": [
                   {
                     "linkId": "PR-name-given",
-                    "type": "string",
-                    "required": true,
                     "text": "First Name",
                     "_text": {
                       "extension": [
                         {
+                          "url": "http://hl7.org/fhir/StructureDefinition/translation",
                           "extension": [
                             {
                               "url": "lang",
@@ -156,20 +222,30 @@ class StructureMapTestUtilities : RobolectricTest() {
                               "url": "content",
                               "valueString": "Jina la kwanza"
                             }
-                          ],
-                          "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                          ]
                         }
                       ]
-                    }
+                    },
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                        "valueExpression": {
+                          "name": "patientName",
+                          "language": "text/fhirpath",
+                          "expression": "Patient.name.given"
+                        }
+                      }
+                    ],
+                    "type": "string",
+                    "required": true
                   },
                   {
                     "linkId": "PR-name-family",
-                    "type": "string",
-                    "required": true,
                     "text": "Family Name",
                     "_text": {
                       "extension": [
                         {
+                          "url": "http://hl7.org/fhir/StructureDefinition/translation",
                           "extension": [
                             {
                               "url": "lang",
@@ -179,22 +255,32 @@ class StructureMapTestUtilities : RobolectricTest() {
                               "url": "content",
                               "valueString": "Jina la ukoo"
                             }
-                          ],
-                          "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                          ]
                         }
                       ]
-                    }
+                    },
+                    "type": "string",
+                    "required": true,
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                        "valueExpression": {
+                          "name": "patientFamily",
+                          "language": "text/fhirpath",
+                          "expression": "Patient.name.family"
+                        }
+                      }
+                    ]
                   }
                 ]
               },
               {
                 "linkId": "patient-0-birth-date",
-                "type": "date",
-                "required": true,
                 "text": "Date of Birth",
                 "_text": {
                   "extension": [
                     {
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation",
                       "extension": [
                         {
                           "url": "lang",
@@ -204,14 +290,24 @@ class StructureMapTestUtilities : RobolectricTest() {
                           "url": "content",
                           "valueString": "Tarehe ya kuzaliwa"
                         }
-                      ],
-                      "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                      ]
                     }
                   ]
-                }
+                },
+                "type": "date",
+                "required": true,
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "name": "patientBirthDate",
+                      "language": "text/fhirpath",
+                      "expression": "Patient.birthDate"
+                    }
+                  }
+                ]
               },
               {
-                "linkId": "patient-0-gender",
                 "extension": [
                   {
                     "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
@@ -229,41 +325,38 @@ class StructureMapTestUtilities : RobolectricTest() {
                   {
                     "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
                     "valueCode": "horizontal"
+                  },
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "name": "patientGender",
+                      "language": "text/fhirpath",
+                      "expression": "Patient.gender"
+                    }
                   }
                 ],
-                "type": "choice",
+                "linkId": "patient-0-gender",
                 "text": "Gender",
-                "initial": [
+                "type": "choice",
+                "answerOption": [
                   {
                     "valueCoding": {
                       "code": "female",
                       "display": "Female"
                     }
-                  }
-                ],
-                "answerOption": [
-                  {
-                    "valueCoding": {
-                      "code": "female",
-                      "display": "Female",
-                      "designation": [
-                        {
-                          "language": "sw",
-                          "value": "Mwanamke"
-                        }
-                      ]
-                    }
                   },
                   {
                     "valueCoding": {
                       "code": "male",
-                      "display": "Male",
-                      "designation": [
-                        {
-                          "language": "sw",
-                          "value": "Mwanaume"
-                        }
-                      ]
+                      "display": "Male"
+                    }
+                  }
+                ],
+                "initial": [
+                  {
+                    "valueCoding": {
+                      "code": "female",
+                      "display": "Female"
                     }
                   }
                 ]
@@ -274,29 +367,38 @@ class StructureMapTestUtilities : RobolectricTest() {
                 "item": [
                   {
                     "linkId": "PR-telecom-system",
-                    "type": "string",
                     "text": "system",
-                    "initial": [
-                      {
-                        "valueString": "phone"
-                      }
-                    ],
+                    "type": "string",
                     "enableWhen": [
                       {
                         "question": "patient-0-gender",
                         "operator": "=",
                         "answerString": "ok"
                       }
+                    ],
+                    "initial": [
+                      {
+                        "valueString": "phone"
+                      }
                     ]
                   },
                   {
                     "linkId": "PR-telecom-value",
-                    "type": "string",
-                    "required": true,
                     "text": "Phone Number",
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                        "valueExpression": {
+                          "name": "patientTelecom",
+                          "language": "text/fhirpath",
+                          "expression": "Patient.telecom.value"
+                        }
+                      }
+                    ],
                     "_text": {
                       "extension": [
                         {
+                          "url": "http://hl7.org/fhir/StructureDefinition/translation",
                           "extension": [
                             {
                               "url": "lang",
@@ -306,11 +408,12 @@ class StructureMapTestUtilities : RobolectricTest() {
                               "url": "content",
                               "valueString": "Nambari ya simu"
                             }
-                          ],
-                          "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                          ]
                         }
                       ]
-                    }
+                    },
+                    "type": "string",
+                    "required": true
                   }
                 ]
               },
@@ -320,11 +423,21 @@ class StructureMapTestUtilities : RobolectricTest() {
                 "item": [
                   {
                     "linkId": "PR-address-city",
-                    "type": "string",
                     "text": "City",
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                        "valueExpression": {
+                          "name": "patientCity",
+                          "language": "text/fhirpath",
+                          "expression": "Patient.address.city"
+                        }
+                      }
+                    ],
                     "_text": {
                       "extension": [
                         {
+                          "url": "http://hl7.org/fhir/StructureDefinition/translation",
                           "extension": [
                             {
                               "url": "lang",
@@ -334,19 +447,19 @@ class StructureMapTestUtilities : RobolectricTest() {
                               "url": "content",
                               "valueString": "Mji"
                             }
-                          ],
-                          "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                          ]
                         }
                       ]
-                    }
+                    },
+                    "type": "string"
                   },
                   {
                     "linkId": "PR-address-country",
-                    "type": "string",
                     "text": "Country",
                     "_text": {
                       "extension": [
                         {
+                          "url": "http://hl7.org/fhir/StructureDefinition/translation",
                           "extension": [
                             {
                               "url": "lang",
@@ -356,21 +469,31 @@ class StructureMapTestUtilities : RobolectricTest() {
                               "url": "content",
                               "valueString": "Nchi"
                             }
-                          ],
-                          "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                          ]
                         }
                       ]
-                    }
+                    },
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                        "valueExpression": {
+                          "name": "patientCountry",
+                          "language": "text/fhirpath",
+                          "expression": "Patient.address.country"
+                        }
+                      }
+                    ],
+                    "type": "string"
                   }
                 ]
               },
               {
                 "linkId": "PR-active",
-                "type": "boolean",
                 "text": "Is Active?",
                 "_text": {
                   "extension": [
                     {
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation",
                       "extension": [
                         {
                           "url": "lang",
@@ -380,48 +503,103 @@ class StructureMapTestUtilities : RobolectricTest() {
                           "url": "content",
                           "valueString": "Inatumika?"
                         }
-                      ],
-                      "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                      ]
                     }
                   ]
-                }
+                },
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "name": "patientActive",
+                      "language": "text/fhirpath",
+                      "expression": "Patient.active"
+                    }
+                  }
+                ],
+                "type": "boolean"
               }
             ]
           },
           {
             "linkId": "RP",
-            "type": "group",
             "text": "Related person",
+            "type": "group",
             "item": [
               {
                 "linkId": "RP-family-name",
                 "text": "Family name",
+                "type": "text",
                 "required": true,
-                "type": "text"
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "RelatedPerson.name.family"
+                    }
+                  }
+                ]
               },
               {
                 "linkId": "RP-first-name",
                 "text": "First name",
+                "type": "text",
                 "required": true,
-                "type": "text"
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "RelatedPerson.name.given"
+                    }
+                  }
+                ]
               },
               {
                 "linkId": "RP-relationship",
                 "text": "Relationship to patient",
-                "required": true,
                 "type": "text",
-                "answerValueSet": "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype"
+                "required": true,
+                "answerValueSet": "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "RelatedPerson.relationship.coding.code"
+                    }
+                  }
+                ]
               },
               {
                 "linkId": "RP-contact-1",
                 "text": "Phone number",
+                "type": "text",
                 "required": true,
-                "type": "text"
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "RelatedPerson.telecom[0].value"
+                    }
+                  }
+                ]
               },
               {
                 "linkId": "RP-contact-alternate",
                 "text": "Alternative phone number",
-                "type": "text"
+                "type": "text",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "RelatedPerson.telecom[0].value"
+                    }
+                  }
+                ]
               }
             ]
           },
@@ -448,63 +626,63 @@ class StructureMapTestUtilities : RobolectricTest() {
             ],
             "text": "Do you have any of the following conditions?",
             "type": "choice",
-            "repeats": true,
             "required": true,
+            "repeats": true,
             "answerOption": [
               {
                 "valueCoding": {
-                  "display": "Diabetes Mellitus (DM)",
                   "system": "https://www.snomed.org",
-                  "code": "73211009"
+                  "code": "73211009",
+                  "display": "Diabetes Mellitus (DM)"
                 }
               },
               {
                 "valueCoding": {
-                  "display": "HyperTension (HT)",
                   "system": "https://www.snomed.org",
-                  "code": "59621000"
+                  "code": "59621000",
+                  "display": "HyperTension (HT)"
                 }
               },
               {
                 "valueCoding": {
-                  "display": "Ischemic Heart Disease (IHD / CHD / CCF)",
                   "system": "https://www.snomed.org",
-                  "code": "414545008"
+                  "code": "414545008",
+                  "display": "Ischemic Heart Disease (IHD / CHD / CCF)"
                 }
               },
               {
                 "valueCoding": {
-                  "display": "Tuberculosis (TB)",
                   "system": "https://www.snomed.org",
-                  "code": "56717001"
+                  "code": "56717001",
+                  "display": "Tuberculosis (TB)"
                 }
               },
               {
                 "valueCoding": {
-                  "display": "Asthma/COPD",
                   "system": "https://www.snomed.org",
-                  "code": "195967001"
+                  "code": "195967001",
+                  "display": "Asthma/COPD"
                 }
               },
               {
                 "valueCoding": {
-                  "display": "Chronic Kidney Disease",
                   "system": "https://www.snomed.org",
-                  "code": "709044004"
+                  "code": "709044004",
+                  "display": "Chronic Kidney Disease"
                 }
               },
               {
                 "valueCoding": {
-                  "display": "Cancer",
                   "system": "https://www.snomed.org",
-                  "code": "363346000"
+                  "code": "363346000",
+                  "display": "Cancer"
                 }
               },
               {
                 "valueCoding": {
-                  "display": "Others",
                   "system": "https://www.snomed.org",
-                  "code": "74964007"
+                  "code": "74964007",
+                  "display": "Others"
                 }
               }
             ]
@@ -530,9 +708,9 @@ class StructureMapTestUtilities : RobolectricTest() {
                 "question": "comorbidities",
                 "operator": "=",
                 "answerCoding": {
-                  "display": "Others",
                   "system": "https://www.snomed.org",
-                  "code": "74964007"
+                  "code": "74964007",
+                  "display": "Others"
                 }
               }
             ],
@@ -554,72 +732,72 @@ class StructureMapTestUtilities : RobolectricTest() {
                 "question": "comorbidities",
                 "operator": "=",
                 "answerCoding": {
-                  "display": "Others",
                   "system": "https://www.snomed.org",
-                  "code": "74964007"
+                  "code": "74964007",
+                  "display": "Others"
                 }
               },
               {
                 "question": "comorbidities",
                 "operator": "=",
                 "answerCoding": {
-                  "display": "Cancer",
                   "system": "https://www.snomed.org",
-                  "code": "363346000"
+                  "code": "363346000",
+                  "display": "Cancer"
                 }
               },
               {
                 "question": "comorbidities",
                 "operator": "=",
                 "answerCoding": {
-                  "display": "Chronic Kidney Disease",
                   "system": "https://www.snomed.org",
-                  "code": "709044004"
+                  "code": "709044004",
+                  "display": "Chronic Kidney Disease"
                 }
               },
               {
                 "question": "comorbidities",
                 "operator": "=",
                 "answerCoding": {
-                  "display": "Asthma/COPD",
                   "system": "https://www.snomed.org",
-                  "code": "195967001"
+                  "code": "195967001",
+                  "display": "Asthma/COPD"
                 }
               },
               {
                 "question": "comorbidities",
                 "operator": "=",
                 "answerCoding": {
-                  "display": "Tuberculosis (TB)",
                   "system": "https://www.snomed.org",
-                  "code": "56717001"
+                  "code": "56717001",
+                  "display": "Tuberculosis (TB)"
                 }
               },
               {
                 "question": "comorbidities",
                 "operator": "=",
                 "answerCoding": {
-                  "display": "Ischemic Heart Disease (IHD / CHD / CCF)",
                   "system": "https://www.snomed.org",
-                  "code": "414545008"
+                  "code": "414545008",
+                  "display": "Ischemic Heart Disease (IHD / CHD / CCF)"
                 }
               },
               {
                 "question": "comorbidities",
                 "operator": "=",
                 "answerCoding": {
-                  "display": "HyperTension (HT)",
                   "system": "https://www.snomed.org",
-                  "code": "59621000"
+                  "code": "59621000",
+                  "display": "HyperTension (HT)"
                 }
               },
               {
                 "question": "comorbidities",
                 "operator": "=",
                 "answerCoding": {
-                  "display": "Diabetes Mellitus (DM)",
                   "system": "https://www.snomed.org",
-                  "code": "73211009"
+                  "code": "73211009",
+                  "display": "Diabetes Mellitus (DM)"
                 }
               }
             ],
@@ -633,6 +811,24 @@ class StructureMapTestUtilities : RobolectricTest() {
                 }
               }
             ]
+          },
+          {
+            "linkId": "RP-id",
+            "text": "Related person id",
+            "type": "text",
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+                "valueBoolean": true
+              },
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "RelatedPerson.id.value"
+                }
+              }
+            ]
           }
         ]
       }
@@ -642,187 +838,189 @@ class StructureMapTestUtilities : RobolectricTest() {
   private val questionnaireResponse =
     """
     {
-  "resourceType": "QuestionnaireResponse",
-  "questionnaire": "Questionnaire/client-registration-sample",
-  "item": [
-    {
-      "linkId": "PR",
+      "resourceType": "QuestionnaireResponse",
+      "questionnaire": "Questionnaire/client-registration-sample",
       "item": [
         {
-          "linkId": "PR-name",
+          "linkId": "PR",
           "item": [
             {
-              "linkId": "PR-name-given",
-              "answer": [
+              "linkId": "PR-name",
+              "item": [
                 {
-                  "valueString": "Mike"
+                  "linkId": "PR-name-given",
+                  "answer": [
+                    {
+                      "valueString": "Mike"
+                    }
+                  ]
+                },
+                {
+                  "linkId": "PR-name-family",
+                  "answer": [
+                    {
+                      "valueString": "Doe"
+                    }
+                  ]
                 }
               ]
             },
             {
-              "linkId": "PR-name-family",
+              "linkId": "patient-0-birth-date",
+              "answer": [
+                {
+                  "valueDate": "2021-07-01"
+                }
+              ]
+            },
+            {
+              "linkId": "patient-0-gender",
+              "answer": [
+                {
+                  "valueCoding": {
+                    "code": "male",
+                    "display": "Male"
+                  }
+                }
+              ]
+            },
+            {
+              "linkId": "PR-telecom",
+              "item": [
+                {
+                  "linkId": "PR-telecom-system",
+                  "answer": [
+                    {
+                      "valueString": "phone"
+                    }
+                  ]
+                },
+                {
+                  "linkId": "PR-telecom-value",
+                  "answer": [
+                    {
+                      "valueString": "0700 000 000"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "linkId": "PR-address",
+              "item": [
+                {
+                  "linkId": "PR-address-city",
+                  "answer": [
+                    {
+                      "valueString": "Nairobi"
+                    }
+                  ]
+                },
+                {
+                  "linkId": "PR-address-country",
+                  "answer": [
+                    {
+                      "valueString": "Kenya"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "linkId": "PR-active",
+              "answer": [
+                {
+                  "valueBoolean": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "RP",
+          "item": [
+            {
+              "linkId": "RP-family-name",
               "answer": [
                 {
                   "valueString": "Doe"
                 }
               ]
-            }
-          ]
-        },
-        {
-          "linkId": "patient-0-birth-date",
-          "answer": [
+            },
             {
-              "valueDate": "2021-07-01"
+              "linkId": "RP-first-name",
+              "answer": [
+                {
+                  "valueString": "Mama-mike"
+                }
+              ]
+            },
+            {
+              "linkId": "RP-relationship",
+              "answer": [
+                {
+                  "valueString": "PRN"
+                }
+              ]
+            },
+            {
+              "linkId": "RP-contact-1",
+              "answer": [
+                {
+                  "valueString": "0700 001 001"
+                }
+              ]
+            },
+            {
+              "linkId": "RP-contact-alternate",
+              "answer": [
+                {
+                  "valueString": "0700 000 012"
+                }
+              ]
             }
           ]
         },
         {
-          "linkId": "patient-0-gender",
+          "linkId": "comorbidities",
           "answer": [
             {
               "valueCoding": {
-                "code": "male",
-                "display": "Male"
-              }
-            }
-          ]
-        },
-        {
-          "linkId": "PR-telecom",
-          "item": [
-            {
-              "linkId": "PR-telecom-system",
-              "answer": [
-                {
-                  "valueString": "phone"
-                }
-              ]
-            },
-            {
-              "linkId": "PR-telecom-value",
-              "answer": [
-                {
-                  "valueString": "0700 000 000"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "linkId": "PR-address",
-          "item": [
-            {
-              "linkId": "PR-address-city",
-              "answer": [
-                {
-                  "valueString": "Nairobi"
-                }
-              ]
-            },
-            {
-              "linkId": "PR-address-country",
-              "answer": [
-                {
-                  "valueString": "Kenya"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "linkId": "PR-active",
-          "answer": [
-            {
-              "valueBoolean": true
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "linkId": "RP",
-      "item": [
-        {
-          "linkId": "RP-family-name",
-          "answer": [
-            {
-              "valueString": "Doe"
-            }
-          ]
-        },
-        {
-          "linkId": "RP-first-name",
-          "answer": [
-            {
-              "valueString": "Mama-mike"
-            }
-          ]
-        },
-        {
-          "linkId": "RP-relationship",
-          "answer": [
-            {
-              "valueString": "PRN"
-            }
-          ]
-        },
-        {
-          "linkId": "RP-contact-1",
-          "answer": [
-            {
-              "valueString": "0700 001 001"
-            }
-          ]
-        },
-        {
-          "linkId": "RP-contact-alternate",
-          "answer": [
-            {
-              "valueString": "0700 000 012"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "linkId": "comorbidities",
-      "answer": [
-        {
-        "valueCoding": {
                 "display": "Cancer",
                 "system": "https://www.snomed.org",
                 "code": "363346000"
               }
-    
-        },
-        {
-        "valueCoding": {
+            },
+            {
+              "valueCoding": {
                 "display": "Others",
                 "system": "https://www.snomed.org",
                 "code": "74964007"
               }
+            }
+          ]
+        },
+        {
+          "linkId": "other_comorbidities",
+          "answer": [
+            {
+              "valueString": "This is another comorbidity"
+            }
+          ]
+        },
+        {
+          "linkId": "patient-barcode",
+          "answer": [
+            {
+              "valueString": "scanned-barcode-string"
+            }
+          ]
+        },
+        {
+          "linkId": "RP-id"
         }
       ]
-    },
-    {
-    "linkId": "other_comorbidities",
-    "answer": [
-    {
-    "valueString": "This is another comorbidity"
     }
-    ]
-    }, 
-    {
-    "linkId": "patient-barcode",
-    "answer": [
-    {
-    "valueString": "scanned-barcode-string"
-    }
-    ]
-    }
-  ]
-}
     """.trimIndent()
 
   private val fhirMapToConvert =
@@ -839,28 +1037,29 @@ group PatientRegistration(source src : QuestionnaireResponse, target bundle: Bun
     src -> bundle.id = uuid() "rule_c";
     src -> bundle.type = 'collection' "rule_b";
     src -> bundle.entry as entry, entry.resource = create('Patient') as patient then
-        ExtractPatient(src, patient), ExtractRelatedPerson(src, bundle, patient), ExtractObservations(src, bundle, patient), ExtractRiskAssessmentObservation(src, bundle, bundle, patient) "rule_i";
+        ExtractPatient(src, patient), ExtractRelatedPerson(src, bundle, patient) "rule_a";
+
+    src.item as relatedPersonIdItem where(linkId = 'RP-id' and answer.count() = 0) then {
+      src -> evaluate(bundle, ${"$"}this.entry.resource.where(${"$"}this.is(Patient))) as patient then ExtractObservations(src, bundle, patient), ExtractRiskAssessmentObservation(src, bundle, bundle, patient) "rule_d";
+    } "rule_e";
 }
 
 group ExtractPatient(source src : QuestionnaireResponse, target patient : Patient) {
-	src.item as patientBarcodeItem where(linkId = 'patient-barcode') then {
-		patientBarcodeItem where (patientBarcodeItem.answer.count() > 0) then {
-          patientBarcodeItem.answer as patientBarcode where (patientBarcode.empty().not()) -> patient.id = create('id') as patientId then {
-            src -> patientId.value = evaluate(patientBarcode, ${"$"}this.value) "rule_j1_1";
+    src -> patient.id = uuid() "rule_patient_id_generation";
+	src.item as patientBarcodeItem where(linkId = 'patient-barcode' and answer.count() > 0 and answer.empty().not()) then {
+          src -> patient.id = create('id') as patientId then {
+            src -> patientId.value = evaluate(patientBarcodeItem, ${"$"}this.answer.value) "rule_j1_1";
           } "rule_j1_2";
-          patientBarcodeItem.answer as patientBarcode where (patientBarcode.empty()) -> patient.id = uuid() "rule_j1_3";
-        } "rule_j1";
-        patientBarcodeItem where (patientBarcodeItem.answer.count() = 0) -> patient.id = uuid() "rule_j2";
-	};
+    };
 
     src.item as item where(linkId = 'PR') then {
        item.item as inner_item where (linkId = 'patient-0-birth-date') then {
-           inner_item.answer first as ans then { 
+           inner_item.answer first as ans then {
                ans.value as val -> patient.birthDate = val "rule_a";
            };
        };
-       
-       item.item as nameItem where(linkId = 'PR-name') -> patient.name = create('HumanName') as patientName then {  
+
+       item.item as nameItem where(linkId = 'PR-name') -> patient.name = create('HumanName') as patientName then {
           src -> patientName.family = evaluate(nameItem, ${"$"}this.item.where(linkId = 'PR-name-family').answer.value) "rule_d";
           src -> patientName.given = evaluate(nameItem, ${"$"}this.item.where(linkId = 'PR-name-given').answer.value) "rule_e";
        };
@@ -911,7 +1110,13 @@ group ExtractRelatedPerson(source src : QuestionnaireResponse, target bundle : B
                 } "rule_erp_10";
             } "rule_erp_10a";
 
-            src -> relatedPerson.id = uuid() "rule_erp_11";
+            src -> relatedPerson.id = uuid() "rule_erp_11_a";
+            src.item as relatedPersonIdItem where(linkId = 'RP-id' and answer.count() > 0 and answer.empty().not()) then {
+                src -> relatedPerson.id = create('id') as patientId then {
+                  src -> patientId.value = evaluate(relatedPersonIdItem, ${"$"}this.answer.value) "rule_erp_11_1_1";
+                } "rule_erp_11_1";
+            } "rule_erp_11";
+
             patient -> relatedPerson.patient = reference(patient) "rule_erp_13a";
         };
     } "rule_erp_14";
@@ -928,7 +1133,7 @@ group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bu
 	    	itemAns.value as itemValue -> obs.value = create('CodeableConcept') as codeableConcept then {
               itemValue.display as itemValueText -> codeableConcept.text = itemValueText "rule_eo6_1";
               itemValue -> codeableConcept.coding = itemValue "rule_eo6_2";
-              
+
               itemValue where(itemValue.code = '74964007') -> bundle.entry as entry, entry.resource = create('Observation') as obs2 then {
                 src.item as otherComorbItem where(linkId = 'other_comorbidities' and answer.count() > 0 and answer[0].empty().not()) then {
                   src -> obs2.id = uuid() "rule_eo6_3_1_1";
@@ -960,9 +1165,9 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
           src -> riskPrediction.outcome = cc("https://www.snomed.org", "38651000000103") "rule_erao_6_2";
         } "rule_erao_6";
         bundleEn.entry as resourceEntry where(resource.is(Observation) and resource.code.coding[0].code = '991381000000107') then {
-          resourceEntry.resource as rs -> riskAm.basis = reference(rs) "rule_erao_7_1"; 
+          resourceEntry.resource as rs -> riskAm.basis = reference(rs) "rule_erao_7_1";
         } "rule_erao_7";
-        
+
         src -> bundle.entry as entry, entry.resource = create('Flag') as riskFlag then {
           src -> riskFlag.id = uuid() "rule_erao_8_1";
           src -> riskFlag.status = "active" "rule_erao_8_2";
@@ -980,8 +1185,28 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
 }
     """.trimIndent()
 
+  private val RELATED_PESRON_JSON =
+    """
+    {"resourceType":"RelatedPerson","id":"7b93dcf1-2ca1-4106-a661-a69ab235facf","meta":{"versionId":"1","lastUpdated":"2021-09-08T08:57:06.038+00:00","source":"#a745b979452223b7"},"patient":{"reference":"Patient/bf04d957-dd5c-4fd4-b1e3-31de3f21a9dc"},"relationship":[{"coding":[{"system":"http://terminology.hl7.org/CodeSystem/v3-RoleCode","code":"Father","display":"father"}]}],"name":[{"family":"Victor","given":["Sumaria"]}],"telecom":[{"system":"phone","rank":1},{"system":"phone","rank":2}]}
+  """
+  private val PATIENT_JSON =
+    """
+      {"resourceType":"Patient","id":"bf04d957-dd5c-4fd4-b1e3-31de3f21a9dc","meta":{"versionId":"1","lastUpdated":"2021-09-08T08:57:03.765+00:00","source":"#9b6a2cfb65269f5c"},"text":{"status":"generated","div":"<div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"hapiHeaderText\">Jared <b>JOHN </b></div><table class=\"hapiPropertyTable\"><tbody><tr><td>Address</td><td><span>Nairobi </span><span>Kenya </span></td></tr><tr><td>Date of birth</td><td><span>17 August 2021</span></td></tr></tbody></table></div>"},"active":true,"name":[{"family":"John","given":["Jared"]}],"telecom":[{"system":"phone","value":"0702125232","rank":1}],"gender":"female","birthDate":"2021-08-17","address":[{"use":"home","type":"physical","city":"Nairobi","country":"Kenya"}]}
+    """.trimIndent()
+
+  private val IMMUNIZATION_JSON =
+    """
+      
+    """.trimIndent()
+
+  private val OBSERVATION_JSON =
+    """
+      
+    """.trimIndent()
+
+
   @Language("Json")
-  private val questionnaireResponseForAdverseEvent = """ 
+  private val questionnaireResponseForAdverseEvent = """
     {"resourceType":"QuestionnaireResponse","item":[{"linkId":"adverse-event-reaction","item":[{"linkId":"adverse-event-codes","answer":[{"valueCoding":{"system":"https://www.snomed.org","code":"39579001","display":"Anaphylaxis"}}]},{"linkId":"adverse-event-date","answer":[{"valueDateTime":"2021-09-08T14:47:00+05:00"}]}]}]}
   """.trimIndent()
 
@@ -1138,8 +1363,8 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
                 ans.value as val -> immunizationReaction.date = val "rule_a";
               };
             };
-          
-            
+
+
             item.item as reaction_detail_item where (linkId = 'adverse-event-codes') -> bundle.entry as entry, entry.resource = create('Observation') as observation then {
               reaction_detail_item -> observation.id = uuid() "rule_obs_1";
               reaction_detail_item.answer as reactionAns -> observation.code = create('CodeableConcept') as codeableConcept then {
@@ -1150,6 +1375,6 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
             };
           };
       };
-  
+
   """.trimIndent()
 }
