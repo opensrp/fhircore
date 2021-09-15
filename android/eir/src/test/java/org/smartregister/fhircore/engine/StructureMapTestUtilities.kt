@@ -174,7 +174,7 @@ class StructureMapTestUtilities : RobolectricTest() {
                 "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
                 "valueExpression": {
                   "language": "text/fhirpath",
-                  "expression": "Patient.id.value"
+                  "expression": "Patient.id"
                 }
               }
             ]
@@ -340,12 +340,14 @@ class StructureMapTestUtilities : RobolectricTest() {
                 "answerOption": [
                   {
                     "valueCoding": {
+                      "system": "http://hl7.org/fhir/administrative-gender",
                       "code": "female",
                       "display": "Female"
                     }
                   },
                   {
                     "valueCoding": {
+                      "system": "http://hl7.org/fhir/administrative-gender",
                       "code": "male",
                       "display": "Male"
                     }
@@ -354,6 +356,7 @@ class StructureMapTestUtilities : RobolectricTest() {
                 "initial": [
                   {
                     "valueCoding": {
+                      "system": "http://hl7.org/fhir/administrative-gender",
                       "code": "female",
                       "display": "Female"
                     }
@@ -595,7 +598,7 @@ class StructureMapTestUtilities : RobolectricTest() {
                     "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
                     "valueExpression": {
                       "language": "text/fhirpath",
-                      "expression": "RelatedPerson.telecom[0].value"
+                      "expression": "RelatedPerson.telecom[1].value"
                     }
                   }
                 ]
@@ -684,6 +687,13 @@ class StructureMapTestUtilities : RobolectricTest() {
                   "display": "Others"
                 }
               }
+            ],
+            "enableWhen": [
+              {
+                "question": "RP-id",
+                "operator": "exists",
+                "answerBoolean": false
+              }
             ]
           },
           {
@@ -711,6 +721,11 @@ class StructureMapTestUtilities : RobolectricTest() {
                   "code": "74964007",
                   "display": "Others"
                 }
+              },
+              {
+                "question": "RP-id",
+                "operator": "exists",
+                "answerBoolean": false
               }
             ],
             "enableBehavior": "all"
@@ -798,6 +813,11 @@ class StructureMapTestUtilities : RobolectricTest() {
                   "code": "73211009",
                   "display": "Diabetes Mellitus (DM)"
                 }
+              },
+              {
+                "question": "RP-id",
+                "operator": "exists",
+                "answerBoolean": false
               }
             ],
             "enableBehavior": "any",
@@ -824,7 +844,7 @@ class StructureMapTestUtilities : RobolectricTest() {
                 "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
                 "valueExpression": {
                   "language": "text/fhirpath",
-                  "expression": "RelatedPerson.id.value"
+                  "expression": "RelatedPerson.id"
                 }
               }
             ]

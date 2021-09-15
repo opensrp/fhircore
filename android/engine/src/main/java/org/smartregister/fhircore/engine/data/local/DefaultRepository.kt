@@ -44,10 +44,10 @@ class DefaultRepository(
     return withContext(dispatcherProvider.io()) { fhirEngine.save(resource) }
   }
 
-  suspend fun addOrUpdate(resource: Resource) {
+  suspend fun <R : Resource> addOrUpdate(resource: R) {
     return withContext(dispatcherProvider.io()) {
       try {
-        fhirEngine.load(resource::class.java, resource.id).run {
+        fhirEngine.load(resource::class.java, resource.idElement.idPart).run {
           fhirEngine.update(updateFrom(resource))
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {

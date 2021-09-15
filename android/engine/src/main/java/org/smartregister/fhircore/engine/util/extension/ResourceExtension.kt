@@ -26,13 +26,13 @@ import org.json.JSONObject
 fun Resource.toJson(parser: IParser = FhirContext.forR4().newJsonParser()): String =
   parser.encodeResourceToString(this)
 
-inline fun <reified T : Resource> T.updateFrom(updatedResource: Resource): T {
+fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   val jsonParser = FhirContext.forR4().newJsonParser()
   val stringJson = toJson(jsonParser)
   val originalResourceJson = JSONObject(stringJson)
 
   originalResourceJson.updateFrom(JSONObject(updatedResource.toJson(jsonParser)))
-  return jsonParser.parseResource(T::class.java, originalResourceJson.toString())
+  return jsonParser.parseResource(this::class.java, originalResourceJson.toString())
 }
 
 @Throws(JSONException::class)
