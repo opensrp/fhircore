@@ -51,7 +51,7 @@ import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.format
-import org.smartregister.fhircore.engine.util.extension.loadConfig
+import org.smartregister.fhircore.engine.util.extension.loadResourceTemplate
 import org.smartregister.fhircore.engine.util.extension.plusMonthsAsString
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
@@ -204,7 +204,7 @@ class AncPatientRepository(
     clazz: Class<T>,
     data: Map<String, String?> = emptyMap()
   ): T {
-    return AncApplication.getContext().loadConfig(id, clazz, data)
+    return AncApplication.getContext().loadResourceTemplate(id, clazz, data)
   }
 
   private fun buildConfigData(
