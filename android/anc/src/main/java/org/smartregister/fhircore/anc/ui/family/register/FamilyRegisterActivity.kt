@@ -21,6 +21,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.FamilyRepository
@@ -59,12 +60,14 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         titleResource = R.string.family_register_title,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_calender)!!,
         opensMainRegister = true,
+        countMethod = { runBlocking { familyRepository.countAll() } }
       ),
       SideMenuOption(
         itemId = R.id.menu_item_anc,
         titleResource = R.string.anc_register_title,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
-        opensMainRegister = false
+        opensMainRegister = false,
+        countMethod = { runBlocking { familyRepository.ancPatientRepository.countAll() } }
       )
     )
 

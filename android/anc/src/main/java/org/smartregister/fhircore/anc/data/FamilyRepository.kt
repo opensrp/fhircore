@@ -46,7 +46,7 @@ class FamilyRepository(
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : RegisterRepository<Family, FamilyItem> {
 
-  private val ancPatientRepository = AncPatientRepository(fhirEngine, AncItemMapper)
+  internal val ancPatientRepository = AncPatientRepository(fhirEngine, AncItemMapper)
 
   override suspend fun loadData(
     query: String,

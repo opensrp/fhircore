@@ -21,13 +21,18 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import kotlinx.coroutines.runBlocking
+import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.data.FamilyRepository
+import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 
 class AncRegisterActivity : BaseRegisterActivity() {
+  internal lateinit var familyRepository: FamilyRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -38,6 +43,9 @@ class AncRegisterActivity : BaseRegisterActivity() {
         registrationForm = "anc-patient-registration"
       }
     )
+
+    familyRepository =
+      FamilyRepository((application as AncApplication).fhirEngine, FamilyItemMapper)
   }
 
   override fun sideMenuOptions(): List<SideMenuOption> =
@@ -47,12 +55,14 @@ class AncRegisterActivity : BaseRegisterActivity() {
         titleResource = R.string.anc_register_title,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
         opensMainRegister = true,
+        countMethod = { runBlocking { familyRepository.ancPatientRepository.countAll() } }
       ),
       SideMenuOption(
         itemId = R.id.menu_item_family,
         titleResource = R.string.family_register_title,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_calender)!!,
         opensMainRegister = false,
+        countMethod = { runBlocking { familyRepository.countAll() } }
       )
     )
 
