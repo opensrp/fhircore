@@ -21,4 +21,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 object FamilyFormConfig {
   const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
+  const val FAMILY_REGISTER_FORM = "family-registration"
 }

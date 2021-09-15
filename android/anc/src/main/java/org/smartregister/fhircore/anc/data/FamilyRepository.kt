@@ -17,23 +17,34 @@
 package org.smartregister.fhircore.anc.data
 
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.datacapture.mapping.ResourceMapper
-import org.hl7.fhir.r4.model.Observation
+import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.StringFilterModifier
+import com.google.android.fhir.search.count
+import com.google.android.fhir.search.search
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
-import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils
+import org.smartregister.fhircore.anc.data.family.model.FamilyItem
+import org.smartregister.fhircore.anc.sdk.PatientExtended
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
+import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
+import org.smartregister.fhircore.anc.ui.family.register.Family
+import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
+import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.find
 
 class FamilyRepository(
   override val fhirEngine: FhirEngine,
-  override val domainMapper: DomainMapper<Patient, AncPatientItem>
-) : RegisterRepository<Patient, AncPatientItem> {
+  override val domainMapper: DomainMapper<Family, FamilyItem>,
+  private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+) : RegisterRepository<Family, FamilyItem> {
 
   private val ancPatientRepository = AncPatientRepository(fhirEngine, AncItemMapper)
 
@@ -41,40 +52,70 @@ class FamilyRepository(
     query: String,
     pageNumber: Int,
     loadAll: Boolean
-  ): List<AncPatientItem> {
-    TODO("https://github.com/opensrp/fhircore/issues/276")
+  ): List<FamilyItem> {
+    return withContext(dispatcherProvider.io()) {
+      val patients =
+        fhirEngine.search<Patient> {
+          filter(PatientExtended.TAG) {
+            this.value = "Family"
+            this.modifier = StringFilterModifier.CONTAINS
+          }
+
+          if (query.isNotEmpty() && query.isNotBlank()) {
+            filter(Patient.NAME) {
+              value = query.trim()
+              modifier = StringFilterModifier.CONTAINS
+            }
+          }
+          sort(Patient.NAME, Order.ASCENDING)
+          count = PaginationUtil.DEFAULT_PAGE_SIZE
+          from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+        }
+
+      patients.map { p ->
+        val carePlans = ancPatientRepository.searchCarePlan(p.logicalId).toMutableList()
+        val members =
+          fhirEngine.search<Patient> {
+            filter(Patient.LINK) { this.value = "Patient/" + p.logicalId }
+          }
+
+        members.forEach { carePlans.addAll(ancPatientRepository.searchCarePlan(it.logicalId)) }
+
+        FamilyItemMapper.mapToDomainModel(Family(p, members, carePlans))
+      }
+    }
   }
 
   override suspend fun countAll(): Long {
-    TODO("https://github.com/opensrp/fhircore/issues/276")
+    return fhirEngine.count<Patient> {
+      filter(PatientExtended.TAG) {
+        this.value = "Family"
+        this.modifier = StringFilterModifier.CONTAINS
+      }
+    }
   }
 
   suspend fun postProcessFamilyMember(
     questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
-  ) {
-    val patient =
-      ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
-    patient.id = getUniqueId()
-    fhirEngine.save(patient)
-
-    // TODO https://github.com/opensrp/fhircore/issues/525
-    // use ResourceMapper when supported by SDK
-    val target = mutableListOf<Observation>()
-    QuestionnaireUtils.extractObservations(
-      questionnaireResponse,
-      questionnaire.item,
-      patient,
-      target
-    )
-    target.forEach { fhirEngine.save(it) }
+    questionnaireResponse: QuestionnaireResponse,
+    relatedTo: String?
+  ): String {
+    val patientId = getUniqueId()
+    ResourceMapperExtended(fhirEngine)
+      .saveParsedResource(questionnaireResponse, questionnaire, patientId, relatedTo)
 
     val pregnantItem = questionnaireResponse.find(IS_PREGNANT_KEY)
-    if (pregnantItem?.answer?.firstOrNull()?.valueBooleanType?.booleanValue() == true)
-      ancPatientRepository.enrollIntoAnc(patient)
+    if (pregnantItem?.answer?.firstOrNull()?.valueBooleanType?.booleanValue() == true) {
+      val lmpItem = questionnaireResponse.find(LMP_KEY)
+      val lmp = lmpItem?.answer?.firstOrNull()?.valueDateTimeType!!
+      ancPatientRepository.enrollIntoAnc(patientId, lmp)
+    }
+
+    return patientId
   }
 
   companion object {
     const val IS_PREGNANT_KEY = "is_pregnant"
+    const val LMP_KEY = "lmp"
   }
 }

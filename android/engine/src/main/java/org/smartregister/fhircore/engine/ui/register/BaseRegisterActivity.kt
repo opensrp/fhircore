@@ -81,7 +81,7 @@ abstract class BaseRegisterActivity :
 
   private lateinit var registerViewModel: RegisterViewModel
 
-  private lateinit var registerActivityBinding: BaseRegisterActivityBinding
+  protected lateinit var registerActivityBinding: BaseRegisterActivityBinding
 
   private lateinit var drawerMenuHeaderBinding: DrawerMenuHeaderBinding
 
@@ -120,7 +120,8 @@ abstract class BaseRegisterActivity :
         if (!syncTimeStamp.isNullOrEmpty()) {
           SharedPreferencesHelper.write(LAST_SYNC_TIMESTAMP, syncTimeStamp)
         }
-        registerActivityBinding.btnRegisterNewClient.isEnabled = !syncTimeStamp.isNullOrEmpty()
+        // It does not work even if sync is successful
+        // registerActivityBinding.btnRegisterNewClient.isEnabled = !syncTimeStamp.isNullOrEmpty()
       }
     )
 
@@ -278,7 +279,10 @@ abstract class BaseRegisterActivity :
 
   private fun setupSideMenu() {
     sideMenuOptionMap = sideMenuOptions().associateBy { it.itemId }
-    if (sideMenuOptionMap.size == 1) selectedMenuOption = sideMenuOptionMap.values.elementAt(0)
+    sideMenuOptionMap.values.firstOrNull { it.opensMainRegister }?.let {
+      selectedMenuOption = sideMenuOptionMap.values.elementAt(0)
+    }
+
     val menu = registerActivityBinding.navView.menu
 
     sideMenuOptions().forEach { menuOption ->

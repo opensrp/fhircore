@@ -16,11 +16,13 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.register
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
@@ -42,13 +44,23 @@ class AncRegisterActivity : BaseRegisterActivity() {
     listOf(
       SideMenuOption(
         itemId = R.id.menu_item_anc,
-        titleResource = R.string.app_name,
+        titleResource = R.string.anc_register_title,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
         opensMainRegister = true,
+      ),
+      SideMenuOption(
+        itemId = R.id.menu_item_family,
+        titleResource = R.string.family_register_title,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_calender)!!,
+        opensMainRegister = false,
       )
     )
 
   override fun onSideMenuOptionSelected(item: MenuItem): Boolean {
+    when (item.itemId) {
+      R.id.menu_item_family -> startActivity(Intent(this, FamilyRegisterActivity::class.java))
+      R.id.menu_item_anc -> startActivity(Intent(this, AncRegisterActivity::class.java))
+    }
     return true
   }
 

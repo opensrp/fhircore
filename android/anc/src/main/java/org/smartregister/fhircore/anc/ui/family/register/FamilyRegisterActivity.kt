@@ -24,9 +24,7 @@ import androidx.fragment.app.Fragment
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.FamilyRepository
-import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterActivity
-import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConfig
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
@@ -50,7 +48,8 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
       }
     )
 
-    familyRepository = FamilyRepository((application as AncApplication).fhirEngine, AncItemMapper)
+    familyRepository =
+      FamilyRepository((application as AncApplication).fhirEngine, FamilyItemMapper)
   }
 
   override fun sideMenuOptions(): List<SideMenuOption> =
@@ -59,7 +58,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         itemId = R.id.menu_item_family,
         titleResource = R.string.family_register_title,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_calender)!!,
-        opensMainRegister = false
+        opensMainRegister = true,
       ),
       SideMenuOption(
         itemId = R.id.menu_item_anc,
@@ -83,12 +82,11 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         .putExtras(
           QuestionnaireActivity.requiredIntentArgs(
             clientIdentifier = null,
-            form = FamilyFormConfig.FAMILY_MEMBER_REGISTER_FORM
+            form = FamilyFormConfig.FAMILY_REGISTER_FORM
           )
         )
     )
   }
 
-  // TODO add family fragment with https://github.com/opensrp/fhircore/issues/276
-  override fun supportedFragments(): List<Fragment> = listOf(AncRegisterFragment())
+  override fun supportedFragments(): List<Fragment> = listOf(FamilyRegisterFragment())
 }

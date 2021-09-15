@@ -19,6 +19,12 @@ package org.smartregister.fhircore.anc.data.model
 import androidx.compose.runtime.Stable
 import java.util.Date
 
+enum class AncVisitStatus {
+  DUE,
+  OVERDUE,
+  PLANNED
+}
+
 @Stable
 data class AncPatientItem(
   var patientIdentifier: String = "",
@@ -26,7 +32,9 @@ data class AncPatientItem(
   var gender: String = "",
   var age: String = "",
   var demographics: String = "",
-  var atRisk: String = ""
+  var atRisk: String = "",
+  val address: String = "",
+  val visitStatus: AncVisitStatus = AncVisitStatus.PLANNED
 )
 
 @Stable

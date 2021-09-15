@@ -17,28 +17,27 @@
 package org.smartregister.fhircore.anc.ui.anccare.details
 
 import com.google.android.fhir.logicalId
-import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.ui.anccare.register.Anc
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
-import org.smartregister.fhircore.engine.util.extension.atRisk
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 
-object AncPatientItemMapper : DomainMapper<Patient, AncPatientItem> {
+object AncPatientItemMapper : DomainMapper<Anc, AncPatientItem> {
 
-  override fun mapToDomainModel(dto: Patient): AncPatientItem {
-    val name = dto.extractName()
-    val gender = dto.extractGender(AncApplication.getContext())?.first() ?: ""
-    val age = dto.extractAge()
+  override fun mapToDomainModel(dto: Anc): AncPatientItem {
+    val patient = dto.patient
+    val name = patient.extractName()
+    val gender = patient.extractGender(AncApplication.getContext())?.first() ?: ""
+    val age = patient.extractAge()
     return AncPatientItem(
-      patientIdentifier = dto.logicalId,
+      patientIdentifier = patient.logicalId,
       name = name,
       gender = gender.toString(),
       age = age,
       demographics = "$name, $gender, $age",
-      atRisk = dto.atRisk()
     )
   }
 }

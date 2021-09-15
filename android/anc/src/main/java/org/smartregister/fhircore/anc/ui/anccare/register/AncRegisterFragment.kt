@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.LazyPagingItems
-import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.AncPatientRepository
 import org.smartregister.fhircore.anc.data.model.AncPatientItem
@@ -33,7 +32,7 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
-class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
+class AncRegisterFragment : ComposeRegisterFragment<Anc, AncPatientItem>() {
 
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
@@ -79,7 +78,7 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
   }
 
   @Suppress("UNCHECKED_CAST")
-  override fun initializeRegisterDataViewModel(): RegisterDataViewModel<Patient, AncPatientItem> {
+  override fun initializeRegisterDataViewModel(): RegisterDataViewModel<Anc, AncPatientItem> {
     val ancPatientRepository =
       AncPatientRepository(
         (requireActivity().application as AncApplication).fhirEngine,
@@ -93,6 +92,6 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
         )
         .createFactory()
     )[RegisterDataViewModel::class.java] as
-      RegisterDataViewModel<Patient, AncPatientItem>
+      RegisterDataViewModel<Anc, AncPatientItem>
   }
 }
