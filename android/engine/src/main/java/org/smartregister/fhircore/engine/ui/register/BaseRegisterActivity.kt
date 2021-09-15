@@ -81,7 +81,7 @@ abstract class BaseRegisterActivity :
 
   private lateinit var registerViewModel: RegisterViewModel
 
-  protected lateinit var registerActivityBinding: BaseRegisterActivityBinding
+  private lateinit var registerActivityBinding: BaseRegisterActivityBinding
 
   private lateinit var drawerMenuHeaderBinding: DrawerMenuHeaderBinding
 
