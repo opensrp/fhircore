@@ -68,7 +68,7 @@ class FamilyRepository(
             }
           }
           sort(Patient.NAME, Order.ASCENDING)
-          count = PaginationUtil.DEFAULT_PAGE_SIZE
+          count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
           from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
         }
 

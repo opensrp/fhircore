@@ -22,6 +22,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
+import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
@@ -46,7 +47,6 @@ import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
@@ -81,7 +81,7 @@ class AncPatientRepository(
             }
           }
           sort(Patient.NAME, Order.ASCENDING)
-          count = PaginationUtil.DEFAULT_PAGE_SIZE
+          count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
           from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
         }
 
@@ -104,7 +104,14 @@ class AncPatientRepository(
   }
 
   override suspend fun countAll(): Long =
-    withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.count<Patient> {
+        filter(PatientExtended.TAG) {
+          this.value = "Pregnant"
+          this.modifier = StringFilterModifier.CONTAINS
+        }
+      }
+    }
 
   suspend fun fetchDemographics(patientId: String): AncPatientDetailItem {
     var ancPatientDetailItem = AncPatientDetailItem()

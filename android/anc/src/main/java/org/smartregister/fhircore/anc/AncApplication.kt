@@ -59,9 +59,9 @@ class AncApplication : Application(), ConfigurableApplication {
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() =
       mapOf(
-        ResourceType.Patient to mapOf(Patient.SP_ADDRESS_CITY to "NAIROBI"),
-        ResourceType.Questionnaire to mapOf(Questionnaire.SP_PUBLISHER to "ONA"),
-        ResourceType.CarePlan to mapOf(CarePlan.SP_CARE_TEAM to "ANC-CHW")
+        ResourceType.Patient to mapOf(),
+        ResourceType.Questionnaire to mapOf(),
+        ResourceType.CarePlan to mapOf()
       )
 
   private fun constructFhirEngine(): FhirEngine {
