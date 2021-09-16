@@ -36,6 +36,11 @@ OAUTH_CLIENT_SECRET=xxxxxx
 OAUTH_SCOPE=openid
 FHIR_BASE_URL=https://fhir.labs.smartregister.org/fhir/
 ```
+## Application architecture
+
+FHIR Core is base on MVVM Android application architecture. It follows the recommend [Repository Pattern](https://developer.android.com/jetpack/guide) . The diagram below shows the different layers of the application structure. At the core is Android FHIR SDK which provides data access, search, sync, smart guidelines and data capture APIs. Refer to [FHIR Core Docs](https://github.com/opensrp/fhircore/tree/main/docs) for illustration.
+
+![fhircore-app-architecture](docs/assets/fhircore-app-architecture.png)
 
 ## Project Structure
 
@@ -79,4 +84,23 @@ FHIR Core supports application configurations through contracts. These contracts
 
 ### Application configuration
 
+Application level configuration is provided through `ConfigurableApplication` contract. `ConfigurableApplication` exposes the following properties that need to be implemented.
+
+| Property | Description  |
+|:--|:--|
+| `applicationConfiguration` | Used to set Application level configuration. Typically a Kotlin data class|
+|`authenticationService` | A singleton instance of `AuthenticationService` used for handling user authorization and authentication using Android `AccountManager` API |
+|`fhirEngine` | Provides an instance of `FhirEngine` from Android FHIR SDK |
+|`secureSharedPreference`| Sets a singleton of `SecureSharedPreference` used to access encrypted shared preference data |
+| `resourceSyncParams` | Provides resource sync parameters needed for syncing data to and from FHIR server |
+| `syncBroadcaster` | Sets a singleton instance of `SyncBroadcaster` that is used to react to FHIR server sync states. Any view can register to this broadcaster to receive sync states |
+| `workerContextProvider` | Loads  `SimpleWorkerContext` required for StructureMap-based extraction |
+
+`ConfigurableApplication` also exposes a `configureApplication` method that accepts an instance of `ApplicationConfiguration` used to configure the application. This method should be called on the `onCreate`  method of the `Application` class.
+
+
 ### View configuration
+
+FHIR Core view configurations are provided through two contracts `ConfigurableComposableView` and `ConfigurableView`.  `ConfigurableComposableView` is used to configure Android views created using Jetpack Compose.
+
+## Resources 
