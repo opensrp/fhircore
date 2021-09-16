@@ -39,7 +39,7 @@ jobs:
         working-directory: android
 
       - name: Run unit tests with Gradle
-        run: ./gradlew :eir:jacocoTestReport -x testDebugUnitTest --stacktrace
+        run: ./gradlew :eir:jacocoTestReport -x testDebugUnitTest --stacktrace -Dorg.gradle.jvmargs="-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError"
         working-directory: android
         env:
          FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
