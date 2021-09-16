@@ -35,6 +35,9 @@ class AncDetailsQuestionnaireActivity : QuestionnaireActivity() {
   }
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
-    
+    lifecycleScope.launch {
+      ancPatientRepository.postVitalSigns(questionnaire!!, questionnaireResponse)
+      finish()
+    }
   }
 }

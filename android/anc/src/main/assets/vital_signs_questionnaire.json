@@ -1,12 +1,11 @@
 {
   "resourceType": "Questionnaire",
-  "id": "vital-sign-observation-sample",
   "status": "active",
   "date": "2020-11-18T07:24:47.111Z",
   "name": "vital-sign",
   "title": "Vital Sign",
   "subjectType": [
-    "Observation"
+    "Patient"
   ],
   "extension": [
     {
@@ -16,23 +15,278 @@
   ],
   "item": [
     {
+      "linkId": "select-vital-sign",
+      "type": "choice",
+      "required": true,
+      "text": "Select vital sign",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "radio-button",
+                "display": "Radio Button"
+              }
+            ],
+            "text": "A control where choices are listed with a button beside them. The button can be toggled to select or de-select a given choice. Selecting one item deselects all others."
+          }
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "weight",
+            "display": "Weight"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "height",
+            "display": "Height"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "blood-oxygen-level",
+            "display": "Blood Oxygen Level"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "blood-pressure",
+            "display": "Blood Pressure"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "pulse-rate",
+            "display": "Pulse Rate"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "blood-glucose",
+            "display": "Blood Glucose"
+          }
+        }
+      ]
+    },
+    {
       "linkId": "vital-signs-body-wight",
       "definition": "http://acme.org/devices/clinical-codes",
       "text": "Body Weight (lb)",
-      "type": "decimal"
+      "type": "decimal",
+      "enableWhen": [
+        {
+          "question": "select-vital-sign",
+          "operator": "=",
+          "answerCoding": {
+            "code": "weight"
+          }
+        }
+      ]
     },
     {
       "linkId": "vital-signs-height",
       "definition": "http://acme.org/devices/clinical-codes",
       "text": "Height (cm)",
-      "type": "decimal"
+      "type": "decimal",
+      "enableWhen": [
+        {
+          "question": "select-vital-sign",
+          "operator": "=",
+          "answerCoding": {
+            "code": "height"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "vital-signs-blood_glucose",
+      "definition": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+      "text": "Blood Glucose (mmol/L)",
+      "type": "decimal",
+      "enableWhen": [
+        {
+          "question": "select-vital-sign",
+          "operator": "=",
+          "answerCoding": {
+            "code": "blood-glucose"
+          }
+        }
+      ]
     },
     {
       "linkId": "vital-signs-blood-oxygen-level",
       "definition": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
-      "text": "Oxygen saturation in Arterial blood",
+      "text": "Blood Oxygen Level",
       "type": "integer",
-      "maxLength": 99
+      "enableWhen": [
+        {
+          "question": "select-vital-sign",
+          "operator": "=",
+          "answerCoding": {
+            "code": "blood-oxygen-level"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "vital-signs-pulse-rate-level",
+      "definition": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+      "text": "Pulse Rate (bpm)",
+      "type": "integer",
+      "enableWhen": [
+        {
+          "question": "select-vital-sign",
+          "operator": "=",
+          "answerCoding": {
+            "code": "pulse-rate"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "vital-signs-body-site-systolic-blood-pressure",
+      "type": "choice",
+      "text": "Select body site for Systolic blood pressure",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "radio-button",
+                "display": "Radio Button"
+              }
+            ],
+            "text": "A control where choices are listed with a button beside them. The button can be toggled to select or de-select a given choice. Selecting one item deselects all others."
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+          "valueCode": "horizontal"
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "left-arm",
+            "display": "Left arm"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "right-arm",
+            "display": "Right arm"
+          }
+        }
+      ],
+      "initial": [
+        {
+          "valueCoding": {
+            "code": "left-arm",
+            "display": "Left arm"
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "select-vital-sign",
+          "operator": "=",
+          "answerCoding": {
+            "code": "blood-pressure"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "vital-signs-systolic-blood-pressure",
+      "definition": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+      "text": "Systolic Blood Pressure (mmHg)",
+      "type": "integer",
+      "enableWhen": [
+        {
+          "question": "select-vital-sign",
+          "operator": "=",
+          "answerCoding": {
+            "code": "blood-pressure"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "vital-signs-body-site-diastolic-blood-pressure",
+      "type": "choice",
+      "text": "Select body site for Diastolic blood pressure",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "radio-button",
+                "display": "Radio Button"
+              }
+            ],
+            "text": "A control where choices are listed with a button beside them. The button can be toggled to select or de-select a given choice. Selecting one item deselects all others."
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+          "valueCode": "horizontal"
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "left-arm",
+            "display": "Left arm"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "right-arm",
+            "display": "Right arm"
+          }
+        }
+      ],
+      "initial": [
+        {
+          "valueCoding": {
+            "code": "left-arm",
+            "display": "Left arm"
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "select-vital-sign",
+          "operator": "=",
+          "answerCoding": {
+            "code": "blood-pressure"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "vital-signs-diastolic-blood-pressure",
+      "definition": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+      "text": "Diastolic blood pressure (mmHg)",
+      "type": "integer",
+      "enableWhen": [
+        {
+          "question": "select-vital-sign",
+          "operator": "=",
+          "answerCoding": {
+            "code": "blood-pressure"
+          }
+        }
+      ]
     }
   ]
 }

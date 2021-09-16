@@ -21,6 +21,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Observation
 import org.smartregister.fhircore.anc.data.AncPatientRepository
 import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
@@ -28,26 +30,44 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class AncDetailsViewModel(
-  val ancPatientRepository: AncPatientRepository,
-  var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
-  val patientId: String
+    val ancPatientRepository: AncPatientRepository,
+    var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
+    val patientId: String
 ) : ViewModel() {
 
-  fun fetchDemographics(): LiveData<AncPatientDetailItem> {
-    val patientDemographics = MutableLiveData<AncPatientDetailItem>()
-    viewModelScope.launch(dispatcher.io()) {
-      val ancPatientDetailItem = ancPatientRepository.fetchDemographics(patientId = patientId)
-      patientDemographics.postValue(ancPatientDetailItem)
+    fun fetchDemographics(): LiveData<AncPatientDetailItem> {
+        val patientDemographics = MutableLiveData<AncPatientDetailItem>()
+        viewModelScope.launch(dispatcher.io()) {
+            val ancPatientDetailItem = ancPatientRepository.fetchDemographics(patientId = patientId)
+            patientDemographics.postValue(ancPatientDetailItem)
+        }
+        return patientDemographics
     }
-    return patientDemographics
-  }
 
-  fun fetchCarePlan(cJson: String?): LiveData<List<CarePlanItem>> {
-    val patientCarePlan = MutableLiveData<List<CarePlanItem>>()
-    viewModelScope.launch(dispatcher.io()) {
-      val listCarePlan = ancPatientRepository.fetchCarePlan(patientId = patientId, cJson)
-      patientCarePlan.postValue(listCarePlan)
+    fun fetchCarePlan(): LiveData<List<CarePlanItem>> {
+        val patientCarePlan = MutableLiveData<List<CarePlanItem>>()
+        viewModelScope.launch(dispatcher.io()) {
+            val listCarePlan = ancPatientRepository.fetchCarePlan(patientId = patientId)
+            val listCarePlanItem = ancPatientRepository.fetchCarePlanItem(listCarePlan)
+            patientCarePlan.postValue(listCarePlanItem)
+        }
+        return patientCarePlan
     }
-    return patientCarePlan
-  }
+
+    fun fetchObservation(): LiveData<List<Observation>> {
+        val patientObservation = MutableLiveData<List<Observation>>()
+        viewModelScope.launch(dispatcher.io()) {
+            val listObservation = ancPatientRepository.fetchObservations(patientId = patientId)
+            patientObservation.postValue(listObservation)
+        }
+        return patientObservation
+    }
+    fun fetchEncounters(): LiveData<List<Encounter>> {
+        val patientEncounters = MutableLiveData<List<Encounter>>()
+        viewModelScope.launch(dispatcher.io()) {
+            val listEncounters = ancPatientRepository.fetchEncounters(patientId = patientId)
+            patientEncounters.postValue(listEncounters)
+        }
+        return patientEncounters
+    }
 }
