@@ -75,7 +75,7 @@ internal class AncRegisterActivityTest : ActivityRobolectricTest() {
     assertEquals(R.id.menu_item_anc, sideMenu[0].itemId)
     assertEquals(R.string.anc_register_title, sideMenu[0].titleResource)
 
-    assertEquals(R.id.menu_item_anc, sideMenu[1].itemId)
+    assertEquals(R.id.menu_item_family, sideMenu[1].itemId)
     assertEquals(R.string.family_register_title, sideMenu[1].titleResource)
   }
 

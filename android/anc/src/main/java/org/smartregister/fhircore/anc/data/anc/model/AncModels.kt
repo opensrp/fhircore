@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.data.model
+package org.smartregister.fhircore.anc.data.anc.model
 
 import androidx.compose.runtime.Stable
 import java.util.Date

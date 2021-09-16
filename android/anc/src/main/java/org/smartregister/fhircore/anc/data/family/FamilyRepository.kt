@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.data
+package org.smartregister.fhircore.anc.data.family
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
@@ -26,6 +26,7 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.sdk.PatientExtended
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
@@ -46,7 +47,7 @@ class FamilyRepository(
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : RegisterRepository<Family, FamilyItem> {
 
-  internal val ancPatientRepository = AncPatientRepository(fhirEngine, AncItemMapper)
+  private val ancPatientRepository = AncPatientRepository(fhirEngine, AncItemMapper)
 
   override suspend fun loadData(
     query: String,
