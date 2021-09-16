@@ -3,6 +3,7 @@
   "id": "anc_service_enrollment",
   "language": "en",
   "status": "active",
+  "publisher": "ONA",
   "subjectType": [
     "Patient"
   ],
@@ -14,6 +15,25 @@
     }
   ],
   "item": [
+    {
+      "linkId": "lmp",
+      "type": "dateTime",
+      "required": true,
+      "text": "Last Menstrual Period Date (LMP)",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "code": [
+        {
+          "system": "https://www.snomed.org",
+          "code": "21840007",
+          "display": "Date of last menstrual period"
+        }
+      ]
+    },
     {
       "linkId": "edd",
       "type": "date",

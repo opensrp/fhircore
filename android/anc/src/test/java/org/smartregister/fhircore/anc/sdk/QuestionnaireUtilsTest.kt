@@ -54,8 +54,8 @@ class QuestionnaireUtilsTest : RobolectricTest() {
       target
     )
 
-    val gaObs = target[1]
-    Assert.assertEquals(4, target.size)
+    val gaObs = target[2]
+    Assert.assertEquals(5, target.size)
     Assert.assertEquals("Fetal gestational age", gaObs.code.coding[0].display)
     Assert.assertEquals("57036006", gaObs.code.coding[0].code)
     Assert.assertEquals("Patient/test_patient_1_id", gaObs.subject.reference)
