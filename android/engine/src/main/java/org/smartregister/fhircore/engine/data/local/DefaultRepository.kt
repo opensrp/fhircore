@@ -16,12 +16,14 @@
 
 package org.smartregister.fhircore.engine.data.local
 
+import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import com.google.android.fhir.FhirEngine
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.loadResource
+import org.smartregister.fhircore.engine.util.extension.updateFrom
 
 class DefaultRepository(
   val fhirEngine: FhirEngine,
@@ -34,5 +36,17 @@ class DefaultRepository(
 
   suspend fun save(resource: Resource) {
     return withContext(dispatcherProvider.io()) { fhirEngine.save(resource) }
+  }
+
+  suspend fun <R : Resource> addOrUpdate(resource: R) {
+    return withContext(dispatcherProvider.io()) {
+      try {
+        fhirEngine.load(resource::class.java, resource.idElement.idPart).run {
+          fhirEngine.update(updateFrom(resource))
+        }
+      } catch (resourceNotFoundException: ResourceNotFoundException) {
+        fhirEngine.save(resource)
+      }
+    }
   }
 }

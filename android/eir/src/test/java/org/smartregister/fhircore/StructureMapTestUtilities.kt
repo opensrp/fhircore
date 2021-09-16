@@ -23,6 +23,8 @@ import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -53,10 +55,12 @@ class StructureMapTestUtilities : RobolectricTest() {
     val questionnaire = iParser.parseResource(Questionnaire::class.java, questionnaireForAdverseEvent)
     val patient = iParser.parseResource(Patient::class.java, PATIENT_JSON)
     val relatedPerson = iParser.parseResource(RelatedPerson::class.java, RELATED_PESRON_JSON)
+    val immunization = iParser.parseResource(Immunization::class.java, IMMUNIZATION_JSON)
+    val observation = iParser.parseResource(Observation::class.java, OBSERVATION_JSON)
 
     var questionnaireResponse: QuestionnaireResponse
     runBlocking {
-      questionnaireResponse = ResourceMapper.populate(questionnaire, patient, relatedPerson)
+      questionnaireResponse = ResourceMapper.populate(questionnaire, immunization, observation)
     }
 
     val expected =
@@ -1196,12 +1200,12 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
 
   private val IMMUNIZATION_JSON =
     """
-      
+    {"resourceType":"Immunization","id":"74dee251-be1e-48ee-a727-e4204cd54ee7","meta":{"versionId":"1","lastUpdated":"2021-09-10T17:55:31.609+00:00","source":"#1ba9b4b2f1fbdeae"},"status":"completed","vaccineCode":{"coding":[{"code":"Moderna"}],"text":"Moderna"},"patient":{"reference":"Patient/9f2ec87c-93c4-4274-a73b-191b92bfe7ac"},"occurrenceDateTime":"2021-09-10","recorded":"2021-09-10T20:29:48+03:00","protocolApplied":[{"doseNumberPositiveInt":2}],"reaction":[{"date":"2021-09-08T14:47:00+05:00","detail":{"reference":"Observation/3bc61be1-36ac-4bd1-9ff3-7760602cf10e"}}]}
     """.trimIndent()
 
   private val OBSERVATION_JSON =
     """
-      
+    {"resourceType":"Observation","id":"3bc61be1-36ac-4bd1-9ff3-7760602cf10e","code":{"coding":[{"system":"https://www.snomed.org","code":"39579001","display":"Anaphylaxis"}]}}
     """.trimIndent()
 
 
@@ -1226,6 +1230,24 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
     }
   ],
   "item": [
+    {
+          "linkId": "immunization-id",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Immunization#Immunization.id",
+          "type": "date",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "expression": "Immunization.id",
+                "language": "text/fhirpath"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ]
+        },
     {
       "linkId": "adverse-event-reaction",
       "type": "group",
@@ -1340,7 +1362,7 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
 """.trimIndent()
 
   private val fhirMapToConvertForAdverseEvents = """
-    map "http://hl7.org/fhir/StructureMap/AdverseReaction" = 'AdverseReaction'
+     map "http://hl7.org/fhir/StructureMap/AdverseReaction" = 'AdverseReaction'
 
       uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
       uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
@@ -1355,14 +1377,13 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
       }
 
       group ExtractImmunization(source src: QuestionnaireResponse, target bundle: Bundle, target immunization: Immunization) {
-          src.id as srcId -> immunization.id = srcId "rule_j";
-
-              src.item as item where(linkId = 'adverse-event-reaction') -> immunization.reaction = create('Immunization_Reaction') as immunizationReaction then {
-                item.item as inner_item where (linkId = 'adverse-event-date') then {
-              inner_item.answer first as ans then {
-                ans.value as val -> immunizationReaction.date = val "rule_a";
-              };
-            };
+      
+            src -> immunization.id = create('id') as immunizationId then {
+                src -> immunizationId.value = evaluate(src, ${"$"}this.item.where(linkId = 'immunization-id').answer.value) "rule_j";
+            } "rule_k"; 
+            
+            src.item as item where(linkId = 'adverse-event-reaction') -> immunization.reaction = create('Immunization_Reaction') as immunizationReaction then {
+                item -> immunizationReaction.date = evaluate(item, ${"$"}this.item.where(linkId = 'adverse-event-date').answer.value) "rule_a";
 
 
             item.item as reaction_detail_item where (linkId = 'adverse-event-codes') -> bundle.entry as entry, entry.resource = create('Observation') as observation then {

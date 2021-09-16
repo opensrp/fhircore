@@ -205,7 +205,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     every { questionnaireViewModel.saveBundleResources(any(), any()) } just runs
 
-    questionnaireViewModel.saveExtractedResources(
+    questionnaireViewModel.extractAndSaveResources(
       "resourceId",
       ApplicationProvider.getApplicationContext(),
       questionnaire,

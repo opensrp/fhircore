@@ -25,6 +25,7 @@ import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -59,7 +60,7 @@ class QuestionnaireViewModel(
     return structureMap
   }
 
-  fun saveExtractedResources(
+  fun extractAndSaveResources(
     resourceId: String?,
     context: Context,
     questionnaire: Questionnaire,
@@ -89,7 +90,7 @@ class QuestionnaireViewModel(
           if (resourceId != null && bundleEntry.hasResource()) {
             bundleEntry.resource.id = resourceId
           }
-          defaultRepository.save(bundleEntry.resource)
+          defaultRepository.addOrUpdate(bundleEntry.resource)
         }
       }
 
@@ -105,6 +106,10 @@ class QuestionnaireViewModel(
   }
 
   suspend fun loadPatient(patientId: String): Patient? {
+    return defaultRepository.loadResource(patientId)
+  }
+
+  suspend fun loadImmunization(patientId: String):Immunization? {
     return defaultRepository.loadResource(patientId)
   }
 

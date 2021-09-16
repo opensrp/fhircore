@@ -167,7 +167,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         }
       )
 
-      questionnaireViewModel.saveExtractedResources(
+      questionnaireViewModel.extractAndSaveResources(
         context = this@QuestionnaireActivity,
         questionnaire = questionnaire!!,
         questionnaireResponse = questionnaireResponse,
