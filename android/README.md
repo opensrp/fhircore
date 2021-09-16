@@ -101,6 +101,12 @@ Application level configuration is provided through `ConfigurableApplication` co
 
 ### View configuration
 
-FHIR Core view configurations are provided through two contracts `ConfigurableComposableView` and `ConfigurableView`.  `ConfigurableComposableView` is used to configure Android views created using Jetpack Compose.
+FHIR Core view configurations are provided through two contracts `ConfigurableComposableView` and `ConfigurableView`.  `ConfigurableComposableView` is used to configure Android views created using Jetpack Compose. View configurations are used to show or hide views, change view content, change view background etc. Each of the two contracts exposes `configureViews` method that accepts view `Configuration` as an argument. This method should be called when the `Activity` or `Fragment` is created. It is also recommended to update the view configurations via a `ViewModel` so they can be observed whenever the configurations are changed.
 
 ## Resources 
+
+- [Code Documentation](https://fhircore.smartregister.org/) - Access FHIR Core code documentation
+- [Developer Guidelines](https://github.com/opensrp/fhircore/wiki) - Get started with FHIR Core
+- [FHIR Core Docs](https://github.com/opensrp/fhircore/tree/main/docs) - Read FHIR Core Documentation 
+- [Android App Architecture Guide](https://developer.android.com/jetpack/guide) - Learn more about Android App Architecture
+- [Jetpack Compose](https://developer.android.com/jetpack/compose) - Learn more about Jetpack Compose
