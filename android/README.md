@@ -40,7 +40,7 @@ FHIR_BASE_URL=https://fhir.labs.smartregister.org/fhir/
 
 FHIR Core is base on MVVM Android application architecture. It follows the recommend [Repository Pattern](https://developer.android.com/jetpack/guide) . The diagram below shows the different layers of the application structure. At the core is Android FHIR SDK which provides data access, search, sync, smart guidelines and data capture APIs. Refer to [FHIR Core Docs](https://github.com/opensrp/fhircore/tree/main/docs) for illustration.
 
-![fhircore-app-architecture](docs/assets/fhircore-app-architecture.png)
+<img align="center" width="800" height="600" src="../docs/assets/fhircore-app-architecture.png">
 
 ## Project Structure
 
