@@ -21,16 +21,19 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.R
+import java.text.SimpleDateFormat
 
 class FamilyEncounterViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val visitName: TextView = itemView.findViewById(R.id.visit_name)
+  private val visitDate: TextView = itemView.findViewById(R.id.visit_date)
 
   fun bindTo(
     familyEncounter: Encounter,
     onItemClicked: (Encounter) -> Unit,
   ) {
 
-    visitName.text = familyEncounter.type?.first()?.coding?.first()?.display ?: ""
+    visitName.text = familyEncounter.class_?.display ?: ""
+    visitDate.text = SimpleDateFormat.getDateInstance().format(familyEncounter.period.start)
     itemView.setOnClickListener { onItemClicked(familyEncounter) }
   }
 }

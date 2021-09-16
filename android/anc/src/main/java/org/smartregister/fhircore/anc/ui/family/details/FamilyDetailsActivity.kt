@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.family.details
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -24,13 +25,15 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.family.FamilyMemberRepository
+import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
-import org.smartregister.fhircore.anc.ui.family.FamilyFormConfig
 import org.smartregister.fhircore.anc.ui.family.details.adapter.FamilyEncounterAdapter
 import org.smartregister.fhircore.anc.ui.family.details.adapter.FamilyMemberAdapter
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
@@ -39,18 +42,18 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
   private lateinit var familyMemberAdapter: FamilyMemberAdapter
   private lateinit var familyEncounterAdapter: FamilyEncounterAdapter
 
-  lateinit var familyMemberRepository: FamilyMemberRepository
+  lateinit var familyDetailRepository: FamilyDetailRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_family_details)
     setSupportActionBar(findViewById(R.id.familyDetailToolbar))
 
-    familyId = intent.extras?.getString(FamilyFormConfig.FAMILY_ARG_ITEM_ID) ?: ""
+    familyId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
     fhirEngine = (AncApplication.getContext() as ConfigurableApplication).fhirEngine
 
-    familyMemberRepository = FamilyMemberRepository(familyId, fhirEngine)
+    familyDetailRepository = FamilyDetailRepository(familyId, fhirEngine)
 
     familyMemberAdapter =
       FamilyMemberAdapter(this::onFamilyMemberItemClicked, this::onAddNewMemberButtonClicked)
@@ -62,9 +65,9 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
   override fun onResume() {
     super.onResume()
-    familyMemberRepository.fetchDemographics().observe(this, this::handlePatientDemographics)
-    familyMemberRepository.fetchFamilyMembers().observe(this, this::handleFamilyMembers)
-    familyMemberRepository.fetchEncounters().observe(this, this::handleFamilyEncounters)
+    familyDetailRepository.fetchDemographics().observe(this, this::handlePatientDemographics)
+    familyDetailRepository.fetchFamilyMembers().observe(this, this::handleFamilyMembers)
+    familyDetailRepository.fetchEncounters().observe(this, this::handleFamilyEncounters)
   }
 
   private fun handlePatientDemographics(family: Patient) {
@@ -85,7 +88,15 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
   private fun onFamilyMemberItemClicked(familyMemberItem: FamilyMemberItem) {}
 
-  private fun onAddNewMemberButtonClicked() {}
+  private fun onAddNewMemberButtonClicked() {
+    val bundle =
+      QuestionnaireActivity.requiredIntentArgs(
+        clientIdentifier = null,
+        form = FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
+      )
+    bundle.putString(FamilyQuestionnaireActivity.QUESTIONNAIRE_RELATED_TO_KEY, familyId)
+    startActivity(Intent(this, FamilyQuestionnaireActivity::class.java).putExtras(bundle))
+  }
 
   private fun onFamilyEncounterItemClicked(encounter: Encounter) {}
 }

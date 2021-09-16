@@ -19,9 +19,11 @@ package org.smartregister.fhircore.anc.data.family
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
@@ -29,7 +31,7 @@ import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-class FamilyMemberRepository(
+class FamilyDetailRepository(
   private val familyId: String,
   private val fhirEngine: FhirEngine,
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
@@ -47,7 +49,7 @@ class FamilyMemberRepository(
     val data = MutableLiveData<List<FamilyMemberItem>>()
     CoroutineScope(dispatcherProvider.io()).launch {
       val members =
-        fhirEngine.search<Patient> { filter(Patient.LINK) { this.value = familyId } }.map {
+        fhirEngine.search<Patient> { filter(Patient.LINK) { this.value = "Patient/$familyId" } }.map {
           FamilyItemMapper.toFamilyMemberItem(it)
         }
       data.postValue(members)
@@ -59,7 +61,11 @@ class FamilyMemberRepository(
     val data = MutableLiveData<List<Encounter>>()
     CoroutineScope(dispatcherProvider.io()).launch {
       val encounters =
-        fhirEngine.search<Encounter> { filter(Encounter.SUBJECT) { value = "Patient/$familyId" } }
+        fhirEngine.search<Encounter> {
+          filter(Encounter.SUBJECT) { value = "Patient/$familyId" }
+          from = 0
+          count = 3
+        }
       data.postValue(encounters)
     }
     return data

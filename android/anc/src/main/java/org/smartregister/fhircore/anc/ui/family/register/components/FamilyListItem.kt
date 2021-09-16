@@ -136,7 +136,7 @@ fun servicesCard(modifier: Modifier, text: String, color: Color) {
 @Composable
 @Preview(showBackground = true)
 fun FamilyRowPreview() {
-  val fmi = FamilyMemberItem("fm1", "21", "F", true)
+  val fmi = FamilyMemberItem("fmname","fm1", "21", "F", true)
 
   val familyItem =
     FamilyItem("fid", "Name ", "M", "27", "Nairobi", true, listOf(fmi, fmi, fmi), 4, 5)
