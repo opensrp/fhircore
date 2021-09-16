@@ -42,6 +42,45 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 class StructureMapTestUtilities : RobolectricTest() {
 
   @Test
+  fun `perform immunization extraction`() {
+    val immunizationQuestionnaireResponseString =
+      """{"resourceType":"QuestionnaireResponse","item":[{"linkId":"vaccine","answer":[{"valueCoding":{"code":"AstraZeneca"}}]},{"linkId":"dose-number","answer":[{"valueInteger":1}]},{"linkId":"patient-id","answer":[{"valueString":"923948023470"}]}]}"""
+    val immunizationQuestionnaire =
+      """{"resourceType":"Questionnaire","id":"800","meta":{"versionId":"2","lastUpdated":"2021-07-30T23:50:21.368+00:00","source":"#F9qcecppcMjNgr95"},"extension":[{"url":"http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext","valueExpression":{"name":"immunization","language":"application/x-fhir-query","expression":"Immunization"}}],"status":"active","subjectType":["Immunization"],"date":"2020-11-18T07:24:47.111Z","item":[{"extension":[{"url":"http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl","valueCodeableConcept":{"coding":[{"system":"http://hl7.org/fhir/questionnaire-item-control","code":"radio-button","display":"Radio Button"}],"text":"A control where choices are listed with a button beside them. The button can be toggled to select or de-select a given choice. Selecting one item deselects all others."}}],"linkId":"vaccine","type":"choice","answerOption":[{"valueCoding":{"code":"Moderna"}},{"valueCoding":{"code":"Pfizer"}},{"valueCoding":{"code":"AstraZeneca"}},{"valueCoding":{"code":"Janssen"}}]},{"linkId":"dose-number","extension":[{"url":"http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression","valueExpression":{"language":"text/fhirpath","expression":"Immunization.protocolApplied.doseNumber + 1"}}]}]}"""
+
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val outputs: MutableList<Base> = ArrayList()
+    val transformSupportServices = TransformSupportServices(outputs, contextR4)
+
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map = scu.parse(immunizationStructureMap, "ImmunizationRegistration")
+
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+
+    val targetResource = Bundle()
+
+    val baseElement =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        immunizationQuestionnaireResponseString
+      )
+
+    scu.transform(contextR4, baseElement, map, targetResource)
+
+    System.out.println(iParser.encodeResourceToString(targetResource))
+  }
+
+  @Test
   fun convertFhirMapToJson() {
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
@@ -50,7 +89,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     contextR4.isCanRunWithoutTerminology = true
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
-    val map = scu.parse(fhirMapToConvert, "PatientRegistration")
+    val map = scu.parse(patientRegistrationStructureMap, "PatientRegistration")
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
@@ -72,7 +111,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val transformSupportServices = TransformSupportServices(outputs, contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val map = scu.parse(fhirMapToConvert, "PatientRegistration")
+    val map = scu.parse(patientRegistrationStructureMap, "PatientRegistration")
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
@@ -82,7 +121,10 @@ class StructureMapTestUtilities : RobolectricTest() {
     val targetResource = Bundle()
 
     val baseElement =
-      iParser.parseResource(QuestionnaireResponse::class.java, questionnaireResponse)
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        patientRegistrationQuestionnaireResponse
+      )
 
     scu.transform(contextR4, baseElement, map, targetResource)
 
@@ -90,7 +132,7 @@ class StructureMapTestUtilities : RobolectricTest() {
   }
 
   @Language("JSON")
-  private val questionnaire =
+  private val patientRegistrationQuestionnaire =
     """
       {
         "resourceType": "Questionnaire",
@@ -639,7 +681,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     """.trimIndent()
 
   @Language("JSON")
-  private val questionnaireResponse =
+  private val patientRegistrationQuestionnaireResponse =
     """
     {
   "resourceType": "QuestionnaireResponse",
@@ -825,7 +867,7 @@ class StructureMapTestUtilities : RobolectricTest() {
 }
     """.trimIndent()
 
-  private val fhirMapToConvert =
+  private val patientRegistrationStructureMap =
     """
     map "http://hl7.org/fhir/StructureMap/PatientRegistration" = 'PatientRegistration'
 
@@ -977,6 +1019,40 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
           } "rule_erao_8_5";
         } "rule_erao_8";
     } "rule_erao_9";
+}
+    """.trimIndent()
+
+  private val immunizationStructureMap =
+    """
+    map "http://hl7.org/fhir/StructureMap/ImmunizationRegistration" = 'ImmunizationRegistration'
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+uses "http://hl7.org/fhir/StructureDefinition/Immunization" as target
+
+group ImmunizationRegistration(source src : QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.id = uuid() "rule_a";
+    src -> bundle.type = 'collection' "rule_b";
+    src -> bundle.entry as entry, entry.resource = create('Immunization') as immunization then
+        ExtractImmunization(src, immunization) "rule_c";
+}
+
+group ExtractImmunization(source src : QuestionnaireResponse, target immunization : Immunization) {
+    src -> immunization.id = uuid() "rule_ei_2";
+    src -> immunization.recorded = evaluate(immunization, now()) "rule_ei_2";
+    src -> immunization.status = "completed" "rule_ei_3";
+    src.item as vaccineItem where(linkId = 'vaccine') -> immunization.vaccineCode = create('CodeableConcept') as codeableConcept then {
+      vaccineItem -> codeableConcept.text = evaluate(vaccineItem,${"$"}this.answer.value.code) "rule_ei_4_1";
+      vaccineItem -> codeableConcept.coding = evaluate(vaccineItem,${"$"}this.answer.value) "rule_ei_4_2";
+    } "rule_ei_4";
+    src -> immunization.occurrence = evaluate(immunization, now()) "rule_ei_5";
+    src -> immunization.patient = create('Reference') as reference then {
+      src -> reference.reference = evaluate(src, ${"$"}this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
+      src -> reference.type = "Patient" "rule_ei_6_2";
+    } "rule_ei_6";
+    src.item as doseNoItem where(linkId = 'dose-number') -> immunization.protocolApplied = create('Immunization_VaccinationProtocol') as vacProtocol then {
+      doseNoItem -> vacProtocol.doseNumber = evaluate(doseNoItem, ${"$"}this.answer.value) "rule_ei_7_1";
+    } "rule_ei_7";
 }
     """.trimIndent()
 }

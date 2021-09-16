@@ -20,6 +20,7 @@ import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.ResourceFactory
 import org.hl7.fhir.r4.model.RiskAssessment.RiskAssessmentPredictionComponent
 import org.hl7.fhir.r4.terminologies.ConceptMapEngine
@@ -46,9 +47,11 @@ class TransformSupportServices(
 
   @Throws(FHIRException::class)
   override fun createType(appInfo: Any, name: String): Base {
-    return if (name == "RiskAssessment_Prediction") {
-      RiskAssessmentPredictionComponent()
-    } else ResourceFactory.createResourceOrType(name)
+    return when (name) {
+      "RiskAssessment_Prediction" -> RiskAssessmentPredictionComponent()
+      "Immunization_VaccinationProtocol" -> Immunization.ImmunizationProtocolAppliedComponent()
+      else -> ResourceFactory.createResourceOrType(name)
+    }
   }
 
   override fun createResource(appInfo: Any, res: Base, atRootofTransform: Boolean): Base {
