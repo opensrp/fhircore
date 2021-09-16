@@ -17,19 +17,29 @@
 package org.smartregister.fhircore.anc.data.family
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
+import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
+import org.smartregister.fhircore.anc.sdk.PatientExtended
+import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
+import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
+import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.Family
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
+import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.find
 
 class FamilyRepository(
   override val fhirEngine: FhirEngine,
@@ -37,42 +47,76 @@ class FamilyRepository(
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : RegisterRepository<Family, FamilyItem> {
 
-  override suspend fun loadData(query: String, pageNumber: Int): List<FamilyItem> {
+  private val ancPatientRepository = AncPatientRepository(fhirEngine, AncItemMapper)
+
+  override suspend fun loadData(
+    query: String,
+    pageNumber: Int,
+    loadAll: Boolean
+  ): List<FamilyItem> {
     return withContext(dispatcherProvider.io()) {
       val patients =
         fhirEngine.search<Patient> {
-          filter(Patient.ADDRESS_CITY) {
-            modifier = StringFilterModifier.CONTAINS
-            value = "NAIROBI"
+          filter(PatientExtended.TAG) {
+            this.value = "Family"
+            this.modifier = StringFilterModifier.CONTAINS
           }
+
           if (query.isNotEmpty() && query.isNotBlank()) {
             filter(Patient.NAME) {
-              modifier = StringFilterModifier.CONTAINS
               value = query.trim()
+              modifier = StringFilterModifier.CONTAINS
             }
           }
           sort(Patient.NAME, Order.ASCENDING)
-          count = 500 // todo defaultPageSize
-          from = pageNumber * defaultPageSize
+          count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
+          from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
         }
 
-      patients
-        .filter { // todo
-          it.extension.any { it.value.toString().contains("family", true) }
-        }
-        .map { p ->
-          val carePlans = searchCarePlan(p.id).toMutableList()
+      patients.map { p ->
+        val carePlans = ancPatientRepository.searchCarePlan(p.logicalId).toMutableList()
+        val members =
+          fhirEngine.search<Patient> {
+            filter(Patient.LINK) { this.value = "Patient/" + p.logicalId }
+          }
 
-          val members = fhirEngine.search<Patient> { filter(Patient.LINK) { this.value = p.id } }
+        members.forEach { carePlans.addAll(ancPatientRepository.searchCarePlan(it.logicalId)) }
 
-          members.forEach { carePlans.addAll(searchCarePlan(it.id)) }
-
-          FamilyItemMapper.mapToDomainModel(Family(p, members, carePlans))
-        }
+        FamilyItemMapper.mapToDomainModel(Family(p, members, carePlans))
+      }
     }
   }
 
-  private suspend fun searchCarePlan(id: String): List<CarePlan> {
-    return fhirEngine.search { filter(CarePlan.PATIENT) { this.value = id } }
+  override suspend fun countAll(): Long {
+    return fhirEngine.count<Patient> {
+      filter(PatientExtended.TAG) {
+        this.value = "Family"
+        this.modifier = StringFilterModifier.CONTAINS
+      }
+    }
+  }
+
+  suspend fun postProcessFamilyMember(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    relatedTo: String?
+  ): String {
+    val patientId = getUniqueId()
+    ResourceMapperExtended(fhirEngine)
+      .saveParsedResource(questionnaireResponse, questionnaire, patientId, relatedTo)
+
+    val pregnantItem = questionnaireResponse.find(IS_PREGNANT_KEY)
+    if (pregnantItem?.answer?.firstOrNull()?.valueBooleanType?.booleanValue() == true) {
+      val lmpItem = questionnaireResponse.find(LMP_KEY)
+      val lmp = lmpItem?.answer?.firstOrNull()?.valueDateTimeType!!
+      ancPatientRepository.enrollIntoAnc(patientId, lmp)
+    }
+
+    return patientId
+  }
+
+  companion object {
+    const val IS_PREGNANT_KEY = "is_pregnant"
+    const val LMP_KEY = "lmp"
   }
 }

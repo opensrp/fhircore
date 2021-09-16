@@ -16,10 +16,12 @@
 
 package org.smartregister.fhircore.anc.sdk
 
+import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.model.api.annotation.SearchParamDefinition
 import ca.uhn.fhir.rest.gclient.StringClientParam
 import org.hl7.fhir.r4.model.Patient
 
+// TODO remove and handle usages when SDK supports tags and profile as searchable
 class PatientExtended : Patient() {
   @SearchParamDefinition(
     name = TAG_KEY,
@@ -34,4 +36,10 @@ class PatientExtended : Patient() {
     const val TAG_KEY = "_tag"
     val TAG = StringClientParam(TAG_KEY)
   }
+}
+
+fun Patient.extractExtendedPatient(): PatientExtended {
+  val parser = FhirContext.forR4().newJsonParser()
+  val patientEncoded = parser.encodeResourceToString(this)
+  return parser.parseResource(PatientExtended::class.java, patientEncoded)
 }

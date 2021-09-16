@@ -34,7 +34,7 @@ android {
         minSdkVersion sdk_versions.min_sdk
         targetSdkVersion sdk_versions.target_sdk
         versionCode 1
-        versionName "0.0.7"
+        versionName "0.0.8"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // Required when setting minSdkVersion to 20 or lower
         // See https://developer.android.com/studio/write/java8-support
@@ -120,32 +120,6 @@ dependencies {
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2'
-
-    implementation('org.smartregister:data-capture:0.1.0-alpha03-preview-2-SNAPSHOT') {
-        transitive = true
-        exclude group: 'org.hamcrest', module: 'hamcrest-core'
-        exclude group: 'javax.xml.bind', module: 'jaxb-api'
-        exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
-        exclude group: 'com.sun.activation', module: 'javax.activation'
-    }
-
-    implementation('com.google.android.fhir:engine:0.1.0-alpha03') {
-        transitive = true
-        exclude group: 'org.hamcrest', module: 'hamcrest-core'
-        exclude group: 'javax.xml.bind', module: 'jaxb-api'
-        exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
-        exclude group: 'com.sun.activation', module: 'javax.activation'
-    }
-
-    implementation(group: 'ca.uhn.hapi.fhir', name: 'org.hl7.fhir.r4', version: '5.3.0') {
-        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
-    }
-    implementation(group: 'ca.uhn.hapi.fhir', name: 'hapi-fhir-base', version: '5.3.0') {
-        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
-    }
-    implementation(group: 'ca.uhn.hapi.fhir', name: 'hapi-fhir-structures-r4', version: '5.3.0') {
-        exclude group: 'org.slf4j', module: 'jcl-over-slf4j'
-    }
 
     implementation deps.appcompat
     implementation deps.constraint_layout

@@ -16,83 +16,81 @@
 
 package org.smartregister.fhircore.anc.ui.family.register
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.runBlocking
+import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.ui.family.FamilyFormConfig
-import org.smartregister.fhircore.anc.ui.family.FamilyFormConfig.Companion.FAMILY_DETAIL_VIEW_CONFIG_ID
+import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
+import org.smartregister.fhircore.anc.data.family.FamilyRepository
+import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterActivity
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.buildQuestionnaireIntent
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.FormConfigUtil
 
 class FamilyRegisterActivity : BaseRegisterActivity() {
-
-  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
-
-  private lateinit var familyFormConfig: FamilyFormConfig
-
-  private val familyItemMapper = FamilyItemMapper
+  private lateinit var familyRepository: FamilyRepository
+  private lateinit var ancPatientRepository: AncPatientRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     configureViews(
-      registerViewConfigurationOf().apply { appTitle = getString(R.string.menu_family) }
+      registerViewConfigurationOf(showScanQRCode = false).apply {
+        appTitle = getString(R.string.family_register_title)
+      }
     )
+
+    familyRepository =
+      FamilyRepository((application as AncApplication).fhirEngine, FamilyItemMapper)
+
+    ancPatientRepository =
+      AncPatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
   }
 
   override fun sideMenuOptions(): List<SideMenuOption> =
     listOf(
       SideMenuOption(
-        itemId = FAMILY_MENU_OPTION,
-        titleResource = R.string.menu_family,
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_hamburger)!!,
-        opensMainRegister = false
+        itemId = R.id.menu_item_family,
+        titleResource = R.string.family_register_title,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_calender)!!,
+        opensMainRegister = true,
+        countMethod = { runBlocking { familyRepository.countAll() } }
+      ),
+      SideMenuOption(
+        itemId = R.id.menu_item_anc,
+        titleResource = R.string.anc_register_title,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
+        opensMainRegister = false,
+        countMethod = { runBlocking { ancPatientRepository.countAll() } }
       )
     )
 
   override fun onSideMenuOptionSelected(item: MenuItem): Boolean {
+    when (item.itemId) {
+      R.id.menu_item_family -> startActivity(Intent(this, FamilyRegisterActivity::class.java))
+      R.id.menu_item_anc -> startActivity(Intent(this, AncRegisterActivity::class.java))
+    }
     return true
   }
 
   override fun registerClient() {
-    lifecycleScope.launch {
-      familyFormConfig =
-        withContext(dispatcherProvider.io()) {
-          FormConfigUtil.loadConfig(
-            FamilyFormConfig.FAMILY_DETAIL_VIEW_CONFIG_ID,
-            this@FamilyRegisterActivity
-          )
-        }
-
-      with(familyFormConfig) {
-        val questionnaireId = registrationQuestionnaireIdentifier
-        val questionnaireTitle = registrationQuestionnaireTitle
-
-        startActivity(
-          buildQuestionnaireIntent(
-            context = this@FamilyRegisterActivity,
-            questionnaireTitle = questionnaireTitle,
-            questionnaireId = questionnaireId,
-            patientId = null,
-            isNewPatient = true
+    startActivity(
+      Intent(this, FamilyQuestionnaireActivity::class.java)
+        .putExtras(
+          QuestionnaireActivity.requiredIntentArgs(
+            clientIdentifier = null,
+            form = FamilyFormConstants.FAMILY_REGISTER_FORM
           )
         )
-      }
-    }
+    )
   }
 
   override fun supportedFragments(): List<Fragment> = listOf(FamilyRegisterFragment())
-
-  companion object {
-    const val FAMILY_MENU_OPTION = 1000
-  }
 }

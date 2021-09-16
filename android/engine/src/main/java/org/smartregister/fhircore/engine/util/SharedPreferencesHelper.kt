@@ -33,8 +33,6 @@ object SharedPreferencesHelper {
 
   fun read(key: String, value: String) = prefs.getString(key, value)
 
-  fun read(key: String, value: Long) = prefs.getLong(key, value)
-
   fun write(key: String, value: String) {
     with(prefs.edit()) {
       putString(key, value)

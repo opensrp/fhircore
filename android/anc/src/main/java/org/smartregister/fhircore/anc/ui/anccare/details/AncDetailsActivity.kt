@@ -16,37 +16,67 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.details
 
+import android.graphics.Color
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.view.Menu
-import android.view.MenuItem
-import org.smartregister.fhircore.anc.form.config.AncFormConfig
+import androidx.core.os.bundleOf
+import androidx.databinding.DataBindingUtil
+import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.databinding.ActivityAncDetailsBinding
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.util.FormConfigUtil
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 class AncDetailsActivity : BaseMultiLanguageActivity() {
 
   private lateinit var patientId: String
 
-  private lateinit var ancFormConfig: AncFormConfig
+  private lateinit var activityAncDetailsBinding: ActivityAncDetailsBinding
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    // setContentView(R.layout.activity_patient_details) // todo use details activity for anc
-    // setSupportActionBar(patientDetailsToolbar) // todo add anc details activity toolbar
+    activityAncDetailsBinding = DataBindingUtil.setContentView(this, R.layout.activity_anc_details)
+    setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
 
     if (savedInstanceState == null) {
-      ancFormConfig = FormConfigUtil.loadConfig(AncFormConfig.ANC_DETAIL_VIEW_CONFIG_ID, this)
 
-      patientId = intent.extras?.getString(AncFormConfig.ANC_ARG_ITEM_ID) ?: ""
+      patientId =
+        intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+
+      supportFragmentManager
+        .beginTransaction()
+        .replace(
+          R.id.container,
+          AncDetailsFragment.newInstance(
+            bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
+          )
+        )
+        .commitNow()
     }
+
+    activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
   }
 
   override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-    // menuInflater.inflate(R.menu.profile_menu, menu) // todo use anc menu
-    return true
+    menuInflater.inflate(R.menu.profile_menu, menu)
+    return super.onCreateOptionsMenu(menu)
   }
 
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    return super.onOptionsItemSelected(item)
+  override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+    val mColorFullMenuBtn = menu!!.findItem(R.id.remove_this_person) // extract the menu item here
+    val title = mColorFullMenuBtn.title.toString()
+    val s = SpannableString(title)
+    with(s) {
+      setSpan(
+        ForegroundColorSpan(Color.parseColor("#DD0000")),
+        0,
+        length,
+        Spannable.SPAN_INCLUSIVE_INCLUSIVE
+      )
+    } // provide whatever color you want here.
+    mColorFullMenuBtn.title = s
+    return super.onPrepareOptionsMenu(menu)
   }
 }

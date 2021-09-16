@@ -20,30 +20,21 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.buildQuestionnaireIntent
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.FormConfigUtil
 
 class PatientRegisterActivity : BaseRegisterActivity() {
 
-  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
-
-  private lateinit var questionnaireFormConfig: QuestionnaireFormConfig
-
-  private val patientItemMapper = PatientItemMapper
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    configureViews(registerViewConfigurationOf().apply { appTitle = getString(R.string.covax_app) })
+    configureViews(
+      registerViewConfigurationOf().apply {
+        appTitle = getString(R.string.covax_app)
+        registrationForm = "patient-registration"
+      }
+    )
   }
 
   override fun sideMenuOptions(): List<SideMenuOption> =
@@ -52,39 +43,12 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         itemId = R.id.menu_item_covax,
         titleResource = R.string.client_list_title_covax,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
-        opensMainRegister = false
+        opensMainRegister = true,
       )
     )
 
   override fun onSideMenuOptionSelected(item: MenuItem): Boolean {
     return true
-  }
-
-  override fun registerClient() {
-    lifecycleScope.launch {
-      questionnaireFormConfig =
-        withContext(dispatcherProvider.io()) {
-          FormConfigUtil.loadConfig(
-            QuestionnaireFormConfig.COVAX_DETAIL_VIEW_CONFIG_ID,
-            this@PatientRegisterActivity
-          )
-        }
-
-      with(questionnaireFormConfig) {
-        val questionnaireId = registrationQuestionnaireIdentifier
-        val questionnaireTitle = registrationQuestionnaireTitle
-
-        startActivity(
-          buildQuestionnaireIntent(
-            context = this@PatientRegisterActivity,
-            questionnaireTitle = questionnaireTitle,
-            questionnaireId = questionnaireId,
-            patientId = null,
-            isNewPatient = true
-          )
-        )
-      }
-    }
   }
 
   override fun supportedFragments(): List<Fragment> = listOf(PatientRegisterFragment())

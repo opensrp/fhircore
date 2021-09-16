@@ -17,67 +17,35 @@
 package org.smartregister.fhircore.anc.ui.anccare.register
 
 import android.content.Intent
-import android.os.Bundle
-import android.view.View
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
-import androidx.paging.compose.collectAsLazyPagingItems
-import kotlinx.coroutines.flow.emptyFlow
-import org.hl7.fhir.r4.model.Patient
+import androidx.paging.compose.LazyPagingItems
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.AncPatientRepository
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
-import org.smartregister.fhircore.anc.form.config.AncFormConfig
+import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
+import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
 import org.smartregister.fhircore.anc.ui.anccare.register.components.AncPatientList
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
-class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
-
-  override lateinit var registerDataViewModel: RegisterDataViewModel<Patient, AncPatientItem>
-
-  private lateinit var ancPatientRepository: AncPatientRepository
-
-  @Suppress("UNCHECKED_CAST")
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    super.onViewCreated(view, savedInstanceState)
-    ancPatientRepository =
-      AncPatientRepository(
-        (requireActivity().application as AncApplication).fhirEngine,
-        AncItemMapper
-      )
-    registerDataViewModel =
-      ViewModelProvider(
-        requireActivity(),
-        RegisterDataViewModel(
-            application = requireActivity().application,
-            registerRepository = ancPatientRepository
-          )
-          .createFactory()
-      )[RegisterDataViewModel::class.java] as
-        RegisterDataViewModel<Patient, AncPatientItem>
-  }
+class AncRegisterFragment : ComposeRegisterFragment<Anc, AncPatientItem>() {
 
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
       Intent(requireActivity(), AncDetailsActivity::class.java).apply {
-        putExtra(AncFormConfig.ANC_ARG_ITEM_ID, uniqueIdentifier)
+        // TODO Add patient identifier
       }
     )
   }
 
   @Composable
-  override fun ConstructRegisterList() {
-    val registerData = registerDataViewModel.registerData.collectAsState(emptyFlow())
+  override fun ConstructRegisterList(pagingItems: LazyPagingItems<AncPatientItem>) {
     AncPatientList(
-      pagingItems = registerData.value.collectAsLazyPagingItems(),
+      pagingItems = pagingItems,
       modifier = Modifier,
       clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
     )
@@ -87,13 +55,6 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
     if (listenerIntent is AncRowClickListenerIntent) {
       when (listenerIntent) {
         OpenPatientProfile -> navigateToDetails(data.patientIdentifier)
-        RecordAncVisit ->
-          startActivity(
-            Intent(requireContext(), QuestionnaireActivity::class.java)
-              .putExtras(
-                QuestionnaireActivity.getExtrasBundle(data.patientIdentifier, "???", "???")
-              )
-          )
       }
     }
   }
@@ -114,5 +75,23 @@ class AncRegisterFragment : ComposeRegisterFragment<Patient, AncPatientItem>() {
         return false // todo
       }
     }
+  }
+
+  @Suppress("UNCHECKED_CAST")
+  override fun initializeRegisterDataViewModel(): RegisterDataViewModel<Anc, AncPatientItem> {
+    val ancPatientRepository =
+      AncPatientRepository(
+        (requireActivity().application as AncApplication).fhirEngine,
+        AncItemMapper
+      )
+    return ViewModelProvider(
+      requireActivity(),
+      RegisterDataViewModel(
+          application = requireActivity().application,
+          registerRepository = ancPatientRepository
+        )
+        .createFactory()
+    )[RegisterDataViewModel::class.java] as
+      RegisterDataViewModel<Anc, AncPatientItem>
   }
 }

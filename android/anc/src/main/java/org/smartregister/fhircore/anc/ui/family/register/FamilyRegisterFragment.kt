@@ -17,20 +17,16 @@
 package org.smartregister.fhircore.anc.ui.family.register
 
 import android.content.Intent
-import android.os.Bundle
-import android.view.View
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
-import androidx.paging.compose.collectAsLazyPagingItems
-import kotlinx.coroutines.flow.emptyFlow
+import androidx.paging.compose.LazyPagingItems
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
-import org.smartregister.fhircore.anc.ui.family.FamilyFormConfig
 import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.register.components.FamilyList
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
@@ -39,43 +35,18 @@ import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
 
-  lateinit var familyRepository: FamilyRepository
-
-  override lateinit var registerDataViewModel: RegisterDataViewModel<Family, FamilyItem>
-
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    super.onViewCreated(view, savedInstanceState)
-    familyRepository =
-      FamilyRepository(
-        (requireActivity().application as AncApplication).fhirEngine,
-        FamilyItemMapper
-      )
-
-    registerDataViewModel =
-      ViewModelProvider(
-        requireActivity(),
-        RegisterDataViewModel(
-            application = requireActivity().application,
-            registerRepository = familyRepository
-          )
-          .createFactory()
-      )[RegisterDataViewModel::class.java] as
-        RegisterDataViewModel<Family, FamilyItem>
-  }
-
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
       Intent(requireActivity(), FamilyDetailsActivity::class.java).apply {
-        putExtra(FamilyFormConfig.FAMILY_ARG_ITEM_ID, uniqueIdentifier)
+        putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier)
       }
     )
   }
 
   @Composable
-  override fun ConstructRegisterList() {
-    val registerData = registerDataViewModel.registerData.collectAsState(emptyFlow())
+  override fun ConstructRegisterList(pagingItems: LazyPagingItems<FamilyItem>) {
     FamilyList(
-      pagingItems = registerData.value!!.collectAsLazyPagingItems(),
+      pagingItems = pagingItems,
       modifier = Modifier,
       clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
     )
@@ -83,7 +54,7 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
 
   override fun onItemClicked(listenerIntent: ListenerIntent, data: FamilyItem) {
     if (listenerIntent is OpenFamilyProfile) {
-      navigateToDetails(data.id)
+      // navigateToDetails(data.id)
     }
   }
 
@@ -100,9 +71,25 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
           data.name.contains(value.toString(), ignoreCase = true) ||
             data.id.contentEquals(value.toString())
       }
-      RegisterFilterType.OVERDUE_FILTER -> {
-        return false // todo
-      }
+      else -> false
     }
+  }
+
+  @Suppress("UNCHECKED_CAST")
+  override fun initializeRegisterDataViewModel(): RegisterDataViewModel<Family, FamilyItem> {
+    val familyRepository =
+      FamilyRepository(
+        (requireActivity().application as AncApplication).fhirEngine,
+        FamilyItemMapper
+      )
+    return ViewModelProvider(
+      requireActivity(),
+      RegisterDataViewModel(
+          application = requireActivity().application,
+          registerRepository = familyRepository
+        )
+        .createFactory()
+    )[RegisterDataViewModel::class.java] as
+      RegisterDataViewModel<Family, FamilyItem>
   }
 }

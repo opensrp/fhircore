@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.ui.family.register.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,12 +37,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
+import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.family.register.FamilyListenerIntent
 import org.smartregister.fhircore.anc.ui.family.register.OpenFamilyProfile
+import org.smartregister.fhircore.engine.ui.theme.DueColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 
@@ -64,7 +68,7 @@ fun FamilyRow(
           .weight(0.65f)
     ) {
       Text(
-        text = familyItem.extractDemographics(),
+        text = familyItem.extractDemographics() + ":" + familyItem.members.size,
         fontSize = 16.sp,
         modifier = modifier.wrapContentWidth()
       )
@@ -77,7 +81,16 @@ fun FamilyRow(
           modifier = modifier.wrapContentWidth()
         )
       }
+      Spacer(modifier = modifier.height(8.dp))
       Row {
+        if (familyItem.isPregnant) {
+          Image(
+            painter = painterResource(R.drawable.ic_pregnant),
+            contentDescription = "Contact anc picture",
+            modifier = Modifier.size(20.dp).border(1.dp, Color.LightGray, CircleShape)
+          )
+        }
+
         familyItem.members.filter { it.pregnant }.forEach { _ ->
           Image(
             painter = painterResource(R.drawable.ic_pregnant),
@@ -87,34 +100,45 @@ fun FamilyRow(
         }
       }
     }
-    Column(modifier = modifier.weight(0.15f)) {
-      if (familyItem.servicesOverdue > 0) {
-        Card(
-          elevation = 2.dp,
-          backgroundColor = OverdueColor,
-          shape = CircleShape,
-          modifier = modifier.padding(5.dp)
-        ) {
-          Text(
-            color = Color.White,
-            text = familyItem.servicesOverdue.toString(),
-            fontSize = 18.sp,
-            modifier = modifier.wrapContentWidth()
-          )
-        }
+
+    if (familyItem.servicesOverdue > 0) {
+      Column(modifier = modifier.weight(0.15f)) {
+        servicesCard(
+          modifier = modifier,
+          text = familyItem.servicesOverdue.toString(),
+          color = OverdueColor
+        )
       }
     }
-    Column(modifier = modifier.weight(0.15f)) {
-      if (familyItem.servicesDue > 0) {
-        Card(elevation = 4.dp, backgroundColor = OverdueColor, shape = CircleShape) {
-          Text(
-            color = Color.White,
-            text = familyItem.servicesDue.toString(),
-            fontSize = 18.sp,
-            modifier = modifier.wrapContentWidth()
-          )
-        }
+    if (familyItem.servicesDue > 0) {
+      Column(modifier = modifier.weight(0.15f)) {
+        servicesCard(
+          modifier = modifier,
+          text = familyItem.servicesDue.toString(),
+          color = DueColor
+        )
       }
     }
   }
+}
+
+@Composable
+fun servicesCard(modifier: Modifier, text: String, color: Color) {
+  Card(
+    backgroundColor = color,
+    shape = CircleShape,
+    modifier = modifier.size(50.dp).padding(5.dp)
+  ) {
+    Text(color = Color.White, text = text, fontSize = 25.sp, modifier = modifier.wrapContentWidth())
+  }
+}
+
+@Composable
+@Preview(showBackground = true)
+fun FamilyRowPreview() {
+  val fmi = FamilyMemberItem("fm1", "21", "F", true)
+
+  val familyItem =
+    FamilyItem("fid", "Name ", "M", "27", "Nairobi", true, listOf(fmi, fmi, fmi), 4, 5)
+  FamilyRow(familyItem = familyItem, { _, _ -> })
 }

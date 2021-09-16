@@ -18,63 +18,37 @@ package org.smartregister.fhircore.eir.ui.vaccine
 
 import android.app.AlertDialog
 import android.os.Bundle
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.viewModels
-import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import java.util.Date
 import java.util.UUID
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.PositiveIntType
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
-import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
-import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.DateUtils
-import org.smartregister.fhircore.engine.util.FormConfigUtil
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
-class RecordVaccineActivity : BaseMultiLanguageActivity() {
+class RecordVaccineActivity : QuestionnaireActivity() {
 
   lateinit var recordVaccineViewModel: RecordVaccineViewModel
-  private val questionnaireViewModel: QuestionnaireViewModel by viewModels()
-  private lateinit var clientIdentifier: String
-  private lateinit var questionnaireFormConfig: QuestionnaireFormConfig
-  private lateinit var recordVaccine: ActivityResultLauncher<QuestionnaireFormConfig>
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_record_vaccine)
-    clientIdentifier = intent.getStringExtra(QuestionnaireFormConfig.COVAX_ARG_ITEM_ID)!!
-    questionnaireFormConfig =
-      FormConfigUtil.loadConfig(QuestionnaireFormConfig.COVAX_DETAIL_VIEW_CONFIG_ID, this)
-
-    recordVaccine =
-      registerForActivityResult(RecordVaccineResult(clientIdentifier)) {
-        it?.run { handleImmunizationResult(it) } // todo handle questionnaire failures
-      }
-
-    supportActionBar!!.apply {
-      title = questionnaireFormConfig.vaccineQuestionnaireTitle
-      setDisplayHomeAsUpEnabled(true)
-    }
-
     recordVaccineViewModel =
       ViewModelProvider(
-          this,
+          this@RecordVaccineActivity,
           RecordVaccineViewModel(
               application,
               PatientRepository(
@@ -85,101 +59,104 @@ class RecordVaccineActivity : BaseMultiLanguageActivity() {
             .createFactory()
         )
         .get(RecordVaccineViewModel::class.java)
-
-    recordVaccine()
   }
 
-  private fun recordVaccine() {
-    recordVaccineViewModel
-      .getVaccineSummary(clientIdentifier)
-      .observe(this@RecordVaccineActivity, { recordVaccine.launch(questionnaireFormConfig) })
-  }
-
-  private fun handleImmunizationResult(response: QuestionnaireResponse) {
-    val questionnaire =
-      questionnaireViewModel.loadQuestionnaire(
-        questionnaireFormConfig.vaccineQuestionnaireIdentifier
-      )
-
-    recordVaccineViewModel.getVaccineSummary(clientIdentifier).observe(this@RecordVaccineActivity) {
-      lifecycleScope.launch(Dispatchers.Main) {
-        val immunization =
-          ResourceMapper.extract(questionnaire, response).entry[0].resource as Immunization
-        immunization.id = UUID.randomUUID().toString()
-        immunization.recorded = Date()
-        immunization.status = Immunization.ImmunizationStatus.COMPLETED
-        immunization.vaccineCode =
-          CodeableConcept().apply {
-            this.text = response.item[0].answer[0].valueCoding.code
-            this.coding = listOf(response.item[0].answer[0].valueCoding)
-          }
-        immunization.occurrence = DateTimeType.today()
-        immunization.patient = Reference().apply { this.reference = "Patient/$clientIdentifier" }
-
-        immunization.protocolApplied =
-          listOf(
-            Immunization.ImmunizationProtocolAppliedComponent().apply {
-              val currentDoseNumber = it?.doseNumber ?: 0
-              this.doseNumber = PositiveIntType(currentDoseNumber + 1)
+  override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
+    lifecycleScope.launch {
+      clientIdentifier?.let { identifier: String ->
+        recordVaccineViewModel.getVaccineSummary(identifier).observe(this@RecordVaccineActivity) {
+          vaccineSummary: PatientVaccineSummary? ->
+          if (vaccineSummary != null) {
+            lifecycleScope.launch {
+              questionnaire?.let { questionnaire ->
+                getImmunization(questionnaire, questionnaireResponse, vaccineSummary).run {
+                  showVaccineRecordDialog(this, vaccineSummary)
+                }
+              }
             }
-          )
-        showVaccineRecordDialog(immunization, it)
+          }
+        }
       }
     }
   }
 
-  // todo optimize
+  private suspend fun getImmunization(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    vaccineSummary: PatientVaccineSummary
+  ): Immunization {
+    val immunization =
+      ResourceMapper.extract(questionnaire, questionnaireResponse).entry!![0].resource as
+        Immunization
+    immunization.apply {
+      id = UUID.randomUUID().toString()
+      recorded = Date()
+      status = Immunization.ImmunizationStatus.COMPLETED
+      vaccineCode =
+        CodeableConcept().apply {
+          this.text = questionnaireResponse.item[0].answer[0].valueCoding.code
+          this.coding = listOf(questionnaireResponse.item[0].answer[0].valueCoding)
+        }
+      occurrence = DateTimeType.today()
+      patient = Reference().apply { this.reference = "Patient/$clientIdentifier" }
+      protocolApplied =
+        listOf(
+          Immunization.ImmunizationProtocolAppliedComponent().apply {
+            val currentDoseNumber = vaccineSummary.doseNumber
+            this.doseNumber = PositiveIntType(currentDoseNumber + 1)
+          }
+        )
+    }
+    return immunization
+  }
+
   private fun showVaccineRecordDialog(
     immunization: Immunization,
     vaccineSummary: PatientVaccineSummary
   ) {
-    val builder = AlertDialog.Builder(this)
     val doseNumber = immunization.protocolApplied.first().doseNumberPositiveIntType.value
-    var msgText: String
-    var titleText: String
+    val message: String
+    val titleText: String
     val vaccineDate = immunization.occurrenceDateTimeType.toHumanDisplay()
     val nextVaccineDate = DateUtils.addDays(vaccineDate, 28)
     val currentDose = immunization.vaccineCode.coding.first().code
     val initialDose = vaccineSummary.initialDose
-    val isSameAsFirstDose = StringUtils.isEmpty(initialDose) || currentDose.equals(initialDose)
+    val isSameAsFirstDose =
+      initialDose.isEmpty() || currentDose.equals(initialDose, ignoreCase = true)
     if (isSameAsFirstDose) {
-      msgText =
-        if (doseNumber == 2) {
-          resources.getString(R.string.fully_vaccinated)
-        } else {
-          resources.getString(R.string.immunization_next_dose_text, doseNumber + 1, nextVaccineDate)
+      message =
+        when (doseNumber) {
+          2 -> resources.getString(R.string.fully_vaccinated)
+          else ->
+            resources.getString(
+              R.string.immunization_next_dose_text,
+              doseNumber + 1,
+              nextVaccineDate
+            )
         }
       titleText =
         this.getString(R.string.ordinal_vaccine_dose_recorded, immunization.vaccineCode.text)
     } else {
-      msgText = "Second vaccine dose should be same as first"
+      message = "Second vaccine dose should be same as first"
       titleText = "Initially received $initialDose"
     }
 
-    // set title for alert dialog
-    builder.setTitle(titleText)
+    val dialogBuilder =
+      AlertDialog.Builder(this).apply {
+        setTitle(titleText)
+        setMessage(message)
+        setNegativeButton(R.string.done) { dialogInterface, _ ->
+          dialogInterface.dismiss()
+          if (isSameAsFirstDose) {
+            questionnaireViewModel.saveResource(immunization)
+            finish()
+          }
+        }
+      }
 
-    // set message for alert dialog
-    builder.setMessage(msgText)
-
-    // performing negative action
-    builder.setNegativeButton(R.string.done) { dialogInterface, _ ->
-      dialogInterface.dismiss()
-      if (isSameAsFirstDose) {
-        questionnaireViewModel.saveResource(immunization)
-        finish()
-      } else recordVaccine() // todo optimize flow... questionnaire should validate in itself
-    }
-    // Create the AlertDialog
-    val alertDialog: AlertDialog = builder.create()
-    // Set other dialog properties
-    alertDialog.setCancelable(false)
-    alertDialog.show()
-  }
-
-  companion object {
-    fun getExtraBundles(patientId: String): Bundle {
-      return bundleOf(Pair(QuestionnaireFormConfig.COVAX_ARG_ITEM_ID, patientId))
+    dialogBuilder.create().run {
+      setCancelable(false)
+      show()
     }
   }
 }

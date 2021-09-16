@@ -17,33 +17,44 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.content.Context
-import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
+import java.text.SimpleDateFormat
 import java.time.Instant
+import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
+import org.smartregister.fhircore.engine.R
+
+private const val RISK = "risk"
+private val simpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.ENGLISH)
 
 fun Patient.extractName(): String {
   if (!hasName()) return ""
   val humanName = this.name.firstOrNull()
   return if (humanName != null) {
-    "${humanName.given.joinToString(" ")
-    { it.toString().trim().toTitleCase() }} ${humanName.family?.toTitleCase() ?: ""}"
+    "${
+    humanName.given.joinToString(" ")
+    { it.toString().trim().toTitleCase() }
+    } ${humanName.family?.toTitleCase() ?: ""}"
   } else ""
 }
 
 private fun String.toTitleCase() = replaceFirstChar {
-    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+  if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
 }
 
-fun Patient.extractGender() =
-  when (AdministrativeGender.valueOf(this.gender.name)) {
-    AdministrativeGender.MALE -> "M"
-    AdministrativeGender.FEMALE -> "F"
-    AdministrativeGender.OTHER -> "O"
-    AdministrativeGender.UNKNOWN -> "U"
-    AdministrativeGender.NULL -> ""
-  }
+fun Patient.extractGender(context: Context): String? =
+  if (hasGender()) {
+    when (AdministrativeGender.valueOf(this.gender.name)) {
+      AdministrativeGender.MALE -> context.getString(R.string.male)
+      AdministrativeGender.FEMALE -> context.getString(R.string.female)
+      AdministrativeGender.OTHER -> context.getString(R.string.other)
+      AdministrativeGender.UNKNOWN -> context.getString(R.string.unknown)
+      AdministrativeGender.NULL -> ""
+    }
+  } else null
 
 fun Patient.extractAge(): String {
   if (!hasBirthDate()) return ""
@@ -51,12 +62,22 @@ fun Patient.extractAge(): String {
   return (TimeUnit.DAYS.convert(ageDiffMilli, TimeUnit.MILLISECONDS) / 365).toString()
 }
 
-fun Patient.extractAddress(): String {
-  if (!hasAddress()) return ""
-  return with(addressFirstRep) { "${district?:""} $city" }
+fun Patient.atRisk() =
+  this.extension.singleOrNull { it.value.toString().contains(RISK) }?.value?.toString() ?: ""
+
+fun Patient.getLastSeen(immunizations: List<Immunization>): String {
+  return immunizations
+    .maxByOrNull { it.protocolApplied.first().doseNumberPositiveIntType.value }
+    ?.occurrenceDateTimeType
+    ?.toHumanDisplay()
+    ?: this.meta?.lastUpdated.makeItReadable()
 }
 
-fun Patient.atRisk(riskCode: String) =
-  this.extension.singleOrNull { it.value.toString().contains(riskCode) }?.value?.toString() ?: ""
+private fun Date?.makeItReadable() = if (this != null) simpleDateFormat.format(this) else ""
+
+fun Patient.extractAddress(): String {
+  if (!hasAddress()) return ""
+  return with(addressFirstRep) { "${district ?: ""} $city" }
+}
 
 fun Patient.isPregnant() = this.extension.any { it.value.toString().contains("pregnant", true) }

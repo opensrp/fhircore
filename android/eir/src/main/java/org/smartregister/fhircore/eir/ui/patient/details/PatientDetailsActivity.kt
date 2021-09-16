@@ -23,16 +23,13 @@ import android.view.MenuItem
 import androidx.core.os.bundleOf
 import kotlinx.android.synthetic.main.activity_patient_details.patientDetailsToolbar
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
+import org.smartregister.fhircore.eir.util.PATIENT_REGISTRATION
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.FormConfigUtil
 
 class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
   private lateinit var patientId: String
-
-  private lateinit var questionnaireFormConfig: QuestionnaireFormConfig
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -40,16 +37,15 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
     setSupportActionBar(patientDetailsToolbar)
 
     if (savedInstanceState == null) {
-      questionnaireFormConfig =
-        FormConfigUtil.loadConfig(QuestionnaireFormConfig.COVAX_DETAIL_VIEW_CONFIG_ID, this)
 
-      patientId = intent.extras?.getString(QuestionnaireFormConfig.COVAX_ARG_ITEM_ID) ?: ""
+      patientId =
+        intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
       supportFragmentManager
         .beginTransaction()
         .replace(
           R.id.container,
           PatientDetailsFragment.newInstance(
-            bundleOf(Pair(QuestionnaireFormConfig.COVAX_ARG_ITEM_ID, patientId))
+            bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
           )
         )
         .commitNow()
@@ -66,15 +62,21 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       startActivity(
         Intent(this, QuestionnaireActivity::class.java)
           .putExtras(
-            QuestionnaireActivity.getExtrasBundle(
-              patientId,
-              questionnaireFormConfig.registrationQuestionnaireTitle,
-              questionnaireFormConfig.registrationQuestionnaireIdentifier
+            QuestionnaireActivity.requiredIntentArgs(
+              clientIdentifier = patientId,
+              form = PATIENT_REGISTRATION
             )
           )
       )
       return true
     }
     return super.onOptionsItemSelected(item)
+  }
+
+  companion object {
+    fun requiredIntentArgs(clientIdentifier: String) =
+      bundleOf(
+        Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
+      )
   }
 }

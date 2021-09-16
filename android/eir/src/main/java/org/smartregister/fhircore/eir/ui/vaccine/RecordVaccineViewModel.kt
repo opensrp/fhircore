@@ -36,7 +36,7 @@ class RecordVaccineViewModel(
 
   fun getVaccineSummary(logicalId: String): LiveData<PatientVaccineSummary> {
     val mutableLiveData: MutableLiveData<PatientVaccineSummary> = MutableLiveData()
-    viewModelScope.launch(dispatcherProvider.io()) {
+    viewModelScope.launch(dispatcherProvider.main()) {
       val immunizations = patientRepository.getPatientImmunizations(logicalId = logicalId)
       if (!immunizations.isNullOrEmpty()) {
         val immunization = immunizations.first()
@@ -46,7 +46,7 @@ class RecordVaccineViewModel(
             initialDose = immunization.vaccineCode.coding.first().code
           )
         )
-      }
+      } else mutableLiveData.postValue(PatientVaccineSummary(doseNumber = 0, initialDose = ""))
     }
     return mutableLiveData
   }

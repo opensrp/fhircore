@@ -26,6 +26,7 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true
     }
     kotlinOptions {
         jvmTarget = '1.8'
@@ -49,6 +50,9 @@ dependencies {
     implementation 'androidx.fragment:fragment-ktx:1.3.6'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
     implementation 'androidx.security:security-crypto:1.1.0-alpha03'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+    implementation "androidx.cardview:cardview:1.0.0"
     implementation 'joda-time:joda-time:2.10.6'
     implementation 'androidx.paging:paging-runtime-ktx:3.0.1'
 
@@ -70,7 +74,7 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
 
-    api('org.smartregister:data-capture:0.1.0-alpha03-preview-2-SNAPSHOT') {
+    api('com.google.android.fhir:datacapture:0.1.0.1-alpha03') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -78,7 +82,7 @@ dependencies {
         exclude group: 'com.sun.activation', module: 'javax.activation'
     }
 
-    api('com.google.android.fhir:engine:0.1.0-alpha03') {
+    api('org.smartregister:engine:0.1.0-alpha04-preview-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
