@@ -21,26 +21,23 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.FamilyRepository
+import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
+import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterActivity
-import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
-import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConfig
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class FamilyRegisterActivity : BaseRegisterActivity() {
-
-  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
-
-  internal lateinit var familyRepository: FamilyRepository
+  private lateinit var familyRepository: FamilyRepository
+  private lateinit var ancPatientRepository: AncPatientRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -50,7 +47,11 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
       }
     )
 
-    familyRepository = FamilyRepository((application as AncApplication).fhirEngine, AncItemMapper)
+    familyRepository =
+      FamilyRepository((application as AncApplication).fhirEngine, FamilyItemMapper)
+
+    ancPatientRepository =
+      AncPatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
   }
 
   override fun sideMenuOptions(): List<SideMenuOption> =
@@ -59,13 +60,15 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         itemId = R.id.menu_item_family,
         titleResource = R.string.family_register_title,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_calender)!!,
-        opensMainRegister = false
+        opensMainRegister = true,
+        countMethod = { runBlocking { familyRepository.countAll() } }
       ),
       SideMenuOption(
         itemId = R.id.menu_item_anc,
         titleResource = R.string.anc_register_title,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
-        opensMainRegister = false
+        opensMainRegister = false,
+        countMethod = { runBlocking { ancPatientRepository.countAll() } }
       )
     )
 
@@ -83,12 +86,11 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         .putExtras(
           QuestionnaireActivity.requiredIntentArgs(
             clientIdentifier = null,
-            form = FamilyFormConfig.FAMILY_MEMBER_REGISTER_FORM
+            form = FamilyFormConstants.FAMILY_REGISTER_FORM
           )
         )
     )
   }
 
-  // TODO add family fragment with https://github.com/opensrp/fhircore/issues/276
-  override fun supportedFragments(): List<Fragment> = listOf(AncRegisterFragment())
+  override fun supportedFragments(): List<Fragment> = listOf(FamilyRegisterFragment())
 }

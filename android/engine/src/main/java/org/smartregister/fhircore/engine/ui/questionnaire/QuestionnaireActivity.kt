@@ -56,7 +56,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 
-  private lateinit var questionnaireConfig: QuestionnaireConfig
+  lateinit var questionnaireConfig: QuestionnaireConfig
 
   lateinit var questionnaireViewModel: QuestionnaireViewModel
 

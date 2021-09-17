@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.family.form
+package org.smartregister.fhircore.anc.ui.family.register
 
-import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.util.ListenerIntent
 
-@Serializable
-object FamilyFormConfig {
-  const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
-}
+sealed class FamilyListenerIntent : ListenerIntent
+
+object OpenFamilyProfile : FamilyListenerIntent()

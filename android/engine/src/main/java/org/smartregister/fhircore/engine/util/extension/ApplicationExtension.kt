@@ -60,8 +60,14 @@ fun Application.lastSyncDateTime(): String {
   return lastSyncDate?.asString() ?: ""
 }
 
-fun <T> Application.loadConfig(id: String, clazz: Class<T>): T {
-  val json = assets.open(id).bufferedReader().use { it.readText() }
+fun <T> Application.loadResourceTemplate(
+  id: String,
+  clazz: Class<T>,
+  data: Map<String, String?>
+): T {
+  var json = assets.open(id).bufferedReader().use { it.readText() }
+
+  data.entries.forEach { it.value?.let { v -> json = json.replace(it.key, v) } }
 
   return if (Resource::class.java.isAssignableFrom(clazz))
     FhirContext.forR4().newJsonParser().parseResource(json) as T
