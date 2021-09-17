@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync progress loader and datetime
 - ANC details activity
 - Enroll into ANC and add Encounter, Observation, Episode of Care, Condition
+- Add edit patient registration feature. This enables you to modify the patient and related person's details
 
 ### Fixed
 
