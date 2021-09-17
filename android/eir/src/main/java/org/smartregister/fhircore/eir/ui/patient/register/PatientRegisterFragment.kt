@@ -17,24 +17,21 @@
 package org.smartregister.fhircore.eir.ui.patient.register
 
 import android.content.Intent
-import android.os.Bundle
-import android.view.View
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
-import androidx.paging.compose.collectAsLazyPagingItems
-import kotlinx.coroutines.flow.emptyFlow
+import androidx.paging.compose.LazyPagingItems
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientItem
 import org.smartregister.fhircore.eir.data.model.VaccineStatus
-import org.smartregister.fhircore.eir.form.config.QuestionnaireFormConfig
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.eir.ui.patient.register.components.PatientRegisterList
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
+import org.smartregister.fhircore.eir.util.RECORD_VACCINE_FORM
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
@@ -44,45 +41,18 @@ import org.smartregister.fhircore.engine.util.extension.createFactory
 class PatientRegisterFragment :
   ComposeRegisterFragment<Pair<Patient, List<Immunization>>, PatientItem>() {
 
-  override lateinit var registerDataViewModel:
-    RegisterDataViewModel<Pair<Patient, List<Immunization>>, PatientItem>
-
-  private lateinit var patientRepository: PatientRepository
-
-  @Suppress("UNCHECKED_CAST")
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    super.onViewCreated(view, savedInstanceState)
-
-    patientRepository =
-      PatientRepository(
-        (requireActivity().application as EirApplication).fhirEngine,
-        PatientItemMapper
-      )
-    registerDataViewModel =
-      ViewModelProvider(
-        requireActivity(),
-        RegisterDataViewModel(
-            application = requireActivity().application,
-            registerRepository = patientRepository
-          )
-          .createFactory()
-      )[RegisterDataViewModel::class.java] as
-        RegisterDataViewModel<Pair<Patient, List<Immunization>>, PatientItem>
-  }
-
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
       Intent(requireActivity(), PatientDetailsActivity::class.java).apply {
-        putExtra(QuestionnaireFormConfig.COVAX_ARG_ITEM_ID, uniqueIdentifier)
+        putExtras(PatientDetailsActivity.requiredIntentArgs(uniqueIdentifier))
       }
     )
   }
 
   @Composable
-  override fun ConstructRegisterList() {
-    val registerData = registerDataViewModel.registerData.collectAsState(emptyFlow())
+  override fun ConstructRegisterList(pagingItems: LazyPagingItems<PatientItem>) {
     PatientRegisterList(
-      pagingItems = registerData.value.collectAsLazyPagingItems(),
+      pagingItems = pagingItems,
       modifier = Modifier,
       clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
     )
@@ -92,11 +62,17 @@ class PatientRegisterFragment :
     if (listenerIntent is PatientRowClickListenerIntent) {
       when (listenerIntent) {
         OpenPatientProfile -> navigateToDetails(data.patientIdentifier)
-        RecordPatientVaccine ->
+        RecordPatientVaccine -> {
           startActivity(
             Intent(requireContext(), RecordVaccineActivity::class.java)
-              .putExtras(RecordVaccineActivity.getExtraBundles(patientId = data.patientIdentifier))
+              .putExtras(
+                QuestionnaireActivity.requiredIntentArgs(
+                  clientIdentifier = data.patientIdentifier,
+                  form = RECORD_VACCINE_FORM
+                )
+              )
           )
+        }
       }
     }
   }
@@ -118,5 +94,24 @@ class PatientRegisterFragment :
         else return true
       }
     }
+  }
+
+  @Suppress("UNCHECKED_CAST")
+  override fun initializeRegisterDataViewModel():
+    RegisterDataViewModel<Pair<Patient, List<Immunization>>, PatientItem> {
+    val patientRepository =
+      PatientRepository(
+        (requireActivity().application as EirApplication).fhirEngine,
+        PatientItemMapper
+      )
+    return ViewModelProvider(
+      requireActivity(),
+      RegisterDataViewModel(
+          application = requireActivity().application,
+          registerRepository = patientRepository
+        )
+        .createFactory()
+    )[RegisterDataViewModel::class.java] as
+      RegisterDataViewModel<Pair<Patient, List<Immunization>>, PatientItem>
   }
 }

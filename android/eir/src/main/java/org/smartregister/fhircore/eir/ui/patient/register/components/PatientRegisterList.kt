@@ -36,7 +36,6 @@ fun PatientRegisterList(
   modifier: Modifier = Modifier,
   clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit
 ) {
-
   LazyColumn {
     items(pagingItems, key = { it.patientIdentifier }) {
       PatientRow(it!!, clickListener, modifier = modifier)
@@ -53,7 +52,6 @@ fun PatientRegisterList(
           item {
             ErrorMessage(
               message = loadStateError.error.localizedMessage!!,
-              modifier = modifier.fillParentMaxSize(),
               onClickRetry = { retry() }
             )
           }

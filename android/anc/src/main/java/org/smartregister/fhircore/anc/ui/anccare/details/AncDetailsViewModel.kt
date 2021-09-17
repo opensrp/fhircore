@@ -23,6 +23,9 @@ import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.parser.JsonParser
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
+import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.AncPatientRepository
 import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
