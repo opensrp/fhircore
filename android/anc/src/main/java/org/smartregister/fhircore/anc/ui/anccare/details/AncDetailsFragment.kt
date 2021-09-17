@@ -27,11 +27,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.AncPatientRepository
-import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
+import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
 import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
-import org.smartregister.fhircore.anc.form.config.AncFormConfig
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class AncDetailsFragment private constructor() : Fragment() {
@@ -58,7 +58,7 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    patientId = arguments?.getString(AncFormConfig.ANC_ARG_ITEM_ID) ?: ""
+    patientId = arguments?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
     fhirEngine = AncApplication.getContext().fhirEngine
 
@@ -94,10 +94,6 @@ class AncDetailsFragment private constructor() : Fragment() {
       adapter = carePlanAdapter
       layoutManager = LinearLayoutManager(requireContext())
     }
-  }
-
-  override fun onResume() {
-    super.onResume()
   }
 
   companion object {

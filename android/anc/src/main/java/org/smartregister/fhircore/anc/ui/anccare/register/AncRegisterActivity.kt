@@ -16,77 +16,67 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.register
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.runBlocking
+import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.form.config.AncFormConfig
+import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
+import org.smartregister.fhircore.anc.data.family.FamilyRepository
+import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
+import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireUtils.buildQuestionnaireIntent
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.FormConfigUtil
 
 class AncRegisterActivity : BaseRegisterActivity() {
-
-  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
-
-  private lateinit var ancFormConfig: AncFormConfig
+  private lateinit var familyRepository: FamilyRepository
+  private lateinit var ancPatientRepository: AncPatientRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     configureViews(
-      registerViewConfigurationOf(showScanQRCode = false).apply {
+      registerViewConfigurationOf().apply {
+        showScanQRCode = false
         appTitle = getString(R.string.app_name)
+        registrationForm = "anc-patient-registration"
       }
     )
+
+    familyRepository =
+      FamilyRepository((application as AncApplication).fhirEngine, FamilyItemMapper)
+
+    ancPatientRepository =
+      AncPatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
   }
 
   override fun sideMenuOptions(): List<SideMenuOption> =
     listOf(
       SideMenuOption(
         itemId = R.id.menu_item_anc,
-        titleResource = R.string.app_name,
+        titleResource = R.string.anc_register_title,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
-        opensMainRegister = false
+        opensMainRegister = true,
+        countMethod = { runBlocking { ancPatientRepository.countAll() } }
+      ),
+      SideMenuOption(
+        itemId = R.id.menu_item_family,
+        titleResource = R.string.family_register_title,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_calender)!!,
+        opensMainRegister = false,
+        countMethod = { runBlocking { familyRepository.countAll() } }
       )
     )
 
   override fun onSideMenuOptionSelected(item: MenuItem): Boolean {
-    return true
-  }
-
-  override fun registerClient() {
-    lifecycleScope.launch {
-      ancFormConfig =
-        withContext(dispatcherProvider.io()) {
-          FormConfigUtil.loadConfig(
-            AncFormConfig.ANC_DETAIL_VIEW_CONFIG_ID,
-            this@AncRegisterActivity
-          )
-        }
-
-      with(ancFormConfig) {
-        val questionnaireId = registrationQuestionnaireIdentifier
-        val questionnaireTitle = registrationQuestionnaireTitle
-
-        startActivity(
-          buildQuestionnaireIntent(
-            context = this@AncRegisterActivity,
-            questionnaireTitle = questionnaireTitle,
-            questionnaireId = questionnaireId,
-            patientId = null,
-            isNewPatient = true
-          )
-        )
-      }
+    when (item.itemId) {
+      R.id.menu_item_family -> startActivity(Intent(this, FamilyRegisterActivity::class.java))
+      R.id.menu_item_anc -> startActivity(Intent(this, AncRegisterActivity::class.java))
     }
+    return true
   }
 
   override fun supportedFragments(): List<Fragment> = listOf(AncRegisterFragment())

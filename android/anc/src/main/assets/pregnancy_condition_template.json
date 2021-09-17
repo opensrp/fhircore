@@ -1,0 +1,45 @@
+{
+  "resourceType" : "Condition",
+  "id": "#Id",
+  "clinicalStatus" : {
+    "coding" : [
+      {
+        "system" : "http://terminology.hl7.org/CodeSystem/condition-clinical",
+        "code" : "active"
+      }
+    ]
+  },
+  "verificationStatus" : {
+    "coding" : [
+      {
+        "system" : "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+        "code" : "confirmed"
+      }
+    ]
+  },
+  "category" : [
+    {
+      "coding" : [
+        {
+          "system" : "http://terminology.hl7.org/CodeSystem/condition-category",
+          "code" : "problem-list-item",
+          "display" : "Problem List Item"
+        }
+      ]
+    }
+  ],
+  "code" : {
+    "coding" : [
+      {
+        "system" : "http://example.org/tbd",
+        "code" : "TBD",
+        "display" : "Pregnancy"
+      }
+    ],
+    "text" : "Pregnancy"
+  },
+  "subject" : {
+    "reference" : "#RefPatient"
+  },
+  "onsetDateTime" : "#RefDateOnset"
+}

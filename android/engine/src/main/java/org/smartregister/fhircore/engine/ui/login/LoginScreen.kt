@@ -17,14 +17,16 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
@@ -32,8 +34,11 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.contentColorFor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -45,6 +50,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -58,6 +64,9 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
+import org.smartregister.fhircore.engine.ui.theme.LoginBackgroundColor
+import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
+import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
 
 @Composable
 fun LoginScreen(loginViewModel: LoginViewModel) {
@@ -95,94 +104,131 @@ fun LoginPage(
   showProgressBar: Boolean = false
 ) {
   var showPassword by remember { mutableStateOf(false) }
-
-  Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-    Spacer(modifier = modifier.height(60.dp))
-    Image(
-      painter = painterResource(id = R.drawable.ic_default_logo),
-      contentDescription = stringResource(id = R.string.app_logo),
-      modifier = modifier.align(Alignment.CenterHorizontally).height(120.dp).width(120.dp)
-    )
-    Text(
-      color = MaterialTheme.colors.primary,
-      text = viewConfiguration.applicationName,
-      fontWeight = FontWeight.Bold,
-      fontSize = 32.sp,
-      modifier =
-        modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.CenterHorizontally)
-    )
-
-    Text(
-      fontSize = 16.sp,
-      text = stringResource(id = R.string.app_version, viewConfiguration.applicationVersion),
-      modifier = modifier.wrapContentWidth().padding(0.dp).align(Alignment.CenterHorizontally)
-    )
-    Spacer(modifier = modifier.height(40.dp))
-
-    TextField(
-      value = username,
-      onValueChange = onUsernameChanged,
-      label = {
+  val backgroundColor = if (viewConfiguration.darkMode) LoginBackgroundColor else Color.White
+  val contentColor = if (viewConfiguration.darkMode) Color.White else Color.Black
+  val textFieldBackgroundColor =
+    if (viewConfiguration.darkMode) LoginFieldBackgroundColor else Color.LightGray
+  Surface(
+    modifier = modifier.fillMaxSize(),
+    color = backgroundColor,
+    contentColor = contentColorFor(backgroundColor = contentColor)
+  ) {
+    Column(modifier = modifier.padding(horizontal = 16.dp)) {
+      Column(
+        modifier = modifier.weight(1f).padding(4.dp),
+        verticalArrangement = Arrangement.Center
+      ) {
         Text(
-          text = stringResource(R.string.username_input_hint),
-          modifier = modifier.padding(vertical = 4.dp)
+          color =
+            if (viewConfiguration.darkMode) Color.White else MaterialTheme.colors.primaryVariant,
+          text = viewConfiguration.applicationName,
+          fontWeight = FontWeight.Bold,
+          fontSize = 32.sp,
+          modifier =
+            modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.CenterHorizontally)
         )
-      },
-      modifier = modifier.fillMaxWidth().padding(vertical = 4.dp)
-    )
-    TextField(
-      value = password,
-      onValueChange = onPasswordChanged,
-      label = {
+        Spacer(modifier = modifier.height(80.dp))
+        TextField(
+          colors =
+            TextFieldDefaults.textFieldColors(
+              backgroundColor = textFieldBackgroundColor,
+              textColor = contentColor
+            ),
+          value = username,
+          onValueChange = onUsernameChanged,
+          label = {
+            Text(
+              color = contentColor,
+              text = stringResource(R.string.username_input_hint),
+              modifier = modifier.padding(vertical = 4.dp)
+            )
+          },
+          modifier = modifier.fillMaxWidth().padding(vertical = 4.dp)
+        )
+        TextField(
+          value = password,
+          colors =
+            TextFieldDefaults.textFieldColors(
+              backgroundColor = textFieldBackgroundColor,
+              textColor = contentColor
+            ),
+          onValueChange = onPasswordChanged,
+          label = {
+            Text(
+              color = contentColor,
+              text = stringResource(R.string.password_input_hint),
+              modifier = modifier.padding(vertical = 4.dp)
+            )
+          },
+          visualTransformation =
+            if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+          keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+          modifier = modifier.fillMaxWidth().padding(vertical = 4.dp),
+          trailingIcon = {
+            val image = if (showPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+            IconButton(onClick = { showPassword = !showPassword }) {
+              Icon(imageVector = image, "", tint = contentColor)
+            }
+          }
+        )
+        Spacer(modifier = modifier.height(10.dp))
+        if (loginError.isNotEmpty()) {
+          Text(
+            fontSize = 14.sp,
+            color = MaterialTheme.colors.error,
+            text = stringResource(id = R.string.login_error, loginError),
+            modifier = modifier.wrapContentWidth().padding(0.dp).align(Alignment.Start)
+          )
+        }
+        Spacer(modifier = modifier.height(40.dp))
+        Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) {
+          Button(
+            enabled = !showProgressBar && username.isNotEmpty() && password.isNotEmpty(),
+            colors =
+              ButtonDefaults.buttonColors(
+                backgroundColor = LoginButtonColor,
+                disabledBackgroundColor =
+                  if (viewConfiguration.darkMode) LoginFieldBackgroundColor else Color.LightGray
+              ),
+            onClick = onLoginButtonClicked,
+            modifier = modifier.fillMaxWidth()
+          ) {
+            Text(
+              color = Color.White,
+              text = stringResource(id = R.string.login_text),
+              modifier = modifier.padding(8.dp)
+            )
+          }
+          if (showProgressBar) {
+            CircularProgressBar(modifier = modifier.matchParentSize().padding(4.dp))
+          }
+        }
+      }
+      Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = modifier.fillMaxWidth().padding(vertical = 16.dp),
+        verticalAlignment = Alignment.Bottom
+      ) {
+        Column {
+          Text(
+            color = contentColor,
+            text = stringResource(id = R.string.powered_by),
+            modifier = modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.Start)
+          )
+          Image(
+            painter = painterResource(id = R.drawable.ic_opensrp_logo),
+            contentDescription = stringResource(id = R.string.app_logo),
+            modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(40.dp)
+          )
+        }
         Text(
-          text = stringResource(R.string.password_input_hint),
-          modifier = modifier.padding(vertical = 4.dp)
+          color = contentColor,
+          fontSize = 16.sp,
+          text = stringResource(id = R.string.app_version, viewConfiguration.applicationVersion),
+          modifier = modifier.wrapContentWidth().padding(0.dp)
         )
-      },
-      visualTransformation =
-        if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-      keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-      modifier = modifier.fillMaxWidth().padding(vertical = 4.dp),
-      trailingIcon = {
-        val image = if (showPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-        IconButton(onClick = { showPassword = !showPassword }) { Icon(imageVector = image, "") }
-      }
-    )
-    Spacer(modifier = modifier.height(10.dp))
-    if (loginError.isNotEmpty()) {
-      Text(
-        fontSize = 14.sp,
-        color = MaterialTheme.colors.error,
-        text = stringResource(id = R.string.login_error, loginError),
-        modifier = modifier.wrapContentWidth().padding(0.dp).align(Alignment.Start)
-      )
-    }
-    Spacer(modifier = modifier.height(40.dp))
-    Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) {
-      Button(
-        enabled = !showProgressBar && username.isNotEmpty() && password.isNotEmpty(),
-        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
-        onClick = onLoginButtonClicked,
-        modifier = modifier.fillMaxWidth()
-      ) { Text(text = stringResource(id = R.string.login_text), modifier = modifier.padding(8.dp)) }
-      if (showProgressBar) {
-        CircularProgressBar(modifier = modifier.matchParentSize().padding(4.dp))
       }
     }
-
-    Spacer(modifier = modifier.height(40.dp))
-    Text(
-      text = stringResource(id = R.string.powered_by),
-      modifier =
-        modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.CenterHorizontally)
-    )
-
-    Image(
-      painter = painterResource(id = R.drawable.ic_opensrp_logo),
-      contentDescription = stringResource(id = R.string.app_logo),
-      modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(40.dp)
-    )
-    Spacer(modifier = modifier.height(60.dp))
   }
 }
 
@@ -190,4 +236,10 @@ fun LoginPage(
 @Composable
 fun LoginScreenPreview() {
   LoginPage(loginViewConfigurationOf(), "", {}, "", {}, {})
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LoginScreenPreviewDarkMode() {
+  LoginPage(loginViewConfigurationOf().apply { darkMode = true }, "", {}, "", {}, {})
 }

@@ -45,14 +45,16 @@ private fun String.toTitleCase() = replaceFirstChar {
   if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
 }
 
-fun Patient.extractGender(context: Context) =
-  when (AdministrativeGender.valueOf(this.gender.name)) {
-    AdministrativeGender.MALE -> context.getString(R.string.male)
-    AdministrativeGender.FEMALE -> context.getString(R.string.female)
-    AdministrativeGender.OTHER -> context.getString(R.string.other)
-    AdministrativeGender.UNKNOWN -> context.getString(R.string.unknown)
-    AdministrativeGender.NULL -> ""
-  }
+fun Patient.extractGender(context: Context): String? =
+  if (hasGender()) {
+    when (AdministrativeGender.valueOf(this.gender.name)) {
+      AdministrativeGender.MALE -> context.getString(R.string.male)
+      AdministrativeGender.FEMALE -> context.getString(R.string.female)
+      AdministrativeGender.OTHER -> context.getString(R.string.other)
+      AdministrativeGender.UNKNOWN -> context.getString(R.string.unknown)
+      AdministrativeGender.NULL -> ""
+    }
+  } else null
 
 fun Patient.extractAge(): String {
   if (!hasBirthDate()) return ""
@@ -72,3 +74,10 @@ fun Patient.getLastSeen(immunizations: List<Immunization>): String {
 }
 
 private fun Date?.makeItReadable() = if (this != null) simpleDateFormat.format(this) else ""
+
+fun Patient.extractAddress(): String {
+  if (!hasAddress()) return ""
+  return with(addressFirstRep) { "${district ?: ""} $city" }
+}
+
+fun Patient.isPregnant() = this.extension.any { it.value.toString().contains("pregnant", true) }

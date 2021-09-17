@@ -17,23 +17,34 @@
 package org.smartregister.fhircore.anc
 
 import android.app.Application
-import androidx.work.Constraints
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.FhirEngineBuilder
+import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.Sync
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
 import timber.log.Timber
 
 class AncApplication : Application(), ConfigurableApplication {
+
+  private val defaultDispatcherProvider = DefaultDispatcherProvider
+
+  override lateinit var workerContextProvider: SimpleWorkerContext
 
   override lateinit var applicationConfiguration: ApplicationConfiguration
 
@@ -48,22 +59,14 @@ class AncApplication : Application(), ConfigurableApplication {
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() =
       mapOf(
-        ResourceType.Patient to emptyMap(),
-        ResourceType.Questionnaire to emptyMap(),
-        ResourceType.StructureMap to mapOf(),
-        ResourceType.RelatedPerson to mapOf()
+        ResourceType.Patient to mapOf(),
+        ResourceType.Questionnaire to mapOf(),
+        ResourceType.CarePlan to mapOf()
       )
 
   private fun constructFhirEngine(): FhirEngine {
-    Sync.periodicSync<AncFhirSyncWorker>(
-      this,
-      PeriodicSyncConfiguration(
-        syncConstraints = Constraints.Builder().build(),
-        repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
-      )
-    )
-
-    return FhirEngineBuilder(this).build()
+    schedulePolling()
+    return FhirEngineProvider.getInstance(this)
   }
 
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
@@ -87,11 +90,25 @@ class AncApplication : Application(), ConfigurableApplication {
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
+
+    CoroutineScope(defaultDispatcherProvider.io()).launch {
+      workerContextProvider = this@AncApplication.initializeWorkerContext()!!
+    }
   }
 
   companion object {
     private lateinit var ancApplication: AncApplication
 
     fun getContext() = ancApplication
+
+    // Make sure that it is called only from one place in app and is done after login
+    fun schedulePolling() =
+      Sync.basicSyncJob(ancApplication)
+        .poll(
+          PeriodicSyncConfiguration(
+            repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
+          ),
+          AncFhirSyncWorker::class.java
+        )
   }
 }

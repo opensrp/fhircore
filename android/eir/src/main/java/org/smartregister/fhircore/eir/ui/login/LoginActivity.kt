@@ -38,7 +38,8 @@ class LoginActivity : BaseLoginActivity() {
     configureViews(
       loginViewConfigurationOf(
         applicationName = getString(R.string.covax_app),
-        applicationVersion = BuildConfig.VERSION_NAME
+        applicationVersion = BuildConfig.VERSION_NAME,
+        darkMode = false
       )
     )
   }

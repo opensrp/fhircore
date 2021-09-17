@@ -30,9 +30,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.AncPatientRepository
-import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
+import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
 
 @ExperimentalCoroutinesApi
 internal class AncDetailsViewModelTest {
