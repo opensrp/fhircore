@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -59,8 +60,6 @@ class QuestionnaireViewModel(
     }
     return structureMap
   }
-
-  // fun populateQuestionnaireResponse()
 
   fun extractAndSaveResources(
     resourceId: String?,
@@ -118,5 +117,26 @@ class QuestionnaireViewModel(
 
   fun saveResource(resource: Resource) {
     viewModelScope.launch { defaultRepository.save(resource = resource) }
+  }
+
+  suspend fun generateQuestionnaireResponse(
+    questionnaire: Questionnaire,
+    intent: Intent
+  ): QuestionnaireResponse {
+    var questionnaireResponse = QuestionnaireResponse()
+
+    intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let {
+      val patient = loadPatient(it)
+      val relatedPerson: List<RelatedPerson>? = loadRelatedPerson(it)
+
+      patient?.let {
+        questionnaireResponse =
+          if (relatedPerson?.isNotEmpty() == true && relatedPerson.firstOrNull() != null)
+            ResourceMapper.populate(questionnaire, patient, relatedPerson.first())
+          else ResourceMapper.populate(questionnaire, patient)
+      }
+    }
+
+    return questionnaireResponse
   }
 }

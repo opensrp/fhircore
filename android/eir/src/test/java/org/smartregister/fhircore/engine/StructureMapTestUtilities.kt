@@ -47,7 +47,7 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 class StructureMapTestUtilities : RobolectricTest() {
 
   @Test
-  fun testPopulation() {
+  fun `populate patient registration Questionnaire and extract Resources`() {
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val questionnaire = iParser.parseResource(Questionnaire::class.java, questionnaire)
     val patient = iParser.parseResource(Patient::class.java, PATIENT_JSON)
@@ -57,24 +57,6 @@ class StructureMapTestUtilities : RobolectricTest() {
     runBlocking {
       questionnaireResponse = ResourceMapper.populate(questionnaire, patient, relatedPerson)
     }
-
-    val expected =
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt u"
-
-    /*try {
-      val `is` = RuntimeEnvironment.application
-          .assets
-          .open("registration_structuremap.txt")
-      val size: Int = `is`.available()
-      val buffer = ByteArray(size)
-      `is`.read(buffer)
-      `is`.close()
-      val fileContents = String(buffer, Charset.forName("UTF-8"))
-
-
-    } catch (e: IOException) {
-      e.printStackTrace()
-    }*/
 
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
@@ -101,7 +83,7 @@ class StructureMapTestUtilities : RobolectricTest() {
   }
 
   @Test
-  fun convertFhirMapToJson() {
+  fun `convert StructureMap to JSON`() {
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
@@ -118,7 +100,7 @@ class StructureMapTestUtilities : RobolectricTest() {
   }
 
   @Test
-  fun performExtraction() {
+  fun `perform extraction from patient registration Questionnaire`() {
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions

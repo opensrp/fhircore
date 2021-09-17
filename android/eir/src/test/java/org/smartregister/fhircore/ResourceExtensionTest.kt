@@ -58,30 +58,34 @@ class ResourceExtensionTest : RobolectricTest() {
 
   @Test
   fun `Resource#updateFrom() should ignore nulls`() {
-    var patient = Patient()
-    patient.active = true
-    patient.gender = Enumerations.AdministrativeGender.FEMALE
-    patient.name.apply {
-      add(
-        HumanName().apply {
-          family = "Doe"
-          given = listOf(StringType("John"))
+    var patient =
+      Patient().apply {
+        active = true
+        gender = Enumerations.AdministrativeGender.FEMALE
+        name.apply {
+          add(
+            HumanName().apply {
+              family = "Doe"
+              given = listOf(StringType("John"))
+            }
+          )
         }
-      )
-    }
+      }
 
-    val updatedPatient = Patient()
-    updatedPatient.deceased = BooleanType(true)
-    updatedPatient.birthDate = Date()
-    updatedPatient.gender = null
-    updatedPatient.name.apply {
-      add(
-        HumanName().apply {
-          family = "Kamau"
-          given = listOf(StringType("Andrew"))
+    val updatedPatient =
+      Patient().apply {
+        deceased = BooleanType(true)
+        birthDate = Date()
+        gender = null
+        name.apply {
+          add(
+            HumanName().apply {
+              family = "Kamau"
+              given = listOf(StringType("Andrew"))
+            }
+          )
         }
-      )
-    }
+      }
 
     patient = patient.updateFrom(updatedPatient)
 
