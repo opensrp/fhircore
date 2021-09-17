@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.configuration.app
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.SyncJob
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
@@ -42,6 +43,8 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
  */
 interface ConfigurableApplication {
 
+  val syncJob: SyncJob
+
   val applicationConfiguration: ApplicationConfiguration
 
   val authenticationService: AuthenticationService
@@ -59,4 +62,10 @@ interface ConfigurableApplication {
 
   /** Provide [applicationConfiguration] for the Application */
   fun configureApplication(applicationConfiguration: ApplicationConfiguration)
+
+  /**
+   * Schedule periodic sync job. Should use the [syncJob] to schedule a task that will run
+   * periodically
+   */
+  fun schedulePeriodicSync()
 }

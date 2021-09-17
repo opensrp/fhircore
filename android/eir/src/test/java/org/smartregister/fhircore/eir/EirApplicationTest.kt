@@ -33,7 +33,7 @@ import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.util.extension.lastSyncDateTime
-import org.smartregister.fhircore.engine.util.extension.runSync
+import org.smartregister.fhircore.engine.util.extension.runOneTimeSync
 
 @Config(shadows = [EirApplicationShadow::class])
 class EirApplicationTest : RobolectricTest() {
@@ -63,7 +63,7 @@ class EirApplicationTest : RobolectricTest() {
     val syncJob: SyncJob = spyk()
     every { Sync.basicSyncJob(any()) } returns syncJob
 
-    application.runSync()
+    application.runOneTimeSync(sharedSyncStatus)
 
     coVerify { syncJob.run(application.fhirEngine, any(), application.resourceSyncParams, null) }
 

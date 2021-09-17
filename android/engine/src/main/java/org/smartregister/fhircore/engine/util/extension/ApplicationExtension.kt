@@ -25,33 +25,52 @@ import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
+import com.google.android.fhir.sync.FhirSyncWorker
+import com.google.android.fhir.sync.PeriodicSyncConfiguration
+import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.Sync
 import com.google.gson.Gson
 import java.io.IOException
+import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import timber.log.Timber
 
-suspend fun Application.runSync(syncStateFlow: MutableSharedFlow<State>? = null) {
+suspend fun Application.runOneTimeSync(sharedSyncStatus: MutableSharedFlow<State>) {
   if (this !is ConfigurableApplication)
     throw (IllegalStateException("Application should extend ConfigurableApplication interface"))
-  val dataSource = buildDatasource(this.applicationConfiguration)
 
-  Sync.basicSyncJob(this)
-    .run(
-      fhirEngine = fhirEngine,
-      dataSource = dataSource,
-      resourceSyncParams = resourceSyncParams,
-      subscribeTo = syncStateFlow
-    )
+  syncJob.run(
+    fhirEngine = fhirEngine,
+    dataSource = FhirResourceDataSource.getInstance(this),
+    resourceSyncParams = resourceSyncParams,
+    subscribeTo = sharedSyncStatus
+  )
+}
+
+inline fun <reified W : FhirSyncWorker> Application.runPeriodicSync() {
+  if (this !is ConfigurableApplication)
+    throw (IllegalStateException("Application should extend ConfigurableApplication interface"))
+  syncJob.poll(
+    PeriodicSyncConfiguration(
+      repeat = RepeatInterval(this.applicationConfiguration.syncInterval, TimeUnit.MINUTES)
+    ),
+    W::class.java
+  )
+
+  CoroutineScope(Dispatchers.Main).launch {
+    syncJob.stateFlow().collect { this@runPeriodicSync.syncBroadcaster.broadcastSync(it) }
+  }
 }
 
 fun Application.lastSyncDateTime(): String {
@@ -71,14 +90,6 @@ fun <T> Application.loadResourceTemplate(
   return if (Resource::class.java.isAssignableFrom(clazz))
     FhirContext.forR4().newJsonParser().parseResource(json) as T
   else Gson().fromJson(json, clazz)
-}
-
-fun Application.buildDatasource(
-  applicationConfiguration: ApplicationConfiguration
-): FhirResourceDataSource {
-  return FhirResourceDataSource(
-    FhirResourceService.create(FhirContext.forR4().newJsonParser(), this, applicationConfiguration)
-  )
 }
 
 suspend fun FhirEngine.searchActivePatients(

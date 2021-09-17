@@ -37,7 +37,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.createFactory
-import org.smartregister.fhircore.engine.util.extension.runSync
+import org.smartregister.fhircore.engine.util.extension.runOneTimeSync
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
 
@@ -69,8 +69,7 @@ abstract class BaseLoginActivity :
         this@BaseLoginActivity,
         {
           lifecycleScope.launch(dispatcherProvider.main()) {
-            // initiate sync
-            application.runSync(sharedSyncStatus)
+            application.runOneTimeSync(sharedSyncStatus)
           }
           navigateToHome()
         }

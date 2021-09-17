@@ -163,7 +163,7 @@
                         android:layout_weight="2"
                         android:gravity="end"
                         android:paddingEnd="15dp"
-                        android:text="@string/last_sync_timestamp"
+                        android:text=""
                         android:textColor="#E0E0E0" />
 
                 </LinearLayout>

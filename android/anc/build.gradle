@@ -132,5 +132,4 @@ dependencies {
 
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
-    implementation deps.work.runtime
 }

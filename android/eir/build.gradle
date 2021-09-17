@@ -130,7 +130,6 @@ dependencies {
     implementation deps.lifecycle.viewmodel
     implementation deps.material
     implementation deps.recyclerview
-    implementation deps.work.runtime
 
     implementation deps.core
     implementation deps.fragment

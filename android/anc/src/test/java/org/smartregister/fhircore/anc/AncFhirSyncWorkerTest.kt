@@ -39,7 +39,7 @@ class AncFhirSyncWorkerTest : RobolectricTest() {
     val workerParam = mockk<WorkerParameters>()
     every { workerParam.taskExecutor } returns WorkManagerTaskExecutor(mockk())
 
-    ancFhirSyncWorker = AncFhirSyncWorker(AncApplication.getContext(), workerParam)
+    ancFhirSyncWorker = AncFhirSyncWorker(workerParam)
   }
 
   @Test

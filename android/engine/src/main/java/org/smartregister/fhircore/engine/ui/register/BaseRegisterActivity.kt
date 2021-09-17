@@ -116,13 +116,7 @@ abstract class BaseRegisterActivity :
 
     registerViewModel.lastSyncTimestamp.observe(
       this,
-      { syncTimeStamp ->
-        if (!syncTimeStamp.isNullOrEmpty()) {
-          SharedPreferencesHelper.write(LAST_SYNC_TIMESTAMP, syncTimeStamp)
-        }
-        // TODO this is blocking the flow and does not allow proceeding if sync fails for any reason
-        // registerActivityBinding.btnRegisterNewClient.isEnabled = !syncTimeStamp.isNullOrEmpty()
-      }
+      { registerActivityBinding.btnRegisterNewClient.isEnabled = !it.isNullOrEmpty() }
     )
 
     registerViewModel.run {
@@ -167,8 +161,9 @@ abstract class BaseRegisterActivity :
       }
       is State.Failed -> {
         progressSync.hide()
-        tvLastSyncTimestamp.text =
-          SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, getString(R.string.syncing_failed))
+        val syncTimestamp = state.result.timestamp.asString()
+        tvLastSyncTimestamp.text = syncTimestamp
+        registerViewModel.setLastSyncTimestamp(syncTimestamp)
         containerProgressSync.background = containerProgressSync.getDrawable(R.drawable.ic_sync)
       }
       is State.Glitch -> {
