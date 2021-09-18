@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.smartregister.fhircore.anc.ui.family.details
 
 import androidx.compose.foundation.Image
@@ -41,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import java.text.SimpleDateFormat
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.HumanName
@@ -50,45 +67,33 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import java.text.SimpleDateFormat
-
 
 @Composable
 fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
 
-  Surface(
-    color = colorResource(id = R.color.white_smoke)
-  ) {
+  Surface(color = colorResource(id = R.color.white_smoke)) {
     Column(
       /*modifier = Modifier
-        .background(color = colorResource(id = R.color.white_smoke))*/
-    ) {
+      .background(color = colorResource(id = R.color.white_smoke))*/
+      ) {
 
       // top bar
       TopAppBar(
-        title = {
-          Text(text = stringResource(id = R.string.all_families))
-        },
+        title = { Text(text = stringResource(id = R.string.all_families)) },
         navigationIcon = {
-          IconButton(onClick = {
-            dataProvider.getAppBackClickListener().invoke()
-          }) {
-            Icon(
-              Icons.Filled.ArrowBack,
-              contentDescription = "Back arrow"
-            )
+          IconButton(onClick = { dataProvider.getAppBackClickListener().invoke() }) {
+            Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")
           }
         }
       )
 
       // family name
       Column(
-        modifier = Modifier
-          .fillMaxWidth()
-          .background(color = colorResource(id = R.color.colorPrimary))
-          .padding(12.dp)
+        modifier =
+          Modifier.fillMaxWidth()
+            .background(color = colorResource(id = R.color.colorPrimary))
+            .padding(12.dp)
       ) {
-
         val patient = dataProvider.getDemographics().observeAsState()
         Text(
           text = patient.value?.name?.first()?.family ?: "",
@@ -101,14 +106,13 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
           color = colorResource(id = R.color.white),
           fontSize = 25.sp
         )
-
       }
 
       Column(
-        modifier = Modifier
-          .fillMaxSize()
-          .padding(start = 12.dp, end = 12.dp)
-          .verticalScroll(rememberScrollState()),
+        modifier =
+          Modifier.fillMaxSize()
+            .padding(start = 12.dp, end = 12.dp)
+            .verticalScroll(rememberScrollState()),
       ) {
 
         // spacer for padding
@@ -119,7 +123,11 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
 
         // members list
         dataProvider.getFamilyMembers().observeAsState().value?.run {
-          MembersList(this, dataProvider.getMemberItemClickListener(), dataProvider.getAddMemberItemClickListener())
+          MembersList(
+            this,
+            dataProvider.getMemberItemClickListener(),
+            dataProvider.getAddMemberItemClickListener()
+          )
         }
 
         // encounter heading and see all button
@@ -133,10 +141,8 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
         // spacer for padding
         Spacer(Modifier.height(12.dp))
       }
-
     }
   }
-
 }
 
 @Composable
@@ -147,35 +153,31 @@ fun MemberHeading() {
     fontWeight = FontWeight.Bold,
     textAlign = TextAlign.Start,
     fontSize = 16.sp,
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(top = 6.dp)
+    modifier = Modifier.fillMaxWidth().padding(top = 6.dp)
   )
 }
 
 @Composable
-fun MembersList(members: List<FamilyMemberItem>, memberItemClickListener: (item: FamilyMemberItem) -> Unit, addMemberItemClickListener: () -> Unit) {
+fun MembersList(
+  members: List<FamilyMemberItem>,
+  memberItemClickListener: (item: FamilyMemberItem) -> Unit,
+  addMemberItemClickListener: () -> Unit
+) {
 
   Card(
     elevation = 4.dp,
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(top = 12.dp),
+    modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
   ) {
     Column(
-      modifier = Modifier
-        .fillMaxWidth(),
+      modifier = Modifier.fillMaxWidth(),
     ) {
-
       val totalMemberCount = members.count()
       members.forEachIndexed { index, item ->
         Row(
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.SpaceBetween,
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp)
-            .clickable { memberItemClickListener(item) }
+          modifier =
+            Modifier.fillMaxWidth().padding(12.dp).clickable { memberItemClickListener(item) }
         ) {
           Text(
             text = item.name,
@@ -193,18 +195,16 @@ fun MembersList(members: List<FamilyMemberItem>, memberItemClickListener: (item:
         }
 
         if (index < totalMemberCount) {
-          Box(modifier = Modifier
-            .fillMaxWidth()
-            .height(1.dp)
-            .background(color = colorResource(id = R.color.white_smoke)))
+          Box(
+            modifier =
+              Modifier.fillMaxWidth()
+                .height(1.dp)
+                .background(color = colorResource(id = R.color.white_smoke))
+          )
         }
       }
-      
-      TextButton(
-        onClick = { addMemberItemClickListener() },
-        modifier = Modifier
-          .fillMaxWidth()
-      ) {
+
+      TextButton(onClick = { addMemberItemClickListener() }, modifier = Modifier.fillMaxWidth()) {
         Text(
           text = stringResource(id = R.string.add_member).uppercase(),
           color = colorResource(id = R.color.colorPrimaryLight),
@@ -214,7 +214,6 @@ fun MembersList(members: List<FamilyMemberItem>, memberItemClickListener: (item:
           modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
         )
       }
-
     }
   }
 }
@@ -225,9 +224,7 @@ fun EncounterHeader(seeAllEncounterClickListener: () -> Unit) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween,
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(top = 18.dp)
+    modifier = Modifier.fillMaxWidth().padding(top = 18.dp)
   ) {
 
     // encounter heading
@@ -240,12 +237,7 @@ fun EncounterHeader(seeAllEncounterClickListener: () -> Unit) {
     )
 
     // button see all encounters
-    TextButton(
-      contentPadding = PaddingValues(0.dp),
-      onClick = {
-        seeAllEncounterClickListener()
-      }
-    ) {
+    TextButton(contentPadding = PaddingValues(0.dp), onClick = { seeAllEncounterClickListener() }) {
       Text(
         text = stringResource(id = R.string.see_all).uppercase(),
         color = colorResource(id = R.color.colorPrimaryLight),
@@ -254,11 +246,7 @@ fun EncounterHeader(seeAllEncounterClickListener: () -> Unit) {
         textAlign = TextAlign.Start
       )
 
-      Icon(
-        painterResource(id = R.drawable.ic_forward_arrow),
-        "",
-        Modifier.padding(start = 4.dp)
-      )
+      Icon(painterResource(id = R.drawable.ic_forward_arrow), "", Modifier.padding(start = 4.dp))
     }
   }
 }
@@ -268,39 +256,21 @@ fun EncounterList(members: List<Encounter>, encounterItemClickListener: (item: E
 
   Card(
     elevation = 4.dp,
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(top = 6.dp),
+    modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
   ) {
     Column(
-      modifier = Modifier
-        .fillMaxWidth(),
+      modifier = Modifier.fillMaxWidth(),
     ) {
-
       val totalMemberCount = members.count()
       members.forEachIndexed { index, item ->
         Row(
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.SpaceBetween,
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp)
-            .clickable {
-              encounterItemClickListener(item)
-            }
+          modifier =
+            Modifier.fillMaxWidth().padding(12.dp).clickable { encounterItemClickListener(item) }
         ) {
-
-          Row(
-            verticalAlignment = Alignment.CenterVertically
-          ){
-
-            Icon(
-              Icons.Filled.TaskAlt,
-              null,
-              Modifier
-                .width(20.dp)
-                .height(20.dp)
-            )
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Filled.TaskAlt, null, Modifier.width(20.dp).height(20.dp))
 
             Text(
               text = item.class_?.display ?: "",
@@ -320,13 +290,14 @@ fun EncounterList(members: List<Encounter>, encounterItemClickListener: (item: E
         }
 
         if (index < totalMemberCount) {
-          Box(modifier = Modifier
-            .fillMaxWidth()
-            .height(1.dp)
-            .background(color = colorResource(id = R.color.white_smoke)))
+          Box(
+            modifier =
+              Modifier.fillMaxWidth()
+                .height(1.dp)
+                .background(color = colorResource(id = R.color.white_smoke))
+          )
         }
       }
-
     }
   }
 }
@@ -334,20 +305,23 @@ fun EncounterList(members: List<Encounter>, encounterItemClickListener: (item: E
 @Preview(showBackground = true)
 @Composable
 fun PreviewFamilyDetailScreen() {
-  AppTheme {
-    FamilyDetailScreen(getDummyDataProvider())
-  }
+  AppTheme { FamilyDetailScreen(getDummyDataProvider()) }
 }
 
-fun getDummyDataProvider() : FamilyDetailDataProvider {
-  return object: FamilyDetailDataProvider{
+fun getDummyDataProvider(): FamilyDetailDataProvider {
+  return object : FamilyDetailDataProvider {
     override fun getDemographics(): LiveData<Patient> {
-      return MutableLiveData(Patient().apply {
-        name = listOf(HumanName().apply {
-          given = listOf(StringType("John"))
-          family = "Doe"
-        })
-      })
+      return MutableLiveData(
+        Patient().apply {
+          name =
+            listOf(
+              HumanName().apply {
+                given = listOf(StringType("John"))
+                family = "Doe"
+              }
+            )
+        }
+      )
     }
 
     override fun getFamilyMembers(): LiveData<List<FamilyMemberItem>> {
@@ -377,11 +351,9 @@ private fun dummyFamilyMemberItem(name: String): FamilyMemberItem {
   return FamilyMemberItem(name, "1", "18", "Male", false)
 }
 
-private fun dummyEncounter(text: String, periodStartDate: String) : Encounter {
+private fun dummyEncounter(text: String, periodStartDate: String): Encounter {
   return Encounter().apply {
     class_ = Coding("", "", text)
-    period = Period().apply {
-      start = SimpleDateFormat("yyyy-MM-dd").parse(periodStartDate)
-    }
+    period = Period().apply { start = SimpleDateFormat("yyyy-MM-dd").parse(periodStartDate) }
   }
 }

@@ -21,7 +21,6 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
@@ -30,7 +29,6 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplicati
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-
 
 class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
@@ -42,7 +40,8 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
     familyId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
     val fhirEngine = (AncApplication.getContext() as ConfigurableApplication).fhirEngine
     val familyDetailRepository = FamilyDetailRepository(familyId, fhirEngine)
-    val viewModel = FamilyDetailViewModel.get(this, application as AncApplication, familyDetailRepository)
+    val viewModel =
+      FamilyDetailViewModel.get(this, application as AncApplication, familyDetailRepository)
 
     viewModel.setAppBackClickListener(this::onBackIconClicked)
     viewModel.setMemberItemClickListener(this::onFamilyMemberItemClicked)
@@ -50,11 +49,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
     viewModel.setSeeAllEncounterClickListener(this::onSeeAllEncounterClicked)
     viewModel.setEncounterItemClickListener(this::onFamilyEncounterItemClicked)
 
-    setContent {
-      AppTheme {
-        FamilyDetailScreen(viewModel)
-      }
-    }
+    setContent { AppTheme { FamilyDetailScreen(viewModel) } }
   }
 
   private fun onBackIconClicked() {

@@ -19,11 +19,9 @@ package org.smartregister.fhircore.anc.data.family
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
@@ -49,9 +47,9 @@ class FamilyDetailRepository(
     val data = MutableLiveData<List<FamilyMemberItem>>()
     CoroutineScope(dispatcherProvider.io()).launch {
       val members =
-        fhirEngine.search<Patient> { filter(Patient.LINK) { this.value = "Patient/$familyId" } }.map {
-          FamilyItemMapper.toFamilyMemberItem(it)
-        }
+        fhirEngine
+          .search<Patient> { filter(Patient.LINK) { this.value = "Patient/$familyId" } }
+          .map { FamilyItemMapper.toFamilyMemberItem(it) }
       data.postValue(members)
     }
     return data

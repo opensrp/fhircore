@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.smartregister.fhircore.anc.ui.family.details
 
 import androidx.lifecycle.AndroidViewModel
@@ -16,17 +32,13 @@ class FamilyDetailViewModel(
   private val repository: FamilyDetailRepository,
 ) : AndroidViewModel(application), FamilyDetailDataProvider {
 
-  private val mDemographics : LiveData<Patient> by lazy {
-    repository.fetchDemographics()
-  }
+  private val mDemographics: LiveData<Patient> by lazy { repository.fetchDemographics() }
 
   private val mFamilyMembers: LiveData<List<FamilyMemberItem>> by lazy {
     repository.fetchFamilyMembers()
   }
 
-  private val mEncounters: LiveData<List<Encounter>> by lazy {
-    repository.fetchEncounters()
-  }
+  private val mEncounters: LiveData<List<Encounter>> by lazy { repository.fetchEncounters() }
 
   private var mAppBackClickListener: () -> Unit = {}
   private var mAddMemberItemClickListener: () -> Unit = {}
@@ -63,7 +75,7 @@ class FamilyDetailViewModel(
   }
 
   override fun getEncounterItemClickListener(): (item: Encounter) -> Unit {
-    return mEncounterItemClickListener;
+    return mEncounterItemClickListener
   }
 
   fun setAppBackClickListener(listener: () -> Unit) {
@@ -87,8 +99,15 @@ class FamilyDetailViewModel(
   }
 
   companion object {
-    fun get(owner: ViewModelStoreOwner, application: AncApplication, repository: FamilyDetailRepository): FamilyDetailViewModel {
-      return ViewModelProvider(owner, FamilyDetailViewModel(application, repository).createFactory())[FamilyDetailViewModel::class.java]
+    fun get(
+      owner: ViewModelStoreOwner,
+      application: AncApplication,
+      repository: FamilyDetailRepository
+    ): FamilyDetailViewModel {
+      return ViewModelProvider(
+        owner,
+        FamilyDetailViewModel(application, repository).createFactory()
+      )[FamilyDetailViewModel::class.java]
     }
   }
 }
