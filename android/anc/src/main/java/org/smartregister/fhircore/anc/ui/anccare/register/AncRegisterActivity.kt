@@ -36,8 +36,6 @@ class AncRegisterActivity : BaseRegisterActivity() {
   private lateinit var familyRepository: FamilyRepository
   private lateinit var ancPatientRepository: AncPatientRepository
 
-  private val ancItemMapper = AncItemMapper
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     configureViews(
