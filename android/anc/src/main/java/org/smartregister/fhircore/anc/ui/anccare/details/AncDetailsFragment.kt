@@ -36,13 +36,16 @@ import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
 import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.anc.form.config.AncFormConfig
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.hl7.fhir.r4.model.Parameters
 import org.json.JSONObject
+import org.json.JSONArray
+
+
+
 
 
 
@@ -97,8 +100,6 @@ class AncDetailsFragment private constructor() : Fragment() {
 
     fhirResourceDataSource= FhirResourceDataSource(fhirResourceService)
 
-    patientId = arguments?.getString(AncFormConfig.ANC_ARG_ITEM_ID) ?: ""
-
     fhirEngine = AncApplication.getContext().fhirEngine
 
     setupViews()
@@ -127,8 +128,7 @@ class AncDetailsFragment private constructor() : Fragment() {
       )
       .observe(viewLifecycleOwner, this::handleCarePlan)
 
-    buttonCQLSetOnClickListener()
-
+    showCQLCard()
   }
 
   private fun setupViews() {
@@ -202,7 +202,7 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   private fun loadCQLPatientData(){
     ancDetailsViewModel
-      .fetchCQLPatientData(parser, fhirResourceDataSource)
+      .fetchCQLPatientData(parser, fhirResourceDataSource,patientId)
       .observe(viewLifecycleOwner, this::handleCQLPatientData)
   }
 
@@ -223,7 +223,7 @@ class AncDetailsFragment private constructor() : Fragment() {
   }
 
   private fun handleCQLPatientData(auxPatientData: String){
-    testData=auxPatientData
+    testData=processCQLPatientBundle(auxPatientData)
     val parameters = libraryEvaluator.runCql(
       libraryData,
       helperData,
@@ -233,11 +233,37 @@ class AncDetailsFragment private constructor() : Fragment() {
       contextCQL,
       contextLabel
     )
-    Log.i("parameters: ",parameters)
     val jsonObject = JSONObject(parameters)
     textView_CQLResults.text=jsonObject.toString(4)
     textView_CQLResults.visibility=View.VISIBLE
   }
 
+  private fun processCQLPatientBundle(auxPatientData: String):String{
+    var auxPatientDataObj = JSONObject(auxPatientData)
+    var oldJSONArrayEntry = auxPatientDataObj.getJSONArray("entry")
+    var newJSONArrayEntry = JSONArray()
+    for (i in 0 until oldJSONArrayEntry.length()-1) {
+      var resourceType= oldJSONArrayEntry.getJSONObject(i)
+        .getJSONObject("resource")
+        .getString("resourceType")
+      if(i!=0 && !resourceType.equals("Patient")){
+        newJSONArrayEntry.put(oldJSONArrayEntry.getJSONObject(i))
+      }
+    }
 
+    auxPatientDataObj.remove("entry")
+    auxPatientDataObj.put("entry",newJSONArrayEntry)
+
+    return auxPatientDataObj.toString()
+  }
+
+  val ANC_TEST_PATIENT_ID="e8725b4c-6db0-4158-a24d-50a5ddf1c2ed"
+  private fun showCQLCard()
+  {
+    if(patientId==ANC_TEST_PATIENT_ID) {
+      cardView_CQLSection.visibility = View.VISIBLE
+      textView_EvaluateCQLHeader.visibility = View.VISIBLE
+      buttonCQLSetOnClickListener()
+    }
+  }
 }

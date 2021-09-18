@@ -26,9 +26,6 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
-import org.smartregister.fhircore.anc.data.AncPatientRepository
-import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -42,7 +39,7 @@ class AncDetailsViewModel(
   val LIBRARY_URL = "https://hapi.fhir.org/baseR4/Library?_id=2549555"
   val HELPER_URL = "https://hapi.fhir.org/baseR4/Library?_id=2537273"
   val VALUE_SET_URL = "https://fhir.labs.smartregister.org/fhir/ValueSet?_id=1750,1751"
-  val PATIENT_URL = "https://hapi.fhir.org/baseR4/Patient/2536426/\$everything"
+  var PATIENT_URL = ""
 
   fun fetchDemographics(): LiveData<AncPatientDetailItem> {
     val patientDemographics = MutableLiveData<AncPatientDetailItem>()
@@ -102,9 +99,11 @@ class AncDetailsViewModel(
   }
 
   fun fetchCQLPatientData(parser: IParser,
-                           fhirResourceDataSource: FhirResourceDataSource):
+                           fhirResourceDataSource: FhirResourceDataSource,
+                          patientId:String):
           LiveData<String> {
-    var patientData=MutableLiveData<String>();
+    var patientData=MutableLiveData<String>()
+    PATIENT_URL= "https://fhir.labs.smartregister.org/fhir/Patient/$patientId\$everything"
     viewModelScope.launch(dispatcher.io()) {
       val auxCQLPatientData = parser.encodeResourceToString(
         fhirResourceDataSource.loadData(PATIENT_URL)

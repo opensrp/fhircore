@@ -52,7 +52,6 @@
                 android:layout_marginLeft="26dp"
                 android:layout_marginRight="26dp">
 
-
                 <TextView
                     android:id="@+id/txtView_carePlanHeading"
                     android:layout_width="wrap_content"
@@ -155,6 +154,7 @@
                     android:textColor="@color/darkGrayText"
                     android:textSize="18sp"
                     android:textStyle="bold"
+                    android:visibility="gone"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/cardView_carePlan" />
 
@@ -172,6 +172,7 @@
                     android:elevation="3dp"
                     app:cardCornerRadius="6dp"
                     app:cardElevation="3dp"
+                    android:visibility="gone"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView_EvaluateCQLHeader">
 
