@@ -45,7 +45,7 @@ class LibraryEvaluatorTest {
       testData = readJsonFile(ASSET_BASE_PATH + "patient.json")
       result = readJsonFile(ASSET_BASE_PATH + "result.json")
     } catch (e: IOException) {
-      Timber.e(e, e.message);
+      Timber.e(e, e.message)
     }
   }
 
