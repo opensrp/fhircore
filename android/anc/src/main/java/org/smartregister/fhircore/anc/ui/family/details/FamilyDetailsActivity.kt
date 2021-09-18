@@ -18,75 +18,50 @@ package org.smartregister.fhircore.anc.ui.family.details
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.TextView
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.fhir.FhirEngine
+import androidx.activity.compose.setContent
 import org.hl7.fhir.r4.model.Encounter
-import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
-import org.smartregister.fhircore.anc.ui.family.details.adapter.FamilyEncounterAdapter
-import org.smartregister.fhircore.anc.ui.family.details.adapter.FamilyMemberAdapter
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.theme.AppTheme
+
 
 class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
   private lateinit var familyId: String
-  private lateinit var fhirEngine: FhirEngine
-  private lateinit var familyMemberAdapter: FamilyMemberAdapter
-  private lateinit var familyEncounterAdapter: FamilyEncounterAdapter
-
-  lateinit var familyDetailRepository: FamilyDetailRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_family_details)
-    setSupportActionBar(findViewById(R.id.familyDetailToolbar))
 
     familyId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+    val fhirEngine = (AncApplication.getContext() as ConfigurableApplication).fhirEngine
+    val familyDetailRepository = FamilyDetailRepository(familyId, fhirEngine)
+    val viewModel = FamilyDetailViewModel.get(this, application as AncApplication, familyDetailRepository)
 
-    fhirEngine = (AncApplication.getContext() as ConfigurableApplication).fhirEngine
+    viewModel.setAppBackClickListener(this::onBackIconClicked)
+    viewModel.setMemberItemClickListener(this::onFamilyMemberItemClicked)
+    viewModel.setAddMemberItemClickListener(this::onAddNewMemberButtonClicked)
+    viewModel.setSeeAllEncounterClickListener(this::onSeeAllEncounterClicked)
+    viewModel.setEncounterItemClickListener(this::onFamilyEncounterItemClicked)
 
-    familyDetailRepository = FamilyDetailRepository(familyId, fhirEngine)
-
-    familyMemberAdapter =
-      FamilyMemberAdapter(this::onFamilyMemberItemClicked, this::onAddNewMemberButtonClicked)
-    findViewById<RecyclerView>(R.id.memberList).adapter = familyMemberAdapter
-
-    familyEncounterAdapter = FamilyEncounterAdapter(this::onFamilyEncounterItemClicked)
-    findViewById<RecyclerView>(R.id.encounterList).adapter = familyEncounterAdapter
-  }
-
-  override fun onResume() {
-    super.onResume()
-    familyDetailRepository.fetchDemographics().observe(this, this::handlePatientDemographics)
-    familyDetailRepository.fetchFamilyMembers().observe(this, this::handleFamilyMembers)
-    familyDetailRepository.fetchEncounters().observe(this, this::handleFamilyEncounters)
-  }
-
-  private fun handlePatientDemographics(family: Patient) {
-    with(family) {
-      findViewById<TextView>(R.id.familyName).text =
-        name?.firstOrNull()?.given?.firstOrNull()?.value
-      findViewById<TextView>(R.id.familySurname).text = name?.firstOrNull()?.family
+    setContent {
+      AppTheme {
+        FamilyDetailScreen(viewModel)
+      }
     }
   }
 
-  private fun handleFamilyMembers(familyMembers: List<FamilyMemberItem>) {
-    familyMemberAdapter.submitList(familyMembers)
+  private fun onBackIconClicked() {
+    finish()
   }
 
-  private fun handleFamilyEncounters(familyEncounters: List<Encounter>) {
-    familyEncounterAdapter.submitList(familyEncounters)
-  }
-
-  private fun onFamilyMemberItemClicked(familyMemberItem: FamilyMemberItem) {}
+  private fun onFamilyMemberItemClicked(item: FamilyMemberItem) {}
 
   private fun onAddNewMemberButtonClicked() {
     val bundle =
@@ -98,5 +73,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
     startActivity(Intent(this, FamilyQuestionnaireActivity::class.java).putExtras(bundle))
   }
 
-  private fun onFamilyEncounterItemClicked(encounter: Encounter) {}
+  private fun onSeeAllEncounterClicked() {}
+
+  private fun onFamilyEncounterItemClicked(item: Encounter) {}
 }
