@@ -72,10 +72,7 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
 
   Surface(color = colorResource(id = R.color.white_smoke)) {
-    Column(
-      /*modifier = Modifier
-      .background(color = colorResource(id = R.color.white_smoke))*/
-      ) {
+    Column{
 
       // top bar
       TopAppBar(
