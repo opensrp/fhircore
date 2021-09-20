@@ -221,9 +221,9 @@ class AncPatientRepository(
     return mapOf(
       "#Id" to getUniqueId(),
       "#RefPatient" to asPatientReference(patientId).reference,
-      "#RefCondition" to pregnancyCondition?.asReference()?.reference,
-      "#RefEpisodeOfCare" to pregnancyEpisodeOfCase?.asReference()?.reference,
-      "#RefEncounter" to pregnancyEncounter?.asReference()?.reference,
+      "#RefCondition" to pregnancyCondition?.id,
+      "#RefEpisodeOfCare" to pregnancyEpisodeOfCase?.id,
+      "#RefEncounter" to pregnancyEncounter?.id,
       "#RefGoal" to pregnancyGoal?.asReference()?.reference,
       "#RefCareTeam" to "ANC-CHW",
       "#RefDateOnset" to lmp?.format(),
