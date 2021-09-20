@@ -1,0 +1,61 @@
+/*
+ * Copyright 2021 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.smartregister.fhircore.anc.ui.madx.details.vitalsigns
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Observation
+import org.smartregister.fhircore.anc.data.NonAncPatientRepository
+import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.model.CarePlanItem
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+
+class VitalSignsDetailsViewModel(
+    val ancPatientRepository: NonAncPatientRepository,
+    var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
+    val patientId: String
+) : ViewModel() {
+
+
+     fun fetchSelectedUnit():LiveData<Boolean>{
+        val selectedUnit = MutableLiveData<Boolean>()
+        selectedUnit.postValue(ancPatientRepository.loadQuestionnaire())
+        return selectedUnit;
+    }
+
+    fun fetchObservation(): LiveData<List<Observation>> {
+        val patientObservation = MutableLiveData<List<Observation>>()
+        viewModelScope.launch(dispatcher.io()) {
+            val listObservation = ancPatientRepository.fetchObservations(patientId = patientId)
+            patientObservation.postValue(listObservation)
+        }
+        return patientObservation
+    }
+    fun fetchEncounters(): LiveData<List<Encounter>> {
+        val patientEncounters = MutableLiveData<List<Encounter>>()
+        viewModelScope.launch(dispatcher.io()) {
+            val listEncounters = ancPatientRepository.fetchEncounters(patientId = patientId)
+            patientEncounters.postValue(listEncounters)
+        }
+        return patientEncounters
+    }
+}

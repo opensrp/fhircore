@@ -26,6 +26,7 @@ import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
+import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
@@ -34,11 +35,14 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.*
 
-class AncPatientRepository(
+class NonAncPatientRepository(
     override val fhirEngine: FhirEngine,
     override val domainMapper: DomainMapper<Patient, AncPatientItem>,
     private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : RegisterRepository<Patient, AncPatientItem> {
+
+
+    private var isMetricSelected: Boolean = false
 
     override suspend fun loadData(
         query: String,
@@ -173,10 +177,54 @@ class AncPatientRepository(
         return AncApplication.getContext().loadConfig(id, clazz)
     }
 
+    suspend fun postVitalSigns(
+        questionnaire: Questionnaire,
+        questionnaireResponse: QuestionnaireResponse,
+        clientIdentifier: String?
+    ) {
+        val patient = fetchPatient(clientIdentifier!!)
+
+        // use ResourceMapper when supported by SDK
+        val target = mutableListOf<Observation>()
+        QuestionnaireUtils.extractObservations(
+            questionnaireResponse,
+            questionnaire.item,
+            patient, //use patient id to get patient details
+            target
+        )
+        target.forEach {
+            fhirEngine.save(it)
+        }
+        //use observation to create Encounter
+    }
+
+    suspend fun selectVitalSignStandard(
+        questionnaire: Questionnaire,
+        questionnaireResponse: QuestionnaireResponse,
+        clientIdentifier: String?
+    ) {
+        val patient = fetchPatient(clientIdentifier!!)
+        val target = mutableListOf<Observation>()
+        QuestionnaireUtils.extractObservations(
+            questionnaireResponse,
+            questionnaire.item,
+            patient,
+            target
+        )
+        target.forEach { fhirEngine.save(it) }
+
+        val metricSelected = questionnaireResponse.find(ANC_VITAL_SIGNS_UNIT)
+        if (metricSelected?.answer?.firstOrNull()?.valueStringType?.value == "metric")
+            isMetricSelected = true
+    }
+
+    fun loadQuestionnaire(): Boolean = isMetricSelected
+
 
     companion object {
         const val PREGNANCY_CONDITION = "pregnancy_condition_template.json"
         const val PREGNANCY_EPISODE_OF_CARE = "pregnancy_episode_of_care_template.json"
         const val PREGNANCY_FIRST_ENCOUNTER = "pregnancy_first_encounter_template.json"
+        const val ANC_VITAL_SIGNS_UNIT = "select-measurement_unit"
     }
 }

@@ -28,70 +28,89 @@ import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.util.extension.find
 
 object QuestionnaireUtils {
-  private const val ITEM_CONTEXT_EXTENSION_URL: String =
-    "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract"
-  private val Questionnaire.QuestionnaireItemComponent.isExtractableObservation: Boolean?
-    get() {
-      return this.extension.firstOrNull { it.url == ITEM_CONTEXT_EXTENSION_URL }?.let {
-        (it.value as BooleanType).booleanValue()
-      }
+    private const val ITEM_CONTEXT_EXTENSION_URL: String =
+        "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract"
+    private val Questionnaire.QuestionnaireItemComponent.isExtractableObservation: Boolean?
+        get() {
+            return this.extension.firstOrNull { it.url == ITEM_CONTEXT_EXTENSION_URL }?.let {
+                (it.value as BooleanType).booleanValue()
+            }
+        }
+
+    // https://github.com/opensrp/fhircore/issues/525
+    // use ResourceMapper when supported by SDK
+    // DO NOT remove unless you know what you are doing
+    fun extractObservations(
+        questionnaireResponse: QuestionnaireResponse,
+        items: List<Questionnaire.QuestionnaireItemComponent>,
+        subject: Resource,
+        target: MutableList<Observation>
+    ) {
+        items.forEach {
+            val response = questionnaireResponse.find(it.linkId)!!
+            if (it.isExtractableObservation == true &&
+                (response.hasAnswer() || it.type == Questionnaire.QuestionnaireItemType.GROUP)
+            ) {
+                target.add(response.asObservation(it, subject.asReference()))
+            }
+            extractObservations(questionnaireResponse, it.item, subject, target)
+        }
     }
 
-  // https://github.com/opensrp/fhircore/issues/525
-  // use ResourceMapper when supported by SDK
-  // DO NOT remove unless you know what you are doing
-  fun extractObservations(
-    questionnaireResponse: QuestionnaireResponse,
-    items: List<Questionnaire.QuestionnaireItemComponent>,
-    subject: Resource,
-    target: MutableList<Observation>
-  ) {
-    items.forEach {
-      val response = questionnaireResponse.find(it.linkId)!!
-      if (it.isExtractableObservation == true &&
-          (response.hasAnswer() || it.type == Questionnaire.QuestionnaireItemType.GROUP)
-      ) {
-        target.add(response.asObservation(it, subject.asReference()))
-      }
-
-      extractObservations(questionnaireResponse, it.item, subject, target)
+    // https://github.com/opensrp/fhircore/issues/525
+    // use ResourceMapper when supported by SDK
+    // DO NOT remove unless you know what you are doing
+    fun extractObservationsChoice(
+        questionnaireResponse: QuestionnaireResponse,
+        items: List<Questionnaire.QuestionnaireItemComponent>,
+        subject: Resource,
+        target: MutableList<Observation>
+    ) {
+        items.forEach {
+            val response = questionnaireResponse.find(it.linkId)!!
+            if (it.isExtractableObservation == true &&
+                (response.hasAnswer() || it.type == Questionnaire.QuestionnaireItemType.CHOICE)
+            ) {
+                target.add(response.asObservation(it, subject.asReference()))
+            }
+            extractObservations(questionnaireResponse, it.item, subject, target)
+        }
     }
-  }
 
-  fun getUniqueId(): String {
-    return UUID.randomUUID().toString()
-  }
-
-  fun Resource.asReference(): Reference {
-    val referenceValue = "${fhirType()}/$id"
-
-    return Reference().apply { this.reference = referenceValue }
-  }
-
-  fun Questionnaire.QuestionnaireItemComponent.asCodeableConcept(): CodeableConcept {
-    val qit = this
-    return CodeableConcept().apply {
-      this.text = qit.text
-      this.coding = qit.code
-
-      this.addCoding().apply {
-        this.code = qit.linkId
-        this.system = qit.definition
-      }
+    fun getUniqueId(): String {
+        return UUID.randomUUID().toString()
     }
-  }
 
-  fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asObservation(
-    questionnaireItemComponent: Questionnaire.QuestionnaireItemComponent,
-    subject: Reference
-  ): Observation {
-    return Observation().apply {
-      this.id = getUniqueId()
-      this.effective = DateTimeType.now()
-      this.code = questionnaireItemComponent.asCodeableConcept()
-      this.status = Observation.ObservationStatus.FINAL
-      this.value = answer?.firstOrNull()?.value
-      this.subject = subject
+    fun Resource.asReference(): Reference {
+        val referenceValue = "${fhirType()}/$id"
+
+        return Reference().apply { this.reference = referenceValue }
     }
-  }
+
+    fun Questionnaire.QuestionnaireItemComponent.asCodeableConcept(): CodeableConcept {
+        val qit = this
+        return CodeableConcept().apply {
+            this.text = qit.text
+            this.coding = qit.code
+
+            this.addCoding().apply {
+                this.code = qit.linkId
+                this.system = qit.definition
+            }
+        }
+    }
+
+    fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asObservation(
+        questionnaireItemComponent: Questionnaire.QuestionnaireItemComponent,
+        subject: Reference
+    ): Observation {
+        return Observation().apply {
+            this.id = getUniqueId()
+            this.effective = DateTimeType.now()
+            this.code = questionnaireItemComponent.asCodeableConcept()
+            this.status = Observation.ObservationStatus.FINAL
+            this.value = answer?.firstOrNull()?.value
+            this.subject = subject
+        }
+    }
 }

@@ -26,9 +26,9 @@ import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.databinding.ActivityAncDetailsBinding
+import org.smartregister.fhircore.anc.ui.madx.details.NonAncDetailsActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.anc.ui.anccare.details.form.AncDetailsFormConfig.ANC_VITAL_SIGNS
 
 class AncDetailsActivity : BaseMultiLanguageActivity() {
 
@@ -43,7 +43,6 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
         setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
 
         if (savedInstanceState == null) {
-
             patientId =
                 intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
@@ -63,7 +62,9 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
                 .commitNow()
         }
 
-        activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
+        activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener {
+            onBackPressed()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -102,13 +103,9 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.add_vitals) {
             startActivity(
-                Intent(this, QuestionnaireActivity::class.java)
-                    .putExtras(
-                        QuestionnaireActivity.requiredIntentArgs(
-                            clientIdentifier = null,
-                            form = ANC_VITAL_SIGNS
-                        )
-                    )
+                Intent(this, NonAncDetailsActivity::class.java).apply {
+                    putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY,patientId)
+                }
             )
             return true
         }

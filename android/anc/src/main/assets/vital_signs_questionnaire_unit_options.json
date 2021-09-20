@@ -1,0 +1,65 @@
+{
+  "resourceType": "Questionnaire",
+  "status": "active",
+  "date": "2020-11-18T07:24:47.111Z",
+  "name": "vital-sign",
+  "title": "Vital Sign",
+  "subjectType": [
+    "Patient"
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/383"
+    }
+  ],
+  "item": [
+    {
+      "linkId": "select-measurement_unit",
+      "type": "choice",
+      "required": true,
+      "text": "Select unit",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "radio-button",
+                "display": "Radio Button"
+              }
+            ],
+            "text": "A control where choices are listed with a button beside them. The button can be toggled to select or de-select a given choice. Selecting one item deselects all others."
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "metric",
+            "display": "Metric Units"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "standard",
+            "display": "Standard Units"
+          }
+        }
+      ],
+      "initial": [
+        {
+          "valueCoding": {
+            "code": "metric",
+            "display": "Metric Units"
+          }
+        }
+      ]
+    }
+  ]
+}

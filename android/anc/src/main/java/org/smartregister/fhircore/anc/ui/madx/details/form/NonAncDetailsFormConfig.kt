@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.anccare.details.form
+package org.smartregister.fhircore.anc.ui.madx.details.form
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-object AncDetailsFormConfig {
-  const val ANC_VITAL_SIGNS = "non-anc-patient-vital-signs"
+object NonAncDetailsFormConfig {
+    const val ANC_VITAL_SIGNS_UNIT_OPTIONS = "non-anc-patient-vital-signs_unit_options"
+    const val ANC_VITAL_SIGNS_METRIC = "non-anc-patient-vital-signs_metric"
+    const val ANC_VITAL_SIGNS_STANDARD = "non-anc-patient-vital-signs_standard"
 }

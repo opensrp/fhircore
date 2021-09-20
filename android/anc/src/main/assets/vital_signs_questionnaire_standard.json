@@ -32,6 +32,10 @@
             ],
             "text": "A control where choices are listed with a button beside them. The button can be toggled to select or de-select a given choice. Selecting one item deselects all others."
           }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
         }
       ],
       "answerOption": [
@@ -74,10 +78,39 @@
       ]
     },
     {
-      "linkId": "vital-signs-body-wight",
+      "linkId": "vital-signs-body-wight_lb",
       "definition": "http://acme.org/devices/clinical-codes",
       "text": "Body Weight (lb)",
       "type": "decimal",
+      "code": {
+        "coding": [
+          {
+            "system": "http://loinc.org",
+            "code": "29463-7",
+            "display": "Body Weight"
+          },
+          {
+            "system": "http://loinc.org",
+            "code": "3141-9",
+            "display": "Body weight Measured"
+          },
+          {
+            "system": "http://snomed.info/sct",
+            "code": "27113001",
+            "display": "Body weight"
+          },
+          {
+            "system": "http://acme.org/devices/clinical-codes",
+            "code": "body-weight",
+            "display": "Body Weight"
+          },
+          {
+            "unit": "lbs",
+            "system": "http://unitsofmeasure.org",
+            "code": "[lb_av]"
+          }
+        ]
+      },
       "enableWhen": [
         {
           "question": "select-vital-sign",
@@ -89,10 +122,63 @@
       ]
     },
     {
-      "linkId": "vital-signs-height",
+      "linkId": "vital-signs-height_ft",
       "definition": "http://acme.org/devices/clinical-codes",
-      "text": "Height (cm)",
+      "text": "Height (ft)",
       "type": "decimal",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://loinc.org",
+            "code": "3137-7",
+            "display": "Body height"
+          },
+          {
+            "system": "http://unitsofmeasure.org",
+            "code": "[ft_i]"
+          }
+        ]
+      },
+      "enableWhen": [
+        {
+          "question": "select-vital-sign",
+          "operator": "=",
+          "answerCoding": {
+            "code": "height"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "vital-signs-height_in",
+      "definition": "http://acme.org/devices/clinical-codes",
+      "text": "Height (in)",
+      "type": "decimal",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://loinc.org",
+            "code": "3137-7",
+            "display": "Body height"
+          },
+          {
+            "system": "http://unitsofmeasure.org",
+            "code": "[in_i]"
+          }
+        ]
+      },
       "enableWhen": [
         {
           "question": "select-vital-sign",
@@ -107,6 +193,21 @@
       "linkId": "vital-signs-blood_glucose",
       "definition": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
       "text": "Blood Glucose (mmol/L)",
+      "code": {
+        "coding": [
+          {
+            "system": "http://loinc.org",
+            "code": "15074-8",
+            "display": "Glucose [Moles/volume] in Blood"
+          }
+        ]
+      },
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
       "type": "decimal",
       "enableWhen": [
         {
@@ -121,7 +222,37 @@
     {
       "linkId": "vital-signs-blood-oxygen-level",
       "definition": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
-      "text": "Blood Oxygen Level",
+      "text": "Blood Oxygen Level (%)",
+      "code": {
+        "coding": [
+          {
+            "system": "http://loinc.org",
+            "code": "2708-6",
+            "display": "Oxygen saturation in Arterial blood"
+          },
+          {
+            "system": "http://loinc.org",
+            "code": "59408-5",
+            "display": "Oxygen saturation in Arterial blood by Pulse oximetry"
+          },
+          {
+            "system": "urn:iso:std:iso:11073:10101",
+            "code": "150456",
+            "display": "MDC_PULS_OXIM_SAT_O2"
+          },
+          {
+            "system": "http://unitsofmeasure.org",
+            "unit": "%",
+            "code": "%"
+          }
+        ]
+      },
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
       "type": "integer",
       "enableWhen": [
         {
@@ -137,6 +268,27 @@
       "linkId": "vital-signs-pulse-rate-level",
       "definition": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
       "text": "Pulse Rate (bpm)",
+      "code": {
+        "coding": [
+          {
+            "system": "http://loinc.org",
+            "code": "8867-4",
+            "display": "Heart rate"
+          },
+          {
+            "unit": "beats/minute",
+            "system": "http://unitsofmeasure.org",
+            "code": "/min"
+          }
+        ],
+        "text": "Heart rate"
+      },
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
       "type": "integer",
       "enableWhen": [
         {
@@ -152,6 +304,26 @@
       "linkId": "vital-signs-body-site-systolic-blood-pressure",
       "type": "choice",
       "text": "Select body site for Systolic blood pressure",
+      "code": {
+        "coding": [
+          {
+            "system": "http://loinc.org",
+            "code": "85354-9",
+            "display": "Blood pressure panel with all children optional"
+          },
+          {
+            "system": "http://snomed.info/sct",
+            "code": "368209003",
+            "display": "Right arm"
+          },
+          {
+            "system": "http://snomed.info/sct",
+            "code": "368209003",
+            "display": "Left arm"
+          }
+        ],
+        "text": "Blood pressure systolic & diastolic"
+      },
       "extension": [
         {
           "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
@@ -169,6 +341,10 @@
         {
           "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
           "valueCode": "horizontal"
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
         }
       ],
       "answerOption": [
@@ -208,6 +384,42 @@
       "definition": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
       "text": "Systolic Blood Pressure (mmHg)",
       "type": "integer",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://loinc.org",
+            "code": "85354-9",
+            "display": "Blood pressure panel with all children optional"
+          },
+          {
+            "system": "http://loinc.org",
+            "code": "8480-6",
+            "display": "Systolic blood pressure"
+          },
+          {
+            "system": "http://snomed.info/sct",
+            "code": "271649006",
+            "display": "Systolic blood pressure"
+          },
+          {
+            "system": "http://acme.org/devices/clinical-codes",
+            "code": "bp-s",
+            "display": "Systolic Blood pressure"
+          },
+          {
+            "unit": "mmHg",
+            "system": "http://unitsofmeasure.org",
+            "code": "mm[Hg]"
+          }
+        ],
+        "text": "Blood pressure systolic & diastolic"
+      },
       "enableWhen": [
         {
           "question": "select-vital-sign",
@@ -239,8 +451,32 @@
         {
           "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
           "valueCode": "horizontal"
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
         }
       ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://loinc.org",
+            "code": "85354-9",
+            "display": "Blood pressure panel with all children optional"
+          },
+          {
+            "system": "http://snomed.info/sct",
+            "code": "368209003",
+            "display": "Right arm"
+          },
+          {
+            "system": "http://snomed.info/sct",
+            "code": "368209003",
+            "display": "Left arm"
+          }
+        ],
+        "text": "Blood pressure systolic & diastolic"
+      },
       "answerOption": [
         {
           "valueCoding": {
@@ -278,6 +514,31 @@
       "definition": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
       "text": "Diastolic blood pressure (mmHg)",
       "type": "integer",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://loinc.org",
+            "code": "85354-9",
+            "display": "Blood pressure panel with all children optional"
+          },
+          {
+            "system": "http://loinc.org",
+            "code": "8462-4",
+            "display": "Diastolic blood pressure"
+          },
+          {
+            "unit": "mmHg",
+            "system": "http://unitsofmeasure.org",
+            "code": "mm[Hg]"
+          }
+        ]
+      },
       "enableWhen": [
         {
           "question": "select-vital-sign",
