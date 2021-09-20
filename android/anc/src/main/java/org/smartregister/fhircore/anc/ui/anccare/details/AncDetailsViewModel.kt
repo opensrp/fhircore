@@ -103,7 +103,7 @@ class AncDetailsViewModel(
                           patientId:String):
           LiveData<String> {
     var patientData=MutableLiveData<String>()
-    PATIENT_URL= "https://fhir.labs.smartregister.org/fhir/Patient/$patientId\$everything"
+    PATIENT_URL= "https://fhir.labs.smartregister.org/fhir/Patient/$patientId/\$everything"
     viewModelScope.launch(dispatcher.io()) {
       val auxCQLPatientData = parser.encodeResourceToString(
         fhirResourceDataSource.loadData(PATIENT_URL)
