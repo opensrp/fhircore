@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Added CQL Lib Evaluator class for CQl Expressions
+
+## [Unreleased]
+### Added
 - Gender input changed to radio selection on client info screen
 - Display message on empty list along with new client register button
 - Client count display in drawer

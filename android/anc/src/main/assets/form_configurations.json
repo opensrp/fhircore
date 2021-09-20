@@ -1,8 +1,8 @@
 [
   {
     "form": "anc-patient-registration",
-    "title": "Add ANC Patient",
-    "identifier": "207"
+    "title": "Enroll as ANC Patient",
+    "identifier": "1924"
   },
   {
     "form": "family-member-registration",
@@ -23,5 +23,10 @@
     "form": "non-anc-patient-vital-signs_unit_options",
     "title": "Add Vital Signs ",
     "identifier": "2006"
+  },
+  {
+    "form": "family-registration",
+    "title": "Add Family",
+    "identifier": "1922"
   }
 ]

@@ -53,175 +53,165 @@ import timber.log.Timber
  */
 open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener {
 
-    val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 
-    lateinit var questionnaireConfig: QuestionnaireConfig
+  lateinit var questionnaireConfig: QuestionnaireConfig
 
-    lateinit var questionnaireViewModel: QuestionnaireViewModel
+  lateinit var questionnaireViewModel: QuestionnaireViewModel
 
-    protected var questionnaire: Questionnaire? = null
+  protected var questionnaire: Questionnaire? = null
 
-    protected var clientIdentifier: String? = null
+  protected var clientIdentifier: String? = null
 
-    protected lateinit var form: String
+  protected lateinit var form: String
 
-    private val parser = FhirContext.forR4().newJsonParser()
+  private val parser = FhirContext.forR4().newJsonParser()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_questionnaire)
-        application.assertIsConfigurable()
-        if (!intent.hasExtra(QUESTIONNAIRE_ARG_FORM)) {
-            showToast(getString(R.string.error_loading_form))
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.activity_questionnaire)
+    application.assertIsConfigurable()
+    if (!intent.hasExtra(QUESTIONNAIRE_ARG_FORM)) {
+      showToast(getString(R.string.error_loading_form))
+      finish()
+    }
+
+    clientIdentifier = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
+    form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
+
+    lifecycleScope.launchWhenCreated {
+      val loadConfig =
+        withContext(dispatcherProvider.io()) {
+          FormConfigUtil.loadConfig<List<QuestionnaireConfig>>(
+            FORM_CONFIGURATIONS,
+            this@QuestionnaireActivity
+          )
+        }
+
+      questionnaireConfig = loadConfig.associateBy { it.form }.getValue(form)
+
+      supportActionBar?.apply {
+        setDisplayHomeAsUpEnabled(true)
+        title = questionnaireConfig.title
+      }
+
+      questionnaireViewModel =
+        ViewModelProvider(
+          this@QuestionnaireActivity,
+          QuestionnaireViewModel(application, questionnaireConfig).createFactory()
+        )[QuestionnaireViewModel::class.java]
+
+      questionnaire = questionnaireViewModel.loadQuestionnaire()
+
+      // Only add the fragment once, when the activity is first created.
+      if (savedInstanceState == null && questionnaire != null) {
+        val fragment =
+          QuestionnaireFragment().apply {
+            val parsedQuestionnaire = parser.encodeResourceToString(questionnaire)
+            arguments =
+              when {
+                clientIdentifier == null ->
+                  bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
+                clientIdentifier != null -> {
+                  val patient = questionnaireViewModel.loadPatient(clientIdentifier!!)
+                  if (patient != null) {
+                    val parsedQuestionnaireResponse =
+                      parser.encodeResourceToString(
+                        ResourceMapper.populate(questionnaire!!, patient)
+                      )
+                    bundleOf(
+                      Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire),
+                      Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
+                    )
+                  } else {
+                    bundleOf()
+                  }
+                }
+                else -> bundleOf()
+              }
+          }
+        supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
+      }
+    }
+
+    findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
+  }
+
+  override fun onClick(view: View) {
+    if (view.id == R.id.btn_save_client_info) {
+      val questionnaireFragment =
+        supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
+          QuestionnaireFragment
+      handleQuestionnaireResponse(questionnaireFragment.getQuestionnaireResponse())
+    } else {
+      showToast(getString(R.string.error_saving_form))
+    }
+  }
+
+  open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
+    if (questionnaire != null) {
+      val alertDialog = showDialog()
+
+      questionnaireViewModel.extractionProgress.observe(
+        this,
+        { result ->
+
+          // TODO: Unregister this observer
+
+          if (result) {
+            alertDialog.dismiss()
             finish()
+          } else {
+            Timber.e("An error occurred during extraction")
+          }
         }
+      )
 
-        clientIdentifier = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
-        form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
-
-        lifecycleScope.launchWhenCreated {
-            val loadConfig =
-                withContext(dispatcherProvider.io()) {
-                    FormConfigUtil.loadConfig<List<QuestionnaireConfig>>(
-                        FORM_CONFIGURATIONS,
-                        this@QuestionnaireActivity
-                    )
-                }
-
-            questionnaireConfig = loadConfig.associateBy { it.form }.getValue(form)
-
-            supportActionBar?.apply {
-                setDisplayHomeAsUpEnabled(true)
-                title = questionnaireConfig.title
-            }
-
-            questionnaireViewModel =
-                ViewModelProvider(
-                    this@QuestionnaireActivity,
-                    QuestionnaireViewModel(application, questionnaireConfig).createFactory()
-                )[QuestionnaireViewModel::class.java]
-
-            questionnaire = questionnaireViewModel.loadQuestionnaire()
-
-            // Only add the fragment once, when the activity is first created.
-            if (savedInstanceState == null && questionnaire != null) {
-                val fragment =
-                    QuestionnaireFragment().apply {
-                        val parsedQuestionnaire = parser.encodeResourceToString(questionnaire)
-                        arguments =
-                            when {
-                                clientIdentifier == null ->
-                                    bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
-                                clientIdentifier != null -> {
-                                    val patient =
-                                        questionnaireViewModel.loadPatient(clientIdentifier!!)
-                                    if (patient != null) {
-                                        val parsedQuestionnaireResponse =
-                                            parser.encodeResourceToString(
-                                                ResourceMapper.populate(questionnaire!!, patient)
-                                            )
-                                        bundleOf(
-                                            Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire),
-                                            Pair(
-                                                BUNDLE_KEY_QUESTIONNAIRE_RESPONSE,
-                                                parsedQuestionnaireResponse
-                                            )
-                                        )
-                                    } else {
-                                        bundleOf()
-                                    }
-                                }
-                                else -> bundleOf()
-                            }
-                    }
-                supportFragmentManager.commit {
-                    add(
-                        R.id.container,
-                        fragment,
-                        QUESTIONNAIRE_FRAGMENT_TAG
-                    )
-                }
-            }
-        }
-
-        findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
+      questionnaireViewModel.saveExtractedResources(
+        context = this@QuestionnaireActivity,
+        questionnaire = questionnaire!!,
+        questionnaireResponse = questionnaireResponse,
+        resourceId = null
+      )
     }
+  }
 
-    override fun onClick(view: View) {
-        if (view.id == R.id.btn_save_client_info) {
-            val questionnaireFragment =
-                supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
-                        QuestionnaireFragment
-            handleQuestionnaireResponse(questionnaireFragment.getQuestionnaireResponse())
-        } else {
-            showToast(getString(R.string.error_saving_form))
-        }
+  fun showDialog(): AlertDialog {
+    val dialogBuilder =
+      AlertDialog.Builder(this).apply {
+        setView(R.layout.dialog_saving)
+        setCancelable(false)
+      }
+
+    return dialogBuilder.create().apply { show() }
+  }
+
+  companion object {
+    const val QUESTIONNAIRE_TITLE_KEY = "questionnaire_title_key"
+    const val QUESTIONNAIRE_PATH_KEY = "questionnaire_path_key"
+    const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire_fragment_tag"
+    const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
+    const val QUESTIONNAIRE_ARG_FORM = "questionnaire_form"
+    private const val FORM_CONFIGURATIONS = "form_configurations.json"
+
+    fun requiredIntentArgs(clientIdentifier: String?, form: String) =
+      bundleOf(
+        Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
+        Pair(QUESTIONNAIRE_ARG_FORM, form)
+      )
+  }
+
+  override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    return when (item.itemId) {
+      android.R.id.home -> {
+        onBackPressed()
+        true
+      }
+      else -> super.onOptionsItemSelected(item)
     }
+  }
 
-    open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
-        if (questionnaire != null) {
-            val alertDialog = showDialog()
-
-            questionnaireViewModel.extractionProgress.observe(
-                this,
-                { result ->
-
-                    // TODO: Unregister this observer
-
-                    if (result) {
-                        alertDialog.dismiss()
-                        finish()
-                    } else {
-                        Timber.e("An error occurred during extraction")
-                    }
-                }
-            )
-
-            questionnaireViewModel.saveExtractedResources(
-                context = this@QuestionnaireActivity,
-                questionnaire = questionnaire!!,
-                questionnaireResponse = questionnaireResponse,
-                resourceId = null
-            )
-        }
-    }
-
-    fun showDialog(): AlertDialog {
-        val dialogBuilder =
-            AlertDialog.Builder(this).apply {
-                setView(R.layout.dialog_saving)
-                setCancelable(false)
-            }
-
-        return dialogBuilder.create().apply { show() }
-    }
-
-    companion object {
-        const val QUESTIONNAIRE_TITLE_KEY = "questionnaire_title_key"
-        const val QUESTIONNAIRE_PATH_KEY = "questionnaire_path_key"
-        const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire_fragment_tag"
-        const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
-        const val QUESTIONNAIRE_ARG_FORM = "questionnaire_form"
-        private const val FORM_CONFIGURATIONS = "form_configurations.json"
-
-        fun requiredIntentArgs(clientIdentifier: String?, form: String) =
-            bundleOf(
-                Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
-                Pair(QUESTIONNAIRE_ARG_FORM, form)
-            )
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            android.R.id.home -> {
-                onBackPressed()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
-    override fun onBackPressed() {
-        finish()
-    }
+  override fun onBackPressed() {
+    finish()
+  }
 }

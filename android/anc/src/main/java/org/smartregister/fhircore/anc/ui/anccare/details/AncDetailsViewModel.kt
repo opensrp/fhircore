@@ -26,13 +26,16 @@ import org.hl7.fhir.r4.model.Observation
 import org.smartregister.fhircore.anc.data.AncPatientRepository
 import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
+import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class AncDetailsViewModel(
-    val ancPatientRepository: AncPatientRepository,
-    var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
-    val patientId: String
+  val ancPatientRepository: AncPatientRepository,
+  var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
+  val patientId: String
 ) : ViewModel() {
 
     fun fetchDemographics(): LiveData<AncPatientDetailItem> {
