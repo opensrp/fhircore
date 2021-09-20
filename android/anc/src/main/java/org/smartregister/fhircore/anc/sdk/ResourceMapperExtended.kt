@@ -56,9 +56,7 @@ class ResourceMapperExtended(val fhirEngine: FhirEngine) {
     }
 
     val flagExt = QuestionnaireUtils.extractFlags(questionnaireResponse, questionnaire, patient)
-    flagExt.forEach {
-      patient.addExtension(it.second)
-    }
+    flagExt.forEach { patient.addExtension(it.second) }
 
     fhirEngine.save(patient)
 
