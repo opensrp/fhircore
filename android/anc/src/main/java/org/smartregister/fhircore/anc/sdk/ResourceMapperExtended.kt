@@ -42,26 +42,8 @@ class ResourceMapperExtended(val fhirEngine: FhirEngine) {
 
     patient.id = patientId
 
-    fhirEngine.save(patient)
-
-    val obsList = mutableListOf<Observation>()
-    QuestionnaireUtils.extractObservations(
-      questionnaireResponse,
-      questionnaire.item,
-      patient,
-      obsList
-    )
-    obsList.forEach { fhirEngine.save(it) }
-
     val tags = QuestionnaireUtils.extractTags(questionnaireResponse, questionnaire)
     tags.forEach { patient.meta.addTag(it) }
-
-    val flags = QuestionnaireUtils.extractFlags(questionnaireResponse, questionnaire, patient)
-    flags.forEach {
-      patient.addExtension(it.second)
-
-      fhirEngine.save(it.first)
-    }
 
     relatedTo?.let {
       val related =
@@ -73,7 +55,23 @@ class ResourceMapperExtended(val fhirEngine: FhirEngine) {
       patient.addressFirstRep.city = related?.addressFirstRep?.city
     }
 
-    fhirEngine.update(patient)
+    val flagExt = QuestionnaireUtils.extractFlags(questionnaireResponse, questionnaire, patient)
+    flagExt.forEach {
+      patient.addExtension(it.second)
+    }
+
+    fhirEngine.save(patient)
+
+    flagExt.forEach { fhirEngine.save(it.first) }
+
+    val obsList = mutableListOf<Observation>()
+    QuestionnaireUtils.extractObservations(
+      questionnaireResponse,
+      questionnaire.item,
+      patient,
+      obsList
+    )
+    obsList.forEach { fhirEngine.save(it) }
   }
 
   private fun getLink(relatedTo: String): Patient.PatientLinkComponent {
