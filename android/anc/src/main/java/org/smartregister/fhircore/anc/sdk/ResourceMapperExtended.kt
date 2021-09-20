@@ -42,6 +42,8 @@ class ResourceMapperExtended(val fhirEngine: FhirEngine) {
 
     patient.id = patientId
 
+    fhirEngine.save(patient)
+
     val obsList = mutableListOf<Observation>()
     QuestionnaireUtils.extractObservations(
       questionnaireResponse,
@@ -71,7 +73,7 @@ class ResourceMapperExtended(val fhirEngine: FhirEngine) {
       patient.addressFirstRep.city = related?.addressFirstRep?.city
     }
 
-    fhirEngine.save(patient)
+    fhirEngine.update(patient)
   }
 
   private fun getLink(relatedTo: String): Patient.PatientLinkComponent {

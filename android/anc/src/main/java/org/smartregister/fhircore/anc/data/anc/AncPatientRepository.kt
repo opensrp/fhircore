@@ -25,12 +25,14 @@ import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CareTeam
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Goal
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
@@ -216,8 +218,6 @@ class AncPatientRepository(
     pregnancyGoal: Goal? = null,
     lmp: DateTimeType? = null
   ): Map<String, String?> {
-    // TODO add careteam and practitioner ref when available into all entities below where required
-
     return mapOf(
       "#Id" to getUniqueId(),
       "#RefPatient" to asPatientReference(patientId).reference,
@@ -225,7 +225,10 @@ class AncPatientRepository(
       "#RefEpisodeOfCare" to pregnancyEpisodeOfCase?.id,
       "#RefEncounter" to pregnancyEncounter?.id,
       "#RefGoal" to pregnancyGoal?.asReference()?.reference,
-      "#RefCareTeam" to "ANC-CHW",
+      // TODO https://github.com/opensrp/fhircore/issues/560
+      // add careteam and practitioner ref when available into all entities below where required
+      "#RefCareTeam" to "CareTeam/325",
+      "#RefPractitioner" to "Practitioner/399",
       "#RefDateOnset" to lmp?.format(),
       "#RefDateStart" to lmp?.format(),
       "#RefDateEnd" to lmp?.plusMonthsAsString(9),

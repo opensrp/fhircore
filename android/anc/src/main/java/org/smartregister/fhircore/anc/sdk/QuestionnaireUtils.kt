@@ -134,7 +134,7 @@ object QuestionnaireUtils {
     return flags
   }
 
-  fun extractFlaggables(
+  private fun extractFlaggables(
     items: List<Questionnaire.QuestionnaireItemComponent>,
     target: MutableList<Questionnaire.QuestionnaireItemComponent>
   ) {
@@ -147,11 +147,11 @@ object QuestionnaireUtils {
     }
   }
 
-  fun extractFlagExtension(item: Questionnaire.QuestionnaireItemComponent): Extension? {
+  private fun extractFlagExtension(item: Questionnaire.QuestionnaireItemComponent): Extension? {
     return item.extension.firstOrNull { it.url.contains(flaggableKey) }
   }
 
-  fun extractFlagExtension(
+  private fun extractFlagExtension(
     code: Coding,
     item: Questionnaire.QuestionnaireItemComponent
   ): Extension? {
@@ -187,7 +187,7 @@ object QuestionnaireUtils {
     return Reference().apply { this.reference = referenceValue }
   }
 
-  fun Questionnaire.QuestionnaireItemComponent.asCodeableConcept(): CodeableConcept {
+  private fun Questionnaire.QuestionnaireItemComponent.asCodeableConcept(): CodeableConcept {
     val qit = this
     return CodeableConcept().apply {
       this.text = qit.text
