@@ -18,6 +18,7 @@ package org.smartregister.fhircore.anc.sdk
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -40,6 +41,15 @@ class ResourceMapperExtended(val fhirEngine: FhirEngine) {
       }
 
     patient.id = patientId
+
+    val obsList = mutableListOf<Observation>()
+    QuestionnaireUtils.extractObservations(
+      questionnaireResponse,
+      questionnaire.item,
+      patient,
+      obsList
+    )
+    obsList.forEach { fhirEngine.save(it) }
 
     val tags = QuestionnaireUtils.extractTags(questionnaireResponse, questionnaire)
     tags.forEach { patient.meta.addTag(it) }
