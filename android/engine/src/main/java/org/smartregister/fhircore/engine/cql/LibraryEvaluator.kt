@@ -20,7 +20,6 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.context.api.BundleInclusionRule
 import ca.uhn.fhir.model.valueset.BundleTypeEnum
-import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.api.BundleLinks
 import com.google.common.collect.Lists
 import java.io.ByteArrayInputStream
@@ -34,7 +33,6 @@ import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.opencds.cqf.cql.engine.data.CompositeDataProvider
 import org.opencds.cqf.cql.engine.data.DataProvider
-import org.opencds.cqf.cql.engine.fhir.converter.FhirTypeConverter
 import org.opencds.cqf.cql.engine.fhir.converter.FhirTypeConverterFactory
 import org.opencds.cqf.cql.engine.fhir.model.R4FhirModelResolver
 import org.opencds.cqf.cql.evaluator.CqlEvaluator
@@ -56,8 +54,9 @@ class LibraryEvaluator {
   private var fhirContext = FhirContext.forCached(FhirVersionEnum.R4)!!
   private var adapterFactory = AdapterFactory()
   private var fhirTypeConverter = FhirTypeConverterFactory().create(fhirContext.version.version)
-  private var cqlFhirParametersConverter=CqlFhirParametersConverter(fhirContext, adapterFactory, fhirTypeConverter)
-  private var libraryVersionSelector= LibraryVersionSelector(adapterFactory)
+  private var cqlFhirParametersConverter =
+    CqlFhirParametersConverter(fhirContext, adapterFactory, fhirTypeConverter)
+  private var libraryVersionSelector = LibraryVersionSelector(adapterFactory)
   private var contentProvider: LibraryContentProvider? = null
   private var terminologyProvider: BundleTerminologyProvider? = null
   private var bundleRetrieveProvider: BundleRetrieveProvider? = null
