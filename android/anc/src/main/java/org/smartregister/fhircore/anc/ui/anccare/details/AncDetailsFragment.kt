@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.ui.anccare.details
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,7 +25,10 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import kotlinx.android.synthetic.main.fragment_anc_details.*
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
@@ -32,7 +36,18 @@ import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
 import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.cql.LibraryEvaluator
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import org.hl7.fhir.r4.model.Parameters
+import org.json.JSONObject
+import org.json.JSONArray
+
+
+
+
+
 
 class AncDetailsFragment private constructor() : Fragment() {
 
@@ -47,6 +62,22 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   lateinit var binding: FragmentAncDetailsBinding
 
+  lateinit var parser: IParser
+
+  lateinit var fhirResourceService: FhirResourceService
+
+  lateinit var fhirResourceDataSource:FhirResourceDataSource
+
+  lateinit var libraryEvaluator:LibraryEvaluator
+
+  var libraryData=""
+  var helperData=""
+  var valueSetData=""
+  var testData=""
+  val evaluatorId = "ANCRecommendationA2"
+  val contextCQL = "patient"
+  val contextLabel = "mom-with-anemia"
+
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
@@ -59,6 +90,15 @@ class AncDetailsFragment private constructor() : Fragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     patientId = arguments?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+    libraryEvaluator= LibraryEvaluator()
+    parser= FhirContext.forR4().newJsonParser()
+    fhirResourceService = FhirResourceService.create(
+      parser,
+      activity?.applicationContext!!,
+      AncApplication.getContext().applicationConfiguration
+    )
+
+    fhirResourceDataSource= FhirResourceDataSource(fhirResourceService)
 
     fhirEngine = AncApplication.getContext().fhirEngine
 
@@ -87,6 +127,8 @@ class AncDetailsFragment private constructor() : Fragment() {
         context?.assets?.open("careplan_sample.json")?.bufferedReader().use { it?.readText() }
       )
       .observe(viewLifecycleOwner, this::handleCarePlan)
+
+    showCQLCard()
   }
 
   private fun setupViews() {
@@ -104,10 +146,10 @@ class AncDetailsFragment private constructor() : Fragment() {
     with(patient) {
       val patientDetails =
         this.patientDetails.name +
-          ", " +
-          this.patientDetails.gender +
-          ", " +
-          this.patientDetails.age
+                ", " +
+                this.patientDetails.gender +
+                ", " +
+                this.patientDetails.age
       val patientId =
         this.patientDetailsHead.demographics + " ID: " + this.patientDetails.patientIdentifier
       binding.txtViewPatientDetails.text = patientDetails
@@ -131,5 +173,97 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   private fun populateImmunizationList(listCarePlan: List<CarePlanItem>) {
     carePlanAdapter.submitList(listCarePlan)
+  }
+
+  private fun buttonCQLSetOnClickListener()
+  {
+    button_CQLEvaluate.setOnClickListener {
+      loadCQLLibraryData()
+    }
+  }
+
+  private fun loadCQLLibraryData(){
+    ancDetailsViewModel
+      .fetchCQLLibraryData(parser, fhirResourceDataSource)
+      .observe(viewLifecycleOwner, this::handleCQLLibraryData)
+  }
+
+  private fun loadCQLHelperData(){
+    ancDetailsViewModel
+      .fetchCQLFhirHelperData(parser, fhirResourceDataSource)
+      .observe(viewLifecycleOwner, this::handleCQLHelperData)
+  }
+
+  private fun loadCQLValueSetData(){
+    ancDetailsViewModel
+      .fetchCQLValueSetData(parser, fhirResourceDataSource)
+      .observe(viewLifecycleOwner, this::handleCQLValueSetData)
+  }
+
+  private fun loadCQLPatientData(){
+    ancDetailsViewModel
+      .fetchCQLPatientData(parser, fhirResourceDataSource,patientId)
+      .observe(viewLifecycleOwner, this::handleCQLPatientData)
+  }
+
+
+  private fun handleCQLLibraryData(auxLibraryData:String){
+    libraryData=auxLibraryData;
+    loadCQLHelperData()
+  }
+
+  private fun handleCQLHelperData(auxHelperData:String){
+    helperData=auxHelperData;
+    loadCQLValueSetData()
+  }
+
+  private fun handleCQLValueSetData(auxValueSetData: String){
+    valueSetData=auxValueSetData
+    loadCQLPatientData()
+  }
+
+  private fun handleCQLPatientData(auxPatientData: String){
+    testData=processCQLPatientBundle(auxPatientData)
+    val parameters = libraryEvaluator.runCql(
+      libraryData,
+      helperData,
+      valueSetData,
+      testData,
+      evaluatorId,
+      contextCQL,
+      contextLabel
+    )
+    val jsonObject = JSONObject(parameters)
+    textView_CQLResults.text=jsonObject.toString(4)
+    textView_CQLResults.visibility=View.VISIBLE
+  }
+
+  private fun processCQLPatientBundle(auxPatientData: String):String{
+    var auxPatientDataObj = JSONObject(auxPatientData)
+    var oldJSONArrayEntry = auxPatientDataObj.getJSONArray("entry")
+    var newJSONArrayEntry = JSONArray()
+    for (i in 0 until oldJSONArrayEntry.length()-1) {
+      var resourceType= oldJSONArrayEntry.getJSONObject(i)
+        .getJSONObject("resource")
+        .getString("resourceType")
+      if(i!=0 && !resourceType.equals("Patient")){
+        newJSONArrayEntry.put(oldJSONArrayEntry.getJSONObject(i))
+      }
+    }
+
+    auxPatientDataObj.remove("entry")
+    auxPatientDataObj.put("entry",newJSONArrayEntry)
+
+    return auxPatientDataObj.toString()
+  }
+
+  val ANC_TEST_PATIENT_ID="e8725b4c-6db0-4158-a24d-50a5ddf1c2ed"
+  private fun showCQLCard()
+  {
+    if(patientId == ANC_TEST_PATIENT_ID) {
+      textView_EvaluateCQLHeader.visibility = View.VISIBLE
+      cardView_CQLSection.visibility = View.VISIBLE
+      buttonCQLSetOnClickListener()
+    }
   }
 }

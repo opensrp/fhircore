@@ -38,4 +38,10 @@
     <string name="no_services_scheduled">No services scheduled</string>
     <string name="family_register_title">Family</string>
 
+
+    <string name="text_view_evaluate_cql_header">Evaluate</string>
+    <string name="button_cql_measure_report">Measure</string>
+    <string name="button_cql_evaluate">CQL</string>
+
+
 </resources>
