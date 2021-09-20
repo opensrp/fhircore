@@ -67,8 +67,23 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     packagingOptions {
+        exclude 'license.html'
+        exclude 'readme.html'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/license.html'
+        exclude 'META-INF/LICENSE.md'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE.md'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
         exclude 'META-INF/ASL-2.0.txt'
         exclude 'META-INF/LGPL-3.0.txt'
+        exclude 'META-INF/sun-jaxb.episode'
+        exclude("META-INF/*.kotlin_module")
     }
     // See https://developer.android.com/studio/write/java8-support
     kotlinOptions {
@@ -108,6 +123,11 @@ configurations {
         exclude module: 'json'
         exclude module: 'xpp3'
     }
+    //CQL
+    all*.exclude group: 'javax.activation', module: 'activation'
+    all*.exclude group: 'javax', module: 'javaee-api'
+    all*.exclude group: 'xml-apis'
+    all*.exclude group: 'org.opencds.cqf'
 }
 
 dependencies {
