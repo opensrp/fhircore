@@ -5,6 +5,8 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
+apply from: "../code.coverage.gradle"
+
 android {
 
     testOptions {
