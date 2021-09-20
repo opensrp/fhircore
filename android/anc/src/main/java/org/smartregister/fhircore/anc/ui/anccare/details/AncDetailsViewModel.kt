@@ -36,8 +36,8 @@ class AncDetailsViewModel(
   val patientId: String
 ) : ViewModel() {
 
-  val LIBRARY_URL = "https://hapi.fhir.org/baseR4/Library?_id=2549555"
-  val HELPER_URL = "https://hapi.fhir.org/baseR4/Library?_id=2537273"
+  val LIBRARY_URL = "https://fhir.labs.smartregister.org/fhir/Library?_id=1752"
+  val HELPER_URL = "https://fhir.labs.smartregister.org/fhir/Library?_id=1753"
   val VALUE_SET_URL = "https://fhir.labs.smartregister.org/fhir/ValueSet?_id=1750,1751"
   var PATIENT_URL = ""
 
@@ -69,7 +69,7 @@ class AncDetailsViewModel(
        )
       libraryData.postValue(auxCQLLibraryData)
     }
-    return libraryData;
+    return libraryData
   }
 
   fun fetchCQLFhirHelperData(parser: IParser,
@@ -82,7 +82,7 @@ class AncDetailsViewModel(
       )
       helperData.postValue(auxCQLHelperData)
     }
-    return helperData;
+    return helperData
   }
 
   fun fetchCQLValueSetData(parser: IParser,
@@ -95,7 +95,7 @@ class AncDetailsViewModel(
       )
       valueSetData.postValue(auxCQLValueSetData)
     }
-    return valueSetData;
+    return valueSetData
   }
 
   fun fetchCQLPatientData(parser: IParser,
@@ -110,7 +110,7 @@ class AncDetailsViewModel(
       )
       patientData.postValue(auxCQLPatientData)
     }
-    return patientData;
+    return patientData
   }
 
 }
