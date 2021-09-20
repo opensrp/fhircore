@@ -53,7 +53,7 @@ import org.opencds.cqf.cql.evaluator.library.LibraryEvaluator
  * https://github.com/DBCG/CqlEvaluatorSampleApp See also https://www.hl7.org/fhir/
  */
 class LibraryEvaluator {
-  var fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
+  var fhirContext = FhirContext.forCached(FhirVersionEnum.R4)!!
   var adapterFactory = AdapterFactory()
   var fhirTypeConverter: FhirTypeConverter? = null
   var cqlFhirParametersConverter: CqlFhirParametersConverter? = null
@@ -62,7 +62,8 @@ class LibraryEvaluator {
   var terminologyProvider: BundleTerminologyProvider? = null
   var bundleRetrieveProvider: BundleRetrieveProvider? = null
   var cqlEvaluator: CqlEvaluator? = null
-  var libraryEvaluator: LibraryEvaluator? = null
+  var libEvaluator: LibraryEvaluator? = null
+  var parser = fhirContext.newJsonParser()!!
 
   /**
    * This method loads configurations for CQL evaluation
@@ -77,8 +78,6 @@ class LibraryEvaluator {
     valueSetData: String,
     testData: String
   ) {
-    var parser: IParser? = null
-    parser = fhirContext.newJsonParser()
     parser.setPrettyPrint(true)
     libraryVersionSelector = LibraryVersionSelector(adapterFactory)
     fhirTypeConverter = FhirTypeConverterFactory().create(fhirContext.version.version)
@@ -151,7 +150,7 @@ class LibraryEvaluator {
         },
         terminologyProvider
       )
-    libraryEvaluator = LibraryEvaluator(cqlFhirParametersConverter, cqlEvaluator)
+    libEvaluator = LibraryEvaluator(cqlFhirParametersConverter, cqlEvaluator)
   }
 
   /**
@@ -176,7 +175,7 @@ class LibraryEvaluator {
   ): String {
     loadConfigs(libraryData, helperData, valueSetData, testData)
     val result =
-      libraryEvaluator!!.evaluate(
+      libEvaluator!!.evaluate(
         VersionedIdentifier().withId(evaluatorId),
         Pair.of(context, contextLabel),
         null,
