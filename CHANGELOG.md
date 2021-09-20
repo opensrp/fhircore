@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync progress loader and datetime
 - ANC details activity
 - Enroll into ANC and add Encounter, Observation, Episode of Care, Condition
+- Family Registeration with Tags from SDK fix for tags and profile
 
 ### Fixed
 

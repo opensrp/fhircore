@@ -1,0 +1,26 @@
+[
+  {
+    "id": "anc",
+    "primaryFilter": {
+      "filterType": "TOKEN",
+      "key": "_tag",
+      "valueType": "CODING",
+      "valueCoding": {
+        "system": "https://www.snomed.org",
+        "code": "77386006"
+      }
+    }
+  },
+  {
+    "id": "family",
+    "primaryFilter": {
+      "filterType": "TOKEN",
+      "key": "_tag",
+      "valueType": "CODING",
+      "valueCoding": {
+        "system": "https://www.snomed.org",
+        "code": "35359004"
+      }
+    }
+  }
+]

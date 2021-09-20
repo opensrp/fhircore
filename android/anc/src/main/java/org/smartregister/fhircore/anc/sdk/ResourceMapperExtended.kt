@@ -18,6 +18,7 @@ package org.smartregister.fhircore.anc.sdk
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -44,13 +45,6 @@ class ResourceMapperExtended(val fhirEngine: FhirEngine) {
     val tags = QuestionnaireUtils.extractTags(questionnaireResponse, questionnaire)
     tags.forEach { patient.meta.addTag(it) }
 
-    val flags = QuestionnaireUtils.extractFlags(questionnaireResponse, questionnaire, patient)
-    flags.forEach {
-      patient.addExtension(it.second)
-
-      fhirEngine.save(it.first)
-    }
-
     relatedTo?.let {
       val related =
         kotlin.runCatching { fhirEngine.load(Patient::class.java, relatedTo) }.getOrNull()
@@ -61,11 +55,21 @@ class ResourceMapperExtended(val fhirEngine: FhirEngine) {
       patient.addressFirstRep.city = related?.addressFirstRep?.city
     }
 
-    // TODO https://github.com/google/android-fhir/pull/488
-    // replace with patient when above is merged and released
-    val extendedPatient = patient.extractExtendedPatient()
+    val flagExt = QuestionnaireUtils.extractFlags(questionnaireResponse, questionnaire, patient)
+    flagExt.forEach { patient.addExtension(it.second) }
 
-    fhirEngine.save(extendedPatient)
+    fhirEngine.save(patient)
+
+    flagExt.forEach { fhirEngine.save(it.first) }
+
+    val obsList = mutableListOf<Observation>()
+    QuestionnaireUtils.extractObservations(
+      questionnaireResponse,
+      questionnaire.item,
+      patient,
+      obsList
+    )
+    obsList.forEach { fhirEngine.save(it) }
   }
 
   private fun getLink(relatedTo: String): Patient.PatientLinkComponent {
