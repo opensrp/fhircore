@@ -21,7 +21,6 @@ import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
-import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.withContext
@@ -37,11 +36,15 @@ import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
 import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
-import org.smartregister.fhircore.anc.sdk.PatientExtended
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asPatientReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
 import org.smartregister.fhircore.anc.ui.anccare.register.Anc
+import org.smartregister.fhircore.anc.util.RegisterType
+import org.smartregister.fhircore.anc.util.filterBy
+import org.smartregister.fhircore.anc.util.filterByPatient
+import org.smartregister.fhircore.anc.util.filterByPatientName
+import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
@@ -61,6 +64,9 @@ class AncPatientRepository(
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : RegisterRepository<Anc, AncPatientItem> {
 
+  private val registerConfig =
+    AncApplication.getContext().loadRegisterConfig(RegisterType.ANC_REGISTER_ID)
+
   override suspend fun loadData(
     query: String,
     pageNumber: Int,
@@ -69,17 +75,10 @@ class AncPatientRepository(
     return withContext(dispatcherProvider.io()) {
       val patients =
         fhirEngine.search<Patient> {
-          filter(PatientExtended.TAG) {
-            this.value = "Pregnant"
-            this.modifier = StringFilterModifier.CONTAINS
-          }
+          filterBy(registerConfig.primaryFilter!!)
 
-          if (query.isNotEmpty() && query.isNotBlank()) {
-            filter(Patient.NAME) {
-              value = query.trim()
-              modifier = StringFilterModifier.CONTAINS
-            }
-          }
+          filterByPatientName(query)
+
           sort(Patient.NAME, Order.ASCENDING)
           count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
           from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
@@ -100,17 +99,12 @@ class AncPatientRepository(
   }
 
   suspend fun searchCarePlan(id: String): List<CarePlan> {
-    return fhirEngine.search { filter(CarePlan.SUBJECT) { this.value = "Patient/$id" } }
+    return fhirEngine.search { filterByPatient(CarePlan.SUBJECT, id) }
   }
 
   override suspend fun countAll(): Long =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.count<Patient> {
-        filter(PatientExtended.TAG) {
-          this.value = "Pregnant"
-          this.modifier = StringFilterModifier.CONTAINS
-        }
-      }
+      fhirEngine.count<Patient> { filterBy(registerConfig.primaryFilter!!) }
     }
 
   suspend fun fetchDemographics(patientId: String): AncPatientDetailItem {

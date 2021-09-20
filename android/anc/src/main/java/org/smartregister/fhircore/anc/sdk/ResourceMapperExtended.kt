@@ -61,11 +61,7 @@ class ResourceMapperExtended(val fhirEngine: FhirEngine) {
       patient.addressFirstRep.city = related?.addressFirstRep?.city
     }
 
-    // TODO https://github.com/google/android-fhir/pull/488
-    // replace with patient when above is merged and released
-    val extendedPatient = patient.extractExtendedPatient()
-
-    fhirEngine.save(extendedPatient)
+    fhirEngine.save(patient)
   }
 
   private fun getLink(relatedTo: String): Patient.PatientLinkComponent {
