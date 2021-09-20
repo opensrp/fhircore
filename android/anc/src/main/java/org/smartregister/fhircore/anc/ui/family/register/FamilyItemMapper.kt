@@ -48,8 +48,8 @@ object FamilyItemMapper : DomainMapper<Family, FamilyItem> {
       address = head.extractAddress(),
       isPregnant = head.isPregnant(),
       members = members.map { toFamilyMemberItem(it) },
-      servicesDue = servicesDue.filter { it.due() }.size,
-      servicesOverdue = servicesDue.filter { it.overdue() }.size
+      servicesDue = servicesDue.flatMap { it.activity }.filter { it.detail.due() }.size,
+      servicesOverdue = servicesDue.flatMap { it.activity }.filter { it.detail.overdue() }.size
     )
   }
 
