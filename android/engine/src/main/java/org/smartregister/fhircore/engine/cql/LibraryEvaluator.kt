@@ -53,16 +53,19 @@ import org.opencds.cqf.cql.evaluator.library.LibraryEvaluator
  * https://github.com/DBCG/CqlEvaluatorSampleApp See also https://www.hl7.org/fhir/
  */
 class LibraryEvaluator {
-  var fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
-  var adapterFactory = AdapterFactory()
-  var fhirTypeConverter: FhirTypeConverter? = null
-  var cqlFhirParametersConverter: CqlFhirParametersConverter? = null
-  var libraryVersionSelector: LibraryVersionSelector? = null
-  var contentProvider: LibraryContentProvider? = null
-  var terminologyProvider: BundleTerminologyProvider? = null
-  var bundleRetrieveProvider: BundleRetrieveProvider? = null
-  var cqlEvaluator: CqlEvaluator? = null
-  var libraryEvaluator: LibraryEvaluator? = null
+  private var fhirContext = FhirContext.forCached(FhirVersionEnum.R4)!!
+  private var adapterFactory = AdapterFactory()
+  private var fhirTypeConverter = FhirTypeConverterFactory().create(fhirContext.version.version)
+  private var cqlFhirParametersConverter=CqlFhirParametersConverter(fhirContext, adapterFactory, fhirTypeConverter)
+  private var libraryVersionSelector= LibraryVersionSelector(adapterFactory)
+  private var contentProvider: LibraryContentProvider? = null
+  private var terminologyProvider: BundleTerminologyProvider? = null
+  private var bundleRetrieveProvider: BundleRetrieveProvider? = null
+  private var cqlEvaluator: CqlEvaluator? = null
+  private var libEvaluator: LibraryEvaluator? = null
+  private var parser = fhirContext.newJsonParser()!!
+  private val bundleFactory = fhirContext.newBundleFactory()!!
+  private val bundleLinks = BundleLinks("", null, true, BundleTypeEnum.COLLECTION)
 
   /**
    * This method loads configurations for CQL evaluation
@@ -77,13 +80,7 @@ class LibraryEvaluator {
     valueSetData: String,
     testData: String
   ) {
-    var parser: IParser? = null
-    parser = fhirContext.newJsonParser()
     parser.setPrettyPrint(true)
-    libraryVersionSelector = LibraryVersionSelector(adapterFactory)
-    fhirTypeConverter = FhirTypeConverterFactory().create(fhirContext.version.version)
-    cqlFhirParametersConverter =
-      CqlFhirParametersConverter(fhirContext, adapterFactory, fhirTypeConverter)
     // Load Library Content and create a LibraryContentProvider, which is the interface used by the
     // LibraryLoader for getting library CQL/ELM/etc.
     val libraryStream: InputStream = ByteArrayInputStream(libraryData.toByteArray())
@@ -91,8 +88,6 @@ class LibraryEvaluator {
     val library = parser.parseResource(libraryStream)
     val fhirHelpersLibrary = parser.parseResource(fhirHelpersStream)
     val resources: List<IBaseResource> = Lists.newArrayList(library, fhirHelpersLibrary)
-    val bundleFactory = fhirContext.newBundleFactory()
-    val bundleLinks = BundleLinks("", null, true, BundleTypeEnum.COLLECTION)
     bundleFactory.addRootPropertiesToBundle("bundled-directory", bundleLinks, resources.size, null)
     bundleFactory.addResourcesToBundle(
       resources,
@@ -149,7 +144,7 @@ class LibraryEvaluator {
         },
         terminologyProvider
       )
-    libraryEvaluator = LibraryEvaluator(cqlFhirParametersConverter, cqlEvaluator)
+    libEvaluator = LibraryEvaluator(cqlFhirParametersConverter, cqlEvaluator)
   }
 
   /**
@@ -174,7 +169,7 @@ class LibraryEvaluator {
   ): String {
     loadConfigs(libraryData, helperData, valueSetData, testData)
     val result =
-      libraryEvaluator!!.evaluate(
+      libEvaluator!!.evaluate(
         VersionedIdentifier().withId(evaluatorId),
         Pair.of(context, contextLabel),
         null,
