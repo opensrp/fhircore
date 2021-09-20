@@ -131,7 +131,6 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   @Test
   fun testThatDemographicViewsAreUpdated() {
     coroutinesTestRule.runBlockingTest {
-
       fragmentScenario.moveToState(Lifecycle.State.RESUMED)
 
       patientDetailsFragment.ancDetailsViewModel.patientDemographics.value = ancPatientDetailItem
@@ -157,5 +156,4 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
       Assert.assertEquals(patientId, txtViewPatientId?.text.toString())
     }
   }
-
 }

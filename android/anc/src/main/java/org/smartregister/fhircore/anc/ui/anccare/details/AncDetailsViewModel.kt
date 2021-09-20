@@ -36,7 +36,7 @@ class AncDetailsViewModel(
   lateinit var patientDemographics: MutableLiveData<AncPatientDetailItem>
 
   fun fetchDemographics(): LiveData<AncPatientDetailItem> {
-     patientDemographics = MutableLiveData<AncPatientDetailItem>()
+    patientDemographics = MutableLiveData<AncPatientDetailItem>()
     viewModelScope.launch(dispatcher.io()) {
       val ancPatientDetailItem = ancPatientRepository.fetchDemographics(patientId = patientId)
       patientDemographics.postValue(ancPatientDetailItem)
