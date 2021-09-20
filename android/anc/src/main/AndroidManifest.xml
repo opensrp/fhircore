@@ -16,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
         <activity
-            android:name=".ui.login.LoginActivity"
+            android:name=".ui.anccare.encounters.EncounterListActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -35,6 +35,9 @@
         <activity
             android:name="org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity"
             android:theme="@style/AppTheme" />
+        <!--<activity
+            android:name=".ui.anccare.encounters.EncounterListActivity"
+            android:theme="@style/AppTheme" />-->
 
         <service android:name=".AncAuthAndroidService">
             <intent-filter>
