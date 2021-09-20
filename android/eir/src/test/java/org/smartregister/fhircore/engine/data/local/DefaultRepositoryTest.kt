@@ -38,7 +38,6 @@ import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.shadow.ShadowNpmPackageProvider
 
-/** Created by Ephraim Kigamba - nek.eam@gmail.com on 15-09-2021. */
 @Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
 class DefaultRepositoryTest : RobolectricTest() {
 
