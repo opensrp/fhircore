@@ -49,9 +49,9 @@ jobs:
         run: ./gradlew :anc:jacocoTestReport -x testReleaseUnitTest --stacktrace
         working-directory: android
          
-      - name: Run EIR unit tests with Gradle
-        run: ./gradlew :engine:jacocoTestReport -x testReleaseUnitTest --stacktrace
-        working-directory: android
+      #- name: Run engine unit tests with Gradle
+      #  run: ./gradlew :engine:jacocoTestReport -x testReleaseUnitTest --stacktrace
+      #  working-directory: android
 
       - name: Upload EIR Test Report to codecov
         working-directory: android
@@ -61,8 +61,8 @@ jobs:
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -f "anc/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
 
-      - name: Upload Engine Test Report to codecov
-        working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -f "engine/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
+      #- name: Upload Engine Test Report to codecov
+      #  working-directory: android
+      #  run:  bash <(curl -s https://codecov.io/bash) -f "engine/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
 
 
