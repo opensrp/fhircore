@@ -124,13 +124,15 @@ class LibraryEvaluator {
             listOf(contentProvider),
             CqlTranslatorOptions.defaultOptions()
           ) {
-              // This is a hack needed to circumvent a bug that's currently present in the cql-engine.
-              // By default, the LibraryLoader checks to ensure that the same translator options are used to for all libraries,
-              // And it will re-translate if possible. Since translating CQL is not currently possible
-              // on Android (some changes to the way ModelInfos are loaded is needed) the library loader just needs to load libraries
-              // regardless of whether the options match.
-              override fun translatorOptionsMatch(library: Library): Boolean {
-              return true
+          // This is a hack needed to circumvent a bug that's currently present in the cql-engine.
+          // By default, the LibraryLoader checks to ensure that the same translator options are
+          // used to for all libraries,
+          // And it will re-translate if possible. Since translating CQL is not currently possible
+          // on Android (some changes to the way ModelInfos are loaded is needed) the library loader
+          // just needs to load libraries
+          // regardless of whether the options match.
+          override fun translatorOptionsMatch(library: Library): Boolean {
+            return true
           }
         },
         object : HashMap<String?, DataProvider?>() {
