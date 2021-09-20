@@ -260,9 +260,9 @@ class AncDetailsFragment private constructor() : Fragment() {
   val ANC_TEST_PATIENT_ID="e8725b4c-6db0-4158-a24d-50a5ddf1c2ed"
   private fun showCQLCard()
   {
-    if(patientId==ANC_TEST_PATIENT_ID) {
-      cardView_CQLSection.visibility = View.VISIBLE
+    if(patientId == ANC_TEST_PATIENT_ID) {
       textView_EvaluateCQLHeader.visibility = View.VISIBLE
+      cardView_CQLSection.visibility = View.VISIBLE
       buttonCQLSetOnClickListener()
     }
   }

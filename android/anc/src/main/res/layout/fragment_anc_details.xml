@@ -187,12 +187,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
-                        <Button android:id="@+id/button_CQLMeasure"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/button_cql_measure_report"
-                            android:layout_weight="1"
-                            android:layout_marginRight="1dp"/>
+
 
                         <Button android:id="@+id/button_CQLEvaluate"
                             android:layout_width="wrap_content"
