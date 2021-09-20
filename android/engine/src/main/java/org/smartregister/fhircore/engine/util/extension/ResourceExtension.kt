@@ -22,7 +22,6 @@ import org.hl7.fhir.r4.model.Resource
 import org.json.JSONException
 import org.json.JSONObject
 
-/** Created by Ephraim Kigamba - nek.eam@gmail.com on 13-09-2021. */
 fun Resource.toJson(parser: IParser = FhirContext.forR4().newJsonParser()): String =
   parser.encodeResourceToString(this)
 
