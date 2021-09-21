@@ -23,8 +23,6 @@ import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Immunization
-import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -38,7 +36,6 @@ import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
-import org.smartregister.fhircore.shadow.ShadowNpmPackageProvider
 
 /**
  * Provides a playground for quickly testing and authoring questionnaire and the respective
@@ -46,40 +43,20 @@ import org.smartregister.fhircore.shadow.ShadowNpmPackageProvider
  *
  * This should be removed at a later point once we have a more clear way of doing this
  */
-@Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
+@Config(shadows = [EirApplicationShadow::class])
 class StructureMapTestUtilities : RobolectricTest() {
 
   @Test
-  fun testPopulation() {
+  fun `populate patient registration Questionnaire and extract Resources`() {
     val iParser: IParser = FhirContext.forR4().newJsonParser()
-    val questionnaire = iParser.parseResource(Questionnaire::class.java, questionnaireForAdverseEvent)
+    val questionnaire = iParser.parseResource(Questionnaire::class.java, questionnaire)
     val patient = iParser.parseResource(Patient::class.java, PATIENT_JSON)
     val relatedPerson = iParser.parseResource(RelatedPerson::class.java, RELATED_PESRON_JSON)
-    val immunization = iParser.parseResource(Immunization::class.java, IMMUNIZATION_JSON)
-    val observation = iParser.parseResource(Observation::class.java, OBSERVATION_JSON)
 
     var questionnaireResponse: QuestionnaireResponse
     runBlocking {
-      questionnaireResponse = ResourceMapper.populate(questionnaire, immunization, observation)
+      questionnaireResponse = ResourceMapper.populate(questionnaire, patient, relatedPerson)
     }
-
-    val expected =
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt u"
-
-    /*try {
-      val `is` = RuntimeEnvironment.application
-          .assets
-          .open("registration_structuremap.txt")
-      val size: Int = `is`.available()
-      val buffer = ByteArray(size)
-      `is`.read(buffer)
-      `is`.close()
-      val fileContents = String(buffer, Charset.forName("UTF-8"))
-
-
-    } catch (e: IOException) {
-      e.printStackTrace()
-    }*/
 
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
@@ -93,7 +70,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val transformSupportServices = TransformSupportServices(outputs, contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val map = scu.parse(fhirMapToConvertForAdverseEvents, "AdverseEvent")
+    val map = scu.parse(fhirMapToConvert, "PatientRegistration")
     val mapString = iParser.encodeResourceToString(map)
 
     System.out.println(mapString)
@@ -106,7 +83,7 @@ class StructureMapTestUtilities : RobolectricTest() {
   }
 
   @Test
-  fun convertFhirMapToJson() {
+  fun `convert StructureMap to JSON`() {
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
@@ -114,7 +91,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     contextR4.isCanRunWithoutTerminology = true
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
-    val map = scu.parse(fhirMapToConvertForAdverseEvents, "AdverseEvent")
+    val map = scu.parse(fhirMapToConvert, "PatientRegistration")
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
@@ -123,7 +100,7 @@ class StructureMapTestUtilities : RobolectricTest() {
   }
 
   @Test
-  fun performExtraction() {
+  fun `perform extraction from patient registration Questionnaire`() {
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
@@ -136,7 +113,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val transformSupportServices = TransformSupportServices(outputs, contextR4)
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val map = scu.parse(fhirMapToConvertForAdverseEvents, "AdverseEvent")
+    val map = scu.parse(fhirMapToConvert, "PatientRegistration")
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
@@ -146,7 +123,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val targetResource = Bundle()
 
     val baseElement =
-      iParser.parseResource(QuestionnaireResponse::class.java, questionnaireResponseForAdverseEvent)
+      iParser.parseResource(QuestionnaireResponse::class.java, questionnaireResponse)
 
     scu.transform(contextR4, baseElement, map, targetResource)
 
@@ -179,7 +156,7 @@ class StructureMapTestUtilities : RobolectricTest() {
                 "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
                 "valueExpression": {
                   "language": "text/fhirpath",
-                  "expression": "Patient.id.value"
+                  "expression": "Patient.id"
                 }
               }
             ]
@@ -345,12 +322,14 @@ class StructureMapTestUtilities : RobolectricTest() {
                 "answerOption": [
                   {
                     "valueCoding": {
+                      "system": "http://hl7.org/fhir/administrative-gender",
                       "code": "female",
                       "display": "Female"
                     }
                   },
                   {
                     "valueCoding": {
+                      "system": "http://hl7.org/fhir/administrative-gender",
                       "code": "male",
                       "display": "Male"
                     }
@@ -359,6 +338,7 @@ class StructureMapTestUtilities : RobolectricTest() {
                 "initial": [
                   {
                     "valueCoding": {
+                      "system": "http://hl7.org/fhir/administrative-gender",
                       "code": "female",
                       "display": "Female"
                     }
@@ -600,7 +580,7 @@ class StructureMapTestUtilities : RobolectricTest() {
                     "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
                     "valueExpression": {
                       "language": "text/fhirpath",
-                      "expression": "RelatedPerson.telecom[0].value"
+                      "expression": "RelatedPerson.telecom[1].value"
                     }
                   }
                 ]
@@ -689,6 +669,13 @@ class StructureMapTestUtilities : RobolectricTest() {
                   "display": "Others"
                 }
               }
+            ],
+            "enableWhen": [
+              {
+                "question": "RP-id",
+                "operator": "exists",
+                "answerBoolean": false
+              }
             ]
           },
           {
@@ -716,6 +703,11 @@ class StructureMapTestUtilities : RobolectricTest() {
                   "code": "74964007",
                   "display": "Others"
                 }
+              },
+              {
+                "question": "RP-id",
+                "operator": "exists",
+                "answerBoolean": false
               }
             ],
             "enableBehavior": "all"
@@ -803,6 +795,11 @@ class StructureMapTestUtilities : RobolectricTest() {
                   "code": "73211009",
                   "display": "Diabetes Mellitus (DM)"
                 }
+              },
+              {
+                "question": "RP-id",
+                "operator": "exists",
+                "answerBoolean": false
               }
             ],
             "enableBehavior": "any",
@@ -829,7 +826,7 @@ class StructureMapTestUtilities : RobolectricTest() {
                 "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
                 "valueExpression": {
                   "language": "text/fhirpath",
-                  "expression": "RelatedPerson.id.value"
+                  "expression": "RelatedPerson.id"
                 }
               }
             ]
@@ -1042,7 +1039,7 @@ group PatientRegistration(source src : QuestionnaireResponse, target bundle: Bun
     src -> bundle.type = 'collection' "rule_b";
     src -> bundle.entry as entry, entry.resource = create('Patient') as patient then
         ExtractPatient(src, patient), ExtractRelatedPerson(src, bundle, patient) "rule_a";
-
+    
     src.item as relatedPersonIdItem where(linkId = 'RP-id' and answer.count() = 0) then {
       src -> evaluate(bundle, ${"$"}this.entry.resource.where(${"$"}this.is(Patient))) as patient then ExtractObservations(src, bundle, patient), ExtractRiskAssessmentObservation(src, bundle, bundle, patient) "rule_d";
     } "rule_e";
@@ -1058,12 +1055,12 @@ group ExtractPatient(source src : QuestionnaireResponse, target patient : Patien
 
     src.item as item where(linkId = 'PR') then {
        item.item as inner_item where (linkId = 'patient-0-birth-date') then {
-           inner_item.answer first as ans then {
+           inner_item.answer first as ans then { 
                ans.value as val -> patient.birthDate = val "rule_a";
            };
        };
-
-       item.item as nameItem where(linkId = 'PR-name') -> patient.name = create('HumanName') as patientName then {
+       
+       item.item as nameItem where(linkId = 'PR-name') -> patient.name = create('HumanName') as patientName then {  
           src -> patientName.family = evaluate(nameItem, ${"$"}this.item.where(linkId = 'PR-name-family').answer.value) "rule_d";
           src -> patientName.given = evaluate(nameItem, ${"$"}this.item.where(linkId = 'PR-name-given').answer.value) "rule_e";
        };
@@ -1113,14 +1110,14 @@ group ExtractRelatedPerson(source src : QuestionnaireResponse, target bundle : B
                   src -> posInt.value = "2" "rule_erp_10b";
                 } "rule_erp_10";
             } "rule_erp_10a";
-
+          
             src -> relatedPerson.id = uuid() "rule_erp_11_a";
             src.item as relatedPersonIdItem where(linkId = 'RP-id' and answer.count() > 0 and answer.empty().not()) then {
-                src -> relatedPerson.id = create('id') as patientId then {
+                src -> relatedPerson.id = create('id') as patientId then { 
                   src -> patientId.value = evaluate(relatedPersonIdItem, ${"$"}this.answer.value) "rule_erp_11_1_1";
                 } "rule_erp_11_1";
             } "rule_erp_11";
-
+            
             patient -> relatedPerson.patient = reference(patient) "rule_erp_13a";
         };
     } "rule_erp_14";
@@ -1137,7 +1134,7 @@ group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bu
 	    	itemAns.value as itemValue -> obs.value = create('CodeableConcept') as codeableConcept then {
               itemValue.display as itemValueText -> codeableConcept.text = itemValueText "rule_eo6_1";
               itemValue -> codeableConcept.coding = itemValue "rule_eo6_2";
-
+              
               itemValue where(itemValue.code = '74964007') -> bundle.entry as entry, entry.resource = create('Observation') as obs2 then {
                 src.item as otherComorbItem where(linkId = 'other_comorbidities' and answer.count() > 0 and answer[0].empty().not()) then {
                   src -> obs2.id = uuid() "rule_eo6_3_1_1";
@@ -1169,9 +1166,9 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
           src -> riskPrediction.outcome = cc("https://www.snomed.org", "38651000000103") "rule_erao_6_2";
         } "rule_erao_6";
         bundleEn.entry as resourceEntry where(resource.is(Observation) and resource.code.coding[0].code = '991381000000107') then {
-          resourceEntry.resource as rs -> riskAm.basis = reference(rs) "rule_erao_7_1";
+          resourceEntry.resource as rs -> riskAm.basis = reference(rs) "rule_erao_7_1"; 
         } "rule_erao_7";
-
+        
         src -> bundle.entry as entry, entry.resource = create('Flag') as riskFlag then {
           src -> riskFlag.id = uuid() "rule_erao_8_1";
           src -> riskFlag.status = "active" "rule_erao_8_2";

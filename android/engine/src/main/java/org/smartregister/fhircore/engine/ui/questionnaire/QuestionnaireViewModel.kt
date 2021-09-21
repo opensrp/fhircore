@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -29,6 +30,7 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
@@ -102,6 +104,7 @@ class QuestionnaireViewModel(
     if (structureMapProvider == null) {
       structureMapProvider = { structureMapUrl: String -> fetchStructureMap(structureMapUrl) }
     }
+
     return structureMapProvider!!
   }
 
@@ -113,7 +116,32 @@ class QuestionnaireViewModel(
     return defaultRepository.loadResource(patientId)
   }
 
+  suspend fun loadRelatedPerson(patientId: String): List<RelatedPerson>? {
+    return defaultRepository.loadRelatedPersons(patientId)
+  }
+
   fun saveResource(resource: Resource) {
     viewModelScope.launch { defaultRepository.save(resource = resource) }
+  }
+
+  suspend fun generateQuestionnaireResponse(
+    questionnaire: Questionnaire,
+    intent: Intent
+  ): QuestionnaireResponse {
+    var questionnaireResponse = QuestionnaireResponse()
+
+    intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let {
+      val patient = loadPatient(it)
+      val relatedPerson: List<RelatedPerson>? = loadRelatedPerson(it)
+
+      patient?.let {
+        questionnaireResponse =
+          if (relatedPerson?.isNotEmpty() == true && relatedPerson.firstOrNull() != null)
+            ResourceMapper.populate(questionnaire, patient, relatedPerson.first())
+          else ResourceMapper.populate(questionnaire, patient)
+      }
+    }
+
+    return questionnaireResponse
   }
 }

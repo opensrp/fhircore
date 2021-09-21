@@ -18,10 +18,13 @@ package org.smartregister.fhircore.engine.data.local
 
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.db.ResourceNotFoundException
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 
@@ -30,8 +33,12 @@ class DefaultRepository(
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) {
 
-  suspend inline fun <reified T : Resource> loadResource(structureMapId: String): T? {
-    return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(structureMapId) }
+  suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
+    return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
+  }
+
+  suspend inline fun loadRelatedPersons(patientId: String): List<RelatedPerson>? {
+    return withContext(dispatcherProvider.io()) { fhirEngine.loadRelatedPersons(patientId) }
   }
 
   suspend fun save(resource: Resource) {
