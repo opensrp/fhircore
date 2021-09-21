@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Added Logic for CQL Evaluation in ANC App. This include, AncDetailsFragment,ViewModel & Tests
+
+## [Unreleased]
+### Added
 - Added CQL Lib Evaluator class for CQl Expressions
 
 ## [Unreleased]
