@@ -21,7 +21,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.parser.IParser
-import ca.uhn.fhir.parser.JsonParser
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
@@ -59,58 +58,59 @@ class AncDetailsViewModel(
     return patientCarePlan
   }
 
-  fun fetchCQLLibraryData(parser: IParser,
-                          fhirResourceDataSource: FhirResourceDataSource):
-          LiveData<String> {
-    var libraryData=MutableLiveData<String>();
+  fun fetchCQLLibraryData(
+    parser: IParser,
+    fhirResourceDataSource: FhirResourceDataSource
+  ): LiveData<String> {
+    var libraryData = MutableLiveData<String>()
     viewModelScope.launch(dispatcher.io()) {
-       val auxCQLLibraryData = parser.encodeResourceToString(
-        fhirResourceDataSource.loadData(LIBRARY_URL).entry[0].resource
-       )
+      val auxCQLLibraryData =
+        parser.encodeResourceToString(
+          fhirResourceDataSource.loadData(LIBRARY_URL).entry[0].resource
+        )
       libraryData.postValue(auxCQLLibraryData)
     }
     return libraryData
   }
 
-  fun fetchCQLFhirHelperData(parser: IParser,
-                          fhirResourceDataSource: FhirResourceDataSource):
-          LiveData<String> {
-    var helperData=MutableLiveData<String>();
+  fun fetchCQLFhirHelperData(
+    parser: IParser,
+    fhirResourceDataSource: FhirResourceDataSource
+  ): LiveData<String> {
+    var helperData = MutableLiveData<String>()
     viewModelScope.launch(dispatcher.io()) {
-      val auxCQLHelperData = parser.encodeResourceToString(
-        fhirResourceDataSource.loadData(HELPER_URL).entry[0].resource
-      )
+      val auxCQLHelperData =
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(HELPER_URL).entry[0].resource)
       helperData.postValue(auxCQLHelperData)
     }
     return helperData
   }
 
-  fun fetchCQLValueSetData(parser: IParser,
-                             fhirResourceDataSource: FhirResourceDataSource):
-          LiveData<String> {
-    var valueSetData=MutableLiveData<String>();
+  fun fetchCQLValueSetData(
+    parser: IParser,
+    fhirResourceDataSource: FhirResourceDataSource
+  ): LiveData<String> {
+    var valueSetData = MutableLiveData<String>()
     viewModelScope.launch(dispatcher.io()) {
-      val auxCQLValueSetData = parser.encodeResourceToString(
-        fhirResourceDataSource.loadData(VALUE_SET_URL)
-      )
+      val auxCQLValueSetData =
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(VALUE_SET_URL))
       valueSetData.postValue(auxCQLValueSetData)
     }
     return valueSetData
   }
 
-  fun fetchCQLPatientData(parser: IParser,
-                           fhirResourceDataSource: FhirResourceDataSource,
-                          patientId:String):
-          LiveData<String> {
-    var patientData=MutableLiveData<String>()
-    PATIENT_URL= "https://fhir.labs.smartregister.org/fhir/Patient/$patientId/\$everything"
+  fun fetchCQLPatientData(
+    parser: IParser,
+    fhirResourceDataSource: FhirResourceDataSource,
+    patientId: String
+  ): LiveData<String> {
+    var patientData = MutableLiveData<String>()
+    PATIENT_URL = "https://fhir.labs.smartregister.org/fhir/Patient/$patientId/\$everything"
     viewModelScope.launch(dispatcher.io()) {
-      val auxCQLPatientData = parser.encodeResourceToString(
-        fhirResourceDataSource.loadData(PATIENT_URL)
-      )
+      val auxCQLPatientData =
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(PATIENT_URL))
       patientData.postValue(auxCQLPatientData)
     }
     return patientData
   }
-
 }
