@@ -1,6 +1,7 @@
 {
   "resourceType" : "Encounter",
-  "status" : null,
+  "id": "#Id",
+  "status" : "in-progress",
   "class" : {
     "system" : "http://terminology.hl7.org/CodeSystem/v3-ActCode",
     "code" : "TBD",
@@ -19,11 +20,11 @@
     }
   ],
   "subject" : {
-    "reference" : "$RefPatient"
+    "reference" : "#RefPatient"
   },
   "episodeOfCare" : [
     {
-      "reference" : "$RefEpisodeOfCare"
+      "reference" : "#RefEpisodeOfCare"
     }
   ],
   "participant" : [
@@ -40,17 +41,17 @@
         }
       ],
       "individual" : {
-        "reference" : "$RefPractitioner"
+        "reference" : "#RefPractitioner"
       }
     }
   ],
   "period" : {
-    "start" : null
+    "start" : "#RefDateStart"
   },
   "diagnosis" : [
     {
       "condition" : {
-        "reference" : "$RefCondition"
+        "reference" : "#RefCondition"
       },
       "rank" : 1
     }

@@ -27,3 +27,5 @@ sealed interface AncRowClickListenerIntent : ListenerIntent
 
 /** This implies that the user intends to open patient's profile */
 object OpenPatientProfile : AncRowClickListenerIntent
+
+object RecordAncVisit : AncRowClickListenerIntent
