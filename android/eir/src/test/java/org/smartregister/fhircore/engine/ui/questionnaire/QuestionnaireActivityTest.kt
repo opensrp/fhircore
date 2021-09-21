@@ -158,14 +158,14 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @Ignore
   @Test
   fun `save-button click should call savedExtractedResources()`() {
-    every { questionnaireViewModel.saveExtractedResources(any(), any(), any(), any()) } just runs
+    every { questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any()) } just runs
 
     questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).performClick()
 
     verify(exactly = 1) { questionnaireActivity.findViewById<Button>(any()) }
     verify(exactly = 1) { questionnaireActivity.finish() }
     verify(exactly = 1) {
-      questionnaireViewModel.saveExtractedResources(any(), any(), any(), any())
+      questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any())
     }
   }
 

@@ -40,8 +40,10 @@ class AncDetailsViewModel(
   val VALUE_SET_URL = "https://fhir.labs.smartregister.org/fhir/ValueSet?_id=1750,1751"
   var PATIENT_URL = ""
 
+  lateinit var patientDemographics: MutableLiveData<AncPatientDetailItem>
+
   fun fetchDemographics(): LiveData<AncPatientDetailItem> {
-    val patientDemographics = MutableLiveData<AncPatientDetailItem>()
+    patientDemographics = MutableLiveData<AncPatientDetailItem>()
     viewModelScope.launch(dispatcher.io()) {
       val ancPatientDetailItem = ancPatientRepository.fetchDemographics(patientId = patientId)
       patientDemographics.postValue(ancPatientDetailItem)

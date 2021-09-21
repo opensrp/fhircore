@@ -26,7 +26,6 @@ import org.hl7.fhir.r4.terminologies.ConceptMapEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities.ITransformerServices
 import timber.log.Timber
 
-/** Created by Ephraim Kigamba - nek.eam@gmail.com on 13-08-2021. */
 /**
  * Copied from
  * https://github.com/hapifhir/org.hl7.fhir.core/blob/master/org.hl7.fhir.validation/src/main/java/org/hl7/fhir/validation/TransformSupportServices.java

@@ -7,7 +7,7 @@ plugins {
     id 'org.jetbrains.dokka'
     id 'org.jetbrains.kotlin.plugin.serialization'
 }
-apply from: "code.coverage.gradle"
+apply from: "../code.coverage.gradle"
 
 Properties props = new Properties()
 

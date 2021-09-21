@@ -26,3 +26,15 @@ fun CarePlan.ended() = period.end.before(Date())
 fun CarePlan.due() = status.equals(CarePlan.CarePlanStatus.ACTIVE) && started() && !ended()
 
 fun CarePlan.overdue() = status.equals(CarePlan.CarePlanStatus.ACTIVE) && ended()
+
+fun CarePlan.CarePlanActivityDetailComponent.started(): Boolean =
+  scheduledPeriod.start?.before(Date()) == true
+
+fun CarePlan.CarePlanActivityDetailComponent.ended(): Boolean =
+  scheduledPeriod.end?.before(Date()) == true
+
+fun CarePlan.CarePlanActivityDetailComponent.due() =
+  status.equals(CarePlan.CarePlanActivityStatus.SCHEDULED) && started() && !ended()
+
+fun CarePlan.CarePlanActivityDetailComponent.overdue() =
+  status.equals(CarePlan.CarePlanActivityStatus.SCHEDULED) && ended()

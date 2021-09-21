@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Added CQL Lib Evaluator class for CQl Expressions
+
+## [Unreleased]
+### Added
 - Added Logic for CQL Evaluation in ANC App. This include, AncDetailsFragment,ViewModel & Tests
 
 ## [Unreleased]
@@ -29,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync progress loader and datetime
 - ANC details activity
 - Enroll into ANC and add Encounter, Observation, Episode of Care, Condition
+- Family Registeration with Tags from SDK fix for tags and profile
+- Add edit patient registration feature. This enables you to modify the patient and related person's details
 
 ### Fixed
 
