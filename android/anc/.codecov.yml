@@ -3,12 +3,15 @@ codecov:
 
 coverage:
   status:
-    project: no
+    project:
+      enabled: yes
+      target: auto
+      threshold: 2%
     patch: yes
     changes: no
   precision: 2
   round: down
-  range: "70...100"
+  range: "70...90"
 
 fixes:
   - "/home/runner/work/fhircore/fhircore/android/anc::"
