@@ -1,6 +1,6 @@
 {
   "resourceType": "Questionnaire",
-  "id": "immunization-adverse-events-reaction",
+  "id": "1568",
   "status": "active",
   "date": "2020-11-18T07:24:47.111Z",
   "subjectType": [
@@ -13,14 +13,14 @@
   ],
   "item": [
     {
-      "linkId": "immunization-0-id",
+      "linkId": "immunization-id",
       "definition": "http://hl7.org/fhir/StructureDefinition/Immunization#Immunization.id",
       "type": "date",
       "extension": [
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
           "valueExpression": {
-            "expression": "%immunization.id",
+            "expression": "Immunization.id",
             "language": "text/fhirpath"
           }
         },
@@ -102,13 +102,6 @@
               "valueCoding": {
                 "code": "111588002",
                 "display": "Heparin-induced thrombocytopenia (disorder) Thrombosis (disorder)",
-                "system": "https://www.snomed.org"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "Other",
-                "display": "Other",
                 "system": "https://www.snomed.org"
               }
             }

@@ -1200,25 +1200,25 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
 
   private val IMMUNIZATION_JSON =
     """
-    {"resourceType":"Immunization","id":"74dee251-be1e-48ee-a727-e4204cd54ee7","meta":{"versionId":"1","lastUpdated":"2021-09-10T17:55:31.609+00:00","source":"#1ba9b4b2f1fbdeae"},"status":"completed","vaccineCode":{"coding":[{"code":"Moderna"}],"text":"Moderna"},"patient":{"reference":"Patient/9f2ec87c-93c4-4274-a73b-191b92bfe7ac"},"occurrenceDateTime":"2021-09-10","recorded":"2021-09-10T20:29:48+03:00","protocolApplied":[{"doseNumberPositiveInt":2}],"reaction":[{"date":"2021-09-08T14:47:00+05:00","detail":{"reference":"Observation/3bc61be1-36ac-4bd1-9ff3-7760602cf10e"}}]}
+    {"resourceType":"Immunization","id":"74dee251-be1e-48ee-a727-e4204cd54ee7","meta":{"versionId":"1","lastUpdated":"2021-09-10T17:55:31.609+00:00","source":"#1ba9b4b2f1fbdeae"},"status":"completed","vaccineCode":{"coding":[{"code":"Moderna"}],"text":"Moderna"},"patient":{"reference":"Patient/9f2ec87c-93c4-4274-a73b-191b92bfe7ac"},"occurrenceDateTime":"2021-09-10","recorded":"2021-09-10T20:29:48+03:00","protocolApplied":[{"doseNumberPositiveInt":2}],"reaction":[{"date":"2021-09-08T14:47:00+05:00","detail":{"reference":"Observation/aef00410-df7d-4978-a98a-a28ff2a439c3"}}]}
     """.trimIndent()
 
   private val OBSERVATION_JSON =
     """
-    {"resourceType":"Observation","id":"3bc61be1-36ac-4bd1-9ff3-7760602cf10e","code":{"coding":[{"system":"https://www.snomed.org","code":"39579001","display":"Anaphylaxis"}]}}
+    {"resourceType":"Observation","id":"aef00410-df7d-4978-a98a-a28ff2a439c3","code":{"coding":[{"system":"https://www.snomed.org","code":"75753009","display":"Blood clots"}]}}
     """.trimIndent()
 
 
   @Language("Json")
   private val questionnaireResponseForAdverseEvent = """
-    {"resourceType":"QuestionnaireResponse","item":[{"linkId":"adverse-event-reaction","item":[{"linkId":"adverse-event-codes","answer":[{"valueCoding":{"system":"https://www.snomed.org","code":"39579001","display":"Anaphylaxis"}}]},{"linkId":"adverse-event-date","answer":[{"valueDateTime":"2021-09-08T14:47:00+05:00"}]}]}]}
+    {"resourceType":"QuestionnaireResponse","item":[{"linkId":"immunization-id"},{"linkId":"adverse-event-reaction","item":[{"linkId":"adverse-event-codes","answer":[{"valueCoding":{"system":"https://www.snomed.org","code":"75753009","display":"Blood clots"}}]},{"linkId":"adverse-event-date","answer":[{"valueDateTime":"2021-09-21T14:31:00+05:00"}]}]}]}
   """.trimIndent()
 
   @Language("Json")
   private val questionnaireForAdverseEvent = """
 {
   "resourceType": "Questionnaire",
-  "id": "immunization-adverse-events-reaction",
+  "id": "1568",
   "status": "active",
   "date": "2020-11-18T07:24:47.111Z",
   "subjectType": [
@@ -1231,23 +1231,23 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
   ],
   "item": [
     {
-          "linkId": "immunization-id",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Immunization#Immunization.id",
-          "type": "date",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "expression": "Immunization.id",
-                "language": "text/fhirpath"
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-              "valueBoolean": true
-            }
-          ]
+      "linkId": "immunization-id",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Immunization#Immunization.id",
+      "type": "date",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "expression": "Immunization.id",
+            "language": "text/fhirpath"
+          }
         },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ]
+    },
     {
       "linkId": "adverse-event-reaction",
       "type": "group",
@@ -1320,13 +1320,6 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
               "valueCoding": {
                 "code": "111588002",
                 "display": "Heparin-induced thrombocytopenia (disorder) Thrombosis (disorder)",
-                "system": "https://www.snomed.org"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "Other",
-                "display": "Other",
                 "system": "https://www.snomed.org"
               }
             }
