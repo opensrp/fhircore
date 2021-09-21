@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.data.local
 
-import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import kotlinx.coroutines.withContext
