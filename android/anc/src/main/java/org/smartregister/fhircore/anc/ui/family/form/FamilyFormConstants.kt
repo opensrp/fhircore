@@ -14,25 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.data.model
+package org.smartregister.fhircore.anc.ui.family.form
 
-import androidx.compose.runtime.Stable
-import java.util.Date
+import kotlinx.serialization.Serializable
 
-@Stable
-data class AncPatientItem(
-  var patientIdentifier: String = "",
-  var name: String = "",
-  var gender: String = "",
-  var age: String = "",
-  var demographics: String = "",
-  var atRisk: String = ""
-)
-
-@Stable
-data class AncPatientDetailItem(
-  var patientDetails: AncPatientItem = AncPatientItem(),
-  var patientDetailsHead: AncPatientItem = AncPatientItem(),
-)
-
-@Stable data class CarePlanItem(var title: String, var periodStartDate: Date)
+@Serializable
+object FamilyFormConstants {
+  const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
+  const val FAMILY_REGISTER_FORM = "family-registration"
+}

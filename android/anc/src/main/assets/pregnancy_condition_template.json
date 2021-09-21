@@ -1,5 +1,6 @@
 {
   "resourceType" : "Condition",
+  "id": "#Id",
   "clinicalStatus" : {
     "coding" : [
       {
@@ -36,5 +37,9 @@
       }
     ],
     "text" : "Pregnancy"
-  }
+  },
+  "subject" : {
+    "reference" : "#RefPatient"
+  },
+  "onsetDateTime" : "#RefDateOnset"
 }

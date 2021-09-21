@@ -21,9 +21,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.anc.data.AncPatientRepository
-import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
+import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
@@ -33,8 +33,10 @@ class AncDetailsViewModel(
   val patientId: String
 ) : ViewModel() {
 
+  lateinit var patientDemographics: MutableLiveData<AncPatientDetailItem>
+
   fun fetchDemographics(): LiveData<AncPatientDetailItem> {
-    val patientDemographics = MutableLiveData<AncPatientDetailItem>()
+    patientDemographics = MutableLiveData<AncPatientDetailItem>()
     viewModelScope.launch(dispatcher.io()) {
       val ancPatientDetailItem = ancPatientRepository.fetchDemographics(patientId = patientId)
       patientDemographics.postValue(ancPatientDetailItem)

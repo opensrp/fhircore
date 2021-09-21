@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.family.form
+package org.smartregister.fhircore.anc.util
 
-import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Enumerations
 
-@Serializable
-object FamilyFormConfig {
-  const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
-}
+data class RegisterConfiguration(val id: String, val primaryFilter: SearchFilter?)
+
+/** Only TokenClientParam, and StringClientParam supported as Register Primary Filter. */
+data class SearchFilter(
+  val key: String,
+  val filterType: Enumerations.SearchParamType,
+  val valueType: Enumerations.DataType,
+  val valueCoding: Coding? = null,
+  val valueString: String? = null
+)
