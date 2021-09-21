@@ -1,0 +1,79 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "800",
+  "meta": {
+    "versionId": "2",
+    "lastUpdated": "2021-07-30T23:50:21.368+00:00",
+    "source": "#F9qcecppcMjNgr95"
+  },
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+      "valueExpression": {
+        "name": "immunization",
+        "language": "application/x-fhir-query",
+        "expression": "Immunization"
+      }
+    }
+  ],
+  "status": "active",
+  "subjectType": [
+    "Immunization"
+  ],
+  "date": "2020-11-18T07:24:47.111Z",
+  "item": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "radio-button",
+                "display": "Radio Button"
+              }
+            ],
+            "text": "A control where choices are listed with a button beside them. The button can be toggled to select or de-select a given choice. Selecting one item deselects all others."
+          }
+        }
+      ],
+      "linkId": "vaccine",
+      "type": "choice",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "Moderna"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "Pfizer"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "AstraZeneca"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "Janssen"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "dose-number",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Immunization.protocolApplied.doseNumber + 1"
+          }
+        }
+      ]
+    }
+  ]
+}
