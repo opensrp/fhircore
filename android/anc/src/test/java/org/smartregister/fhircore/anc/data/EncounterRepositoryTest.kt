@@ -28,7 +28,7 @@ import org.hl7.fhir.r4.model.Period
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.smartregister.fhircore.anc.data.model.EncounterItem
+import org.smartregister.fhircore.anc.data.anc.model.EncounterItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 class EncounterRepositoryTest : RobolectricTest() {
