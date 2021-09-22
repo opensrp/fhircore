@@ -102,6 +102,8 @@ android {
         exclude 'META-INF/LGPL-3.0.txt'
         exclude 'META-INF/sun-jaxb.episode'
         exclude("META-INF/*.kotlin_module")
+        exclude("META-INF/AL2.0")
+        exclude("META-INF/LGPL2.1")
     }
 
     testOptions {
@@ -151,4 +153,7 @@ dependencies {
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
     implementation deps.work.runtime
+
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.0.1")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.0.1")
 }
