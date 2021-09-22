@@ -17,8 +17,8 @@
 package org.smartregister.fhircore.anc.data.model
 
 import androidx.compose.runtime.Stable
-import org.hl7.fhir.r4.model.Encounter
 import java.util.Date
+import org.hl7.fhir.r4.model.Encounter
 
 @Stable
 data class AncPatientItem(
@@ -38,9 +38,10 @@ data class AncPatientDetailItem(
 
 @Stable data class CarePlanItem(var title: String, var periodStartDate: Date)
 
-@Stable data class EncounterItem(
+@Stable
+data class EncounterItem(
   val id: String,
   val status: Encounter.EncounterStatus,
   val display: String,
   val periodStartDate: Date
-  )
+)

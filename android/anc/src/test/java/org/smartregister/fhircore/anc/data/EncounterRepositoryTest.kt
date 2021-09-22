@@ -1,0 +1,79 @@
+/*
+ * Copyright 2021 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.smartregister.fhircore.anc.data
+
+import androidx.paging.PagingSource
+import com.google.android.fhir.FhirEngine
+import io.mockk.coEvery
+import io.mockk.mockk
+import java.text.SimpleDateFormat
+import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Period
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import org.smartregister.fhircore.anc.data.model.EncounterItem
+import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+
+class EncounterRepositoryTest : RobolectricTest() {
+
+  private lateinit var repository: EncounterRepository
+  private lateinit var fhirEngine: FhirEngine
+
+  @Before
+  fun setUp() {
+    fhirEngine = mockk()
+
+    coEvery {
+      hint(Encounter::class)
+      fhirEngine.search<Encounter>(any())
+    } returns listOf(getEncounter())
+
+    repository = EncounterRepository(fhirEngine, "")
+  }
+
+  @Test
+  fun testLoadReturnsPageWhenOnSuccessfulLoadOfItemKeyedData() = runBlockingTest {
+    val encounter = getEncounter()
+    Assert.assertEquals(
+      PagingSource.LoadResult.Page(
+        listOf(
+          EncounterItem(
+            encounter.id,
+            encounter.status,
+            encounter.class_.display,
+            encounter.period.start
+          )
+        ),
+        null,
+        1
+      ),
+      repository.load(PagingSource.LoadParams.Refresh(null, 1, false))
+    )
+  }
+
+  private fun getEncounter(): Encounter {
+    return Encounter().apply {
+      id = "1"
+      status = Encounter.EncounterStatus.FINISHED
+      class_ = Coding("", "", "first")
+      period = Period().apply { start = SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01") }
+    }
+  }
+}
