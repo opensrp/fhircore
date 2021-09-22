@@ -57,14 +57,14 @@ jobs:
 
       - name: Upload EIR Test Report to codecov
         working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -f "eir/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
+        run:  bash <(curl -s https://codecov.io/bash) -F eir -f "eir/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
 
       - name: Upload ANC Test Report to codecov
         working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -f "anc/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
+        run:  bash <(curl -s https://codecov.io/bash) -F anc -f "anc/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
 
       - name: Upload Engine Test Report to codecov
         working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -f "engine/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
+        run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
 
 
