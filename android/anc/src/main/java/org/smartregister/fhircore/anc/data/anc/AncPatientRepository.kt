@@ -27,6 +27,7 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Goal
@@ -158,7 +159,7 @@ class AncPatientRepository(
     return listCarePlan
   }
 
-  suspend fun enrollIntoAnc(patientId: String, lmp: DateTimeType) {
+  suspend fun enrollIntoAnc(patientId: String, lmp: DateType) {
     val conditionData = buildConfigData(patientId = patientId, lmp = lmp)
 
     val pregnancyCondition =
@@ -214,7 +215,7 @@ class AncPatientRepository(
     pregnancyEpisodeOfCase: EpisodeOfCare? = null,
     pregnancyEncounter: Encounter? = null,
     pregnancyGoal: Goal? = null,
-    lmp: DateTimeType? = null
+    lmp: DateType? = null
   ): Map<String, String?> {
     return mapOf(
       "#Id" to getUniqueId(),

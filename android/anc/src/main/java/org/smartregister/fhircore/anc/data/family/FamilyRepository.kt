@@ -22,6 +22,7 @@ import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -98,13 +99,26 @@ class FamilyRepository(
       .saveParsedResource(questionnaireResponse, questionnaire, patientId, relatedTo)
 
     val pregnantItem = questionnaireResponse.find(IS_PREGNANT_KEY)
-    if (pregnantItem?.answer?.firstOrNull()?.valueBooleanType?.booleanValue() == true) {
+    /*if (pregnantItem?.answer?.firstOrNull()?.valueBooleanType?.booleanValue() == true) {
       val lmpItem = questionnaireResponse.find(LMP_KEY)
       val lmp = lmpItem?.answer?.firstOrNull()?.valueDateTimeType!!
       ancPatientRepository.enrollIntoAnc(patientId, lmp)
-    }
+    }*/
 
     return patientId
+  }
+
+  suspend fun enrollIntoAnc(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    patientId: String
+  ) {
+    ResourceMapperExtended(fhirEngine)
+      .saveParsedResource(questionnaireResponse, questionnaire, patientId, null)
+
+      val lmpItem = questionnaireResponse.find(LMP_KEY)
+      val lmp = lmpItem?.answer?.firstOrNull()?.valueDateType!!
+      ancPatientRepository.enrollIntoAnc(patientId, lmp)
   }
 
   companion object {

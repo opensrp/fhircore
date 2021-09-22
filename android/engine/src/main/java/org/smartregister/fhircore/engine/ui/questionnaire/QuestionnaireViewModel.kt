@@ -21,6 +21,7 @@ import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -49,7 +50,10 @@ class QuestionnaireViewModel(
   var structureMapProvider: (suspend (String) -> StructureMap?)? = null
 
   suspend fun loadQuestionnaire(): Questionnaire? =
-    defaultRepository.loadResource(questionnaireConfig.identifier)
+    FhirContext.forR4().newJsonParser().parseResource(
+      getApplication<Application>().assets
+        .open(questionnaireConfig.identifier).bufferedReader().use { it.readText() }) as Questionnaire
+    //TODO ooooooooooo ???????? defaultRepository.loadResource(questionnaireConfig.identifier)
 
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null

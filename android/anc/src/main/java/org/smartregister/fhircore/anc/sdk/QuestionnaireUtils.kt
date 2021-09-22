@@ -209,7 +209,10 @@ object QuestionnaireUtils {
       this.effective = DateTimeType.now()
       this.code = questionnaireItemComponent.asCodeableConcept()
       this.status = Observation.ObservationStatus.FINAL
-      this.value = answer?.firstOrNull()?.value
+      val ansVal = answer?.firstOrNull()
+      this.value =
+        if (ansVal?.hasValueDateType() == true) DateTimeType(ansVal.valueDateType.value)
+        else ansVal?.value
       this.subject = subject
     }
   }

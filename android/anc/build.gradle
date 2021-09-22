@@ -48,7 +48,7 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("boolean", 'SKIP_AUTH_CHECK', "false")
+        buildConfigField("boolean", 'SKIP_AUTH_CHECK', "true")
 
         buildConfigField("String", 'FHIR_BASE_URL', "\"${FHIR_BASE_URL}\"")
         buildConfigField("String", 'OAUTH_BASE_URL', "\"${OAUTH_BASE_URL}\"")

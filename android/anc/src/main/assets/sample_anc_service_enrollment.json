@@ -17,7 +17,7 @@
   "item": [
     {
       "linkId": "lmp",
-      "type": "dateTime",
+      "type": "date",
       "required": true,
       "text": "Last Menstrual Period Date (LMP)",
       "extension": [
@@ -54,10 +54,11 @@
       ]
     },
     {
-      "linkId": "gestational_age",
+      "linkId": "previous_pregnancies",
       "type": "integer",
       "required": true,
-      "text": "Gestational age (GA)",
+      "minValue": "12",
+      "text": "Number of previous pregnancies",
       "extension": [
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
@@ -67,16 +68,16 @@
       "code": [
         {
           "system": "https://www.snomed.org",
-          "code": "57036006",
-          "display": "Fetal gestational age"
+          "code": "246211005",
+          "display": "Number of previous pregnancies"
         }
       ]
     },
     {
-      "linkId": "number_of_fetuses",
+      "linkId": "surviving_children",
       "type": "integer",
       "required": true,
-      "text": "Number of fetuses",
+      "text": "Number of surviving children",
       "extension": [
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
@@ -86,26 +87,8 @@
       "code": [
         {
           "system": "https://www.snomed.org",
-          "code": "246435002",
-          "display": "Number of fetuses"
-        }
-      ]
-    },
-    {
-      "linkId": "risks",
-      "type": "integer",
-      "text": "Risks",
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
-          "valueBoolean": true
-        }
-      ],
-      "code": [
-        {
-          "system": "https://www.snomed.org",
-          "code": "199312002",
-          "display": "Pregnancy risk"
+          "code": "248991006",
+          "display": "Number of live deliveries"
         }
       ]
     }

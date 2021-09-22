@@ -2,16 +2,19 @@
   {
     "form": "anc-patient-registration",
     "title": "Enroll as ANC Patient",
-    "identifier": "1924"
+    "identifier": "1924",
+    "identifier": "sample_anc_service_enrollment.json"
   },
   {
     "form": "family-member-registration",
     "title": "Add Family Member",
-    "identifier": "1923"
+    "identifier": "1923",
+    "identifier": "sample_family_member_registration.json"
   },
   {
     "form": "family-registration",
     "title": "Add Family",
-    "identifier": "1922"
+    "identifier": "1922",
+    "identifier": "sample_family_registration.json"
   }
 ]

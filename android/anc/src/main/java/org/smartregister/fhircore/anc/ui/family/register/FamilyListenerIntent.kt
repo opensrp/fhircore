@@ -21,3 +21,4 @@ import org.smartregister.fhircore.engine.util.ListenerIntent
 sealed class FamilyListenerIntent : ListenerIntent
 
 object OpenFamilyProfile : FamilyListenerIntent()
+object EnrollIntoAnc : FamilyListenerIntent()

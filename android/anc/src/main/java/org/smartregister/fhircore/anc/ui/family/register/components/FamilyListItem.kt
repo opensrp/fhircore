@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.family.register.components
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
+import org.smartregister.fhircore.anc.ui.family.register.EnrollIntoAnc
 import org.smartregister.fhircore.anc.ui.family.register.FamilyListenerIntent
 import org.smartregister.fhircore.anc.ui.family.register.OpenFamilyProfile
 import org.smartregister.fhircore.engine.ui.theme.DueColor
@@ -68,7 +70,7 @@ fun FamilyRow(
           .weight(0.65f)
     ) {
       Text(
-        text = familyItem.extractDemographics() + ":" + familyItem.members.size,
+        text = familyItem.extractDemographics(),
         fontSize = 16.sp,
         modifier = modifier.wrapContentWidth()
       )
@@ -88,6 +90,12 @@ fun FamilyRow(
             painter = painterResource(R.drawable.ic_pregnant),
             contentDescription = "Contact anc picture",
             modifier = Modifier.size(20.dp).border(1.dp, Color.LightGray, CircleShape)
+              .clickable(
+                enabled = true,
+                onClick = {
+                  clickListener.invoke(EnrollIntoAnc, familyItem)
+                }
+              )
           )
         }
 
@@ -139,6 +147,6 @@ fun FamilyRowPreview() {
   val fmi = FamilyMemberItem("fm1", "21", "F", true)
 
   val familyItem =
-    FamilyItem("fid", "Name ", "M", "27", "Nairobi", true, listOf(fmi, fmi, fmi), 4, 5)
+    FamilyItem("fid", "1111", "Name ", "M", "27", "Nairobi", true, listOf(fmi, fmi, fmi), 4, 5)
   FamilyRow(familyItem = familyItem, { _, _ -> })
 }
