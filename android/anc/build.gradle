@@ -154,6 +154,4 @@ dependencies {
     androidTestImplementation deps.atsl.espresso
     implementation deps.work.runtime
 
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.0.1")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.0.1")
 }
