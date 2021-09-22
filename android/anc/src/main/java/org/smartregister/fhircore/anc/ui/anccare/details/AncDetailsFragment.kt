@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.details
 
+import android.content.Context
+import android.content.res.AssetManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -27,6 +29,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import java.io.InputStream
+import java.util.Properties
 import kotlinx.android.synthetic.main.fragment_anc_details.button_CQLEvaluate
 import kotlinx.android.synthetic.main.fragment_anc_details.cardView_CQLSection
 import kotlinx.android.synthetic.main.fragment_anc_details.textView_CQLResults
@@ -43,6 +47,7 @@ import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.FileUtil
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class AncDetailsFragment private constructor() : Fragment() {
@@ -66,6 +71,8 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   lateinit var libraryEvaluator: LibraryEvaluator
 
+  lateinit var fileUtil: FileUtil
+
   var libraryData = ""
   var helperData = ""
   var valueSetData = ""
@@ -73,6 +80,13 @@ class AncDetailsFragment private constructor() : Fragment() {
   val evaluatorId = "ANCRecommendationA2"
   val contextCQL = "patient"
   val contextLabel = "mom-with-anemia"
+
+  var CQL_BASE_URL = ""
+  var LIBRARY_URL = ""
+  var HELPER_URL = ""
+  var VALUE_SET_URL = ""
+  var PATIENT_URL = ""
+  var CQL_CONFIG_FILE_NAME = "configs/cql_configs.properties"
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -124,6 +138,22 @@ class AncDetailsFragment private constructor() : Fragment() {
         context?.assets?.open("careplan_sample.json")?.bufferedReader().use { it?.readText() }
       )
       .observe(viewLifecycleOwner, this::handleCarePlan)
+
+    fileUtil = FileUtil()
+    CQL_BASE_URL =
+      context?.let { fileUtil.getProperty("smart_register_base_url", it, CQL_CONFIG_FILE_NAME) }!!
+    LIBRARY_URL =
+      CQL_BASE_URL +
+        context?.let { fileUtil.getProperty("cql_library_url", it, CQL_CONFIG_FILE_NAME) }
+    HELPER_URL =
+      CQL_BASE_URL +
+        context?.let { fileUtil.getProperty("cql_helper_library_url", it, CQL_CONFIG_FILE_NAME) }
+    VALUE_SET_URL =
+      CQL_BASE_URL +
+        context?.let { fileUtil.getProperty("cql_value_set_url", it, CQL_CONFIG_FILE_NAME) }
+    PATIENT_URL =
+      CQL_BASE_URL +
+        context?.let { fileUtil.getProperty("cql_patient_url", it, CQL_CONFIG_FILE_NAME) }
 
     showCQLCard()
   }
@@ -178,25 +208,25 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   fun loadCQLLibraryData() {
     ancDetailsViewModel
-      .fetchCQLLibraryData(parser, fhirResourceDataSource)
+      .fetchCQLLibraryData(parser, fhirResourceDataSource, LIBRARY_URL)
       .observe(viewLifecycleOwner, this::handleCQLLibraryData)
   }
 
   fun loadCQLHelperData() {
     ancDetailsViewModel
-      .fetchCQLFhirHelperData(parser, fhirResourceDataSource)
+      .fetchCQLFhirHelperData(parser, fhirResourceDataSource, HELPER_URL)
       .observe(viewLifecycleOwner, this::handleCQLHelperData)
   }
 
   fun loadCQLValueSetData() {
     ancDetailsViewModel
-      .fetchCQLValueSetData(parser, fhirResourceDataSource)
+      .fetchCQLValueSetData(parser, fhirResourceDataSource, VALUE_SET_URL)
       .observe(viewLifecycleOwner, this::handleCQLValueSetData)
   }
 
   fun loadCQLPatientData() {
     ancDetailsViewModel
-      .fetchCQLPatientData(parser, fhirResourceDataSource, patientId)
+      .fetchCQLPatientData(parser, fhirResourceDataSource, "$PATIENT_URL$patientId/\$everything")
       .observe(viewLifecycleOwner, this::handleCQLPatientData)
   }
 
@@ -257,5 +287,13 @@ class AncDetailsFragment private constructor() : Fragment() {
       cardView_CQLSection.visibility = View.VISIBLE
       buttonCQLSetOnClickListener()
     }
+  }
+
+  fun getProperty(key: String?, context: Context): String? {
+    val properties = Properties()
+    val assetManager: AssetManager = context.getAssets()
+    val inputStream: InputStream = assetManager.open("configs/cql_configs.properties")
+    properties.load(inputStream)
+    return properties.getProperty(key)
   }
 }

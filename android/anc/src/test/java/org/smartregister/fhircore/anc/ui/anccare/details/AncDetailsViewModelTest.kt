@@ -115,7 +115,7 @@ internal class AncDetailsViewModelTest {
       coEvery { parser.encodeResourceToString(resource) } returns auxCQLLibraryData
     }
     val libraryDataLiveData: String =
-      ancDetailsViewModel.fetchCQLLibraryData(parser, fhirResourceDataSource).value!!
+      ancDetailsViewModel.fetchCQLLibraryData(parser, fhirResourceDataSource, "").value!!
     Assert.assertEquals(auxCQLLibraryData, libraryDataLiveData)
   }
 
@@ -129,7 +129,7 @@ internal class AncDetailsViewModelTest {
       coEvery { parser.encodeResourceToString(resource) } returns auxCQLHelperData
     }
     val libraryDataLiveData: String =
-      ancDetailsViewModel.fetchCQLFhirHelperData(parser, fhirResourceDataSource).value!!
+      ancDetailsViewModel.fetchCQLFhirHelperData(parser, fhirResourceDataSource, "").value!!
     Assert.assertEquals(auxCQLHelperData, libraryDataLiveData)
   }
 
@@ -141,7 +141,7 @@ internal class AncDetailsViewModelTest {
       coEvery { parser.encodeResourceToString(bundle) } returns auxCQLValueSetData
     }
     val libraryDataLiveData: String =
-      ancDetailsViewModel.fetchCQLValueSetData(parser, fhirResourceDataSource).value!!
+      ancDetailsViewModel.fetchCQLValueSetData(parser, fhirResourceDataSource, "").value!!
     Assert.assertEquals(auxCQLValueSetData, libraryDataLiveData)
   }
 

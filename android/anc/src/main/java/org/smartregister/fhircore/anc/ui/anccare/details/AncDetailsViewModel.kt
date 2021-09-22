@@ -35,11 +35,6 @@ class AncDetailsViewModel(
   val patientId: String
 ) : ViewModel() {
 
-  val LIBRARY_URL = "https://fhir.labs.smartregister.org/fhir/Library?_id=1752"
-  val HELPER_URL = "https://fhir.labs.smartregister.org/fhir/Library?_id=1753"
-  val VALUE_SET_URL = "https://fhir.labs.smartregister.org/fhir/ValueSet?_id=1750,1751"
-  var PATIENT_URL = ""
-
   lateinit var patientDemographics: MutableLiveData<AncPatientDetailItem>
 
   fun fetchDemographics(): LiveData<AncPatientDetailItem> {
@@ -62,7 +57,8 @@ class AncDetailsViewModel(
 
   fun fetchCQLLibraryData(
     parser: IParser,
-    fhirResourceDataSource: FhirResourceDataSource
+    fhirResourceDataSource: FhirResourceDataSource,
+    LIBRARY_URL: String
   ): LiveData<String> {
     var libraryData = MutableLiveData<String>()
     viewModelScope.launch(dispatcher.io()) {
@@ -77,7 +73,8 @@ class AncDetailsViewModel(
 
   fun fetchCQLFhirHelperData(
     parser: IParser,
-    fhirResourceDataSource: FhirResourceDataSource
+    fhirResourceDataSource: FhirResourceDataSource,
+    HELPER_URL: String
   ): LiveData<String> {
     var helperData = MutableLiveData<String>()
     viewModelScope.launch(dispatcher.io()) {
@@ -90,7 +87,8 @@ class AncDetailsViewModel(
 
   fun fetchCQLValueSetData(
     parser: IParser,
-    fhirResourceDataSource: FhirResourceDataSource
+    fhirResourceDataSource: FhirResourceDataSource,
+    VALUE_SET_URL: String
   ): LiveData<String> {
     var valueSetData = MutableLiveData<String>()
     viewModelScope.launch(dispatcher.io()) {
@@ -104,10 +102,9 @@ class AncDetailsViewModel(
   fun fetchCQLPatientData(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
-    patientId: String
+    PATIENT_URL: String
   ): LiveData<String> {
     var patientData = MutableLiveData<String>()
-    PATIENT_URL = "https://fhir.labs.smartregister.org/fhir/Patient/$patientId/\$everything"
     viewModelScope.launch(dispatcher.io()) {
       val auxCQLPatientData =
         parser.encodeResourceToString(fhirResourceDataSource.loadData(PATIENT_URL))
