@@ -20,11 +20,6 @@
     "identifier": "2007"
   },
   {
-    "form": "non-anc-patient-vital-signs_unit_options",
-    "title": "Add Vital Signs ",
-    "identifier": "2006"
-  },
-  {
     "form": "family-registration",
     "title": "Add Family",
     "identifier": "1922"

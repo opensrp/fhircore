@@ -23,9 +23,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Observation
-import org.smartregister.fhircore.anc.data.NonAncPatientRepository
-import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
@@ -34,13 +32,6 @@ class VitalSignsDetailsViewModel(
     var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
     val patientId: String
 ) : ViewModel() {
-
-
-     fun fetchSelectedUnit():LiveData<Boolean>{
-        val selectedUnit = MutableLiveData<Boolean>()
-        selectedUnit.postValue(ancPatientRepository.loadQuestionnaire())
-        return selectedUnit;
-    }
 
     fun fetchObservation(): LiveData<List<Observation>> {
         val patientObservation = MutableLiveData<List<Observation>>()

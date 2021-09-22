@@ -18,7 +18,8 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:paddingBottom="70dp">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/constraintLayout_vitals"
@@ -62,7 +63,7 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:layout_marginTop="6dp"
-                            android:visibility="visible"
+                            android:visibility="gone"
                             tools:itemCount="3"
                             tools:listitem="@layout/item_plan_text" />
 
@@ -70,12 +71,11 @@
                             android:id="@+id/txtView_noAllergies"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_margin="14dp"
-                            android:layout_marginTop="16dp"
+                            android:layout_marginTop="6dp"
                             android:text="@string/none"
-                            android:textColor="@color/grayText"
+                            android:textColor="@color/black"
                             android:textSize="18sp"
-                            android:visibility="gone"
+                            android:visibility="visible"
                             app:layout_constraintLeft_toLeftOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -115,7 +115,7 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:layout_marginTop="6dp"
-                            android:visibility="visible"
+                            android:visibility="gone"
                             tools:itemCount="3"
                             tools:listitem="@layout/item_plan_text" />
 
@@ -123,12 +123,11 @@
                             android:id="@+id/txtView_noConditions"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_margin="14dp"
-                            android:layout_marginTop="16dp"
+                            android:layout_marginTop="6dp"
                             android:text="@string/none"
-                            android:textColor="@color/grayText"
+                            android:textColor="@color/black"
                             android:textSize="18sp"
-                            android:visibility="gone"
+                            android:visibility="visible"
                             app:layout_constraintLeft_toLeftOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -204,7 +203,7 @@
                                         android:textStyle="bold"
                                         app:layout_constraintRight_toRightOf="parent"
                                         app:layout_constraintTop_toTopOf="parent"
-                                        tools:text="115/900" />
+                                        android:text="-" />
 
                                     <TextView
                                         android:id="@+id/txtView_bpUnit"
@@ -265,7 +264,7 @@
                                         android:textStyle="bold"
                                         app:layout_constraintRight_toRightOf="parent"
                                         app:layout_constraintTop_toTopOf="parent"
-                                        tools:text="115/900" />
+                                        android:text="-" />
 
                                     <TextView
                                         android:id="@+id/txtView_pulseUnit"
@@ -327,7 +326,7 @@
                                         android:textStyle="bold"
                                         app:layout_constraintRight_toRightOf="parent"
                                         app:layout_constraintTop_toTopOf="parent"
-                                        tools:text="115/900" />
+                                        android:text="-"/>
 
                                     <TextView
                                         android:id="@+id/txtView_bgUnit"
@@ -397,7 +396,7 @@
                                         android:textStyle="bold"
                                         app:layout_constraintRight_toRightOf="parent"
                                         app:layout_constraintTop_toTopOf="parent"
-                                        tools:text="115/900" />
+                                        android:text="-" />
 
                                     <TextView
                                         android:id="@+id/txtView_spUnit"
@@ -458,7 +457,7 @@
                                         android:textStyle="bold"
                                         app:layout_constraintRight_toRightOf="parent"
                                         app:layout_constraintTop_toTopOf="parent"
-                                        tools:text="115/900" />
+                                        android:text="-" />
 
                                     <TextView
                                         android:id="@+id/txtView_weightUnit"
@@ -519,7 +518,7 @@
                                         android:textStyle="bold"
                                         app:layout_constraintRight_toRightOf="parent"
                                         app:layout_constraintTop_toTopOf="parent"
-                                        tools:text="115/900" />
+                                        android:text="-" />
 
                                     <TextView
                                         android:id="@+id/txtView_heightUnit"
@@ -580,7 +579,7 @@
                             android:id="@+id/encounterListView"
                             android:layout_gravity="center"
                             android:layout_marginTop="6dp"
-                            android:visibility="visible"
+                            android:visibility="gone"
                             android:paddingBottom="70dp"
                             android:clipToPadding="false"
                             android:layout_width="match_parent"
@@ -592,12 +591,12 @@
                             android:id="@+id/txtView_noEncounter"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_margin="14dp"
-                            android:layout_marginTop="16dp"
+                            android:layout_marginLeft="26dp"
+                            android:layout_marginTop="6dp"
                             android:text="@string/none"
-                            android:textColor="@color/grayText"
+                            android:textColor="@color/black"
                             android:textSize="18sp"
-                            android:visibility="gone"
+                            android:visibility="visible"
                             app:layout_constraintLeft_toLeftOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 

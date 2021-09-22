@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.ui.anccare.details
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -35,6 +36,7 @@ import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
 import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import timber.log.Timber
 
 class AncDetailsFragment private constructor() : Fragment() {
 
@@ -48,6 +50,11 @@ class AncDetailsFragment private constructor() : Fragment() {
     private val carePlanAdapter = CarePlanAdapter()
 
     lateinit var binding: FragmentAncDetailsBinding
+
+    override fun onCreate(arg0: Bundle?) {
+        super.onCreate(arg0)
+        patientId = arg0?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -80,6 +87,8 @@ class AncDetailsFragment private constructor() : Fragment() {
 
         binding.txtViewPatientId.text = patientId
 
+        Timber.d(patientId)
+
         ancDetailsViewModel
             .fetchDemographics()
             .observe(viewLifecycleOwner, this::handlePatientDemographics)
@@ -108,7 +117,8 @@ class AncDetailsFragment private constructor() : Fragment() {
     private fun setupViews() {
         binding.carePlanListView.apply {
             adapter = carePlanAdapter
-            layoutManager = LinearLayoutManager(requireContext())
+            layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         }
     }
 

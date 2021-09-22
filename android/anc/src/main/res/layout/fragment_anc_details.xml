@@ -72,11 +72,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
+                    android:layout_marginRight="8dp"
                     android:text="@string/see_all"
                     android:textAllCaps="true"
                     android:textColor="@color/colorPrimaryLight"
                     android:textSize="18sp"
-                    android:layout_marginRight="8dp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/imageView_seeAllArrow"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -85,10 +85,10 @@
                     android:id="@+id/imageView_seeAllArrow"
                     android:layout_width="8dp"
                     android:layout_height="12dp"
-                    app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/txtView_carePlanSeeAllHeading"
+                    android:src="@drawable/ic_forward_arrow"
                     app:layout_constraintBottom_toBottomOf="@+id/txtView_carePlanSeeAllHeading"
-                    android:src="@drawable/ic_forward_arrow" />
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/txtView_carePlanSeeAllHeading" />
 
 
                 <androidx.cardview.widget.CardView
@@ -116,13 +116,13 @@
 
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/carePlanListView"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:layout_gravity="center"
                             android:layout_marginLeft="14dp"
                             android:layout_marginTop="14dp"
                             android:layout_marginRight="14dp"
                             android:layout_marginBottom="14dp"
-                            android:layout_gravity="center"
                             android:visibility="visible"
                             tools:itemCount="3"
                             tools:listitem="@layout/item_careplan" />
@@ -163,11 +163,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
+                    android:layout_marginRight="8dp"
                     android:text="@string/see_all"
                     android:textAllCaps="true"
                     android:textColor="@color/colorPrimaryLight"
                     android:textSize="18sp"
-                    android:layout_marginRight="8dp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/imageView_ANCOverviewSeeAllArrow"
                     app:layout_constraintTop_toBottomOf="@+id/cardView_carePlan" />
@@ -176,10 +176,10 @@
                     android:id="@+id/imageView_ANCOverviewSeeAllArrow"
                     android:layout_width="8dp"
                     android:layout_height="12dp"
-                    app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/txtView_ANCOverviewSeeAllHeading"
+                    android:src="@drawable/ic_forward_arrow"
                     app:layout_constraintBottom_toBottomOf="@+id/txtView_ANCOverviewSeeAllHeading"
-                    android:src="@drawable/ic_forward_arrow" />
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/txtView_ANCOverviewSeeAllHeading" />
 
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardView_ANCOverview"
@@ -346,11 +346,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
+                    android:layout_marginRight="8dp"
                     android:text="@string/see_all"
                     android:textAllCaps="true"
                     android:textColor="@color/colorPrimaryLight"
                     android:textSize="18sp"
-                    android:layout_marginRight="8dp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/imageView_ANCOverviewSeeAllArrow"
                     app:layout_constraintTop_toBottomOf="@+id/cardView_ANCOverview" />
@@ -360,10 +360,10 @@
                     android:id="@+id/imageView_upcomingServicesSeeAllArrow"
                     android:layout_width="8dp"
                     android:layout_height="12dp"
-                    app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/txtView_upcomingServicesSeeAllHeading"
+                    android:src="@drawable/ic_forward_arrow"
                     app:layout_constraintBottom_toBottomOf="@+id/txtView_upcomingServicesSeeAllHeading"
-                    android:src="@drawable/ic_forward_arrow" />
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/txtView_upcomingServicesSeeAllHeading" />
 
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardView_upcomingServices"

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.data
+package org.smartregister.fhircore.anc.data.madx
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
@@ -23,10 +23,9 @@ import java.util.Date
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.*
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
-import org.smartregister.fhircore.anc.data.model.CarePlanItem
-import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils
+import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
@@ -40,9 +39,6 @@ class NonAncPatientRepository(
     override val domainMapper: DomainMapper<Patient, AncPatientItem>,
     private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : RegisterRepository<Patient, AncPatientItem> {
-
-
-    private var isMetricSelected: Boolean = false
 
     override suspend fun loadData(
         query: String,
@@ -76,9 +72,17 @@ class NonAncPatientRepository(
                             Patient::class.java,
                             patient.link[0].other.reference.replace("Patient/", "")
                         )
-                    if (patientHead.address.isNotEmpty()) {
-                        address = patientHead.address[0].country
-                    }
+                    if (patientHead.address != null)
+                        if (patientHead.address.isNotEmpty()) {
+                            if (patient.address[0].hasCountry())
+                                address = patientHead.address[0].country
+                            else if (patient.address[0].hasCity())
+                                address = patientHead.address[0].city
+                            else if (patient.address[0].hasState())
+                                address = patientHead.address[0].state
+                            else if (patient.address[0].hasDistrict())
+                                address = patientHead.address[0].district
+                        }
                     ancPatientItemHead =
                         AncPatientItem(
                             patientIdentifier = patient.logicalId,
@@ -123,11 +127,24 @@ class NonAncPatientRepository(
     }
 
 
-    fun fetchCarePlanItem(carePlan: List<CarePlan>): List<CarePlanItem> {
+    fun fetchCarePlanItem(carePlan: List<CarePlan>, patientId: String): List<CarePlanItem> {
         val listCarePlan = arrayListOf<CarePlanItem>()
+        val listCarePlanList = arrayListOf<CarePlan>()
         if (carePlan.isNotEmpty()) {
-            for (i in 0..carePlan.size)
-                listCarePlan.add(CarePlanItem(carePlan[i].title, carePlan[i].period.start))
+            listCarePlanList.addAll(carePlan.filter { it.due() })
+            listCarePlanList.addAll(carePlan.filter { it.overdue() })
+            for (i in listCarePlanList.indices) {
+                val title = if (listCarePlanList[i].title == null) "" else listCarePlanList[i].title
+                listCarePlan.add(
+                    CarePlanItem(
+                        listCarePlanList[i].id,
+                        patientId,
+                        title,
+                        listCarePlanList[i].due(),
+                        listCarePlanList[i].overdue()
+                    )
+                )
+            }
         }
         return listCarePlan
     }
@@ -173,8 +190,12 @@ class NonAncPatientRepository(
         fhirEngine.save(pregnancyGoal)
     }
 
-    private fun <T : Resource> loadConfig(id: String, clazz: Class<T>): T {
-        return AncApplication.getContext().loadConfig(id, clazz)
+    private fun <T : Resource> loadConfig(
+        id: String,
+        clazz: Class<T>,
+        data: Map<String, String?> = emptyMap()
+    ): T {
+        return AncApplication.getContext().loadResourceTemplate(id, clazz, data)
     }
 
     suspend fun postVitalSigns(
@@ -184,47 +205,12 @@ class NonAncPatientRepository(
     ) {
         val patient = fetchPatient(clientIdentifier!!)
 
-        // use ResourceMapper when supported by SDK
-        val target = mutableListOf<Observation>()
-        QuestionnaireUtils.extractObservations(
-            questionnaireResponse,
-            questionnaire.item,
-            patient, //use patient id to get patient details
-            target
-        )
-        target.forEach {
-            fhirEngine.save(it)
-        }
-        //use observation to create Encounter
     }
-
-    suspend fun selectVitalSignStandard(
-        questionnaire: Questionnaire,
-        questionnaireResponse: QuestionnaireResponse,
-        clientIdentifier: String?
-    ) {
-        val patient = fetchPatient(clientIdentifier!!)
-        val target = mutableListOf<Observation>()
-        QuestionnaireUtils.extractObservations(
-            questionnaireResponse,
-            questionnaire.item,
-            patient,
-            target
-        )
-        target.forEach { fhirEngine.save(it) }
-
-        val metricSelected = questionnaireResponse.find(ANC_VITAL_SIGNS_UNIT)
-        if (metricSelected?.answer?.firstOrNull()?.valueStringType?.value == "metric")
-            isMetricSelected = true
-    }
-
-    fun loadQuestionnaire(): Boolean = isMetricSelected
 
 
     companion object {
         const val PREGNANCY_CONDITION = "pregnancy_condition_template.json"
         const val PREGNANCY_EPISODE_OF_CARE = "pregnancy_episode_of_care_template.json"
         const val PREGNANCY_FIRST_ENCOUNTER = "pregnancy_first_encounter_template.json"
-        const val ANC_VITAL_SIGNS_UNIT = "select-measurement_unit"
     }
 }

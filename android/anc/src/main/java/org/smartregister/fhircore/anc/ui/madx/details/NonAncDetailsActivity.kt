@@ -22,6 +22,7 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.Menu
 import android.view.MenuItem
+import androidx.appcompat.app.AlertDialog
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
@@ -29,12 +30,11 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.material.tabs.TabLayoutMediator
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.NonAncPatientRepository
-import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
+import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.databinding.ActivityNonAncDetailsBinding
-import org.smartregister.fhircore.anc.ui.madx.details.form.NonAncDetailsFormConfig.ANC_VITAL_SIGNS_UNIT_OPTIONS
+import org.smartregister.fhircore.anc.ui.madx.details.form.NonAncDetailsFormConfig
 import org.smartregister.fhircore.anc.ui.madx.details.form.NonAncDetailsQuestionnaireActivity
-import org.smartregister.fhircore.anc.ui.madx.details.nonanccareplan.CarePlanDetailsFragment
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.createFactory
@@ -66,7 +66,7 @@ class NonAncDetailsActivity : BaseMultiLanguageActivity() {
         fhirEngine = AncApplication.getContext().fhirEngine
 
 
-        if (savedInstanceState == null) {
+//        if (savedInstanceState == null) {
 
 
             patientId =
@@ -107,7 +107,7 @@ class NonAncDetailsActivity : BaseMultiLanguageActivity() {
                 tab.text = details[position]
             }.attach()
 
-        }
+//        }
 
         activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener {
             onBackPressed()
@@ -150,15 +150,7 @@ class NonAncDetailsActivity : BaseMultiLanguageActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.add_vitals) {
-            startActivity(
-                Intent(this, NonAncDetailsQuestionnaireActivity::class.java)
-                    .putExtras(
-                        QuestionnaireActivity.requiredIntentArgs(
-                            clientIdentifier = patientId,
-                            form = ANC_VITAL_SIGNS_UNIT_OPTIONS
-                        )
-                    )
-            )
+            showAlert()
             return true
         }
         return super.onOptionsItemSelected(item)
@@ -177,6 +169,45 @@ class NonAncDetailsActivity : BaseMultiLanguageActivity() {
             activityAncDetailsBinding.txtViewPatientDetails.text = patientDetails
             activityAncDetailsBinding.txtViewPatientId.text = patientId
         }
+    }
+
+    private fun showAlert() {
+        AlertDialog.Builder(this)
+            .setMessage(getString(R.string.select_unit))
+            .setCancelable(false)
+            .setNegativeButton("Metric unit") { dialogInterface, _ ->
+                dialogInterface.dismiss()
+               openVitalSignsMetric(patientId)
+            }
+            .setPositiveButton("Standard unit") { dialogInterface, _ ->
+                dialogInterface.dismiss()
+                openVitalSignsStandard(patientId)
+            }
+            .show()
+    }
+
+    private fun openVitalSignsMetric(patientId: String) {
+        startActivity(
+            Intent(this, NonAncDetailsQuestionnaireActivity::class.java)
+                .putExtras(
+                    QuestionnaireActivity.requiredIntentArgs(
+                        clientIdentifier = patientId,
+                        form = NonAncDetailsFormConfig.ANC_VITAL_SIGNS_METRIC
+                    )
+                )
+        )
+    }
+
+    private fun openVitalSignsStandard(patientId: String) {
+        startActivity(
+            Intent(this, NonAncDetailsQuestionnaireActivity::class.java)
+                .putExtras(
+                    QuestionnaireActivity.requiredIntentArgs(
+                        clientIdentifier = patientId,
+                        form = NonAncDetailsFormConfig.ANC_VITAL_SIGNS_STANDARD
+                    )
+                )
+        )
     }
 
 }

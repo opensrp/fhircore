@@ -21,7 +21,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import java.util.Date
 import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
 import org.smartregister.fhircore.anc.databinding.ItemCareplanBinding
 
@@ -35,9 +34,8 @@ class CarePlanAdapter :
     RecyclerView.ViewHolder(containerView.root) {
     fun bindTo(carePlanItem: CarePlanItem) {
       with(carePlanItem) {
-        val datePassed = this.periodStartDate.before(Date())
-        containerView.carPlanDatePassed = datePassed
-        containerView.carPlanTitle = if (datePassed) this.title + " Overdue" else this.title
+        containerView.carPlanDatePassed = overdue
+        containerView.carPlanTitle = if (overdue) this.title + " Overdue" else this.title
       }
     }
   }

@@ -16,13 +16,14 @@
 
 package org.smartregister.fhircore.anc.ui.madx.details.form
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.NonAncPatientRepository
-import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
+import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
+import org.smartregister.fhircore.anc.ui.madx.details.NonAncPatientItemMapper
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 
@@ -32,20 +33,11 @@ class NonAncDetailsQuestionnaireActivity : QuestionnaireActivity() {
         super.onCreate(savedInstanceState)
 
         ancPatientRepository =
-            NonAncPatientRepository(AncApplication.getContext().fhirEngine, AncItemMapper)
+            NonAncPatientRepository(AncApplication.getContext().fhirEngine, NonAncPatientItemMapper)
     }
 
     override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
         when (questionnaireConfig.form) {
-            NonAncDetailsFormConfig.ANC_VITAL_SIGNS_UNIT_OPTIONS ->
-                lifecycleScope.launch {
-                    ancPatientRepository.selectVitalSignStandard(
-                        questionnaire!!,
-                        questionnaireResponse,
-                        clientIdentifier
-                    )
-                    this@NonAncDetailsQuestionnaireActivity.finish()
-                }
             NonAncDetailsFormConfig.ANC_VITAL_SIGNS_METRIC -> lifecycleScope.launch {
                 ancPatientRepository.postVitalSigns(
                     questionnaire!!,
@@ -64,5 +56,29 @@ class NonAncDetailsQuestionnaireActivity : QuestionnaireActivity() {
                 this@NonAncDetailsQuestionnaireActivity.finish()
             }
         }
+    }
+
+    private fun openVitalSignsMetric(patientId: String) {
+        startActivity(
+            Intent(this, NonAncDetailsQuestionnaireActivity::class.java)
+                .putExtras(
+                    QuestionnaireActivity.requiredIntentArgs(
+                        clientIdentifier = patientId,
+                        form = NonAncDetailsFormConfig.ANC_VITAL_SIGNS_METRIC
+                    )
+                )
+        )
+    }
+
+    private fun openVitalSignsStandard(patientId: String) {
+        startActivity(
+            Intent(this, NonAncDetailsQuestionnaireActivity::class.java)
+                .putExtras(
+                    QuestionnaireActivity.requiredIntentArgs(
+                        clientIdentifier = patientId,
+                        form = NonAncDetailsFormConfig.ANC_VITAL_SIGNS_STANDARD
+                    )
+                )
+        )
     }
 }
