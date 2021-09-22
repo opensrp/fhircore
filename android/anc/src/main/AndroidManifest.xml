@@ -35,7 +35,16 @@
         <activity
             android:name="org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity"
             android:theme="@style/AppTheme" />
+        <activity
+            android:name=".ui.family.details.FamilyDetailsActivity"
+            android:label=""
+            android:parentActivityName=".ui.family.register.FamilyRegisterActivity"
+            android:theme="@style/AppTheme.NoActionBar">
 
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.family.register.FamilyRegisterActivity" />
+        </activity>
         <service android:name=".AncAuthAndroidService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
