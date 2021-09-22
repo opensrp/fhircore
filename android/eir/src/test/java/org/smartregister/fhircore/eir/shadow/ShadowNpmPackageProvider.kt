@@ -25,7 +25,6 @@ import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
 import org.robolectric.util.ReflectionHelpers
 
-/** Created by Ephraim Kigamba - nek.eam@gmail.com on 18-08-2021. */
 @Implements(NpmPackageProvider::class)
 class ShadowNpmPackageProvider {
 

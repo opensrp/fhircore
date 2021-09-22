@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Added CQL Lib Evaluator class for CQl Expressions
+
+## [Unreleased]
+### Added
 - Gender input changed to radio selection on client info screen
 - Display message on empty list along with new client register button
 - Client count display in drawer
@@ -22,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC details activity
 - Enroll into ANC and add Encounter, Observation, Episode of Care, Condition
 - Family Registeration with Tags from SDK fix for tags and profile
+- Add edit patient registration feature. This enables you to modify the patient and related person's details
 - Add Family Profile View
 
 ### Fixed
