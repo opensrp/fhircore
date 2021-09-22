@@ -368,10 +368,15 @@
     },
     {
       "linkId": "geopoint",
-      "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
       "type": "string",
       "required": true,
       "text": "Record GPS Location",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
       "code": [
         {
           "system": "https://www.snomed.org",
@@ -382,10 +387,15 @@
     },
     {
       "linkId": "income_source",
-      "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
       "type": "string",
       "required": true,
       "text": "Source of income",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
       "code": [
         {
           "system": "https://www.snomed.org",
@@ -396,10 +406,15 @@
     },
     {
       "linkId": "living_family_members",
-      "definition": "http://hl7.org/fhir/StructureDefinition/Observation",
       "type": "integer",
       "required": true,
       "text": "Family members living (including head)",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
       "code": [
         {
           "system": "https://www.snomed.org",
