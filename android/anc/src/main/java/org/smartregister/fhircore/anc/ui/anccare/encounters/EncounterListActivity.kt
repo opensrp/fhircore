@@ -36,7 +36,7 @@ class EncounterListActivity : BaseMultiLanguageActivity() {
 
     viewModel.setAppBackClickListener(this::handleBackClicked)
 
-    setContent { AppTheme { EncounterListScreen(dummyData()) } }
+    setContent { AppTheme { EncounterListScreen(viewModel) } }
   }
 
   private fun handleBackClicked() {

@@ -40,12 +40,12 @@
             android:label=""
             android:parentActivityName=".ui.family.register.FamilyRegisterActivity"
             android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".ui.anccare.encounters.EncounterListActivity" />
 
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.family.register.FamilyRegisterActivity" />
         </activity>
+        <activity android:name=".ui.anccare.encounters.EncounterListActivity" />
         <service android:name=".AncAuthAndroidService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
