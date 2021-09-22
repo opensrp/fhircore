@@ -16,16 +16,25 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.register
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import kotlinx.coroutines.runBlocking
+import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
+import org.smartregister.fhircore.anc.data.family.FamilyRepository
+import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
+import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 
 class AncRegisterActivity : BaseRegisterActivity() {
+  private lateinit var familyRepository: FamilyRepository
+  private lateinit var ancPatientRepository: AncPatientRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -36,19 +45,37 @@ class AncRegisterActivity : BaseRegisterActivity() {
         registrationForm = "anc-patient-registration"
       }
     )
+
+    familyRepository =
+      FamilyRepository((application as AncApplication).fhirEngine, FamilyItemMapper)
+
+    ancPatientRepository =
+      AncPatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
   }
 
   override fun sideMenuOptions(): List<SideMenuOption> =
     listOf(
       SideMenuOption(
         itemId = R.id.menu_item_anc,
-        titleResource = R.string.app_name,
+        titleResource = R.string.anc_register_title,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
         opensMainRegister = true,
+        countMethod = { runBlocking { ancPatientRepository.countAll() } }
+      ),
+      SideMenuOption(
+        itemId = R.id.menu_item_family,
+        titleResource = R.string.family_register_title,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_calender)!!,
+        opensMainRegister = false,
+        countMethod = { runBlocking { familyRepository.countAll() } }
       )
     )
 
   override fun onSideMenuOptionSelected(item: MenuItem): Boolean {
+    when (item.itemId) {
+      R.id.menu_item_family -> startActivity(Intent(this, FamilyRegisterActivity::class.java))
+      R.id.menu_item_anc -> startActivity(Intent(this, AncRegisterActivity::class.java))
+    }
     return true
   }
 

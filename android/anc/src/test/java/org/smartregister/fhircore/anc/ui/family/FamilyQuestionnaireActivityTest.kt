@@ -22,10 +22,8 @@ import com.google.android.fhir.sync.Sync
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import java.time.OffsetDateTime
@@ -43,7 +41,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
-import org.smartregister.fhircore.anc.data.FamilyRepository
+import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
@@ -82,7 +80,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
   @Test
   fun testHandleFamilyMemberRegistrationShouldCallPostProcessFamilyMember() {
     val familyRepository = mockk<FamilyRepository>()
-    coEvery { familyRepository.postProcessFamilyMember(any(), any()) } just runs
+    coEvery { familyRepository.postProcessFamilyMember(any(), any(), any()) } returns "1832"
 
     runBlocking {
       AncApplication.getContext().fhirEngine.save(Questionnaire().apply { id = "1832" })
@@ -94,7 +92,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
 
     familyQuestionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
 
-    coVerify(timeout = 2000) { familyRepository.postProcessFamilyMember(any(), any()) }
+    coVerify(timeout = 2000) { familyRepository.postProcessFamilyMember(any(), any(), any()) }
   }
 
   override fun getActivity(): Activity {

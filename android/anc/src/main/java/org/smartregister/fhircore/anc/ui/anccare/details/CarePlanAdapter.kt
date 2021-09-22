@@ -22,7 +22,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import java.util.Date
-import org.smartregister.fhircore.anc.data.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
 import org.smartregister.fhircore.anc.databinding.ItemCareplanBinding
 
 /** Subclass of [ListAdapter] used to display careplan for the ANC client */

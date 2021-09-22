@@ -1,6 +1,7 @@
 {
   "resourceType" : "EpisodeOfCare",
-  "status" : null,
+  "id": "#Id",
+  "status" : "active",
   "type" : [
     {
       "coding" : [
@@ -15,7 +16,7 @@
   "diagnosis" : [
     {
       "condition" : {
-        "reference" : "$RefCondition"
+        "reference" : "#RefCondition"
       },
       "role" : {
         "coding" : [
@@ -30,9 +31,9 @@
     }
   ],
   "patient" : {
-    "reference" : "$RefPatient"
+    "reference" : "#RefPatient"
   },
   "period" : {
-    "start" : null
+    "start" : "#RefDateStart"
   }
 }

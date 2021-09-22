@@ -40,9 +40,9 @@ import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.AncPatientRepository
-import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
+import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
 import org.smartregister.fhircore.anc.robolectric.FragmentRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 
@@ -67,15 +67,13 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   private val patientId = "samplePatientId"
-
+  var ancPatientDetailItem = spyk<AncPatientDetailItem>()
   @Before
   fun setUp() {
 
     fhirEngine = mockk(relaxed = true)
 
     patientRepository = mockk()
-
-    val ancPatientDetailItem = spyk<AncPatientDetailItem>()
 
     every { ancPatientDetailItem.patientDetails } returns
       AncPatientItem(patientId, "Mandela Nelson", "M", "26")
@@ -133,6 +131,10 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   @Test
   fun testThatDemographicViewsAreUpdated() {
     coroutinesTestRule.runBlockingTest {
+      fragmentScenario.moveToState(Lifecycle.State.RESUMED)
+
+      patientDetailsFragment.ancDetailsViewModel.patientDemographics.value = ancPatientDetailItem
+
       val ancPatientDetailItem = patientDetailsViewModel.fetchDemographics().value
       val patientDetails =
         ancPatientDetailItem?.patientDetails?.name +

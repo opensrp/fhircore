@@ -29,7 +29,6 @@ import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
-import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -55,7 +54,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 
-  private lateinit var questionnaireConfig: QuestionnaireConfig
+  lateinit var questionnaireConfig: QuestionnaireConfig
 
   lateinit var questionnaireViewModel: QuestionnaireViewModel
 
@@ -113,19 +112,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                 clientIdentifier == null ->
                   bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
                 clientIdentifier != null -> {
-                  val patient = questionnaireViewModel.loadPatient(clientIdentifier!!)
-                  if (patient != null) {
-                    val parsedQuestionnaireResponse =
-                      parser.encodeResourceToString(
-                        ResourceMapper.populate(questionnaire!!, patient)
-                      )
-                    bundleOf(
-                      Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire),
-                      Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
+                  val parsedQuestionnaireResponse =
+                    parser.encodeResourceToString(
+                      questionnaireViewModel.generateQuestionnaireResponse(questionnaire!!, intent)
                     )
-                  } else {
-                    bundleOf()
-                  }
+                  bundleOf(
+                    Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire),
+                    Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
+                  )
                 }
                 else -> bundleOf()
               }
@@ -167,7 +161,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         }
       )
 
-      questionnaireViewModel.saveExtractedResources(
+      questionnaireViewModel.extractAndSaveResources(
         context = this@QuestionnaireActivity,
         questionnaire = questionnaire!!,
         questionnaireResponse = questionnaireResponse,
@@ -187,9 +181,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   companion object {
-    const val QUESTIONNAIRE_TITLE_KEY = "questionnaire_title_key"
-    const val QUESTIONNAIRE_PATH_KEY = "questionnaire_path_key"
-    const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire_fragment_tag"
+    const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
+    const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"
+    const val QUESTIONNAIRE_PATH_KEY = "questionnaire-path-key"
+    const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire_form"
     private const val FORM_CONFIGURATIONS = "form_configurations.json"
