@@ -56,6 +56,7 @@ object FamilyItemMapper : DomainMapper<Family, FamilyItem> {
 
   fun toFamilyMemberItem(member: Patient): FamilyMemberItem {
     return FamilyMemberItem(
+      name = member.extractName(),
       id = member.logicalId,
       age = member.extractAge(),
       gender = (member.extractGender(AncApplication.getContext())?.firstOrNull() ?: "").toString(),

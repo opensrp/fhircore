@@ -57,7 +57,7 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
 
   override fun onItemClicked(listenerIntent: ListenerIntent, data: FamilyItem) {
     if (listenerIntent is OpenFamilyProfile) {
-      // navigateToDetails(data.id)
+      navigateToDetails(data.id)
     }
     else if (listenerIntent is EnrollIntoAnc) {
       startActivity(

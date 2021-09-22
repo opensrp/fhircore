@@ -6,8 +6,8 @@ plugins {
     id 'kotlin-android-extensions'
     id 'org.jetbrains.dokka'
     id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'jacoco'
 }
-apply from: "../code.coverage.gradle"
 
 Properties props = new Properties()
 
@@ -102,6 +102,8 @@ android {
         exclude 'META-INF/LGPL-3.0.txt'
         exclude 'META-INF/sun-jaxb.episode'
         exclude("META-INF/*.kotlin_module")
+        exclude("META-INF/AL2.0")
+        exclude("META-INF/LGPL2.1")
     }
 
     testOptions {
@@ -151,4 +153,5 @@ dependencies {
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
     implementation deps.work.runtime
+
 }

@@ -1,11 +1,13 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'de.mannodermaus.android-junit5'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'org.jetbrains.dokka'
-apply plugin: "org.jetbrains.kotlin.plugin.serialization"
-apply from: "../code.coverage.gradle"
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+    id 'de.mannodermaus.android-junit5'
+    id 'kotlin-android-extensions'
+    id 'org.jetbrains.dokka'
+    id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'jacoco'
+}
 
 Properties props = new Properties()
 
@@ -137,10 +139,6 @@ dependencies {
     implementation 'androidx.security:security-crypto:1.1.0-alpha03'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
 
-    androidTestImplementation deps.atsl.ext_junit
-    androidTestImplementation deps.atsl.espresso
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2'
-
     implementation deps.appcompat
     implementation deps.constraint_layout
     implementation deps.kotlin.stdlib
@@ -197,6 +195,7 @@ dependencies {
 
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2'
 }
 
 dokkaHtml.configure {
