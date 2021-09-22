@@ -43,13 +43,6 @@ class FileUtilTest {
   @Before
   fun setUp() {
     MockKAnnotations.init(this, relaxUnitFun = true)
-    val ASSET_BASE_PATH_RESOURCES =
-      (System.getProperty("user.dir") +
-        File.separator +
-        "src" +
-        File.separator +
-        "test" +
-        File.separator)
     var fileName = FileUtil.ASSET_BASE_PATH_RESOURCES + "resources/fileutil/cql_configs.properties"
     val file = File(fileName)
     inputStream = FileInputStream(file)
