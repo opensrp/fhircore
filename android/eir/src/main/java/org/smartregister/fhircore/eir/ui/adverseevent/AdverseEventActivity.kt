@@ -2,11 +2,6 @@ package org.smartregister.fhircore.eir.ui.adverseevent
 
 import android.os.Bundle
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Immunization
-import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
@@ -31,20 +26,5 @@ class AdverseEventActivity : QuestionnaireActivity() {
           )
         ).createFactory()
       ).get(AdverseEventViewModel::class.java)
-  }
-
-  override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
-
-    lifecycleScope.launch {
-      clientIdentifier?.let { identifier: String ->
-        adverseEventViewModel.getPatientImmunization(identifier).observe(this@AdverseEventActivity) { oldImmunization: Immunization ->
-          lifecycleScope.launch {
-            questionnaire?.let { questionnaire ->
-              //todo Extract Immunization and further steps
-            }
-          }
-        }
-      }
-    }
   }
 }

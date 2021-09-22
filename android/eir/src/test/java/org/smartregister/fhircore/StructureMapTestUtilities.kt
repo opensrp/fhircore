@@ -23,6 +23,7 @@ import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -83,7 +84,7 @@ class StructureMapTestUtilities : RobolectricTest() {
   }
 
   @Test
-  fun `convert StructureMap to JSON`() {
+  fun `convert patient registration StructureMap to JSON`() {
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
@@ -124,6 +125,89 @@ class StructureMapTestUtilities : RobolectricTest() {
 
     val baseElement =
       iParser.parseResource(QuestionnaireResponse::class.java, questionnaireResponse)
+
+    scu.transform(contextR4, baseElement, map, targetResource)
+
+    System.out.println(iParser.encodeResourceToString(targetResource))
+  }
+
+  @Test
+  fun `populate adverse event Questionnaire and extract Resources`() {
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val questionnaire = iParser.parseResource(Questionnaire::class.java, questionnaireForAdverseEvent)
+    val immunization = iParser.parseResource(Immunization::class.java, IMMUNIZATION_JSON)
+
+    var questionnaireResponse: QuestionnaireResponse
+    runBlocking {
+      questionnaireResponse = ResourceMapper.populate(questionnaire, immunization)
+    }
+
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val outputs: MutableList<Base> = ArrayList()
+    val transformSupportServices = TransformSupportServices(outputs, contextR4)
+
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map = scu.parse(fhirMapToConvertForAdverseEvents, "AdverseEvent")
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+
+    val targetResource = Bundle()
+
+    scu.transform(contextR4, questionnaireResponse, map, targetResource)
+
+    System.out.println(iParser.encodeResourceToString(targetResource))
+  }
+
+  @Test
+  fun `convert adverse event StructureMap to JSON`() {
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+    contextR4.isCanRunWithoutTerminology = true
+
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
+    val map = scu.parse(fhirMapToConvertForAdverseEvents, "AdverseEvent")
+
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+  }
+
+  @Test
+  fun `perform extraction from adverse event Questionnaire`() {
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val outputs: MutableList<Base> = ArrayList()
+    val transformSupportServices = TransformSupportServices(outputs, contextR4)
+
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map = scu.parse(fhirMapToConvertForAdverseEvents, "AdverseEvent")
+
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+
+    val targetResource = Bundle()
+
+    val baseElement =
+      iParser.parseResource(QuestionnaireResponse::class.java, questionnaireResponseForAdverseEvent)
 
     scu.transform(contextR4, baseElement, map, targetResource)
 
@@ -1200,12 +1284,6 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
     {"resourceType":"Immunization","id":"74dee251-be1e-48ee-a727-e4204cd54ee7","meta":{"versionId":"1","lastUpdated":"2021-09-10T17:55:31.609+00:00","source":"#1ba9b4b2f1fbdeae"},"status":"completed","vaccineCode":{"coding":[{"code":"Moderna"}],"text":"Moderna"},"patient":{"reference":"Patient/9f2ec87c-93c4-4274-a73b-191b92bfe7ac"},"occurrenceDateTime":"2021-09-10","recorded":"2021-09-10T20:29:48+03:00","protocolApplied":[{"doseNumberPositiveInt":2}],"reaction":[{"date":"2021-09-08T14:47:00+05:00","detail":{"reference":"Observation/aef00410-df7d-4978-a98a-a28ff2a439c3"}}]}
     """.trimIndent()
 
-  private val OBSERVATION_JSON =
-    """
-    {"resourceType":"Observation","id":"aef00410-df7d-4978-a98a-a28ff2a439c3","code":{"coding":[{"system":"https://www.snomed.org","code":"75753009","display":"Blood clots"}]}}
-    """.trimIndent()
-
-
   @Language("Json")
   private val questionnaireResponseForAdverseEvent = """
     {"resourceType":"QuestionnaireResponse","item":[{"linkId":"immunization-id"},{"linkId":"adverse-event-reaction","item":[{"linkId":"adverse-event-codes","answer":[{"valueCoding":{"system":"https://www.snomed.org","code":"75753009","display":"Blood clots"}}]},{"linkId":"adverse-event-date","answer":[{"valueDateTime":"2021-09-21T14:31:00+05:00"}]}]}]}
@@ -1223,7 +1301,8 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
   ],
   "extension": [
     {
-      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap"
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/2202"
     }
   ],
   "item": [
@@ -1352,14 +1431,14 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
 """.trimIndent()
 
   private val fhirMapToConvertForAdverseEvents = """
-     map "http://hl7.org/fhir/StructureMap/AdverseReaction" = 'AdverseReaction'
+     map "http://hl7.org/fhir/StructureMap/AdverseEvent" = 'AdverseEvent'
 
       uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
       uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
       uses "http://hl7.org/fhir/StructureDefinition/Observation" as source
       uses "http://hl7.org/fhir/StructureDefinition/Immunization" as target
 
-      group AdverseReaction(source src : QuestionnaireResponse, target bundle: Bundle) {
+      group AdverseEvent(source src : QuestionnaireResponse, target bundle: Bundle) {
           src -> bundle.id = uuid() "rule_c";
           src -> bundle.type = 'collection' "rule_b";
           src -> bundle.entry as entry, entry.resource = create('Immunization') as immunization then

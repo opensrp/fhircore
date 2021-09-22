@@ -112,8 +112,8 @@ class QuestionnaireViewModel(
     return defaultRepository.loadResource(patientId)
   }
 
-  suspend fun loadImmunization(patientId: String):Immunization? {
-    return defaultRepository.loadResource(patientId)
+  suspend fun loadImmunizations(patientId: String): List<Immunization>? {
+    return defaultRepository.loadImmunizations(patientId)
   }
 
   suspend fun loadRelatedPerson(patientId: String): List<RelatedPerson>? {
@@ -132,16 +132,30 @@ class QuestionnaireViewModel(
 
     intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let {
       val patient = loadPatient(it)
-      val relatedPerson: List<RelatedPerson>? = loadRelatedPerson(it)
+      when (questionnaireConfig.form) {
+        "patient-registration" -> {
+          val relatedPerson: List<RelatedPerson>? = loadRelatedPerson(it)
 
-      patient?.let {
-        questionnaireResponse =
-          if (relatedPerson?.isNotEmpty() == true && relatedPerson.firstOrNull() != null)
-            ResourceMapper.populate(questionnaire, patient, relatedPerson.first())
-          else ResourceMapper.populate(questionnaire, patient)
+          patient?.let {
+            questionnaireResponse =
+              if (relatedPerson?.isNotEmpty() == true && relatedPerson.firstOrNull() != null)
+                ResourceMapper.populate(questionnaire, patient, relatedPerson.first())
+              else ResourceMapper.populate(questionnaire, patient)
+          }
+        }
+        "adverse-event" -> {
+          val immunizations: List<Immunization>? = loadImmunizations(it)
+
+          patient?.let {
+            questionnaireResponse =
+              if (immunizations?.isNotEmpty() == true && immunizations.firstOrNull() != null)
+                ResourceMapper.populate(questionnaire, immunizations.first())
+              else ResourceMapper.populate(questionnaire)
+          }
+        }
+        else -> questionnaireResponse
       }
     }
-
     return questionnaireResponse
   }
 }
