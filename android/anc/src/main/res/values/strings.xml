@@ -39,4 +39,8 @@
     <string name="family_register_title">Family</string>
     <string name="past_encounters">Past encounters</string>
 
+    <string name="all_families">All Families</string>
+    <string name="add_member">Add Member</string>
+    <string name="encounters">Encounters</string>
+    <string name="members">Members</string>
 </resources>
