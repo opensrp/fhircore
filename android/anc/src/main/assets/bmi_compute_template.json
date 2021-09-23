@@ -1,0 +1,289 @@
+{
+  "resourceType": "Questionnaire",
+  "status": "active",
+  "date": "2020-11-18T07:24:47.111Z",
+  "name": "compute-bmi",
+  "title": "Compute BMI",
+  "subjectType": [
+    "Patient"
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/383"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "weightPounds",
+        "language": "text/fhirpath",
+        "expression": "%resource.repeat(item).where(linkId='vital-signs-body-wight-s').item.answer.valueDecimal"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "heightInches",
+        "language": "text/fhirpath",
+        "expression": "%resource.repeat(item).where(linkId='vital-signs-height-s').item.answer.valueDecimal"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "weightKgs",
+        "language": "text/fhirpath",
+        "expression": "%resource.repeat(item).where(linkId='vital-signs-body-wight-m').item.answer.valueDecimal"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "heightCms",
+        "language": "text/fhirpath",
+        "expression": "%resource.repeat(item).where(linkId='vital-signs-height-m').item.answer.valueDecimal"
+      }
+    },
+    {
+      "extension": [
+        {
+          "url": "name",
+          "valueId": "LaunchPatient"
+        },
+        {
+          "url": "type",
+          "valueCode": "Patient"
+        },
+        {
+          "url": "description",
+          "valueString": "The patient that is to be used to pre-populate the form"
+        }
+      ],
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-launchContext"
+    }
+  ],
+  "item": [
+    {
+      "linkId": "select-mode",
+      "type": "choice",
+      "required": true,
+      "text": "Select Unit Mode for calculation",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "radio-button",
+                "display": "Radio Button"
+              }
+            ],
+            "text": "A control where choices are listed with a button beside them. The button can be toggled to select or de-select a given choice. Selecting one item deselects all others."
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+          "valueCode": "vertical"
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "standard",
+            "display": "STANDARD"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "metric",
+            "display": "METRIC"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "data details",
+      "type": "group",
+      "item": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "description": "patient's last name",
+                "language": "text/fhirpath",
+                "expression": "%LaunchPatient.name.where(use='official').given.first()"
+              }
+            }
+          ],
+          "linkId": "patient-last-name",
+          "text": "Last Name:",
+          "type": "string",
+          "readOnly": true
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+              "valueCoding": {
+                "system": "http://unitsofmeasure.org",
+                "code": "kg"
+              }
+            }
+          ],
+          "linkId": "vital-signs-body-wight-s",
+          "definition": "http://acme.org/devices/clinical-codes",
+          "text": "Body Weight (lb)",
+          "type": "decimal",
+          "enableWhen": [
+            {
+              "question": "select-mode",
+              "operator": "=",
+              "answerCoding": {
+                "code": "standard"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+              "valueCoding": {
+                "system": "http://unitsofmeasure.org",
+                "code": "[in_i]"
+              }
+            }
+          ],
+          "linkId": "vital-signs-height-s",
+          "definition": "http://acme.org/devices/clinical-codes",
+          "text": "Height (ft)",
+          "type": "decimal",
+          "enableWhen": [
+            {
+              "question": "select-mode",
+              "operator": "=",
+              "answerCoding": {
+                "code": "standard"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "vital-signs-height-double-prime",
+          "definition": "http://acme.org/devices/clinical-codes",
+          "text": "Height (inches)",
+          "type": "decimal",
+          "enableWhen": [
+            {
+              "question": "select-mode",
+              "operator": "=",
+              "answerCoding": {
+                "code": "standard"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+              "valueCoding": {
+                "system": "http://unitsofmeasure.org",
+                "code": "kg"
+              }
+            }
+          ],
+          "linkId": "vital-signs-body-wight-m",
+          "definition": "http://acme.org/devices/clinical-codes",
+          "text": "Body Weight (kg)",
+          "type": "decimal",
+          "enableWhen": [
+            {
+              "question": "select-mode",
+              "operator": "=",
+              "answerCoding": {
+                "code": "metric"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+              "valueCoding": {
+                "system": "http://unitsofmeasure.org",
+                "code": "[in_i]"
+              }
+            }
+          ],
+          "linkId": "vital-signs-height-m",
+          "definition": "http://acme.org/devices/clinical-codes",
+          "text": "Height (cm)",
+          "type": "decimal",
+          "enableWhen": [
+            {
+              "question": "select-mode",
+              "operator": "=",
+              "answerCoding": {
+                "code": "metric"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+              "valueExpression": {
+                "description": "BMI Calculation",
+                "language": "text/fhirpath",
+                "expression": "(%weightPounds/(%heightInches.power(2))).round(1)"
+              }
+            }
+          ],
+          "linkId": "bmi-body-mass-index-s",
+          "text": "Your Body Mass Index s-(BMI) is ",
+          "type": "decimal",
+          "readOnly": true,
+          "enableWhen": [
+            {
+              "question": "select-mode",
+              "operator": "=",
+              "answerCoding": {
+                "code": "standard"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+              "valueExpression": {
+                "description": "BMI Calculation",
+                "language": "text/fhirpath",
+                "expression": "(%weightKgs/(%heightCms.power(2))).round(1)"
+              }
+            }
+          ],
+          "linkId": "bmi-body-mass-index-m",
+          "text": "Your Body Mass Index m-(BMI) is ",
+          "type": "decimal",
+          "readOnly": true,
+          "enableWhen": [
+            {
+              "question": "select-mode",
+              "operator": "=",
+              "answerCoding": {
+                "code": "metric"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

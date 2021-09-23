@@ -16,16 +16,19 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.details
 
-import android.graphics.Color
+import android.content.Intent
 import android.os.Bundle
-import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.Menu
+import android.view.MenuItem
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.databinding.ActivityAncDetailsBinding
+import org.smartregister.fhircore.anc.ui.family.form.BMIQuestionnaireActivity
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
@@ -56,27 +59,55 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
         .commitNow()
     }
 
-    activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
+      activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
   }
 
-  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-    menuInflater.inflate(R.menu.profile_menu, menu)
-    return super.onCreateOptionsMenu(menu)
-  }
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.profile_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
 
-  override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-    val mColorFullMenuBtn = menu!!.findItem(R.id.remove_this_person) // extract the menu item here
-    val title = mColorFullMenuBtn.title.toString()
-    val s = SpannableString(title)
-    with(s) {
-      setSpan(
-        ForegroundColorSpan(Color.parseColor("#DD0000")),
-        0,
-        length,
-        Spannable.SPAN_INCLUSIVE_INCLUSIVE
-      )
-    } // provide whatever color you want here.
-    mColorFullMenuBtn.title = s
-    return super.onPrepareOptionsMenu(menu)
-  }
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
+        //val markAsAncClient = menu!!.findItem(R.id.mark_as_anc_client)
+        //val addVitals = menu!!.findItem(R.id.add_vitals)
+        //val addConditions = menu!!.findItem(R.id.add_conditions)
+        val viewPastEncounters = menu!!.findItem(R.id.view_past_encounters)
+        val bmiWidget = menu!!.findItem(R.id.bmi_widget)
+
+        viewPastEncounters.isVisible = true
+        //markAsAncClient.isVisible = false
+        //addVitals.isVisible = true
+        //addConditions.isVisible = false
+        bmiWidget.isVisible = true
+
+        val title = removeThisPerson.title.toString()
+        val s = SpannableString(title)
+        with(s) {
+            setSpan(
+                ForegroundColorSpan(android.graphics.Color.parseColor("#DD0000")),
+                0,
+                length,
+                android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE
+            )
+        } // provide whatever color you want here.
+        removeThisPerson.title = s
+        return super.onPrepareOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.bmi_widget) {
+            startActivity(
+                Intent(this, BMIQuestionnaireActivity::class.java)
+                    .putExtras(
+                        QuestionnaireActivity.requiredIntentArgs(
+                            clientIdentifier = null,
+                            form = FamilyFormConstants.FAMILY_PATIENT_BMI_FORM
+                        )
+                    )
+            )
+            return true
+        }
+        return super.onOptionsItemSelected(item)
+    }
 }

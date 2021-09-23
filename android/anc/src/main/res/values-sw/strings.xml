@@ -4,6 +4,7 @@
     <string name="edit_info">Hariri maelezo</string>
     <string name="mark_as_ANC_client">Alamisha kama mteja wa ANC</string>
     <string name="view_family">Angalia Familia</string>
+    <string name="bmi_widget">Wijeti ya BMI</string>
     <string name="view_past_encounters">Tazama mikutano ya zamani</string>
     <string name="remove_this_person">Ondoa mtu huyu</string>
     <string name="care_plan">Mpango wa huduma</string>

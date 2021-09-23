@@ -13,5 +13,15 @@
     "form": "family-registration",
     "title": "Add Family",
     "identifier": "1922"
+  },
+  {
+    "form": "non-anc-patient-vital-signs",
+    "title": "Add Vital Signs ",
+    "identifier": "1921"
+  },
+  {
+    "form": "family-patient_bmi_compute",
+    "title": "Compute BMI",
+    "identifier": "1999"
   }
 ]

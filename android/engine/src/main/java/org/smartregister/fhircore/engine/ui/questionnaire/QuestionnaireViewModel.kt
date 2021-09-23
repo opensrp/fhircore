@@ -132,7 +132,7 @@ class QuestionnaireViewModel(
       patient?.let {
         questionnaireResponse =
           if (relatedPerson?.isNotEmpty() == true && relatedPerson.firstOrNull() != null)
-            ResourceMapper.populate(questionnaire, patient, relatedPerson.first())
+            ResourceMapper.populate(questionnaire, patient)
           else ResourceMapper.populate(questionnaire, patient)
       }
     }

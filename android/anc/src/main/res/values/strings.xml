@@ -20,6 +20,7 @@
     <string name="edit_info">Edit info</string>
     <string name="mark_as_ANC_client">Mark as ANC client</string>
     <string name="view_family">View family</string>
+    <string name="bmi_widget">BMI Widget</string>
     <string name="view_past_encounters">View past encounters</string>
     <string name="remove_this_person">Remove this person</string>
     <string name="care_plan">Care plan</string>
