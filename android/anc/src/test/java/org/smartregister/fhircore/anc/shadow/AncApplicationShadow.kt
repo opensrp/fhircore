@@ -31,7 +31,7 @@ import org.robolectric.shadows.ShadowApplication
 import org.smartregister.fhircore.anc.AncApplication
 
 @Implements(AncApplication::class)
-class AncApplicationShadow : ShadowApplication() {
+open class AncApplicationShadow : ShadowApplication() {
 
   private val dataMap = mutableMapOf<String, MutableList<Resource>>()
 
