@@ -43,15 +43,14 @@ class FileUtilTest {
   @Before
   fun setUp() {
     MockKAnnotations.init(this, relaxUnitFun = true)
-    var fileName = FileUtil.ASSET_BASE_PATH_RESOURCES + "resources/fileutil/cql_configs.properties"
-    val file = File(fileName)
-    inputStream = FileInputStream(file)
-
     fileUtil = FileUtil()
   }
 
   @Test
   fun getPropertyTest() {
+    var fileName = ASSET_BASE_PATH_RESOURCES + "test/resources/fileutil/cql_configs.properties"
+    val file = File(fileName)
+    inputStream = FileInputStream(file)
     every { context.getAssets() } returns assetManager
     every { assetManager.open(any()) } returns inputStream
     var smartRegisterBaseUrl =
@@ -61,7 +60,7 @@ class FileUtilTest {
 
   @Test
   fun readJsonFileTest() {
-    libraryData = fileUtil.readJsonFile("resources/cql/libraryevaluator/library.json")
+    libraryData = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/library.json")
     Assert.assertNotNull(libraryData)
   }
 }

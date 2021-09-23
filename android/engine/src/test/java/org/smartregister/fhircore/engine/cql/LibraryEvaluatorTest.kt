@@ -38,11 +38,12 @@ class LibraryEvaluatorTest {
   @Before
   fun setUp() {
     try {
-      libraryData = fileUtil.readJsonFile("resources/cql/libraryevaluator/library.json")
-      helperData = fileUtil.readJsonFile("resources/cql/libraryevaluator/helper.json")
-      valueSetData = fileUtil.readJsonFile("resources/cql/libraryevaluator/valueSet.json")
-      testData = fileUtil.readJsonFile("resources/cql/libraryevaluator/patient.json")
-      result = fileUtil.readJsonFile("resources/cql/libraryevaluator/result.json")
+      libraryData = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/library.json")
+      helperData = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/helper.json")
+      valueSetData = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/valueSet.json")
+      testData = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/patient.json")
+      result = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/result.json")
+      evaluator = LibraryEvaluator()
     } catch (e: IOException) {
       Timber.e(e, e.message)
     }
@@ -50,7 +51,6 @@ class LibraryEvaluatorTest {
 
   @Test
   fun runCqlTest() {
-    evaluator = LibraryEvaluator()
     val auxResult =
       evaluator!!.runCql(
         libraryData,
@@ -63,4 +63,5 @@ class LibraryEvaluatorTest {
       )
     Assert.assertEquals(result, auxResult)
   }
+
 }
