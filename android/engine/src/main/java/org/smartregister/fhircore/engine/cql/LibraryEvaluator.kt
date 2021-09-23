@@ -203,5 +203,4 @@ class LibraryEvaluator {
 
     return auxPatientDataObj.toString()
   }
-
 }
