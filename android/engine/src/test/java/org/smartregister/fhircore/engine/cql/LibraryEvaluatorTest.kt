@@ -63,5 +63,4 @@ class LibraryEvaluatorTest {
       )
     Assert.assertEquals(result, auxResult)
   }
-
 }
