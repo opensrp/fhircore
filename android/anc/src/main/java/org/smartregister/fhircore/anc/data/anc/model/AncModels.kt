@@ -18,6 +18,7 @@ package org.smartregister.fhircore.anc.data.anc.model
 
 import androidx.compose.runtime.Stable
 import java.util.Date
+import org.hl7.fhir.r4.model.Encounter
 
 enum class AncVisitStatus {
   DUE,
@@ -44,3 +45,11 @@ data class AncPatientDetailItem(
 )
 
 @Stable data class CarePlanItem(var title: String, var periodStartDate: Date)
+
+@Stable
+data class EncounterItem(
+  val id: String,
+  val status: Encounter.EncounterStatus,
+  val display: String,
+  val periodStartDate: Date
+)
