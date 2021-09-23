@@ -20,7 +20,6 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
-import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 
 fun OffsetDateTime.asString(): String {

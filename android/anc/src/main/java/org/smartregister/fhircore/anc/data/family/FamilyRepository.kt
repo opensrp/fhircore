@@ -22,7 +22,6 @@ import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse

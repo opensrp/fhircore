@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.anc.data.family.model
 
 import androidx.compose.runtime.Stable
-import org.hl7.fhir.r4.model.Identifier
 
 @Stable
 data class FamilyItem(
