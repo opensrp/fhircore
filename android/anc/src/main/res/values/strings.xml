@@ -54,5 +54,6 @@
     <string name="encounters">Encounters</string>
     <string name="new_consultation">New Consultation</string>
     <string name="select_unit">Select unit</string>
+    <string name="pregnancy_outcome">Pregnancy outcome</string>
 
 </resources>

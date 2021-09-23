@@ -385,51 +385,23 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_margin="14dp"
                         android:orientation="vertical"
                         android:padding="6dp">
 
-                        <LinearLayout
-                            android:id="@+id/linearLayout_scheduledServices"
-                            android:layout_width="wrap_content"
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/upcomingServicesListView"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="horizontal">
-
-                            <ImageView
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:layout_marginRight="14dp"
-                                android:src="@drawable/ic_calender" />
-
-
-                            <TextView
-                                android:id="@+id/txtView_ANCFacilityVisit"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/anc_facility_visit"
-                                android:textColor="@color/black"
-                                android:textSize="16sp"
-                                app:layout_constraintRight_toRightOf="parent"
-                                app:layout_constraintTop_toTopOf="parent" />
-
-                            <TextView
-                                android:id="@+id/txtView_ANCFacilityVisitDate"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginLeft="12dp"
-                                android:text="14-Dec-2021"
-                                android:textColor="@color/darkGrayText"
-                                android:textSize="16sp"
-                                app:layout_constraintLeft_toLeftOf="parent"
-                                app:layout_constraintTop_toBottomOf="@+id/cardView_carePlan" />
-
-                        </LinearLayout>
+                            android:layout_gravity="center"
+                            android:visibility="visible"
+                            tools:itemCount="1"
+                            tools:listitem="@layout/item_services" />
 
                         <TextView
                             android:id="@+id/txtView_noUpcomingServices"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_margin="14dp"
                             android:text="@string/no_services_scheduled"
                             android:textColor="@color/grayText"
                             android:textSize="18sp"
@@ -475,44 +447,29 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_margin="14dp"
                         android:orientation="vertical"
                         android:padding="6dp">
 
-                        <LinearLayout
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/lastSeenListView"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:visibility="visible"
+                            tools:itemCount="1"
+                            tools:listitem="@layout/item_services" />
+
+                        <TextView
+                            android:id="@+id/txtView_noLastSeenServices"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="horizontal">
-
-                            <ImageView
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:layout_marginRight="14dp"
-                                android:src="@drawable/ic_calender" />
-
-                            <TextView
-                                android:id="@+id/txtView_ANCHomeVisit"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/anc_home_visit"
-                                android:textColor="@color/black"
-                                android:textSize="16sp"
-                                app:layout_constraintRight_toRightOf="parent"
-                                app:layout_constraintTop_toTopOf="parent" />
-
-                            <TextView
-                                android:id="@+id/txtView_ANCHomeVisitDate"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginLeft="12dp"
-                                android:text="14-Dec-2021"
-                                android:textColor="@color/darkGrayText"
-                                android:textSize="16sp"
-                                app:layout_constraintLeft_toLeftOf="parent"
-                                app:layout_constraintTop_toBottomOf="@+id/cardView_carePlan" />
-
-                        </LinearLayout>
+                            android:layout_margin="14dp"
+                            android:text="@string/no_services_scheduled"
+                            android:textColor="@color/grayText"
+                            android:textSize="18sp"
+                            android:visibility="gone"
+                            app:layout_constraintLeft_toLeftOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
 
 
                     </LinearLayout>

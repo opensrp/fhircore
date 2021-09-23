@@ -23,9 +23,7 @@ import java.util.Date
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.*
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
-import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.madx.model.*
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
@@ -109,17 +107,17 @@ class NonAncPatientRepository(
 
     suspend fun fetchCarePlan(patientId: String): List<CarePlan> =
         withContext(dispatcherProvider.io()) {
-            fhirEngine.search { filter(CarePlan.PATIENT) { value = "Patient/$patientId" } }
+            fhirEngine.search { filter(CarePlan.SUBJECT) { value = "Patient/$patientId" } }
         }
 
-    suspend fun fetchObservations(patientId: String): List<Observation> =
+    suspend fun fetchConditions(patientId: String): List<Condition> =
         withContext(dispatcherProvider.io()) {
-            fhirEngine.search { filter(Observation.PATIENT) { value = "Patient/$patientId" } }
+            fhirEngine.search { filter(Condition.SUBJECT) { value = "Patient/$patientId" } }
         }
 
     suspend fun fetchEncounters(patientId: String): List<Encounter> =
         withContext(dispatcherProvider.io()) {
-            fhirEngine.search { filter(Encounter.PATIENT) { value = "Patient/$patientId" } }
+            fhirEngine.search { filter(Encounter.SUBJECT) { value = "Patient/$patientId" } }
         }
 
     suspend fun fetchPatient(patientId: String): Patient = withContext(dispatcherProvider.io()) {
@@ -205,6 +203,28 @@ class NonAncPatientRepository(
     ) {
         val patient = fetchPatient(clientIdentifier!!)
 
+    }
+
+    fun fetchEncounterItem(
+        patientId: String,
+        listEncounters: List<Encounter>
+    ): List<EncounterItem> {
+        return  arrayListOf()
+    }
+
+    fun fetchUpcomingServiceItem(
+        patientId: String,
+        listEncounters: List<Encounter>
+    ): List<UpcomingServiceItem> {
+        return  arrayListOf()
+    }
+
+    fun fetchConditionItem(patientId: String, listCondition: List<Condition>): List<ConditionItem> {
+        return  arrayListOf()
+    }
+
+    fun fetchAllergiesItem(patientId: String, listCondition: List<Condition>): List<AllergiesItem> {
+        return  arrayListOf()
     }
 
 

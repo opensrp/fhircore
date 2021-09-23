@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.madx.details
+package org.smartregister.fhircore.anc.ui.madx.details.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
-import java.util.Date
+import org.smartregister.fhircore.anc.data.madx.model.CarePlanItem
 import org.smartregister.fhircore.anc.databinding.ItemCareplanBinding
 
 /** Subclass of [ListAdapter] used to display careplan for the ANC client */

@@ -74,17 +74,6 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
-        val markAsAncClient = menu!!.findItem(R.id.mark_as_anc_client)
-        val addVitals = menu!!.findItem(R.id.add_vitals)
-        val addConditions = menu!!.findItem(R.id.add_conditions)
-        val viewPastEncounters = menu!!.findItem(R.id.view_past_encounters)
-        val bmiWidget = menu!!.findItem(R.id.bmi_widget)
-
-        viewPastEncounters.isVisible = true
-        markAsAncClient.isVisible = false
-        addVitals.isVisible = true
-        addConditions.isVisible = false
-        bmiWidget.isVisible = false
 
         val title = removeThisPerson.title.toString()
         val s = SpannableString(title)
@@ -101,7 +90,7 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.add_vitals) {
+        if (item.itemId == R.id.view_past_encounters) {
             startActivity(
                 Intent(this, NonAncDetailsActivity::class.java).apply {
                     putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY,patientId)

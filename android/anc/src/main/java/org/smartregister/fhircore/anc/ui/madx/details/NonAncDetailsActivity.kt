@@ -31,8 +31,9 @@ import com.google.android.material.tabs.TabLayoutMediator
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.madx.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.databinding.ActivityNonAncDetailsBinding
+import org.smartregister.fhircore.anc.ui.madx.details.adapter.ViewPagerAdapter
 import org.smartregister.fhircore.anc.ui.madx.details.form.NonAncDetailsFormConfig
 import org.smartregister.fhircore.anc.ui.madx.details.form.NonAncDetailsQuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
@@ -116,23 +117,12 @@ class NonAncDetailsActivity : BaseMultiLanguageActivity() {
 
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.profile_menu, menu)
+        menuInflater.inflate(R.menu.profile_menu_madx, menu)
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
-        val markAsAncClient = menu!!.findItem(R.id.mark_as_anc_client)
-        val addVitals = menu!!.findItem(R.id.add_vitals)
-        val addConditions = menu!!.findItem(R.id.add_conditions)
-        val viewPastEncounters = menu!!.findItem(R.id.view_past_encounters)
-        val bmiWidget = menu!!.findItem(R.id.bmi_widget)
-
-        viewPastEncounters.isVisible = true
-        markAsAncClient.isVisible = false
-        addVitals.isVisible = true
-        addConditions.isVisible = false
-        bmiWidget.isVisible = false
 
         val title = removeThisPerson.title.toString()
         val s = SpannableString(title)

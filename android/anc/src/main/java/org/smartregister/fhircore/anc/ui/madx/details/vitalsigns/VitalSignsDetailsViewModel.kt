@@ -24,6 +24,9 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Observation
 import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
+import org.smartregister.fhircore.anc.data.madx.model.AllergiesItem
+import org.smartregister.fhircore.anc.data.madx.model.ConditionItem
+import org.smartregister.fhircore.anc.data.madx.model.EncounterItem
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
@@ -33,20 +36,37 @@ class VitalSignsDetailsViewModel(
     val patientId: String
 ) : ViewModel() {
 
-    fun fetchObservation(): LiveData<List<Observation>> {
-        val patientObservation = MutableLiveData<List<Observation>>()
-        viewModelScope.launch(dispatcher.io()) {
-            val listObservation = ancPatientRepository.fetchObservations(patientId = patientId)
-            patientObservation.postValue(listObservation)
-        }
-        return patientObservation
-    }
-    fun fetchEncounters(): LiveData<List<Encounter>> {
-        val patientEncounters = MutableLiveData<List<Encounter>>()
+
+    fun fetchEncounters(): LiveData<List<EncounterItem>> {
+        val patientEncounters = MutableLiveData<List<EncounterItem>>()
         viewModelScope.launch(dispatcher.io()) {
             val listEncounters = ancPatientRepository.fetchEncounters(patientId = patientId)
-            patientEncounters.postValue(listEncounters)
+            val listEncountersItem =
+                ancPatientRepository.fetchEncounterItem(patientId = patientId, listEncounters)
+            patientEncounters.postValue(listEncountersItem)
         }
         return patientEncounters
+    }
+
+    fun fetchConditions(): LiveData<List<ConditionItem>> {
+        val patientCondition = MutableLiveData<List<ConditionItem>>()
+        viewModelScope.launch(dispatcher.io()) {
+            val listCondition = ancPatientRepository.fetchConditions(patientId = patientId)
+            val listConditionItem =
+                ancPatientRepository.fetchConditionItem(patientId = patientId, listCondition)
+            patientCondition.postValue(listConditionItem)
+        }
+        return patientCondition
+    }
+
+    fun fetchAllergies(): LiveData<List<AllergiesItem>> {
+        val patientCondition = MutableLiveData<List<AllergiesItem>>()
+        viewModelScope.launch(dispatcher.io()) {
+            val listCondition = ancPatientRepository.fetchConditions(patientId = patientId)
+            val listConditionItem =
+                ancPatientRepository.fetchAllergiesItem(patientId = patientId, listCondition)
+            patientCondition.postValue(listConditionItem)
+        }
+        return patientCondition
     }
 }
