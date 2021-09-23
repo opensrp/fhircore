@@ -23,5 +23,5 @@ import org.smartregister.fhircore.anc.data.anc.model.EncounterItem
 interface EncounterDataProvider {
 
   fun getEncounterList(): Flow<PagingData<EncounterItem>>
-  fun getAppBackClickListener(): () -> Unit = {}
+  fun getAppBackClickListener(): () -> Unit
 }

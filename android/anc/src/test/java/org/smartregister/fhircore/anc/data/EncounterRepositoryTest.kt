@@ -16,11 +16,15 @@
 
 package org.smartregister.fhircore.anc.data
 
+import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
+import androidx.paging.PagingState
 import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.mockk
+import io.mockk.mockkObject
 import java.text.SimpleDateFormat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
@@ -31,6 +35,7 @@ import org.junit.Test
 import org.smartregister.fhircore.anc.data.anc.model.EncounterItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
+@ExperimentalCoroutinesApi
 class EncounterRepositoryTest : RobolectricTest() {
 
   private lateinit var repository: EncounterRepository
@@ -40,17 +45,26 @@ class EncounterRepositoryTest : RobolectricTest() {
   fun setUp() {
     fhirEngine = mockk()
 
-    coEvery {
-      hint(Encounter::class)
-      fhirEngine.search<Encounter>(any())
-    } returns listOf(getEncounter())
-
     repository = EncounterRepository(fhirEngine, "")
+  }
+
+  @Test
+  fun testGetRefreshKeyShouldReturnValidAnchorPosition() {
+    val pagingState = PagingState<Int, EncounterItem>(listOf(), 0, PagingConfig(1), 10)
+
+    val anchorPosition = repository.getRefreshKey(pagingState)
+    Assert.assertEquals(0, anchorPosition)
   }
 
   @Test
   fun testLoadReturnsPageWhenOnSuccessfulLoadOfItemKeyedData() = runBlockingTest {
     val encounter = getEncounter()
+
+    coEvery {
+      hint(Encounter::class)
+      fhirEngine.search<Encounter>(any())
+    } returns listOf(encounter)
+
     Assert.assertEquals(
       PagingSource.LoadResult.Page(
         listOf(
@@ -65,6 +79,23 @@ class EncounterRepositoryTest : RobolectricTest() {
         1
       ),
       repository.load(PagingSource.LoadParams.Refresh(null, 1, false))
+    )
+
+    mockkObject(PagingSource.LoadResult.Error::class)
+
+    encounter.class_ = null
+
+    coEvery {
+      hint(Encounter::class)
+      fhirEngine.search<Encounter>(any())
+    } returns listOf(encounter)
+
+    val result = repository.load(PagingSource.LoadParams.Refresh(null, 1, false))
+
+    Assert.assertTrue(result is PagingSource.LoadResult.Error)
+    Assert.assertEquals(
+      NullPointerException::class.simpleName,
+      (result as PagingSource.LoadResult.Error).throwable.javaClass.simpleName
     )
   }
 

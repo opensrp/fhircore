@@ -21,6 +21,7 @@ import io.mockk.mockk
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.robolectric.Robolectric
 import org.smartregister.fhircore.anc.data.EncounterRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
@@ -32,7 +33,12 @@ class EncounterListViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     repository = mockk()
-    viewModel = EncounterListViewModel(ApplicationProvider.getApplicationContext(), repository)
+    viewModel =
+      EncounterListViewModel.get(
+        Robolectric.buildActivity(EncounterListActivity::class.java).get(),
+        ApplicationProvider.getApplicationContext(),
+        repository
+      )
   }
 
   @Test

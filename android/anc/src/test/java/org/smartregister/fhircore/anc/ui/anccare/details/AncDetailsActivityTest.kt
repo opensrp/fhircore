@@ -81,6 +81,7 @@ internal class AncDetailsActivityTest : ActivityRobolectricTest() {
       shadowOf(ApplicationProvider.getApplicationContext<AncApplication>()).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
   }
 
   override fun getActivity(): Activity {

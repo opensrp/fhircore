@@ -204,6 +204,10 @@ fun dummyData() =
         }
         .flow
     }
+
+    override fun getAppBackClickListener(): () -> Unit {
+      return {}
+    }
   }
 
 class DummyItem : PreviewParameterProvider<EncounterItem> {
