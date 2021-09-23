@@ -43,7 +43,7 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   private lateinit var ancPatientRepository: AncPatientRepository
 
-  private val carePlanAdapter = CarePlanAdapter()
+  private var carePlanAdapter = CarePlanAdapter()
 
   lateinit var binding: FragmentAncDetailsBinding
 

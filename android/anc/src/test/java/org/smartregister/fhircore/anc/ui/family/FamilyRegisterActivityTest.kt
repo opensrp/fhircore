@@ -17,36 +17,47 @@
 package org.smartregister.fhircore.anc.ui.family
 
 import android.app.Activity
-import android.view.MenuInflater
+import android.content.Intent
+import androidx.core.content.ContextCompat
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Sync
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.spyk
 import io.mockk.unmockkObject
 import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.flowOf
 import org.junit.After
-import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows
 import org.robolectric.annotation.Config
+import org.robolectric.fakes.RoboMenuItem
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
+import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
+import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
+import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
+import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
 
 @Config(shadows = [AncApplicationShadow::class])
 internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
 
   private lateinit var familyRegisterActivity: FamilyRegisterActivity
-
-  private lateinit var familyRegisterActivitySpy: FamilyRegisterActivity
+  private lateinit var ancPatientRepository: AncPatientRepository
+  private lateinit var familyRepository: FamilyRepository
 
   @Before
   fun setUp() {
@@ -54,9 +65,14 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
     every { Sync.basicSyncJob(any()).stateFlow() } returns flowOf()
     every { Sync.basicSyncJob(any()).lastSyncTimestamp() } returns OffsetDateTime.now()
 
+    ancPatientRepository = mockk()
+    familyRepository = mockk()
+
     familyRegisterActivity =
       Robolectric.buildActivity(FamilyRegisterActivity::class.java, null).create().get()
-    familyRegisterActivitySpy = spyk(objToCopy = familyRegisterActivity)
+
+    ReflectionHelpers.setField(familyRegisterActivity, "ancPatientRepository", ancPatientRepository)
+    ReflectionHelpers.setField(familyRegisterActivity, "familyRepository", familyRepository)
   }
 
   @After
@@ -71,22 +87,68 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testActivityHasCorrectSideMenuItem() {
+
+    coEvery { familyRepository.countAll() } returns 1
+    coEvery { ancPatientRepository.countAll() } returns 1
+
     val sideMenu = familyRegisterActivity.sideMenuOptions()
+
+    // verify family menu
     assertEquals(R.id.menu_item_family, sideMenu[0].itemId)
     assertEquals(R.string.family_register_title, sideMenu[0].titleResource)
+    assertEquals(
+      Shadows.shadowOf(ContextCompat.getDrawable(familyRegisterActivity, R.drawable.ic_calender))
+        .createdFromResId,
+      Shadows.shadowOf(sideMenu[0].iconResource).createdFromResId
+    )
+    assertTrue(sideMenu[0].opensMainRegister)
+    assertEquals(1, sideMenu[0].countMethod.invoke())
 
+    // verify anc menu
     assertEquals(R.id.menu_item_anc, sideMenu[1].itemId)
     assertEquals(R.string.anc_register_title, sideMenu[1].titleResource)
+    assertEquals(
+      Shadows.shadowOf(ContextCompat.getDrawable(familyRegisterActivity, R.drawable.ic_baby_mother))
+        .createdFromResId,
+      Shadows.shadowOf(sideMenu[1].iconResource).createdFromResId
+    )
+    assertFalse(sideMenu[1].opensMainRegister)
+    assertEquals(1, sideMenu[1].countMethod.invoke())
   }
 
   @Test
-  fun testThatMenuIsCreated() {
-    val menuInflater = mockk<MenuInflater>()
+  fun testOnSideMenuOptionSelectedShouldVerifyActivityStarting() {
 
-    every { familyRegisterActivitySpy.menuInflater } returns menuInflater
-    every { menuInflater.inflate(any(), any()) } returns Unit
+    val menuItemFamily = RoboMenuItem(R.id.menu_item_family)
+    familyRegisterActivity.onSideMenuOptionSelected(menuItemFamily)
 
-    Assert.assertTrue(familyRegisterActivitySpy.onCreateOptionsMenu(null))
+    var expectedIntent = Intent(familyRegisterActivity, FamilyRegisterActivity::class.java)
+    var actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<AncApplication>())
+        .nextStartedActivity
+
+    assertEquals(expectedIntent.component, actualIntent.component)
+
+    val menuItemAnc = RoboMenuItem(R.id.menu_item_anc)
+    familyRegisterActivity.onSideMenuOptionSelected(menuItemAnc)
+
+    expectedIntent = Intent(familyRegisterActivity, AncRegisterActivity::class.java)
+    actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<AncApplication>())
+        .nextStartedActivity
+
+    assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testSupportedFragmentsShouldReturnAncRegisterFragment() {
+    val fragments = familyRegisterActivity.supportedFragments()
+
+    assertEquals(1, fragments.size)
+    assertEquals(
+      FamilyRegisterFragment::class.java.simpleName,
+      fragments.first().javaClass.simpleName
+    )
   }
 
   override fun getActivity(): Activity {

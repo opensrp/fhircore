@@ -90,12 +90,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     fhirEngine = mockk()
     coEvery { fhirEngine.load(Patient::class.java, any()) } returns TestUtils.TEST_PATIENT_1
-    coEvery { fhirEngine.save<Patient>(any()) } answers {}
+    coEvery { fhirEngine.save(any()) } answers {}
+    coEvery { fhirEngine.update(any()) } answers {}
 
     ReflectionHelpers.setField(context, "fhirEngine\$delegate", lazy { fhirEngine })
 
     defaultRepo = spyk(DefaultRepository(fhirEngine))
     coEvery { defaultRepo.save(any()) } returns Unit
+    coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
 
     val config =
       QuestionnaireConfig(form = "patient-registration", title = "Add Patient", identifier = "1452")
@@ -127,7 +129,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // call the method under test
     questionnaireViewModel.saveBundleResources(bundle, resourceId)
 
-    coVerify(exactly = size) { defaultRepo.save(any()) }
+    coVerify(exactly = size) { defaultRepo.addOrUpdate(any()) }
   }
 
   @Test
@@ -153,7 +155,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // call the method under test
     questionnaireViewModel.saveBundleResources(bundle, resourceId)
 
-    coVerify(exactly = 1) { defaultRepo.save(capture(resource)) }
+    coVerify(exactly = 1) { defaultRepo.addOrUpdate(capture(resource)) }
 
     Assert.assertEquals(resourceId, resource.captured.id)
   }
@@ -198,7 +200,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     ReflectionHelpers.setField(context, "workerContextProvider", mockk<SimpleWorkerContext>())
 
-    questionnaireViewModel.saveExtractedResources(
+    questionnaireViewModel.extractAndSaveResources(
       "0993ldsfkaljlsnldm",
       ApplicationProvider.getApplicationContext(),
       questionnaire,

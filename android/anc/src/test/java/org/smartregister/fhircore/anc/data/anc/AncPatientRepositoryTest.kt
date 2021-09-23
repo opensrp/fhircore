@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.data
+package org.smartregister.fhircore.anc.data.anc
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
@@ -28,12 +28,18 @@ import io.mockk.mockkStatic
 import java.text.SimpleDateFormat
 import java.util.Date
 import kotlinx.coroutines.runBlocking
+import org.hamcrest.CoreMatchers.`is`
+import org.hamcrest.MatcherAssert
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.ContactPoint
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumeration
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.EpisodeOfCare
+import org.hl7.fhir.r4.model.Goal
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
@@ -44,7 +50,8 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.robolectric.util.ReflectionHelpers.ClassParameter
+import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
 
@@ -143,38 +150,50 @@ class AncPatientRepositoryTest : RobolectricTest() {
   @Test
   fun testEnrollIntoAncShouldVerifyEngineSaveCall() {
 
-    runBlocking { patientRepository.enrollIntoAnc(getPatient()) }
-    coVerify(exactly = 4) { fhirEngine.save(any()) }
+    runBlocking { patientRepository.enrollIntoAnc("", DateTimeType.now()) }
+    coVerify(exactly = 5) { fhirEngine.save(any()) }
   }
 
   @Test
   fun testLoadConfigShouldReturnPregnancyCondition() {
-    val pregnancyCondition =
-      ReflectionHelpers.callInstanceMethod<Condition>(
+    val config =
+      ReflectionHelpers.callInstanceMethod<Map<String, String?>>(
         patientRepository,
-        "loadConfig",
-        ReflectionHelpers.ClassParameter(
-          String::class.java,
-          AncPatientRepository.Companion.Template.PREGNANCY_CONDITION
-        ),
-        ReflectionHelpers.ClassParameter(Class::class.java, Condition::class.java)
+        "buildConfigData",
+        ClassParameter(String::class.java, PATIENT_ID_1),
+        ClassParameter(Condition::class.java, Condition().apply { id = "condition_id" }),
+        ClassParameter(EpisodeOfCare::class.java, EpisodeOfCare().apply { id = "episode_id" }),
+        ClassParameter(Encounter::class.java, Encounter().apply { id = "encounter_id" }),
+        ClassParameter(Goal::class.java, Goal().apply { id = "goal_id" }),
+        ClassParameter(DateTimeType::class.java, DateTimeType.parseV3("2021-01-01"))
       )
 
-    Assert.assertNotNull(pregnancyCondition)
-    Assert.assertEquals(Condition::class.java.simpleName, pregnancyCondition.javaClass.simpleName)
-    Assert.assertEquals("active", pregnancyCondition?.clinicalStatus?.coding?.first()?.code)
-    Assert.assertEquals("confirmed", pregnancyCondition?.verificationStatus?.coding?.first()?.code)
-    Assert.assertEquals(
-      "problem-list-item",
-      pregnancyCondition?.category?.first()?.coding?.first()?.code
-    )
-    Assert.assertEquals(
-      "Problem List Item",
-      pregnancyCondition?.category?.first()?.coding?.first()?.display
-    )
-    Assert.assertEquals("Pregnancy", pregnancyCondition?.code?.text)
-    Assert.assertEquals("Pregnancy", pregnancyCondition?.code?.coding?.first()?.display)
-    Assert.assertEquals("TBD", pregnancyCondition?.code?.coding?.first()?.code)
+    val expected =
+      mapOf(
+        "#Id" to config["#Id"],
+        "#RefPatient" to "Patient/test_patient_id_1",
+        "#RefCondition" to "condition_id",
+        "#RefEpisodeOfCare" to "episode_id",
+        "#RefEncounter" to "encounter_id",
+        "#RefGoal" to "Goal/goal_id",
+        "#RefCareTeam" to "CareTeam/325",
+        "#RefPractitioner" to "Practitioner/399",
+        "#RefDateOnset" to "2020-12-31",
+        "#RefDateStart" to "2020-12-31",
+        "#RefDateEnd" to "2021-09-30",
+        "#RefDate20w" to "2021-05-20",
+        "#RefDate26w" to "2021-07-01",
+        "#RefDate30w" to "2021-07-29",
+        "#RefDate34w" to "2021-08-26",
+        "#RefDate36w" to "2021-09-09",
+        "#RefDate38w" to "2021-09-23",
+        "#RefDate40w" to "2021-10-07",
+        "#RefDateDeliveryStart" to "2021-10-07",
+        "#RefDateDeliveryEnd" to "2021-10-21",
+      )
+
+    MatcherAssert.assertThat(config, `is`(expected))
+    MatcherAssert.assertThat(config.size, `is`(expected.size))
   }
 
   private fun verifyPatient(patient: AncPatientItem) {

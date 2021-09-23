@@ -25,6 +25,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.smartregister.fhircore.anc.data.anc.model.AncVisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 class AncItemMapperTest : RobolectricTest() {
@@ -38,7 +39,7 @@ class AncItemMapperTest : RobolectricTest() {
 
   @Test
   fun testMapToDomainModel() {
-    val patientItem = AncItemMapper.mapToDomainModel(dto = patient)
+    val patientItem = AncItemMapper.mapToDomainModel(dto = Anc(patient, null, listOf()))
     with(patientItem) {
       Assert.assertEquals("test_patient_id_1", patientIdentifier)
       Assert.assertEquals("Jane Mc", name)
@@ -46,6 +47,7 @@ class AncItemMapperTest : RobolectricTest() {
       Assert.assertEquals("0", age)
       Assert.assertEquals("Jane Mc, M, 0", demographics)
       Assert.assertEquals("", atRisk)
+      Assert.assertEquals(AncVisitStatus.PLANNED, visitStatus)
     }
   }
 
