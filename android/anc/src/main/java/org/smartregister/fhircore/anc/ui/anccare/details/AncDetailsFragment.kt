@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.details
 
-import android.content.Context
-import android.content.res.AssetManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -29,13 +27,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
-import java.io.InputStream
-import java.util.Properties
 import kotlinx.android.synthetic.main.fragment_anc_details.button_CQLEvaluate
 import kotlinx.android.synthetic.main.fragment_anc_details.cardView_CQLSection
 import kotlinx.android.synthetic.main.fragment_anc_details.textView_CQLResults
 import kotlinx.android.synthetic.main.fragment_anc_details.textView_EvaluateCQLHeader
-import org.json.JSONArray
 import org.json.JSONObject
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
@@ -246,7 +241,7 @@ class AncDetailsFragment private constructor() : Fragment() {
   }
 
   fun handleCQLPatientData(auxPatientData: String) {
-    testData = processCQLPatientBundle(auxPatientData)
+    testData = libraryEvaluator.processCQLPatientBundle(auxPatientData)
     val parameters =
       libraryEvaluator.runCql(
         libraryData,
@@ -262,24 +257,6 @@ class AncDetailsFragment private constructor() : Fragment() {
     textView_CQLResults.visibility = View.VISIBLE
   }
 
-  fun processCQLPatientBundle(auxPatientData: String): String {
-    var auxPatientDataObj = JSONObject(auxPatientData)
-    var oldJSONArrayEntry = auxPatientDataObj.getJSONArray("entry")
-    var newJSONArrayEntry = JSONArray()
-    for (i in 0 until oldJSONArrayEntry.length() - 1) {
-      var resourceType =
-        oldJSONArrayEntry.getJSONObject(i).getJSONObject("resource").getString("resourceType")
-      if (i != 0 && !resourceType.equals("Patient")) {
-        newJSONArrayEntry.put(oldJSONArrayEntry.getJSONObject(i))
-      }
-    }
-
-    auxPatientDataObj.remove("entry")
-    auxPatientDataObj.put("entry", newJSONArrayEntry)
-
-    return auxPatientDataObj.toString()
-  }
-
   val ANC_TEST_PATIENT_ID = "e8725b4c-6db0-4158-a24d-50a5ddf1c2ed"
   fun showCQLCard() {
     if (patientId == ANC_TEST_PATIENT_ID) {
@@ -287,13 +264,5 @@ class AncDetailsFragment private constructor() : Fragment() {
       cardView_CQLSection.visibility = View.VISIBLE
       buttonCQLSetOnClickListener()
     }
-  }
-
-  fun getProperty(key: String?, context: Context): String? {
-    val properties = Properties()
-    val assetManager: AssetManager = context.getAssets()
-    val inputStream: InputStream = assetManager.open("configs/cql_configs.properties")
-    properties.load(inputStream)
-    return properties.getProperty(key)
   }
 }

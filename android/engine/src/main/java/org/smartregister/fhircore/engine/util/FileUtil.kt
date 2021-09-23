@@ -62,11 +62,6 @@ class FileUtil {
 
   companion object {
     val ASSET_BASE_PATH_RESOURCES =
-      (System.getProperty("user.dir") +
-        File.separator +
-        "src" +
-        File.separator +
-        "test" +
-        File.separator)
+      (System.getProperty("user.dir") + File.separator + "src" + File.separator)
   }
 }

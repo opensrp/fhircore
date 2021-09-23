@@ -199,7 +199,8 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   fun handleCQLPatientDataTest() {
     val auxPatientData = "auxPatientData"
     val parameters = "{\"parameters\":\"parameters\"}"
-    every { patientDetailsFragment.processCQLPatientBundle(any()) } returns auxPatientData
+    every { patientDetailsFragment.libraryEvaluator.processCQLPatientBundle(any()) } returns
+      auxPatientData
     every {
       patientDetailsFragment.libraryEvaluator.runCql(
         any(),
@@ -214,13 +215,6 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
     patientDetailsFragment.handleCQLPatientData(auxPatientData)
     Assert.assertEquals(auxPatientData, patientDetailsFragment.testData)
     Assert.assertNotNull(patientDetailsFragment.textView_CQLResults)
-  }
-
-  @Test
-  fun processCQLPatientBundleTest() {
-    val auxPatientData = fileUtil.readJsonFile("/resources/cql/patient.json")
-    var cqlPatientBundle = patientDetailsFragment.processCQLPatientBundle(auxPatientData)
-    Assert.assertNotNull(cqlPatientBundle)
   }
 
   @MockK lateinit var parser: IParser
