@@ -16,30 +16,56 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.register
 
+import android.content.Intent
 import androidx.fragment.app.commitNow
+import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.robolectric.annotation.Implementation
+import org.robolectric.annotation.Implements
+import org.smartregister.fhircore.anc.AncApplication
+import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
+import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
-@Config(shadows = [AncApplicationShadow::class])
+@Config(
+  shadows =
+    [AncApplicationShadow::class, AncRegisterFragmentTest.SecureSharedPreferenceShadow::class]
+)
 class AncRegisterFragmentTest : RobolectricTest() {
 
   private lateinit var registerFragment: AncRegisterFragment
 
   @Before
   fun setUp() {
-    registerFragment = AncRegisterFragment()
+
     val registerActivity =
       Robolectric.buildActivity(AncRegisterActivity::class.java).create().resume().get()
+    registerFragment = AncRegisterFragment()
     registerActivity.supportFragmentManager.commitNow { add(registerFragment, "") }
+  }
+
+  @Test
+  fun testNavigateToDetailsShouldGotoToAncDetailsActivity() {
+
+    val patientItem = AncPatientItem(patientIdentifier = "test_patient")
+    registerFragment.onItemClicked(OpenPatientProfile, patientItem)
+
+    val expectedIntent = Intent(registerFragment.context, AncDetailsActivity::class.java)
+    val actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<AncApplication>()).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test
@@ -62,6 +88,15 @@ class AncRegisterFragmentTest : RobolectricTest() {
     @BeforeClass
     fun beforeClass() {
       FakeKeyStore.setup
+    }
+  }
+
+  @Implements(SecureSharedPreference::class)
+  class SecureSharedPreferenceShadow : Shadows() {
+
+    @Implementation
+    fun retrieveSessionUsername(): String {
+      return "demo"
     }
   }
 }

@@ -67,7 +67,7 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   private val patientId = "samplePatientId"
-
+  var ancPatientDetailItem = spyk<AncPatientDetailItem>()
   @Before
   fun setUp() {
 
@@ -75,14 +75,10 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
 
     patientRepository = mockk()
 
-    val ancPatientDetailItem =
-      AncPatientDetailItem().apply {
-        patientDetails = AncPatientItem(patientId, "Mandela Nelson", "M", "26")
-        patientDetailsHead = AncPatientItem()
-      }
-
-    coEvery { patientRepository.fetchDemographics(any()) } returns ancPatientDetailItem
-    coEvery { patientRepository.fetchCarePlan(any(), any()) } returns listOf()
+    every { ancPatientDetailItem.patientDetails } returns
+      AncPatientItem(patientId, "Mandela Nelson", "M", "26")
+    every { ancPatientDetailItem.patientDetailsHead } returns AncPatientItem()
+    coEvery { patientRepository.fetchDemographics(patientId) } returns ancPatientDetailItem
 
     patientDetailsViewModel =
       spyk(
@@ -136,6 +132,7 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   @Test
   fun testThatDemographicViewsAreUpdated() {
     coroutinesTestRule.runBlockingTest {
+
       val ancPatientDetailItem = patientDetailsViewModel.fetchDemographics().value
       val patientDetails =
         ancPatientDetailItem?.patientDetails?.name +

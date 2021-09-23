@@ -1,11 +1,13 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'de.mannodermaus.android-junit5'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'org.jetbrains.dokka'
-apply plugin: "org.jetbrains.kotlin.plugin.serialization"
-apply from: "code.coverage.gradle"
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+    id 'de.mannodermaus.android-junit5'
+    id 'kotlin-android-extensions'
+    id 'org.jetbrains.dokka'
+    id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'jacoco'
+}
 
 Properties props = new Properties()
 
@@ -67,8 +69,23 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     packagingOptions {
+        exclude 'license.html'
+        exclude 'readme.html'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/license.html'
+        exclude 'META-INF/LICENSE.md'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE.md'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
         exclude 'META-INF/ASL-2.0.txt'
         exclude 'META-INF/LGPL-3.0.txt'
+        exclude 'META-INF/sun-jaxb.episode'
+        exclude("META-INF/*.kotlin_module")
     }
     // See https://developer.android.com/studio/write/java8-support
     kotlinOptions {
@@ -108,6 +125,11 @@ configurations {
         exclude module: 'json'
         exclude module: 'xpp3'
     }
+    //CQL
+    all*.exclude group: 'javax.activation', module: 'activation'
+    all*.exclude group: 'javax', module: 'javaee-api'
+    all*.exclude group: 'xml-apis'
+    all*.exclude group: 'org.opencds.cqf'
 }
 
 dependencies {
@@ -116,10 +138,6 @@ dependencies {
     coreLibraryDesugaring deps.desugar
     implementation 'androidx.security:security-crypto:1.1.0-alpha03'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
-
-    androidTestImplementation deps.atsl.ext_junit
-    androidTestImplementation deps.atsl.espresso
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2'
 
     implementation deps.appcompat
     implementation deps.constraint_layout
@@ -177,6 +195,7 @@ dependencies {
 
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2'
 }
 
 dokkaHtml.configure {
