@@ -63,4 +63,10 @@ class LibraryEvaluatorTest {
       )
     Assert.assertEquals(result, auxResult)
   }
+
+  @Test
+  fun processCQLPatientBundleTest() {
+    var results = evaluator!!.processCQLPatientBundle(testData)
+    Assert.assertNotNull(results)
+  }
 }
