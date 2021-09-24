@@ -13,7 +13,7 @@ group PatientRegistration(source src : QuestionnaireResponse, target bundle: Bun
         ExtractPatient(src, patient), ExtractRelatedPerson(src, bundle, patient) "rule_a";
 
     src.item as relatedPersonIdItem where(linkId = 'RP-id' and answer.count() = 0) then {
-      src -> evaluate(bundle, ${"$"}this.entry.resource.where(${"$"}this.is(Patient))) as patient then ExtractObservations(src, bundle, patient), ExtractRiskAssessmentObservation(src, bundle, bundle, patient) "rule_d";
+      src -> evaluate(bundle, $this.entry.resource.where($this.is(Patient))) as patient then ExtractObservations(src, bundle, patient), ExtractRiskAssessmentObservation(src, bundle, bundle, patient) "rule_d";
     } "rule_e";
 }
 
@@ -21,7 +21,7 @@ group ExtractPatient(source src : QuestionnaireResponse, target patient : Patien
     src -> patient.id = uuid() "rule_patient_id_generation";
 	src.item as patientBarcodeItem where(linkId = 'patient-barcode' and answer.count() > 0 and answer.empty().not()) then {
           src -> patient.id = create('id') as patientId then {
-            src -> patientId.value = evaluate(patientBarcodeItem, ${"$"}this.answer.value) "rule_j1_1";
+            src -> patientId.value = evaluate(patientBarcodeItem, $this.answer.value) "rule_j1_1";
           } "rule_j1_2";
     };
 
@@ -33,22 +33,22 @@ group ExtractPatient(source src : QuestionnaireResponse, target patient : Patien
        };
 
        item.item as nameItem where(linkId = 'PR-name') -> patient.name = create('HumanName') as patientName then {
-          src -> patientName.family = evaluate(nameItem, ${"$"}this.item.where(linkId = 'PR-name-family').answer.value) "rule_d";
-          src -> patientName.given = evaluate(nameItem, ${"$"}this.item.where(linkId = 'PR-name-given').answer.value) "rule_e";
+          src -> patientName.family = evaluate(nameItem, $this.item.where(linkId = 'PR-name-family').answer.value) "rule_d";
+          src -> patientName.given = evaluate(nameItem, $this.item.where(linkId = 'PR-name-given').answer.value) "rule_e";
        };
 
-       src -> patient.gender = evaluate(item, ${"$"}this.item.where(linkId = 'patient-0-gender').answer.value.code) "rule_f";
+       src -> patient.gender = evaluate(item, $this.item.where(linkId = 'patient-0-gender').answer.value.code) "rule_f";
        item.item as telecomBlock where (linkId = 'PR-telecom') -> patient.telecom = create('ContactPoint') as patientContact then {
-          src -> patientContact.value = evaluate(telecomBlock, ${"$"}this.item.where(linkId = 'PR-telecom-value').answer.value) "rule_f1";
+          src -> patientContact.value = evaluate(telecomBlock, $this.item.where(linkId = 'PR-telecom-value').answer.value) "rule_f1";
           src -> patientContact.system = "phone" "rule_f2";
           src -> patientContact.rank = create('positiveInt') as posInt then {
             src -> posInt.value = "1" "rule_f5";
           } "rule_f3";
        } "rule_f4";
-       src -> patient.active = evaluate(item, ${"$"}this.item.where(linkId = 'PR-active').answer.value) "rule_h";
+       src -> patient.active = evaluate(item, $this.item.where(linkId = 'PR-active').answer.value) "rule_h";
        item.item as addressBlock where (linkId = 'PR-address') -> patient.address = create('Address') as patientAddress then {
-          src -> patientAddress.city = evaluate(addressBlock, ${"$"}this.item.where(linkId = 'PR-address-city').answer.value) "rule_g1";
-          src -> patientAddress.country = evaluate(addressBlock, ${"$"}this.item.where(linkId = 'PR-address-country').answer.value) "rule_g2";
+          src -> patientAddress.city = evaluate(addressBlock, $this.item.where(linkId = 'PR-address-city').answer.value) "rule_g1";
+          src -> patientAddress.country = evaluate(addressBlock, $this.item.where(linkId = 'PR-address-country').answer.value) "rule_g2";
           src -> patientAddress.use = "home" "rule_g3";
           src -> patientAddress.type = "physical" "rule_g4";
        } "rule_g";
@@ -59,17 +59,17 @@ group ExtractRelatedPerson(source src : QuestionnaireResponse, target bundle : B
     src -> bundle.entry as entry, entry.resource = create('RelatedPerson') as relatedPerson then {
         src.item as item where(linkId = 'RP') then {
             src -> relatedPerson.name = create('HumanName') as relatedPersonName then {
-                src -> relatedPersonName.family = evaluate(item, ${"$"}this.item.where(linkId = 'RP-family-name').answer.value) "rule_erp_2";
-                src -> relatedPersonName.given = evaluate(item, ${"$"}this.item.where(linkId = 'RP-first-name').answer.value) "rule_erp_3";
+                src -> relatedPersonName.family = evaluate(item, $this.item.where(linkId = 'RP-family-name').answer.value) "rule_erp_2";
+                src -> relatedPersonName.given = evaluate(item, $this.item.where(linkId = 'RP-first-name').answer.value) "rule_erp_3";
             } "rule_erp_1";
             item.item as patientRelationship where(linkId = 'RP-relationship' and answer.count() > 0 and answer[0].empty().not()) then {
-                  src -> evaluate(patientRelationship, ${"$"}this.answer.value) as relationshipString then {
+                  src -> evaluate(patientRelationship, $this.answer.value) as relationshipString then {
                       src -> relatedPerson.relationship = cc("http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype", relationshipString) "rule_erp_4a";
                   } "rule_erp_4";
             } "rule_erp_4__3";
             src -> relatedPerson.telecom = create('ContactPoint') as relatedPersonContact then {
                 src -> relatedPersonContact.system = "phone" "rule_erp_5";
-                src -> relatedPersonContact.value = evaluate(item, ${"$"}this.item.where(linkId = 'RP-contact-1').answer.value) "rule_erp_6";
+                src -> relatedPersonContact.value = evaluate(item, $this.item.where(linkId = 'RP-contact-1').answer.value) "rule_erp_6";
                 src -> relatedPersonContact.rank = create('positiveInt') as posInt then {
                     src -> posInt.value = "1" "rule_erp_7a";
                 } "rule_erp_7";
@@ -77,7 +77,7 @@ group ExtractRelatedPerson(source src : QuestionnaireResponse, target bundle : B
 
             src -> relatedPerson.telecom = create('ContactPoint') as relatedPersonContact then {
                 src -> relatedPersonContact.system = "phone" "rule_erp_8";
-                src -> relatedPersonContact.value = evaluate(item, ${"$"}this.item.where(linkId = 'RP-contact-alternate').answer.value) "rule_erp_9";
+                src -> relatedPersonContact.value = evaluate(item, $this.item.where(linkId = 'RP-contact-alternate').answer.value) "rule_erp_9";
                 src -> relatedPersonContact.rank = create('positiveInt') as posInt then {
                   src -> posInt.value = "2" "rule_erp_10b";
                 } "rule_erp_10";
@@ -86,7 +86,7 @@ group ExtractRelatedPerson(source src : QuestionnaireResponse, target bundle : B
             src -> relatedPerson.id = uuid() "rule_erp_11_a";
             src.item as relatedPersonIdItem where(linkId = 'RP-id' and answer.count() > 0 and answer.empty().not()) then {
                 src -> relatedPerson.id = create('id') as patientId then {
-                  src -> patientId.value = evaluate(relatedPersonIdItem, ${"$"}this.answer.value) "rule_erp_11_1_1";
+                  src -> patientId.value = evaluate(relatedPersonIdItem, $this.answer.value) "rule_erp_11_1_1";
                 } "rule_erp_11_1";
             } "rule_erp_11";
 
@@ -114,7 +114,7 @@ group ExtractObservations(source src : QuestionnaireResponse, target bundle : Bu
                   src -> obs2.subject = reference(patient) "rule_eo6_3_1_3";
                   src -> obs2.code = cc("https://www.snomed.org", "38651000000103") "rule_eo6_3_1_4";
                   src -> obs2.status = "final" "rule_eo6_3_1_5";
-                  src -> obs2.value = evaluate(otherComorbItem , ${"$"}this.answer[0].value) "rule_eo6_3_1_5";
+                  src -> obs2.value = evaluate(otherComorbItem , $this.answer[0].value) "rule_eo6_3_1_5";
                 } "rule_eo6_3_1";
               } "rule_eo6_3";
             } "rule_eo6";
@@ -134,7 +134,7 @@ group ExtractRiskAssessmentObservation(source src : QuestionnaireResponse, sourc
         src -> riskAm.subject = reference(patient) "rule_erao_4";
         src -> riskAm.occurrence = evaluate(patient, now()) "rule_erao_5";
         src -> riskAm.prediction = create('RiskAssessment_Prediction') as riskPrediction then {
-          src -> riskPrediction.relativeRisk = evaluate(bundle, ${"$"}this.entry.where(resource.is(Observation) and resource.code.coding[0].code = '991381000000107').count()) "rule_erao_6_1";
+          src -> riskPrediction.relativeRisk = evaluate(bundle, $this.entry.where(resource.is(Observation) and resource.code.coding[0].code = '991381000000107').count()) "rule_erao_6_1";
           src -> riskPrediction.outcome = cc("https://www.snomed.org", "38651000000103") "rule_erao_6_2";
         } "rule_erao_6";
         bundleEn.entry as resourceEntry where(resource.is(Observation) and resource.code.coding[0].code = '991381000000107') then {

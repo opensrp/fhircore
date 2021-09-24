@@ -136,11 +136,12 @@ class StructureMapTestUtilities : RobolectricTest() {
   @Test
   fun `populate patient registration Questionnaire and extract Resources`() {
     val patientRegistrationQuestionnaire =
-      "structure-map-questionnaires/patient-registration/questionnaire-response.json".readFile()
+      "structure-map-questionnaires/patient-registration/questionnaire.json".readFile()
     val patientRegistrationStructureMap =
       "structure-map-questionnaires/patient-registration/structure-map.txt".readFile()
-    val relatedPersonJson = "structure-map-questionnaires/patient-registration/related-person.json"
-    val patientJson = "structure-map-questionnaires/patient-registration/patient.json"
+    val relatedPersonJson =
+      "structure-map-questionnaires/patient-registration/related-person.json".readFile()
+    val patientJson = "structure-map-questionnaires/patient-registration/patient.json".readFile()
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val questionnaire =
@@ -198,7 +199,7 @@ class StructureMapTestUtilities : RobolectricTest() {
   @Test
   fun `perform extraction from patient registration Questionnaire`() {
     val patientRegistrationQuestionnaireResponse =
-      "structure-map-questionnaires/patient-registration/questionnaire.json".readFile()
+      "structure-map-questionnaires/patient-registration/questionnaire-response.json".readFile()
     val patientRegistrationStructureMap =
       "structure-map-questionnaires/patient-registration/structure-map.txt".readFile()
 
