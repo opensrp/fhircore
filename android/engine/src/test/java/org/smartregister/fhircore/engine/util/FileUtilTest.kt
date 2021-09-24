@@ -63,4 +63,20 @@ class FileUtilTest {
     libraryData = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/library.json")
     Assert.assertNotNull(libraryData)
   }
+
+  @Test
+  fun recurseFoldersTest() {
+    var baseTestPathMeasureAssets =
+      System.getProperty("user.dir") +
+        File.separator +
+        "src" +
+        File.separator +
+        File.separator +
+        "test/resources/cql/measureevaluator/"
+    var patientAssetsDir = baseTestPathMeasureAssets + "first-contact"
+    var filePatientAssetDir = File(patientAssetsDir)
+    var fileUtil = FileUtil()
+    var fileListString = fileUtil.recurseFolders(filePatientAssetDir)
+    Assert.assertNotNull(fileListString)
+  }
 }

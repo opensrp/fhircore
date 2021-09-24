@@ -66,15 +66,13 @@ class FileUtil {
    * @param dir Directory to recurse
    */
   @Throws(IOException::class)
-  fun recurse(
-    dir:File
-  ): List<String> {
+  fun recurseFolders(dir: File): List<String> {
     val returnFiles: MutableList<String> = ArrayList()
     try {
       val files: Array<File> = dir.listFiles()
       for (file in files) {
         if (file.isDirectory()) {
-          recurse(file)
+          recurseFolders(file)
         } else {
           returnFiles.add(file.getCanonicalPath())
         }
