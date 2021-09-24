@@ -44,15 +44,15 @@ jobs:
         working-directory: android
          
       - name: Run EIR unit tests with Gradle
-        run: ./gradlew :eir:jacocoTestReport -x testReleaseUnitTest --stacktrace
+        run: ./gradlew :eir:jacocoTestReport -x testReleaseUnitTest --stacktrace -Dorg.gradle.jvmargs="-Xmx2048m
         working-directory: android
 
       - name: Run ANC unit tests with Gradle
-        run: ./gradlew :anc:jacocoTestReport -x testReleaseUnitTest --stacktrace
+        run: ./gradlew :anc:jacocoTestReport -x testReleaseUnitTest --stacktrace -Dorg.gradle.jvmargs="-Xmx2048m
         working-directory: android
          
       - name: Run Engine unit tests with Gradle
-        run: ./gradlew :engine:jacocoTestReport -x testReleaseUnitTest --stacktrace
+        run: ./gradlew :engine:jacocoTestReport -x testReleaseUnitTest --stacktrace -Dorg.gradle.jvmargs="-Xmx2048m
         working-directory: android
 
       - name: Upload EIR Test Report to codecov
