@@ -17,7 +17,9 @@
 package org.smartregister.fhircore.anc.ui.anccare.details
 
 import android.app.Activity
+import android.content.Intent
 import android.view.MenuInflater
+import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -26,9 +28,14 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.DisplayName
 import org.robolectric.Robolectric
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.fakes.RoboMenuItem
+import org.smartregister.fhircore.anc.AncApplication
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
+import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
 
 @Config(shadows = [AncApplicationShadow::class])
 internal class AncDetailsActivityTest : ActivityRobolectricTest() {
@@ -60,6 +67,21 @@ internal class AncDetailsActivityTest : ActivityRobolectricTest() {
     every { menuInflater.inflate(any(), any()) } returns Unit
 
     Assert.assertTrue(patientDetailsActivitySpy.onCreateOptionsMenu(null))
+  }
+
+  @Test
+  @DisplayName("Should start Encounter List Activity")
+  fun testOnClickedPastViewEncounterItemShouldStartEncounterListActivity() {
+
+    val menuItem = RoboMenuItem(R.id.view_past_encounters)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+
+    val expectedIntent = Intent(patientDetailsActivity, EncounterListActivity::class.java)
+    val actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<AncApplication>()).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
   }
 
   override fun getActivity(): Activity {

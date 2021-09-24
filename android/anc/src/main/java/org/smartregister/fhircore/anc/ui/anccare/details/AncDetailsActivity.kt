@@ -16,16 +16,19 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.details
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.Menu
+import android.view.MenuItem
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.databinding.ActivityAncDetailsBinding
+import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
@@ -78,5 +81,21 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
     } // provide whatever color you want here.
     mColorFullMenuBtn.title = s
     return super.onPrepareOptionsMenu(menu)
+  }
+
+  override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    return when (item.itemId) {
+      R.id.view_past_encounters -> {
+
+        startActivity(
+          Intent(this, EncounterListActivity::class.java).apply {
+            putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
+          }
+        )
+
+        true
+      }
+      else -> return super.onOptionsItemSelected(item)
+    }
   }
 }
