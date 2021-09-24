@@ -59,7 +59,13 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
     every { immunization.vaccineCode.coding } returns listOf(Coding("sys", "code", "disp"))
     coEvery { patientRepository.getPatientImmunizations(any()) } returns listOf(immunization)
     recordVaccineViewModel =
-      spyk(RecordVaccineViewModel(ApplicationProvider.getApplicationContext(), mockk(), patientRepository))
+      spyk(
+        RecordVaccineViewModel(
+          ApplicationProvider.getApplicationContext(),
+          mockk(),
+          patientRepository
+        )
+      )
   }
 
   @Test

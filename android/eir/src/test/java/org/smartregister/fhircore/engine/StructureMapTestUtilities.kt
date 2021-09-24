@@ -19,7 +19,8 @@ package org.smartregister.fhircore
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
-import com.google.android.fhir.datacapture.utilities.SimpleWorkerContextProvider
+import java.io.File
+import java.io.FileReader
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
@@ -32,14 +33,11 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
 import org.hl7.fhir.utilities.npm.ToolsVersion
-import org.junit.After
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
-import java.io.File
-import java.io.FileReader
 
 /**
  * Provides a playground for quickly testing and authoring questionnaire.json and the respective
@@ -52,8 +50,10 @@ class StructureMapTestUtilities : RobolectricTest() {
 
   @Test
   fun `perform immunization extraction`() {
-    val immunizationQuestionnaireResponseString = "structure-map-questionnaires/immunization/questionnaire-response.json".readFile()
-    val immunizationStructureMap = "structure-map-questionnaires/immunization/structure-map.txt".readFile()
+    val immunizationQuestionnaireResponseString =
+      "structure-map-questionnaires/immunization/questionnaire-response.json".readFile()
+    val immunizationStructureMap =
+      "structure-map-questionnaires/immunization/structure-map.txt".readFile()
 
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
@@ -90,10 +90,13 @@ class StructureMapTestUtilities : RobolectricTest() {
   @Test
   fun `populate immunization Questionnaire`() {
     val patientJson = "structure-map-questionnaires/immunization/patient.json".readFile()
-    val immunizationJson = "structure-map-questionnaires/immunization/immunization-1.json".readFile()
-    val immunizationStructureMap = "structure-map-questionnaires/immunization/structure-map.txt".readFile()
+    val immunizationJson =
+      "structure-map-questionnaires/immunization/immunization-1.json".readFile()
+    val immunizationStructureMap =
+      "structure-map-questionnaires/immunization/structure-map.txt".readFile()
 
-    val questionnaireJson = "structure-map-questionnaires/immunization/questionnaire.json".readFile()
+    val questionnaireJson =
+      "structure-map-questionnaires/immunization/questionnaire.json".readFile()
 
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
@@ -120,8 +123,10 @@ class StructureMapTestUtilities : RobolectricTest() {
     val immunization = iParser.parseResource(Immunization::class.java, immunizationJson)
     val questionnaire = iParser.parseResource(Questionnaire::class.java, questionnaireJson)
 
-    val questionnaireResponse : QuestionnaireResponse
-    runBlocking { questionnaireResponse = ResourceMapper.populate(questionnaire, patient, immunization) }
+    val questionnaireResponse: QuestionnaireResponse
+    runBlocking {
+      questionnaireResponse = ResourceMapper.populate(questionnaire, patient, immunization)
+    }
 
     scu.transform(contextR4, questionnaireResponse, map, targetResource)
 
@@ -130,13 +135,16 @@ class StructureMapTestUtilities : RobolectricTest() {
 
   @Test
   fun `populate patient registration Questionnaire and extract Resources`() {
-    val patientRegistrationQuestionnaire = "structure-map-questionnaires/patient-registration/questionnaire-response.json".readFile()
-    val patientRegistrationStructureMap = "structure-map-questionnaires/patient-registration/structure-map.txt".readFile()
+    val patientRegistrationQuestionnaire =
+      "structure-map-questionnaires/patient-registration/questionnaire-response.json".readFile()
+    val patientRegistrationStructureMap =
+      "structure-map-questionnaires/patient-registration/structure-map.txt".readFile()
     val relatedPersonJson = "structure-map-questionnaires/patient-registration/related-person.json"
     val patientJson = "structure-map-questionnaires/patient-registration/patient.json"
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
-    val questionnaire = iParser.parseResource(Questionnaire::class.java, patientRegistrationQuestionnaire)
+    val questionnaire =
+      iParser.parseResource(Questionnaire::class.java, patientRegistrationQuestionnaire)
     val patient = iParser.parseResource(Patient::class.java, patientJson)
     val relatedPerson = iParser.parseResource(RelatedPerson::class.java, relatedPersonJson)
 
@@ -170,7 +178,8 @@ class StructureMapTestUtilities : RobolectricTest() {
 
   @Test
   fun `convert StructureMap to JSON`() {
-    val patientRegistrationStructureMap = "structure-map-questionnaires/patient-registration/structure-map.txt".readFile()
+    val patientRegistrationStructureMap =
+      "structure-map-questionnaires/patient-registration/structure-map.txt".readFile()
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
@@ -188,8 +197,10 @@ class StructureMapTestUtilities : RobolectricTest() {
 
   @Test
   fun `perform extraction from patient registration Questionnaire`() {
-    val patientRegistrationQuestionnaireResponse = "structure-map-questionnaires/patient-registration/questionnaire.json".readFile()
-    val patientRegistrationStructureMap = "structure-map-questionnaires/patient-registration/structure-map.txt".readFile()
+    val patientRegistrationQuestionnaireResponse =
+      "structure-map-questionnaires/patient-registration/questionnaire.json".readFile()
+    val patientRegistrationStructureMap =
+      "structure-map-questionnaires/patient-registration/structure-map.txt".readFile()
 
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
@@ -223,25 +234,21 @@ class StructureMapTestUtilities : RobolectricTest() {
     System.out.println(iParser.encodeResourceToString(targetResource))
   }
 
-  fun String.readFile() : String {
+  fun String.readFile(): String {
     val file = File("$ASSET_BASE_PATH/$this")
-    val charArray = CharArray(file.length().toInt()).apply {
-      FileReader(file)
-        .read(this)
-    }
+    val charArray = CharArray(file.length().toInt()).apply { FileReader(file).read(this) }
     return String(charArray)
   }
 
   companion object {
     val ASSET_BASE_PATH =
       (System.getProperty("user.dir") +
-              File.separator +
-              "src" +
-              File.separator +
-              "test" +
-              File.separator +
-              "resources" +
-              File.separator)
+        File.separator +
+        "src" +
+        File.separator +
+        "test" +
+        File.separator +
+        "resources" +
+        File.separator)
   }
-
 }

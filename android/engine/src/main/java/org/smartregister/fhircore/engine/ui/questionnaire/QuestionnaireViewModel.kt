@@ -69,28 +69,26 @@ open class QuestionnaireViewModel(
     questionnaireResponse: QuestionnaireResponse
   ) {
     viewModelScope.launch {
-      val bundle =
-        performExtraction(questionnaire, questionnaireResponse, context)
+      val bundle = performExtraction(questionnaire, questionnaireResponse, context)
 
       saveBundleResources(bundle, resourceId)
     }
   }
 
   suspend fun performExtraction(
-      questionnaire: Questionnaire,
-      questionnaireResponse: QuestionnaireResponse,
-      context: Context
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    context: Context
   ): Bundle {
-    val contextR4 =
-      (getApplication<Application>() as ConfigurableApplication).workerContextProvider
+    val contextR4 = (getApplication<Application>() as ConfigurableApplication).workerContextProvider
     val transformSupportServices = TransformSupportServices(mutableListOf(), contextR4)
     return ResourceMapper.extract(
-        questionnaire = questionnaire,
-        questionnaireResponse = questionnaireResponse,
-        structureMapProvider = retrieveStructureMapProvider(),
-        context = context,
-        transformSupportServices = transformSupportServices
-      )
+      questionnaire = questionnaire,
+      questionnaireResponse = questionnaireResponse,
+      structureMapProvider = retrieveStructureMapProvider(),
+      context = context,
+      transformSupportServices = transformSupportServices
+    )
   }
 
   fun saveBundleResources(bundle: Bundle, resourceId: String? = null) {
