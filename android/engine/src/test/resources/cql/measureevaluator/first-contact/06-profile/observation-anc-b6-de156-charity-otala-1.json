@@ -1,0 +1,35 @@
+{
+  "resourceType": "Observation",
+  "id": "anc-b6-de156-charity-otala-1",
+  "meta": {
+    "profile": [ "http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de156" ]
+  },
+  "status": "final",
+  "code": {
+    "coding": [ {
+      "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
+      "code": "ANC.B6.DE156",
+      "display": "Partner HIV status (reported)"
+    } ]
+  },
+  "subject": {
+    "reference": "Patient/charity-otala-1"
+  },
+  "encounter": {
+    "reference": "Encounter/anc-encounter-charity-otala-1"
+  },
+  "performer": [ {
+    "reference": "PractitionerRole/jane"
+  } ],
+  "valueCodeableConcept": {
+    "coding": [ {
+      "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
+      "code": "ANC.B6.DE159",
+      "display": "Inconclusive"
+    }, {
+      "system": "http://snomed.info/sct",
+      "code": "419984006",
+      "display": "Inconclusive (qualifier value)"
+    } ]
+  }
+}
