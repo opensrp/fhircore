@@ -80,12 +80,12 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
     return true
   }
 
-  override fun registerClient() {
+  override fun registerClient(clientIdentifier: String?) {
     startActivity(
       Intent(this, FamilyQuestionnaireActivity::class.java)
         .putExtras(
           QuestionnaireActivity.requiredIntentArgs(
-            clientIdentifier = null,
+            clientIdentifier = clientIdentifier,
             form = FamilyFormConstants.FAMILY_REGISTER_FORM
           )
         )

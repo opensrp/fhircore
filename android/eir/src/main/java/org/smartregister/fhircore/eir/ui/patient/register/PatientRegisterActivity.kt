@@ -16,11 +16,15 @@
 
 package org.smartregister.fhircore.eir.ui.patient.register
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import org.smartregister.fhircore.eir.R
+import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
@@ -52,4 +56,28 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   }
 
   override fun supportedFragments(): List<Fragment> = listOf(PatientRegisterFragment())
+
+  override fun onBarcodeResult(barcode: String, view: View) {
+    super.onBarcodeResult(barcode, view)
+
+    isPatientExists(barcode)
+      .observe(
+        this,
+        Observer {
+          if (it.isSuccess) {
+            navigateToDetails(barcode)
+          } else {
+            registerClient(barcode)
+          }
+        }
+      )
+  }
+
+  private fun navigateToDetails(patientIdentifier: String) {
+    startActivity(
+      Intent(this, PatientDetailsActivity::class.java).apply {
+        putExtras(PatientDetailsActivity.requiredIntentArgs(patientIdentifier))
+      }
+    )
+  }
 }

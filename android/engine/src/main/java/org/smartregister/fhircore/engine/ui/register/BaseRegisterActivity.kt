@@ -16,11 +16,13 @@
 
 package org.smartregister.fhircore.engine.ui.register
 
+import android.Manifest
 import android.accounts.AccountManager
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -29,20 +31,28 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.contrib.views.barcode.mlkit.md.LiveBarcodeScanningFragment
 import com.google.android.fhir.sync.State
 import com.google.android.material.navigation.NavigationView
 import java.util.Locale
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableView
@@ -96,6 +106,7 @@ abstract class BaseRegisterActivity :
   private lateinit var registerPagerAdapter: RegisterPagerAdapter
 
   protected lateinit var fhirEngine: FhirEngine
+  private val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -206,6 +217,7 @@ abstract class BaseRegisterActivity :
 
     setupSearchView()
     setupDueButtonView()
+    setupBarcodeButtonView()
 
     val lastSyncTimestamp = SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, "")
     lastSyncTimestamp?.let { registerViewModel.setLastSyncTimestamp(it) }
@@ -273,6 +285,16 @@ abstract class BaseRegisterActivity :
         } else {
           registerViewModel.updateFilterValue(RegisterFilterType.OVERDUE_FILTER, null)
         }
+      }
+    }
+  }
+
+  private fun setupBarcodeButtonView() {
+    val requestPermissionLauncher = getBarcodePermissionLauncher()
+    with(registerActivityBinding.toolbarLayout) {
+      layoutScanBarcode.setOnClickListener {
+        launchBarcodeReader(requestPermissionLauncher)
+        barcodeFragmentListener(it)
       }
     }
   }
@@ -447,12 +469,12 @@ abstract class BaseRegisterActivity :
    */
   abstract fun onSideMenuOptionSelected(item: MenuItem): Boolean
 
-  protected open fun registerClient() {
+  protected open fun registerClient(clientIdentifier: String? = null) {
     startActivity(
       Intent(this, QuestionnaireActivity::class.java)
         .putExtras(
           QuestionnaireActivity.requiredIntentArgs(
-            clientIdentifier = null,
+            clientIdentifier = clientIdentifier,
             form = registerViewModel.registerViewConfiguration.value?.registrationForm!!
           )
         )
@@ -490,4 +512,61 @@ abstract class BaseRegisterActivity :
       }
     }
   }
+
+  private fun barcodeFragmentListener(view: View) {
+    supportFragmentManager.setFragmentResultListener(
+      "result",
+      this,
+      { key, result ->
+        val barcode = result.getString(key)!!.trim()
+        Timber.i("Received barcode $barcode initiated by view id ${view.id}")
+
+        onBarcodeResult(barcode, view)
+
+        liveBarcodeScanningFragment.onDestroy()
+      }
+    )
+  }
+
+  private fun launchBarcodeReader(requestPermissionLauncher: ActivityResultLauncher<String>) {
+    if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
+        PackageManager.PERMISSION_GRANTED
+    ) {
+      liveBarcodeScanningFragment.show(this.supportFragmentManager, "TAG")
+    } else {
+      requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+    }
+  }
+
+  private fun getBarcodePermissionLauncher(): ActivityResultLauncher<String> {
+    return registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+      isGranted: Boolean ->
+      if (isGranted) {
+        liveBarcodeScanningFragment.show(supportFragmentManager, "TAG")
+      } else {
+        Toast.makeText(
+            this,
+            "Camera permissions are needed to launch barcode reader!",
+            Toast.LENGTH_LONG
+          )
+          .show()
+      }
+    }
+  }
+
+  fun isPatientExists(barcode: String): LiveData<Result<Boolean>> {
+    val result = MutableLiveData<Result<Boolean>>()
+
+    lifecycleScope.launch(registerViewModel.dispatcher.io()) {
+      try {
+        fhirEngine.load(Patient::class.java, barcode)
+        result.postValue(Result.success(true))
+      } catch (e: ResourceNotFoundException) {
+        result.postValue(Result.failure(e))
+      }
+    }
+    return result
+  }
+
+  open fun onBarcodeResult(barcode: String, view: View) {}
 }
