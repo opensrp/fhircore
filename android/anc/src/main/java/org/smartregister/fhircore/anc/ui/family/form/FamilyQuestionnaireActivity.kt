@@ -20,31 +20,32 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
-import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
+import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.find
-import timber.log.Timber
+import org.smartregister.fhircore.engine.util.extension.hide
 
 class FamilyQuestionnaireActivity : QuestionnaireActivity() {
   internal lateinit var familyRepository: FamilyRepository
+  private lateinit var saveBtn: Button
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    val saveBtn = findViewById<Button>(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
+    saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
 
-    when(intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!){
+    when (intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!) {
       FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_ANC_client)
-      FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM -> saveBtn.setText(R.string.family_member_save_label)
+      FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM ->
+        saveBtn.setText(R.string.family_member_save_label)
       FamilyFormConstants.FAMILY_REGISTER_FORM -> saveBtn.setText(R.string.family_save_label)
     }
 
@@ -53,6 +54,8 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
+      saveBtn.hide(false)
+
       when (questionnaireConfig.form) {
         FamilyFormConstants.ANC_ENROLLMENT_FORM -> {
           val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!
@@ -66,11 +69,12 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
         }
         FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM -> {
           val relatedTo = intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)
-          val patientId = familyRepository.postProcessFamilyMember(
-            questionnaire!!,
-            questionnaireResponse,
-            relatedTo
-          )
+          val patientId =
+            familyRepository.postProcessFamilyMember(
+              questionnaire!!,
+              questionnaireResponse,
+              relatedTo
+            )
           handlePregnancy(patientId, questionnaireResponse)
         }
         else -> throw IllegalStateException("Invalid flow of app")
@@ -93,44 +97,27 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
   }
 
   private fun handlePregnancy(patientId: String, questionnaireResponse: QuestionnaireResponse) {
-    val pregnantItem = questionnaireResponse.find(PREGNANCY_STATUS_KEY)
-    val pregnancyStatus = pregnantItem?.answer?.firstOrNull()?.valueCoding?.display?:""
-    if (pregnancyStatus.contentEquals(PREGNANCY_ANSWER_KEY, true)) {
-      startAncEnrollment(patientId)
-    }
-    else endActivity()
+    val pregnantItem = questionnaireResponse.find(IS_PREGNANT_KEY)
+    val pregnancy = pregnantItem?.answer?.firstOrNull()?.valueBooleanType?.booleanValue()
+    if (pregnancy == true) {
+      this.startAncEnrollment(patientId)
+    } else endActivity()
   }
 
-  private fun endActivity(){
-    when(intent.getStringExtra(QUESTIONNAIRE_CALLING_ACTIVITY)?:"") {
-      FamilyQuestionnaireActivity::class.java.name -> reloadList()
+  private fun endActivity() {
+    when (intent.getStringExtra(QUESTIONNAIRE_CALLING_ACTIVITY) ?: "") {
+      FamilyRegisterActivity::class.java.name -> reloadList()
     }
     finish()
   }
 
   fun reloadList() {
-    startActivity(Intent(this, FamilyRegisterActivity::class.java)
-   )
-  }
-
-  fun startAncEnrollment(patientId: String) {
-    startActivity(
-      Intent(this, FamilyQuestionnaireActivity::class.java)
-        .putExtras(
-          requiredIntentArgs(
-            clientIdentifier = patientId,
-            form = FamilyFormConstants.ANC_ENROLLMENT_FORM
-          )
-        ).putExtra(QUESTIONNAIRE_CALLING_ACTIVITY, intent.getStringExtra(
-          QUESTIONNAIRE_CALLING_ACTIVITY) )
-    )
-    finish()
+    startActivity(Intent(this, FamilyRegisterActivity::class.java))
   }
 
   companion object {
     const val QUESTIONNAIRE_RELATED_TO_KEY = "questionnaire-related-to"
     const val QUESTIONNAIRE_CALLING_ACTIVITY = "questionnaire-calling-activity"
-    const val PREGNANCY_STATUS_KEY = "pregnancy_status"
-    const val PREGNANCY_ANSWER_KEY = "Pregnant"
+    const val IS_PREGNANT_KEY = "is_pregnant"
   }
 }

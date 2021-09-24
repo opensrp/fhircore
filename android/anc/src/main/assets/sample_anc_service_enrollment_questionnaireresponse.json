@@ -3,10 +3,21 @@
   "questionnaire": "Questionnaire/family-registration",
   "item": [
     {
+      "linkId": "pregnancy_status",
+      "answer": [
+        {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA15173-0",
+            "display": "Pregnant"
+          }
+        }
+      ]
+    },    {
       "linkId": "lmp",
       "answer": [
         {
-          "valueDateTime": "2021-07-02"
+          "valueDate": "2021-07-02"
         }
       ]
     },
@@ -14,12 +25,12 @@
       "linkId": "edd",
       "answer": [
         {
-          "valueDateTime": "2021-07-02"
+          "valueDate": "2021-07-02"
         }
       ]
     },
     {
-      "linkId": "gestational_age",
+      "linkId": "previous_pregnancies",
       "answer": [
         {
           "valueInteger": 5
@@ -27,7 +38,7 @@
       ]
     },
     {
-      "linkId": "number_of_fetuses",
+      "linkId": "surviving_children",
       "answer": [
         {
           "valueInteger": 4

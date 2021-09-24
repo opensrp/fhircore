@@ -97,13 +97,6 @@ class FamilyRepository(
     ResourceMapperExtended(fhirEngine)
       .saveParsedResource(questionnaireResponse, questionnaire, patientId, relatedTo)
 
-    /*val pregnantItem = questionnaireResponse.find(IS_PREGNANT_KEY)
-    if (pregnantItem?.answer?.firstOrNull()?.valueBooleanType?.booleanValue() == true) {
-      val lmpItem = questionnaireResponse.find(LMP_KEY)
-      val lmp = lmpItem?.answer?.firstOrNull()?.valueDateTimeType!!
-      ancPatientRepository.enrollIntoAnc(patientId, lmp)
-    }*/
-
     return patientId
   }
 
@@ -122,9 +115,9 @@ class FamilyRepository(
     ResourceMapperExtended(fhirEngine)
       .saveParsedResource(questionnaireResponse, questionnaire, patientId, null)
 
-      val lmpItem = questionnaireResponse.find(LMP_KEY)
-      val lmp = lmpItem?.answer?.firstOrNull()?.valueDateType!!
-      ancPatientRepository.enrollIntoAnc(patientId, lmp)
+    val lmpItem = questionnaireResponse.find(LMP_KEY)
+    val lmp = lmpItem?.answer?.firstOrNull()?.valueDateType!!
+    ancPatientRepository.enrollIntoAnc(patientId, lmp)
   }
 
   companion object {

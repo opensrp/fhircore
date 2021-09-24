@@ -41,8 +41,10 @@ object AncItemMapper : DomainMapper<Anc, AncPatientItem> {
     val age = patient.extractAge()
     var visitStatus = AncVisitStatus.PLANNED
 
-    if (dto.carePlans.flatMap { it.activity }.any { it.detail.overdue() }) visitStatus = AncVisitStatus.OVERDUE
-    else if (dto.carePlans.flatMap { it.activity }.any { it.detail.due() }) visitStatus = AncVisitStatus.DUE
+    if (dto.carePlans.flatMap { it.activity }.any { it.detail.overdue() })
+      visitStatus = AncVisitStatus.OVERDUE
+    else if (dto.carePlans.flatMap { it.activity }.any { it.detail.due() })
+      visitStatus = AncVisitStatus.DUE
 
     return AncPatientItem(
       patientIdentifier = patient.logicalId,

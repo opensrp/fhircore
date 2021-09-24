@@ -24,13 +24,9 @@ import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
-import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
-import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
-import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity.Companion.QUESTIONNAIRE_CALLING_ACTIVITY
-import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity.Companion.QUESTIONNAIRE_RELATED_TO_KEY
+import org.smartregister.fhircore.anc.util.startFamilyMemberRegistration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
@@ -41,7 +37,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    familyId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+    familyId = intent.extras?.getString(QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
     val fhirEngine = (AncApplication.getContext() as ConfigurableApplication).fhirEngine
     val familyDetailRepository = FamilyDetailRepository(familyId, fhirEngine)
     val viewModel =
@@ -69,14 +65,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
   }
 
   private fun onAddNewMemberButtonClicked() {
-    val bundle =
-      QuestionnaireActivity.requiredIntentArgs(
-        clientIdentifier = null,
-        form = FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
-      )
-    bundle.putString(QUESTIONNAIRE_RELATED_TO_KEY, familyId)
-    bundle.putString(QUESTIONNAIRE_CALLING_ACTIVITY, this::class.java.name)
-    startActivity(Intent(this, FamilyQuestionnaireActivity::class.java).putExtras(bundle))
+    this.startFamilyMemberRegistration(familyId)
   }
 
   private fun onSeeAllEncounterClicked() {}

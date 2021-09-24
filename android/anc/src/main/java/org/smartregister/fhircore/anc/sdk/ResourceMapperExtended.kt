@@ -16,14 +16,12 @@
 
 package org.smartregister.fhircore.anc.sdk
 
-import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import timber.log.Timber
 
 class ResourceMapperExtended(val fhirEngine: FhirEngine) {
 
@@ -41,8 +39,6 @@ class ResourceMapperExtended(val fhirEngine: FhirEngine) {
       kotlin.runCatching { fhirEngine.load(Patient::class.java, patientId) }.getOrElse {
         ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
       }
-
-    Timber.w(FhirContext.forR4().newJsonParser().encodeResourceToString(patient))
 
     patient.id = patientId
 
@@ -67,13 +63,12 @@ class ResourceMapperExtended(val fhirEngine: FhirEngine) {
     flagExt.forEach { fhirEngine.save(it.first) }
 
     val obsList = mutableListOf<Observation>()
-    kotlin.runCatching {
     QuestionnaireUtils.extractObservations(
       questionnaireResponse,
       questionnaire.item,
       patient,
       obsList
-    )}.onFailure { Timber.e(it) }
+    )
     obsList.forEach { fhirEngine.save(it) }
   }
 

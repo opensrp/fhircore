@@ -25,10 +25,7 @@ import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
-import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
-import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.register.components.FamilyList
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
@@ -59,9 +56,6 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
     if (listenerIntent is OpenFamilyProfile) {
       navigateToDetails(data.id)
     }
-    else if (listenerIntent is EnrollIntoAnc) {
-
-    }
   }
 
   // todo maybe we need to do a db call
@@ -76,7 +70,7 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
         else
           data.name.contains(value.toString(), ignoreCase = true) ||
             data.id.contentEquals(value.toString()) ||
-                  data.identifier.contentEquals(value.toString())
+            data.identifier.contentEquals(value.toString())
       }
       RegisterFilterType.OVERDUE_FILTER -> {
         data.servicesOverdue > 0

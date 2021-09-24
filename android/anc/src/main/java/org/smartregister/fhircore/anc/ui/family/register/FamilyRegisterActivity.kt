@@ -29,10 +29,8 @@ import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
-import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
-import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity.Companion.QUESTIONNAIRE_CALLING_ACTIVITY
+import org.smartregister.fhircore.anc.util.getFamilyQuestionnaireIntent
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 
@@ -82,16 +80,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
   }
 
   override fun registerClient() {
-    startActivity(
-      Intent(this, FamilyQuestionnaireActivity::class.java)
-        .putExtras(
-          QuestionnaireActivity.requiredIntentArgs(
-            clientIdentifier = null,
-            form = FamilyFormConstants.FAMILY_REGISTER_FORM
-          )
-        )
-        .putExtra(QUESTIONNAIRE_CALLING_ACTIVITY, this::class.java.name)
-    )
+    startActivity(getFamilyQuestionnaireIntent(form = FamilyFormConstants.FAMILY_REGISTER_FORM))
   }
 
   override fun supportedFragments(): List<Fragment> = listOf(FamilyRegisterFragment())

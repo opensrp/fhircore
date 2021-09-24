@@ -14,22 +14,20 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.util
+package org.smartregister.fhircore.engine.util.extension
 
-import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Reference
+import org.junit.Assert
+import org.junit.Test
 
-data class RegisterConfiguration(
-  val id: String,
-  val primaryFilter: SearchFilter?,
-  val secondaryFilter: SearchFilter?
-)
+class ReferenceExtensionTest {
 
-/** Only TokenClientParam, and StringClientParam supported as Register Primary Filter. */
-data class SearchFilter(
-  val key: String,
-  val filterType: Enumerations.SearchParamType,
-  val valueType: Enumerations.DataType,
-  val valueCoding: Coding? = null,
-  val valueString: String? = null
-)
+  @Test
+  fun testExtractIdShouldReturnIdPartOnly() {
+    val ref = Reference().apply { reference = "Patient/123456" }
+
+    val result = ref.extractId()
+
+    Assert.assertEquals("123456", result)
+  }
+}

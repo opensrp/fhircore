@@ -20,13 +20,11 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.EpisodeOfCare
@@ -44,7 +42,6 @@ import org.smartregister.fhircore.anc.ui.anccare.register.Anc
 import org.smartregister.fhircore.anc.util.RegisterType
 import org.smartregister.fhircore.anc.util.filterBy
 import org.smartregister.fhircore.anc.util.filterByPatient
-import org.smartregister.fhircore.anc.util.filterByPatientName
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
@@ -76,20 +73,17 @@ class AncPatientRepository(
     loadAll: Boolean
   ): List<AncPatientItem> {
     return withContext(dispatcherProvider.io()) {
-      val pregnancies = fhirEngine.search<Condition> {
-        filterBy(registerConfig.primaryFilter!!)
-        registerConfig.secondaryFilter?.let {
-          filterBy(it)
+      val pregnancies =
+        fhirEngine.search<Condition> {
+          filterBy(registerConfig.primaryFilter!!)
+          registerConfig.secondaryFilter?.let { filterBy(it) }
+
+          count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
+          from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
         }
 
-        count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
-        from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
-      }
-
       val patients =
-        pregnancies.map {
-          fhirEngine.load(Patient::class.java, it.subject.extractId())
-        }.sortedBy {
+        pregnancies.map { fhirEngine.load(Patient::class.java, it.subject.extractId()) }.sortedBy {
           it.nameFirstRep.family
         }
 
@@ -115,9 +109,8 @@ class AncPatientRepository(
     withContext(dispatcherProvider.io()) {
       fhirEngine.count<Condition> {
         filterBy(registerConfig.primaryFilter!!)
-        registerConfig.secondaryFilter?.let {
-          filterBy(it)
-        }}
+        registerConfig.secondaryFilter?.let { filterBy(it) }
+      }
     }
 
   suspend fun fetchDemographics(patientId: String): AncPatientDetailItem {

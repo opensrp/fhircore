@@ -14,10 +14,29 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.family.register
+package org.smartregister.fhircore.engine.util.extension
 
-import org.smartregister.fhircore.engine.util.ListenerIntent
+import org.hl7.fhir.r4.model.DateType
+import org.junit.Assert.assertEquals
+import org.junit.Test
 
-sealed class FamilyListenerIntent : ListenerIntent
+class DateTimeExtensionTest {
 
-object OpenFamilyProfile : FamilyListenerIntent()
+  @Test
+  fun testPlusWeeksAsStringShouldAddWeeksAndReturnFormattedDate() {
+    val date = DateType("2012-10-12")
+
+    val formatted = date.plusWeeksAsString(2)
+
+    assertEquals("2012-10-25", formatted)
+  }
+
+  @Test
+  fun testPlusWeeksAsStringShouldAddMonthsAndReturnFormattedDate() {
+    val date = DateType("2012-10-12")
+
+    val formatted = date.plusMonthsAsString(3)
+
+    assertEquals("2013-01-11", formatted)
+  }
+}

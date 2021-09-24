@@ -16,6 +16,47 @@
   ],
   "item": [
     {
+      "linkId": "pregnancy_status",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.meta.tag",
+      "type": "choice",
+      "text": "Pregnancy Status",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "82810-3",
+          "display": "Pregnancy status"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/flag-detail",
+          "valueString": "Pregnant"
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "initial": [
+        {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA15173-0",
+            "display": "Pregnant"
+          }
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA15173-0",
+            "display": "Pregnant"
+          }
+        }
+      ]
+    },
+    {
       "linkId": "lmp",
       "type": "date",
       "required": true,
@@ -57,7 +98,6 @@
       "linkId": "previous_pregnancies",
       "type": "integer",
       "required": true,
-      "minValue": "12",
       "text": "Number of previous pregnancies",
       "extension": [
         {

@@ -44,8 +44,11 @@ import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
+import org.smartregister.fhircore.engine.util.FormConfigUtil
 
 @Config(shadows = [AncApplicationShadow::class])
 internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
@@ -78,13 +81,21 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testHandleFamilyMemberRegistrationShouldCallPostProcessFamilyMember() {
+  fun testHandleFamilyRegistrationShouldCallPostProcessFamilyHead() {
     val familyRepository = mockk<FamilyRepository>()
-    coEvery { familyRepository.postProcessFamilyMember(any(), any(), any()) } returns "1832"
+    coEvery { familyRepository.postProcessFamilyHead(any(), any()) } returns "1832"
 
     runBlocking {
       AncApplication.getContext().fhirEngine.save(Questionnaire().apply { id = "1832" })
     }
+
+    familyQuestionnaireActivity.questionnaireConfig =
+      FormConfigUtil.loadConfig<List<QuestionnaireConfig>>(
+          "form_configurations.json",
+          AncApplication.getContext()
+        )
+        .associateBy { it.form }
+        .getValue(FamilyFormConstants.FAMILY_REGISTER_FORM)
 
     familyQuestionnaireActivity.familyRepository = familyRepository
 
@@ -92,7 +103,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
 
     familyQuestionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
 
-    coVerify(timeout = 2000) { familyRepository.postProcessFamilyMember(any(), any(), any()) }
+    coVerify(timeout = 2000) { familyRepository.postProcessFamilyHead(any(), any()) }
   }
 
   override fun getActivity(): Activity {

@@ -59,7 +59,8 @@ object QuestionnaireUtils {
   ) {
     items.forEach {
       val response = questionnaireResponse.find(it.linkId)
-      if (response != null && it.isExtractableObservation == true &&
+      if (response != null &&
+          it.isExtractableObservation == true &&
           (response.hasAnswer() || it.type == Questionnaire.QuestionnaireItemType.GROUP)
       ) {
         target.add(response.asObservation(it, subject.asReference()))
@@ -212,7 +213,7 @@ object QuestionnaireUtils {
       this.status = Observation.ObservationStatus.FINAL
       val ansVal = answer?.firstOrNull()
       this.value =
-        when(ansVal?.value){
+        when (ansVal?.value) {
           is DateType -> DateTimeType(ansVal.valueDateType.value)
           is Coding -> ansVal.valueCoding.asCodeableConcept()
           else -> ansVal?.value
