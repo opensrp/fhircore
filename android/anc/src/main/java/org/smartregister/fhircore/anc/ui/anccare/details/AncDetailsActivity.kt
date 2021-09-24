@@ -26,41 +26,46 @@ import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.databinding.ActivityAncDetailsBinding
+import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
 import org.smartregister.fhircore.anc.ui.family.form.BMIQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
-import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 class AncDetailsActivity : BaseMultiLanguageActivity() {
 
-  private lateinit var patientId: String
+    private lateinit var patientId: String
 
-  private lateinit var activityAncDetailsBinding: ActivityAncDetailsBinding
+    private lateinit var activityAncDetailsBinding: ActivityAncDetailsBinding
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    activityAncDetailsBinding = DataBindingUtil.setContentView(this, R.layout.activity_anc_details)
-    setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        activityAncDetailsBinding =
+            DataBindingUtil.setContentView(this, R.layout.activity_anc_details)
+        setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
 
-    if (savedInstanceState == null) {
+        if (savedInstanceState == null) {
 
-      patientId =
-        intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+            patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
-      supportFragmentManager
-        .beginTransaction()
-        .replace(
-          R.id.container,
-          AncDetailsFragment.newInstance(
-            bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
-          )
-        )
-        .commitNow()
+            supportFragmentManager
+                .beginTransaction()
+                .replace(
+                    R.id.container,
+                    AncDetailsFragment.newInstance(
+                        bundleOf(
+                            Pair(
+                                QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY,
+                                patientId
+                            )
+                        )
+                    )
+                )
+                .commitNow()
+        }
+
+        activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
     }
-
-      activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
-  }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.profile_menu, menu)
@@ -96,18 +101,30 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.bmi_widget) {
-            startActivity(
-                Intent(this, BMIQuestionnaireActivity::class.java)
-                    .putExtras(
-                        QuestionnaireActivity.requiredIntentArgs(
-                            clientIdentifier = null,
-                            form = FamilyFormConstants.FAMILY_PATIENT_BMI_FORM
+        return when (item.itemId) {
+            R.id.view_past_encounters -> {
+                startActivity(
+                    Intent(this, EncounterListActivity::class.java).apply {
+                        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
+                    }
+                )
+                true
+            }
+
+            R.id.bmi_widget -> {
+                startActivity(
+                    Intent(this, BMIQuestionnaireActivity::class.java)
+                        .putExtras(
+                            QuestionnaireActivity.requiredIntentArgs(
+                                clientIdentifier = null,
+                                form = FamilyFormConstants.FAMILY_PATIENT_BMI_FORM
+                            )
                         )
-                    )
-            )
-            return true
+                )
+                true
+            }
+
+            else -> return super.onOptionsItemSelected(item)
         }
-        return super.onOptionsItemSelected(item)
     }
 }

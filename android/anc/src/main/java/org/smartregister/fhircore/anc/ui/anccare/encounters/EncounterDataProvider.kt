@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.data.family.model
+package org.smartregister.fhircore.anc.ui.anccare.encounters
 
-import androidx.compose.runtime.Stable
+import androidx.paging.PagingData
+import kotlinx.coroutines.flow.Flow
+import org.smartregister.fhircore.anc.data.anc.model.EncounterItem
 
-@Stable
-data class FamilyMemberItem(
-  val name: String,
-  val id: String,
-  val age: String,
-  val gender: String,
-  val pregnant: Boolean
-)
+interface EncounterDataProvider {
+
+  fun getEncounterList(): Flow<PagingData<EncounterItem>>
+  fun getAppBackClickListener(): () -> Unit
+}
