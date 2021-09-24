@@ -23,11 +23,15 @@ import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
+import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity.Companion.QUESTIONNAIRE_CALLING_ACTIVITY
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity.Companion.QUESTIONNAIRE_RELATED_TO_KEY
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 class FamilyDetailsActivity : BaseMultiLanguageActivity() {
@@ -56,7 +60,13 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
     finish()
   }
 
-  private fun onFamilyMemberItemClicked(item: FamilyMemberItem) {}
+  private fun onFamilyMemberItemClicked(item: FamilyMemberItem) {
+    startActivity(
+      Intent(this, AncDetailsActivity::class.java).apply {
+        putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, item.id)
+      }
+    )
+  }
 
   private fun onAddNewMemberButtonClicked() {
     val bundle =
@@ -64,7 +74,8 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
         clientIdentifier = null,
         form = FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
       )
-    bundle.putString(FamilyQuestionnaireActivity.QUESTIONNAIRE_RELATED_TO_KEY, familyId)
+    bundle.putString(QUESTIONNAIRE_RELATED_TO_KEY, familyId)
+    bundle.putString(QUESTIONNAIRE_CALLING_ACTIVITY, this::class.java.name)
     startActivity(Intent(this, FamilyQuestionnaireActivity::class.java).putExtras(bundle))
   }
 

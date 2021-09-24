@@ -51,8 +51,10 @@ import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.format
 import org.smartregister.fhircore.engine.util.extension.loadResourceTemplate
@@ -74,15 +76,21 @@ class AncPatientRepository(
     loadAll: Boolean
   ): List<AncPatientItem> {
     return withContext(dispatcherProvider.io()) {
+      val pregnancies = fhirEngine.search<Condition> {
+        filterBy(registerConfig.primaryFilter!!)
+        registerConfig.secondaryFilter?.let {
+          filterBy(it)
+        }
+
+        count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
+        from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+      }
+
       val patients =
-        fhirEngine.search<Patient> {
-          filterBy(registerConfig.primaryFilter!!)
-
-          filterByPatientName(query)
-
-          sort(Patient.NAME, Order.ASCENDING)
-          count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
-          from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+        pregnancies.map {
+          fhirEngine.load(Patient::class.java, it.subject.extractId())
+        }.sortedBy {
+          it.nameFirstRep.family
         }
 
       patients.map {
@@ -105,7 +113,11 @@ class AncPatientRepository(
 
   override suspend fun countAll(): Long =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.count<Patient> { filterBy(registerConfig.primaryFilter!!) }
+      fhirEngine.count<Condition> {
+        filterBy(registerConfig.primaryFilter!!)
+        registerConfig.secondaryFilter?.let {
+          filterBy(it)
+        }}
     }
 
   suspend fun fetchDemographics(patientId: String): AncPatientDetailItem {
@@ -122,7 +134,7 @@ class AncPatientRepository(
               patient.link[0].other.reference.replace("Patient/", "")
             )
           if (patientHead.address.isNotEmpty()) {
-            address = patientHead.address[0].country
+            address = patientHead.extractAddress()
           }
           ancPatientItemHead =
             AncPatientItem(

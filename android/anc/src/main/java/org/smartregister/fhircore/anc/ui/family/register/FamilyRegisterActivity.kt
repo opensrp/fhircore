@@ -30,6 +30,7 @@ import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity.Companion.QUESTIONNAIRE_CALLING_ACTIVITY
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
@@ -89,6 +90,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
             form = FamilyFormConstants.FAMILY_REGISTER_FORM
           )
         )
+        .putExtra(QUESTIONNAIRE_CALLING_ACTIVITY, this::class.java.name)
     )
   }
 

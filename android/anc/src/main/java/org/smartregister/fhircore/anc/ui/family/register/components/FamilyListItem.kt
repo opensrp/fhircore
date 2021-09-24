@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.anc.ui.family.register.components
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -44,7 +43,6 @@ import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
-import org.smartregister.fhircore.anc.ui.family.register.EnrollIntoAnc
 import org.smartregister.fhircore.anc.ui.family.register.FamilyListenerIntent
 import org.smartregister.fhircore.anc.ui.family.register.OpenFamilyProfile
 import org.smartregister.fhircore.engine.ui.theme.DueColor
@@ -90,12 +88,6 @@ fun FamilyRow(
             painter = painterResource(R.drawable.ic_pregnant),
             contentDescription = "Contact anc picture",
             modifier = Modifier.size(20.dp).border(1.dp, Color.LightGray, CircleShape)
-              .clickable(
-                enabled = true,
-                onClick = {
-                  clickListener.invoke(EnrollIntoAnc, familyItem)
-                }
-              )
           )
         }
 

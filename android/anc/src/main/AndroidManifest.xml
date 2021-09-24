@@ -27,7 +27,7 @@
         <activity
             android:name=".ui.anccare.register.AncRegisterActivity"
             android:windowSoftInputMode="adjustPan" />
-        <activity android:name=".ui.family.register.FamilyRegisterActivity" />
+        <activity android:name=".ui.family.register.FamilyRegisterActivity" android:launchMode="singleTop" />
         <activity
             android:name=".ui.family.form.FamilyQuestionnaireActivity"
             android:theme="@style/AppTheme" />
@@ -39,7 +39,7 @@
             android:name=".ui.family.details.FamilyDetailsActivity"
             android:label=""
             android:parentActivityName=".ui.family.register.FamilyRegisterActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar" android:launchMode="singleTop">
 
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

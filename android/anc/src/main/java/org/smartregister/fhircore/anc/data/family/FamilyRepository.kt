@@ -97,14 +97,21 @@ class FamilyRepository(
     ResourceMapperExtended(fhirEngine)
       .saveParsedResource(questionnaireResponse, questionnaire, patientId, relatedTo)
 
-    val pregnantItem = questionnaireResponse.find(IS_PREGNANT_KEY)
-    /*if (pregnantItem?.answer?.firstOrNull()?.valueBooleanType?.booleanValue() == true) {
+    /*val pregnantItem = questionnaireResponse.find(IS_PREGNANT_KEY)
+    if (pregnantItem?.answer?.firstOrNull()?.valueBooleanType?.booleanValue() == true) {
       val lmpItem = questionnaireResponse.find(LMP_KEY)
       val lmp = lmpItem?.answer?.firstOrNull()?.valueDateTimeType!!
       ancPatientRepository.enrollIntoAnc(patientId, lmp)
     }*/
 
     return patientId
+  }
+
+  suspend fun postProcessFamilyHead(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse
+  ): String {
+    return postProcessFamilyMember(questionnaire, questionnaireResponse, null)
   }
 
   suspend fun enrollIntoAnc(
@@ -121,7 +128,6 @@ class FamilyRepository(
   }
 
   companion object {
-    const val IS_PREGNANT_KEY = "is_pregnant"
     const val LMP_KEY = "lmp"
   }
 }

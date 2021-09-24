@@ -70,20 +70,27 @@
           ]
         },
         {
-          "linkId": "PR-birth-date",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
-          "extension": [
+          "linkId": "PR-identifier-info",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier",
+          "type": "group",
+          "item": [
             {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "Patient.birthDate"
-              }
+              "linkId": "PR-identifier-nid",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  "valueExpression": {
+                    "language": "text/fhirpath",
+                    "expression": "Patient.identifier.value"
+                  }
+                }
+              ],
+              "type": "string",
+              "required": true,
+              "text": "National ID Number"
             }
-          ],
-          "type": "date",
-          "required": true,
-          "text": "Date of Birth"
+          ]
         },
         {
           "linkId": "PR-gender",
@@ -120,21 +127,63 @@
           ]
         },
         {
-          "linkId": "is_pregnant",
+          "linkId": "PR-birth-date",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.birthDate"
+              }
+            }
+          ],
+          "type": "date",
+          "required": true,
+          "text": "Date of Birth"
+        },
+        {
+          "linkId": "PR-age",
+          "type": "integer",
+          "required": true,
+          "text": "Age"
+        },
+        {
+          "linkId": "pregnancy_status",
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.meta.tag",
-          "type": "boolean",
-          "text": "Is Pregnant?",
+          "type": "choice",
+          "text": "Pregnancy Status",
           "code": [
             {
-              "system": "https://www.snomed.org",
-              "code": "77386006",
-              "display": "Pregnant"
+              "system": "http://loinc.org",
+              "code": "82810-3",
+              "display": "Pregnancy status"
             }
           ],
           "extension": [
             {
               "url": "http://hl7.org/fhir/StructureDefinition/flag-detail",
               "valueString": "Pregnant"
+            },
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+              "valueBoolean": true
+            }
+          ],
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://loinc.org",
+                "code": "LA15173-0",
+                "display": "Pregnant"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://loinc.org",
+                "code": "LA26683-5",
+                "display": "Not Pregnant"
+              }
             }
           ],
           "enableWhen": [
@@ -144,29 +193,6 @@
               "answerCoding": {
                 "code": "female"
               }
-            }
-          ]
-        },
-        {
-          "linkId": "PR-identifier-info",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier",
-          "type": "group",
-          "item": [
-            {
-              "linkId": "PR-identifier-nid",
-              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-                  "valueExpression": {
-                    "language": "text/fhirpath",
-                    "expression": "Patient.identifier.value"
-                  }
-                }
-              ],
-              "type": "string",
-              "required": true,
-              "text": "National ID Number"
             }
           ]
         },

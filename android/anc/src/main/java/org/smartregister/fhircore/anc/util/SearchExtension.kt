@@ -25,6 +25,7 @@ import java.lang.UnsupportedOperationException
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asCodeableConcept
 
 fun Search.filterByPatient(reference: ReferenceClientParam, patientId: String) {
   filter(reference) { this.value = "${ResourceType.Patient.name}/$patientId" }
@@ -56,6 +57,7 @@ fun Search.filterToken(filter: SearchFilter) {
   // TODO TokenFilter in SDK is not fully implemented and ignores all types but Coding
   when (filter.valueType) {
     Enumerations.DataType.CODING -> filter(TokenClientParam(filter.key), filter.valueCoding!!)
+    Enumerations.DataType.CODEABLECONCEPT -> filter(TokenClientParam(filter.key), filter.valueCoding!!.asCodeableConcept()!!)
     else ->
       throw UnsupportedOperationException("SDK does not support value type ${filter.valueType}")
   }

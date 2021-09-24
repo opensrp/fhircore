@@ -21,6 +21,7 @@ import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Observation
@@ -57,8 +58,8 @@ object QuestionnaireUtils {
     target: MutableList<Observation>
   ) {
     items.forEach {
-      val response = questionnaireResponse.find(it.linkId)!!
-      if (it.isExtractableObservation == true &&
+      val response = questionnaireResponse.find(it.linkId)
+      if (response != null && it.isExtractableObservation == true &&
           (response.hasAnswer() || it.type == Questionnaire.QuestionnaireItemType.GROUP)
       ) {
         target.add(response.asObservation(it, subject.asReference()))
@@ -211,8 +212,11 @@ object QuestionnaireUtils {
       this.status = Observation.ObservationStatus.FINAL
       val ansVal = answer?.firstOrNull()
       this.value =
-        if (ansVal?.hasValueDateType() == true) DateTimeType(ansVal.valueDateType.value)
-        else ansVal?.value
+        when(ansVal?.value){
+          is DateType -> DateTimeType(ansVal.valueDateType.value)
+          is Coding -> ansVal.valueCoding.asCodeableConcept()
+          else -> ansVal?.value
+        }
       this.subject = subject
     }
   }
@@ -226,5 +230,9 @@ object QuestionnaireUtils {
     qit: QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent
   ): CodeableConcept {
     return CodeableConcept().apply { this.addCoding(qit.valueCoding) }
+  }
+
+  fun Coding.asCodeableConcept(): CodeableConcept? {
+    return CodeableConcept().addCoding(this)
   }
 }

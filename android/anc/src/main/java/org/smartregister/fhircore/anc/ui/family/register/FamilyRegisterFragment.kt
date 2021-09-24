@@ -60,15 +60,7 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
       navigateToDetails(data.id)
     }
     else if (listenerIntent is EnrollIntoAnc) {
-      startActivity(
-        Intent(requireActivity(), FamilyQuestionnaireActivity::class.java)
-          .putExtras(
-            QuestionnaireActivity.requiredIntentArgs(
-              clientIdentifier = data.id,
-              form = FamilyFormConstants.ANC_ENROLLMENT_FORM
-            )
-          )
-      )
+
     }
   }
 

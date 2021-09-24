@@ -67,12 +67,13 @@ class ResourceMapperExtended(val fhirEngine: FhirEngine) {
     flagExt.forEach { fhirEngine.save(it.first) }
 
     val obsList = mutableListOf<Observation>()
+    kotlin.runCatching {
     QuestionnaireUtils.extractObservations(
       questionnaireResponse,
       questionnaire.item,
       patient,
       obsList
-    )
+    )}.onFailure { Timber.e(it) }
     obsList.forEach { fhirEngine.save(it) }
   }
 
