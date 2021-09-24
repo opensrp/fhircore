@@ -1,0 +1,203 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.drawerlayout.widget.DrawerLayout
+            android:id="@+id/drawer_layout"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <RelativeLayout
+                android:id="@+id/content_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/base_register_toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:background="?attr/colorPrimary"
+                    android:contentInsetEnd="0dp"
+                    android:contentInsetRight="0dp"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="10dp"
+                    app:contentInsetEnd="0dp"
+                    app:contentInsetStart="0dp">
+
+                    <include
+                        android:id="@+id/toolbarLayout"
+                        layout="@layout/toolbar_base_register" />
+
+                </androidx.appcompat.widget.Toolbar>
+
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/list_pager"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@id/pagination_section"
+                    android:layout_below="@id/base_register_toolbar"
+                    android:layout_marginBottom="15dp">
+
+                </androidx.viewpager2.widget.ViewPager2>
+
+                <LinearLayout
+                    android:visibility="gone"
+                    android:id="@+id/pagination_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@+id/btn_register_new_client"
+                    android:orientation="horizontal"
+                    android:padding="8dp">
+
+                    <Button
+                        android:id="@+id/previous_page_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/transparent_blue_background"
+                        android:clickable="true"
+                        android:drawableLeft="@drawable/ic_chevron_left"
+                        android:focusable="true"
+                        android:text="@string/str_previous"
+                        android:textColor="?attr/colorPrimary" />
+
+                    <TextView
+                        android:id="@+id/page_info_textview"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/str_page_info"
+                        android:textAlignment="center"
+                        android:textColor="@color/grey_text_color" />
+
+                    <Button
+                        android:id="@+id/next_page_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/transparent_blue_background"
+                        android:clickable="true"
+                        android:drawableRight="@drawable/ic_chevron_right"
+                        android:focusable="true"
+                        android:text="@string/str_next"
+                        android:textColor="?attr/colorPrimary" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btn_register_new_client"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="15dp"
+                    android:background="@drawable/rounded_white_bg"
+                    android:drawableStart="@drawable/ic_plus"
+                    android:drawablePadding="5dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:padding="10dp"
+                    android:paddingHorizontal="10dp"
+                    android:paddingEnd="15dp"
+                    android:text="@string/register_new_client"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textSize="18sp" />
+
+            </RelativeLayout>
+
+            <com.google.android.material.navigation.NavigationView
+                android:id="@+id/nav_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="start"
+                android:background="@color/drawer_menu_bg_color"
+                android:fitsSystemWindows="true"
+                app:headerLayout="@layout/drawer_menu_header"
+                app:itemBackground="@drawable/drawer_menu_item_selector"
+                app:itemIconPadding="10dp"
+                app:itemIconSize="32dp"
+                app:itemIconTint="#AEAEAE"
+                app:itemTextAppearance="@style/menu_text_style"
+                app:itemTextColor="@color/white"
+                app:menu="@menu/drawer_menu">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:background="#404040"
+                    android:paddingTop="15dp"
+                    android:paddingBottom="15dp">
+
+                    <LinearLayout
+                        android:id="@+id/container_progress_sync"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="10dp"
+                        android:background="@drawable/ic_sync">
+
+                        <ProgressBar
+                            android:layout_width="40dp"
+                            android:id="@+id/progress_sync"
+                            android:layout_height="40dp"
+                            android:gravity="center_vertical"
+                            android:drawablePadding="10dp"
+                            android:indeterminate="true"
+                            android:visibility="gone" />
+                    </LinearLayout>
+
+
+                    <TextView
+                        android:id="@+id/tv_last_sync_timestamp"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="2"
+                        android:gravity="end"
+                        android:paddingEnd="15dp"
+                        android:text="@string/last_sync_timestamp"
+                        android:textColor="#E0E0E0" />
+
+                </LinearLayout>
+
+            </com.google.android.material.navigation.NavigationView>
+        </androidx.drawerlayout.widget.DrawerLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/loader_overlay"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="#55000000"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="gone">
+
+            <ProgressBar
+                android:id="@+id/loader"
+                style="@style/Widget.MaterialComponents.CircularProgressIndicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#fff"
+                android:indeterminate="true"
+                android:padding="10dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
