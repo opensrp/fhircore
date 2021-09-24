@@ -26,7 +26,7 @@ class CalculationUtils {
     }
 
     fun computeBMIViaStandardUnits(heightInInches: Double, weightInPounds: Double): Double {
-        return Companion.roundOffDecimal(703.00 * (weightInPounds / (heightInInches * heightInInches)))
+        return roundOffDecimal(703.00 * (weightInPounds / (heightInInches * heightInInches)))
     }
 
     companion object {

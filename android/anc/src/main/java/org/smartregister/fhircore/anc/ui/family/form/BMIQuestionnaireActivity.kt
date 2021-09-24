@@ -16,18 +16,16 @@
 
 package org.smartregister.fhircore.anc.ui.family.form
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
-import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
-import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
+import org.smartregister.fhircore.anc.util.CalculationUtils
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.extension.find
 
 class BMIQuestionnaireActivity : QuestionnaireActivity() {
   internal lateinit var familyRepository: FamilyRepository
@@ -40,50 +38,92 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
-//      val relatedTo = intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)
-//      val patientId =
-//        familyRepository.postProcessFamilyMember(questionnaire!!, questionnaireResponse, relatedTo)
 
-      val headId = "aw-test"
-//        when (questionnaireConfig.form) {
-//          FamilyFormConstants.FAMILY_REGISTER_FORM -> patientId
-//          FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM -> relatedTo!!
-//          else -> throw IllegalStateException("Invalid flow of app")
-//        }
-      showAlert(headId)
+      val computedBMI = computeBMI(questionnaireResponse)
+      if (computedBMI < 0)
+        showErrorAlert(getString(R.string.error_saving_form))
+      else
+        showBMIAlert(computedBMI)
     }
   }
 
-  private fun showAlert(headId: String) {
-    AlertDialog.Builder(this)
-      .setMessage(R.string.family_register_message_alert)
-      .setCancelable(false)
-      .setNegativeButton(R.string.family_register_cancel_title) { dialogInterface, _ ->
-        dialogInterface.dismiss()
-        reloadList()
+  private fun computeBMI(questionnaireResponse: QuestionnaireResponse): Double {
+    try {
+      val unitMode = questionnaireResponse.find(KEY_UNIT_SELECTION)
+      // for Standard Units
+      if (unitMode?.answer?.get(0)?.valueCoding?.code == "standard") {
+        val weightPounds = questionnaireResponse.find(KEY_WEIGHT_SI)
+        val heightFeets = questionnaireResponse.find(KEY_HEIGHT_SI)
+        val heightInches = questionnaireResponse.find(KEY_HEIGHT_DP_SI)
+
+        val weight = weightPounds?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
+        val heightInFeets =
+          heightFeets?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
+        val heightInInches =
+          heightInches?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
+        val height = (heightInFeets.toDouble() * 12) + heightInInches.toDouble()
+
+        return CalculationUtils().computeBMIViaStandardUnits(height, weight.toDouble())
+
+      } else {
+        // for Metric Units
+        val weightKgs = questionnaireResponse.find(KEY_WEIGHT_MU)
+        val heightCms = questionnaireResponse.find(KEY_HEIGHT_MU)
+
+        val weight = weightKgs?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
+        val height = heightCms?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
+
+        return CalculationUtils().computeBMIViaMetricUnits(
+          height.toDouble() / 100,
+          weight.toDouble()
+        )
       }
-      .setPositiveButton(R.string.family_register_ok_title) { dialogInterface, _ ->
+    } catch (e: Exception) {
+      e.printStackTrace()
+      return -1.0
+    }
+  }
+
+  private fun showBMIAlert(computedBMI: Double) {
+    AlertDialog.Builder(this)
+      .setTitle(getString(R.string.your_bmi))
+      .setMessage("$computedBMI" + getBMICategories())
+      .setCancelable(false)
+      .setNegativeButton(R.string.re_compute) { dialogInterface, _ ->
         dialogInterface.dismiss()
-        registerMember(headId!!)
+      }
+      .setPositiveButton(R.string.str_save) { dialogInterface, _ ->
+        dialogInterface.dismiss()
+        showErrorAlert("Save Observations")
       }
       .show()
   }
 
-  fun reloadList() {
-    startActivity(Intent(this, FamilyRegisterActivity::class.java))
+
+  private fun showErrorAlert(message: String) {
+    AlertDialog.Builder(this)
+      .setTitle(getString(R.string.try_again))
+      .setMessage(message)
+      .setCancelable(true)
+      .setPositiveButton("OK") { dialogInterface, _ ->
+        dialogInterface.dismiss()
+      }
+      .show()
   }
 
-  fun registerMember(headId: String) {
-    val bundle =
-      requiredIntentArgs(
-        clientIdentifier = null,
-        form = FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
-      )
-    bundle.putString(QUESTIONNAIRE_RELATED_TO_KEY, headId)
-    startActivity(Intent(this, BMIQuestionnaireActivity::class.java).putExtras(bundle))
-  }
 
   companion object {
-    const val QUESTIONNAIRE_RELATED_TO_KEY = "questionnaire-related-to"
+    const val KEY_UNIT_SELECTION = "select-mode"
+    const val KEY_WEIGHT_SI = "vital-signs-body-wight-s"
+    const val KEY_HEIGHT_SI = "vital-signs-height-s"
+    const val KEY_HEIGHT_DP_SI = "vital-signs-height-double-prime"
+    const val KEY_WEIGHT_MU = "vital-signs-body-wight-m"
+    const val KEY_HEIGHT_MU = "vital-signs-height-m"
+  }
+
+  // Below BMI Categories information isn't required, it can be omit out
+  private fun getBMICategories(): String {
+    return "\n\n\nBMI Categories:\n\nUnderweight = <18.5\nNormal weight = 18.5–24.9" +
+            "\nOverweight = 25–29.9\nObesity = BMI of 30 or greater"
   }
 }

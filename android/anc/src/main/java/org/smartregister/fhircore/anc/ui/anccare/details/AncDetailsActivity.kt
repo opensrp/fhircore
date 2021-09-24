@@ -117,7 +117,8 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
                         .putExtras(
                             QuestionnaireActivity.requiredIntentArgs(
                                 clientIdentifier = null,
-                                form = FamilyFormConstants.FAMILY_PATIENT_BMI_FORM
+                                form = FamilyFormConstants.FAMILY_PATIENT_BMI_FORM,
+                                saveBtnText = getString(R.string.compute_bmi)
                             )
                         )
                 )

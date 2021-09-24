@@ -128,6 +128,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       }
     }
 
+    intent.getStringExtra(QUESTIONNAIRE_ARG_SAVE_BUTTON_TEXT)?.let {
+      if (it.isNotEmpty())
+        findViewById<Button>(R.id.btn_save_client_info).text = it
+    }
     findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
   }
 
@@ -187,12 +191,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire_form"
+    const val QUESTIONNAIRE_ARG_SAVE_BUTTON_TEXT = "questionnaire_form_save_button_text"
     private const val FORM_CONFIGURATIONS = "form_configurations.json"
 
-    fun requiredIntentArgs(clientIdentifier: String?, form: String) =
+    fun requiredIntentArgs(clientIdentifier: String?, form: String, saveBtnText: String = "") =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
-        Pair(QUESTIONNAIRE_ARG_FORM, form)
+        Pair(QUESTIONNAIRE_ARG_FORM, form),
+        Pair(QUESTIONNAIRE_ARG_SAVE_BUTTON_TEXT, saveBtnText)
       )
   }
 
