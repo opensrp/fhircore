@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.app.AlertDialog
+import android.app.Application
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -33,6 +34,7 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -95,10 +97,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       }
 
       questionnaireViewModel =
-        ViewModelProvider(
-          this@QuestionnaireActivity,
-          QuestionnaireViewModel(application, questionnaireConfig).createFactory()
-        )[QuestionnaireViewModel::class.java]
+        createViewModel(application, questionnaireConfig)
 
       questionnaire = questionnaireViewModel.loadQuestionnaire()
 
@@ -130,6 +129,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
   }
+
+  open fun createViewModel(application: Application, questionnaireConfig: QuestionnaireConfig) = ViewModelProvider(
+    this@QuestionnaireActivity,
+    QuestionnaireViewModel(application, questionnaireConfig).createFactory()
+  )[QuestionnaireViewModel::class.java]
 
   override fun onClick(view: View) {
     if (view.id == R.id.btn_save_client_info) {

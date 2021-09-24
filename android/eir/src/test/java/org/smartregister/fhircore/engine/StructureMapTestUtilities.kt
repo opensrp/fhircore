@@ -19,10 +19,12 @@ package org.smartregister.fhircore
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import com.google.android.fhir.datacapture.utilities.SimpleWorkerContextProvider
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -30,6 +32,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
 import org.hl7.fhir.utilities.npm.ToolsVersion
+import org.junit.After
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
@@ -80,6 +83,47 @@ class StructureMapTestUtilities : RobolectricTest() {
       )
 
     scu.transform(contextR4, baseElement, map, targetResource)
+
+    System.out.println(iParser.encodeResourceToString(targetResource))
+  }
+
+  @Test
+  fun `populate immunization Questionnaire`() {
+    val patientJson = "structure-map-questionnaires/immunization/patient.json".readFile()
+    val immunizationJson = "structure-map-questionnaires/immunization/immunization-1.json".readFile()
+    val immunizationStructureMap = "structure-map-questionnaires/immunization/structure-map.txt".readFile()
+
+    val questionnaireJson = "structure-map-questionnaires/immunization/questionnaire.json".readFile()
+
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val outputs: MutableList<Base> = ArrayList()
+    val transformSupportServices = TransformSupportServices(outputs, contextR4)
+
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map = scu.parse(immunizationStructureMap, "ImmunizationRegistration")
+
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+
+    val targetResource = Bundle()
+
+    val patient = iParser.parseResource(Patient::class.java, patientJson)
+    val immunization = iParser.parseResource(Immunization::class.java, immunizationJson)
+    val questionnaire = iParser.parseResource(Questionnaire::class.java, questionnaireJson)
+
+    val questionnaireResponse : QuestionnaireResponse
+    runBlocking { questionnaireResponse = ResourceMapper.populate(questionnaire, patient, immunization) }
+
+    scu.transform(contextR4, questionnaireResponse, map, targetResource)
 
     System.out.println(iParser.encodeResourceToString(targetResource))
   }

@@ -22,6 +22,7 @@ import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,14 +37,14 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplicati
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
-class QuestionnaireViewModel(
+open class QuestionnaireViewModel(
   application: Application,
   private val questionnaireConfig: QuestionnaireConfig
 ) : AndroidViewModel(application) {
 
   val extractionProgress = MutableLiveData<Boolean>()
 
-  private val defaultRepository: DefaultRepository =
+  val defaultRepository: DefaultRepository =
     DefaultRepository(
       (application as ConfigurableApplication).fhirEngine,
     )
@@ -68,23 +69,31 @@ class QuestionnaireViewModel(
     questionnaireResponse: QuestionnaireResponse
   ) {
     viewModelScope.launch {
-      val contextR4 =
-        (getApplication<Application>() as ConfigurableApplication).workerContextProvider
-      val transformSupportServices = TransformSupportServices(mutableListOf(), contextR4)
       val bundle =
-        ResourceMapper.extract(
-          questionnaire = questionnaire,
-          questionnaireResponse = questionnaireResponse,
-          structureMapProvider = retrieveStructureMapProvider(),
-          context = context,
-          transformSupportServices = transformSupportServices
-        )
+        performExtraction(questionnaire, questionnaireResponse, context)
 
       saveBundleResources(bundle, resourceId)
     }
   }
 
-  fun saveBundleResources(bundle: Bundle, resourceId: String?) {
+  suspend fun performExtraction(
+      questionnaire: Questionnaire,
+      questionnaireResponse: QuestionnaireResponse,
+      context: Context
+  ): Bundle {
+    val contextR4 =
+      (getApplication<Application>() as ConfigurableApplication).workerContextProvider
+    val transformSupportServices = TransformSupportServices(mutableListOf(), contextR4)
+    return ResourceMapper.extract(
+        questionnaire = questionnaire,
+        questionnaireResponse = questionnaireResponse,
+        structureMapProvider = retrieveStructureMapProvider(),
+        context = context,
+        transformSupportServices = transformSupportServices
+      )
+  }
+
+  fun saveBundleResources(bundle: Bundle, resourceId: String? = null) {
     viewModelScope.launch {
       if (!bundle.isEmpty) {
         bundle.entry.forEach { bundleEntry ->
@@ -119,24 +128,26 @@ class QuestionnaireViewModel(
     viewModelScope.launch { defaultRepository.save(resource = resource) }
   }
 
+  open suspend fun getPopulationResources(intent: Intent): Array<Resource> {
+    val resourcesList = mutableListOf<Resource>()
+
+    intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.run {
+      val jsonParser = FhirContext.forR4().newJsonParser()
+      forEach { resourcesList.add(jsonParser.parseResource(it) as Resource) }
+    }
+
+    intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let { patientId ->
+      loadPatient(patientId)?.apply { resourcesList.add(this) }
+      loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
+    }
+
+    return resourcesList.toTypedArray()
+  }
+
   suspend fun generateQuestionnaireResponse(
     questionnaire: Questionnaire,
     intent: Intent
   ): QuestionnaireResponse {
-    var questionnaireResponse = QuestionnaireResponse()
-
-    intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let {
-      val patient = loadPatient(it)
-      val relatedPerson: List<RelatedPerson>? = loadRelatedPerson(it)
-
-      patient?.let {
-        questionnaireResponse =
-          if (relatedPerson?.isNotEmpty() == true && relatedPerson.firstOrNull() != null)
-            ResourceMapper.populate(questionnaire, patient, relatedPerson.first())
-          else ResourceMapper.populate(questionnaire, patient)
-      }
-    }
-
-    return questionnaireResponse
+    return ResourceMapper.populate(questionnaire, *getPopulationResources(intent))
   }
 }
