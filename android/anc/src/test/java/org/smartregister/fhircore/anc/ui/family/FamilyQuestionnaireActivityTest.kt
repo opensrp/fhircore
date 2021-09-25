@@ -22,8 +22,10 @@ import com.google.android.fhir.sync.Sync
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import java.time.OffsetDateTime
@@ -47,6 +49,7 @@ import org.smartregister.fhircore.anc.shadow.FakeKeyStore
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.FormConfigUtil
 
@@ -104,6 +107,59 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     familyQuestionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
 
     coVerify(timeout = 2000) { familyRepository.postProcessFamilyHead(any(), any()) }
+  }
+
+  @Test
+  fun testHandleFamilyMemberRegistrationShouldCallPostProcessFamilyMember() {
+    val familyRepository = mockk<FamilyRepository>()
+    coEvery { familyRepository.postProcessFamilyMember(any(), any(), any()) } returns "1832"
+
+    runBlocking {
+      AncApplication.getContext().fhirEngine.save(Questionnaire().apply { id = "1832" })
+    }
+
+    familyQuestionnaireActivity.questionnaireConfig =
+      FormConfigUtil.loadConfig<List<QuestionnaireConfig>>(
+          "form_configurations.json",
+          AncApplication.getContext()
+        )
+        .associateBy { it.form }
+        .getValue(FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM)
+
+    familyQuestionnaireActivity.familyRepository = familyRepository
+
+    ReflectionHelpers.setField(familyQuestionnaireActivity, "questionnaire", Questionnaire())
+
+    familyQuestionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
+
+    coVerify(timeout = 2000) { familyRepository.postProcessFamilyMember(any(), any(), any()) }
+  }
+
+  @Test
+  fun testHandleAncEnrollmentShouldCallEnrollIntoAnc() {
+    val familyRepository = mockk<FamilyRepository>()
+    coEvery { familyRepository.enrollIntoAnc(any(), any(), any()) } just runs
+
+    runBlocking {
+      AncApplication.getContext().fhirEngine.save(Questionnaire().apply { id = "1832" })
+    }
+
+    familyQuestionnaireActivity.questionnaireConfig =
+      FormConfigUtil.loadConfig<List<QuestionnaireConfig>>(
+          "form_configurations.json",
+          AncApplication.getContext()
+        )
+        .associateBy { it.form }
+        .getValue(FamilyFormConstants.ANC_ENROLLMENT_FORM)
+
+    familyQuestionnaireActivity.familyRepository = familyRepository
+    familyQuestionnaireActivity.intent.putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, "123456")
+
+    ReflectionHelpers.setField(familyQuestionnaireActivity, "questionnaire", Questionnaire())
+
+    familyQuestionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
+
+    coVerify(timeout = 2000) { familyRepository.enrollIntoAnc(any(), any(), any()) }
   }
 
   override fun getActivity(): Activity {
