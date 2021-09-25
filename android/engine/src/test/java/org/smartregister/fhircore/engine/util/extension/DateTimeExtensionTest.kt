@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import org.hl7.fhir.r4.model.DateType
-import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class DateTimeExtensionTest {
@@ -28,7 +28,7 @@ class DateTimeExtensionTest {
 
     val formatted = date.plusWeeksAsString(2)
 
-    assertEquals("2012-10-25", formatted)
+    assertTrue("2012-10-25".contentEquals(formatted))
   }
 
   @Test
@@ -37,6 +37,6 @@ class DateTimeExtensionTest {
 
     val formatted = date.plusMonthsAsString(3)
 
-    assertEquals("2013-01-11", formatted)
+    assertTrue("2013-01-11".contentEquals(formatted))
   }
 }
