@@ -44,27 +44,29 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
             DataBindingUtil.setContentView(this, R.layout.activity_anc_details)
         setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
 
-        if (savedInstanceState == null) {
+//        if (savedInstanceState == null) {
+        patientId =
+            intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
-            patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-
-            supportFragmentManager
-                .beginTransaction()
-                .replace(
-                    R.id.container,
-                    AncDetailsFragment.newInstance(
-                        bundleOf(
-                            Pair(
-                                QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY,
-                                patientId
-                            )
+        supportFragmentManager
+            .beginTransaction()
+            .replace(
+                R.id.container,
+                AncDetailsFragment.newInstance(
+                    bundleOf(
+                        Pair(
+                            QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY,
+                            patientId
                         )
                     )
                 )
-                .commitNow()
-        }
+            )
+            .commitNow()
+//        }
 
-        activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
+        activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener {
+            onBackPressed()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
