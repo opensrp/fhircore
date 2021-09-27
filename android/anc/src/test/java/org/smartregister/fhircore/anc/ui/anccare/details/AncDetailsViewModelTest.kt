@@ -17,14 +17,19 @@
 package org.smartregister.fhircore.anc.ui.anccare.details
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Resource
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -33,12 +38,13 @@ import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 
 @ExperimentalCoroutinesApi
 internal class AncDetailsViewModelTest {
   private lateinit var fhirEngine: FhirEngine
 
-  private lateinit var patientDetailsViewModel: AncDetailsViewModel
+  private lateinit var ancDetailsViewModel: AncDetailsViewModel
 
   private lateinit var patientRepository: AncPatientRepository
 
@@ -50,6 +56,8 @@ internal class AncDetailsViewModelTest {
 
   @Before
   fun setUp() {
+    MockKAnnotations.init(this, relaxUnitFun = true)
+
     fhirEngine = mockk(relaxed = true)
     patientRepository = mockk()
 
@@ -60,7 +68,7 @@ internal class AncDetailsViewModelTest {
     every { ancPatientDetailItem.patientDetailsHead } returns AncPatientItem()
     coEvery { patientRepository.fetchDemographics(patientId) } returns ancPatientDetailItem
 
-    patientDetailsViewModel =
+    ancDetailsViewModel =
       spyk(
         AncDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider, patientId)
       )
@@ -72,7 +80,7 @@ internal class AncDetailsViewModelTest {
       val patient = spyk<Patient>().apply { idElement.id = patientId }
       coEvery { fhirEngine.load(Patient::class.java, patientId) } returns patient
       val ancPatientDetailItem: AncPatientDetailItem =
-        patientDetailsViewModel.fetchDemographics().value!!
+        ancDetailsViewModel.fetchDemographics().value!!
       Assert.assertNotNull(ancPatientDetailItem)
       Assert.assertEquals(ancPatientDetailItem.patientDetails.patientIdentifier, patientId)
       val patientDetails =
@@ -89,5 +97,63 @@ internal class AncDetailsViewModelTest {
       Assert.assertEquals(patientDetails, "Mandela Nelson, M, 26")
       Assert.assertEquals(patientId, " ID: samplePatientId")
     }
+  }
+
+  @MockK lateinit var parser: IParser
+  @MockK lateinit var fhirResourceDataSource: FhirResourceDataSource
+  @MockK lateinit var resource: Resource
+  @MockK lateinit var entryList: List<Bundle.BundleEntryComponent>
+  @MockK lateinit var bundle: Bundle
+
+  @Test
+  fun fetchCQLLibraryDataTest() {
+    val auxCQLLibraryData = "Library JSON"
+    coroutinesTestRule.runBlockingTest {
+      coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
+      coEvery { bundle.entry } returns entryList
+      coEvery { entryList[0].resource } returns resource
+      coEvery { parser.encodeResourceToString(resource) } returns auxCQLLibraryData
+    }
+    val libraryDataLiveData: String =
+      ancDetailsViewModel.fetchCQLLibraryData(parser, fhirResourceDataSource, "").value!!
+    Assert.assertEquals(auxCQLLibraryData, libraryDataLiveData)
+  }
+
+  @Test
+  fun fetchCQLFhirHelperDataTest() {
+    val auxCQLHelperData = "Helper JSON"
+    coroutinesTestRule.runBlockingTest {
+      coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
+      coEvery { bundle.entry } returns entryList
+      coEvery { entryList[0].resource } returns resource
+      coEvery { parser.encodeResourceToString(resource) } returns auxCQLHelperData
+    }
+    val libraryDataLiveData: String =
+      ancDetailsViewModel.fetchCQLFhirHelperData(parser, fhirResourceDataSource, "").value!!
+    Assert.assertEquals(auxCQLHelperData, libraryDataLiveData)
+  }
+
+  @Test
+  fun fetchCQLValueSetDataTest() {
+    val auxCQLValueSetData = "ValueSet JSON"
+    coroutinesTestRule.runBlockingTest {
+      coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
+      coEvery { parser.encodeResourceToString(bundle) } returns auxCQLValueSetData
+    }
+    val libraryDataLiveData: String =
+      ancDetailsViewModel.fetchCQLValueSetData(parser, fhirResourceDataSource, "").value!!
+    Assert.assertEquals(auxCQLValueSetData, libraryDataLiveData)
+  }
+
+  @Test
+  fun fetchCQLPatientDataTest() {
+    val auxCQLValueSetData = "Patient Data JSON"
+    coroutinesTestRule.runBlockingTest {
+      coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
+      coEvery { parser.encodeResourceToString(bundle) } returns auxCQLValueSetData
+    }
+    val libraryDataLiveData: String =
+      ancDetailsViewModel.fetchCQLPatientData(parser, fhirResourceDataSource, "1").value!!
+    Assert.assertEquals(auxCQLValueSetData, libraryDataLiveData)
   }
 }

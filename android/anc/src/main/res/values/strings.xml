@@ -43,4 +43,10 @@
     <string name="add_member">Add Member</string>
     <string name="encounters">Encounters</string>
     <string name="members">Members</string>
+
+    <string name="text_view_evaluate_cql_header">Evaluate</string>
+    <string name="button_cql_measure_report">Measure</string>
+    <string name="button_cql_evaluate">CQL</string>
+
+
 </resources>
