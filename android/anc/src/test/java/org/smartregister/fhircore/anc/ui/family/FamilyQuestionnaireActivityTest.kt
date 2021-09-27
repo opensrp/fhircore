@@ -60,7 +60,6 @@ import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.engine.util.FormConfigUtil
 
 @Config(shadows = [AncApplicationShadow::class])
 internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
@@ -102,12 +101,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     }
 
     familyQuestionnaireActivity.questionnaireConfig =
-      FormConfigUtil.loadConfig<List<QuestionnaireConfig>>(
-          "form_configurations.json",
-          AncApplication.getContext()
-        )
-        .associateBy { it.form }
-        .getValue(FamilyFormConstants.FAMILY_REGISTER_FORM)
+      QuestionnaireConfig(FamilyFormConstants.FAMILY_REGISTER_FORM, "Add Family", "1832")
 
     familyQuestionnaireActivity.familyRepository = familyRepository
 
@@ -146,12 +140,11 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     }
 
     familyQuestionnaireActivity.questionnaireConfig =
-      FormConfigUtil.loadConfig<List<QuestionnaireConfig>>(
-          "form_configurations.json",
-          AncApplication.getContext()
-        )
-        .associateBy { it.form }
-        .getValue(FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM)
+      QuestionnaireConfig(
+        FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM,
+        "Add Family Member",
+        "1832"
+      )
 
     familyQuestionnaireActivity.familyRepository = familyRepository
 
@@ -200,12 +193,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     }
 
     familyQuestionnaireActivity.questionnaireConfig =
-      FormConfigUtil.loadConfig<List<QuestionnaireConfig>>(
-          "form_configurations.json",
-          AncApplication.getContext()
-        )
-        .associateBy { it.form }
-        .getValue(FamilyFormConstants.ANC_ENROLLMENT_FORM)
+      QuestionnaireConfig(FamilyFormConstants.ANC_ENROLLMENT_FORM, "Enroll into ANC", "1832")
 
     familyQuestionnaireActivity.familyRepository = familyRepository
     familyQuestionnaireActivity.intent.putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, "123456")

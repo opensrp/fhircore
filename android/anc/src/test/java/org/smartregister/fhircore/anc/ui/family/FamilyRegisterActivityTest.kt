@@ -17,7 +17,10 @@
 package org.smartregister.fhircore.anc.ui.family
 
 import android.app.Activity
+import android.app.Application
+import android.content.Intent
 import android.view.MenuInflater
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Sync
 import io.mockk.every
 import io.mockk.mockk
@@ -27,19 +30,24 @@ import io.mockk.unmockkObject
 import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.flowOf
 import org.junit.After
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
 
 @Config(shadows = [AncApplicationShadow::class])
 internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
@@ -86,7 +94,25 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
     every { familyRegisterActivitySpy.menuInflater } returns menuInflater
     every { menuInflater.inflate(any(), any()) } returns Unit
 
-    Assert.assertTrue(familyRegisterActivitySpy.onCreateOptionsMenu(null))
+    assertTrue(familyRegisterActivitySpy.onCreateOptionsMenu(null))
+  }
+
+  @Test
+  fun testRegisterClientShouldStartFamilyQuestionnaireActivity() {
+    ReflectionHelpers.callInstanceMethod<FamilyRegisterActivity>(
+      familyRegisterActivity,
+      "registerClient"
+    )
+
+    val expectedIntent = Intent(familyRegisterActivity, FamilyQuestionnaireActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<Application>()).nextStartedActivity
+
+    assertEquals(expectedIntent.component, actualIntent.component)
+    assertEquals(
+      FamilyFormConstants.FAMILY_REGISTER_FORM,
+      actualIntent.getStringExtra(QUESTIONNAIRE_ARG_FORM)
+    )
   }
 
   override fun getActivity(): Activity {
