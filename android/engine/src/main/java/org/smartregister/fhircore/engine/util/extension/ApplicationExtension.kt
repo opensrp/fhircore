@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
@@ -115,9 +116,19 @@ suspend fun FhirEngine.searchActivePatients(
 suspend fun FhirEngine.countActivePatients(): Long =
   this.count<Patient> { filter(Patient.ACTIVE, true) }
 
-suspend inline fun <reified T : Resource> FhirEngine.loadResource(structureMapId: String): T? {
+suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
   return try {
-    this@loadResource.load(T::class.java, structureMapId)
+    this@loadResource.load(T::class.java, resourceId)
+  } catch (resourceNotFoundException: ResourceNotFoundException) {
+    null
+  }
+}
+
+suspend fun FhirEngine.loadRelatedPersons(patientId: String): List<RelatedPerson>? {
+  return try {
+    this@loadRelatedPersons.search {
+      filter(RelatedPerson.PATIENT) { value = "Patient/$patientId" }
+    }
   } catch (resourceNotFoundException: ResourceNotFoundException) {
     null
   }

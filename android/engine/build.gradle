@@ -4,9 +4,24 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'de.mannodermaus.android-junit5'
+    id 'jacoco'
 }
 
 android {
+
+    testOptions {
+        unitTests {
+            returnDefaultValues = true
+            all {
+                jacoco {
+                    includeNoLocationClasses = true
+                    excludes = ['jdk.internal.*']
+                }
+            }
+        }
+    }
+
     compileSdkVersion 30
     dataBinding {
         enabled true
@@ -19,6 +34,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            testCoverageEnabled true
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -38,9 +56,36 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion '1.0.1'
     }
+
+    //CQL
+    configurations {
+        all*.exclude group: 'org.eclipse.persistence'
+    }
+
+    packagingOptions {
+        exclude 'license.html'
+        exclude 'readme.html'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/license.html'
+        exclude 'META-INF/LICENSE.md'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE.md'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/ASL-2.0.txt'
+        exclude 'META-INF/LGPL-3.0.txt'
+        exclude 'META-INF/sun-jaxb.episode'
+        exclude("META-INF/*.kotlin_module")
+    }
 }
 
 dependencies {
+
+    coreLibraryDesugaring deps.desugar
 
     implementation 'androidx.core:core-ktx:1.6.0'
     implementation 'androidx.appcompat:appcompat:1.3.1'
@@ -56,6 +101,18 @@ dependencies {
     implementation "androidx.cardview:cardview:1.0.0"
     implementation 'joda-time:joda-time:2.10.6'
     implementation 'androidx.paging:paging-runtime-ktx:3.0.1'
+
+    //CQL
+    implementation "javax.xml.stream:stax-api:1.0-2"
+    implementation ("stax:stax:1.2.0") {
+        transitive = true
+        exclude group: 'stax', module: 'stax-api'
+    }
+    implementation "org.opencds.cqf.cql:engine:1.5.2"
+    def cqlEvaluatorVersion = '1.2.1-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator:' + cqlEvaluatorVersion
+    implementation 'org.opencds.cqf.cql:evaluator.builder:1.2.1-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator.dagger:1.2.1-SNAPSHOT'
 
     //Configure Jetpack Compose
     def composeVersion = "1.0.1"
@@ -76,7 +133,7 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
 
-    api('com.google.android.fhir:datacapture:0.1.0.1-alpha03') {
+    api('com.google.android.fhir:datacapture:0.1.0.5-alpha04') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -90,6 +147,10 @@ dependencies {
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
         exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
         exclude group: 'com.sun.activation', module: 'javax.activation'
+        exclude group: 'org.opencds.cqf.cql', module: 'engine'
+        exclude group: 'org.opencds.cqf.cql', module: 'evaluator'
+        exclude group: 'org.opencds.cqf.cql', module: 'evaluator.builder'
+        exclude group: 'org.opencds.cqf.cql', module: 'evaluator.dagger'
     }
 
     def hapiFhirVersion = "5.4.2"
@@ -116,8 +177,19 @@ dependencies {
     api "com.squareup.okhttp3:okhttp:$okhttpVersion"
     api "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
 
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutineVersion"
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    testImplementation deps.junit5_api
+    testRuntimeOnly deps.junit5_engine
+    testRuntimeOnly deps.junit5_engine_vintage
+    testImplementation deps.robolectric
+    testImplementation deps.atsl.ext_junit
+    testImplementation deps.atsl.ext_junit_ktx
+    testImplementation deps.coroutines.test
+    testImplementation deps.androidx.core_test
+    debugImplementation deps.fragment_testing
+    releaseImplementation deps.fragment_testing
+    testImplementation deps.mockk
+    androidTestImplementation deps.atsl.ext_junit
+    androidTestImplementation deps.atsl.espresso
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2'
+
 }

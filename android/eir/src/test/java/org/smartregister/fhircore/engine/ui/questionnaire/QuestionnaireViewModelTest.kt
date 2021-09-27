@@ -59,7 +59,6 @@ import org.smartregister.fhircore.eir.shadow.TestUtils
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
 import org.smartregister.fhircore.shadow.ShadowNpmPackageProvider
 
-/** Created by Ephraim Kigamba - nek.eam@gmail.com on 03-07-2021. */
 @Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
 @Ignore("Failing ")
 class QuestionnaireViewModelTest : RobolectricTest() {
@@ -205,7 +204,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     every { questionnaireViewModel.saveBundleResources(any(), any()) } just runs
 
-    questionnaireViewModel.saveExtractedResources(
+    questionnaireViewModel.extractAndSaveResources(
       "resourceId",
       ApplicationProvider.getApplicationContext(),
       questionnaire,
