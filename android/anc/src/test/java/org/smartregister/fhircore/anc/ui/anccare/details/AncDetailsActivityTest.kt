@@ -36,6 +36,7 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 
 @Config(shadows = [AncApplicationShadow::class])
 internal class AncDetailsActivityTest : ActivityRobolectricTest() {
@@ -77,6 +78,20 @@ internal class AncDetailsActivityTest : ActivityRobolectricTest() {
     patientDetailsActivity.onOptionsItemSelected(menuItem)
 
     val expectedIntent = Intent(patientDetailsActivity, EncounterListActivity::class.java)
+    val actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<AncApplication>()).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
+  }
+
+  @Test
+  fun testOnClickedAncEnrollmentItemShouldStartQuestionnaireActivity() {
+
+    val menuItem = RoboMenuItem(R.id.anc_enrollment)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+
+    val expectedIntent = Intent(patientDetailsActivity, FamilyQuestionnaireActivity::class.java)
     val actualIntent =
       shadowOf(ApplicationProvider.getApplicationContext<AncApplication>()).nextStartedActivity
 

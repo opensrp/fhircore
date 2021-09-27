@@ -33,7 +33,9 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
+import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
+import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 
 @Config(shadows = [AncApplicationShadow::class])
@@ -81,6 +83,23 @@ class FamilyDetailsActivityTest : ActivityRobolectricTest() {
     ReflectionHelpers.callInstanceMethod<Any>(activity, "onAddNewMemberButtonClicked")
 
     val expectedIntent = Intent(activity, FamilyQuestionnaireActivity::class.java)
+    val actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<Application>()).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testOnFamilyMemberItemClickedShouldStartAncDetailsActivity() {
+    val familyMemberItem = FamilyMemberItem("fmname", "fm1", "21", "F", true)
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      activity,
+      "onFamilyMemberItemClicked",
+      ReflectionHelpers.ClassParameter.from(FamilyMemberItem::class.java, familyMemberItem)
+    )
+
+    val expectedIntent = Intent(activity, AncDetailsActivity::class.java)
     val actualIntent =
       shadowOf(ApplicationProvider.getApplicationContext<Application>()).nextStartedActivity
 
