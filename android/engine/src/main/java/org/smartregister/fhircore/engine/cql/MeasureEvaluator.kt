@@ -40,6 +40,11 @@ import org.opencds.cqf.cql.evaluator.fhir.dal.BundleFhirDal
 import org.opencds.cqf.cql.evaluator.measure.MeasureEvalConfig
 import org.opencds.cqf.cql.evaluator.measure.r4.R4MeasureProcessor
 
+
+/**
+ * This class contains methods to run Measure evaluations given Fhir expressions It borrows code from
+ * https://github.com/DBCG/CqlEvaluatorSampleApp See also https://www.hl7.org/fhir/
+ */
 class MeasureEvaluator {
 
   var fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
@@ -47,9 +52,14 @@ class MeasureEvaluator {
   private var parser = fhirContext.newJsonParser()!!
   private val bundleFactory = fhirContext.newBundleFactory()!!
   private val bundleLinks = BundleLinks("", null, true, BundleTypeEnum.COLLECTION)
-  val adapterFactory = AdapterFactory()
-  val libraryVersionSelector = LibraryVersionSelector(adapterFactory)
+  private val adapterFactory = AdapterFactory()
+  private val libraryVersionSelector = LibraryVersionSelector(adapterFactory)
 
+  /**
+   * This method loads configurations for Measure evaluation
+   * @param libraryData Fhir resource type Library
+   * @param patientDataList List of Fhir patient resources that are related
+   */
   private fun setup(libraryData: String, patientDataList: List<String>) {
     val libraryStream: InputStream = ByteArrayInputStream(libraryData.toByteArray())
     val library = parser.parseResource(libraryStream) as IBaseBundle
@@ -106,6 +116,16 @@ class MeasureEvaluator {
       )
   }
 
+  /**
+   * This method is used to run measure evaluation
+   * @param libraryData Fhir resource type Library
+   * @param patientDataList List of Fhir patient resources that are related
+   * @param url e.g. http://fhir.org/guides/who/anc-cds/Measure/ANCIND01
+   * @param periodStartDate e.g. 2020-01-01
+   * @param periodEndDate e.g. 2020-01-31
+   * @param reportType e.g. subject
+   * @param subject e.g. "patient-charity-otala-1
+   */
   fun runMeasureEvaluate(
     libraryData: String,
     patientDataList: List<String>,
