@@ -77,7 +77,6 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
             )
           handlePregnancy(patientId, questionnaireResponse)
         }
-        else -> throw IllegalStateException("Invalid flow of app")
       }
     }
   }

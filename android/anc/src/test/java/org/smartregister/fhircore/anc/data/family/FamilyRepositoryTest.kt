@@ -148,6 +148,10 @@ class FamilyRepositoryTest : RobolectricTest() {
         this.family = family
         this.given.add(StringType(given))
       }
+      this.addAddress().apply {
+        district = "Dist 1"
+        city = "City 1"
+      }
     }
   }
 }
