@@ -56,6 +56,8 @@ class FamilyRepository(
 
   private val ancPatientRepository = AncPatientRepository(fhirEngine, AncItemMapper)
 
+  private val resourceMapperExtended = ResourceMapperExtended(fhirEngine)
+
   override suspend fun loadData(
     query: String,
     pageNumber: Int,
@@ -94,8 +96,12 @@ class FamilyRepository(
     relatedTo: String?
   ): String {
     val patientId = getUniqueId()
-    ResourceMapperExtended(fhirEngine)
-      .saveParsedResource(questionnaireResponse, questionnaire, patientId, relatedTo)
+    resourceMapperExtended.saveParsedResource(
+      questionnaireResponse,
+      questionnaire,
+      patientId,
+      relatedTo
+    )
 
     return patientId
   }
@@ -112,8 +118,7 @@ class FamilyRepository(
     questionnaireResponse: QuestionnaireResponse,
     patientId: String
   ) {
-    ResourceMapperExtended(fhirEngine)
-      .saveParsedResource(questionnaireResponse, questionnaire, patientId, null)
+    resourceMapperExtended.saveParsedResource(questionnaireResponse, questionnaire, patientId, null)
 
     val lmpItem = questionnaireResponse.find(LMP_KEY)
     val lmp = lmpItem?.answer?.firstOrNull()?.valueDateType!!

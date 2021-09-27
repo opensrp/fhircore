@@ -20,10 +20,17 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.search
 import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
@@ -32,6 +39,7 @@ import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 
 class FamilyRepositoryTest : RobolectricTest() {
@@ -73,6 +81,64 @@ class FamilyRepositoryTest : RobolectricTest() {
       Assert.assertEquals("Given2 Family2", families[1].name)
       Assert.assertEquals("2222", families[1].id)
     }
+  }
+
+  @Test
+  fun postProcessFamilyMemberShouldExtractEntities() = runBlockingTest {
+    val resourceMapperExtended = mockk<ResourceMapperExtended>()
+
+    coEvery { resourceMapperExtended.saveParsedResource(any(), any(), any(), "1111") } just runs
+
+    ReflectionHelpers.setField(repository, "resourceMapperExtended", resourceMapperExtended)
+
+    repository.postProcessFamilyMember(Questionnaire(), QuestionnaireResponse(), "1111")
+
+    coVerify { resourceMapperExtended.saveParsedResource(any(), any(), any(), "1111") }
+  }
+
+  @Test
+  fun postProcessFamilyHeadShouldExtractEntities() = runBlockingTest {
+    val resourceMapperExtended = mockk<ResourceMapperExtended>()
+
+    coEvery { resourceMapperExtended.saveParsedResource(any(), any(), any(), null) } just runs
+
+    ReflectionHelpers.setField(repository, "resourceMapperExtended", resourceMapperExtended)
+
+    repository.postProcessFamilyHead(Questionnaire(), QuestionnaireResponse())
+
+    coVerify { resourceMapperExtended.saveParsedResource(any(), any(), any(), null) }
+  }
+
+  @Test
+  fun postEnrollIntoAncShouldExtractEntitiesAndCallAncRepository() = runBlockingTest {
+    val ancRepository = mockk<AncPatientRepository>()
+    ReflectionHelpers.setField(
+      FamilyRepository::class.java,
+      repository,
+      "ancPatientRepository",
+      ancRepository
+    )
+
+    val resourceMapperExtended = mockk<ResourceMapperExtended>()
+
+    coEvery { ancRepository.enrollIntoAnc("1111", any()) } just runs
+    coEvery { resourceMapperExtended.saveParsedResource(any(), any(), "1111", null) } just runs
+
+    ReflectionHelpers.setField(repository, "resourceMapperExtended", resourceMapperExtended)
+
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        addItem().apply {
+          linkId = "lmp"
+          addAnswer().apply { this.value = DateType() }
+        }
+      }
+
+    repository.enrollIntoAnc(Questionnaire(), questionnaireResponse, "1111")
+
+    coVerify { resourceMapperExtended.saveParsedResource(any(), any(), "1111", null) }
+
+    coVerify { ancRepository.enrollIntoAnc("1111", any()) }
   }
 
   private fun buildPatient(id: String, family: String, given: String): Patient {
