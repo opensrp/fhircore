@@ -22,18 +22,15 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.family.FamilyRepository
-import org.smartregister.fhircore.anc.util.CalculationUtils
+import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
+import org.smartregister.fhircore.anc.util.computeBMIViaStandardUnits
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.find
 
 class BMIQuestionnaireActivity : QuestionnaireActivity() {
-  internal lateinit var familyRepository: FamilyRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
-//    familyRepository = FamilyRepository(AncApplication.getContext().fhirEngine, FamilyItemMapper)
   }
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
@@ -57,26 +54,18 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
         val heightInches = questionnaireResponse.find(KEY_HEIGHT_DP_SI)
 
         val weight = weightPounds?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-        val heightInFeets =
-          heightFeets?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-        val heightInInches =
-          heightInches?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
+        val heightInFeets = heightFeets?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
+        val heightInInches = heightInches?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
         val height = (heightInFeets.toDouble() * 12) + heightInInches.toDouble()
 
-        return CalculationUtils().computeBMIViaStandardUnits(height, weight.toDouble())
-
+        return computeBMIViaStandardUnits(height, weight.toDouble())
       } else {
         // for Metric Units
         val weightKgs = questionnaireResponse.find(KEY_WEIGHT_MU)
         val heightCms = questionnaireResponse.find(KEY_HEIGHT_MU)
-
         val weight = weightKgs?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
         val height = heightCms?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-
-        return CalculationUtils().computeBMIViaMetricUnits(
-          height.toDouble() / 100,
-          weight.toDouble()
-        )
+        return computeBMIViaMetricUnits(height.toDouble() / 100, weight.toDouble())
       }
     } catch (e: Exception) {
       e.printStackTrace()
@@ -98,7 +87,6 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
       }
       .show()
   }
-
 
   private fun showErrorAlert(message: String) {
     AlertDialog.Builder(this)
