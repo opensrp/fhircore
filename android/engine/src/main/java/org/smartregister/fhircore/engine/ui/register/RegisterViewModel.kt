@@ -47,7 +47,8 @@ class RegisterViewModel(
   val dispatcher: DispatcherProvider = DefaultDispatcherProvider
 ) : AndroidViewModel(application) {
 
-  private val _lastSyncTimestamp = MutableLiveData("")
+  private val _lastSyncTimestamp =
+    MutableLiveData(SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, ""))
   val lastSyncTimestamp
     get() = _lastSyncTimestamp
 

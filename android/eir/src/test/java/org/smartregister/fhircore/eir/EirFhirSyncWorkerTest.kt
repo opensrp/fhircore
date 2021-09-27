@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.eir
 
+import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkerParameters
 import androidx.work.impl.utils.taskexecutor.WorkManagerTaskExecutor
 import io.mockk.every
@@ -39,7 +40,7 @@ class EirFhirSyncWorkerTest : RobolectricTest() {
     val workerParam = mockk<WorkerParameters>()
     every { workerParam.taskExecutor } returns WorkManagerTaskExecutor(mockk())
 
-    eirFhirSyncWorker = EirFhirSyncWorker(workerParam)
+    eirFhirSyncWorker = EirFhirSyncWorker(ApplicationProvider.getApplicationContext(), workerParam)
   }
 
   @Test

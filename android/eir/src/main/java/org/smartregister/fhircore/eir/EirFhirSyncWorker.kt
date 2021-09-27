@@ -16,12 +16,13 @@
 
 package org.smartregister.fhircore.eir
 
+import android.content.Context
 import androidx.work.WorkerParameters
 import com.google.android.fhir.sync.FhirSyncWorker
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 
-class EirFhirSyncWorker(workerParams: WorkerParameters) :
-  FhirSyncWorker(EirApplication.getContext(), workerParams) {
+class EirFhirSyncWorker(context: Context, workerParams: WorkerParameters) :
+  FhirSyncWorker(context, workerParams) {
 
   override fun getSyncData() = EirApplication.getContext().resourceSyncParams
 
