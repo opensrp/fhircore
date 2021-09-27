@@ -69,7 +69,11 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
         if (value is String && value.isEmpty()) return true
         else
           data.name.contains(value.toString(), ignoreCase = true) ||
-            data.id.contentEquals(value.toString())
+            data.id.contentEquals(value.toString()) ||
+            data.identifier.contentEquals(value.toString())
+      }
+      RegisterFilterType.OVERDUE_FILTER -> {
+        data.servicesOverdue > 0
       }
       else -> false
     }
