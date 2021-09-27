@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add edit patient registration feature. This enables you to modify the patient and related person's details
 - Add Family Profile View
 - Add Past Encounters Screen
+- Add missing properties in the COVAX Immunization Resource
 
 ### Fixed
 
@@ -47,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reduce font size and spacing on patient list screen
 - removed covax prefix and postfix in general use-case
 - Changed patient registration extraction to use StructureMap-based extraction
+- Refactor COVAX Immunization extraction to use StructureMap-based extraction
 
 ## [0.0.3] - 2021-05-24
 ### Added
