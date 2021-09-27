@@ -74,7 +74,8 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     every { Sync.basicSyncJob(any()).stateFlow() } returns flowOf()
     every { Sync.basicSyncJob(any()).lastSyncTimestamp() } returns OffsetDateTime.now()
 
-    val intent = Intent().apply { putExtra(QUESTIONNAIRE_ARG_FORM, "family-member-registration") }
+    val intent =
+      Intent().apply { putExtra(QUESTIONNAIRE_ARG_FORM, FamilyFormConstants.FAMILY_REGISTER_FORM) }
 
     familyQuestionnaireActivity =
       Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent).create().get()

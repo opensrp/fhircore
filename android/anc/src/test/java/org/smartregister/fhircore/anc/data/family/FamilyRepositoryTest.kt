@@ -27,12 +27,15 @@ import io.mockk.runs
 import io.mockk.spyk
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateType
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -41,6 +44,8 @@ import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
+import org.smartregister.fhircore.anc.util.RegisterConfiguration
+import org.smartregister.fhircore.anc.util.SearchFilter
 
 class FamilyRepositoryTest : RobolectricTest() {
 
@@ -139,6 +144,31 @@ class FamilyRepositoryTest : RobolectricTest() {
     coVerify { resourceMapperExtended.saveParsedResource(any(), any(), "1111", null) }
 
     coVerify { ancRepository.enrollIntoAnc("1111", any()) }
+  }
+
+  @Test
+  fun repositoryShouldLoadCorrectRegisterConfig() = runBlockingTest {
+    val expected =
+      RegisterConfiguration(
+        "family",
+        SearchFilter(
+          "_tag",
+          Enumerations.SearchParamType.TOKEN,
+          Enumerations.DataType.CODING,
+          valueCoding =
+            Coding().apply {
+              code = "35359004"
+              system = "https://www.snomed.org"
+            }
+        ),
+        null
+      )
+
+    val actual = ReflectionHelpers.getField<RegisterConfiguration>(repository, "registerConfig")
+
+    assertEquals(expected.id, actual.id)
+    assertEquals(expected.primaryFilter?.filterType, actual.primaryFilter?.filterType)
+    assertEquals(expected.primaryFilter?.valueType, actual.primaryFilter?.valueType)
   }
 
   private fun buildPatient(id: String, family: String, given: String): Patient {

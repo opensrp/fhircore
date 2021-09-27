@@ -62,6 +62,8 @@ class AncPatientRepositoryTest : RobolectricTest() {
     coEvery { repository.searchCarePlan(any()) } returns listOf(buildCarePlan("1111"))
     coEvery { fhirEngine.load(Patient::class.java, "1111") } returns
       buildPatient("1111", "Test", "Abc")
+    coEvery { fhirEngine.load(Patient::class.java, "1110") } returns
+      buildPatient("1110", "Test0", "Abc0")
     coEvery { fhirEngine.count(any()) } returns 10
 
     runBlocking {
@@ -124,6 +126,7 @@ class AncPatientRepositoryTest : RobolectricTest() {
         district = "Dist 1"
         city = "City 1"
       }
+      this.addLink().apply { this.other = Reference().apply { reference = "Patient/1110" } }
     }
   }
 
