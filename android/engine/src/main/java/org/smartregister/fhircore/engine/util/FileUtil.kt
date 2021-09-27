@@ -24,6 +24,7 @@ import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.util.ArrayList
 import java.util.Properties
 
 /** This class has method to help load static files, their contents and properties in android */
@@ -58,6 +59,28 @@ class FileUtil {
       line = br.readLine()
     }
     return sb.toString()
+  }
+
+  /**
+   * Method for returning all files in a dir
+   * @param dir Directory to recurse
+   */
+  @Throws(IOException::class)
+  fun recurseFolders(dir: File): List<String> {
+    val returnFiles: MutableList<String> = ArrayList()
+    try {
+      val files: Array<File> = dir.listFiles()
+      for (file in files) {
+        if (file.isDirectory()) {
+          recurseFolders(file)
+        } else {
+          returnFiles.add(file.getCanonicalPath())
+        }
+      }
+    } catch (e: IOException) {
+      e.printStackTrace()
+    }
+    return returnFiles
   }
 
   companion object {
