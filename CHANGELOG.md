@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Family Registeration with Tags from SDK fix for tags and profile
 - Add edit patient registration feature. This enables you to modify the patient and related person's details
 - Add Family Profile View
+- Add Past Encounters Screen
 
 ### Fixed
 

@@ -46,6 +46,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.family.register.FamilyRegisterActivity" />
         </activity>
+        <activity android:name=".ui.anccare.encounters.EncounterListActivity" />
         <service android:name=".AncAuthAndroidService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />

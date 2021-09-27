@@ -37,6 +37,7 @@
     <string name="no_care_plan">No care plan</string>
     <string name="no_services_scheduled">No services scheduled</string>
     <string name="family_register_title">Family</string>
+    <string name="past_encounters">Past encounters</string>
 
     <string name="all_families">All Families</string>
     <string name="add_member">Add Member</string>
