@@ -14,22 +14,10 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.util
+package org.smartregister.fhircore.engine.util.extension
 
-import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Reference
 
-data class RegisterConfiguration(
-  val id: String,
-  val primaryFilter: SearchFilter?,
-  val secondaryFilter: SearchFilter?
-)
-
-/** Only TokenClientParam, and StringClientParam supported as Register Primary Filter. */
-data class SearchFilter(
-  val key: String,
-  val filterType: Enumerations.SearchParamType,
-  val valueType: Enumerations.DataType,
-  val valueCoding: Coding? = null,
-  val valueString: String? = null
-)
+fun Reference.extractId(): String {
+  return this.reference.split("/").last()
+}

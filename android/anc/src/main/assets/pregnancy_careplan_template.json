@@ -85,7 +85,8 @@
         },
         "status": "scheduled",
         "scheduledPeriod": {
-          "start": "#RefDate20w"
+          "start": "#RefDate20w",
+          "end": "#RefDate26w"
         },
         "performer": [
           {
@@ -113,7 +114,8 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "#RefDate26w"
+          "start": "#RefDate26w",
+          "end": "#RefDate30w"
         },
         "performer": [
           {
@@ -141,7 +143,8 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "#RefDate30w"
+          "start": "#RefDate30w",
+          "end": "#RefDate34w"
         },
         "performer": [
           {
@@ -169,7 +172,8 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "#RefDate34w"
+          "start": "#RefDate34w",
+          "end": "#RefDate36w"
         },
         "performer": [
           {
@@ -197,7 +201,8 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "#RefDate36w"
+          "start": "#RefDate36w",
+          "end": "#RefDate38w"
         },
         "performer": [
           {
@@ -225,7 +230,8 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "#RefDate38w"
+          "start": "#RefDate38w",
+          "end": "#RefDate40w"
         },
         "performer": [
           {
@@ -253,7 +259,8 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "#RefDate40w"
+          "start": "#RefDate40w",
+          "end": "#RefDateDeliveryEnd"
         },
         "performer": [
           {
