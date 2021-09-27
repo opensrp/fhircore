@@ -40,10 +40,9 @@ import org.opencds.cqf.cql.evaluator.fhir.dal.BundleFhirDal
 import org.opencds.cqf.cql.evaluator.measure.MeasureEvalConfig
 import org.opencds.cqf.cql.evaluator.measure.r4.R4MeasureProcessor
 
-
 /**
- * This class contains methods to run Measure evaluations given Fhir expressions It borrows code from
- * https://github.com/DBCG/CqlEvaluatorSampleApp See also https://www.hl7.org/fhir/
+ * This class contains methods to run Measure evaluations given Fhir expressions It borrows code
+ * from https://github.com/DBCG/CqlEvaluatorSampleApp See also https://www.hl7.org/fhir/
  */
 class MeasureEvaluator {
 
