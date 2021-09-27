@@ -60,3 +60,7 @@ fun Application.assertIsConfigurable() {
     throw (IllegalStateException("Application MUST implement ConfigurableApplication interface"))
   else return
 }
+
+fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {
+  return values.any { this == it }
+}
