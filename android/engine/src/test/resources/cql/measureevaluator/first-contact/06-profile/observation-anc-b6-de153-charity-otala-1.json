@@ -1,0 +1,40 @@
+{
+  "resourceType": "Observation",
+  "id": "anc-b6-de153-charity-otala-1",
+  "meta": {
+    "profile": [ "http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de153" ]
+  },
+  "status": "final",
+  "code": {
+    "coding": [ {
+      "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
+      "code": "ANC.B6.DE153",
+      "display": "Tobacco use"
+    }, {
+      "system": "http://hl7.org/fhir/sid/icd-10",
+      "code": "Z72.0",
+      "display": "Tobacco use"
+    }, {
+      "system": "http://hl7.org/fhir/sid/icd-11",
+      "code": "QE13",
+      "display": "Tobacco use"
+    }, {
+      "system": "http://snomed.info/sct",
+      "code": "110483000",
+      "display": "Tobacco user (finding)"
+    }, {
+      "system": "http://loinc.org",
+      "code": "64234-8"
+    } ]
+  },
+  "subject": {
+    "reference": "Patient/charity-otala-1"
+  },
+  "encounter": {
+    "reference": "Encounter/anc-encounter-charity-otala-1"
+  },
+  "performer": [ {
+    "reference": "PractitionerRole/jane"
+  } ],
+  "valueBoolean": false
+}

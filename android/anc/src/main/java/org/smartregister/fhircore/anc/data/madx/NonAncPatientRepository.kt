@@ -19,19 +19,13 @@ package org.smartregister.fhircore.anc.data.madx
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
-import java.util.Date
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Encounter
-import org.hl7.fhir.r4.model.EpisodeOfCare
-import org.hl7.fhir.r4.model.Goal
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.madx.model.AllergiesItem
 import org.smartregister.fhircore.anc.data.madx.model.AncPatientDetailItem
@@ -40,8 +34,6 @@ import org.smartregister.fhircore.anc.data.madx.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.madx.model.ConditionItem
 import org.smartregister.fhircore.anc.data.madx.model.EncounterItem
 import org.smartregister.fhircore.anc.data.madx.model.UpcomingServiceItem
-import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
-import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
@@ -52,7 +44,6 @@ import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
-import org.smartregister.fhircore.engine.util.extension.loadResourceTemplate
 import org.smartregister.fhircore.engine.util.extension.overdue
 import org.smartregister.fhircore.engine.util.extension.searchActivePatients
 
@@ -136,9 +127,6 @@ class NonAncPatientRepository(
       fhirEngine.search { filter(Encounter.SUBJECT) { value = "Patient/$patientId" } }
     }
 
-  suspend fun fetchPatient(patientId: String): Patient =
-    withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, patientId) }
-
   fun fetchCarePlanItem(carePlan: List<CarePlan>, patientId: String): List<CarePlanItem> {
     val listCarePlan = arrayListOf<CarePlanItem>()
     val listCarePlanList = arrayListOf<CarePlan>()
@@ -146,66 +134,24 @@ class NonAncPatientRepository(
       listCarePlanList.addAll(carePlan.filter { it.due() })
       listCarePlanList.addAll(carePlan.filter { it.overdue() })
       for (i in listCarePlanList.indices) {
-        val title = if (listCarePlanList[i].title == null) "" else listCarePlanList[i].title
-        listCarePlan.add(
-          CarePlanItem(
-            listCarePlanList[i].id,
-            patientId,
-            title,
-            listCarePlanList[i].due(),
-            listCarePlanList[i].overdue()
+        for (j in listCarePlanList[i].activity.indices) {
+          var typeString = ""
+          if (listCarePlanList[i].activity[j].hasDetail())
+            if (listCarePlanList[i].activity[j].detail.hasDescription())
+              typeString = listCarePlanList[i].activity[j].detail.description
+          listCarePlan.add(
+            CarePlanItem(
+              listCarePlanList[i].id,
+              patientId,
+              typeString,
+              listCarePlanList[i].due(),
+              listCarePlanList[i].overdue()
+            )
           )
-        )
+        }
       }
     }
     return listCarePlan
-  }
-
-  suspend fun enrollIntoAnc(patient: Patient) {
-    val pregnancyCondition = loadConfig(PREGNANCY_CONDITION, Condition::class.java)
-    pregnancyCondition.apply {
-      this.id = getUniqueId()
-      this.subject = patient.asReference()
-      this.onset = DateTimeType.now()
-    }
-    fhirEngine.save(pregnancyCondition)
-
-    val pregnancyEpisodeOfCase = loadConfig(PREGNANCY_EPISODE_OF_CARE, EpisodeOfCare::class.java)
-    pregnancyEpisodeOfCase.apply {
-      this.id = getUniqueId()
-      this.patient = patient.asReference()
-      this.diagnosisFirstRep.condition = pregnancyCondition.asReference()
-      this.period = Period().apply { this@apply.start = Date() }
-      this.status = EpisodeOfCare.EpisodeOfCareStatus.ACTIVE
-    }
-    fhirEngine.save(pregnancyEpisodeOfCase)
-
-    val pregnancyEncounter = loadConfig(PREGNANCY_FIRST_ENCOUNTER, Encounter::class.java)
-    pregnancyEncounter.apply {
-      this.id = getUniqueId()
-      this.status = Encounter.EncounterStatus.INPROGRESS
-      this.subject = patient.asReference()
-      this.episodeOfCare = listOf(pregnancyEpisodeOfCase.asReference())
-      this.period = Period().apply { this@apply.start = Date() }
-      this.diagnosisFirstRep.condition = pregnancyCondition.asReference()
-    }
-    fhirEngine.save(pregnancyEncounter)
-
-    val pregnancyGoal =
-      Goal().apply {
-        this.id = getUniqueId()
-        this.lifecycleStatus = Goal.GoalLifecycleStatus.ACTIVE
-        this.subject = patient.asReference()
-      }
-    fhirEngine.save(pregnancyGoal)
-  }
-
-  private fun <T : Resource> loadConfig(
-    id: String,
-    clazz: Class<T>,
-    data: Map<String, String?> = emptyMap()
-  ): T {
-    return AncApplication.getContext().loadResourceTemplate(id, clazz, data)
   }
 
   suspend fun postVitalSigns(
@@ -251,11 +197,5 @@ class NonAncPatientRepository(
 
   fun fetchAllergiesItem(patientId: String, listCondition: List<Condition>): List<AllergiesItem> {
     return arrayListOf()
-  }
-
-  companion object {
-    const val PREGNANCY_CONDITION = "pregnancy_condition_template.json"
-    const val PREGNANCY_EPISODE_OF_CARE = "pregnancy_episode_of_care_template.json"
-    const val PREGNANCY_FIRST_ENCOUNTER = "pregnancy_first_encounter_template.json"
   }
 }
