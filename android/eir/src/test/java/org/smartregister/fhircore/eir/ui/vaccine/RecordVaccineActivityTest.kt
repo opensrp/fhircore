@@ -43,7 +43,6 @@ import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.Questionnaire
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -62,7 +61,6 @@ import org.smartregister.fhircore.engine.util.DateUtils
 
 @Config(shadows = [EirApplicationShadow::class])
 @ExperimentalCoroutinesApi
-@Ignore
 class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   private lateinit var recordVaccineActivity: RecordVaccineActivity
