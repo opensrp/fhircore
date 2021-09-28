@@ -1,0 +1,291 @@
+<QuestionnaireResponse xlmns="http://hl7.org/fhir">
+    <id value="charity-otala-1-profile" />
+    <questionnaire value="http://fhir.org/guides/who/anc-cds/Questionnaire/ANCB6" />
+    <status value="completed" />
+    <subject>
+        <reference value="Patient/charity-otala-1" />
+    </subject>
+    <encounter>
+      <reference value="Encounter/anc-encounter-charity-otala-1"/>
+    </encounter>
+    <item>
+        <linkId value="1" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-patient#Patient.educationLevel" />
+        <text value="Highest level of education achieved" />
+        <answer>
+            <valueCoding>
+                <system value="http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes" />
+                <code value="ANC.B6.DE4" />
+                <display value="Primary school" />
+            </valueCoding>
+        </answer>
+    </item>
+    <item>
+        <linkId value="2" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-patient#Patient.occupation" />
+        <text value="Occupation" />
+        <answer>
+            <valueCoding>
+                <system value="http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes" />
+                <code value="ANC.B6.DE12" />
+                <display value="Informal employment (other)" />
+            </valueCoding>
+        </answer>
+    </item>
+    <item>
+        <linkId value="3" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de14#Observation.value[x]" />
+        <text value="Last menstrual period (LMP) date" />
+        <answer>
+            <valueDate value="2018-03-29"/>
+        </answer>
+    </item>
+    <item>
+        <linkId value="4" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de15#Observation.value[x]" />
+        <text value="Ultrasound done" />
+        <answer>
+            <valueBoolean value="false"/>
+        </answer>
+    </item>
+    <item>
+        <linkId value="5" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/ultrasound#Procedure.performed[x]" />
+        <text value="Ultrasound date" />
+    </item>
+    <item>
+        <linkId value="6" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de17#Observation.value[x]" />
+        <text value="Gestational age" />
+        <answer>
+            <valueQuantity>
+                <value value="15" />
+                <system value="http://unitsofmeasure.org" />
+                <code value="wk" />
+            </valueQuantity>
+        </answer>
+    </item>
+    <item>
+        <linkId value="7" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de18#Observation.value[x]" />
+        <text value="Source of gestational age" />
+        <answer>
+          <valueCoding>
+            <system value="http://fhir.org/guides/who/anc-cds/CodeSystem/anc-csutom-codes"/>
+            <code value="ANC.B6.DE19"/>
+            <display value="Last menstrual period (LMP)"/>
+          </valueCoding>
+        </answer>
+    </item>
+    <item>
+        <linkId value="8" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de22#Observation.value[x]" />
+        <text value="Expected date of delivery (EDD)" />
+    </item>
+    <item>
+        <linkId value="9" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de24#Observation.value[x]" />
+        <text value="Number of pregnancies (gravida)" />
+        <answer>
+            <valueInteger value="1" />
+        </answer>
+    </item>
+    <item>
+        <linkId value="10" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de25#Observation.value[x]" />
+        <text value="Number of miscarriages and/or abortions" />
+    </item>
+    <item>
+        <linkId value="11" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de26#Observation.value[x]" />
+        <text value="Number of live births" />
+    </item>
+    <item>
+        <linkId value="12" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de27#Observation.value[x]" />
+        <text value="Whether last live birth was preterm" />
+    </item>
+    <item>
+        <linkId value="13" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de31#Observation.value[x]" />
+        <text value="Number of stillbirths" />
+    </item>
+    <item>
+        <linkId value="14" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de32#Observation.value[x]" />
+        <text value="Parity" />
+    </item>
+    <item>
+        <linkId value="15" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de33#Observation.value[x]" />
+        <text value="Number of caesarian sections" />
+    </item>
+    <item>
+        <linkId value="16" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de34#Observation.value[x]" />
+        <text value="Past pregnancy complications" />
+        <answer>
+            <valueCoding>
+                <system value="http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes" />
+                <code value="ANC.B6.DE35" />
+                <display value="No past pregnancy complications" />
+            </valueCoding>
+        </answer>
+    </item>
+    <item>
+        <linkId value="17" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de51#Observation.value[x]" />
+        <text value="Substance use during past pregnancy specification" />
+    </item>
+    <item>
+        <linkId value="18" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de57#Observation.value[x]" />
+        <text value="Allergies" />
+        <answer>
+            <valueCoding>
+                <system value="http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes" />
+                <code value="ANC.B6.DE58"/>
+                <display value="Allergies - No known allergies" />
+            </valueCoding>
+        </answer>
+    </item>
+    <item>
+        <linkId value="19" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de72#Observation.value[x]" />
+        <text value="Past surgeries" />
+        <answer>
+            <valueCoding>
+                <system value="http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes" />
+                <code value="ANC.B6.DE73" />
+                <display value="No known past surgeries" />
+            </valueCoding>
+        </answer>
+    </item>
+    <item>
+        <linkId value="20" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de83#Observation.value[x]" />
+        <text value="Existing chronic health conditions" />
+        <answer>
+            <valueCoding>
+                <system value="http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes" />
+                <code value="ANC.B6.DE85"/>
+                <display value="Don't know if there are any chronic or past health conditions"/>
+            </valueCoding>
+        </answer>
+    </item>
+    <item>
+        <linkId value="21" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de99#Observation.value[x]" />
+        <text value="HIV diagnosis date" />
+    </item>
+    <item>
+        <linkId value="22" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de100#Observation.value[x]" />
+        <text value="Tetanus toxoid-containing vaccine (TTCV) immunization history" />
+        <answer>
+            <valueCoding>
+                <system value="http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes" />
+                <code value="ANC.B6.DE104" />
+                <display value="Unknown" />
+            </valueCoding>
+        </answer>
+    </item>
+    <item>
+        <linkId value="23" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de105#Observation.value[x]" />
+        <text value="Flu immunization history" />
+        <answer>
+            <valueCoding>
+                <system value="http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes" />
+                <code value="ANC.B6.DE107" />
+                <display value="No doses" />
+            </valueCoding>
+        </answer>
+    </item>
+    <item>
+        <linkId value="24" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de109#Observation.value[x]" />
+        <text value="Current medications" />
+        <answer>
+            <valueCoding>
+                <system value="http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes" />
+                <code value="ANC.B6.DE110" />
+                <display value="No medications" />
+            </valueCoding>
+        </answer>
+    </item>
+    <item>
+        <linkId value="25" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de139#Observation.value[x]" />
+        <text value="Daily caffeine intake" />
+        <answer>
+            <valueCoding>
+                <system value="http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes" />
+                <code value="ANC.B6.DE144" />
+                <display value="None of the above daily caffeine intake" />
+            </valueCoding>
+        </answer>
+    </item>
+    <item>
+        <linkId value="26" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de145#Observation.value[x]" />
+        <text value="ANC.B6.DE145" />
+        <type value="boolean" />
+        <answer>
+          <valueBoolean value="true"/>
+        </answer>
+    </item>
+    <item>
+        <linkId value="27" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de146#Observation.value[x]" />
+        <text value="Current alcohol and/or other substance use" />
+        <answer>
+            <valueCoding>
+                <system value="http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes" />
+                <code value="ANC.B6.DE147" />
+                <display value="No alcohol and/or substances" />
+            </valueCoding>
+        </answer>
+    </item>
+    <item>
+        <linkId value="28" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de153#Observation.value[x]" />
+        <text value="Tobacco use" />
+        <answer>
+            <valueBoolean value="false"/>
+        </answer>
+    </item>
+    <item>
+        <linkId value="29" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de154#Observation.value[x]" />
+        <text value="Recently quit tobacco products" />
+    </item>
+    <item>
+        <linkId value="30" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de155#Observation.value[x]" />
+        <text value="Exposure to second-hand smoke" />
+        <answer>
+            <valueBoolean value="true"/>
+        </answer>
+    </item>
+    <item>
+        <linkId value="31" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de156#Observation.value[x]" />
+        <text value="Partner HIV status (reported)" />
+        <answer>
+            <valueCoding>
+                <system value="http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes" />
+                <code value="ANC.B6.DE159" />
+                <display value="Inconclusive" />
+            </valueCoding>
+        </answer>
+    </item>
+    <item>
+        <linkId value="32" />
+        <definition value="http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de160#Observation.value[x]" />
+        <text value="Contraceptive use of male condoms" />
+        <answer>
+            <valueBoolean value="false"/>
+        </answer>
+    </item>
+</QuestionnaireResponse>

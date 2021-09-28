@@ -1,0 +1,35 @@
+{
+  "resourceType": "Observation",
+  "id": "anc-b6-de15-charity-otala-1",
+  "meta": {
+    "profile": [ "http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de15" ]
+  },
+  "status": "final",
+  "code": {
+    "coding": [ {
+      "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
+      "code": "ANC.B6.DE15",
+      "display": "Ultrasound done"
+    }, {
+      "system": "http://snomed.info/sct",
+      "code": "55052008",
+      "display": "Diagnostic ultrasound of gravid uterus (procedure)"
+    }, {
+      "system": "http://loinc.org",
+      "code": "30705-8"
+    }, {
+      "system": "https://mitel.dimi.uniud.it/ichi/#http://id.who.int/ichi",
+      "code": "NME.BA.BJ"
+    } ]
+  },
+  "subject": {
+    "reference": "Patient/charity-otala-1"
+  },
+  "encounter": {
+    "reference": "Encounter/anc-encounter-charity-otala-1"
+  },
+  "performer": [ {
+    "reference": "PractitionerRole/jane"
+  } ],
+  "valueBoolean": false
+}

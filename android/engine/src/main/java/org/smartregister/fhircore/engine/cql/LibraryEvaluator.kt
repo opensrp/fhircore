@@ -89,6 +89,7 @@ class LibraryEvaluator {
     val library = parser.parseResource(libraryStream)
     val fhirHelpersLibrary = parser.parseResource(fhirHelpersStream)
     val resources: List<IBaseResource> = Lists.newArrayList(library, fhirHelpersLibrary)
+
     bundleFactory.addRootPropertiesToBundle("bundled-directory", bundleLinks, resources.size, null)
     bundleFactory.addResourcesToBundle(
       resources,
