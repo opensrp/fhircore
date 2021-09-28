@@ -142,27 +142,25 @@ class AncDetailsFragment : Fragment() {
     ancDetailsViewModel.fetchObservation().observe(viewLifecycleOwner, this::handleObservation)
 
     ancDetailsViewModel
-    .fetchUpcomingServices()
+      .fetchUpcomingServices()
       .observe(viewLifecycleOwner, this::handleUpcomingServices)
-    ancDetailsViewModel
-      .fetchCarePlan()
-      .observe(viewLifecycleOwner, this::handleCarePlan)
+    ancDetailsViewModel.fetchCarePlan().observe(viewLifecycleOwner, this::handleCarePlan)
 
     fileUtil = FileUtil()
     CQL_BASE_URL =
       context?.let { fileUtil.getProperty("smart_register_base_url", it, CQL_CONFIG_FILE_NAME) }!!
     LIBRARY_URL =
       CQL_BASE_URL +
-              context?.let { fileUtil.getProperty("cql_library_url", it, CQL_CONFIG_FILE_NAME) }
+        context?.let { fileUtil.getProperty("cql_library_url", it, CQL_CONFIG_FILE_NAME) }
     HELPER_URL =
       CQL_BASE_URL +
-              context?.let { fileUtil.getProperty("cql_helper_library_url", it, CQL_CONFIG_FILE_NAME) }
+        context?.let { fileUtil.getProperty("cql_helper_library_url", it, CQL_CONFIG_FILE_NAME) }
     VALUE_SET_URL =
       CQL_BASE_URL +
-              context?.let { fileUtil.getProperty("cql_value_set_url", it, CQL_CONFIG_FILE_NAME) }
+        context?.let { fileUtil.getProperty("cql_value_set_url", it, CQL_CONFIG_FILE_NAME) }
     PATIENT_URL =
       CQL_BASE_URL +
-              context?.let { fileUtil.getProperty("cql_patient_url", it, CQL_CONFIG_FILE_NAME) }
+        context?.let { fileUtil.getProperty("cql_patient_url", it, CQL_CONFIG_FILE_NAME) }
 
     showCQLCard()
 
@@ -206,10 +204,6 @@ class AncDetailsFragment : Fragment() {
         populateLastSeenList(listEncounters)
       }
     }
-   
-
-   
-    >>>>>>> main
   }
 
   private fun setupViews() {
@@ -237,10 +231,10 @@ class AncDetailsFragment : Fragment() {
     with(patient) {
       val patientDetails =
         this.patientDetails.name +
-                ", " +
-                this.patientDetails.gender +
-                ", " +
-                this.patientDetails.age
+          ", " +
+          this.patientDetails.gender +
+          ", " +
+          this.patientDetails.age
       val patientId =
         this.patientDetailsHead.demographics + " ID: " + this.patientDetails.patientIdentifier
       binding.txtViewPatientDetails.text = patientDetails
@@ -274,74 +268,75 @@ class AncDetailsFragment : Fragment() {
     upcomingServicesAdapter.submitList(upcomingServiceItem)
   }
   private fun populateLastSeenList(upcomingServiceItem: List<UpcomingServiceItem>) {
-    lastSeen.submitList(upcomingServiceItem)}
+    lastSeen.submitList(upcomingServiceItem)
+  }
 
-    fun buttonCQLSetOnClickListener() {
-      button_CQLEvaluate.setOnClickListener { loadCQLLibraryData() }
-    }
+  fun buttonCQLSetOnClickListener() {
+    button_CQLEvaluate.setOnClickListener { loadCQLLibraryData() }
+  }
 
-    fun loadCQLLibraryData() {
-      ancDetailsViewModel
-        .fetchCQLLibraryData(parser, fhirResourceDataSource, LIBRARY_URL)
-        .observe(viewLifecycleOwner, this::handleCQLLibraryData)
-    }
+  fun loadCQLLibraryData() {
+    ancDetailsViewModel
+      .fetchCQLLibraryData(parser, fhirResourceDataSource, LIBRARY_URL)
+      .observe(viewLifecycleOwner, this::handleCQLLibraryData)
+  }
 
-    fun loadCQLHelperData() {
-      ancDetailsViewModel
-        .fetchCQLFhirHelperData(parser, fhirResourceDataSource, HELPER_URL)
-        .observe(viewLifecycleOwner, this::handleCQLHelperData)
-    }
+  fun loadCQLHelperData() {
+    ancDetailsViewModel
+      .fetchCQLFhirHelperData(parser, fhirResourceDataSource, HELPER_URL)
+      .observe(viewLifecycleOwner, this::handleCQLHelperData)
+  }
 
-    fun loadCQLValueSetData() {
-      ancDetailsViewModel
-        .fetchCQLValueSetData(parser, fhirResourceDataSource, VALUE_SET_URL)
-        .observe(viewLifecycleOwner, this::handleCQLValueSetData)
-    }
+  fun loadCQLValueSetData() {
+    ancDetailsViewModel
+      .fetchCQLValueSetData(parser, fhirResourceDataSource, VALUE_SET_URL)
+      .observe(viewLifecycleOwner, this::handleCQLValueSetData)
+  }
 
-    fun loadCQLPatientData() {
-      ancDetailsViewModel
-        .fetchCQLPatientData(parser, fhirResourceDataSource, "$PATIENT_URL$patientId/\$everything")
-        .observe(viewLifecycleOwner, this::handleCQLPatientData)
-    }
+  fun loadCQLPatientData() {
+    ancDetailsViewModel
+      .fetchCQLPatientData(parser, fhirResourceDataSource, "$PATIENT_URL$patientId/\$everything")
+      .observe(viewLifecycleOwner, this::handleCQLPatientData)
+  }
 
-    fun handleCQLLibraryData(auxLibraryData: String) {
-      libraryData = auxLibraryData
-      loadCQLHelperData()
-    }
+  fun handleCQLLibraryData(auxLibraryData: String) {
+    libraryData = auxLibraryData
+    loadCQLHelperData()
+  }
 
-    fun handleCQLHelperData(auxHelperData: String) {
-      helperData = auxHelperData
-      loadCQLValueSetData()
-    }
+  fun handleCQLHelperData(auxHelperData: String) {
+    helperData = auxHelperData
+    loadCQLValueSetData()
+  }
 
-    fun handleCQLValueSetData(auxValueSetData: String) {
-      valueSetData = auxValueSetData
-      loadCQLPatientData()
-    }
+  fun handleCQLValueSetData(auxValueSetData: String) {
+    valueSetData = auxValueSetData
+    loadCQLPatientData()
+  }
 
-    fun handleCQLPatientData(auxPatientData: String) {
-      testData = libraryEvaluator.processCQLPatientBundle(auxPatientData)
-      val parameters =
-        libraryEvaluator.runCql(
-          libraryData,
-          helperData,
-          valueSetData,
-          testData,
-          evaluatorId,
-          contextCQL,
-          contextLabel
-        )
-      val jsonObject = JSONObject(parameters)
-      textView_CQLResults.text = jsonObject.toString(4)
-      textView_CQLResults.visibility = View.VISIBLE
-    }
+  fun handleCQLPatientData(auxPatientData: String) {
+    testData = libraryEvaluator.processCQLPatientBundle(auxPatientData)
+    val parameters =
+      libraryEvaluator.runCql(
+        libraryData,
+        helperData,
+        valueSetData,
+        testData,
+        evaluatorId,
+        contextCQL,
+        contextLabel
+      )
+    val jsonObject = JSONObject(parameters)
+    textView_CQLResults.text = jsonObject.toString(4)
+    textView_CQLResults.visibility = View.VISIBLE
+  }
 
-    val ANC_TEST_PATIENT_ID = "e8725b4c-6db0-4158-a24d-50a5ddf1c2ed"
-    fun showCQLCard() {
-      if (patientId == ANC_TEST_PATIENT_ID) {
-        textView_EvaluateCQLHeader.visibility = View.VISIBLE
-        cardView_CQLSection.visibility = View.VISIBLE
-        buttonCQLSetOnClickListener()
-      }
+  val ANC_TEST_PATIENT_ID = "e8725b4c-6db0-4158-a24d-50a5ddf1c2ed"
+  fun showCQLCard() {
+    if (patientId == ANC_TEST_PATIENT_ID) {
+      textView_EvaluateCQLHeader.visibility = View.VISIBLE
+      cardView_CQLSection.visibility = View.VISIBLE
+      buttonCQLSetOnClickListener()
     }
   }
+}

@@ -27,8 +27,8 @@ import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.databinding.ActivityAncDetailsBinding
-import org.smartregister.fhircore.anc.ui.madx.details.NonAncDetailsActivity
 import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
+import org.smartregister.fhircore.anc.ui.madx.details.NonAncDetailsActivity
 import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
