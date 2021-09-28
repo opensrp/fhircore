@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ### Added
+-Added class for Measure report evaluation which will be used in ANC application
 - Added Logic for CQL Evaluation in ANC App. This include, AncDetailsFragment,ViewModel & Tests
 - Added CQL Lib Evaluator class for CQl Expressions
 - Gender input changed to radio selection on client info screen
@@ -31,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New mockup changes incorporated 
 
 ### Fixed
-
+- Added dependecies that were missing and causing CQL Evaluation to fail
 - Select initial/default value of Radio Button on client info screen
 - Fixed patient list pagination button position to static on bottom of list
 - Fixed patient list fragment adapter count
