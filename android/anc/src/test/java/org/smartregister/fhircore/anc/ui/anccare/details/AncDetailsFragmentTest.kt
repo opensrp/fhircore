@@ -23,7 +23,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import ca.uhn.fhir.parser.IParser
@@ -34,12 +33,13 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verify
+import java.util.Date
 import kotlinx.android.synthetic.main.fragment_anc_details.button_CQLEvaluate
 import kotlinx.android.synthetic.main.fragment_anc_details.textView_CQLResults
 import kotlinx.android.synthetic.main.fragment_anc_details.textView_EvaluateCQLHeader
-import io.mockk.verify
-import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule

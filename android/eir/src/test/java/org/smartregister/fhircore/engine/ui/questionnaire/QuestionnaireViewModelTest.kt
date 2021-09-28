@@ -44,6 +44,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
@@ -58,6 +59,7 @@ import org.smartregister.fhircore.shadow.ShadowNpmPackageProvider
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 03-07-2021. */
 @Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
+@Ignore
 class QuestionnaireViewModelTest : RobolectricTest() {
 
   private lateinit var fhirEngine: FhirEngine

@@ -33,7 +33,6 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
 import org.hl7.fhir.utilities.npm.ToolsVersion
-import org.intellij.lang.annotations.Language
 import org.junit.Ignore
 import org.junit.Test
 import org.robolectric.annotation.Config
