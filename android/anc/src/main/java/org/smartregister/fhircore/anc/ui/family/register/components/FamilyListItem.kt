@@ -68,7 +68,7 @@ fun FamilyRow(
           .weight(0.65f)
     ) {
       Text(
-        text = familyItem.extractDemographics() + ":" + familyItem.members.size,
+        text = familyItem.extractDemographics(),
         fontSize = 16.sp,
         modifier = modifier.wrapContentWidth()
       )
@@ -139,6 +139,6 @@ fun FamilyRowPreview() {
   val fmi = FamilyMemberItem("fmname", "fm1", "21", "F", true)
 
   val familyItem =
-    FamilyItem("fid", "Name ", "M", "27", "Nairobi", true, listOf(fmi, fmi, fmi), 4, 5)
+    FamilyItem("fid", "1111", "Name ", "M", "27", "Nairobi", true, listOf(fmi, fmi, fmi), 4, 5)
   FamilyRow(familyItem = familyItem, { _, _ -> })
 }

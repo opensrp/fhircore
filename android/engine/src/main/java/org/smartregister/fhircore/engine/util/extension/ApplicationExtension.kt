@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
@@ -129,6 +130,14 @@ suspend fun FhirEngine.loadRelatedPersons(patientId: String): List<RelatedPerson
     this@loadRelatedPersons.search {
       filter(RelatedPerson.PATIENT) { value = "Patient/$patientId" }
     }
+  } catch (resourceNotFoundException: ResourceNotFoundException) {
+    null
+  }
+}
+
+suspend fun FhirEngine.loadImmunizations(patientId: String): List<Immunization>? {
+  return try {
+    this@loadImmunizations.search { filter(Immunization.PATIENT) { value = "Patient/$patientId" } }
   } catch (resourceNotFoundException: ResourceNotFoundException) {
     null
   }

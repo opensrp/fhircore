@@ -24,6 +24,7 @@ import androidx.paging.compose.LazyPagingItems
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.anc.model.AncVisitStatus
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
 import org.smartregister.fhircore.anc.ui.anccare.register.components.AncPatientList
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -73,7 +74,7 @@ class AncRegisterFragment : ComposeRegisterFragment<Anc, AncPatientItem>() {
             data.patientIdentifier.contentEquals(value.toString())
       }
       RegisterFilterType.OVERDUE_FILTER -> {
-        return false // todo
+        return data.visitStatus == AncVisitStatus.OVERDUE
       }
     }
   }

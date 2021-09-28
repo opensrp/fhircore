@@ -26,9 +26,16 @@ import org.joda.time.format.DateTimeFormatter
 
 object DateUtils {
 
-  fun addDays(initialDate: String, daysToAdd: Int = 0, returnDateFormat: String = "M-d-Y"): String {
+  fun addDays(
+    initialDate: String,
+    daysToAdd: Int = 0,
+    returnDateFormat: String = "M-d-Y",
+    dateTimeFormat: String? = null
+  ): String {
     val fmt: DateTimeFormatter = DateTimeFormat.forPattern(returnDateFormat)
-    val date: DateTime = DateTime.parse(initialDate)
+    val date: DateTime =
+      if (dateTimeFormat == null) DateTime.parse(initialDate)
+      else DateTime.parse(initialDate, DateTimeFormat.forPattern(dateTimeFormat))
     return date.plusDays(daysToAdd).toString(fmt)
   }
 

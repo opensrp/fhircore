@@ -29,6 +29,7 @@ import androidx.databinding.DataBindingUtil
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.databinding.ActivityAncDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
+import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
@@ -93,6 +94,10 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
           }
         )
 
+        true
+      }
+      R.id.anc_enrollment -> {
+        this.startAncEnrollment(patientId)
         true
       }
       else -> return super.onOptionsItemSelected(item)

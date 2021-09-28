@@ -31,12 +31,12 @@
   "code" : {
     "coding" : [
       {
-        "system" : "http://example.org/tbd",
-        "code" : "TBD",
-        "display" : "Pregnancy"
+        "system": "http://loinc.org",
+        "code": "LA15173-0",
+        "display": "Pregnant"
       }
     ],
-    "text" : "Pregnancy"
+    "text" : "Pregnant"
   },
   "subject" : {
     "reference" : "#RefPatient"
