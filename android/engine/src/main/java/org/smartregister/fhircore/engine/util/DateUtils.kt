@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util
 
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -49,4 +50,16 @@ object DateUtils {
   }
 
   fun Date.makeItReadable(): String = simpleDateFormat.format(this)
+
+  fun String.getDate(formatNeeded: String): Date {
+    val format = SimpleDateFormat(formatNeeded)
+    var date = Date()
+    try {
+      date = format.parse(this)
+      println(date)
+    } catch (e: ParseException) {
+      e.printStackTrace()
+    }
+    return date
+  }
 }

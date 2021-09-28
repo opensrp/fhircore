@@ -43,6 +43,8 @@ import org.junit.Test
 import org.smartregister.fhircore.anc.data.anc.model.AncVisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
+import org.smartregister.fhircore.engine.util.DateUtils.getDate
+import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
 class AncPatientRepositoryTest : RobolectricTest() {
   private lateinit var repository: AncPatientRepository
@@ -130,10 +132,38 @@ class AncPatientRepositoryTest : RobolectricTest() {
     }
   }
 
+  @Test
+  fun fetchCarePlanItemTest() {
+    val patientId = "1111"
+    val carePlan = listOf(buildCarePlanWithActive(patientId))
+    val listCarePlan = repository.fetchCarePlanItem(carePlan = carePlan, patientId = patientId)
+    if (listCarePlan.isNotEmpty()) {
+      assertEquals(patientId, listCarePlan[0].patientIdentifier)
+      assertEquals("ABC", listCarePlan[0].title)
+    }
+  }
+
   private fun buildCarePlan(subject: String): CarePlan {
     return CarePlan().apply {
       this.subject = Reference().apply { reference = "Patient/$subject" }
       this.addActivity().detail.apply {
+        this.scheduledPeriod.start = Date()
+        this.status = CarePlan.CarePlanActivityStatus.SCHEDULED
+      }
+    }
+  }
+
+  private fun buildCarePlanWithActive(subject: String): CarePlan {
+    val date = DateType(Date())
+    val end = date.plusWeeksAsString(4).getDate("yyyy-MM-dd")
+    return CarePlan().apply {
+      this.id = "11190"
+      this.status = CarePlan.CarePlanStatus.ACTIVE
+      this.period.start = date.value
+      this.period.end = end
+      this.subject = Reference().apply { reference = "Patient/$subject" }
+      this.addActivity().detail.apply {
+        this.description = "ABC"
         this.scheduledPeriod.start = Date()
         this.status = CarePlan.CarePlanActivityStatus.SCHEDULED
       }
