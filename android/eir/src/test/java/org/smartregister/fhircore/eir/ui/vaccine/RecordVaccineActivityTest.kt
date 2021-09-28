@@ -106,7 +106,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
       coEvery { patientRepository.getPatientImmunizations(any()) } returns listOf(immunization)
 
       ReflectionHelpers.setField(
-        recordVaccineActivity.recordVaccineViewModel,
+        recordVaccineActivity.questionnaireViewModel,
         "patientRepository",
         patientRepository
       )
