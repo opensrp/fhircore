@@ -35,6 +35,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -52,6 +53,7 @@ import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
 
 @Config(shadows = [EirApplicationShadow::class, QuestionnaireActivityTest.CustomBuilder::class])
+@Ignore
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
   private lateinit var context: EirApplication
   private lateinit var questionnaireActivity: QuestionnaireActivity
