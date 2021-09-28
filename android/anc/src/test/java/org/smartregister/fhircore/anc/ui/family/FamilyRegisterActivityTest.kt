@@ -20,6 +20,10 @@ import android.app.Activity
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import androidx.test.core.app.ApplicationProvider
+import android.app.Application
+import android.content.Intent
+import android.view.MenuInflater
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Sync
 import io.mockk.coEvery
 import io.mockk.every
@@ -39,6 +43,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
 import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.AncApplication
@@ -48,8 +53,11 @@ import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
 
 @Config(shadows = [AncApplicationShadow::class])
@@ -137,7 +145,25 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
       Shadows.shadowOf(ApplicationProvider.getApplicationContext<AncApplication>())
         .nextStartedActivity
 
+    assertTrue(familyRegisterActivitySpy.onCreateOptionsMenu(null))
+  }
+
+  @Test
+  fun testRegisterClientShouldStartFamilyQuestionnaireActivity() {
+    ReflectionHelpers.callInstanceMethod<FamilyRegisterActivity>(
+      familyRegisterActivity,
+      "registerClient"
+    )
+
+    val expectedIntent = Intent(familyRegisterActivity, FamilyQuestionnaireActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<Application>()).nextStartedActivity
+
     assertEquals(expectedIntent.component, actualIntent.component)
+    assertEquals(
+      FamilyFormConstants.FAMILY_REGISTER_FORM,
+      actualIntent.getStringExtra(QUESTIONNAIRE_ARG_FORM)
+    )
   }
 
   @Test

@@ -24,19 +24,30 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import kotlinx.android.synthetic.main.fragment_anc_details.button_CQLEvaluate
+import kotlinx.android.synthetic.main.fragment_anc_details.cardView_CQLSection
+import kotlinx.android.synthetic.main.fragment_anc_details.textView_CQLResults
+import kotlinx.android.synthetic.main.fragment_anc_details.textView_EvaluateCQLHeader
+import org.json.JSONObject
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
 import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
+import org.smartregister.fhircore.engine.cql.LibraryEvaluator
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.FileUtil
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class AncDetailsFragment private constructor() : Fragment() {
 
-  private lateinit var patientId: String
+  lateinit var patientId: String
   private lateinit var fhirEngine: FhirEngine
 
   lateinit var ancDetailsViewModel: AncDetailsViewModel
@@ -46,6 +57,31 @@ class AncDetailsFragment private constructor() : Fragment() {
   private var carePlanAdapter = CarePlanAdapter()
 
   lateinit var binding: FragmentAncDetailsBinding
+
+  lateinit var parser: IParser
+
+  lateinit var fhirResourceService: FhirResourceService
+
+  lateinit var fhirResourceDataSource: FhirResourceDataSource
+
+  lateinit var libraryEvaluator: LibraryEvaluator
+
+  lateinit var fileUtil: FileUtil
+
+  var libraryData = ""
+  var helperData = ""
+  var valueSetData = ""
+  var testData = ""
+  val evaluatorId = "ANCRecommendationA2"
+  val contextCQL = "patient"
+  val contextLabel = "mom-with-anemia"
+
+  var CQL_BASE_URL = ""
+  var LIBRARY_URL = ""
+  var HELPER_URL = ""
+  var VALUE_SET_URL = ""
+  var PATIENT_URL = ""
+  var CQL_CONFIG_FILE_NAME = "configs/cql_configs.properties"
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -59,6 +95,16 @@ class AncDetailsFragment private constructor() : Fragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     patientId = arguments?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+    libraryEvaluator = LibraryEvaluator()
+    parser = FhirContext.forR4().newJsonParser()
+    fhirResourceService =
+      FhirResourceService.create(
+        parser,
+        activity?.applicationContext!!,
+        AncApplication.getContext().applicationConfiguration
+      )
+
+    fhirResourceDataSource = FhirResourceDataSource(fhirResourceService)
 
     fhirEngine = AncApplication.getContext().fhirEngine
 
@@ -83,6 +129,24 @@ class AncDetailsFragment private constructor() : Fragment() {
         context?.assets?.open("careplan_sample.json")?.bufferedReader().use { it?.readText() }
       )
       .observe(viewLifecycleOwner, this::handleCarePlan)
+
+    fileUtil = FileUtil()
+    CQL_BASE_URL =
+      context?.let { fileUtil.getProperty("smart_register_base_url", it, CQL_CONFIG_FILE_NAME) }!!
+    LIBRARY_URL =
+      CQL_BASE_URL +
+        context?.let { fileUtil.getProperty("cql_library_url", it, CQL_CONFIG_FILE_NAME) }
+    HELPER_URL =
+      CQL_BASE_URL +
+        context?.let { fileUtil.getProperty("cql_helper_library_url", it, CQL_CONFIG_FILE_NAME) }
+    VALUE_SET_URL =
+      CQL_BASE_URL +
+        context?.let { fileUtil.getProperty("cql_value_set_url", it, CQL_CONFIG_FILE_NAME) }
+    PATIENT_URL =
+      CQL_BASE_URL +
+        context?.let { fileUtil.getProperty("cql_patient_url", it, CQL_CONFIG_FILE_NAME) }
+
+    showCQLCard()
   }
 
   private fun setupViews() {
@@ -127,6 +191,75 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   private fun populateImmunizationList(listCarePlan: List<CarePlanItem>) {
     carePlanAdapter.submitList(listCarePlan)
+  }
+
+  fun buttonCQLSetOnClickListener() {
+    button_CQLEvaluate.setOnClickListener { loadCQLLibraryData() }
+  }
+
+  fun loadCQLLibraryData() {
+    ancDetailsViewModel
+      .fetchCQLLibraryData(parser, fhirResourceDataSource, LIBRARY_URL)
+      .observe(viewLifecycleOwner, this::handleCQLLibraryData)
+  }
+
+  fun loadCQLHelperData() {
+    ancDetailsViewModel
+      .fetchCQLFhirHelperData(parser, fhirResourceDataSource, HELPER_URL)
+      .observe(viewLifecycleOwner, this::handleCQLHelperData)
+  }
+
+  fun loadCQLValueSetData() {
+    ancDetailsViewModel
+      .fetchCQLValueSetData(parser, fhirResourceDataSource, VALUE_SET_URL)
+      .observe(viewLifecycleOwner, this::handleCQLValueSetData)
+  }
+
+  fun loadCQLPatientData() {
+    ancDetailsViewModel
+      .fetchCQLPatientData(parser, fhirResourceDataSource, "$PATIENT_URL$patientId/\$everything")
+      .observe(viewLifecycleOwner, this::handleCQLPatientData)
+  }
+
+  fun handleCQLLibraryData(auxLibraryData: String) {
+    libraryData = auxLibraryData
+    loadCQLHelperData()
+  }
+
+  fun handleCQLHelperData(auxHelperData: String) {
+    helperData = auxHelperData
+    loadCQLValueSetData()
+  }
+
+  fun handleCQLValueSetData(auxValueSetData: String) {
+    valueSetData = auxValueSetData
+    loadCQLPatientData()
+  }
+
+  fun handleCQLPatientData(auxPatientData: String) {
+    testData = libraryEvaluator.processCQLPatientBundle(auxPatientData)
+    val parameters =
+      libraryEvaluator.runCql(
+        libraryData,
+        helperData,
+        valueSetData,
+        testData,
+        evaluatorId,
+        contextCQL,
+        contextLabel
+      )
+    val jsonObject = JSONObject(parameters)
+    textView_CQLResults.text = jsonObject.toString(4)
+    textView_CQLResults.visibility = View.VISIBLE
+  }
+
+  val ANC_TEST_PATIENT_ID = "e8725b4c-6db0-4158-a24d-50a5ddf1c2ed"
+  fun showCQLCard() {
+    if (patientId == ANC_TEST_PATIENT_ID) {
+      textView_EvaluateCQLHeader.visibility = View.VISIBLE
+      cardView_CQLSection.visibility = View.VISIBLE
+      buttonCQLSetOnClickListener()
+    }
   }
 
   fun getAncPatientRepository(): AncPatientRepository {

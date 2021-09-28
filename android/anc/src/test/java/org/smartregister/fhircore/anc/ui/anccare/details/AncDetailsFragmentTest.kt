@@ -23,12 +23,20 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.spyk
+import kotlinx.android.synthetic.main.fragment_anc_details.button_CQLEvaluate
+import kotlinx.android.synthetic.main.fragment_anc_details.textView_CQLResults
+import kotlinx.android.synthetic.main.fragment_anc_details.textView_EvaluateCQLHeader
 import io.mockk.verify
 import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -47,6 +55,8 @@ import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
 import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
 import org.smartregister.fhircore.anc.robolectric.FragmentRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.util.FileUtil
 
 @ExperimentalCoroutinesApi
 @Config(shadows = [AncApplicationShadow::class])
@@ -66,8 +76,12 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   private val patientId = "samplePatientId"
   var ancPatientDetailItem = spyk<AncPatientDetailItem>()
 
+  val fileUtil = FileUtil()
+
   @Before
   fun setUp() {
+
+    MockKAnnotations.init(this, relaxUnitFun = true)
 
     fhirEngine = mockk(relaxed = true)
     patientRepository = mockk()
@@ -164,5 +178,134 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
 
     Assert.assertEquals("demo, M, 20", patientDetailsFragment.binding.txtViewPatientDetails.text)
     Assert.assertEquals("2 ID: 1", patientDetailsFragment.binding.txtViewPatientId.text)
+  }
+
+  @Test
+  fun handleCQLLibraryDataTest() {
+    val auxLibraryData = "auxLibraryData"
+    every { patientDetailsFragment.loadCQLHelperData() } returns Unit
+    patientDetailsFragment.handleCQLLibraryData(auxLibraryData)
+    Assert.assertEquals(auxLibraryData, patientDetailsFragment.libraryData)
+  }
+
+  @Test
+  fun handleCQLHelperDataTest() {
+    val auxHelperData = "auxHelperData"
+    every { patientDetailsFragment.loadCQLValueSetData() } returns Unit
+    patientDetailsFragment.handleCQLHelperData("auxHelperData")
+    Assert.assertEquals(auxHelperData, patientDetailsFragment.helperData)
+  }
+
+  @Test
+  fun handleCQLValueSetDataTest() {
+    val auxValueSetData = "auxValueSetData"
+    every { patientDetailsFragment.loadCQLPatientData() } returns Unit
+    patientDetailsFragment.handleCQLValueSetData(auxValueSetData)
+    Assert.assertEquals(auxValueSetData, patientDetailsFragment.valueSetData)
+  }
+
+  @Test
+  fun handleCQLPatientDataTest() {
+    val auxPatientData = "auxPatientData"
+    val parameters = "{\"parameters\":\"parameters\"}"
+    every { patientDetailsFragment.libraryEvaluator.processCQLPatientBundle(any()) } returns
+      auxPatientData
+    every {
+      patientDetailsFragment.libraryEvaluator.runCql(
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any()
+      )
+    } returns parameters
+    patientDetailsFragment.handleCQLPatientData(auxPatientData)
+    Assert.assertEquals(auxPatientData, patientDetailsFragment.testData)
+    Assert.assertNotNull(patientDetailsFragment.textView_CQLResults)
+  }
+
+  @MockK lateinit var parser: IParser
+  @MockK lateinit var fhirResourceDataSource: FhirResourceDataSource
+  @Test
+  fun loadCQLLibraryDataTest() {
+    var auxCQLLibraryData = "auxCQLLibraryData"
+    var libraryData = MutableLiveData<String>()
+    libraryData.postValue(auxCQLLibraryData)
+
+    coroutinesTestRule.runBlockingTest {
+      coEvery {
+        patientDetailsViewModel.fetchCQLLibraryData(parser, fhirResourceDataSource, any())
+      } returns libraryData
+    }
+    patientDetailsFragment.loadCQLLibraryData()
+    Assert.assertNotNull(libraryData.value)
+    Assert.assertEquals(auxCQLLibraryData, libraryData.value)
+  }
+
+  @Test
+  fun loadCQLHelperDataTest() {
+    var auxCQLHelperData = "auxCQLHelperData"
+    var helperData = MutableLiveData<String>()
+    helperData.postValue(auxCQLHelperData)
+
+    coroutinesTestRule.runBlockingTest {
+      coEvery {
+        patientDetailsViewModel.fetchCQLFhirHelperData(parser, fhirResourceDataSource, any())
+      } returns helperData
+    }
+    patientDetailsFragment.loadCQLHelperData()
+    Assert.assertNotNull(helperData.value)
+    Assert.assertEquals(auxCQLHelperData, helperData.value)
+  }
+
+  @Test
+  fun loadCQLValueSetDataTest() {
+    var auxCQLValueSetData = "auxCQLValueSetData"
+    var valueSetData = MutableLiveData<String>()
+    valueSetData.postValue(auxCQLValueSetData)
+
+    coroutinesTestRule.runBlockingTest {
+      coEvery {
+        patientDetailsViewModel.fetchCQLValueSetData(parser, fhirResourceDataSource, any())
+      } returns valueSetData
+    }
+    patientDetailsFragment.loadCQLValueSetData()
+    Assert.assertNotNull(valueSetData.value)
+    Assert.assertEquals(auxCQLValueSetData, valueSetData.value)
+  }
+
+  @Test
+  fun loadCQLPatientDataTest() {
+    var auxCQLPatientData = "auxCQLPatientData"
+    var valueSetData = MutableLiveData<String>()
+    valueSetData.postValue(auxCQLPatientData)
+
+    coroutinesTestRule.runBlockingTest {
+      coEvery {
+        patientDetailsViewModel.fetchCQLPatientData(parser, fhirResourceDataSource, any())
+      } returns valueSetData
+    }
+    patientDetailsFragment.loadCQLPatientData()
+    Assert.assertNotNull(valueSetData.value)
+    Assert.assertEquals(auxCQLPatientData, valueSetData.value)
+  }
+
+  @Test
+  fun showCQLCardTest() {
+    val ANC_TEST_PATIENT_ID = "e8725b4c-6db0-4158-a24d-50a5ddf1c2ed"
+    patientDetailsFragment.patientId = ANC_TEST_PATIENT_ID
+    every { patientDetailsFragment.buttonCQLSetOnClickListener() } returns Unit
+    patientDetailsFragment.showCQLCard()
+    Assert.assertEquals(patientDetailsFragment.textView_EvaluateCQLHeader.visibility, View.VISIBLE)
+    Assert.assertEquals(ANC_TEST_PATIENT_ID, patientDetailsFragment.patientId)
+  }
+
+  @Test
+  fun buttonCQLSetOnClickListener() {
+    every { patientDetailsFragment.loadCQLLibraryData() } returns Unit
+    patientDetailsFragment.buttonCQLSetOnClickListener()
+    Assert.assertEquals(true, patientDetailsFragment.button_CQLEvaluate.hasOnClickListeners())
   }
 }

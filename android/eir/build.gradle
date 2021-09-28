@@ -192,10 +192,10 @@ dependencies {
     debugImplementation deps.fragment_testing
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1'
 
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2'
 }
 
 dokkaHtml.configure {

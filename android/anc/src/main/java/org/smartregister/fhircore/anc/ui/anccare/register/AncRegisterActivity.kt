@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc.ui.anccare.register
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.Button
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.runBlocking
@@ -31,6 +32,7 @@ import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
+import org.smartregister.fhircore.engine.util.extension.hide
 
 class AncRegisterActivity : BaseRegisterActivity() {
   private lateinit var familyRepository: FamilyRepository
@@ -41,6 +43,7 @@ class AncRegisterActivity : BaseRegisterActivity() {
     configureViews(
       registerViewConfigurationOf().apply {
         showScanQRCode = false
+        showNewClientButton = false
         appTitle = getString(R.string.app_name)
         registrationForm = "anc-patient-registration"
       }
@@ -51,6 +54,8 @@ class AncRegisterActivity : BaseRegisterActivity() {
 
     ancPatientRepository =
       AncPatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
+
+    findViewById<Button>(R.id.btn_register_new_client).hide()
   }
 
   override fun sideMenuOptions(): List<SideMenuOption> =

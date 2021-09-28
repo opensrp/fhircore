@@ -21,6 +21,7 @@ import androidx.compose.runtime.Stable
 @Stable
 data class FamilyItem(
   val id: String,
+  val identifier: String?,
   val name: String,
   val gender: String,
   val age: String,

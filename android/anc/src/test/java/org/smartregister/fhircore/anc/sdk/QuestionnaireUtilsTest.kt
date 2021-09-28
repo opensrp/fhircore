@@ -54,12 +54,12 @@ class QuestionnaireUtilsTest : RobolectricTest() {
       target
     )
 
-    val gaObs = target[2]
+    val grObs = target[3]
     Assert.assertEquals(5, target.size)
-    Assert.assertEquals("Fetal gestational age", gaObs.code.coding[0].display)
-    Assert.assertEquals("57036006", gaObs.code.coding[0].code)
-    Assert.assertEquals("Patient/test_patient_1_id", gaObs.subject.reference)
-    Assert.assertEquals(5, gaObs.valueIntegerType.value)
+    Assert.assertEquals("Number of previous pregnancies", grObs.code.coding[0].display)
+    Assert.assertEquals("246211005", grObs.code.coding[0].code)
+    Assert.assertEquals("Patient/test_patient_1_id", grObs.subject.reference)
+    Assert.assertEquals(5, grObs.valueIntegerType.value)
 
     unmockkObject(SimpleWorkerContextProvider)
   }
