@@ -46,11 +46,12 @@ class TransformSupportServices(
 
   @Throws(FHIRException::class)
   override fun createType(appInfo: Any, name: String): Base {
-    return if (name == "RiskAssessment_Prediction") {
-      RiskAssessmentPredictionComponent()
-    } else if(name == "Immunization_Reaction") {
-      Immunization.ImmunizationReactionComponent()
-    }else ResourceFactory.createResourceOrType(name)
+    return when (name) {
+      "RiskAssessment_Prediction" -> RiskAssessmentPredictionComponent()
+      "Immunization_VaccinationProtocol" -> Immunization.ImmunizationProtocolAppliedComponent()
+      "Immunization_Reaction" -> Immunization.ImmunizationReactionComponent()
+      else -> ResourceFactory.createResourceOrType(name)
+    }
   }
 
   override fun createResource(appInfo: Any, res: Base, atRootofTransform: Boolean): Base {

@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ### Added
+-Added class for Measure report evaluation which will be used in ANC application
 - Added Logic for CQL Evaluation in ANC App. This include, AncDetailsFragment,ViewModel & Tests
 - Added CQL Lib Evaluator class for CQl Expressions
 - Gender input changed to radio selection on client info screen
@@ -26,11 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Family Registeration with Tags from SDK fix for tags and profile
 - Add edit patient registration feature. This enables you to modify the patient and related person's details
 - Add Family Profile View
-- Add Past Encounters Screen
-- New mockup changes incorporated
+- Add Past Encounters Screen 
+- Add missing properties in the COVAX Immunization Resource 
+- New mockup changes incorporated 
 
 ### Fixed
-
+- Added dependecies that were missing and causing CQL Evaluation to fail
 - Select initial/default value of Radio Button on client info screen
 - Fixed patient list pagination button position to static on bottom of list
 - Fixed patient list fragment adapter count
@@ -46,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reduce font size and spacing on patient list screen
 - removed covax prefix and postfix in general use-case
 - Changed patient registration extraction to use StructureMap-based extraction
+- Refactor COVAX Immunization extraction to use StructureMap-based extraction
 
 ## [0.0.3] - 2021-05-24
 ### Added

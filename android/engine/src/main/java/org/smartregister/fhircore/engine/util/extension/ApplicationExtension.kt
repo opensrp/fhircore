@@ -126,9 +126,7 @@ suspend fun FhirEngine.loadRelatedPersons(patientId: String): List<RelatedPerson
 
 suspend fun FhirEngine.loadImmunizations(patientId: String): List<Immunization>? {
   return try {
-    this@loadImmunizations.search {
-      filter(Immunization.PATIENT) { value = "Patient/$patientId" }
-    }
+    this@loadImmunizations.search { filter(Immunization.PATIENT) { value = "Patient/$patientId" } }
   } catch (resourceNotFoundException: ResourceNotFoundException) {
     null
   }

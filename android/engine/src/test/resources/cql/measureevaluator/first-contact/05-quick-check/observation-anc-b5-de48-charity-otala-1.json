@@ -1,0 +1,35 @@
+{
+  "resourceType": "Observation",
+  "id": "anc-b5-de48-charity-otala-1",
+  "meta": {
+    "profile": [ "http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b5-de48" ]
+  },
+  "status": "final",
+  "code": {
+    "coding": [ {
+      "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
+      "code": "ANC.B5.DE48",
+      "display": "Danger signs"
+    } ]
+  },
+  "subject": {
+    "reference": "Patient/charity-otala-1"
+  },
+  "encounter": {
+    "reference": "Encounter/anc-encounter-charity-otala-1"
+  },
+  "performer": [ {
+    "reference": "PractitionerRole/jane"
+  } ],
+  "valueCodeableConcept": {
+    "coding": [ {
+      "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
+      "code": "ANC.B5.DE49",
+      "display": "No danger signs"
+    }, {
+      "system": "http://snomed.info/sct",
+      "code": "161915001",
+      "display": "No general symptom (situation)"
+    } ]
+  }
+}

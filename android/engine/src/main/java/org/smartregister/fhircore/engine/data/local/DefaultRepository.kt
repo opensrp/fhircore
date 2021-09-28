@@ -38,11 +38,11 @@ class DefaultRepository(
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
   }
 
-  suspend inline fun loadRelatedPersons(patientId: String): List<RelatedPerson>? {
+  suspend fun loadRelatedPersons(patientId: String): List<RelatedPerson>? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadRelatedPersons(patientId) }
   }
 
-  suspend inline fun loadImmunizations(patientId: String): List<Immunization>? {
+  suspend fun loadImmunizations(patientId: String): List<Immunization>? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadImmunizations(patientId) }
   }
 
