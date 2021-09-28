@@ -34,6 +34,8 @@ import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.loadImmunizations
+import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 
 class DefaultRepositoryTest : RobolectricTest() {
 
@@ -87,5 +89,31 @@ class DefaultRepositoryTest : RobolectricTest() {
       Assert.assertEquals(patient.address[0].city, address[0].city)
       Assert.assertEquals(patient.address[0].country, address[0].country)
     }
+  }
+
+  @Test
+  fun `loadRelatedPersons() should call FhirEngine#loadRelatedPersons`() {
+    val patientId = "15672-9234"
+    val fhirEngine: FhirEngine = mockk()
+    coEvery { fhirEngine.loadRelatedPersons(patientId) } returns listOf()
+
+    val defaultRepository = DefaultRepository(fhirEngine)
+
+    runBlocking { defaultRepository.loadRelatedPersons(patientId) }
+
+    coVerify { fhirEngine.loadRelatedPersons(patientId) }
+  }
+
+  @Test
+  fun `loadImmunizations() should call FhirEngine#loadImmunizations`() {
+    val patientId = "15672-9234"
+    val fhirEngine: FhirEngine = mockk()
+    coEvery { fhirEngine.loadImmunizations(patientId) } returns listOf()
+
+    val defaultRepository = DefaultRepository(fhirEngine)
+
+    runBlocking { defaultRepository.loadImmunizations(patientId) }
+
+    coVerify { fhirEngine.loadImmunizations(patientId) }
   }
 }
