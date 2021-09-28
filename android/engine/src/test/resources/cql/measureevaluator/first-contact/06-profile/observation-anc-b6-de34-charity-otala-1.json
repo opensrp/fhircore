@@ -1,0 +1,31 @@
+{
+  "resourceType": "Observation",
+  "id": "anc-b6-de34-charity-otala-1",
+  "meta": {
+    "profile": [ "http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de34" ]
+  },
+  "status": "final",
+  "code": {
+    "coding": [ {
+      "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
+      "code": "ANC.B6.DE34",
+      "display": "Past pregnancy complications"
+    } ]
+  },
+  "subject": {
+    "reference": "Patient/charity-otala-1"
+  },
+  "encounter": {
+    "reference": "Encounter/anc-encounter-charity-otala-1"
+  },
+  "performer": [ {
+    "reference": "PractitionerRole/jane"
+  } ],
+  "valueCodeableConcept": {
+    "coding": [ {
+      "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
+      "code": "ANC.B6.DE35",
+      "display": "No past pregnancy complications"
+    } ]
+  }
+}

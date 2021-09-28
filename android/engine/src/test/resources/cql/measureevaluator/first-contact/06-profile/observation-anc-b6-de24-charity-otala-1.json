@@ -1,0 +1,32 @@
+{
+  "resourceType": "Observation",
+  "id": "anc-b6-de24-charity-otala-1",
+  "meta": {
+    "profile": [ "http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de24" ]
+  },
+  "status": "final",
+  "code": {
+    "coding": [ {
+      "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
+      "code": "ANC.B6.DE24",
+      "display": "Number of pregnancies (gravida)"
+    }, {
+      "system": "http://snomed.info/sct",
+      "code": "161732006",
+      "display": "Gravida (observable entity)"
+    }, {
+      "system": "http://loinc.org",
+      "code": "11996-6"
+    } ]
+  },
+  "subject": {
+    "reference": "Patient/charity-otala-1"
+  },
+  "encounter": {
+    "reference": "Encounter/anc-encounter-charity-otala-1"
+  },
+  "performer": [ {
+    "reference": "PractitionerRole/jane"
+  } ],
+  "valueInteger": 1
+}
