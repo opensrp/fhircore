@@ -1,0 +1,32 @@
+{
+  "resourceType": "Observation",
+  "id": "anc-b6-de14-charity-otala-1",
+  "meta": {
+    "profile": [ "http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de14" ]
+  },
+  "status": "final",
+  "code": {
+    "coding": [ {
+      "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
+      "code": "ANC.B6.DE14",
+      "display": "Last menstrual period (LMP) date"
+    }, {
+      "system": "http://snomed.info/sct",
+      "code": "21840007",
+      "display": "Date of last menstrual period (observable entity)"
+    }, {
+      "system": "http://loinc.org",
+      "code": "8665-2"
+    } ]
+  },
+  "subject": {
+    "reference": "Patient/charity-otala-1"
+  },
+  "encounter": {
+    "reference": "Encounter/anc-encounter-charity-otala-1"
+  },
+  "performer": [ {
+    "reference": "PractitionerRole/jane"
+  } ],
+  "valueDate": "2018-03-29"
+}

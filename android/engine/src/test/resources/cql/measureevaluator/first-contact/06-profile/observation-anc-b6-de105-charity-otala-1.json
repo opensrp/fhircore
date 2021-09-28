@@ -1,0 +1,39 @@
+{
+  "resourceType": "Observation",
+  "id": "anc-b6-de105-charity-otala-1",
+  "meta": {
+    "profile": [ "http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de105" ]
+  },
+  "status": "final",
+  "code": {
+    "coding": [ {
+      "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
+      "code": "ANC.B6.DE105",
+      "display": "Flu immunization history"
+    } ]
+  },
+  "subject": {
+    "reference": "Patient/charity-otala-1"
+  },
+  "encounter": {
+    "reference": "Encounter/anc-encounter-charity-otala-1"
+  },
+  "performer": [ {
+    "reference": "PractitionerRole/jane"
+  } ],
+  "valueCodeableConcept": {
+    "coding": [ {
+      "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
+      "code": "ANC.B6.DE107",
+      "display": "No doses"
+    }, {
+      "system": "http://hl7.org/fhir/sid/icd-10",
+      "code": "Z25.1",
+      "display": "Need for immunization against influenza"
+    }, {
+      "system": "http://snomed.info/sct",
+      "code": "416237000",
+      "display": "Procedure not done (situation)"
+    } ]
+  }
+}
