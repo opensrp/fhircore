@@ -41,4 +41,5 @@
     <color name="immune">#38B500</color>
     <color name="not_immune">#E8B600</color>
     <color name="separator_color">#efefef</color>
+    <color name="white_smoke">#F2F4F7</color>
 </resources>

@@ -16,6 +16,10 @@
         android:title="@string/pregnancy_outcome" />
 
     <item
+        android:id="@+id/anc_enrollment"
+        android:orderInCategory="300"
+        android:title="@string/mark_as_ANC_client" />
+    <item
         android:id="@+id/view_past_encounters"
         android:orderInCategory="300"
         android:title="@string/view_past_encounters" />

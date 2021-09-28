@@ -18,6 +18,9 @@ package org.smartregister.fhircore.anc.data.anc.model
 
 import androidx.compose.runtime.Stable
 
+import java.util.Date
+import org.hl7.fhir.r4.model.Encounter
+
 enum class AncVisitStatus {
   DUE,
   OVERDUE,
@@ -64,5 +67,12 @@ data class AncOverviewItem(
   var EDD: String = "",
   var GA: String = "",
   var noOfFetusses: String = "",
-  var risk: String = "None"
-)
+  var risk: String = "None")
+
+  @Stable
+data class EncounterItem(
+  val id: String,
+  val status: Encounter.EncounterStatus,
+  val display: String,
+  val periodStartDate: Date)
+

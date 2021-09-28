@@ -18,7 +18,6 @@ package org.smartregister.fhircore.anc.data.anc
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.withContext
@@ -26,7 +25,7 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Goal
@@ -45,7 +44,6 @@ import org.smartregister.fhircore.anc.ui.anccare.register.Anc
 import org.smartregister.fhircore.anc.util.RegisterType
 import org.smartregister.fhircore.anc.util.filterBy
 import org.smartregister.fhircore.anc.util.filterByPatient
-import org.smartregister.fhircore.anc.util.filterByPatientName
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
@@ -54,8 +52,10 @@ import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.due
+import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.format
 import org.smartregister.fhircore.engine.util.extension.loadResourceTemplate
@@ -78,15 +78,18 @@ class AncPatientRepository(
     loadAll: Boolean
   ): List<AncPatientItem> {
     return withContext(dispatcherProvider.io()) {
-      val patients =
-        fhirEngine.search<Patient> {
+      val pregnancies =
+        fhirEngine.search<Condition> {
           filterBy(registerConfig.primaryFilter!!)
+          registerConfig.secondaryFilter?.let { filterBy(it) }
 
-          filterByPatientName(query)
-
-          sort(Patient.NAME, Order.ASCENDING)
           count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
           from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+        }
+
+      val patients =
+        pregnancies.map { fhirEngine.load(Patient::class.java, it.subject.extractId()) }.sortedBy {
+          it.nameFirstRep.family
         }
 
       patients.map {
@@ -109,7 +112,10 @@ class AncPatientRepository(
 
   override suspend fun countAll(): Long =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.count<Patient> { filterBy(registerConfig.primaryFilter!!) }
+      fhirEngine.count<Condition> {
+        filterBy(registerConfig.primaryFilter!!)
+        registerConfig.secondaryFilter?.let { filterBy(it) }
+      }
     }
 
   suspend fun fetchDemographics(patientId: String): AncPatientDetailItem {
@@ -203,7 +209,8 @@ class AncPatientRepository(
       fhirEngine.search { filter(Condition.SUBJECT) { value = "Patient/$patientId" } }
     }
 
-  suspend fun enrollIntoAnc(patientId: String, lmp: DateTimeType) {
+
+  suspend fun enrollIntoAnc(patientId: String, lmp: DateType) {
     val conditionData = buildConfigData(patientId = patientId, lmp = lmp)
 
     val pregnancyCondition =
@@ -259,7 +266,7 @@ class AncPatientRepository(
     pregnancyEpisodeOfCase: EpisodeOfCare? = null,
     pregnancyEncounter: Encounter? = null,
     pregnancyGoal: Goal? = null,
-    lmp: DateTimeType? = null
+    lmp: DateType? = null
   ): Map<String, String?> {
     return mapOf(
       "#Id" to getUniqueId(),

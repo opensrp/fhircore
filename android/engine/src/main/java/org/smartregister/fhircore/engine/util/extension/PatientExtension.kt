@@ -77,7 +77,7 @@ private fun Date?.makeItReadable() = if (this != null) simpleDateFormat.format(t
 
 fun Patient.extractAddress(): String {
   if (!hasAddress()) return ""
-  return with(addressFirstRep) { "${district ?: ""} $city" }
+  return with(addressFirstRep) { "${district ?: ""} ${city ?: ""}" }
 }
 
 fun Patient.isPregnant() = this.extension.any { it.value.toString().contains("pregnant", true) }

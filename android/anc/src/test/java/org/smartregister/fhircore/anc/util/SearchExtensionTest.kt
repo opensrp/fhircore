@@ -55,6 +55,28 @@ class SearchExtensionTest {
   }
 
   @Test
+  fun testSearchFilterByShouldAddTokenFilterOfCodeableConceptType() {
+    val filter =
+      SearchFilter(
+        "code",
+        Enumerations.SearchParamType.TOKEN,
+        Enumerations.DataType.CODEABLECONCEPT,
+        valueCoding = Coding("http://snomed.com", "123456", "Code")
+      )
+
+    val search = Search(ResourceType.Patient)
+
+    search.filterBy(filter)
+
+    val tokenFilters = ReflectionHelpers.getField<List<TokenFilter>>(search, "tokenFilters")
+
+    assertEquals(1, tokenFilters.size)
+    assertEquals("http://snomed.com", tokenFilters[0].uri)
+    assertEquals("123456", tokenFilters[0].code)
+    assertEquals("code", tokenFilters[0].parameter?.paramName)
+  }
+
+  @Test
   fun testSearchFilterByShouldAddTokenFilterOfStringType() {
     val filter =
       SearchFilter(

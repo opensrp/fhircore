@@ -16,11 +16,59 @@
 
 package org.smartregister.fhircore.anc.ui.family.details
 
+import android.content.Intent
 import android.os.Bundle
+import androidx.activity.compose.setContent
+import org.hl7.fhir.r4.model.Encounter
+import org.smartregister.fhircore.anc.AncApplication
+import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
+import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
+import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
+import org.smartregister.fhircore.anc.util.startFamilyMemberRegistration
+import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
+import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 class FamilyDetailsActivity : BaseMultiLanguageActivity() {
+
+  private lateinit var familyId: String
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
+    familyId = intent.extras?.getString(QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+    val fhirEngine = (AncApplication.getContext() as ConfigurableApplication).fhirEngine
+    val familyDetailRepository = FamilyDetailRepository(familyId, fhirEngine)
+    val viewModel =
+      FamilyDetailViewModel.get(this, application as AncApplication, familyDetailRepository)
+
+    viewModel.setAppBackClickListener(this::onBackIconClicked)
+    viewModel.setMemberItemClickListener(this::onFamilyMemberItemClicked)
+    viewModel.setAddMemberItemClickListener(this::onAddNewMemberButtonClicked)
+    viewModel.setSeeAllEncounterClickListener(this::onSeeAllEncounterClicked)
+    viewModel.setEncounterItemClickListener(this::onFamilyEncounterItemClicked)
+
+    setContent { AppTheme { FamilyDetailScreen(viewModel) } }
   }
+
+  private fun onBackIconClicked() {
+    finish()
+  }
+
+  private fun onFamilyMemberItemClicked(item: FamilyMemberItem) {
+    startActivity(
+      Intent(this, AncDetailsActivity::class.java).apply {
+        putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, item.id)
+      }
+    )
+  }
+
+  private fun onAddNewMemberButtonClicked() {
+    this.startFamilyMemberRegistration(familyId)
+  }
+
+  private fun onSeeAllEncounterClicked() {}
+
+  private fun onFamilyEncounterItemClicked(item: Encounter) {}
 }
