@@ -1,0 +1,40 @@
+{
+  "resourceType": "Observation",
+  "id": "anc-b6-de155-charity-otala-1",
+  "meta": {
+    "profile": [ "http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de155" ]
+  },
+  "status": "final",
+  "code": {
+    "coding": [ {
+      "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
+      "code": "ANC.B6.DE155",
+      "display": "Exposure to second-hand smoke"
+    }, {
+      "system": "http://hl7.org/fhir/sid/icd-10",
+      "code": "Z58.7",
+      "display": "Exposure to tobacco smoke"
+    }, {
+      "system": "http://hl7.org/fhir/sid/icd-11",
+      "code": "QD70.5",
+      "display": "Problems associated with exposure to tobacco smoke"
+    }, {
+      "system": "http://snomed.info/sct",
+      "code": "43381005",
+      "display": "Passive smoker (finding)"
+    }, {
+      "system": "http://loinc.org",
+      "code": "62526-9"
+    } ]
+  },
+  "subject": {
+    "reference": "Patient/charity-otala-1"
+  },
+  "encounter": {
+    "reference": "Encounter/anc-encounter-charity-otala-1"
+  },
+  "performer": [ {
+    "reference": "PractitionerRole/jane"
+  } ],
+  "valueBoolean": true
+}
