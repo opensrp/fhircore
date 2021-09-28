@@ -37,41 +37,39 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 class AncDetailsActivity : BaseMultiLanguageActivity() {
 
-    private lateinit var patientId: String
+  private lateinit var patientId: String
 
-    private lateinit var activityAncDetailsBinding: ActivityAncDetailsBinding
+  private lateinit var activityAncDetailsBinding: ActivityAncDetailsBinding
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        activityAncDetailsBinding =
-            DataBindingUtil.setContentView(this, R.layout.activity_anc_details)
-        setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    activityAncDetailsBinding = DataBindingUtil.setContentView(this, R.layout.activity_anc_details)
+    setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
 
-        //        if (savedInstanceState == null) {
-        patientId =
-            intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+    //        if (savedInstanceState == null) {
+    patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
-        supportFragmentManager
-            .beginTransaction()
-            .replace(
-                R.id.container,
-                AncDetailsFragment.newInstance(
-                    bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
-                )
-            )
-            .commitNow()
-        //        }
+    supportFragmentManager
+      .beginTransaction()
+      .replace(
+        R.id.container,
+        AncDetailsFragment.newInstance(
+          bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
+        )
+      )
+      .commitNow()
+    //        }
 
-        activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
-    }
+    activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
+  }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.profile_menu, menu)
-        return true
-    }
+  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    menuInflater.inflate(R.menu.profile_menu, menu)
+    return true
+  }
 
-    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-        val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
+  override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+    val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
         //val markAsAncClient = menu!!.findItem(R.id.mark_as_anc_client)
         //val addVitals = menu!!.findItem(R.id.add_vitals)
         //val addConditions = menu!!.findItem(R.id.add_conditions)
@@ -84,19 +82,19 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
         //addConditions.isVisible = false
         bmiWidget.isVisible = true
 
-        val title = removeThisPerson.title.toString()
-        val s = SpannableString(title)
-        with(s) {
-            setSpan(
-                ForegroundColorSpan(Color.parseColor("#DD0000")),
-                0,
-                length,
-                android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE
-            )
-        } // provide whatever color you want here.
-        removeThisPerson.title = s
-        return super.onPrepareOptionsMenu(menu)
-    }
+    val title = removeThisPerson.title.toString()
+    val s = SpannableString(title)
+    with(s) {
+      setSpan(
+        ForegroundColorSpan(Color.parseColor("#DD0000")),
+        0,
+        length,
+        android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE
+      )
+    } // provide whatever color you want here.
+    removeThisPerson.title = s
+    return super.onPrepareOptionsMenu(menu)
+  }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {

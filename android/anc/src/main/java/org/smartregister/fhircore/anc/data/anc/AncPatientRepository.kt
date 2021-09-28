@@ -52,7 +52,6 @@ import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.due
-import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -208,7 +207,6 @@ class AncPatientRepository(
     withContext(dispatcherProvider.io()) {
       fhirEngine.search { filter(Condition.SUBJECT) { value = "Patient/$patientId" } }
     }
-
 
   suspend fun enrollIntoAnc(patientId: String, lmp: DateType) {
     val conditionData = buildConfigData(patientId = patientId, lmp = lmp)

@@ -141,31 +141,23 @@ class AncDetailsFragment : Fragment() {
     ancDetailsViewModel
       .fetchUpcomingServices()
       .observe(viewLifecycleOwner, this::handleUpcomingServices)
-    ancDetailsViewModel
-      .fetchCarePlan()
-      .observe(viewLifecycleOwner, this::handleCarePlan)
+    ancDetailsViewModel.fetchCarePlan().observe(viewLifecycleOwner, this::handleCarePlan)
 
     fileUtil = FileUtil()
     CQL_BASE_URL =
       context?.let { fileUtil.getProperty("smart_register_base_url", it, CQL_CONFIG_FILE_NAME) }!!
     LIBRARY_URL =
       CQL_BASE_URL +
-              context?.let { fileUtil.getProperty("cql_library_url", it, CQL_CONFIG_FILE_NAME) }
+        context?.let { fileUtil.getProperty("cql_library_url", it, CQL_CONFIG_FILE_NAME) }
     HELPER_URL =
       CQL_BASE_URL +
-              context?.let {
-                fileUtil.getProperty(
-                  "cql_helper_library_url",
-                  it,
-                  CQL_CONFIG_FILE_NAME
-                )
-              }
+        context?.let { fileUtil.getProperty("cql_helper_library_url", it, CQL_CONFIG_FILE_NAME) }
     VALUE_SET_URL =
       CQL_BASE_URL +
-              context?.let { fileUtil.getProperty("cql_value_set_url", it, CQL_CONFIG_FILE_NAME) }
+        context?.let { fileUtil.getProperty("cql_value_set_url", it, CQL_CONFIG_FILE_NAME) }
     PATIENT_URL =
       CQL_BASE_URL +
-              context?.let { fileUtil.getProperty("cql_patient_url", it, CQL_CONFIG_FILE_NAME) }
+        context?.let { fileUtil.getProperty("cql_patient_url", it, CQL_CONFIG_FILE_NAME) }
 
     showCQLCard()
 
@@ -236,10 +228,10 @@ class AncDetailsFragment : Fragment() {
     with(patient) {
       val patientDetails =
         this.patientDetails.name +
-                ", " +
-                this.patientDetails.gender +
-                ", " +
-                this.patientDetails.age
+          ", " +
+          this.patientDetails.gender +
+          ", " +
+          this.patientDetails.age
       val patientId =
         this.patientDetailsHead.demographics + " ID: " + this.patientDetails.patientIdentifier
       binding.txtViewPatientDetails.text = patientDetails
