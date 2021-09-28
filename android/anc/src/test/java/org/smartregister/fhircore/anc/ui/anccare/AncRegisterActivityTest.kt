@@ -17,17 +17,14 @@
 package org.smartregister.fhircore.anc.ui.anccare
 
 import android.app.Activity
-import android.view.MenuInflater
 import com.google.android.fhir.sync.Sync
 import io.mockk.every
-import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.flowOf
 import org.junit.After
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
@@ -77,16 +74,6 @@ internal class AncRegisterActivityTest : ActivityRobolectricTest() {
 
     assertEquals(R.id.menu_item_family, sideMenu[1].itemId)
     assertEquals(R.string.family_register_title, sideMenu[1].titleResource)
-  }
-
-  @Test
-  fun testThatMenuIsCreated() {
-    val menuInflater = mockk<MenuInflater>()
-
-    every { ancRegisterActivitySpy.menuInflater } returns menuInflater
-    every { menuInflater.inflate(any(), any()) } returns Unit
-
-    Assert.assertTrue(ancRegisterActivitySpy.onCreateOptionsMenu(null))
   }
 
   override fun getActivity(): Activity {

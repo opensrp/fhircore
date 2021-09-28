@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.ui.anccare.details
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
@@ -29,6 +30,8 @@ import org.smartregister.fhircore.anc.databinding.ActivityAncDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
 import org.smartregister.fhircore.anc.ui.family.form.BMIQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
+import org.smartregister.fhircore.anc.ui.madx.details.NonAncDetailsActivity
+import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
@@ -44,7 +47,7 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
             DataBindingUtil.setContentView(this, R.layout.activity_anc_details)
         setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
 
-//        if (savedInstanceState == null) {
+        //        if (savedInstanceState == null) {
         patientId =
             intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
@@ -53,25 +56,18 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
             .replace(
                 R.id.container,
                 AncDetailsFragment.newInstance(
-                    bundleOf(
-                        Pair(
-                            QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY,
-                            patientId
-                        )
-                    )
+                    bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
                 )
             )
             .commitNow()
-//        }
+        //        }
 
-        activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener {
-            onBackPressed()
-        }
+        activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.profile_menu, menu)
-        return super.onCreateOptionsMenu(menu)
+        return true
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
@@ -92,7 +88,7 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
         val s = SpannableString(title)
         with(s) {
             setSpan(
-                ForegroundColorSpan(android.graphics.Color.parseColor("#DD0000")),
+                ForegroundColorSpan(Color.parseColor("#DD0000")),
                 0,
                 length,
                 android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE
@@ -112,7 +108,10 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
                 )
                 true
             }
-
+            R.id.anc_enrollment -> {
+                this.startAncEnrollment(patientId)
+                true
+            }
             R.id.bmi_widget -> {
                 startActivity(
                     Intent(this, BMIQuestionnaireActivity::class.java)
@@ -126,7 +125,14 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
                 )
                 true
             }
-
+            R.id.remove_this_person -> {
+                startActivity(
+                    Intent(this, NonAncDetailsActivity::class.java).apply {
+                        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
+                    }
+                )
+                true
+            }
             else -> return super.onOptionsItemSelected(item)
         }
     }

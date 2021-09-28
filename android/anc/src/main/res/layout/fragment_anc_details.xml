@@ -52,7 +52,6 @@
                 android:layout_marginLeft="26dp"
                 android:layout_marginRight="26dp">
 
-
                 <TextView
                     android:id="@+id/txtView_carePlanHeading"
                     android:layout_width="wrap_content"
@@ -144,6 +143,75 @@
 
                 </androidx.cardview.widget.CardView>
 
+
+                <TextView
+                    android:id="@+id/textView_EvaluateCQLHeader"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/text_view_evaluate_cql_header"
+                    android:textAllCaps="true"
+                    android:textColor="@color/darkGrayText"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/cardView_carePlan" />
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardView_CQLSection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginRight="3dp"
+                    android:layout_marginBottom="3dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:elevation="3dp"
+                    app:cardCornerRadius="6dp"
+                    app:cardElevation="3dp"
+                    android:visibility="gone"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView_EvaluateCQLHeader">
+
+                    <LinearLayout
+                        android:id="@+id/linearLayout_CQLBody"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                        android:id="@+id/linearLayout_CQLButtons"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+
+                        <Button android:id="@+id/button_CQLEvaluate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/button_cql_evaluate"
+                            android:layout_weight="1"
+                            android:layout_marginLeft="1dp"/>
+                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/textView_CQLResults"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textAllCaps="true"
+                        android:textColor="@color/darkGrayText"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        app:layout_constraintLeft_toLeftOf="parent" />
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+
                 <TextView
                     android:id="@+id/txtView_ANCOverviewHeading"
                     android:layout_width="wrap_content"
@@ -155,7 +223,7 @@
                     android:textSize="18sp"
                     android:textStyle="bold"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/cardView_carePlan" />
+                    app:layout_constraintTop_toBottomOf="@+id/cardView_CQLSection" />
 
 
                 <TextView
@@ -170,7 +238,7 @@
                     android:textSize="18sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/imageView_ANCOverviewSeeAllArrow"
-                    app:layout_constraintTop_toBottomOf="@+id/cardView_carePlan" />
+                    app:layout_constraintTop_toBottomOf="@+id/cardView_CQLSection" />
 
                 <ImageView
                     android:id="@+id/imageView_ANCOverviewSeeAllArrow"
@@ -394,7 +462,7 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:visibility="visible"
-                            tools:itemCount="1"
+                            tools:itemCount="6"
                             tools:listitem="@layout/item_services" />
 
                         <TextView

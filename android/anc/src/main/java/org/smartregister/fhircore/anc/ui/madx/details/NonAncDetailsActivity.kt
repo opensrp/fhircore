@@ -42,162 +42,147 @@ import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class NonAncDetailsActivity : BaseMultiLanguageActivity() {
 
-    private lateinit var adapter: ViewPagerAdapter
-    private lateinit var patientId: String
+  private lateinit var adapter: ViewPagerAdapter
+  private lateinit var patientId: String
 
-    private lateinit var fhirEngine: FhirEngine
+  private lateinit var fhirEngine: FhirEngine
 
-    lateinit var ancDetailsViewModel: NonAncDetailsViewModel
+  lateinit var ancDetailsViewModel: NonAncDetailsViewModel
 
-    private lateinit var ancPatientRepository: NonAncPatientRepository
+  private lateinit var ancPatientRepository: NonAncPatientRepository
 
-    private lateinit var activityAncDetailsBinding: ActivityNonAncDetailsBinding
+  private lateinit var activityAncDetailsBinding: ActivityNonAncDetailsBinding
 
-    val details = arrayOf(
-        "CARE PLAN",
-        "DETAILS"
+  val details = arrayOf("CARE PLAN", "DETAILS")
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    activityAncDetailsBinding =
+      DataBindingUtil.setContentView(this, R.layout.activity_non_anc_details)
+    setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
+
+    fhirEngine = AncApplication.getContext().fhirEngine
+
+    //        if (savedInstanceState == null) {
+
+    patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+
+    ancPatientRepository =
+      NonAncPatientRepository((application as AncApplication).fhirEngine, NonAncPatientItemMapper)
+
+    ancDetailsViewModel =
+      ViewModelProvider(
+        this,
+        NonAncDetailsViewModel(ancPatientRepository, patientId = patientId).createFactory()
+      )[NonAncDetailsViewModel::class.java]
+
+    activityAncDetailsBinding.txtViewPatientId.text = patientId
+
+    ancDetailsViewModel
+      .fetchDemographics()
+      .observe(this@NonAncDetailsActivity, this::handlePatientDemographics)
+
+    adapter =
+      ViewPagerAdapter(
+        supportFragmentManager,
+        lifecycle,
+        bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
+      )
+    activityAncDetailsBinding.pager.adapter = adapter
+
+    TabLayoutMediator(activityAncDetailsBinding.tablayout, activityAncDetailsBinding.pager) {
+        tab,
+        position ->
+        tab.text = details[position]
+      }
+      .attach()
+
+    //        }
+
+    activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
+  }
+
+  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    menuInflater.inflate(R.menu.profile_menu_madx, menu)
+    return true
+  }
+
+  override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+    val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
+
+    val title = removeThisPerson.title.toString()
+    val s = SpannableString(title)
+    with(s) {
+      setSpan(
+        ForegroundColorSpan(android.graphics.Color.parseColor("#DD0000")),
+        0,
+        length,
+        android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE
+      )
+    } // provide whatever color you want here.
+    removeThisPerson.title = s
+    return super.onPrepareOptionsMenu(menu)
+  }
+
+  override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    if (item.itemId == R.id.add_vitals) {
+      showAlert()
+      return true
+    }
+    return super.onOptionsItemSelected(item)
+  }
+
+  private fun handlePatientDemographics(patient: AncPatientDetailItem) {
+    with(patient) {
+      val patientDetails =
+        this.patientDetails.name +
+          ", " +
+          this.patientDetails.gender +
+          ", " +
+          this.patientDetails.age
+      val patientId =
+        this.patientDetailsHead.demographics + " ID: " + this.patientDetails.patientIdentifier
+      activityAncDetailsBinding.txtViewPatientDetails.text = patientDetails
+      activityAncDetailsBinding.txtViewPatientId.text = patientId
+    }
+  }
+
+  private fun showAlert() {
+    AlertDialog.Builder(this)
+      .setMessage(getString(R.string.select_unit))
+      .setCancelable(false)
+      .setNegativeButton("Metric unit") { dialogInterface, _ ->
+        dialogInterface.dismiss()
+        openVitalSignsMetric(patientId)
+      }
+      .setPositiveButton("Standard unit") { dialogInterface, _ ->
+        dialogInterface.dismiss()
+        openVitalSignsStandard(patientId)
+      }
+      .show()
+  }
+
+  private fun openVitalSignsMetric(patientId: String) {
+    startActivity(
+      Intent(this, NonAncDetailsQuestionnaireActivity::class.java)
+        .putExtras(
+          QuestionnaireActivity.requiredIntentArgs(
+            clientIdentifier = patientId,
+            form = NonAncDetailsFormConfig.ANC_VITAL_SIGNS_METRIC
+          )
+        )
     )
+  }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        activityAncDetailsBinding =
-            DataBindingUtil.setContentView(this, R.layout.activity_non_anc_details)
-        setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
-
-        fhirEngine = AncApplication.getContext().fhirEngine
-
-
-//        if (savedInstanceState == null) {
-
-
-            patientId =
-                intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-
-            ancPatientRepository =
-                NonAncPatientRepository(
-                    (application as AncApplication).fhirEngine,
-                    NonAncPatientItemMapper
-                )
-
-            ancDetailsViewModel =
-                ViewModelProvider(
-                    this,
-                    NonAncDetailsViewModel(ancPatientRepository, patientId = patientId).createFactory()
-                )[NonAncDetailsViewModel::class.java]
-
-            activityAncDetailsBinding.txtViewPatientId.text = patientId
-
-            ancDetailsViewModel
-                .fetchDemographics()
-                .observe(this@NonAncDetailsActivity, this::handlePatientDemographics)
-
-             adapter = ViewPagerAdapter(
-                supportFragmentManager, lifecycle, bundleOf(
-                    Pair(
-                        QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY,
-                        patientId
-                    )
-                )
-            )
-            activityAncDetailsBinding.pager.adapter = adapter
-
-            TabLayoutMediator(
-                activityAncDetailsBinding.tablayout,
-                activityAncDetailsBinding.pager
-            ) { tab, position ->
-                tab.text = details[position]
-            }.attach()
-
-//        }
-
-        activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener {
-            onBackPressed()
-        }
-    }
-
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.profile_menu_madx, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-        val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
-
-        val title = removeThisPerson.title.toString()
-        val s = SpannableString(title)
-        with(s) {
-            setSpan(
-                ForegroundColorSpan(android.graphics.Color.parseColor("#DD0000")),
-                0,
-                length,
-                android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE
-            )
-        } // provide whatever color you want here.
-        removeThisPerson.title = s
-        return super.onPrepareOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.add_vitals) {
-            showAlert()
-            return true
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    private fun handlePatientDemographics(patient: AncPatientDetailItem) {
-        with(patient) {
-            val patientDetails =
-                this.patientDetails.name +
-                        ", " +
-                        this.patientDetails.gender +
-                        ", " +
-                        this.patientDetails.age
-            val patientId =
-                this.patientDetailsHead.demographics + " ID: " + this.patientDetails.patientIdentifier
-            activityAncDetailsBinding.txtViewPatientDetails.text = patientDetails
-            activityAncDetailsBinding.txtViewPatientId.text = patientId
-        }
-    }
-
-    private fun showAlert() {
-        AlertDialog.Builder(this)
-            .setMessage(getString(R.string.select_unit))
-            .setCancelable(false)
-            .setNegativeButton("Metric unit") { dialogInterface, _ ->
-                dialogInterface.dismiss()
-               openVitalSignsMetric(patientId)
-            }
-            .setPositiveButton("Standard unit") { dialogInterface, _ ->
-                dialogInterface.dismiss()
-                openVitalSignsStandard(patientId)
-            }
-            .show()
-    }
-
-    private fun openVitalSignsMetric(patientId: String) {
-        startActivity(
-            Intent(this, NonAncDetailsQuestionnaireActivity::class.java)
-                .putExtras(
-                    QuestionnaireActivity.requiredIntentArgs(
-                        clientIdentifier = patientId,
-                        form = NonAncDetailsFormConfig.ANC_VITAL_SIGNS_METRIC
-                    )
-                )
+  private fun openVitalSignsStandard(patientId: String) {
+    startActivity(
+      Intent(this, NonAncDetailsQuestionnaireActivity::class.java)
+        .putExtras(
+          QuestionnaireActivity.requiredIntentArgs(
+            clientIdentifier = patientId,
+            form = NonAncDetailsFormConfig.ANC_VITAL_SIGNS_STANDARD
+          )
         )
-    }
-
-    private fun openVitalSignsStandard(patientId: String) {
-        startActivity(
-            Intent(this, NonAncDetailsQuestionnaireActivity::class.java)
-                .putExtras(
-                    QuestionnaireActivity.requiredIntentArgs(
-                        clientIdentifier = patientId,
-                        form = NonAncDetailsFormConfig.ANC_VITAL_SIGNS_STANDARD
-                    )
-                )
-        )
-    }
-
+    )
+  }
 }

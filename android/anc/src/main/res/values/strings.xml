@@ -6,7 +6,12 @@
     <string name="menu_anc">ANC</string>
     <string name="menu_family">Family</string>
 
-    <string name="family_register_message_alert">Register another member in family?</string>
+    <string name="family_register_message_alert">Family added. Register another member in family?</string>
+    <string name="family_save_label">Save Family</string>
+    <string name="family_member_save_label">Save Family Member</string>
+    <string name="unsaved_changes_message_alert">If you leave before saving, your edits or changes will be lost</string>
+    <string name="unsaved_changes_neg">Leave</string>
+    <string name="unsaved_changes_pos">Stay</string>
 
     <string name="family_register_button_title">Register New Family</string>
     <string name="family_register_ok_title">Yes</string>
@@ -41,7 +46,6 @@
     <string name="no_care_plan">No care plan</string>
     <string name="no_services_scheduled">No services scheduled</string>
     <string name="family_register_title">Family</string>
-    <string name="past_encounters">Past encounters</string>
     <string name="mark_as_anc_client">Mark as ANC client</string>
     <string name="add_vitals">Add Vitals</string>
     <string name="add_conditions">Add Conditions</string>
@@ -59,8 +63,14 @@
     <string name="new_consultation">New Consultation</string>
     <string name="select_unit">Select unit</string>
     <string name="pregnancy_outcome">Pregnancy outcome</string>
+    <string name="past_encounters">Past encounters</string>
 
     <string name="all_families">All Families</string>
     <string name="add_member">Add Member</string>
     <string name="members">Members</string>
+
+    <string name="text_view_evaluate_cql_header">Evaluate</string>
+    <string name="button_cql_measure_report">Measure</string>
+    <string name="button_cql_evaluate">CQL</string>
+
 </resources>

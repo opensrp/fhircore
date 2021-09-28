@@ -23,38 +23,35 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.anc.data.madx.model.EncounterItem
 import org.smartregister.fhircore.anc.databinding.ItemEncountersBinding
-import org.smartregister.fhircore.anc.databinding.ItemServicesBinding
 
 /** Subclass of [ListAdapter] used to display encounter for the non ANC client */
 class EncounterAdapter :
-    ListAdapter<EncounterItem, EncounterAdapter.PatientEncounterViewHolder>(
-        ImmunizationItemDiffCallback
-    ) {
+  ListAdapter<EncounterItem, EncounterAdapter.PatientEncounterViewHolder>(
+    ImmunizationItemDiffCallback
+  ) {
 
-    inner class PatientEncounterViewHolder(private val containerView: ItemEncountersBinding) :
-        RecyclerView.ViewHolder(containerView.root) {
-        fun bindTo(encounterItem: EncounterItem) {
-            with(encounterItem) {
-                containerView.date = "$date Encounter"
-            }
-        }
+  inner class PatientEncounterViewHolder(private val containerView: ItemEncountersBinding) :
+    RecyclerView.ViewHolder(containerView.root) {
+    fun bindTo(encounterItem: EncounterItem) {
+      with(encounterItem) { containerView.date = "$date Encounter" }
     }
+  }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PatientEncounterViewHolder {
-        val inflater = LayoutInflater.from(parent.context)
-        val binding = ItemEncountersBinding.inflate(inflater)
-        return PatientEncounterViewHolder(binding)
-    }
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PatientEncounterViewHolder {
+    val inflater = LayoutInflater.from(parent.context)
+    val binding = ItemEncountersBinding.inflate(inflater)
+    return PatientEncounterViewHolder(binding)
+  }
 
-    override fun onBindViewHolder(holder: PatientEncounterViewHolder, position: Int) {
-        holder.bindTo(getItem(position))
-    }
+  override fun onBindViewHolder(holder: PatientEncounterViewHolder, position: Int) {
+    holder.bindTo(getItem(position))
+  }
 
-    object ImmunizationItemDiffCallback : DiffUtil.ItemCallback<EncounterItem>() {
-        override fun areItemsTheSame(oldItem: EncounterItem, newItem: EncounterItem) =
-            oldItem.title == newItem.title
+  object ImmunizationItemDiffCallback : DiffUtil.ItemCallback<EncounterItem>() {
+    override fun areItemsTheSame(oldItem: EncounterItem, newItem: EncounterItem) =
+      oldItem.title == newItem.title
 
-        override fun areContentsTheSame(oldItem: EncounterItem, newItem: EncounterItem) =
-            oldItem.equals(newItem)
-    }
+    override fun areContentsTheSame(oldItem: EncounterItem, newItem: EncounterItem) =
+      oldItem.equals(newItem)
+  }
 }

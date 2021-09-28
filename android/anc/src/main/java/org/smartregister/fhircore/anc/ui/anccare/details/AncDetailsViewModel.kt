@@ -20,6 +20,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.parser.IParser
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Coding
 import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
@@ -27,6 +28,7 @@ import org.smartregister.fhircore.anc.data.anc.model.AncOverviewItem
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.anc.model.UpcomingServiceItem
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -73,18 +75,18 @@ class AncDetailsViewModel(
                                     if (coding.display != null) {
                                         if (coding.display.isNotEmpty()) {
                                             when {
-                                                coding.display.lowercase()
-                                                    .contains("edd") -> ancOverviewItem.EDD =
-                                                    listObservation[i].valueDateTimeType.value.makeItReadable()
-                                                coding.display.lowercase()
-                                                    .contains("ga") -> ancOverviewItem.GA =
-                                                    listObservation[i].valueIntegerType.valueAsString
-                                                coding.display.lowercase()
-                                                    .contains("fetuses") -> ancOverviewItem.noOfFetusses =
-                                                    listObservation[i].valueIntegerType.valueAsString
-                                                coding.display.lowercase()
-                                                    .contains("risk") -> ancOverviewItem.risk =
-                                                    listObservation[i].valueStringType.valueNotNull
+                                                coding.display.lowercase().contains("edd") ->
+                                                    ancOverviewItem.EDD =
+                                                        listObservation[i].valueDateTimeType.value.makeItReadable()
+                                                coding.display.lowercase().contains("ga") ->
+                                                    ancOverviewItem.GA =
+                                                        listObservation[i].valueIntegerType.valueAsString
+                                                coding.display.lowercase().contains("fetuses") ->
+                                                    ancOverviewItem.noOfFetusses =
+                                                        listObservation[i].valueIntegerType.valueAsString
+                                                coding.display.lowercase().contains("risk") ->
+                                                    ancOverviewItem.risk =
+                                                        listObservation[i].valueIntegerType.valueAsString
                                             }
                                         }
                                     }
@@ -101,10 +103,7 @@ class AncDetailsViewModel(
         viewModelScope.launch(dispatcher.io()) {
             val listEncounters = ancPatientRepository.fetchCarePlan(patientId = patientId)
             val listEncountersItem =
-                ancPatientRepository.fetchUpcomingServiceItem(
-                    patientId = patientId,
-                    listEncounters
-                )
+                ancPatientRepository.fetchUpcomingServiceItem(patientId = patientId, listEncounters)
             patientEncounters.postValue(listEncountersItem)
         }
         return patientEncounters
@@ -115,14 +114,67 @@ class AncDetailsViewModel(
         viewModelScope.launch(dispatcher.io()) {
             val listEncounters = ancPatientRepository.fetchEncounters(patientId = patientId)
             val listEncountersItem =
-                ancPatientRepository.fetchLastSeenItem(
-                    patientId = patientId,
-                    listEncounters
-                )
+                ancPatientRepository.fetchLastSeenItem(patientId = patientId, listEncounters)
             patientEncounters.postValue(listEncountersItem)
         }
         return patientEncounters
     }
 
+    fun fetchCQLLibraryData(
+        parser: IParser,
+        fhirResourceDataSource: FhirResourceDataSource,
+        LIBRARY_URL: String
+    ): LiveData<String> {
+        var libraryData = MutableLiveData<String>()
+        viewModelScope.launch(dispatcher.io()) {
+            val auxCQLLibraryData =
+                parser.encodeResourceToString(
+                    fhirResourceDataSource.loadData(LIBRARY_URL).entry[0].resource
+                )
+            libraryData.postValue(auxCQLLibraryData)
+        }
+        return libraryData
+    }
 
+    fun fetchCQLFhirHelperData(
+        parser: IParser,
+        fhirResourceDataSource: FhirResourceDataSource,
+        HELPER_URL: String
+    ): LiveData<String> {
+        var helperData = MutableLiveData<String>()
+        viewModelScope.launch(dispatcher.io()) {
+            val auxCQLHelperData =
+                parser.encodeResourceToString(fhirResourceDataSource.loadData(HELPER_URL).entry[0].resource)
+            helperData.postValue(auxCQLHelperData)
+        }
+        return helperData
+    }
+
+    fun fetchCQLValueSetData(
+        parser: IParser,
+        fhirResourceDataSource: FhirResourceDataSource,
+        VALUE_SET_URL: String
+    ): LiveData<String> {
+        var valueSetData = MutableLiveData<String>()
+        viewModelScope.launch(dispatcher.io()) {
+            val auxCQLValueSetData =
+                parser.encodeResourceToString(fhirResourceDataSource.loadData(VALUE_SET_URL))
+            valueSetData.postValue(auxCQLValueSetData)
+        }
+        return valueSetData
+    }
+
+    fun fetchCQLPatientData(
+        parser: IParser,
+        fhirResourceDataSource: FhirResourceDataSource,
+        PATIENT_URL: String
+    ): LiveData<String> {
+        var patientData = MutableLiveData<String>()
+        viewModelScope.launch(dispatcher.io()) {
+            val auxCQLPatientData =
+                parser.encodeResourceToString(fhirResourceDataSource.loadData(PATIENT_URL))
+            patientData.postValue(auxCQLPatientData)
+        }
+        return patientData
+    }
 }

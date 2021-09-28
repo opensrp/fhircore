@@ -40,7 +40,10 @@ class UpcomingServicesAdapter :
     }
   }
 
-  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PatientUpcomingServiceViewHolder {
+  override fun onCreateViewHolder(
+    parent: ViewGroup,
+    viewType: Int
+  ): PatientUpcomingServiceViewHolder {
     val inflater = LayoutInflater.from(parent.context)
     val binding = ItemServicesBinding.inflate(inflater)
     return PatientUpcomingServiceViewHolder(binding)
