@@ -38,7 +38,7 @@ class AncRegisterFragment : ComposeRegisterFragment<Anc, AncPatientItem>() {
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
       Intent(requireActivity(), AncDetailsActivity::class.java).apply {
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY,uniqueIdentifier)
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier)
       }
     )
   }

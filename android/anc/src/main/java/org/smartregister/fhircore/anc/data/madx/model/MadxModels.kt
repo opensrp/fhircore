@@ -17,68 +17,66 @@
 package org.smartregister.fhircore.anc.data.madx.model
 
 import androidx.compose.runtime.Stable
-import java.util.Date
 
 enum class AncVisitStatus {
-    DUE,
-    OVERDUE,
-    PLANNED
+  DUE,
+  OVERDUE,
+  PLANNED
 }
 
 @Stable
 data class AncPatientItem(
-    var patientIdentifier: String = "",
-    var name: String = "",
-    var gender: String = "",
-    var age: String = "",
-    var demographics: String = "",
-    var atRisk: String = "",
-    val address: String = "",
-    val visitStatus: AncVisitStatus = AncVisitStatus.PLANNED
+  var patientIdentifier: String = "",
+  var name: String = "",
+  var gender: String = "",
+  var age: String = "",
+  var demographics: String = "",
+  var atRisk: String = "",
+  val address: String = "",
+  val visitStatus: AncVisitStatus = AncVisitStatus.PLANNED
 )
 
 @Stable
 data class AncPatientDetailItem(
-    var patientDetails: AncPatientItem = AncPatientItem(),
-    var patientDetailsHead: AncPatientItem = AncPatientItem(),
+  var patientDetails: AncPatientItem = AncPatientItem(),
+  var patientDetailsHead: AncPatientItem = AncPatientItem(),
 )
 
 @Stable
 data class CarePlanItem(
-    var carePlanIdentifier: String = "",
-    var patientIdentifier: String = "",
-    var title: String = "",
-    var due: Boolean,
-    var overdue: Boolean
+  var carePlanIdentifier: String = "",
+  var patientIdentifier: String = "",
+  var title: String = "",
+  var due: Boolean,
+  var overdue: Boolean
 )
 
 @Stable
 data class UpcomingServiceItem(
-    var encounterIdentifier: String = "",
-    var patientIdentifier: String = "",
-    var title: String = "",
-    var date: String
+  var encounterIdentifier: String = "",
+  var patientIdentifier: String = "",
+  var title: String = "",
+  var date: String
 )
-
 
 @Stable
 data class EncounterItem(
-    var encounterIdentifier: String = "",
-    var patientIdentifier: String = "",
-    var title: String = "",
-    var date: String
+  var encounterIdentifier: String = "",
+  var patientIdentifier: String = "",
+  var title: String = "",
+  var date: String
 )
 
 @Stable
 data class AllergiesItem(
-    var allergiesIdentifier: String = "",
-    var patientIdentifier: String = "",
-    var title: String = ""
+  var allergiesIdentifier: String = "",
+  var patientIdentifier: String = "",
+  var title: String = ""
 )
 
 @Stable
 data class ConditionItem(
-    var conditionIdentifier: String = "",
-    var patientIdentifier: String = "",
-    var title: String = ""
+  var conditionIdentifier: String = "",
+  var patientIdentifier: String = "",
+  var title: String = ""
 )

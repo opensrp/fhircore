@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.anccare.details
+package org.smartregister.fhircore.anc.ui.madx.details.vitalsigns
 
 import android.view.View
 import android.widget.TextView
@@ -40,27 +40,28 @@ import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
+import org.smartregister.fhircore.anc.data.madx.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.madx.model.AncPatientItem
 import org.smartregister.fhircore.anc.robolectric.FragmentRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
+import org.smartregister.fhircore.anc.ui.madx.details.NonAncDetailsActivity
 
 @ExperimentalCoroutinesApi
 @Config(shadows = [AncApplicationShadow::class])
-internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
+internal class VitalSignsDetailsFragmentTest : FragmentRobolectricTest() {
 
   private lateinit var fhirEngine: FhirEngine
 
-  private lateinit var patientDetailsViewModel: AncDetailsViewModel
+  private lateinit var patientDetailsViewModel: VitalSignsDetailsViewModel
 
-  private lateinit var patientDetailsActivity: AncDetailsActivity
+  private lateinit var patientDetailsActivity: NonAncDetailsActivity
 
-  private lateinit var patientRepository: AncPatientRepository
+  private lateinit var patientRepository: NonAncPatientRepository
 
-  private lateinit var fragmentScenario: FragmentScenario<AncDetailsFragment>
+  private lateinit var fragmentScenario: FragmentScenario<VitalSignsDetailsFragment>
 
-  private lateinit var patientDetailsFragment: AncDetailsFragment
+  private lateinit var patientDetailsFragment: VitalSignsDetailsFragment
 
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
@@ -82,17 +83,21 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
 
     patientDetailsViewModel =
       spyk(
-        AncDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider, patientId)
+        VitalSignsDetailsViewModel(
+          patientRepository,
+          coroutinesTestRule.testDispatcherProvider,
+          patientId
+        )
       )
 
     patientDetailsActivity =
-      Robolectric.buildActivity(AncDetailsActivity::class.java).create().get()
+      Robolectric.buildActivity(NonAncDetailsActivity::class.java).create().get()
     fragmentScenario =
       launchFragmentInContainer(
         factory =
           object : FragmentFactory() {
             override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
-              val fragment = spyk(AncDetailsFragment.newInstance())
+              val fragment = spyk(VitalSignsDetailsFragment.newInstance())
               every { fragment.activity } returns patientDetailsActivity
               fragment.ancDetailsViewModel = patientDetailsViewModel
               return fragment
@@ -104,53 +109,53 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   }
 
   @Test
-  fun testThatCarePlanViewsAreSetupCorrectly() {
+  fun testThatEncounterViewsAreSetupCorrectly() {
     fragmentScenario.moveToState(Lifecycle.State.RESUMED)
     Assert.assertNotNull(patientDetailsFragment.view)
 
-    // No CarePlan available text displayed
+    // None text displayed
     val noVaccinesTextView =
-      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noCarePlan)
+      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noEncounter)
     Assert.assertEquals(View.VISIBLE, noVaccinesTextView?.visibility)
-    Assert.assertEquals("No care plan", noVaccinesTextView?.text.toString())
+    Assert.assertEquals("None", noVaccinesTextView?.text.toString())
 
-    // CarePlan list is not displayed
+    // Encounter list is not displayed
     val immunizationsListView =
-      patientDetailsFragment.view?.findViewById<RecyclerView>(R.id.carePlanListView)
+      patientDetailsFragment.view?.findViewById<RecyclerView>(R.id.encounterListView)
     Assert.assertEquals(View.GONE, immunizationsListView?.visibility)
   }
 
   @Test
-  fun testThatUpcomingServicesViewsAreSetupCorrectly() {
+  fun testThatAllergiesViewsAreSetupCorrectly() {
     fragmentScenario.moveToState(Lifecycle.State.RESUMED)
     Assert.assertNotNull(patientDetailsFragment.view)
 
-    // No services scheduled available text displayed
+    // None text displayed
     val noVaccinesTextView =
-      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noUpcomingServices)
+      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noAllergies)
     Assert.assertEquals(View.VISIBLE, noVaccinesTextView?.visibility)
-    Assert.assertEquals("No services scheduled", noVaccinesTextView?.text.toString())
+    Assert.assertEquals("None", noVaccinesTextView?.text.toString())
 
-    // Upcoming list is not displayed
+    // Allergies list is not displayed
     val immunizationsListView =
-      patientDetailsFragment.view?.findViewById<RecyclerView>(R.id.upcomingServicesListView)
+      patientDetailsFragment.view?.findViewById<RecyclerView>(R.id.allergiesListView)
     Assert.assertEquals(View.GONE, immunizationsListView?.visibility)
   }
 
   @Test
-  fun testThatLastViewsAreSetupCorrectly() {
+  fun testThatConditionsViewsAreSetupCorrectly() {
     fragmentScenario.moveToState(Lifecycle.State.RESUMED)
     Assert.assertNotNull(patientDetailsFragment.view)
 
-    // No services scheduled available text displayed
+    // None text displayed
     val noVaccinesTextView =
-      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noLastSeenServices)
+      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noConditions)
     Assert.assertEquals(View.VISIBLE, noVaccinesTextView?.visibility)
-    Assert.assertEquals("No services scheduled", noVaccinesTextView?.text.toString())
+    Assert.assertEquals("None", noVaccinesTextView?.text.toString())
 
-    // Last Scene list is not displayed
+    // Conditions list is not displayed
     val immunizationsListView =
-      patientDetailsFragment.view?.findViewById<RecyclerView>(R.id.lastSeenListView)
+      patientDetailsFragment.view?.findViewById<RecyclerView>(R.id.conditionsListView)
     Assert.assertEquals(View.GONE, immunizationsListView?.visibility)
   }
 
@@ -163,31 +168,7 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   }
 
   @Test
-  fun testThatDemographicViewsAreUpdated() {
-    coroutinesTestRule.runBlockingTest {
-      fragmentScenario.moveToState(Lifecycle.State.RESUMED)
-
-      patientDetailsFragment.ancDetailsViewModel.patientDemographics.value = ancPatientDetailItem
-
-      val ancPatientDetailItem = patientDetailsViewModel.fetchDemographics().value
-      val patientDetails =
-        ancPatientDetailItem?.patientDetails?.name +
-          ", " +
-          ancPatientDetailItem?.patientDetails?.gender +
-          ", " +
-          ancPatientDetailItem?.patientDetails?.age
-      val patientId =
-        ancPatientDetailItem?.patientDetailsHead?.demographics +
-          " ID: " +
-          ancPatientDetailItem?.patientDetails?.patientIdentifier
-
-      val txtViewPatientDetails =
-        patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_patientDetails)
-      Assert.assertEquals(patientDetails, txtViewPatientDetails?.text.toString())
-
-      val txtViewPatientId =
-        patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_patientId)
-      Assert.assertEquals(patientId, txtViewPatientId?.text.toString())
-    }
+  fun testThatEncountersViewAreUpdated() {
+    coroutinesTestRule.runBlockingTest { fragmentScenario.moveToState(Lifecycle.State.RESUMED) }
   }
 }

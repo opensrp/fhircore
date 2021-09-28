@@ -22,9 +22,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.anc.data.madx.model.ConditionItem
-import org.smartregister.fhircore.anc.databinding.ItemEncountersBinding
 import org.smartregister.fhircore.anc.databinding.ItemPlanTextBinding
-import org.smartregister.fhircore.anc.databinding.ItemServicesBinding
 
 /** Subclass of [ListAdapter] used to display conditions for the non ANC client */
 class ConditionsAdapter :
@@ -35,9 +33,7 @@ class ConditionsAdapter :
   inner class PatientConditionViewHolder(private val containerView: ItemPlanTextBinding) :
     RecyclerView.ViewHolder(containerView.root) {
     fun bindTo(conditionItem: ConditionItem) {
-      with(conditionItem) {
-        containerView.title = title
-      }
+      with(conditionItem) { containerView.title = title }
     }
   }
 

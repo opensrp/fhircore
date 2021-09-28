@@ -25,7 +25,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.fhir.FhirEngine
-import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
@@ -40,109 +39,96 @@ import org.smartregister.fhircore.anc.ui.madx.details.adapter.EncounterAdapter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
-class VitalSignsDetailsFragment private constructor() : Fragment() {
+class VitalSignsDetailsFragment : Fragment() {
 
-    private lateinit var patientId: String
-    private lateinit var fhirEngine: FhirEngine
+  private lateinit var patientId: String
+  private lateinit var fhirEngine: FhirEngine
 
-    lateinit var ancDetailsViewModel: VitalSignsDetailsViewModel
+  lateinit var ancDetailsViewModel: VitalSignsDetailsViewModel
 
-    private val allergiesAdapter = AllergiesAdapter()
-    private val conditionsAdapter = ConditionsAdapter()
-    private val encounterAdapter = EncounterAdapter()
+  private val allergiesAdapter = AllergiesAdapter()
+  private val conditionsAdapter = ConditionsAdapter()
+  private val encounterAdapter = EncounterAdapter()
 
-    private lateinit var ancPatientRepository: NonAncPatientRepository
+  private lateinit var ancPatientRepository: NonAncPatientRepository
 
+  lateinit var binding: FragmentVitalDetailsBinding
 
-    lateinit var binding: FragmentVitalDetailsBinding
+  override fun onCreateView(
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?
+  ): View {
+    binding = DataBindingUtil.inflate(inflater, R.layout.fragment_vital_details, container, false)
+    return binding.root
+  }
 
-    override fun onCreate(arg0: Bundle?) {
-        super.onCreate(arg0)
-        patientId = arg0?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    super.onViewCreated(view, savedInstanceState)
+    patientId = arguments?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+
+    fhirEngine = AncApplication.getContext().fhirEngine
+
+    setupViews()
+
+    ancPatientRepository =
+      NonAncPatientRepository(
+        (requireActivity().application as AncApplication).fhirEngine,
+        NonAncPatientItemMapper
+      )
+
+    ancDetailsViewModel =
+      ViewModelProvider(
+        this,
+        VitalSignsDetailsViewModel(ancPatientRepository, patientId = patientId).createFactory()
+      )[VitalSignsDetailsViewModel::class.java]
+
+    ancDetailsViewModel.fetchEncounters().observe(viewLifecycleOwner, this::handleEncounters)
+  }
+
+  private fun handleEncounters(listEncounters: List<EncounterItem>) {
+    when {
+      listEncounters.isEmpty() -> {
+        binding.txtViewNoEncounter.visibility = View.VISIBLE
+        binding.encounterListView.visibility = View.GONE
+      }
+      else -> {
+        binding.txtViewNoEncounter.visibility = View.GONE
+        binding.encounterListView.visibility = View.VISIBLE
+        populateEncounterList(listEncounters)
+      }
     }
+  }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        binding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_vital_details, container, false)
-        return binding.root
+  private fun setupViews() {
+    binding.allergiesListView.apply {
+      adapter = allergiesAdapter
+      layoutManager = LinearLayoutManager(requireContext())
     }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        patientId = arguments?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-
-        fhirEngine = AncApplication.getContext().fhirEngine
-
-        setupViews()
-
-        ancPatientRepository =
-            NonAncPatientRepository(
-                (requireActivity().application as AncApplication).fhirEngine,
-                NonAncPatientItemMapper
-            )
-
-        ancDetailsViewModel =
-            ViewModelProvider(
-                this,
-                VitalSignsDetailsViewModel(
-                    ancPatientRepository,
-                    patientId = patientId
-                ).createFactory()
-            )[VitalSignsDetailsViewModel::class.java]
-
-
-        ancDetailsViewModel
-            .fetchEncounters()
-            .observe(viewLifecycleOwner, this::handleEncounters)
+    binding.conditionsListView.apply {
+      adapter = conditionsAdapter
+      layoutManager = LinearLayoutManager(requireContext())
     }
-
-    private fun handleEncounters(listEncounters: List<EncounterItem>) {
-        when {
-            listEncounters.isEmpty() -> {
-                binding.txtViewNoEncounter.visibility = View.VISIBLE
-                binding.encounterListView.visibility = View.GONE
-            }
-            else -> {
-                binding.txtViewNoEncounter.visibility = View.GONE
-                binding.encounterListView.visibility = View.VISIBLE
-                populateEncounterList(listEncounters)
-            }
-        }
+    binding.encounterListView.apply {
+      adapter = encounterAdapter
+      layoutManager = LinearLayoutManager(requireContext())
     }
+  }
 
-    private fun setupViews() {
-        binding.allergiesListView.apply {
-            adapter = allergiesAdapter
-            layoutManager = LinearLayoutManager(requireContext())
-        }
-        binding.conditionsListView.apply {
-            adapter = conditionsAdapter
-            layoutManager = LinearLayoutManager(requireContext())
-        }
-        binding.encounterListView.apply {
-            adapter = encounterAdapter
-            layoutManager = LinearLayoutManager(requireContext())
-        }
-    }
+  private fun populateEncounterList(listEncounters: List<EncounterItem>) {
+    encounterAdapter.submitList(arrayListOf())
+  }
 
-    private fun populateEncounterList(listEncounters: List<EncounterItem>) {
-        encounterAdapter.submitList(arrayListOf())
-    }
+  private fun populateAllergiesList(listEncounters: List<AllergiesItem>) {
+    encounterAdapter.submitList(arrayListOf())
+  }
 
-    private fun populateAllergiesList(listEncounters: List<AllergiesItem>) {
-        encounterAdapter.submitList(arrayListOf())
-    }
+  private fun populateConditionsList(listEncounters: List<ConditionItem>) {
+    encounterAdapter.submitList(arrayListOf())
+  }
 
-    private fun populateConditionsList(listEncounters: List<ConditionItem>) {
-        encounterAdapter.submitList(arrayListOf())
-    }
-
-    companion object {
-        fun newInstance(bundle: Bundle = Bundle()) =
-            VitalSignsDetailsFragment().apply { arguments = bundle }
-    }
+  companion object {
+    fun newInstance(bundle: Bundle = Bundle()) =
+      VitalSignsDetailsFragment().apply { arguments = bundle }
+  }
 }

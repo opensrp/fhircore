@@ -27,17 +27,17 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class NonAncDetailsViewModel(
-    val ancPatientRepository: NonAncPatientRepository,
-    var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
-    val patientId: String
+  val ancPatientRepository: NonAncPatientRepository,
+  var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
+  val patientId: String
 ) : ViewModel() {
 
-    fun fetchDemographics(): LiveData<AncPatientDetailItem> {
-        val patientDemographics = MutableLiveData<AncPatientDetailItem>()
-        viewModelScope.launch(dispatcher.io()) {
-            val ancPatientDetailItem = ancPatientRepository.fetchDemographics(patientId = patientId)
-            patientDemographics.postValue(ancPatientDetailItem)
-        }
-        return patientDemographics
+  fun fetchDemographics(): LiveData<AncPatientDetailItem> {
+    val patientDemographics = MutableLiveData<AncPatientDetailItem>()
+    viewModelScope.launch(dispatcher.io()) {
+      val ancPatientDetailItem = ancPatientRepository.fetchDemographics(patientId = patientId)
+      patientDemographics.postValue(ancPatientDetailItem)
     }
+    return patientDemographics
+  }
 }
