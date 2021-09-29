@@ -21,6 +21,8 @@ import com.google.android.fhir.FhirEngine
 import io.mockk.spyk
 import java.util.Date
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Reference
 import org.junit.Assert
@@ -28,8 +30,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.ui.madx.details.NonAncPatientItemMapper
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
+import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
 class NonAncPatientRepositoryTest : RobolectricTest() {
@@ -41,7 +43,7 @@ class NonAncPatientRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     fhirEngine = spyk()
-    repository = spyk(NonAncPatientRepository(fhirEngine, NonAncPatientItemMapper))
+    repository = spyk(NonAncPatientRepository(fhirEngine))
   }
 
   @Test
@@ -53,6 +55,40 @@ class NonAncPatientRepositoryTest : RobolectricTest() {
       Assert.assertEquals(patientId, listCarePlan[0].patientIdentifier)
       Assert.assertEquals("ABC", listCarePlan[0].title)
     }
+  }
+
+  @Test
+  fun fetchConditionItemTest() {
+    val patientId = "1111"
+    val conditionList = listOf(buildCondition(patientId))
+    val listConditionList = repository.fetchConditionItem(patientId = patientId, conditionList)
+    Assert.assertEquals(listConditionList.isEmpty(), true)
+  }
+
+  @Test
+  fun fetchAllergiesItemTest() {
+    val patientId = "1111"
+    val conditionList = listOf(buildCondition(patientId))
+    val listConditionList = repository.fetchAllergiesItem(patientId = patientId, conditionList)
+    Assert.assertEquals(listConditionList.isEmpty(), true)
+  }
+
+  @Test
+  fun fetchEncounterItemTest() {
+    val patientId = "1111"
+    val listConditionList = repository.fetchEncounterItem(patientId = patientId, arrayListOf())
+    Assert.assertEquals(listConditionList.isEmpty(), true)
+  }
+
+  @Test
+  fun fetchUpcomingServiceItemTest() {
+    val patientId = "1111"
+    val carePlan = listOf(buildCarePlanWithActive(patientId))
+    val listUpcomingServiceItem =
+      repository.fetchUpcomingServiceItem(patientId = patientId, carePlan = carePlan)
+    Assert.assertEquals(patientId, listUpcomingServiceItem[0].patientIdentifier)
+    Assert.assertEquals("ABC", listUpcomingServiceItem[0].title)
+    Assert.assertEquals(Date().makeItReadable(), listUpcomingServiceItem[0].date)
   }
 
   private fun buildCarePlanWithActive(subject: String): CarePlan {
@@ -69,6 +105,14 @@ class NonAncPatientRepositoryTest : RobolectricTest() {
         this.scheduledPeriod.start = Date()
         this.status = CarePlan.CarePlanActivityStatus.SCHEDULED
       }
+    }
+  }
+
+  private fun buildCondition(subject: String): Condition {
+    return Condition().apply {
+      this.id = id
+      this.code = CodeableConcept().apply { addCoding().apply { code = "123456" } }
+      this.subject = Reference().apply { reference = "Patient/$subject" }
     }
   }
 }

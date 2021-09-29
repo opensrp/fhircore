@@ -37,6 +37,7 @@ import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.anc.ui.madx.details.NonAncDetailsActivity
 
 @Config(shadows = [AncApplicationShadow::class])
 internal class AncDetailsActivityTest : ActivityRobolectricTest() {
@@ -78,6 +79,21 @@ internal class AncDetailsActivityTest : ActivityRobolectricTest() {
     patientDetailsActivity.onOptionsItemSelected(menuItem)
 
     val expectedIntent = Intent(patientDetailsActivity, EncounterListActivity::class.java)
+    val actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<AncApplication>()).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
+  }
+
+  @Test
+  @DisplayName("Should start Non ANC Details Activity for now")
+  fun testOnClickedRemoveThisPersonItemShouldStartNonAncDetailsActivity() {
+
+    val menuItem = RoboMenuItem(R.id.remove_this_person)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+
+    val expectedIntent = Intent(patientDetailsActivity, NonAncDetailsActivity::class.java)
     val actualIntent =
       shadowOf(ApplicationProvider.getApplicationContext<AncApplication>()).nextStartedActivity
 
