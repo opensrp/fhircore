@@ -23,9 +23,10 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.anc.shadow.SecureSharedPreferenceShadow
 
 @RunWith(FhircoreTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.O_MR1])
+@Config(sdk = [Build.VERSION_CODES.O_MR1], shadows = [SecureSharedPreferenceShadow::class])
 abstract class RobolectricTest {
   /** Get the liveData value by observing but wait for 3 seconds if not ready then stop observing */
   @Throws(InterruptedException::class)
