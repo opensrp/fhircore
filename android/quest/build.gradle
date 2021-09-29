@@ -32,7 +32,8 @@ android {
         minSdk 21
         targetSdk 30
         versionCode 1
-        versionName "1.0"
+        versionName "0.0.1"
+        multiDexEnabled true
 
         buildConfigField("boolean", 'SKIP_AUTH_CHECK', "false")
         buildConfigField("String", 'FHIR_BASE_URL', "\"${FHIR_BASE_URL}\"")
@@ -42,6 +43,30 @@ android {
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    packagingOptions {
+        exclude 'META-INF/ASL-2.0.txt'
+        exclude 'META-INF/LGPL-3.0.txt'
+        exclude 'license.html'
+        exclude 'readme.html'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/license.html'
+        exclude 'META-INF/LICENSE.md'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE.md'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/ASL-2.0.txt'
+        exclude 'META-INF/LGPL-3.0.txt'
+        exclude 'META-INF/sun-jaxb.episode'
+        exclude("META-INF/*.kotlin_module")
+        exclude("META-INF/AL2.0")
+        exclude("META-INF/LGPL2.1")
     }
 
     buildTypes {
