@@ -20,12 +20,15 @@ import android.os.Bundle
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 
 class LoginActivity : BaseLoginActivity() {
+
   override fun navigateToHome() {
     this.showToast("Show quest")
   }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     configureViews(
