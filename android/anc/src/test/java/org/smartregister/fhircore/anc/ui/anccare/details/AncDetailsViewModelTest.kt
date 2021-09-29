@@ -25,8 +25,10 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.spyk
+import java.text.SimpleDateFormat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import org.bouncycastle.asn1.x500.style.RFC4519Style.title
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
@@ -38,6 +40,7 @@ import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 
 @ExperimentalCoroutinesApi
@@ -155,5 +158,23 @@ internal class AncDetailsViewModelTest {
     val libraryDataLiveData: String =
       ancDetailsViewModel.fetchCQLPatientData(parser, fhirResourceDataSource, "1").value!!
     Assert.assertEquals(auxCQLValueSetData, libraryDataLiveData)
+  }
+
+  @Test
+  fun testFetchCarePlanShouldReturnExpectedCarePlan() {
+
+    val cpTitle = "First Care Plan"
+    val cpPeriodStartDate = SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01")
+
+    coEvery { patientRepository.fetchCarePlan(any(), any()) } returns
+      listOf(CarePlanItem(cpTitle, cpPeriodStartDate!!))
+
+    val carePlanList = ancDetailsViewModel.fetchCarePlan("")
+
+    Assert.assertEquals(1, carePlanList.value!!.size)
+    with(carePlanList.value!!.first()) {
+      Assert.assertEquals(cpTitle, title)
+      Assert.assertEquals(cpPeriodStartDate.time, periodStartDate.time)
+    }
   }
 }
