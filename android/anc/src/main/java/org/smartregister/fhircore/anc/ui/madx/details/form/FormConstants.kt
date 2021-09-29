@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.family.form
+package org.smartregister.fhircore.anc.ui.madx.details.form
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-object FamilyFormConstants {
-  const val FAMILY_MEMBER_REGISTER_FORM = "family-member-registration"
-  const val FAMILY_REGISTER_FORM = "family-registration"
-  const val ANC_ENROLLMENT_FORM = "anc-patient-registration"
+object FormConstants {
+  const val FAMILY_PATIENT_BMI_FORM = "family-patient_bmi_compute"
 }

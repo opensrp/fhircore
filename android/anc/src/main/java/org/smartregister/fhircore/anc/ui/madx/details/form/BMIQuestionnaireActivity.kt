@@ -14,66 +14,52 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.family.form
+package org.smartregister.fhircore.anc.ui.madx.details.form
 
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
-import org.smartregister.fhircore.anc.util.computeBMIViaStandardUnits
+import org.smartregister.fhircore.anc.data.madx.PatientBmiRepository
+import org.smartregister.fhircore.anc.ui.madx.details.PatientBmiItemMapper
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.extension.find
 
 class BMIQuestionnaireActivity : QuestionnaireActivity() {
 
+  internal lateinit var patientBmiRepository: PatientBmiRepository
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    patientBmiRepository =
+      PatientBmiRepository(AncApplication.getContext().fhirEngine, PatientBmiItemMapper)
   }
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
-
-      val computedBMI = computeBMI(questionnaireResponse)
+      val isUnitModeMetric = patientBmiRepository.isUnitModeMetric(questionnaireResponse)
+      val inputHeight = patientBmiRepository.getInputHeight(questionnaireResponse, isUnitModeMetric)
+      val inputWeight = patientBmiRepository.getInputWeight(questionnaireResponse, isUnitModeMetric)
+      val computedBMI = patientBmiRepository.calculateBMI(inputHeight, inputWeight, isUnitModeMetric)
+//      val computedBMI = patientBmiRepository.computeBMI(questionnaireResponse) // first approach to delete
       if (computedBMI < 0)
         showErrorAlert(getString(R.string.error_saving_form))
-      else
-        showBMIAlert(computedBMI)
-    }
-  }
-
-  private fun computeBMI(questionnaireResponse: QuestionnaireResponse): Double {
-    try {
-      val unitMode = questionnaireResponse.find(KEY_UNIT_SELECTION)
-      // for Standard Units
-      if (unitMode?.answer?.get(0)?.valueCoding?.code == "standard") {
-        val weightPounds = questionnaireResponse.find(KEY_WEIGHT_SI)
-        val heightFeets = questionnaireResponse.find(KEY_HEIGHT_SI)
-        val heightInches = questionnaireResponse.find(KEY_HEIGHT_DP_SI)
-
-        val weight = weightPounds?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-        val heightInFeets = heightFeets?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-        val heightInInches = heightInches?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-        val height = (heightInFeets.toDouble() * 12) + heightInInches.toDouble()
-
-        return computeBMIViaStandardUnits(height, weight.toDouble())
-      } else {
-        // for Metric Units
-        val weightKgs = questionnaireResponse.find(KEY_WEIGHT_MU)
-        val heightCms = questionnaireResponse.find(KEY_HEIGHT_MU)
-        val weight = weightKgs?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-        val height = heightCms?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-        return computeBMIViaMetricUnits(height.toDouble() / 100, weight.toDouble())
+      else {
+        val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!
+        showBmiDataAlert(questionnaireResponse, patientId, inputHeight, inputWeight, computedBMI)
       }
-    } catch (e: Exception) {
-      e.printStackTrace()
-      return -1.0
     }
   }
 
-  private fun showBMIAlert(computedBMI: Double) {
+  private fun showBmiDataAlert(
+    questionnaireResponse: QuestionnaireResponse,
+    patientId: String,
+    height: Double,
+    weight: Double,
+    computedBMI: Double
+  ) {
     AlertDialog.Builder(this)
       .setTitle(getString(R.string.your_bmi))
       .setMessage("$computedBMI" + getBMICategories())
@@ -83,9 +69,28 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
       }
       .setPositiveButton(R.string.str_save) { dialogInterface, _ ->
         dialogInterface.dismiss()
-        showErrorAlert("Save Observations")
+        proceedRecordBMI(questionnaireResponse, patientId, height, weight, computedBMI)
       }
       .show()
+  }
+
+  private fun proceedRecordBMI(
+    questionnaireResponse: QuestionnaireResponse,
+    patientId: String,
+    height: Double,
+    weight: Double,
+    computedBMI: Double
+  ) {
+    lifecycleScope.launch {
+      patientBmiRepository.recordComputedBMI(
+        questionnaire!!,
+        questionnaireResponse,
+        patientId,
+        height,
+        weight,
+        computedBMI
+      )
+    }
   }
 
   private fun showErrorAlert(message: String) {
@@ -98,7 +103,6 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
       }
       .show()
   }
-
 
   companion object {
     const val KEY_UNIT_SELECTION = "select-mode"

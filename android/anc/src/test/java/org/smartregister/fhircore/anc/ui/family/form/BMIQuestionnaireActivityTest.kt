@@ -34,6 +34,7 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
+import org.smartregister.fhircore.anc.ui.madx.details.form.BMIQuestionnaireActivity
 import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
 import org.smartregister.fhircore.anc.util.computeBMIViaStandardUnits
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM

@@ -80,3 +80,12 @@ data class ConditionItem(
   var patientIdentifier: String = "",
   var title: String = ""
 )
+
+@Stable
+data class PatientBMIItem(
+  var patientIdentifier: String = "",
+  var name: String = "",
+  var height: String = "",
+  var weight: String = "",
+  var bmi: String = ""
+)

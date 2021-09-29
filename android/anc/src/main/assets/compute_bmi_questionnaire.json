@@ -109,22 +109,6 @@
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-              "valueExpression": {
-                "description": "patient's last name",
-                "language": "text/fhirpath",
-                "expression": "%LaunchPatient.name.where(use='official').given.first()"
-              }
-            }
-          ],
-          "linkId": "patient-last-name",
-          "text": "Last Name:",
-          "type": "string",
-          "readOnly": true
-        },
-        {
-          "extension": [
-            {
               "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
               "valueCoding": {
                 "system": "http://unitsofmeasure.org",
