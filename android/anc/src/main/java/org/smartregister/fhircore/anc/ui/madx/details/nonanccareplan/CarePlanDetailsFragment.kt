@@ -31,7 +31,6 @@ import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
 import org.smartregister.fhircore.anc.data.madx.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.madx.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.databinding.FragmentNonAncDetailsBinding
-import org.smartregister.fhircore.anc.ui.madx.details.NonAncPatientItemMapper
 import org.smartregister.fhircore.anc.ui.madx.details.adapter.CarePlanAdapter
 import org.smartregister.fhircore.anc.ui.madx.details.adapter.UpcomingServicesAdapter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -69,10 +68,7 @@ class CarePlanDetailsFragment : Fragment() {
     setupViews()
 
     ancPatientRepository =
-      NonAncPatientRepository(
-        (requireActivity().application as AncApplication).fhirEngine,
-        NonAncPatientItemMapper
-      )
+      NonAncPatientRepository((requireActivity().application as AncApplication).fhirEngine)
 
     ancDetailsViewModel =
       ViewModelProvider(

@@ -24,16 +24,19 @@ import io.mockk.just
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import java.text.SimpleDateFormat
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Goal
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert.assertEquals
@@ -155,6 +158,15 @@ class AncPatientRepositoryTest : RobolectricTest() {
     assertEquals(Date().makeItReadable(), listUpcomingServiceItem[0].date)
   }
 
+  @Test
+  fun fetchLastSceneItemTest() {
+    val patientId = "1111"
+    val encounter = listOf(getEncounter(patientId))
+    val listLastItem = repository.fetchLastSeenItem(patientId = patientId, encounter)
+    assertEquals(patientId, listLastItem[0].patientIdentifier)
+    assertEquals("ABC", listLastItem[0].title)
+  }
+
   private fun buildCarePlan(subject: String): CarePlan {
     return CarePlan().apply {
       this.subject = Reference().apply { reference = "Patient/$subject" }
@@ -179,6 +191,34 @@ class AncPatientRepositoryTest : RobolectricTest() {
         this.scheduledPeriod.start = Date()
         this.status = CarePlan.CarePlanActivityStatus.SCHEDULED
       }
+    }
+  }
+
+  private fun getEncounter(patientId: String): Encounter {
+    return Encounter().apply {
+      id = "1"
+      type = listOf(getCodeableConcept())
+      subject = Reference().apply { reference = "Patient/$patientId" }
+      status = Encounter.EncounterStatus.FINISHED
+      class_ = Coding("", "", "ABC")
+      period = Period().apply { start = SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01") }
+    }
+  }
+
+  private fun getCodeableConcept(): CodeableConcept {
+    return CodeableConcept().apply {
+      id = "1"
+      coding = listOf(getCodingList())
+      text = "ABC"
+    }
+  }
+
+  private fun getCodingList(): Coding {
+    return Coding().apply {
+      id = "1"
+      system = "123"
+      code = "123"
+      display = "ABC"
     }
   }
 }

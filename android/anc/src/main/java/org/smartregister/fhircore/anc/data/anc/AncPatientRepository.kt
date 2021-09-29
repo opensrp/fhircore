@@ -203,11 +203,6 @@ class AncPatientRepository(
       fhirEngine.search { filter(Encounter.SUBJECT) { value = "Patient/$patientId" } }
     }
 
-  suspend fun fetchConditions(patientId: String): List<Condition> =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.search { filter(Condition.SUBJECT) { value = "Patient/$patientId" } }
-    }
-
   suspend fun enrollIntoAnc(patientId: String, lmp: DateType) {
     val conditionData = buildConfigData(patientId = patientId, lmp = lmp)
 

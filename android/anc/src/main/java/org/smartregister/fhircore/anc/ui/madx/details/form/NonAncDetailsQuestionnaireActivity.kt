@@ -22,7 +22,6 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
-import org.smartregister.fhircore.anc.ui.madx.details.NonAncPatientItemMapper
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 class NonAncDetailsQuestionnaireActivity : QuestionnaireActivity() {
@@ -30,8 +29,7 @@ class NonAncDetailsQuestionnaireActivity : QuestionnaireActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    ancPatientRepository =
-      NonAncPatientRepository(AncApplication.getContext().fhirEngine, NonAncPatientItemMapper)
+    ancPatientRepository = NonAncPatientRepository(AncApplication.getContext().fhirEngine)
   }
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {

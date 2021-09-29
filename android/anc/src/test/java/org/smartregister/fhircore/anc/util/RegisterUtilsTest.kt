@@ -23,7 +23,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
-class RegisterUtilsTest : RobolectricTest() {
+class bRegisterUtilsTest : RobolectricTest() {
 
   @Test
   fun testLoadRegisterConfig() {

@@ -32,7 +32,6 @@ import org.smartregister.fhircore.anc.data.madx.model.AllergiesItem
 import org.smartregister.fhircore.anc.data.madx.model.ConditionItem
 import org.smartregister.fhircore.anc.data.madx.model.EncounterItem
 import org.smartregister.fhircore.anc.databinding.FragmentVitalDetailsBinding
-import org.smartregister.fhircore.anc.ui.madx.details.NonAncPatientItemMapper
 import org.smartregister.fhircore.anc.ui.madx.details.adapter.AllergiesAdapter
 import org.smartregister.fhircore.anc.ui.madx.details.adapter.ConditionsAdapter
 import org.smartregister.fhircore.anc.ui.madx.details.adapter.EncounterAdapter
@@ -72,10 +71,7 @@ class VitalSignsDetailsFragment : Fragment() {
     setupViews()
 
     ancPatientRepository =
-      NonAncPatientRepository(
-        (requireActivity().application as AncApplication).fhirEngine,
-        NonAncPatientItemMapper
-      )
+      NonAncPatientRepository((requireActivity().application as AncApplication).fhirEngine)
 
     ancDetailsViewModel =
       ViewModelProvider(
