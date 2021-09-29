@@ -64,6 +64,7 @@ class AncApplication : Application(), ConfigurableApplication {
         ResourceType.CarePlan to mapOf(),
         ResourceType.Observation to mapOf(),
         ResourceType.Encounter to mapOf(),
+        ResourceType.Condition to mapOf(),
       )
 
   private fun constructFhirEngine(): FhirEngine {
