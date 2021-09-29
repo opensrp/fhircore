@@ -30,6 +30,7 @@ import org.junit.Test
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.madx.details.NonAncPatientItemMapper
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
+import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
 class NonAncPatientRepositoryTest : RobolectricTest() {
@@ -53,6 +54,17 @@ class NonAncPatientRepositoryTest : RobolectricTest() {
       Assert.assertEquals(patientId, listCarePlan[0].patientIdentifier)
       Assert.assertEquals("ABC", listCarePlan[0].title)
     }
+  }
+
+  @Test
+  fun fetchUpcomingServiceItemTest() {
+    val patientId = "1111"
+    val carePlan = listOf(buildCarePlanWithActive(patientId))
+    val listUpcomingServiceItem =
+      repository.fetchUpcomingServiceItem(patientId = patientId, carePlan = carePlan)
+    Assert.assertEquals(patientId, listUpcomingServiceItem[0].patientIdentifier)
+    Assert.assertEquals("ABC", listUpcomingServiceItem[0].title)
+    Assert.assertEquals(Date().makeItReadable(), listUpcomingServiceItem[0].date)
   }
 
   private fun buildCarePlanWithActive(subject: String): CarePlan {
