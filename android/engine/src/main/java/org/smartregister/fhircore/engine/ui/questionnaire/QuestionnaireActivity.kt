@@ -30,7 +30,6 @@ import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -54,7 +53,7 @@ import timber.log.Timber
  */
 open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener {
 
-  var dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 
   lateinit var questionnaireConfig: QuestionnaireConfig
 
@@ -80,7 +79,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     clientIdentifier = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
     form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
 
-    lifecycleScope.launch(dispatcherProvider.io()) {
+    lifecycleScope.launchWhenCreated {
       val loadConfig =
         withContext(dispatcherProvider.io()) {
           FormConfigUtil.loadConfig<List<QuestionnaireConfig>>(
