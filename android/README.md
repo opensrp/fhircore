@@ -12,8 +12,7 @@ You need a [GitHub token](https://docs.github.com/en/github/authenticating-to-gi
 
 When creating the token, select the `read:packages` permission.
 
-Add your token details to the file `~/local.properties` in the format below:
-
+Add your token details to the file `.gradle/gradle.properties` or `android/local.properties` in the format below:
 
 ```
 GITHUB_USER=xxxxxx
