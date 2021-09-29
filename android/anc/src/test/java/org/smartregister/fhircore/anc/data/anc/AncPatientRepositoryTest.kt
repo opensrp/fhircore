@@ -17,29 +17,43 @@
 package org.smartregister.fhircore.anc.data.anc
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.coVerifyOrder
+import io.mockk.every
 import io.mockk.just
+import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import java.text.SimpleDateFormat
 import java.util.Date
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Enumeration
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Goal
+import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
 import org.smartregister.fhircore.anc.data.anc.model.AncVisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
@@ -107,6 +121,51 @@ class AncPatientRepositoryTest : RobolectricTest() {
     }
   }
 
+  @Test
+  fun testFetchDemographicsShouldReturnMergedPatient() {
+
+    coEvery { fhirEngine.load(any<Class<Resource>>(), any()) } answers
+      {
+        when (secondArg<String>()) {
+          PATIENT_ID_1 -> getPatient()
+          PATIENT_ID_2 -> getHeadPatient()
+          else -> Patient()
+        }
+      }
+
+    val demographics = runBlocking { repository.fetchDemographics(PATIENT_ID_1) }
+
+    verifyPatient(demographics.patientDetails)
+    verifyHeadPatient(demographics.patientDetailsHead)
+  }
+
+  @Test
+  fun testFetchCarePlanShouldReturnExpectedCarePlan() {
+    mockkStatic(FhirContext::class)
+
+    val fhirContext = mockk<FhirContext>()
+    val parser = mockk<IParser>()
+
+    val cpTitle = "First Care Plan"
+    val cpPeriodStartDate = SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01")
+
+    every { FhirContext.forR4() } returns fhirContext
+    every { fhirContext.newJsonParser() } returns parser
+    every { parser.parseResource(any<String>()) } returns
+      CarePlan().apply {
+        title = cpTitle
+        period = Period().apply { start = cpPeriodStartDate }
+      }
+
+    val carePlans = runBlocking { repository.fetchCarePlan(PATIENT_ID_1, "") }
+
+    assertEquals(1, carePlans.size)
+    with(carePlans.first()) {
+      assertEquals(cpTitle, title)
+      assertEquals(cpPeriodStartDate?.time, periodStartDate.time)
+    }
+  }
+
   private fun buildCondition(subject: String): Condition {
     return Condition().apply {
       this.id = id
@@ -138,5 +197,87 @@ class AncPatientRepositoryTest : RobolectricTest() {
         this.status = CarePlan.CarePlanActivityStatus.SCHEDULED
       }
     }
+  }
+
+  private fun verifyPatient(patient: AncPatientItem) {
+    with(patient) {
+      assertEquals(PATIENT_ID_1, patientIdentifier)
+      assertEquals("Jane Mc", name)
+      assertEquals("Male", gender)
+      assertEquals("0", age)
+      assertEquals("", demographics)
+      assertEquals("", atRisk)
+    }
+  }
+
+  private fun verifyHeadPatient(patient: AncPatientItem) {
+    with(patient) {
+      assertEquals(PATIENT_ID_1, patientIdentifier)
+      assertEquals("Salina Jetly", name)
+      assertEquals("Female", gender)
+      assertEquals("0", age)
+      assertEquals(" Nairobi", demographics)
+      assertEquals("", atRisk)
+    }
+  }
+
+  private fun getHeadPatient(): Patient {
+    return Patient().apply {
+      id = PATIENT_ID_2
+      gender = Enumerations.AdministrativeGender.FEMALE
+      name =
+        mutableListOf(
+          HumanName().apply {
+            addGiven("salina")
+            family = "jetly"
+          }
+        )
+      telecom = mutableListOf(ContactPoint().apply { value = "87654321" })
+      address =
+        mutableListOf(
+          Address().apply {
+            city = "Nairobi"
+            country = "Kenya"
+          }
+        )
+      active = true
+      birthDate = Date()
+    }
+  }
+
+  private fun getPatient(): Patient {
+    return Patient().apply {
+      id = PATIENT_ID_1
+      gender = Enumerations.AdministrativeGender.MALE
+      name =
+        mutableListOf(
+          HumanName().apply {
+            addGiven("jane")
+            family = "Mc"
+          }
+        )
+      telecom = mutableListOf(ContactPoint().apply { value = "12345678" })
+      address =
+        mutableListOf(
+          Address().apply {
+            city = "Nairobi"
+            country = "Kenya"
+          }
+        )
+      active = true
+      birthDate = Date()
+      link =
+        listOf(
+          Patient.PatientLinkComponent(
+            Reference(PATIENT_ID_2),
+            Enumeration(Patient.LinkTypeEnumFactory())
+          )
+        )
+    }
+  }
+
+  companion object {
+    private const val PATIENT_ID_1 = "test_patient_id_1"
+    private const val PATIENT_ID_2 = "test_patient_id_2"
   }
 }
