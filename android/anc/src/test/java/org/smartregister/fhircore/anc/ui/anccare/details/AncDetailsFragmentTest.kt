@@ -107,7 +107,6 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
             override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
               val fragment = spyk(AncDetailsFragment.newInstance())
               every { fragment.activity } returns patientDetailsActivity
-              every { fragment.getAncPatientRepository() } returns patientRepository
               fragment.ancDetailsViewModel = patientDetailsViewModel
 
               return fragment
