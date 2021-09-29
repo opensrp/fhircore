@@ -23,6 +23,10 @@ if (rootProject.file("local.properties").exists()) {
 android {
     compileSdk 30
 
+    dataBinding {
+        enabled true
+    }
+
     defaultConfig {
         applicationId "org.smartregister.fhircore.quest"
         minSdk 21
