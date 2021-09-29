@@ -31,7 +31,6 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import java.text.SimpleDateFormat
-import java.text.SimpleDateFormat
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
@@ -163,13 +162,10 @@ class AncPatientRepositoryTest : RobolectricTest() {
         period = Period().apply { start = cpPeriodStartDate }
       }
 
-    val carePlans = runBlocking { repository.fetchCarePlan(PATIENT_ID_1, "") }
+    val carePlans = runBlocking { repository.fetchCarePlan(PATIENT_ID_1) }
 
     assertEquals(1, carePlans.size)
-    with(carePlans.first()) {
-      assertEquals(cpTitle, title)
-      assertEquals(cpPeriodStartDate?.time, periodStartDate.time)
-    }
+    with(carePlans.first()) { assertEquals(cpTitle, title) }
 
     unmockkStatic(FhirContext::class)
   }
@@ -237,51 +233,50 @@ class AncPatientRepositoryTest : RobolectricTest() {
       }
     }
   }
-    private fun buildCarePlanWithActive(subject: String): CarePlan {
-        val date = DateType(Date())
-        val end = date.plusWeeksAsString(4).getDate("yyyy-MM-dd")
-        return CarePlan().apply {
-            this.id = "11190"
-            this.status = CarePlan.CarePlanStatus.ACTIVE
-            this.period.start = date.value
-            this.period.end = end
-            this.subject = Reference().apply { reference = "Patient/$subject" }
-            this.addActivity().detail.apply {
-                this.description = "ABC"
-                this.scheduledPeriod.start = Date()
-                this.status = CarePlan.CarePlanActivityStatus.SCHEDULED
-            }
-        }
+  private fun buildCarePlanWithActive(subject: String): CarePlan {
+    val date = DateType(Date())
+    val end = date.plusWeeksAsString(4).getDate("yyyy-MM-dd")
+    return CarePlan().apply {
+      this.id = "11190"
+      this.status = CarePlan.CarePlanStatus.ACTIVE
+      this.period.start = date.value
+      this.period.end = end
+      this.subject = Reference().apply { reference = "Patient/$subject" }
+      this.addActivity().detail.apply {
+        this.description = "ABC"
+        this.scheduledPeriod.start = Date()
+        this.status = CarePlan.CarePlanActivityStatus.SCHEDULED
+      }
     }
+  }
 
-    private fun getEncounter(patientId: String): Encounter {
-        return Encounter().apply {
-            id = "1"
-            type = listOf(getCodeableConcept())
-            subject = Reference().apply { reference = "Patient/$patientId" }
-            status = Encounter.EncounterStatus.FINISHED
-            class_ = Coding("", "", "ABC")
-            period = Period().apply { start = SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01") }
-        }
+  private fun getEncounter(patientId: String): Encounter {
+    return Encounter().apply {
+      id = "1"
+      type = listOf(getCodeableConcept())
+      subject = Reference().apply { reference = "Patient/$patientId" }
+      status = Encounter.EncounterStatus.FINISHED
+      class_ = Coding("", "", "ABC")
+      period = Period().apply { start = SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01") }
     }
+  }
 
-    private fun getCodeableConcept(): CodeableConcept {
-        return CodeableConcept().apply {
-            id = "1"
-            coding = listOf(getCodingList())
-            text = "ABC"
-        }
+  private fun getCodeableConcept(): CodeableConcept {
+    return CodeableConcept().apply {
+      id = "1"
+      coding = listOf(getCodingList())
+      text = "ABC"
     }
+  }
 
-    private fun getCodingList(): Coding {
-        return Coding().apply {
-            id = "1"
-            system = "123"
-            code = "123"
-            display = "ABC"
-        }
+  private fun getCodingList(): Coding {
+    return Coding().apply {
+      id = "1"
+      system = "123"
+      code = "123"
+      display = "ABC"
     }
-
+  }
 
   private fun verifyPatient(patient: AncPatientItem) {
     with(patient) {

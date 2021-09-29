@@ -60,25 +60,21 @@ class CarePlanAdapterTest : RobolectricTest() {
   fun testAdapterDiffUtilEquatesDifferentObjectsWithSameId() {
 
     val diffCallback = CarePlanAdapter.ImmunizationItemDiffCallback
-    val item = CarePlanItem("first", getPeriodStartDate())
+    val item = CarePlanItem("1111","1110","first", due = false, overdue = true)
 
     // change title only
-    val itemDifferentVaccine = CarePlanItem("second", getPeriodStartDate())
+    val itemDifferentVaccine = CarePlanItem("1111","1110","second", due = false, overdue = true)
     Assert.assertFalse(diffCallback.areItemsTheSame(item, itemDifferentVaccine))
     Assert.assertFalse(diffCallback.areContentsTheSame(item, itemDifferentVaccine))
 
     // same title with different content
-    val itemWithMatchingVaccine = CarePlanItem("first", getPeriodStartDate("2021-01-02"))
+    val itemWithMatchingVaccine = CarePlanItem("1111","1110","first", due = true, overdue = false)
     Assert.assertTrue(diffCallback.areItemsTheSame(item, itemWithMatchingVaccine))
     Assert.assertFalse(diffCallback.areContentsTheSame(item, itemWithMatchingVaccine))
 
     // identical items
-    val identical = CarePlanItem("first", getPeriodStartDate())
+    val identical = CarePlanItem("1111","1110","first", due = false, overdue = true)
     Assert.assertTrue(diffCallback.areItemsTheSame(item, identical))
     Assert.assertTrue(diffCallback.areContentsTheSame(item, identical))
-  }
-
-  private fun getPeriodStartDate(date: String = "2021-01-01"): Date {
-    return SimpleDateFormat("yyyy-MM-dd").parse(date)!!
   }
 }

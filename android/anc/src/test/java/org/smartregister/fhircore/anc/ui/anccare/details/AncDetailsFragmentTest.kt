@@ -23,6 +23,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import ca.uhn.fhir.parser.IParser
@@ -34,7 +35,6 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import java.util.Date
 import kotlinx.android.synthetic.main.fragment_anc_details.button_CQLEvaluate
 import kotlinx.android.synthetic.main.fragment_anc_details.textView_CQLResults
 import kotlinx.android.synthetic.main.fragment_anc_details.textView_EvaluateCQLHeader
@@ -143,7 +143,10 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
     ReflectionHelpers.callInstanceMethod<Any>(
       patientDetailsFragment,
       "handleCarePlan",
-      ReflectionHelpers.ClassParameter(List::class.java, listOf(CarePlanItem("", Date())))
+      ReflectionHelpers.ClassParameter(
+        List::class.java,
+        listOf(CarePlanItem("1111", patientId, "", due = true, overdue = false))
+      )
     )
 
     Assert.assertEquals(View.GONE, noVaccinesTextView?.visibility)
