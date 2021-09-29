@@ -29,6 +29,7 @@ import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.unmockkStatic
 import java.text.SimpleDateFormat
 import java.util.Date
 import kotlinx.coroutines.runBlocking
@@ -164,6 +165,8 @@ class AncPatientRepositoryTest : RobolectricTest() {
       assertEquals(cpTitle, title)
       assertEquals(cpPeriodStartDate?.time, periodStartDate.time)
     }
+
+    unmockkStatic(FhirContext::class)
   }
 
   private fun buildCondition(subject: String): Condition {
