@@ -30,6 +30,7 @@ import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -53,7 +54,7 @@ import timber.log.Timber
  */
 open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener {
 
-  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+  var dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 
   lateinit var questionnaireConfig: QuestionnaireConfig
 
@@ -79,7 +80,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     clientIdentifier = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
     form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
 
-    lifecycleScope.launchWhenCreated {
+    lifecycleScope.launch(dispatcherProvider.io()) {
       val loadConfig =
         withContext(dispatcherProvider.io()) {
           FormConfigUtil.loadConfig<List<QuestionnaireConfig>>(
@@ -136,7 +137,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   override fun onClick(view: View) {
     if (view.id == R.id.btn_save_client_info) {
-      handleQuestionnaireResponse(getQuestionnaireResponse())
+      val questionnaireFragment =
+        supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
+          QuestionnaireFragment
+      handleQuestionnaireResponse(questionnaireFragment.getQuestionnaireResponse())
     } else {
       showToast(getString(R.string.error_saving_form))
     }
@@ -178,12 +182,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       }
 
     return dialogBuilder.create().apply { show() }
-  }
-
-  private fun getQuestionnaireResponse(): QuestionnaireResponse {
-    val questionnaireFragment =
-      supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
-    return questionnaireFragment.getQuestionnaireResponse()
   }
 
   companion object {

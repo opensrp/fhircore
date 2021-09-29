@@ -27,11 +27,11 @@ import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.verify
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.junit.Assert
 import org.junit.Before
@@ -50,6 +50,7 @@ import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.TestUtils
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
 @Config(shadows = [EirApplicationShadow::class, QuestionnaireActivityTest.CustomBuilder::class])
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
@@ -87,6 +88,10 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     ReflectionHelpers.setField(context, "fhirEngine\$delegate", lazy { fhirEngine })
 
+    mockkObject(DefaultDispatcherProvider)
+    every { DefaultDispatcherProvider.io() } returns
+      coroutinesTestRule.testDispatcherProvider.main()
+
     intent =
       Intent().apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
@@ -97,56 +102,12 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
     questionnaireActivity = controller.create().resume().get()
     questionnaireActivity.questionnaireViewModel = questionnaireViewModel
-    Thread.sleep(2000)
     questionnaireActivity.supportFragmentManager.executePendingTransactions()
   }
 
   @Test
   fun testActivityShouldNotNull() {
     Assert.assertNotNull(questionnaireActivity)
-  }
-
-  @Test
-  fun testVerifyPrePopulatedQuestionnaire() {
-
-    val response =
-      ReflectionHelpers.callInstanceMethod<QuestionnaireResponse>(
-        questionnaireActivity,
-        "getQuestionnaireResponse"
-      )
-    // Assert.assertEquals(TEST_PATIENT_1.id, response.find("patient-barcode")?.value.toString())
-    Assert.assertEquals(
-      TEST_PATIENT_1.name[0].given[0].toString(),
-      response.find("PR-name-text")?.value.toString()
-    )
-    Assert.assertEquals(
-      TEST_PATIENT_1.name[0].family,
-      response.find("PR-name-family")?.value.toString()
-    )
-    Assert.assertEquals(
-      TEST_PATIENT_1.birthDate.toString(),
-      response.find("patient-0-birth-date")?.valueDateType?.value.toString()
-    )
-    Assert.assertEquals(
-      TEST_PATIENT_1.gender.toCode(),
-      response.find("patient-0-gender")?.valueCoding?.code
-    )
-    Assert.assertEquals(
-      TEST_PATIENT_1.telecom[0].value,
-      response.find("PR-telecom-value")?.value.toString()
-    )
-    Assert.assertEquals(
-      TEST_PATIENT_1.address[0].city,
-      response.find("PR-address-city")?.value.toString()
-    )
-    Assert.assertEquals(
-      TEST_PATIENT_1.address[0].country,
-      response.find("PR-address-country")?.value.toString()
-    )
-    Assert.assertEquals(
-      TEST_PATIENT_1.active,
-      response.find("PR-active")?.valueBooleanType?.booleanValue()
-    )
   }
 
   @Test
@@ -164,31 +125,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   override fun getActivity(): Activity {
     return questionnaireActivity
-  }
-
-  private fun QuestionnaireResponse.find(
-    linkId: String
-  ): QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent? {
-    return item.find(linkId, null)
-  }
-
-  private fun List<QuestionnaireResponse.QuestionnaireResponseItemComponent>.find(
-    linkId: String,
-    default: QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent?
-  ): QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent? {
-    var result = default
-    run loop@{
-      forEach {
-        if (it.linkId == linkId) {
-          result = if (it.answer.isNotEmpty()) it.answer[0] else default
-          return@loop
-        } else if (it.item.isNotEmpty()) {
-          result = it.item.find(linkId, result)
-        }
-      }
-    }
-
-    return result
   }
 
   @Implements(AlertDialog.Builder::class)
