@@ -21,10 +21,12 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 
 @Serializable
 @Stable
 data class RegisterViewConfiguration(
+  var appId: String,
   var appTitle: String,
   var filterText: String,
   var searchBarHint: String,
@@ -54,6 +56,7 @@ data class RegisterViewConfiguration(
  */
 @Stable
 fun Context.registerViewConfigurationOf(
+  appId: String = this.getString(R.string.default_app_title),
   appTitle: String = this.getString(R.string.default_app_title),
   filterText: String = this.getString(R.string.show_overdue),
   searchBarHint: String = this.getString(R.string.search_hint),
@@ -67,6 +70,7 @@ fun Context.registerViewConfigurationOf(
   registrationForm: String = "patient-registration"
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
+    appId = appId,
     appTitle = appTitle,
     filterText = filterText,
     searchBarHint = searchBarHint,
@@ -78,4 +82,11 @@ fun Context.registerViewConfigurationOf(
     showNewClientButton = showNewClientButton,
     registrationForm = registrationForm,
   )
+}
+
+private const val REGISTER_VIEW_CONFIG_FILE = "register_view_config.json"
+
+fun Context.loadRegisterViewConfiguration(id: String): RegisterViewConfiguration {
+  return assets.open(REGISTER_VIEW_CONFIG_FILE).bufferedReader()
+    .use { it.readText() }.decodeJson<List<RegisterViewConfiguration>>().first { it.appId == id }
 }
