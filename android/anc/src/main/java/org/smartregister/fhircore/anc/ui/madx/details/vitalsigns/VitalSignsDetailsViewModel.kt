@@ -22,8 +22,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
-import org.smartregister.fhircore.anc.data.madx.model.AllergiesItem
-import org.smartregister.fhircore.anc.data.madx.model.ConditionItem
 import org.smartregister.fhircore.anc.data.madx.model.EncounterItem
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -43,27 +41,5 @@ class VitalSignsDetailsViewModel(
       patientEncounters.postValue(listEncountersItem)
     }
     return patientEncounters
-  }
-
-  fun fetchConditions(): LiveData<List<ConditionItem>> {
-    val patientCondition = MutableLiveData<List<ConditionItem>>()
-    viewModelScope.launch(dispatcher.io()) {
-      val listCondition = ancPatientRepository.fetchConditions(patientId = patientId)
-      val listConditionItem =
-        ancPatientRepository.fetchConditionItem(patientId = patientId, listCondition)
-      patientCondition.postValue(listConditionItem)
-    }
-    return patientCondition
-  }
-
-  fun fetchAllergies(): LiveData<List<AllergiesItem>> {
-    val patientCondition = MutableLiveData<List<AllergiesItem>>()
-    viewModelScope.launch(dispatcher.io()) {
-      val listCondition = ancPatientRepository.fetchConditions(patientId = patientId)
-      val listConditionItem =
-        ancPatientRepository.fetchAllergiesItem(patientId = patientId, listCondition)
-      patientCondition.postValue(listConditionItem)
-    }
-    return patientCondition
   }
 }

@@ -24,8 +24,6 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.madx.model.AllergiesItem
 import org.smartregister.fhircore.anc.data.madx.model.AncPatientDetailItem
@@ -53,7 +51,7 @@ class NonAncPatientRepository(
     if (patientId.isNotEmpty())
       withContext(dispatcherProvider.io()) {
         val patient = fhirEngine.load(Patient::class.java, patientId)
-        lateinit var ancPatientItemHead: AncPatientItem
+        var ancPatientItemHead = AncPatientItem()
         if (patient.link.isNotEmpty()) {
           var address = ""
           val patientHead =
@@ -63,10 +61,13 @@ class NonAncPatientRepository(
             )
           if (patientHead.address != null)
             if (patientHead.address.isNotEmpty()) {
-              if (patient.address[0].hasCountry()) address = patientHead.address[0].country
-              else if (patient.address[0].hasCity()) address = patientHead.address[0].city
-              else if (patient.address[0].hasState()) address = patientHead.address[0].state
-              else if (patient.address[0].hasDistrict()) address = patientHead.address[0].district
+              if (patientHead.address.size > 0)
+                when {
+                  patient.address[0].hasCountry() -> address = patientHead.address[0].country
+                  patient.address[0].hasCity() -> address = patientHead.address[0].city
+                  patient.address[0].hasState() -> address = patientHead.address[0].state
+                  patient.address[0].hasDistrict() -> address = patientHead.address[0].district
+                }
             }
           ancPatientItemHead =
             AncPatientItem(
@@ -76,8 +77,6 @@ class NonAncPatientRepository(
               age = patientHead.extractAge(),
               demographics = address
             )
-        } else {
-          ancPatientItemHead = AncPatientItem()
         }
 
         val ancPatientItem =
@@ -95,11 +94,6 @@ class NonAncPatientRepository(
   suspend fun fetchCarePlan(patientId: String): List<CarePlan> =
     withContext(dispatcherProvider.io()) {
       fhirEngine.search { filter(CarePlan.SUBJECT) { value = "Patient/$patientId" } }
-    }
-
-  suspend fun fetchConditions(patientId: String): List<Condition> =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.search { filter(Condition.SUBJECT) { value = "Patient/$patientId" } }
     }
 
   suspend fun fetchEncounters(patientId: String): List<Encounter> =
@@ -133,12 +127,6 @@ class NonAncPatientRepository(
     }
     return listCarePlan
   }
-
-  suspend fun postVitalSigns(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
-    clientIdentifier: String?
-  ) {}
 
   fun fetchEncounterItem(patientId: String, listEncounters: List<Encounter>): List<EncounterItem> {
     return arrayListOf()

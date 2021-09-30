@@ -30,6 +30,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
@@ -38,14 +39,19 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.anc.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
 import org.smartregister.fhircore.anc.data.madx.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.madx.model.AncPatientItem
 import org.smartregister.fhircore.anc.robolectric.FragmentRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.ui.madx.details.NonAncDetailsActivity
+import org.smartregister.fhircore.anc.ui.madx.details.adapter.CarePlanAdapter
+import org.smartregister.fhircore.anc.ui.madx.details.adapter.UpcomingServicesAdapter
 
 @ExperimentalCoroutinesApi
 @Config(shadows = [AncApplicationShadow::class])
@@ -63,6 +69,10 @@ internal class CarePlanDetailsFragmentTest : FragmentRobolectricTest() {
 
   private lateinit var patientDetailsFragment: CarePlanDetailsFragment
 
+  private lateinit var carePlanAdapter: CarePlanAdapter
+
+  private lateinit var upcomingServicesAdapter: UpcomingServicesAdapter
+
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
@@ -76,6 +86,11 @@ internal class CarePlanDetailsFragmentTest : FragmentRobolectricTest() {
     fhirEngine = mockk(relaxed = true)
 
     patientRepository = mockk()
+    carePlanAdapter = mockk()
+    upcomingServicesAdapter = mockk()
+
+    every { carePlanAdapter.submitList(any()) } returns Unit
+    every { upcomingServicesAdapter.submitList(any()) } returns Unit
 
     every { ancPatientDetailItem.patientDetails } returns
       AncPatientItem(patientId, "Mandela Nelson", "M", "26")
@@ -106,41 +121,85 @@ internal class CarePlanDetailsFragmentTest : FragmentRobolectricTest() {
           }
       )
 
-    fragmentScenario.onFragment { patientDetailsFragment = it }
+    fragmentScenario.onFragment {
+      patientDetailsFragment = it
+      ReflectionHelpers.setField(patientDetailsFragment, "carePlanAdapter", carePlanAdapter)
+      ReflectionHelpers.setField(
+        patientDetailsFragment,
+        "upcomingServicesAdapter",
+        upcomingServicesAdapter
+      )
+    }
   }
 
   @Test
-  fun testThatCarePlanViewsAreSetupCorrectly() {
-    fragmentScenario.moveToState(Lifecycle.State.RESUMED)
-    Assert.assertNotNull(patientDetailsFragment.view)
+  fun testHandleCarePlanShouldVerifyExpectedCalls() {
 
-    // No care plan  text displayed
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientDetailsFragment,
+      "handleCarePlan",
+      ReflectionHelpers.ClassParameter(List::class.java, listOf<CarePlanItem>())
+    )
+
+    // No CarePlan available text displayed
     val noVaccinesTextView =
       patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noCarePlan)
-    Assert.assertEquals(View.VISIBLE, noVaccinesTextView?.visibility)
-    Assert.assertEquals("No care plan", noVaccinesTextView?.text.toString())
 
     // CarePlan list is not displayed
     val immunizationsListView =
       patientDetailsFragment.view?.findViewById<RecyclerView>(R.id.carePlanListView)
+
+    Assert.assertEquals(View.VISIBLE, noVaccinesTextView?.visibility)
     Assert.assertEquals(View.GONE, immunizationsListView?.visibility)
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientDetailsFragment,
+      "handleCarePlan",
+      ReflectionHelpers.ClassParameter(
+        List::class.java,
+        listOf(CarePlanItem("1111", patientId, "", due = true, overdue = false))
+      )
+    )
+
+    Assert.assertEquals(View.GONE, noVaccinesTextView?.visibility)
+    Assert.assertEquals(View.VISIBLE, immunizationsListView?.visibility)
+
+    verify(exactly = 1) { carePlanAdapter.submitList(any()) }
   }
 
   @Test
-  fun testThatUpcomingServicesViewsAreSetupCorrectly() {
-    fragmentScenario.moveToState(Lifecycle.State.RESUMED)
-    Assert.assertNotNull(patientDetailsFragment.view)
+  fun testHandleEncounterShouldVerifyExpectedCalls() {
 
-    // No services scheduled text displayed
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientDetailsFragment,
+      "handleEncounters",
+      ReflectionHelpers.ClassParameter(List::class.java, listOf<UpcomingServiceItem>())
+    )
+
+    // No CarePlan available text displayed
     val noVaccinesTextView =
       patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noUpcomingServices)
-    Assert.assertEquals(View.VISIBLE, noVaccinesTextView?.visibility)
-    Assert.assertEquals("No services scheduled", noVaccinesTextView?.text.toString())
 
-    // Upcoming list is not displayed
+    // CarePlan list is not displayed
     val immunizationsListView =
       patientDetailsFragment.view?.findViewById<RecyclerView>(R.id.upcomingServicesListView)
+
+    Assert.assertEquals(View.VISIBLE, noVaccinesTextView?.visibility)
     Assert.assertEquals(View.GONE, immunizationsListView?.visibility)
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientDetailsFragment,
+      "handleEncounters",
+      ReflectionHelpers.ClassParameter(
+        List::class.java,
+        listOf(UpcomingServiceItem("1111", patientId, "ABC", "2020-02-01"))
+      )
+    )
+
+    Assert.assertEquals(View.GONE, noVaccinesTextView?.visibility)
+    Assert.assertEquals(View.VISIBLE, immunizationsListView?.visibility)
+
+    verify(exactly = 1) { upcomingServicesAdapter.submitList(any()) }
   }
 
   override fun getFragmentScenario(): FragmentScenario<out Fragment> {
