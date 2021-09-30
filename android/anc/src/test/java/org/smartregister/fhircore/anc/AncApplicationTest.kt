@@ -40,4 +40,13 @@ class AncApplicationTest : RobolectricTest() {
       ApplicationProvider.getApplicationContext<AncApplication>() is ConfigurableApplication
     )
   }
+  
+  @Test
+  fun testResourceSyncParamsShouldHaveAllRequiredEntities() {
+    val syncParams = AncApplication.getContext().resourceSyncParams
+    Assert.assertTrue(syncParams.containsKey(ResourceType.Patient))
+    Assert.assertTrue(syncParams.containsKey(ResourceType.Questionnaire))
+    Assert.assertTrue(syncParams.containsKey(ResourceType.CarePlan))
+    Assert.assertTrue(syncParams.containsKey(ResourceType.Condition))
+  }
 }
