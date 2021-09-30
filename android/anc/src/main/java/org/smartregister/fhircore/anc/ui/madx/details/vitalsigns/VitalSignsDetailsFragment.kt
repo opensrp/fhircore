@@ -28,8 +28,6 @@ import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
-import org.smartregister.fhircore.anc.data.madx.model.AllergiesItem
-import org.smartregister.fhircore.anc.data.madx.model.ConditionItem
 import org.smartregister.fhircore.anc.data.madx.model.EncounterItem
 import org.smartregister.fhircore.anc.databinding.FragmentVitalDetailsBinding
 import org.smartregister.fhircore.anc.ui.madx.details.adapter.AllergiesAdapter
@@ -112,14 +110,6 @@ class VitalSignsDetailsFragment : Fragment() {
   }
 
   private fun populateEncounterList(listEncounters: List<EncounterItem>) {
-    encounterAdapter.submitList(arrayListOf())
-  }
-
-  private fun populateAllergiesList(listEncounters: List<AllergiesItem>) {
-    encounterAdapter.submitList(arrayListOf())
-  }
-
-  private fun populateConditionsList(listEncounters: List<ConditionItem>) {
     encounterAdapter.submitList(arrayListOf())
   }
 

@@ -30,6 +30,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
@@ -38,14 +39,17 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
 import org.smartregister.fhircore.anc.data.madx.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.madx.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.madx.model.EncounterItem
 import org.smartregister.fhircore.anc.robolectric.FragmentRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.ui.madx.details.NonAncDetailsActivity
+import org.smartregister.fhircore.anc.ui.madx.details.adapter.EncounterAdapter
 
 @ExperimentalCoroutinesApi
 @Config(shadows = [AncApplicationShadow::class])
@@ -63,6 +67,8 @@ internal class VitalSignsDetailsFragmentTest : FragmentRobolectricTest() {
 
   private lateinit var patientDetailsFragment: VitalSignsDetailsFragment
 
+  private lateinit var encounterAdapter: EncounterAdapter
+
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
@@ -75,6 +81,10 @@ internal class VitalSignsDetailsFragmentTest : FragmentRobolectricTest() {
     fhirEngine = mockk(relaxed = true)
 
     patientRepository = mockk()
+
+    encounterAdapter = mockk()
+
+    every { encounterAdapter.submitList(any()) } returns Unit
 
     every { ancPatientDetailItem.patientDetails } returns
       AncPatientItem(patientId, "Mandela Nelson", "M", "26")
@@ -105,7 +115,45 @@ internal class VitalSignsDetailsFragmentTest : FragmentRobolectricTest() {
           }
       )
 
-    fragmentScenario.onFragment { patientDetailsFragment = it }
+    fragmentScenario.onFragment {
+      patientDetailsFragment = it
+      ReflectionHelpers.setField(patientDetailsFragment, "encounterAdapter", encounterAdapter)
+    }
+  }
+
+  @Test
+  fun testHandleEncounterShouldVerifyExpectedCalls() {
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientDetailsFragment,
+      "handleEncounters",
+      ReflectionHelpers.ClassParameter(List::class.java, listOf<EncounterItem>())
+    )
+
+    // No CarePlan available text displayed
+    val noVaccinesTextView =
+      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noEncounter)
+
+    // CarePlan list is not displayed
+    val immunizationsListView =
+      patientDetailsFragment.view?.findViewById<RecyclerView>(R.id.encounterListView)
+
+    Assert.assertEquals(View.VISIBLE, noVaccinesTextView?.visibility)
+    Assert.assertEquals(View.GONE, immunizationsListView?.visibility)
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientDetailsFragment,
+      "handleEncounters",
+      ReflectionHelpers.ClassParameter(
+        List::class.java,
+        listOf(EncounterItem("1111", patientId, "ABC", "2020-02-01"))
+      )
+    )
+
+    Assert.assertEquals(View.GONE, noVaccinesTextView?.visibility)
+    Assert.assertEquals(View.VISIBLE, immunizationsListView?.visibility)
+
+    verify(exactly = 1) { encounterAdapter.submitList(any()) }
   }
 
   @Test

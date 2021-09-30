@@ -35,7 +35,6 @@ import org.smartregister.fhircore.anc.data.madx.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.databinding.ActivityNonAncDetailsBinding
 import org.smartregister.fhircore.anc.ui.madx.details.adapter.ViewPagerAdapter
 import org.smartregister.fhircore.anc.ui.madx.details.form.NonAncDetailsFormConfig
-import org.smartregister.fhircore.anc.ui.madx.details.form.NonAncDetailsQuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.createFactory
@@ -163,7 +162,7 @@ class NonAncDetailsActivity : BaseMultiLanguageActivity() {
 
   private fun openVitalSignsMetric(patientId: String) {
     startActivity(
-      Intent(this, NonAncDetailsQuestionnaireActivity::class.java)
+      Intent(this, QuestionnaireActivity::class.java)
         .putExtras(
           QuestionnaireActivity.requiredIntentArgs(
             clientIdentifier = patientId,
@@ -175,7 +174,7 @@ class NonAncDetailsActivity : BaseMultiLanguageActivity() {
 
   private fun openVitalSignsStandard(patientId: String) {
     startActivity(
-      Intent(this, NonAncDetailsQuestionnaireActivity::class.java)
+      Intent(this, QuestionnaireActivity::class.java)
         .putExtras(
           QuestionnaireActivity.requiredIntentArgs(
             clientIdentifier = patientId,

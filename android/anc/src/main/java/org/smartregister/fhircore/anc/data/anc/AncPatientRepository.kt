@@ -122,7 +122,7 @@ class AncPatientRepository(
     if (patientId.isNotEmpty())
       withContext(dispatcherProvider.io()) {
         val patient = fhirEngine.load(Patient::class.java, patientId)
-        lateinit var ancPatientItemHead: AncPatientItem
+        var ancPatientItemHead = AncPatientItem()
         if (patient.link.isNotEmpty()) {
           var address = ""
           val patientHead =
@@ -148,8 +148,6 @@ class AncPatientRepository(
               age = patientHead.extractAge(),
               demographics = address
             )
-        } else {
-          ancPatientItemHead = AncPatientItem()
         }
 
         val ancPatientItem =
