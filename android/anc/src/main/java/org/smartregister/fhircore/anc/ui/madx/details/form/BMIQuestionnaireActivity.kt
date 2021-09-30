@@ -23,7 +23,8 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.madx.PatientBmiRepository
+import org.smartregister.fhircore.anc.data.madx.BmiPatientRepository
+import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils
 import org.smartregister.fhircore.anc.ui.madx.details.PatientBmiItemMapper
 import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
 import org.smartregister.fhircore.anc.util.computeBMIViaStandardUnits
@@ -32,12 +33,14 @@ import org.smartregister.fhircore.engine.util.extension.find
 
 class BMIQuestionnaireActivity : QuestionnaireActivity() {
 
-  private lateinit var patientBmiRepository: PatientBmiRepository
+  private lateinit var patientBmiRepository: BmiPatientRepository
+  private var encounterID = QuestionnaireUtils.getUniqueId()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     patientBmiRepository =
-      PatientBmiRepository(AncApplication.getContext().fhirEngine, PatientBmiItemMapper)
+      BmiPatientRepository(AncApplication.getContext().fhirEngine, PatientBmiItemMapper)
+    encounterID = QuestionnaireUtils.getUniqueId()
   }
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
@@ -46,12 +49,13 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
       val inputHeight = getInputHeight(questionnaireResponse, isUnitModeMetric)
       val inputWeight = getInputWeight(questionnaireResponse, isUnitModeMetric)
       val computedBMI = calculateBMI(inputHeight, inputWeight, isUnitModeMetric)
-      // val computedBMI = computeBMI(questionnaireResponse) // first approach to delete
       if (computedBMI < 0)
         showErrorAlert(getString(R.string.error_saving_form))
       else {
         val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!
-        showBmiDataAlert(questionnaireResponse, patientId, inputHeight, inputWeight, computedBMI)
+        val height = getHeightAsPerSIUnit(inputHeight, isUnitModeMetric)
+        val weight = getWeightAsPerSIUnit(inputWeight, isUnitModeMetric)
+        showBmiDataAlert(questionnaireResponse, patientId, height, weight, computedBMI)
       }
     }
   }
@@ -96,14 +100,16 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
     computedBMI: Double
   ) {
     lifecycleScope.launch {
-      patientBmiRepository.recordComputedBMI(
+      val success = patientBmiRepository.recordComputedBMI(
         questionnaire!!,
         questionnaireResponse,
         patientId,
+        encounterID,
         height,
         weight,
         computedBMI
       )
+      showErrorAlert("saving bmi record success = $success")
     }
   }
 
@@ -141,6 +147,22 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
     } else {
       val weightPounds = questionnaireResponse.find(KEY_WEIGHT_SI)
       weightPounds?.answer?.firstOrNull()?.valueDecimalType?.value?.toDouble() ?: 0.0
+    }
+  }
+
+  private fun getHeightAsPerSIUnit(inputHeight: Double, unitModeMetric: Boolean): Double {
+    return if (unitModeMetric) {
+      inputHeight * 39.3701
+    } else {
+      inputHeight
+    }
+  }
+
+  private fun getWeightAsPerSIUnit(inputWeight: Double, unitModeMetric: Boolean): Double {
+    return if (unitModeMetric) {
+      inputWeight * 2.20462
+    } else {
+      inputWeight
     }
   }
 

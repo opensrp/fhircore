@@ -245,48 +245,6 @@ class AncPatientRepository(
     fhirEngine.save(pregnancyCarePlan)
   }
 
-  suspend fun recordBmi(patientId: String, height: Double, weight: Double, bmi: Double) {
-    val conditionData = buildConfigData(patientId = patientId, lmp = null)
-
-    val pregnancyCondition =
-      loadConfig(Template.PREGNANCY_CONDITION, Condition::class.java, conditionData)
-    fhirEngine.save(pregnancyCondition)
-
-    val episodeData =
-      buildConfigData(patientId = patientId, pregnancyCondition = pregnancyCondition, lmp = null)
-    val pregnancyEpisodeOfCase =
-      loadConfig(Template.PREGNANCY_EPISODE_OF_CARE, EpisodeOfCare::class.java, episodeData)
-    fhirEngine.save(pregnancyEpisodeOfCase)
-
-    val encounterData =
-      buildConfigData(
-        patientId = patientId,
-        pregnancyCondition = pregnancyCondition,
-        pregnancyEpisodeOfCase = pregnancyEpisodeOfCase,
-        lmp = null
-      )
-    val pregnancyEncounter =
-      loadConfig(Template.PREGNANCY_FIRST_ENCOUNTER, Encounter::class.java, encounterData)
-    fhirEngine.save(pregnancyEncounter)
-
-    val goalData = buildConfigData(patientId)
-    val pregnancyGoal = loadConfig(Template.PREGNANCY_GOAL, Goal::class.java, goalData)
-    fhirEngine.save(pregnancyGoal)
-
-    val careplanData =
-      buildConfigData(
-        patientId = patientId,
-        pregnancyCondition = pregnancyCondition,
-        pregnancyEpisodeOfCase = pregnancyEpisodeOfCase,
-        pregnancyEncounter = pregnancyEncounter,
-        pregnancyGoal = pregnancyGoal,
-        lmp = null
-      )
-    val pregnancyCarePlan =
-      loadConfig(Template.PREGNANCY_CARE_PLAN, CarePlan::class.java, careplanData)
-    fhirEngine.save(pregnancyCarePlan)
-  }
-
   private fun <T : Resource> loadConfig(
     id: String,
     clazz: Class<T>,

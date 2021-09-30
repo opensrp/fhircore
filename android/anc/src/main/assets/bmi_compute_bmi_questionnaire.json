@@ -237,7 +237,7 @@
               "question": "select-mode",
               "operator": "=",
               "answerCoding": {
-                "code": "standard"
+                "code": "hide"
               }
             }
           ]
@@ -262,7 +262,7 @@
               "question": "select-mode",
               "operator": "=",
               "answerCoding": {
-                "code": "metric"
+                "code": "hide"
               }
             }
           ]
