@@ -35,6 +35,7 @@ import org.smartregister.fhircore.engine.configuration.app.applicationConfigurat
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
 import timber.log.Timber
 
@@ -55,14 +56,21 @@ class QuestApplication : Application(), ConfigurableApplication {
     get() = SecureSharedPreference(applicationContext)
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
-    get() =
-      mapOf(
+    get() {
+      return mapOf(
         ResourceType.Patient to mapOf(),
-        ResourceType.Questionnaire to mapOf(
-          Questionnaire.SP_PUBLISHER to "g6pd"
-        ),
+        ResourceType.Questionnaire to buildQuestionnaireFilterMap(),
         ResourceType.CarePlan to mapOf()
       )
+    }
+
+  private fun buildQuestionnaireFilterMap(): MutableMap<String, String> {
+    val questionnaireFilterMap: MutableMap<String, String> = HashMap()
+    val publisher =
+      SharedPreferencesHelper.read(USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY, null)
+    if (publisher != null) questionnaireFilterMap[Questionnaire.SP_PUBLISHER] = publisher
+    return questionnaireFilterMap
+  }
 
   private fun constructFhirEngine(): FhirEngine {
     schedulePolling()
