@@ -3,12 +3,12 @@
     "appId": "quest-patient-register",
     "appTitle": "Quest",
     "filterText": "Show overdue",
-    "searchBarHint": "Search by ID or Name",
+    "searchBarHint": "Search for client name",
     "newClientButtonText": "New Client",
     "showSearchBar": true,
-    "showFilter": true,
+    "showFilter": false,
     "switchLanguages": true,
-    "showScanQRCode": true,
+    "showScanQRCode": false,
     "showNewClientButton": true,
     "registrationForm": "patient-registration"
   }
