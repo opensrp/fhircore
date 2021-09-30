@@ -54,7 +54,7 @@ class AncDetailsFragment : Fragment() {
 
   private lateinit var ancPatientRepository: AncPatientRepository
 
-  private val carePlanAdapter = CarePlanAdapter()
+  private var carePlanAdapter = CarePlanAdapter()
 
   private val upcomingServicesAdapter = UpcomingServicesAdapter()
 
@@ -114,11 +114,7 @@ class AncDetailsFragment : Fragment() {
 
     setupViews()
 
-    ancPatientRepository =
-      AncPatientRepository(
-        (requireActivity().application as AncApplication).fhirEngine,
-        AncPatientItemMapper
-      )
+    ancPatientRepository = getAncPatientRepository()
 
     ancDetailsViewModel =
       ViewModelProvider(
@@ -336,5 +332,12 @@ class AncDetailsFragment : Fragment() {
       cardView_CQLSection.visibility = View.VISIBLE
       buttonCQLSetOnClickListener()
     }
+  }
+
+  fun getAncPatientRepository(): AncPatientRepository {
+    return AncPatientRepository(
+      (requireActivity().application as AncApplication).fhirEngine,
+      AncPatientItemMapper
+    )
   }
 }
