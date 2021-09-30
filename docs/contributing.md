@@ -6,7 +6,7 @@ For us to accept your patches and contributions to this project there are a few 
 
 First, be aware of ABC - Always Be Committing! Make frequent and small commits.
 
-_Second, the 7 rules of writing great commit messages:_
+*Second, the 7 rules of writing great commit messages:*
 
 - Separate subject from body with a blank line
 - Limit the subject line to 50 characters
@@ -16,7 +16,7 @@ _Second, the 7 rules of writing great commit messages:_
 - Wrap the body at 72 characters
 - Use the body to explain what and why vs. how
 
-_Commits Rule of thumb:_
+*Commits Rule of thumb:*
 
 - Don’t commit broken code
 - Always commit at the end of the day before leaving the office
@@ -26,9 +26,8 @@ _Commits Rule of thumb:_
 
 e.g. for version source control
 
-https://blog.rainforestqa.com/2014-05-28-version-control-best-practices/
-
-https://github.com/torvalds/linux/pull/17#issuecomment-5659933
+[Version control best practices](https://blog.rainforestqa.com/2014-05-28-version-control-best-practices/)
+[Pointers from Linus](https://github.com/torvalds/linux/pull/17#issuecomment-5659933)
 
 ## Pull Requests
 
@@ -66,7 +65,7 @@ Every time a feature is updated or a bug is fixed, a Peer review or Code review 
 - Assign 1 or 2 reviewers to the PR
 - Notify them. While Github does have notifications for the above actions. It is recommended to notify the reviewers via slack you assigned especially depending on urgency. Before doing this please ensure the status checks on the PR have all passed.
 
-**The Reviewer is required to: **
+**The Reviewer is required to:**
 
 - Ensure all the CI status checks as set up on Github pass e.g. Build, Codacy, Code coverage
 - Perform a manual review of the code. If anything requires an update, add a comment to the corresponding lines on the file within the Github PR
@@ -82,4 +81,6 @@ Every time a feature is updated or a bug is fixed, a Peer review or Code review 
 - Merge the PR code from the issue branch to master
 - Delete the issue branch
 
-Please see [additional documentation on PRs here](https://github.com/opensrp/fhircore/issues/324) for more information.
+Please see [additional documentation on PRs here](https://github.com/opensrp/fhircore/issues/324).
+
+
