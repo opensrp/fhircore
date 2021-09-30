@@ -18,17 +18,27 @@ package org.smartregister.fhircore.anc.data.madx
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
+import io.mockk.coEvery
 import io.mockk.spyk
 import java.util.Date
+import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.DateType
+import org.hl7.fhir.r4.model.Enumeration
+import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.Resource
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.anc.data.madx.model.AncPatientItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
@@ -44,6 +54,24 @@ class NonAncPatientRepositoryTest : RobolectricTest() {
   fun setUp() {
     fhirEngine = spyk()
     repository = spyk(NonAncPatientRepository(fhirEngine))
+  }
+
+  @Test
+  fun testFetchDemographicsShouldReturnMergedPatient() {
+
+    coEvery { fhirEngine.load(any<Class<Resource>>(), any()) } answers
+      {
+        when (secondArg<String>()) {
+          PATIENT_ID_1 -> getPatient()
+          PATIENT_ID_2 -> getHeadPatient()
+          else -> Patient()
+        }
+      }
+
+    val demographics = runBlocking { repository.fetchDemographics(PATIENT_ID_1) }
+
+    verifyPatient(demographics.patientDetails)
+    verifyHeadPatient(demographics.patientDetailsHead)
   }
 
   @Test
@@ -114,5 +142,87 @@ class NonAncPatientRepositoryTest : RobolectricTest() {
       this.code = CodeableConcept().apply { addCoding().apply { code = "123456" } }
       this.subject = Reference().apply { reference = "Patient/$subject" }
     }
+  }
+
+  private fun getHeadPatient(): Patient {
+    return Patient().apply {
+      id = PATIENT_ID_2
+      gender = Enumerations.AdministrativeGender.FEMALE
+      name =
+        mutableListOf(
+          HumanName().apply {
+            addGiven("salina")
+            family = "jetly"
+          }
+        )
+      telecom = mutableListOf(ContactPoint().apply { value = "87654321" })
+      address =
+        mutableListOf(
+          Address().apply {
+            city = "Nairobi"
+            country = "Kenya"
+          }
+        )
+      active = true
+      birthDate = Date()
+    }
+  }
+
+  private fun getPatient(): Patient {
+    return Patient().apply {
+      id = PATIENT_ID_1
+      gender = Enumerations.AdministrativeGender.MALE
+      name =
+        mutableListOf(
+          HumanName().apply {
+            addGiven("jane")
+            family = "Mc"
+          }
+        )
+      telecom = mutableListOf(ContactPoint().apply { value = "12345678" })
+      address =
+        mutableListOf(
+          Address().apply {
+            city = "Nairobi"
+            country = "Kenya"
+          }
+        )
+      active = true
+      birthDate = Date()
+      link =
+        listOf(
+          Patient.PatientLinkComponent(
+            Reference(PATIENT_ID_2),
+            Enumeration(Patient.LinkTypeEnumFactory())
+          )
+        )
+    }
+  }
+
+  private fun verifyPatient(patient: AncPatientItem) {
+    with(patient) {
+      Assert.assertEquals(PATIENT_ID_1, patientIdentifier)
+      Assert.assertEquals("Jane Mc", name)
+      Assert.assertEquals("Male", gender)
+      Assert.assertEquals("0", age)
+      Assert.assertEquals("", demographics)
+      Assert.assertEquals("", atRisk)
+    }
+  }
+
+  private fun verifyHeadPatient(patient: AncPatientItem) {
+    with(patient) {
+      Assert.assertEquals(PATIENT_ID_1, patientIdentifier)
+      Assert.assertEquals("Salina Jetly", name)
+      Assert.assertEquals("Female", gender)
+      Assert.assertEquals("0", age)
+      Assert.assertEquals("Kenya", demographics)
+      Assert.assertEquals("", atRisk)
+    }
+  }
+
+  companion object {
+    private const val PATIENT_ID_1 = "test_patient_id_1"
+    private const val PATIENT_ID_2 = "test_patient_id_2"
   }
 }
