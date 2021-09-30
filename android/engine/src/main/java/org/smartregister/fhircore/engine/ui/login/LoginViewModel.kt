@@ -35,11 +35,15 @@ import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.data.remote.model.response.UserResponse
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.G6PD
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.USER_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import retrofit2.Call
 import retrofit2.Response
@@ -60,8 +64,7 @@ class LoginViewModel(
     object : ResponseHandler<ResponseBody> {
       override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
         response.body()?.run {
-          Timber.i(this.string())
-          SharedPreferencesHelper.init(application.applicationContext).write("USER", this.string())
+          storeUserPreferences(application, this)
           _showProgressBar.postValue(false)
         }
       }
@@ -72,6 +75,20 @@ class LoginViewModel(
         _showProgressBar.postValue(false)
       }
     }
+
+  private fun storeUserPreferences(application: Application, responseBody: ResponseBody) {
+    val responseBodyString = responseBody.string()
+    Timber.i(responseBodyString)
+
+    val sharedPreferences = SharedPreferencesHelper.init(application.applicationContext)
+    sharedPreferences.write(USER_SHARED_PREFERENCE_KEY, responseBodyString)
+
+    val userResponse = responseBodyString.decodeJson<UserResponse>()
+
+    if (userResponse.realmAccess.roles.contains(G6PD)) {
+      sharedPreferences.write(USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY, G6PD)
+    }
+  }
 
   private val userInfoResponseCallback: ResponseCallback<ResponseBody> by lazy {
     object : ResponseCallback<ResponseBody>(responseBodyHandler) {}
