@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -57,7 +58,9 @@ class QuestApplication : Application(), ConfigurableApplication {
     get() =
       mapOf(
         ResourceType.Patient to mapOf(),
-        ResourceType.Questionnaire to mapOf(),
+        ResourceType.Questionnaire to mapOf(
+          Questionnaire.SP_PUBLISHER to "g6pd"
+        ),
         ResourceType.CarePlan to mapOf()
       )
 
