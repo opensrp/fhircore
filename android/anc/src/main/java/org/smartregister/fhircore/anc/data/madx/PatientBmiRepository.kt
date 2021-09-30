@@ -27,13 +27,13 @@ import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.madx.model.PatientBMIItem
 import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
-import org.smartregister.fhircore.anc.ui.madx.details.form.BMIQuestionnaireActivity
-import org.smartregister.fhircore.anc.util.*
+import org.smartregister.fhircore.anc.util.RegisterType
+import org.smartregister.fhircore.anc.util.filterBy
+import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.searchActivePatients
 
 class PatientBmiRepository(
@@ -43,7 +43,7 @@ class PatientBmiRepository(
 ) : RegisterRepository<Patient, PatientBMIItem> {
 
     private val registerConfig =
-        AncApplication.getContext().loadRegisterConfig(RegisterType.FAMILY_REGISTER_ID)
+        AncApplication.getContext().loadRegisterConfig(RegisterType.ANC_REGISTER_ID)
 
     private val ancPatientRepository = AncPatientRepository(fhirEngine, AncItemMapper)
 
@@ -67,91 +67,6 @@ class PatientBmiRepository(
 
     override suspend fun countAll(): Long {
         return fhirEngine.count<Patient> { filterBy(registerConfig.primaryFilter!!) }
-    }
-
-    fun isUnitModeMetric(questionnaireResponse: QuestionnaireResponse): Boolean {
-        val unitMode = questionnaireResponse.find(BMIQuestionnaireActivity.KEY_UNIT_SELECTION)
-        return (unitMode?.answer?.get(0)?.valueCoding?.code == "metric")
-    }
-
-    fun computeBMI(questionnaireResponse: QuestionnaireResponse): Double {
-        try {
-            val unitMode = questionnaireResponse.find(BMIQuestionnaireActivity.KEY_UNIT_SELECTION)
-            // for Standard Units
-            if (unitMode?.answer?.get(0)?.valueCoding?.code == "standard") {
-                val weightPounds =
-                    questionnaireResponse.find(BMIQuestionnaireActivity.KEY_WEIGHT_SI)
-                val heightFeets = questionnaireResponse.find(BMIQuestionnaireActivity.KEY_HEIGHT_SI)
-                val heightInches =
-                    questionnaireResponse.find(BMIQuestionnaireActivity.KEY_HEIGHT_DP_SI)
-
-                val weight = weightPounds?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-                val heightInFeets = heightFeets?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-                val heightInInches =
-                    heightInches?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-                val height = (heightInFeets.toDouble() * 12) + heightInInches.toDouble()
-
-                return computeBMIViaStandardUnits(height, weight.toDouble())
-            } else {
-                // for Metric Units
-                val weightKgs = questionnaireResponse.find(BMIQuestionnaireActivity.KEY_WEIGHT_MU)
-                val heightCms = questionnaireResponse.find(BMIQuestionnaireActivity.KEY_HEIGHT_MU)
-                val weight = weightKgs?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-                val height = heightCms?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-                return computeBMIViaMetricUnits(height.toDouble() / 100, weight.toDouble())
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return -1.0
-        }
-    }
-
-    fun getInputHeight(
-        questionnaireResponse: QuestionnaireResponse,
-        isUnitModeMetric: Boolean
-    ): Double {
-        return if (isUnitModeMetric) {
-            val heightCms = questionnaireResponse.find(BMIQuestionnaireActivity.KEY_HEIGHT_MU)
-            val height = heightCms?.answer?.firstOrNull()?.valueDecimalType?.value?.toDouble() ?: 0.0
-            val heightInMeters = height.div(100)
-            heightInMeters
-        } else {
-            val heightFeets = questionnaireResponse.find(BMIQuestionnaireActivity.KEY_HEIGHT_SI)
-            val heightInches = questionnaireResponse.find(BMIQuestionnaireActivity.KEY_HEIGHT_DP_SI)
-            val heightInFeets = heightFeets?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-            val heightInInches = heightInches?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-            val height = (heightInFeets.toDouble() * 12) + heightInInches.toDouble()
-            height
-        }
-    }
-
-    fun getInputWeight(
-        questionnaireResponse: QuestionnaireResponse,
-        isUnitModeMetric: Boolean
-    ): Double {
-        return if (isUnitModeMetric) {
-            val weightKgs = questionnaireResponse.find(BMIQuestionnaireActivity.KEY_WEIGHT_MU)
-            weightKgs?.answer?.firstOrNull()?.valueDecimalType?.value?.toDouble() ?: 0.0
-        } else {
-            val weightPounds = questionnaireResponse.find(BMIQuestionnaireActivity.KEY_WEIGHT_SI)
-            weightPounds?.answer?.firstOrNull()?.valueDecimalType?.value?.toDouble() ?: 0.0
-        }
-    }
-
-    fun calculateBMI(
-        height: Double,
-        weight: Double,
-        isUnitModeMetric: Boolean
-    ): Double {
-        return try {
-            if (isUnitModeMetric)
-                computeBMIViaMetricUnits(heightInMeters = height, weightInKgs = weight)
-            else
-                computeBMIViaStandardUnits(heightInInches = height, weightInPounds = weight)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            -1.0
-        }
     }
 
     suspend fun recordComputedBMI(
