@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.anc.ui.madx.details.form
 
 import android.os.Bundle
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
@@ -28,30 +26,17 @@ class NonAncDetailsQuestionnaireActivity : QuestionnaireActivity() {
   internal lateinit var ancPatientRepository: NonAncPatientRepository
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
     ancPatientRepository = NonAncPatientRepository(AncApplication.getContext().fhirEngine)
   }
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     when (questionnaireConfig.form) {
-      NonAncDetailsFormConfig.ANC_VITAL_SIGNS_METRIC ->
-        lifecycleScope.launch {
-          ancPatientRepository.postVitalSigns(
-            questionnaire!!,
-            questionnaireResponse,
-            clientIdentifier
-          )
-          this@NonAncDetailsQuestionnaireActivity.finish()
-        }
-      NonAncDetailsFormConfig.ANC_VITAL_SIGNS_STANDARD ->
-        lifecycleScope.launch {
-          ancPatientRepository.postVitalSigns(
-            questionnaire!!,
-            questionnaireResponse,
-            clientIdentifier
-          )
-          this@NonAncDetailsQuestionnaireActivity.finish()
-        }
+      NonAncDetailsFormConfig.ANC_VITAL_SIGNS_METRIC -> endActivity()
+      NonAncDetailsFormConfig.ANC_VITAL_SIGNS_STANDARD -> endActivity()
     }
+  }
+
+  private fun endActivity() {
+    finish()
   }
 }

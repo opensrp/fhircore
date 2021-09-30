@@ -24,8 +24,6 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.madx.model.AllergiesItem
 import org.smartregister.fhircore.anc.data.madx.model.AncPatientDetailItem
@@ -97,11 +95,6 @@ class NonAncPatientRepository(
       fhirEngine.search { filter(CarePlan.SUBJECT) { value = "Patient/$patientId" } }
     }
 
-  suspend fun fetchConditions(patientId: String): List<Condition> =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.search { filter(Condition.SUBJECT) { value = "Patient/$patientId" } }
-    }
-
   suspend fun fetchEncounters(patientId: String): List<Encounter> =
     withContext(dispatcherProvider.io()) {
       fhirEngine.search { filter(Encounter.SUBJECT) { value = "Patient/$patientId" } }
@@ -133,12 +126,6 @@ class NonAncPatientRepository(
     }
     return listCarePlan
   }
-
-  suspend fun postVitalSigns(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
-    clientIdentifier: String?
-  ) {}
 
   fun fetchEncounterItem(patientId: String, listEncounters: List<Encounter>): List<EncounterItem> {
     return arrayListOf()
