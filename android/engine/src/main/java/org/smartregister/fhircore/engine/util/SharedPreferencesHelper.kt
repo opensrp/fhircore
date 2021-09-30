@@ -31,7 +31,8 @@ object SharedPreferencesHelper {
     return this
   }
 
-  fun read(key: String, value: String) = prefs.getString(key, value)
+  /** @see [SharedPreferences.getString] */
+  fun read(key: String, defaultValue: String?) = prefs.getString(key, defaultValue)
 
   fun write(key: String, value: String) {
     with(prefs.edit()) {
