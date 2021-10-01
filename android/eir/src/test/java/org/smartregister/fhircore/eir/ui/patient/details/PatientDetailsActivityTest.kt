@@ -19,11 +19,7 @@ package org.smartregister.fhircore.eir.ui.patient.details
 import android.app.Activity
 import android.view.MenuInflater
 import android.view.MenuItem
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.spyk
+import io.mockk.*
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -43,6 +39,7 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
 
   @Before
   fun setUp() {
+    clearAllMocks()
     patientDetailsActivity =
       Robolectric.buildActivity(PatientDetailsActivity::class.java, null).create().get()
     patientDetailsActivitySpy = spyk(objToCopy = patientDetailsActivity)
