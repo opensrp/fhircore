@@ -26,9 +26,7 @@ import org.smartregister.fhircore.anc.databinding.ItemCareplanBinding
 
 /** Subclass of [ListAdapter] used to display careplan for the ANC client */
 class CarePlanAdapter :
-  ListAdapter<CarePlanItem, CarePlanAdapter.PatientCarePlanViewHolder>(
-    CarePlanItemDiffCallback
-  ) {
+  ListAdapter<CarePlanItem, CarePlanAdapter.PatientCarePlanViewHolder>(CarePlanItemDiffCallback) {
 
   inner class PatientCarePlanViewHolder(private val containerView: ItemCareplanBinding) :
     RecyclerView.ViewHolder(containerView.root) {
