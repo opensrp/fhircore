@@ -63,6 +63,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   protected var clientIdentifier: String? = null
 
+  protected var immunizationId: String? = null
+
   protected lateinit var form: String
 
   private val parser = FhirContext.forR4().newJsonParser()
@@ -78,6 +80,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     clientIdentifier = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
     form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
+    immunizationId = intent.getStringExtra(ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY)
 
     lifecycleScope.launchWhenCreated {
       val loadConfig =
@@ -189,13 +192,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_PATH_KEY = "questionnaire-path-key"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
+    const val ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY = "adverse_event_immunization_item_id"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire_form"
     private const val FORM_CONFIGURATIONS = "form_configurations.json"
 
-    fun requiredIntentArgs(clientIdentifier: String?, form: String) =
+    fun requiredIntentArgs(clientIdentifier: String?, form: String, immunizationId: String? = null) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
-        Pair(QUESTIONNAIRE_ARG_FORM, form)
+        Pair(QUESTIONNAIRE_ARG_FORM, form),
+        Pair(ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY, immunizationId)
       )
   }
 

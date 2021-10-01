@@ -46,4 +46,7 @@
     <string name="report_adverse_event">Report Adverse Event</string>
     <string name="covax_app" translatable="false">Covax</string>
     <string name="check">Tick</string>
+    <string name="adverse_events">Adverse events</string>
+    <string name="cancel">Cancel</string>
+    <string name="no_adverse_events">No Adverse Events reported</string>
 </resources>

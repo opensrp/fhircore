@@ -21,13 +21,18 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.data.model.PatientItem
+import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
+import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
+import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.searchActivePatients
 
 class PatientRepository(
@@ -55,11 +60,28 @@ class PatientRepository(
     }
   }
 
-  suspend fun getPatientImmunizations(logicalId: String): List<Immunization> =
+  suspend fun getPatientImmunizations(patientId: String): List<Immunization> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$logicalId" } }
+      fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$patientId" } }
     }
 
   override suspend fun countAll(): Long =
     withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
+
+  suspend fun getAdverseEvents(immunization: Immunization): List<AdverseEventItem> {
+    return withContext(dispatcherProvider.io()) {
+      val adverseEventItems = mutableListOf<AdverseEventItem>()
+      immunization.reaction.forEach {
+        val detailObservation = loadObservation(it.detail.extractId())
+        adverseEventItems.add(AdverseEventItem(it.date.makeItReadable(), detailObservation?.code?.coding?.first()?.display
+          ?: ""))
+      }
+      adverseEventItems
+    }
+  }
+
+  private suspend fun loadObservation(id: String): Observation? =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.loadResource(id)
+    }
 }

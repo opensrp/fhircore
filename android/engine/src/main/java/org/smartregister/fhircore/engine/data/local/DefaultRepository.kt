@@ -24,7 +24,7 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.loadImmunizations
+import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.updateFrom
@@ -38,12 +38,16 @@ class DefaultRepository(
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
   }
 
-  suspend fun loadRelatedPersons(patientId: String): List<RelatedPerson>? {
+  suspend inline fun loadRelatedPersons(patientId: String): List<RelatedPerson>? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadRelatedPersons(patientId) }
   }
 
-  suspend fun loadImmunizations(patientId: String): List<Immunization>? {
-    return withContext(dispatcherProvider.io()) { fhirEngine.loadImmunizations(patientId) }
+  suspend inline fun loadPatientImmunizations(patientId: String): List<Immunization>? {
+    return withContext(dispatcherProvider.io()) { fhirEngine.loadPatientImmunizations(patientId) }
+  }
+
+  suspend inline fun loadImmunization(immunizationId: String): Immunization? {
+    return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(immunizationId) }
   }
 
   suspend fun save(resource: Resource) {

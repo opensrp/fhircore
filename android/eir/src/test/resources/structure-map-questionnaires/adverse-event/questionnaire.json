@@ -16,7 +16,7 @@
     {
       "linkId": "immunization-id",
       "definition": "http://hl7.org/fhir/StructureDefinition/Immunization#Immunization.id",
-      "type": "date",
+      "type": "text",
       "extension": [
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",

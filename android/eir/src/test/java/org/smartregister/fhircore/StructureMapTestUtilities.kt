@@ -186,7 +186,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val adverseEventStructureMap =
       "structure-map-questionnaires/adverse-event/structure-map.txt".readFile()
     val immunizationJson =
-      "structure-map-questionnaires/patient-registration/immunization.json".readFile()
+      "structure-map-questionnaires/adverse-event/immunization.json".readFile()
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val questionnaire =

@@ -119,10 +119,6 @@ open class QuestionnaireViewModel(
     return defaultRepository.loadResource(patientId)
   }
 
-  suspend fun loadImmunizations(patientId: String): List<Immunization>? {
-    return defaultRepository.loadImmunizations(patientId)
-  }
-
   suspend fun loadRelatedPerson(patientId: String): List<RelatedPerson>? {
     return defaultRepository.loadRelatedPersons(patientId)
   }
