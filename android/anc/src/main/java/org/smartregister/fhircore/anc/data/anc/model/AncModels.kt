@@ -58,7 +58,7 @@ data class UpcomingServiceItem(
   var encounterIdentifier: String = "",
   var patientIdentifier: String = "",
   var title: String = "",
-  var date: String
+  var date: String = ""
 )
 
 @Stable
@@ -71,8 +71,8 @@ data class AncOverviewItem(
 
 @Stable
 data class EncounterItem(
-  val id: String,
+  val id: String = "",
   val status: Encounter.EncounterStatus,
-  val display: String,
-  val periodStartDate: Date
+  val display: String = "",
+  val periodStartDate: Date = Date()
 )
