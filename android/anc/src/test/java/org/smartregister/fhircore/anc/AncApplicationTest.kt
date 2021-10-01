@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 import org.robolectric.annotation.Config
@@ -39,5 +40,14 @@ class AncApplicationTest : RobolectricTest() {
     Assert.assertTrue(
       ApplicationProvider.getApplicationContext<AncApplication>() is ConfigurableApplication
     )
+  }
+
+  @Test
+  fun testResourceSyncParamsShouldHaveAllRequiredEntities() {
+    val syncParams = ApplicationProvider.getApplicationContext<AncApplication>().resourceSyncParams
+    Assert.assertTrue(syncParams.containsKey(ResourceType.Patient))
+    Assert.assertTrue(syncParams.containsKey(ResourceType.Questionnaire))
+    Assert.assertTrue(syncParams.containsKey(ResourceType.CarePlan))
+    Assert.assertTrue(syncParams.containsKey(ResourceType.Condition))
   }
 }
