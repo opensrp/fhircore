@@ -66,8 +66,6 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
 
   private val patientId = "samplePatientId"
 
-  @get:Rule var coroutinesTestRule = CoroutineTestRule()
-
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   @Before
@@ -75,7 +73,7 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
     patientDetailsViewModel =
       spyk(
         PatientDetailsViewModel(
-          dispatcher = coroutinesTestRule.testDispatcherProvider,
+          dispatcher = CoroutineTestRule().testDispatcherProvider,
           fhirEngine = mockk(relaxed = true),
           patientId = patientId
         )

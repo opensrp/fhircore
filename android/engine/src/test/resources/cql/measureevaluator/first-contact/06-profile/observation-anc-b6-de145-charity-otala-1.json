@@ -1,0 +1,33 @@
+{
+  "resourceType": "Observation",
+  "id": "anc-b6-de145-charity-otala-1",
+  "meta": {
+    "profile": [ "http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-b6-de145" ]
+  },
+  "status": "final",
+  "code": {
+    "coding": [ {
+      "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
+      "code": "ANC.B6.DE145",
+      "display": "Clinical enquiry for alcohol and other substance use done"
+    }, {
+      "system": "http://snomed.info/sct",
+      "code": "713132000",
+      "display": "Assessment of drug use (procedure)"
+    }, {
+      "system": "https://mitel.dimi.uniud.it/ichi/#http://id.who.int/ichi",
+      "code": "UAA.AA.ZZ",
+      "display": "Assessment of products and substances for personal consumption"
+    } ]
+  },
+  "subject": {
+    "reference": "Patient/charity-otala-1"
+  },
+  "encounter": {
+    "reference": "Encounter/anc-encounter-charity-otala-1"
+  },
+  "performer": [ {
+    "reference": "PractitionerRole/jane"
+  } ],
+  "valueBoolean": true
+}
