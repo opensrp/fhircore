@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc
+package org.smartregister.fhircore.quest
 
 import android.app.Application
 import com.google.android.fhir.FhirEngine
@@ -26,9 +26,6 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.context.SimpleWorkerContext
-import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -40,7 +37,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
 import timber.log.Timber
 
-class AncApplication : Application(), ConfigurableApplication {
+class QuestApplication : Application(), ConfigurableApplication {
 
   private val defaultDispatcherProvider = DefaultDispatcherProvider
 
@@ -49,7 +46,7 @@ class AncApplication : Application(), ConfigurableApplication {
   override lateinit var applicationConfiguration: ApplicationConfiguration
 
   override val authenticationService: AuthenticationService
-    get() = AncAuthenticationService(applicationContext)
+    get() = QuestAuthenticationService(applicationContext)
 
   override val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
 
@@ -61,10 +58,7 @@ class AncApplication : Application(), ConfigurableApplication {
       mapOf(
         ResourceType.Patient to mapOf(),
         ResourceType.Questionnaire to mapOf(),
-        ResourceType.Observation to mapOf(),
-        ResourceType.Encounter to mapOf(),
-        ResourceType.CarePlan to mapOf(),
-        ResourceType.Condition to mapOf(),
+        ResourceType.CarePlan to mapOf()
       )
 
   private fun constructFhirEngine(): FhirEngine {
@@ -79,7 +73,7 @@ class AncApplication : Application(), ConfigurableApplication {
   override fun onCreate() {
     super.onCreate()
     SharedPreferencesHelper.init(this)
-    ancApplication = this
+    questApplication = this
     configureApplication(
       applicationConfigurationOf(
         oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL,
@@ -95,23 +89,23 @@ class AncApplication : Application(), ConfigurableApplication {
     }
 
     CoroutineScope(defaultDispatcherProvider.io()).launch {
-      workerContextProvider = this@AncApplication.initializeWorkerContext()!!
+      workerContextProvider = this@QuestApplication.initializeWorkerContext()!!
     }
   }
 
   companion object {
-    private lateinit var ancApplication: AncApplication
+    private lateinit var questApplication: QuestApplication
 
-    fun getContext() = ancApplication
+    fun getContext() = questApplication
 
     // Make sure that it is called only from one place in app and is done after login
     fun schedulePolling() =
-      Sync.basicSyncJob(ancApplication)
+      Sync.basicSyncJob(questApplication)
         .poll(
           PeriodicSyncConfiguration(
             repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
           ),
-          AncFhirSyncWorker::class.java
+          QuestFhirSyncWorker::class.java
         )
   }
 }
