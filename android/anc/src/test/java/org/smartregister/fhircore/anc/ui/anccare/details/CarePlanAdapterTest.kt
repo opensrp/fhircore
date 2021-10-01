@@ -57,7 +57,7 @@ class CarePlanAdapterTest : RobolectricTest() {
   @Test
   fun testAdapterDiffUtilEquatesDifferentObjectsWithSameId() {
 
-    val diffCallback = CarePlanAdapter.ImmunizationItemDiffCallback
+    val diffCallback = CarePlanAdapter.CarePlanItemDiffCallback
     val item = CarePlanItem("1111", "1110", "first", due = false, overdue = true)
 
     // change title only

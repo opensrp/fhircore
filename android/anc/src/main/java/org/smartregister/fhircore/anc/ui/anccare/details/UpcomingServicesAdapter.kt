@@ -27,7 +27,7 @@ import org.smartregister.fhircore.anc.databinding.ItemServicesBinding
 /** Subclass of [ListAdapter] used to display careplan for the ANC client */
 class UpcomingServicesAdapter :
   ListAdapter<UpcomingServiceItem, UpcomingServicesAdapter.PatientUpcomingServiceViewHolder>(
-    ImmunizationItemDiffCallback
+    UpcomingServiceItemDiffCallback
   ) {
 
   inner class PatientUpcomingServiceViewHolder(private val containerView: ItemServicesBinding) :
@@ -53,7 +53,7 @@ class UpcomingServicesAdapter :
     holder.bindTo(getItem(position))
   }
 
-  object ImmunizationItemDiffCallback : DiffUtil.ItemCallback<UpcomingServiceItem>() {
+  object UpcomingServiceItemDiffCallback : DiffUtil.ItemCallback<UpcomingServiceItem>() {
     override fun areItemsTheSame(oldItem: UpcomingServiceItem, newItem: UpcomingServiceItem) =
       oldItem.title == newItem.title
 

@@ -57,7 +57,7 @@ class ConditionsAdapterTest : RobolectricTest() {
   @Test
   fun testAdapterDiffUtilEquatesDifferentObjectsWithSameId() {
 
-    val diffCallback = ConditionsAdapter.ImmunizationItemDiffCallback
+    val diffCallback = ConditionsAdapter.ConditionItemDiffCallback
     val item = ConditionItem("1111", "1110", "first")
 
     // change title only

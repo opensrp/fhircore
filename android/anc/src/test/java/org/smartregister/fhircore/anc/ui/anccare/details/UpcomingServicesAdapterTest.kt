@@ -57,7 +57,7 @@ class UpcomingServicesAdapterTest : RobolectricTest() {
   @Test
   fun testAdapterDiffUtilEquatesDifferentObjectsWithSameId() {
 
-    val diffCallback = UpcomingServicesAdapter.ImmunizationItemDiffCallback
+    val diffCallback = UpcomingServicesAdapter.UpcomingServiceItemDiffCallback
     val item = UpcomingServiceItem("1111", "1110", "first", date = "2021-02-01")
 
     // change title only
