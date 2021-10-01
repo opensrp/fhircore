@@ -23,7 +23,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.SecureSharedPreferenceShadow
 
 @RunWith(FhircoreTestRunner::class)

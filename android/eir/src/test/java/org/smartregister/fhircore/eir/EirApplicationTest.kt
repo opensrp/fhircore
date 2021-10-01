@@ -40,7 +40,7 @@ import org.smartregister.fhircore.engine.util.extension.runOneTimeSync
 @Config(shadows = [EirApplicationShadow::class])
 class EirApplicationTest : RobolectricTest() {
 
-private  val application = ApplicationProvider.getApplicationContext<EirApplication>()
+  private val application = ApplicationProvider.getApplicationContext<EirApplication>()
 
   @Test
   fun testConstructFhirEngineShouldReturnNonNull() {
@@ -65,10 +65,12 @@ private  val application = ApplicationProvider.getApplicationContext<EirApplicat
     val syncJob: SyncJob = spyk()
     every { Sync.basicSyncJob(any()) } returns syncJob
 
-    val sharedSyncStatus: MutableSharedFlow<State> =  spyk()
+    val sharedSyncStatus: MutableSharedFlow<State> = spyk()
     application.runOneTimeSync(sharedSyncStatus = sharedSyncStatus)
 
-    coVerify { syncJob.run(application.fhirEngine, any(), application.resourceSyncParams, sharedSyncStatus) }
+    coVerify {
+      syncJob.run(application.fhirEngine, any(), application.resourceSyncParams, sharedSyncStatus)
+    }
 
     unmockkObject(Sync)
   }

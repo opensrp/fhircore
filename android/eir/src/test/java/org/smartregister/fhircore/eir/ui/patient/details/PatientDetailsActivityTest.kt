@@ -19,7 +19,12 @@ package org.smartregister.fhircore.eir.ui.patient.details
 import android.app.Activity
 import android.view.MenuInflater
 import android.view.MenuItem
-import io.mockk.*
+import io.mockk.clearAllMocks
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.spyk
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test

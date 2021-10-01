@@ -29,8 +29,6 @@ import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
 import org.robolectric.shadows.ShadowApplication
 import org.smartregister.fhircore.eir.EirApplication
-import org.smartregister.fhircore.eir.EirFhirSyncWorker
-import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 
 @Implements(EirApplication::class)
 class EirApplicationShadow : ShadowApplication() {
@@ -121,6 +119,5 @@ class EirApplicationShadow : ShadowApplication() {
     field.isAccessible = true
     return field.get(search) as MutableList<T>
   }
-  @Implementation
-   fun schedulePeriodicSync() {}
+  @Implementation fun schedulePeriodicSync() {}
 }
