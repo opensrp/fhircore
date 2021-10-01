@@ -21,7 +21,14 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.ui.register.model.MenuOption
 import org.smartregister.fhircore.engine.util.extension.decodeJson
+
+enum class MenuType {
+  DRAWER,
+  BOTTOM_NAV,
+  NONE
+}
 
 @Serializable
 @Stable
@@ -37,6 +44,9 @@ data class RegisterViewConfiguration(
   var showScanQRCode: Boolean = true,
   var showNewClientButton: Boolean = true,
   var registrationForm: String = "patient-registration",
+  var appTheme: String? = null,
+  var showSideMenu: Boolean = true,
+  var bottomMenuOptions: List<MenuOption> = emptyList()
 ) : Configuration
 
 /**
@@ -67,7 +77,9 @@ fun Context.registerViewConfigurationOf(
   showScanQRCode: Boolean = true,
   showNewClientButton: Boolean = true,
   languages: List<String> = listOf("en"),
-  registrationForm: String = "patient-registration"
+  registrationForm: String = "patient-registration",
+  showSideMenu: Boolean = true,
+  bottomMenuOptions: List<MenuOption> = emptyList()
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
     appId = appId,
@@ -81,12 +93,18 @@ fun Context.registerViewConfigurationOf(
     showScanQRCode = showScanQRCode,
     showNewClientButton = showNewClientButton,
     registrationForm = registrationForm,
+    showSideMenu = showSideMenu,
+    bottomMenuOptions = bottomMenuOptions
   )
 }
 
 private const val REGISTER_VIEW_CONFIG_FILE = "register_view_config.json"
 
 fun Context.loadRegisterViewConfiguration(id: String): RegisterViewConfiguration {
-  return assets.open(REGISTER_VIEW_CONFIG_FILE).bufferedReader()
-    .use { it.readText() }.decodeJson<List<RegisterViewConfiguration>>().first { it.appId == id }
+  return assets
+    .open(REGISTER_VIEW_CONFIG_FILE)
+    .bufferedReader()
+    .use { it.readText() }
+    .decodeJson<List<RegisterViewConfiguration>>()
+    .first { it.appId == id }
 }
