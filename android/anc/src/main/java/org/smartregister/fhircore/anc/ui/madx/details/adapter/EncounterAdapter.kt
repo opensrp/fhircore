@@ -27,7 +27,7 @@ import org.smartregister.fhircore.anc.databinding.ItemEncountersBinding
 /** Subclass of [ListAdapter] used to display encounter for the non ANC client */
 class EncounterAdapter :
   ListAdapter<EncounterItem, EncounterAdapter.PatientEncounterViewHolder>(
-    ImmunizationItemDiffCallback
+    EncounterItemDiffCallback
   ) {
 
   inner class PatientEncounterViewHolder(private val containerView: ItemEncountersBinding) :
@@ -47,7 +47,7 @@ class EncounterAdapter :
     holder.bindTo(getItem(position))
   }
 
-  object ImmunizationItemDiffCallback : DiffUtil.ItemCallback<EncounterItem>() {
+  object EncounterItemDiffCallback : DiffUtil.ItemCallback<EncounterItem>() {
     override fun areItemsTheSame(oldItem: EncounterItem, newItem: EncounterItem) =
       oldItem.title == newItem.title
 

@@ -27,7 +27,7 @@ import org.smartregister.fhircore.anc.databinding.ItemPlanTextBinding
 /** Subclass of [ListAdapter] used to display conditions for the non ANC client */
 class ConditionsAdapter :
   ListAdapter<ConditionItem, ConditionsAdapter.PatientConditionViewHolder>(
-    ImmunizationItemDiffCallback
+    ConditionItemDiffCallback
   ) {
 
   inner class PatientConditionViewHolder(private val containerView: ItemPlanTextBinding) :
@@ -47,7 +47,7 @@ class ConditionsAdapter :
     holder.bindTo(getItem(position))
   }
 
-  object ImmunizationItemDiffCallback : DiffUtil.ItemCallback<ConditionItem>() {
+  object ConditionItemDiffCallback : DiffUtil.ItemCallback<ConditionItem>() {
     override fun areItemsTheSame(oldItem: ConditionItem, newItem: ConditionItem) =
       oldItem.title == newItem.title
 

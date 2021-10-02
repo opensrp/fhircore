@@ -27,7 +27,7 @@ import org.smartregister.fhircore.anc.databinding.ItemPlanTextBinding
 /** Subclass of [ListAdapter] used to display allergies for the non ANC client */
 class AllergiesAdapter :
   ListAdapter<AllergiesItem, AllergiesAdapter.PatientAllergiesViewHolder>(
-    ImmunizationItemDiffCallback
+    AllergiesItemDiffCallback
   ) {
 
   inner class PatientAllergiesViewHolder(private val containerView: ItemPlanTextBinding) :
@@ -47,7 +47,7 @@ class AllergiesAdapter :
     holder.bindTo(getItem(position))
   }
 
-  object ImmunizationItemDiffCallback : DiffUtil.ItemCallback<AllergiesItem>() {
+  object AllergiesItemDiffCallback : DiffUtil.ItemCallback<AllergiesItem>() {
     override fun areItemsTheSame(oldItem: AllergiesItem, newItem: AllergiesItem) =
       oldItem.title == newItem.title
 

@@ -1,6 +1,7 @@
 {
   "resourceType": "Questionnaire",
   "status": "active",
+  "id": "1921",
   "date": "2020-11-18T07:24:47.111Z",
   "name": "vital-sign",
   "title": "Vital Sign",
@@ -82,7 +83,8 @@
       "definition": "http://acme.org/devices/clinical-codes",
       "text": "Body Weight (kg)",
       "type": "decimal",
-      "maxLength": 999,
+      "maxValue": 999,
+      "minValue": 0,
       "code": [
         {
           "system": "http://loinc.org",
@@ -125,7 +127,8 @@
       "definition": "http://acme.org/devices/clinical-codes",
       "text": "Height (cm)",
       "type": "decimal",
-      "maxLength": 300,
+      "maxValue": 300,
+      "minValue": 0,
       "extension": [
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
@@ -152,7 +155,8 @@
     {
       "linkId": "vital-signs-blood_glucose",
       "type": "decimal",
-      "maxLength": 1000,
+      "maxValue": 1000,
+      "minValue": 0,
       "definition": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
       "text": "Blood Glucose (mmol/L)",
       "code": [
@@ -181,7 +185,8 @@
     {
       "linkId": "vital-signs-blood-oxygen-level",
       "type": "integer",
-      "maxLength": 100,
+      "maxValue": 100,
+      "minValue": 0,
       "definition": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
       "text": "Blood Oxygen Level (%)",
       "code": [
@@ -227,7 +232,8 @@
       "type": "integer",
       "definition": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
       "text": "Pulse Rate (bpm)",
-      "maxLength": 300,
+      "maxValue": 300,
+      "minValue": 0,
       "code": [
         {
           "system": "http://loinc.org",
@@ -335,7 +341,8 @@
     {
       "linkId": "vital-signs-systolic-blood-pressure",
       "type": "integer",
-      "maxLength": 200,
+      "maxValue": 200,
+      "minValue": 0,
       "definition": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
       "text": "Systolic Blood Pressure (mmHg)",
       "extension": [
@@ -460,7 +467,8 @@
     {
       "linkId": "vital-signs-diastolic-blood-pressure",
       "type": "integer",
-      "maxLength": 200,
+      "maxValue": 200,
+      "minValue": 0,
       "definition": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
       "text": "Diastolic blood pressure (mmHg)",
       "extension": [

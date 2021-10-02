@@ -26,9 +26,7 @@ import org.smartregister.fhircore.anc.databinding.ItemCareplanBinding
 
 /** Subclass of [ListAdapter] used to display careplan for the ANC client */
 class CarePlanAdapter :
-  ListAdapter<CarePlanItem, CarePlanAdapter.PatientCarePlanViewHolder>(
-    ImmunizationItemDiffCallback
-  ) {
+  ListAdapter<CarePlanItem, CarePlanAdapter.PatientCarePlanViewHolder>(CarePlanItemDiffCallback) {
 
   inner class PatientCarePlanViewHolder(private val containerView: ItemCareplanBinding) :
     RecyclerView.ViewHolder(containerView.root) {
@@ -50,7 +48,7 @@ class CarePlanAdapter :
     holder.bindTo(getItem(position))
   }
 
-  object ImmunizationItemDiffCallback : DiffUtil.ItemCallback<CarePlanItem>() {
+  object CarePlanItemDiffCallback : DiffUtil.ItemCallback<CarePlanItem>() {
     override fun areItemsTheSame(oldItem: CarePlanItem, newItem: CarePlanItem) =
       oldItem.title == newItem.title
 

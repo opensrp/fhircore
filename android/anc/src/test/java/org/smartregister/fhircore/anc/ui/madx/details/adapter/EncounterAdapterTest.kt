@@ -57,7 +57,7 @@ class EncounterAdapterTest : RobolectricTest() {
   @Test
   fun testAdapterDiffUtilEquatesDifferentObjectsWithSameId() {
 
-    val diffCallback = EncounterAdapter.ImmunizationItemDiffCallback
+    val diffCallback = EncounterAdapter.EncounterItemDiffCallback
     val item = EncounterItem("1111", "1110", "first", date = "2021-02-01")
 
     // change title only

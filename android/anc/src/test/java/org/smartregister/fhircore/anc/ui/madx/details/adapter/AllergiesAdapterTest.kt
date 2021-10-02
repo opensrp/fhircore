@@ -57,7 +57,7 @@ class AllergiesAdapterTest : RobolectricTest() {
   @Test
   fun testAdapterDiffUtilEquatesDifferentObjectsWithSameId() {
 
-    val diffCallback = AllergiesAdapter.ImmunizationItemDiffCallback
+    val diffCallback = AllergiesAdapter.AllergiesItemDiffCallback
     val item = AllergiesItem("1111", "1110", "first")
 
     // change title only
