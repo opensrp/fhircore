@@ -196,7 +196,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire_form"
     private const val FORM_CONFIGURATIONS = "form_configurations.json"
 
-    fun requiredIntentArgs(clientIdentifier: String?, form: String, immunizationId: String? = null) =
+    fun requiredIntentArgs(
+      clientIdentifier: String?,
+      form: String,
+      immunizationId: String? = null
+    ) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
         Pair(QUESTIONNAIRE_ARG_FORM, form),
