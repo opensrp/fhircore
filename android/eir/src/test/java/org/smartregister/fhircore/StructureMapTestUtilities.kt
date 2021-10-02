@@ -185,18 +185,14 @@ class StructureMapTestUtilities : RobolectricTest() {
       "structure-map-questionnaires/adverse-event/questionnaire.json".readFile()
     val adverseEventStructureMap =
       "structure-map-questionnaires/adverse-event/structure-map.txt".readFile()
-    val immunizationJson =
-      "structure-map-questionnaires/adverse-event/immunization.json".readFile()
+    val immunizationJson = "structure-map-questionnaires/adverse-event/immunization.json".readFile()
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
-    val questionnaire =
-      iParser.parseResource(Questionnaire::class.java, adverseEventQuestionnaire)
+    val questionnaire = iParser.parseResource(Questionnaire::class.java, adverseEventQuestionnaire)
     val immunization = iParser.parseResource(Immunization::class.java, immunizationJson)
 
     var questionnaireResponse: QuestionnaireResponse
-    runBlocking {
-      questionnaireResponse = ResourceMapper.populate(questionnaire, immunization)
-    }
+    runBlocking { questionnaireResponse = ResourceMapper.populate(questionnaire, immunization) }
 
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
@@ -308,10 +304,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val targetResource = Bundle()
 
     val baseElement =
-      iParser.parseResource(
-        QuestionnaireResponse::class.java,
-        adverseEventQuestionnaireResponse
-      )
+      iParser.parseResource(QuestionnaireResponse::class.java, adverseEventQuestionnaireResponse)
 
     scu.transform(contextR4, baseElement, map, targetResource)
 

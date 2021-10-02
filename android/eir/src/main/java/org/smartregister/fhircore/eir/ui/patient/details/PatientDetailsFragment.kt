@@ -121,39 +121,41 @@ class PatientDetailsFragment private constructor() : Fragment() {
 
     reportAdverseEventButton.setOnClickListener {
       val immunizations = patientDetailsViewModel.patientImmunizations.value as List<Immunization>
-      val immunizationItemWithIds = immunizations.toImmunizationItemsWithIds(requireContext()).first()
+      val immunizationItemWithIds =
+        immunizations.toImmunizationItemsWithIds(requireContext()).first()
 
       goToAdverseEventQuestionnaireActivity(immunizationItemWithIds, patientId)
     }
   }
 
-  private fun goToAdverseEventQuestionnaireActivity(immunizationItemWithIds: ImmunizationItemWithIds, patientId: String) {
+  private fun goToAdverseEventQuestionnaireActivity(
+    immunizationItemWithIds: ImmunizationItemWithIds,
+    patientId: String
+  ) {
 
     val list = arrayListOf<String>()
-      immunizationItemWithIds.doses.forEach { dose ->
-      list.add(dose.first)
-    }
+    immunizationItemWithIds.doses.forEach { dose -> list.add(dose.first) }
 
-    AlertDialog.Builder(requireActivity()).apply {
-      setTitle("Choose dose of ${immunizationItemWithIds.vaccine} for adverse events")
-      setNegativeButton(R.string.cancel) { dialog: DialogInterface, _ ->
-        dialog.dismiss()
+    AlertDialog.Builder(requireActivity())
+      .apply {
+        setTitle("Choose dose of ${immunizationItemWithIds.vaccine} for adverse events")
+        setNegativeButton(R.string.cancel) { dialog: DialogInterface, _ -> dialog.dismiss() }
+        setSingleChoiceItems(list.toTypedArray(), -1) { dialog: DialogInterface, position: Int ->
+          startActivity(
+            Intent(requireContext(), AdverseEventQuestionnaireActivity::class.java)
+              .putExtras(
+                QuestionnaireActivity.requiredIntentArgs(
+                  clientIdentifier = patientId,
+                  form = ADVERSE_EVENT_FORM,
+                  immunizationId = immunizationItemWithIds.ids[position]
+                )
+              )
+          )
+          dialog.dismiss()
+        }
       }
-      setSingleChoiceItems(list.toTypedArray(), -1) { dialog: DialogInterface, position: Int ->
-
-        startActivity(
-          Intent(requireContext(), AdverseEventQuestionnaireActivity::class.java)
-            .putExtras(QuestionnaireActivity.requiredIntentArgs(
-              clientIdentifier = patientId,
-              form = ADVERSE_EVENT_FORM,
-              immunizationId = immunizationItemWithIds.ids[position]
-            )
-            )
-        )
-        dialog.dismiss()
-      }
-    }.create().show()
-
+      .create()
+      .show()
   }
 
   private fun handlePatientDemographics(patient: Patient) {

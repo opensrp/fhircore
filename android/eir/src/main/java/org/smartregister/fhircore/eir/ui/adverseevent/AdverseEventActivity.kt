@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.smartregister.fhircore.eir.ui.adverseevent
 
 import android.os.Bundle
@@ -32,30 +48,36 @@ class AdverseEventActivity : BaseMultiLanguageActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    activityAdverseEventBinding = DataBindingUtil.setContentView(this, R.layout.activity_adverse_event)
+    activityAdverseEventBinding =
+      DataBindingUtil.setContentView(this, R.layout.activity_adverse_event)
     setSupportActionBar(activityAdverseEventBinding.adverseEventsToolbar)
 
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
     adverseEventViewModel =
       ViewModelProvider(
-        this@AdverseEventActivity,
-        AdverseEventViewModel(
-          application,
-          questionnaireConfig = QuestionnaireConfig("adverse-event", "Adverse Event", "1568"),
-          PatientRepository(
-            (application as ConfigurableApplication).fhirEngine,
-            PatientItemMapper
-          )
-        ).createFactory()
-      ).get(AdverseEventViewModel::class.java)
+          this@AdverseEventActivity,
+          AdverseEventViewModel(
+              application,
+              questionnaireConfig = QuestionnaireConfig("adverse-event", "Adverse Event", "1568"),
+              PatientRepository(
+                (application as ConfigurableApplication).fhirEngine,
+                PatientItemMapper
+              )
+            )
+            .createFactory()
+        )
+        .get(AdverseEventViewModel::class.java)
 
     setupViews()
 
-    adverseEventViewModel.getPatientImmunizations(patientId = patientId).observe(this@AdverseEventActivity,
-      this::handleImmunizations)
+    adverseEventViewModel
+      .getPatientImmunizations(patientId = patientId)
+      .observe(this@AdverseEventActivity, this::handleImmunizations)
 
-    activityAdverseEventBinding.adverseEventsToolbar.setNavigationOnClickListener { onBackPressed() }
+    activityAdverseEventBinding.adverseEventsToolbar.setNavigationOnClickListener {
+      onBackPressed()
+    }
   }
 
   private fun setupViews() {
@@ -72,7 +94,8 @@ class AdverseEventActivity : BaseMultiLanguageActivity() {
         activityAdverseEventBinding.noAdverseEventTextView.show()
       }
       else -> {
-        adverseEventViewModel.getAdverseEvents(immunizations).observe(this@AdverseEventActivity) { immunizationAdverseEvents ->
+        adverseEventViewModel.getAdverseEvents(immunizations).observe(this@AdverseEventActivity) {
+          immunizationAdverseEvents ->
           immunizationAdverseEvents.filter { it.second.isNotEmpty() }.run {
             if (this.isEmpty()) {
               activityAdverseEventBinding.adverseEventListView.hide()
@@ -82,20 +105,26 @@ class AdverseEventActivity : BaseMultiLanguageActivity() {
               activityAdverseEventBinding.adverseEventListView.show()
               populateAdverseEventsList(immunizations, immunizationAdverseEvents)
             }
-
           }
         }
       }
     }
   }
 
-  private fun populateAdverseEventsList(immunizations: List<Immunization>, immunizationAdverseEvents: List<Pair<String, List<AdverseEventItem>>>) {
-    adverseEventAdapter.submitList(immunizations.toImmunizationAdverseEventItem(this@AdverseEventActivity, immunizationAdverseEvents))
+  private fun populateAdverseEventsList(
+    immunizations: List<Immunization>,
+    immunizationAdverseEvents: List<Pair<String, List<AdverseEventItem>>>
+  ) {
+    adverseEventAdapter.submitList(
+      immunizations.toImmunizationAdverseEventItem(
+        this@AdverseEventActivity,
+        immunizationAdverseEvents
+      )
+    )
   }
 
   companion object {
-    fun requiredIntentArgs(clientIdentifier: String) = bundleOf(
-      Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier)
-    )
+    fun requiredIntentArgs(clientIdentifier: String) =
+      bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier))
   }
 }

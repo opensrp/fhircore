@@ -50,13 +50,18 @@ class AdverseEventViewModel(
     return mutableLiveData
   }
 
-  fun getAdverseEvents(immunizations: List<Immunization>): LiveData<List<Pair<String, List<AdverseEventItem>>>> {
-    val mutableLiveData : MutableLiveData<List<Pair<String, List<AdverseEventItem>>>> = MutableLiveData()
+  fun getAdverseEvents(
+    immunizations: List<Immunization>
+  ): LiveData<List<Pair<String, List<AdverseEventItem>>>> {
+    val mutableLiveData: MutableLiveData<List<Pair<String, List<AdverseEventItem>>>> =
+      MutableLiveData()
 
     val immunizationAdverseEvents = mutableListOf<Pair<String, List<AdverseEventItem>>>()
     viewModelScope.launch(dispatcherProvider.io()) {
       immunizations.forEach { immunization ->
-        immunizationAdverseEvents.add(Pair(immunization.idElement.idPart, patientRepository.getAdverseEvents(immunization)))
+        immunizationAdverseEvents.add(
+          Pair(immunization.idElement.idPart, patientRepository.getAdverseEvents(immunization))
+        )
       }
       mutableLiveData.postValue(immunizationAdverseEvents)
     }
@@ -66,8 +71,11 @@ class AdverseEventViewModel(
   override suspend fun getPopulationResources(intent: Intent): Array<Resource> {
     val resourcesList = mutableListOf<Resource>()
 
-    intent.getStringExtra(QuestionnaireActivity.ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY)?.let { immunizationId ->
-      defaultRepository.loadImmunization(immunizationId).run { resourcesList.add(this as Immunization) }
+    intent.getStringExtra(QuestionnaireActivity.ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY)?.let {
+      immunizationId ->
+      defaultRepository.loadImmunization(immunizationId).run {
+        resourcesList.add(this as Immunization)
+      }
     }
 
     return resourcesList.toTypedArray()
@@ -76,8 +84,8 @@ class AdverseEventViewModel(
   fun loadImmunization(immunizationId: String): LiveData<Immunization?> {
     val mutableLiveData: MutableLiveData<Immunization> = MutableLiveData()
     viewModelScope.launch(dispatcherProvider.io()) {
-      val immunization: Immunization? =  defaultRepository.loadResource(immunizationId)
-      if(immunization != null) {
+      val immunization: Immunization? = defaultRepository.loadResource(immunizationId)
+      if (immunization != null) {
         mutableLiveData.postValue(immunization)
       } else mutableLiveData.postValue(Immunization())
     }

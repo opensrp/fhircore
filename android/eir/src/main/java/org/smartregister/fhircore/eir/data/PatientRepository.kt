@@ -73,15 +73,17 @@ class PatientRepository(
       val adverseEventItems = mutableListOf<AdverseEventItem>()
       immunization.reaction.forEach {
         val detailObservation = loadObservation(it.detail.extractId())
-        adverseEventItems.add(AdverseEventItem(it.date.makeItReadable(), detailObservation?.code?.coding?.first()?.display
-          ?: ""))
+        adverseEventItems.add(
+          AdverseEventItem(
+            it.date.makeItReadable(),
+            detailObservation?.code?.coding?.first()?.display ?: ""
+          )
+        )
       }
       adverseEventItems
     }
   }
 
   private suspend fun loadObservation(id: String): Observation? =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.loadResource(id)
-    }
+    withContext(dispatcherProvider.io()) { fhirEngine.loadResource(id) }
 }

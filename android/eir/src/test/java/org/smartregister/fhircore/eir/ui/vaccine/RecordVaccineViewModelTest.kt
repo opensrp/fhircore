@@ -132,7 +132,9 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
     ReflectionHelpers.setField(recordVaccineViewModel, "defaultRepository", defaultRepository)
 
     val actualImmunizations: Immunization
-    runBlocking { actualImmunizations = recordVaccineViewModel.loadPatientImmunization(patientId)!! }
+    runBlocking {
+      actualImmunizations = recordVaccineViewModel.loadPatientImmunization(patientId)!!
+    }
 
     Assert.assertEquals(immunizationsList[0], actualImmunizations)
   }
