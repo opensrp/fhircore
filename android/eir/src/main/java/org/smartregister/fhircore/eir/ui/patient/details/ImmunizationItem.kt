@@ -27,7 +27,6 @@ const val OVERDUE_DAYS_IN_MONTH: Int = 14
 
 data class ImmunizationItem(val vaccine: String, val doses: List<Pair<String, Int>>)
 
-
 data class ImmunizationAdverseEventItem(
   val immunizationIds: List<String>,
   val vaccine: String,
@@ -92,7 +91,8 @@ fun List<Immunization>.toImmunizationAdverseEventItem(
 
   immunizationsMap.forEach { vaccine ->
     val doses: List<Pair<String, List<AdverseEventItem>>> =
-      vaccine.value.sortedBy { it.protocolApplied.first().doseNumberPositiveIntType.value }.map { immunization ->
+      vaccine.value.sortedBy { it.protocolApplied.first().doseNumberPositiveIntType.value }.map {
+        immunization ->
         immunization.getDoseLabelWithAdverseEvent(
           context,
           this.isNotEmpty(),
