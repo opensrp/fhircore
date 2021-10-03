@@ -20,7 +20,6 @@ import android.content.Intent
 import android.os.Bundle
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
-import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
