@@ -122,23 +122,23 @@ class PatientDetailsFragment private constructor() : Fragment() {
     reportAdverseEventButton.setOnClickListener {
       val immunizations = patientDetailsViewModel.patientImmunizations.value as List<Immunization>
       val immunizationItemWithIds =
-        immunizations.toImmunizationItemsWithIds(requireContext()).first()
+        immunizations.toImmunizationAdverseEventItem(requireContext()).first()
 
       goToAdverseEventQuestionnaireActivity(immunizationItemWithIds, patientId)
     }
   }
 
   private fun goToAdverseEventQuestionnaireActivity(
-    immunizationItemWithIds: ImmunizationItemWithIds,
+    immunizationAdverseEventItem: ImmunizationAdverseEventItem,
     patientId: String
   ) {
 
     val list = arrayListOf<String>()
-    immunizationItemWithIds.doses.forEach { dose -> list.add(dose.first) }
+    immunizationAdverseEventItem.dosesWithAdverseEvents.forEach { dose -> list.add(dose.first) }
 
-    AlertDialog.Builder(requireActivity())
+    AlertDialog.Builder(requireActivity(), R.style.Theme_AppCompat_Light_Dialog_Alert)
       .apply {
-        setTitle("Choose dose of ${immunizationItemWithIds.vaccine} for adverse events")
+        setTitle("Choose dose of ${immunizationAdverseEventItem.vaccine} for adverse events")
         setNegativeButton(R.string.cancel) { dialog: DialogInterface, _ -> dialog.dismiss() }
         setSingleChoiceItems(list.toTypedArray(), -1) { dialog: DialogInterface, position: Int ->
           startActivity(
@@ -147,7 +147,7 @@ class PatientDetailsFragment private constructor() : Fragment() {
                 QuestionnaireActivity.requiredIntentArgs(
                   clientIdentifier = patientId,
                   form = ADVERSE_EVENT_FORM,
-                  immunizationId = immunizationItemWithIds.ids[position]
+                  immunizationId = immunizationAdverseEventItem.immunizationIds[position]
                 )
               )
           )

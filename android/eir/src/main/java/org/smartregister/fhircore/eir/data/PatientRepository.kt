@@ -27,7 +27,7 @@ import org.smartregister.fhircore.eir.data.model.PatientItem
 import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
-import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
+import org.smartregister.fhircore.engine.util.DateUtils.toHumanDisplay
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
@@ -75,7 +75,7 @@ class PatientRepository(
         val detailObservation = loadObservation(it.detail.extractId())
         adverseEventItems.add(
           AdverseEventItem(
-            it.date.makeItReadable(),
+            it.date.toHumanDisplay(),
             detailObservation?.code?.coding?.first()?.display ?: ""
           )
         )
