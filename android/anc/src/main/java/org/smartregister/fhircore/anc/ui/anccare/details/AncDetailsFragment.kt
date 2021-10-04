@@ -283,11 +283,7 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   fun loadMeasureEvaluatePatient() {
     ancDetailsViewModel
-      .fetchCQLPatientData(
-        parser,
-        fhirResourceDataSource,
-        "$PATIENT_URL$patientId/\$everything"
-      )
+      .fetchCQLPatientData(parser, fhirResourceDataSource, "$PATIENT_URL$patientId/\$everything")
       .observe(viewLifecycleOwner, this::handleMeasureEvaluatePatient)
   }
 
