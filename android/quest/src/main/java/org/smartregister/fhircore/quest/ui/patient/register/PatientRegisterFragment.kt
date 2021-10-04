@@ -16,11 +16,13 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register
 
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.LazyPagingItems
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
@@ -29,12 +31,16 @@ import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
+import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
 import org.smartregister.fhircore.quest.ui.patient.register.components.PatientRegisterList
 
 class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() {
 
   override fun navigateToDetails(uniqueIdentifier: String) {
-    // TODO https://github.com/opensrp/fhircore/issues/585
+    startActivity(
+      Intent(requireActivity(), QuestPatientDetailActivity::class.java)
+        .putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier)
+    )
   }
 
   @Composable

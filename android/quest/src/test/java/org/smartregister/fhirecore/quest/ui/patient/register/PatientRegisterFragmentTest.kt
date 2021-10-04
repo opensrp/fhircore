@@ -16,15 +16,20 @@
 
 package org.smartregister.fhirecore.quest.ui.patient.register
 
+import android.content.Intent
 import androidx.fragment.app.commitNow
+import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
+import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
+import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterFragment
 import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
@@ -57,6 +62,18 @@ class PatientRegisterFragmentTest : RobolectricTest() {
         "12345"
       )
     )
+  }
+
+  @Test
+  fun testNavigateToDetailsShouldGotoToPatientDetailActivity() {
+    registerFragment.navigateToDetails("")
+
+    val expectedIntent = Intent(registerFragment.context, QuestPatientDetailActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<QuestApplication>())
+        .nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   companion object {
