@@ -38,15 +38,15 @@ class DefaultRepository(
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
   }
 
-  suspend inline fun loadRelatedPersons(patientId: String): List<RelatedPerson>? {
+  suspend fun loadRelatedPersons(patientId: String): List<RelatedPerson>? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadRelatedPersons(patientId) }
   }
 
-  suspend inline fun loadPatientImmunizations(patientId: String): List<Immunization>? {
+  suspend fun loadPatientImmunizations(patientId: String): List<Immunization>? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadPatientImmunizations(patientId) }
   }
 
-  suspend inline fun loadImmunization(immunizationId: String): Immunization? {
+  suspend fun loadImmunization(immunizationId: String): Immunization? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(immunizationId) }
   }
 

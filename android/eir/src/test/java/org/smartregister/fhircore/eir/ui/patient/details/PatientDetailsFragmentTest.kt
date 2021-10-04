@@ -261,7 +261,7 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
           CodeableConcept(Coding("system", "vaccine_code", "code display")).setText("Astrazeneca")
         protocolApplied =
           listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(1)))
-        occurrence = DateTimeType("2021-07-30")
+        occurrence = DateTimeType(Date())
       }
 
     val immunization2 =
@@ -270,7 +270,7 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
           CodeableConcept(Coding("system", "vaccine_code", "code display")).setText("Astrazeneca")
         protocolApplied =
           listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(2)))
-        occurrence = DateTimeType("2021-07-30")
+        occurrence = DateTimeType(Date())
       }
 
     val immunization3 =
@@ -279,7 +279,7 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
           CodeableConcept(Coding("system", "vaccine_code", "code display")).setText("Pfizer")
         protocolApplied =
           listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(2)))
-        occurrence = DateTimeType("2021-07-30")
+        occurrence = DateTimeType(Date())
       }
     return listOf(immunization1, immunization2, immunization3)
   }

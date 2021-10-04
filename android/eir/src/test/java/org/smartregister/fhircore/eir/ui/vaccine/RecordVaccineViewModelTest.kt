@@ -90,7 +90,7 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
     }
 
   @Test
-  fun `getPopulationResources() should call loadPatient() and loadImmunization()`() {
+  fun `getPopulationResources() should call loadPatient() and loadPatientImmunization()`() {
     val patientId = "2892347"
     val patient = Patient()
     val immunization = Immunization()
@@ -110,7 +110,7 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `loadImmunization() should call defaultRepository#loadImmunizations`() {
+  fun `loadPatientImmunization() should call defaultRepository#loadPatientImmunizations`() {
     val patientId = "2892347"
 
     val defaultRepository: DefaultRepository = mockk()
@@ -123,7 +123,7 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `loadImmunization() should return first immunization from defaultRepository#loadImmunizations`() {
+  fun `loadPatientImmunization() should return first immunization from defaultRepository#loadPatientImmunizations`() {
     val patientId = "2892347"
     val immunizationsList: List<Immunization> = listOf(Immunization(), Immunization())
 
