@@ -55,6 +55,7 @@ import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.model.Language
+import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
@@ -133,6 +134,9 @@ abstract class BaseRegisterActivity :
       lifecycleScope.launch { sharedSyncStatus.collect { state -> onSync(state) } }
     }
 
+    registerActivityBinding = DataBindingUtil.setContentView(this, R.layout.base_register_activity)
+    registerActivityBinding.lifecycleOwner = this
+
     fhirEngine = (application as ConfigurableApplication).fhirEngine
   }
 
@@ -175,7 +179,6 @@ abstract class BaseRegisterActivity :
 
     with(registerActivityBinding) {
       toolbarLayout.btnDrawerMenu.setOnClickListener { manipulateDrawer(open = true) }
-      btnRegisterNewClient.setOnClickListener { registerClient() }
       containerProgressSync.setOnClickListener {
         progressSync.show()
         manipulateDrawer(false)
@@ -186,6 +189,8 @@ abstract class BaseRegisterActivity :
     // Setup view pager
     registerPagerAdapter = RegisterPagerAdapter(this, supportedFragments = supportedFragments())
     registerActivityBinding.listPager.adapter = registerPagerAdapter
+
+    setupNewClientButtonView(registerViewModel.registerViewConfiguration.value!!)
 
     updateRegisterTitle()
 
@@ -247,6 +252,16 @@ abstract class BaseRegisterActivity :
           }
         )
       }
+    }
+  }
+
+  private fun setupNewClientButtonView(registerViewConfiguration: RegisterViewConfiguration) {
+    with(registerActivityBinding.btnRegisterNewClient) {
+      this.setOnClickListener { registerClient() }
+      if (registerViewConfiguration.newClientButtonStyle.isNotEmpty()) {
+        this.background = getDrawable(registerViewConfiguration.newClientButtonStyle)
+      }
+      this.text = registerViewConfiguration.newClientButtonText
     }
   }
 
@@ -366,9 +381,6 @@ abstract class BaseRegisterActivity :
   }
 
   override fun setupConfigurableViews(viewConfiguration: RegisterViewConfiguration) {
-    registerActivityBinding = DataBindingUtil.setContentView(this, R.layout.base_register_activity)
-    registerActivityBinding.lifecycleOwner = this
-
     setUpViews()
 
     with(registerActivityBinding.toolbarLayout) {
@@ -383,18 +395,15 @@ abstract class BaseRegisterActivity :
       layoutScanBarcode.toggleVisibility(viewConfiguration.showScanQRCode)
     }
 
-    setupBottomMenu(viewConfiguration)
+    setupBottomNavigationMenu(viewConfiguration)
   }
 
-  open fun setupBottomMenu(viewConfiguration: RegisterViewConfiguration) {
+  open fun setupBottomNavigationMenu(viewConfiguration: RegisterViewConfiguration) {
     val bottomMenu = registerActivityBinding.bottomNavView.menu
-    if (viewConfiguration.bottomMenuOptions.isEmpty())
-      registerActivityBinding.bottomNavView.hide(true)
+    if (viewConfiguration.showBottomMenu) registerActivityBinding.bottomNavView.hide(true)
 
-    viewConfiguration.bottomMenuOptions.forEach {
-      bottomMenu.add(it.title).apply {
-        it.iconResource?.let { this.icon = applicationContext.getDrawable(it) }
-      }
+    bottomNavigationMenuOptions().forEach {
+      bottomMenu.add(it.title).apply { it.iconResource?.let { ic -> this.icon = ic } }
     }
   }
 
@@ -414,7 +423,7 @@ abstract class BaseRegisterActivity :
       }
       else -> {
         manipulateDrawer(open = false)
-        return onSideMenuOptionSelected(item)
+        return onMenuOptionSelected(item)
       }
     }
     return true
@@ -470,13 +479,21 @@ abstract class BaseRegisterActivity :
   }
 
   /** List of [SideMenuOption] representing individual menu items listed in the DrawerLayout */
-  abstract fun sideMenuOptions(): List<SideMenuOption>
+  open fun sideMenuOptions(): List<SideMenuOption> {
+    return emptyList()
+  }
+
+  /** List of [SideMenuOption] representing individual menu items listed in the DrawerLayout */
+  open fun bottomNavigationMenuOptions(): List<NavigationMenuOption> {
+    return emptyList()
+  }
 
   /**
    * Abstract method to be implemented by the subclass to provide actions for the menu [item]
    * options. Refer to the selected menu item using the view tag that was set by [sideMenuOptions]
+   * or [bottomNavigationMenuOptions]
    */
-  abstract fun onSideMenuOptionSelected(item: MenuItem): Boolean
+  abstract fun onMenuOptionSelected(item: MenuItem): Boolean
 
   protected open fun registerClient() {
     startActivity(

@@ -45,16 +45,7 @@ class RegisterViewConfigTest : RobolectricTest() {
     assertEquals(false, result.showScanQRCode)
     assertEquals(true, result.showNewClientButton)
     assertEquals(false, result.showSideMenu)
+    assertEquals(true, result.showBottomMenu)
     assertEquals("patient-registration", result.registrationForm)
-    assertEquals(2, result.bottomMenuOptions.size)
-
-    val menuOption1 = result.bottomMenuOptions[0]
-    val menuOption2 = result.bottomMenuOptions[1]
-
-    assertEquals("Clients", menuOption1.title)
-    assertEquals("ic_users", menuOption1.iconResource)
-
-    assertEquals("Settings", menuOption2.title)
-    assertEquals("ic_settings", menuOption2.iconResource)
   }
 }

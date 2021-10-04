@@ -1,7 +1,7 @@
 [
   {
     "id": "quest-app",
-    "theme": "QuestBlue",
+    "theme": "QuestDefault",
     "languages": ["en", "sw"]
   }
 ]
