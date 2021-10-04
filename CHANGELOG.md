@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added class for Measure report evaluation which will be used in ANC application
+- QUEST | Patient List, Load Config from server
 
 ### Fixed
 

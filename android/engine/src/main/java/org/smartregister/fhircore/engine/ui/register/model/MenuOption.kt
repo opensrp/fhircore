@@ -30,10 +30,4 @@ import kotlinx.serialization.Serializable
  * returning -1. -1 is used to determine whether to count active patients or not. Override to
  * provide custom count implementation for instance calling a view model method to perform the count
  */
-@Serializable
-data class MenuOption(
-  val title: String,
-  val iconResource: String? = null,
-  val opensMainRegister: Boolean = false,
-  val showCount: Boolean = true,
-)
+@Serializable data class MenuOption(val title: String, val iconResource: String? = null)

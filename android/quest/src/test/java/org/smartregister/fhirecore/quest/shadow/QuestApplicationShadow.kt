@@ -29,6 +29,7 @@ import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
 import org.robolectric.shadows.ShadowApplication
 import org.smartregister.fhircore.quest.QuestApplication
+import timber.log.Timber
 
 @Implements(QuestApplication::class)
 class QuestApplicationShadow : ShadowApplication() {
@@ -112,6 +113,11 @@ class QuestApplicationShadow : ShadowApplication() {
   @Implementation
   fun constructFhirEngine(): FhirEngine {
     return FhirEngineImpl()
+  }
+
+  @Implementation
+  fun schedulePolling() {
+    Timber.i("Scheduled polling for Shadow")
   }
 
   private fun <T> getListOfFilters(search: Search, filterName: String): MutableList<T> {
