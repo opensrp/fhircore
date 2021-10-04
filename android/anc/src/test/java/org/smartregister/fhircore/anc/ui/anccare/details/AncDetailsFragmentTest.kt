@@ -23,7 +23,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import ca.uhn.fhir.parser.IParser
@@ -34,6 +33,11 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verify
+import java.util.Date
+import kotlinx.android.synthetic.main.fragment_anc_details.button_CQLEvaluate
+import kotlinx.android.synthetic.main.fragment_anc_details.textView_CQLResults
+import kotlinx.android.synthetic.main.fragment_anc_details.textView_EvaluateCQLHeader
 import kotlinx.android.synthetic.main.fragment_anc_details.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
@@ -43,11 +47,13 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
 import org.smartregister.fhircore.anc.robolectric.FragmentRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -58,19 +64,14 @@ import org.smartregister.fhircore.engine.util.FileUtil
 internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
 
   private lateinit var fhirEngine: FhirEngine
-
   private lateinit var patientDetailsViewModel: AncDetailsViewModel
-
   private lateinit var patientDetailsActivity: AncDetailsActivity
-
   private lateinit var patientRepository: AncPatientRepository
-
   private lateinit var fragmentScenario: FragmentScenario<AncDetailsFragment>
-
   private lateinit var patientDetailsFragment: AncDetailsFragment
+  private lateinit var carePlanAdapter: CarePlanAdapter
 
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
-
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   private val patientId = "samplePatientId"
@@ -84,9 +85,10 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
     MockKAnnotations.init(this, relaxUnitFun = true)
 
     fhirEngine = mockk(relaxed = true)
-
     patientRepository = mockk()
+    carePlanAdapter = mockk()
 
+    every { carePlanAdapter.submitList(any()) } returns Unit
     every { ancPatientDetailItem.patientDetails } returns
       AncPatientItem(patientId, "Mandela Nelson", "M", "26")
     every { ancPatientDetailItem.patientDetailsHead } returns AncPatientItem()
@@ -107,29 +109,48 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
               val fragment = spyk(AncDetailsFragment.newInstance())
               every { fragment.activity } returns patientDetailsActivity
               fragment.ancDetailsViewModel = patientDetailsViewModel
+
               return fragment
             }
           }
       )
 
-    fragmentScenario.onFragment { patientDetailsFragment = it }
+    fragmentScenario.onFragment {
+      patientDetailsFragment = it
+      ReflectionHelpers.setField(patientDetailsFragment, "carePlanAdapter", carePlanAdapter)
+    }
   }
 
   @Test
-  fun testThatViewsAreSetupCorrectly() {
-    fragmentScenario.moveToState(Lifecycle.State.RESUMED)
-    Assert.assertNotNull(patientDetailsFragment.view)
+  fun testHandleCarePlanShouldVerifyExpectedCalls() {
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientDetailsFragment,
+      "handleCarePlan",
+      ReflectionHelpers.ClassParameter(List::class.java, listOf<CarePlanItem>())
+    )
 
     // No CarePlan available text displayed
     val noVaccinesTextView =
       patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noCarePlan)
-    Assert.assertEquals(View.VISIBLE, noVaccinesTextView?.visibility)
-    Assert.assertEquals("No care plan", noVaccinesTextView?.text.toString())
 
     // CarePlan list is not displayed
     val immunizationsListView =
       patientDetailsFragment.view?.findViewById<RecyclerView>(R.id.carePlanListView)
+
+    Assert.assertEquals(View.VISIBLE, noVaccinesTextView?.visibility)
     Assert.assertEquals(View.GONE, immunizationsListView?.visibility)
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientDetailsFragment,
+      "handleCarePlan",
+      ReflectionHelpers.ClassParameter(List::class.java, listOf(CarePlanItem("", Date())))
+    )
+
+    Assert.assertEquals(View.GONE, noVaccinesTextView?.visibility)
+    Assert.assertEquals(View.VISIBLE, immunizationsListView?.visibility)
+
+    verify(exactly = 1) { carePlanAdapter.submitList(any()) }
   }
 
   override fun getFragmentScenario(): FragmentScenario<out Fragment> {
@@ -142,31 +163,21 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
 
   @Test
   fun testThatDemographicViewsAreUpdated() {
-    coroutinesTestRule.runBlockingTest {
-      fragmentScenario.moveToState(Lifecycle.State.RESUMED)
 
-      patientDetailsFragment.ancDetailsViewModel.patientDemographics.value = ancPatientDetailItem
+    val item =
+      AncPatientDetailItem(
+        AncPatientItem(patientIdentifier = "1", name = "demo", gender = "M", age = "20"),
+        AncPatientItem(demographics = "2")
+      )
 
-      val ancPatientDetailItem = patientDetailsViewModel.fetchDemographics().value
-      val patientDetails =
-        ancPatientDetailItem?.patientDetails?.name +
-          ", " +
-          ancPatientDetailItem?.patientDetails?.gender +
-          ", " +
-          ancPatientDetailItem?.patientDetails?.age
-      val patientId =
-        ancPatientDetailItem?.patientDetailsHead?.demographics +
-          " ID: " +
-          ancPatientDetailItem?.patientDetails?.patientIdentifier
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientDetailsFragment,
+      "handlePatientDemographics",
+      ReflectionHelpers.ClassParameter(AncPatientDetailItem::class.java, item)
+    )
 
-      val txtViewPatientDetails =
-        patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_patientDetails)
-      Assert.assertEquals(patientDetails, txtViewPatientDetails?.text.toString())
-
-      val txtViewPatientId =
-        patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_patientId)
-      Assert.assertEquals(patientId, txtViewPatientId?.text.toString())
-    }
+    Assert.assertEquals("demo, M, 20", patientDetailsFragment.binding.txtViewPatientDetails.text)
+    Assert.assertEquals("2 ID: 1", patientDetailsFragment.binding.txtViewPatientId.text)
   }
 
   @Test

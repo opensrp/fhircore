@@ -53,7 +53,7 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   private lateinit var ancPatientRepository: AncPatientRepository
 
-  private val carePlanAdapter = CarePlanAdapter()
+  private var carePlanAdapter = CarePlanAdapter()
 
   lateinit var binding: FragmentAncDetailsBinding
 
@@ -122,11 +122,7 @@ class AncDetailsFragment private constructor() : Fragment() {
 
     setupViews()
 
-    ancPatientRepository =
-      AncPatientRepository(
-        (requireActivity().application as AncApplication).fhirEngine,
-        AncPatientItemMapper
-      )
+    ancPatientRepository = getAncPatientRepository()
 
     ancDetailsViewModel =
       ViewModelProvider(
@@ -359,5 +355,12 @@ class AncDetailsFragment private constructor() : Fragment() {
       buttonCQLSetOnClickListener()
       buttonCQLMeasureEvaluateSetOnClickListener()
     }
+  }
+
+  fun getAncPatientRepository(): AncPatientRepository {
+    return AncPatientRepository(
+      (requireActivity().application as AncApplication).fhirEngine,
+      AncPatientItemMapper
+    )
   }
 }
