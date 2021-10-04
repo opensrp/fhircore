@@ -48,16 +48,16 @@ object SyncBroadcaster {
 
   var syncInitiator: SyncInitiator? = null
 
-  private val syncListeners = mutableListOf<WeakReference<OnSyncListener>>()
+  val syncListeners = mutableListOf<WeakReference<OnSyncListener>>()
 
   fun registerSyncInitiator(syncInitiator: SyncInitiator) =
     if (this.syncInitiator == null) {
       this.syncInitiator = syncInitiator
       this.syncInitiator?.runSync() ?: Timber.e("Register at least one sync initiator")
     } else {
-      Timber.w(
+      throw IllegalStateException(
         "One time sync can only be triggered from one place within the entire application e.g." +
-          " opening register page"
+          " when loading the landing register page. Other views can register as listeners to respond to Sync State"
       )
     }
 
