@@ -39,6 +39,7 @@ class RegisterViewConfigTest : RobolectricTest() {
     assertEquals("Show overdue", result.filterText)
     assertEquals("Search for ID or client name", result.searchBarHint)
     assertEquals("Add new client", result.newClientButtonText)
+    assertEquals("rounded_corner", result.newClientButtonStyle)
     assertEquals(true, result.showSearchBar)
     assertEquals(false, result.showFilter)
     assertEquals(true, result.switchLanguages)

@@ -400,7 +400,7 @@ abstract class BaseRegisterActivity :
 
   open fun setupBottomNavigationMenu(viewConfiguration: RegisterViewConfiguration) {
     val bottomMenu = registerActivityBinding.bottomNavView.menu
-    if (viewConfiguration.showBottomMenu) registerActivityBinding.bottomNavView.hide(true)
+    if (!viewConfiguration.showBottomMenu) registerActivityBinding.bottomNavView.hide(true)
 
     bottomNavigationMenuOptions().forEach {
       bottomMenu.add(it.title).apply { it.iconResource?.let { ic -> this.icon = ic } }
