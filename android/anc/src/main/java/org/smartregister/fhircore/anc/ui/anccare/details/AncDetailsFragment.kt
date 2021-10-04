@@ -290,7 +290,7 @@ class AncDetailsFragment private constructor() : Fragment() {
       .fetchCQLPatientData(
         parser,
         fhirResourceDataSource,
-        "https://hapi.fhir.org/baseR4/Patient/2536426/\$everything"
+        "$PATIENT_URL$patientId/\$everything"
       )
       .observe(viewLifecycleOwner, this::handleMeasureEvaluatePatient)
   }
