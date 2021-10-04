@@ -59,13 +59,13 @@ class AncDetailsViewModel(
   fun fetchCQLLibraryData(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
-    LIBRARY_URL: String
+    libraryURL: String
   ): LiveData<String> {
     var libraryData = MutableLiveData<String>()
     viewModelScope.launch(dispatcher.io()) {
       val auxCQLLibraryData =
         parser.encodeResourceToString(
-          fhirResourceDataSource.loadData(LIBRARY_URL).entry[0].resource
+          fhirResourceDataSource.loadData(libraryURL).entry[0].resource
         )
       libraryData.postValue(auxCQLLibraryData)
     }
@@ -75,12 +75,12 @@ class AncDetailsViewModel(
   fun fetchCQLFhirHelperData(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
-    HELPER_URL: String
+    helperURL: String
   ): LiveData<String> {
     var helperData = MutableLiveData<String>()
     viewModelScope.launch(dispatcher.io()) {
       val auxCQLHelperData =
-        parser.encodeResourceToString(fhirResourceDataSource.loadData(HELPER_URL).entry[0].resource)
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(helperURL).entry[0].resource)
       helperData.postValue(auxCQLHelperData)
     }
     return helperData
@@ -89,12 +89,12 @@ class AncDetailsViewModel(
   fun fetchCQLValueSetData(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
-    VALUE_SET_URL: String
+    valueSetURL: String
   ): LiveData<String> {
     var valueSetData = MutableLiveData<String>()
     viewModelScope.launch(dispatcher.io()) {
       val auxCQLValueSetData =
-        parser.encodeResourceToString(fhirResourceDataSource.loadData(VALUE_SET_URL))
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(valueSetURL))
       valueSetData.postValue(auxCQLValueSetData)
     }
     return valueSetData
@@ -103,12 +103,12 @@ class AncDetailsViewModel(
   fun fetchCQLPatientData(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
-    PATIENT_URL: String
+    patientURL: String
   ): LiveData<String> {
     var patientData = MutableLiveData<String>()
     viewModelScope.launch(dispatcher.io()) {
       val auxCQLPatientData =
-        parser.encodeResourceToString(fhirResourceDataSource.loadData(PATIENT_URL))
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(patientURL))
       patientData.postValue(auxCQLPatientData)
     }
     return patientData
@@ -117,24 +117,24 @@ class AncDetailsViewModel(
   fun fetchCQLMeasureEvaluateLibraryAndValueSets(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
-    LIB_AND_VALUE_SET_URL: String,
-    MEASURE_URL: String
+    libAndValueSetURL: String,
+    measureURL: String
   ): LiveData<String> {
     var valueSetData = MutableLiveData<String>()
-    val equalsIndexUrl: Int = LIB_AND_VALUE_SET_URL.indexOf("=")
+    val equalsIndexUrl: Int = libAndValueSetURL.indexOf("=")
 
     var libStrAfterEquals =
-      LIB_AND_VALUE_SET_URL.substring(LIB_AND_VALUE_SET_URL.lastIndexOf("=") + 1)
+      libAndValueSetURL.substring(libAndValueSetURL.lastIndexOf("=") + 1)
     var libList = libStrAfterEquals.split(",").map { it.trim() }
 
-    var libURLStrBeforeEquals = LIB_AND_VALUE_SET_URL.substring(0, equalsIndexUrl) + "="
+    var libURLStrBeforeEquals = libAndValueSetURL.substring(0, equalsIndexUrl) + "="
     var initialStr =
       "{  \"resourceType\": \"Bundle\",  \"id\": \"ANCIND01-bundle\",  \"meta\": {    \"lastUpdated\": \"2021-09-30T12:15:24.569+00:00\"  },  \"type\": \"searchset\",  \"total\": 11,  \"link\": [ {    \"relation\": \"self\",    \"url\": \"http://hapi.fhir.org/baseR4/Library?_id=ANCDataElements%2CWHOCommon%2CANCConcepts%2CANCContactDataElements%2CFHIRHelpers%2CANCStratifiers%2CANCIND01%2CANCCommon%2CANCBaseDataElements%2CFHIRCommon%2CANCBaseConcepts\"  } ],  \"entry\": ["
 
     viewModelScope.launch(dispatcher.io()) {
       val measureObject =
         parser.encodeResourceToString(
-          fhirResourceDataSource.loadData(MEASURE_URL).entry[0].resource
+          fhirResourceDataSource.loadData(measureURL).entry[0].resource
         )
       var jsonObjectResource = JSONObject()
       var jsonObjectResourceType = JSONObject(measureObject)

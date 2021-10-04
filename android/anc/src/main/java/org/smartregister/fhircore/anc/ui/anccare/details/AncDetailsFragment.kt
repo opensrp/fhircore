@@ -78,21 +78,21 @@ class AncDetailsFragment private constructor() : Fragment() {
   val contextCQL = "patient"
   val contextLabel = "mom-with-anemia"
 
-  var CQL_BASE_URL = ""
-  var LIBRARY_URL = ""
-  var MEASURE_EVALUATE_LIBRARY_URL = ""
-  var MEASURE_RESOURCE_TYPE_URL = ""
+  var cqlBaseURL = ""
+  var libraryURL = ""
+  var measureEvaluateLibraryURL = ""
+  var measureTypeURL = ""
 
-  var CQL_MEASURE_REPORT_URL = ""
-  var CQL_MEASURE_REPORT_START_DATE = ""
-  var CQL_MEASURE_REPORT_END_DATE = ""
-  var CQL_MEASURE_REPORT_REPORT_TYPE = ""
-  var CQL_MEASURE_REPORT_SUBJECT = ""
+  var cqlMasureReportURL = ""
+  var cqlMeasureReportStartDate = ""
+  var cqlMeasureReportEndDate = ""
+  var cqlMeasureReportReportType = ""
+  var cqlMeasureReportSubject = ""
 
-  var HELPER_URL = ""
-  var VALUE_SET_URL = ""
-  var PATIENT_URL = ""
-  var CQL_CONFIG_FILE_NAME = "configs/cql_configs.properties"
+  var cqlHelperURL = ""
+  var valueSetURL = ""
+  var patientURL = ""
+  var cqlConfigFileName = "configs/cql_configs.properties"
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -143,52 +143,52 @@ class AncDetailsFragment private constructor() : Fragment() {
       .observe(viewLifecycleOwner, this::handleCarePlan)
 
     fileUtil = FileUtil()
-    CQL_BASE_URL =
-      context?.let { fileUtil.getProperty("smart_register_base_url", it, CQL_CONFIG_FILE_NAME) }!!
-    LIBRARY_URL =
-      CQL_BASE_URL +
-        context?.let { fileUtil.getProperty("cql_library_url", it, CQL_CONFIG_FILE_NAME) }
-    HELPER_URL =
-      CQL_BASE_URL +
-        context?.let { fileUtil.getProperty("cql_helper_library_url", it, CQL_CONFIG_FILE_NAME) }
-    VALUE_SET_URL =
-      CQL_BASE_URL +
-        context?.let { fileUtil.getProperty("cql_value_set_url", it, CQL_CONFIG_FILE_NAME) }
-    PATIENT_URL =
-      CQL_BASE_URL +
-        context?.let { fileUtil.getProperty("cql_patient_url", it, CQL_CONFIG_FILE_NAME) }
+    cqlBaseURL =
+      context?.let { fileUtil.getProperty("smart_register_base_url", it, cqlConfigFileName) }!!
+    libraryURL =
+      cqlBaseURL +
+        context?.let { fileUtil.getProperty("cql_library_url", it, cqlConfigFileName) }
+    cqlHelperURL =
+      cqlBaseURL +
+        context?.let { fileUtil.getProperty("cql_helper_library_url", it, cqlConfigFileName) }
+    valueSetURL =
+      cqlBaseURL +
+        context?.let { fileUtil.getProperty("cql_value_set_url", it, cqlConfigFileName) }
+    patientURL =
+      cqlBaseURL +
+        context?.let { fileUtil.getProperty("cql_patient_url", it, cqlConfigFileName) }
 
-    MEASURE_EVALUATE_LIBRARY_URL =
+    measureEvaluateLibraryURL =
       context?.let {
-        fileUtil.getProperty("cql_measure_report_library_value_sets_url", it, CQL_CONFIG_FILE_NAME)
+        fileUtil.getProperty("cql_measure_report_library_value_sets_url", it, cqlConfigFileName)
       }!!
 
-    MEASURE_RESOURCE_TYPE_URL =
+    measureTypeURL =
       context?.let {
-        fileUtil.getProperty("cql_measure_report_resource_url", it, CQL_CONFIG_FILE_NAME)
+        fileUtil.getProperty("cql_measure_report_resource_url", it, cqlConfigFileName)
       }!!
 
-    CQL_MEASURE_REPORT_URL =
-      context?.let { fileUtil.getProperty("cql_measure_report_url", it, CQL_CONFIG_FILE_NAME) }!!
+    cqlMasureReportURL =
+      context?.let { fileUtil.getProperty("cql_measure_report_url", it, cqlConfigFileName) }!!
 
-    CQL_MEASURE_REPORT_START_DATE =
+    cqlMeasureReportStartDate =
       context?.let {
-        fileUtil.getProperty("cql_measure_report_start_date", it, CQL_CONFIG_FILE_NAME)
+        fileUtil.getProperty("cql_measure_report_start_date", it, cqlConfigFileName)
       }!!
 
-    CQL_MEASURE_REPORT_END_DATE =
+    cqlMeasureReportEndDate =
       context?.let {
-        fileUtil.getProperty("cql_measure_report_end_date", it, CQL_CONFIG_FILE_NAME)
+        fileUtil.getProperty("cql_measure_report_end_date", it, cqlConfigFileName)
       }!!
 
-    CQL_MEASURE_REPORT_REPORT_TYPE =
+    cqlMeasureReportReportType =
       context?.let {
-        fileUtil.getProperty("cql_measure_report_report_type", it, CQL_CONFIG_FILE_NAME)
+        fileUtil.getProperty("cql_measure_report_report_type", it, cqlConfigFileName)
       }!!
 
-    CQL_MEASURE_REPORT_SUBJECT =
+    cqlMeasureReportSubject =
       context?.let {
-        fileUtil.getProperty("cql_measure_report_subject", it, CQL_CONFIG_FILE_NAME)
+        fileUtil.getProperty("cql_measure_report_subject", it, cqlConfigFileName)
       }!!
 
     showCQLCard()
@@ -248,25 +248,25 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   fun loadCQLLibraryData() {
     ancDetailsViewModel
-      .fetchCQLLibraryData(parser, fhirResourceDataSource, LIBRARY_URL)
+      .fetchCQLLibraryData(parser, fhirResourceDataSource, libraryURL)
       .observe(viewLifecycleOwner, this::handleCQLLibraryData)
   }
 
   fun loadCQLHelperData() {
     ancDetailsViewModel
-      .fetchCQLFhirHelperData(parser, fhirResourceDataSource, HELPER_URL)
+      .fetchCQLFhirHelperData(parser, fhirResourceDataSource, cqlHelperURL)
       .observe(viewLifecycleOwner, this::handleCQLHelperData)
   }
 
   fun loadCQLValueSetData() {
     ancDetailsViewModel
-      .fetchCQLValueSetData(parser, fhirResourceDataSource, VALUE_SET_URL)
+      .fetchCQLValueSetData(parser, fhirResourceDataSource, valueSetURL)
       .observe(viewLifecycleOwner, this::handleCQLValueSetData)
   }
 
   fun loadCQLPatientData() {
     ancDetailsViewModel
-      .fetchCQLPatientData(parser, fhirResourceDataSource, "$PATIENT_URL$patientId/\$everything")
+      .fetchCQLPatientData(parser, fhirResourceDataSource, "$patientURL$patientId/\$everything")
       .observe(viewLifecycleOwner, this::handleCQLPatientData)
   }
 
@@ -275,15 +275,15 @@ class AncDetailsFragment private constructor() : Fragment() {
       .fetchCQLMeasureEvaluateLibraryAndValueSets(
         parser,
         fhirResourceDataSource,
-        MEASURE_EVALUATE_LIBRARY_URL,
-        MEASURE_RESOURCE_TYPE_URL
+        measureEvaluateLibraryURL,
+        measureTypeURL
       )
       .observe(viewLifecycleOwner, this::handleMeasureEvaluateLibrary)
   }
 
   fun loadMeasureEvaluatePatient() {
     ancDetailsViewModel
-      .fetchCQLPatientData(parser, fhirResourceDataSource, "$PATIENT_URL$patientId/\$everything")
+      .fetchCQLPatientData(parser, fhirResourceDataSource, "$patientURL$patientId/\$everything")
       .observe(viewLifecycleOwner, this::handleMeasureEvaluatePatient)
   }
 
@@ -327,11 +327,11 @@ class AncDetailsFragment private constructor() : Fragment() {
       measureEvaluator.runMeasureEvaluate(
         measureEvaluateLibraryData,
         patientResources,
-        CQL_MEASURE_REPORT_URL,
-        CQL_MEASURE_REPORT_START_DATE,
-        CQL_MEASURE_REPORT_END_DATE,
-        CQL_MEASURE_REPORT_REPORT_TYPE,
-        CQL_MEASURE_REPORT_SUBJECT
+        cqlMasureReportURL,
+        cqlMeasureReportStartDate,
+        cqlMeasureReportEndDate,
+        cqlMeasureReportReportType,
+        cqlMeasureReportSubject
       )
     val jsonObject = JSONObject(parameters)
     textView_CQLResults.text = jsonObject.toString(4)
