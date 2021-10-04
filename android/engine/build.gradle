@@ -119,7 +119,7 @@ dependencies {
 
 
     //Configure Jetpack Compose
-    def composeVersion = "1.0.1"
+    def composeVersion = "1.0.2"
     api("androidx.compose.ui:ui:$composeVersion")
     api("androidx.compose.ui:ui-tooling:$composeVersion")
     api("androidx.compose.foundation:foundation:$composeVersion")
@@ -129,7 +129,6 @@ dependencies {
     api("androidx.compose.runtime:runtime-livedata:$composeVersion")
     api("androidx.paging:paging-compose:1.0.0-alpha12")
     api("androidx.activity:activity-compose:1.3.1")
-    api('androidx.navigation:navigation-compose:2.4.0-alpha06')
     api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2'
     api ("androidx.work:work-runtime-ktx:2.3.4")
 
