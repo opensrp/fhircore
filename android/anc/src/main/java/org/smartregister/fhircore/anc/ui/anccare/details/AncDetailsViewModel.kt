@@ -118,7 +118,8 @@ class AncDetailsViewModel(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
     libAndValueSetURL: String,
-    measureURL: String
+    measureURL: String,
+    cqlMeasureReportLibInitialString:String
   ): LiveData<String> {
     var valueSetData = MutableLiveData<String>()
     val equalsIndexUrl: Int = libAndValueSetURL.indexOf("=")
@@ -128,9 +129,7 @@ class AncDetailsViewModel(
     var libList = libStrAfterEquals.split(",").map { it.trim() }
 
     var libURLStrBeforeEquals = libAndValueSetURL.substring(0, equalsIndexUrl) + "="
-    var initialStr =
-      "{  \"resourceType\": \"Bundle\",  \"id\": \"ANCIND01-bundle\",  \"meta\": {    \"lastUpdated\": \"2021-09-30T12:15:24.569+00:00\"  },  \"type\": \"searchset\",  \"total\": 11,  \"link\": [ {    \"relation\": \"self\",    \"url\": \"http://hapi.fhir.org/baseR4/Library?_id=ANCDataElements%2CWHOCommon%2CANCConcepts%2CANCContactDataElements%2CFHIRHelpers%2CANCStratifiers%2CANCIND01%2CANCCommon%2CANCBaseDataElements%2CFHIRCommon%2CANCBaseConcepts\"  } ],  \"entry\": ["
-
+    var initialStr =cqlMeasureReportLibInitialString
     viewModelScope.launch(dispatcher.io()) {
       val measureObject =
         parser.encodeResourceToString(

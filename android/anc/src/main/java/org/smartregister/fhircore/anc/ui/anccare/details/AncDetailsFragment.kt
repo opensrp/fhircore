@@ -88,7 +88,7 @@ class AncDetailsFragment private constructor() : Fragment() {
   var cqlMeasureReportEndDate = ""
   var cqlMeasureReportReportType = ""
   var cqlMeasureReportSubject = ""
-
+  var cqlMeasureReportLibInitialString=""
   var cqlHelperURL = ""
   var valueSetURL = ""
   var patientURL = ""
@@ -191,6 +191,11 @@ class AncDetailsFragment private constructor() : Fragment() {
         fileUtil.getProperty("cql_measure_report_subject", it, cqlConfigFileName)
       }!!
 
+    cqlMeasureReportLibInitialString=
+      context?.let {
+        fileUtil.getProperty("cql_measure_report_lib_initial_string", it, cqlConfigFileName)
+      }!!
+
     showCQLCard()
   }
 
@@ -276,7 +281,8 @@ class AncDetailsFragment private constructor() : Fragment() {
         parser,
         fhirResourceDataSource,
         measureEvaluateLibraryURL,
-        measureTypeURL
+        measureTypeURL,
+        cqlMeasureReportLibInitialString
       )
       .observe(viewLifecycleOwner, this::handleMeasureEvaluateLibrary)
   }
