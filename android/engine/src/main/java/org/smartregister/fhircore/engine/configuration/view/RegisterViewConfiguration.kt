@@ -18,22 +18,18 @@ package org.smartregister.fhircore.engine.configuration.view
 
 import android.content.Context
 import androidx.compose.runtime.Stable
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.ui.register.model.MenuOption
 import org.smartregister.fhircore.engine.util.extension.decodeJson
-
-enum class MenuType {
-  DRAWER,
-  BOTTOM_NAV,
-  NONE
-}
+import org.smartregister.fhircore.engine.util.extension.loadBinaryResourceConfiguration
 
 @Serializable
 @Stable
 data class RegisterViewConfiguration(
-  var appId: String,
+  var id: String,
   var appTitle: String,
   var filterText: String,
   var searchBarHint: String,
@@ -66,7 +62,7 @@ data class RegisterViewConfiguration(
  */
 @Stable
 fun Context.registerViewConfigurationOf(
-  appId: String = this.getString(R.string.default_app_title),
+  id: String = this.getString(R.string.default_app_title),
   appTitle: String = this.getString(R.string.default_app_title),
   filterText: String = this.getString(R.string.show_overdue),
   searchBarHint: String = this.getString(R.string.search_hint),
@@ -82,7 +78,7 @@ fun Context.registerViewConfigurationOf(
   bottomMenuOptions: List<MenuOption> = emptyList()
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
-    appId = appId,
+    id = id,
     appTitle = appTitle,
     filterText = filterText,
     searchBarHint = searchBarHint,
@@ -101,10 +97,11 @@ fun Context.registerViewConfigurationOf(
 private const val REGISTER_VIEW_CONFIG_FILE = "register_view_config.json"
 
 fun Context.loadRegisterViewConfiguration(id: String): RegisterViewConfiguration {
-  return assets
-    .open(REGISTER_VIEW_CONFIG_FILE)
-    .bufferedReader()
-    .use { it.readText() }
-    .decodeJson<List<RegisterViewConfiguration>>()
-    .first { it.appId == id }
+  return runBlocking { loadBinaryResourceConfiguration(id) }
+    ?: assets
+      .open(REGISTER_VIEW_CONFIG_FILE)
+      .bufferedReader()
+      .use { it.readText() }
+      .decodeJson<List<RegisterViewConfiguration>>()
+      .first { it.id == id }
 }

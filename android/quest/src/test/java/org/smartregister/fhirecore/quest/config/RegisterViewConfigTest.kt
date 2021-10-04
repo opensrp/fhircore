@@ -20,27 +20,41 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.configuration.view.loadRegisterViewConfiguration
 import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
+import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
 
+@Config(shadows = [QuestApplicationShadow::class])
 class RegisterViewConfigTest : RobolectricTest() {
 
   @Test
   fun testLoadRegisterViewConfigShouldReturnValidConfig() {
     val result =
       ApplicationProvider.getApplicationContext<Application>()
-        .loadRegisterViewConfiguration("quest-patient-register")
+        .loadRegisterViewConfiguration("quest-app-patient-register")
 
-    assertEquals("quest-patient-register", result.appId)
-    assertEquals("Quest", result.appTitle)
+    assertEquals("quest-app-patient-register", result.id)
+    assertEquals("Clients", result.appTitle)
     assertEquals("Show overdue", result.filterText)
-    assertEquals("Search by ID or Name", result.searchBarHint)
-    assertEquals("New Client", result.newClientButtonText)
+    assertEquals("Search for ID or client name", result.searchBarHint)
+    assertEquals("Add new client", result.newClientButtonText)
     assertEquals(true, result.showSearchBar)
-    assertEquals(true, result.showFilter)
+    assertEquals(false, result.showFilter)
     assertEquals(true, result.switchLanguages)
-    assertEquals(true, result.showScanQRCode)
+    assertEquals(false, result.showScanQRCode)
     assertEquals(true, result.showNewClientButton)
+    assertEquals(false, result.showSideMenu)
     assertEquals("patient-registration", result.registrationForm)
+    assertEquals(2, result.bottomMenuOptions.size)
+
+    val menuOption1 = result.bottomMenuOptions[0]
+    val menuOption2 = result.bottomMenuOptions[1]
+
+    assertEquals("Clients", menuOption1.title)
+    assertEquals("ic_users", menuOption1.iconResource)
+
+    assertEquals("Settings", menuOption2.title)
+    assertEquals("ic_settings", menuOption2.iconResource)
   }
 }

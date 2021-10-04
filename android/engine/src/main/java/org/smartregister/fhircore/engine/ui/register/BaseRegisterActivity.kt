@@ -33,7 +33,6 @@ import androidx.annotation.IdRes
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import androidx.core.view.isEmpty
 import androidx.core.widget.doAfterTextChanged
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -66,7 +65,6 @@ import org.smartregister.fhircore.engine.util.extension.asString
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.getDrawable
-import org.smartregister.fhircore.engine.util.extension.getTheme
 import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
@@ -304,8 +302,7 @@ abstract class BaseRegisterActivity :
     sideMenuOptions().forEach { menuOption ->
       menu.add(R.id.menu_group_clients, menuOption.itemId, Menu.NONE, menuOption.titleResource)
         .apply {
-          // TODO  icon = menuOption.iconResource?:ContextCompat.getDrawable(applicationContext,
-          // R.drawable.ic_list_item)!!
+          icon = menuOption.iconResource
           actionView = layoutInflater.inflate(R.layout.drawable_menu_item_layout, null, false)
         }
       if (menuOption.opensMainRegister) {
@@ -369,7 +366,6 @@ abstract class BaseRegisterActivity :
   }
 
   override fun setupConfigurableViews(viewConfiguration: RegisterViewConfiguration) {
-    viewConfiguration.appTheme?.let { theme.applyStyle(getTheme(it), true) }
     registerActivityBinding = DataBindingUtil.setContentView(this, R.layout.base_register_activity)
     registerActivityBinding.lifecycleOwner = this
 

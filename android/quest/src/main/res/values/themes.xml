@@ -16,9 +16,11 @@
     <style name="QuestBlue" parent="AppTheme.NoActionBar">
         <item name="colorPrimary">@color/dodger_blue</item>
         <item name="colorPrimaryDark">@color/purple_700</item>
+        <item name="colorAccent">@color/dodger_blue</item>
     </style>
     <style name="QuestGray" parent="AppTheme.NoActionBar">
         <item name="colorPrimary">@color/light_gray</item>
-        <item name="colorPrimaryDark">@color/gray</item>
+        <item name="colorPrimaryDark">@color/light_gray</item>
+        <item name="colorAccent">@color/light_gray</item>
     </style>
 </resources>

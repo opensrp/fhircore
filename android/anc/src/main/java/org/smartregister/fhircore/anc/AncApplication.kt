@@ -61,7 +61,8 @@ class AncApplication : Application(), ConfigurableApplication {
       mapOf(
         ResourceType.Patient to mapOf(),
         ResourceType.Questionnaire to mapOf(),
-        ResourceType.CarePlan to mapOf()
+        ResourceType.CarePlan to mapOf(),
+        ResourceType.Condition to mapOf(),
       )
 
   private fun constructFhirEngine(): FhirEngine {

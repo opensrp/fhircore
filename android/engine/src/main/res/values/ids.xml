@@ -3,7 +3,6 @@
     <item name="menu_item_language" type="id" />
     <item name="menu_item_logout" type="id" />
     <item name="menu_group_clients" type="id" />
-    <item name="menu_group_bottom" type="id" />
     <item name="menu_group_app_actions" type="id" />
     <item name="menu_group_empty" type="id" />
     <item name="menu_group_empty_item_id" type="id" />
