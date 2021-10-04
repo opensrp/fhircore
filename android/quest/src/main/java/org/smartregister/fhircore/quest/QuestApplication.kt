@@ -30,7 +30,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
-import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
+import org.smartregister.fhircore.engine.configuration.app.loadApplicationConfiguration
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -58,54 +58,62 @@ class QuestApplication : Application(), ConfigurableApplication {
       mapOf(
         ResourceType.Patient to mapOf(),
         ResourceType.Questionnaire to mapOf(),
-        ResourceType.CarePlan to mapOf()
+        ResourceType.Binary to mapOf("_id" to CONFIG_RESOURCE_IDS)
       )
 
   private fun constructFhirEngine(): FhirEngine {
-    schedulePolling()
     return FhirEngineProvider.getInstance(this)
   }
 
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
     this.applicationConfiguration = applicationConfiguration
+    SharedPreferencesHelper.write(SharedPreferencesHelper.THEME, applicationConfiguration.theme)
+  }
+
+  private fun applyApplicationConfiguration() {
+    configureApplication(
+      loadApplicationConfiguration(CONFIG_APP).apply {
+        fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL
+        oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL
+        clientId = BuildConfig.OAUTH_CIENT_ID
+        clientSecret = BuildConfig.OAUTH_CLIENT_SECRET
+      }
+    )
   }
 
   override fun onCreate() {
     super.onCreate()
     SharedPreferencesHelper.init(this)
     questApplication = this
-    configureApplication(
-      applicationConfigurationOf(
-        oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL,
-        fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL,
-        clientId = BuildConfig.OAUTH_CIENT_ID,
-        clientSecret = BuildConfig.OAUTH_CLIENT_SECRET,
-        languages = listOf("en", "sw")
-      )
-    )
 
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
+
+    applyApplicationConfiguration()
+
+    schedulePolling()
 
     CoroutineScope(defaultDispatcherProvider.io()).launch {
       workerContextProvider = this@QuestApplication.initializeWorkerContext()!!
     }
   }
 
+  // Make sure that it is called only from one place in app and is done after login
+  fun schedulePolling() =
+    Sync.basicSyncJob(questApplication)
+      .poll(
+        PeriodicSyncConfiguration(repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)),
+        QuestFhirSyncWorker::class.java
+      )
+
   companion object {
     private lateinit var questApplication: QuestApplication
+    private const val CONFIG_APP = "quest-app"
+    private const val CONFIG_PATIENT_REGISTER = "quest-app-patient-register"
+
+    private const val CONFIG_RESOURCE_IDS = "$CONFIG_APP,$CONFIG_PATIENT_REGISTER"
 
     fun getContext() = questApplication
-
-    // Make sure that it is called only from one place in app and is done after login
-    fun schedulePolling() =
-      Sync.basicSyncJob(questApplication)
-        .poll(
-          PeriodicSyncConfiguration(
-            repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
-          ),
-          QuestFhirSyncWorker::class.java
-        )
   }
 }

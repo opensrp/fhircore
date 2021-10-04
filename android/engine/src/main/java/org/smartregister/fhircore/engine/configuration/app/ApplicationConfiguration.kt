@@ -16,16 +16,22 @@
 
 package org.smartregister.fhircore.engine.configuration.app
 
+import android.content.Context
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.loadBinaryResourceConfiguration
 
 @Serializable
 data class ApplicationConfiguration(
-  var oauthServerBaseUrl: String,
-  var fhirServerBaseUrl: String,
+  var id: String = "",
+  var oauthServerBaseUrl: String = "",
+  var fhirServerBaseUrl: String = "",
   var clientId: String = "",
   var clientSecret: String = "",
   var scope: String = "openid",
-  var languages: List<String> = listOf("en")
+  var languages: List<String> = listOf("en"),
+  var theme: String = ""
 )
 
 /**
@@ -42,18 +48,34 @@ data class ApplicationConfiguration(
  * @param languages Sets the languages for the app
  */
 fun applicationConfigurationOf(
+  id: String = "",
   oauthServerBaseUrl: String = "",
   fhirServerBaseUrl: String = "",
   clientId: String = "",
   clientSecret: String = "",
   scope: String = "openid",
-  languages: List<String> = listOf("en")
+  languages: List<String> = listOf("en"),
+  theme: String = ""
 ): ApplicationConfiguration =
   ApplicationConfiguration(
+    id = id,
     oauthServerBaseUrl = oauthServerBaseUrl,
     fhirServerBaseUrl = fhirServerBaseUrl,
     clientId = clientId,
     clientSecret = clientSecret,
     scope = scope,
-    languages = languages
+    languages = languages,
+    theme = theme
   )
+
+private const val APPLICATION_CONFIG_FILE = "application_config.json"
+
+fun Context.loadApplicationConfiguration(id: String): ApplicationConfiguration {
+  return runBlocking { loadBinaryResourceConfiguration(id) }
+    ?: assets
+      .open(APPLICATION_CONFIG_FILE)
+      .bufferedReader()
+      .use { it.readText() }
+      .decodeJson<List<ApplicationConfiguration>>()
+      .first { it.id == id }
+}

@@ -26,7 +26,7 @@ import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 class PatientRegisterActivity : BaseRegisterActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    configureViews(applicationContext.loadRegisterViewConfiguration("quest-patient-register"))
+    configureViews(applicationContext.loadRegisterViewConfiguration("quest-app-patient-register"))
   }
 
   override fun sideMenuOptions(): List<SideMenuOption> {
