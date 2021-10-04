@@ -1,6 +1,21 @@
+/*
+ * Copyright 2021 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -11,7 +26,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.DropdownMenu
@@ -35,13 +49,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.fhir.logicalId
@@ -64,25 +75,21 @@ fun Toolbar(dataProvider: QuestPatientDetailDataProvider) {
   TopAppBar(
     title = { Text(text = stringResource(id = R.string.back_to_clients)) },
     navigationIcon = {
-      IconButton(onClick = {
-        dataProvider.onBackPressListener().invoke()
-      }) {
+      IconButton(onClick = { dataProvider.onBackPressListener().invoke() }) {
         Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")
       }
     },
     actions = {
-      IconButton(onClick = {
-        showMenu = !showMenu
-      }) {
+      IconButton(onClick = { showMenu = !showMenu }) {
         Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)
       }
       DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-        DropdownMenuItem(onClick = {
-          showMenu = false
-          dataProvider.onMenuItemClickListener().invoke("")
-        }) {
-          Text(text = stringResource(id = R.string.test_results))
-        }
+        DropdownMenuItem(
+          onClick = {
+            showMenu = false
+            dataProvider.onMenuItemClickListener().invoke("")
+          }
+        ) { Text(text = stringResource(id = R.string.test_results)) }
       }
     }
   )
@@ -90,18 +97,12 @@ fun Toolbar(dataProvider: QuestPatientDetailDataProvider) {
 
 @Composable
 fun FormItem(formName: String, clickHandler: (formName: String) -> Unit) {
-  Card (
+  Card(
     backgroundColor = colorResource(id = R.color.cornflower_blue),
     elevation = 0.dp,
-
-    modifier = Modifier
-      .fillMaxWidth()
-      .clickable { clickHandler(formName) }
-    ) {
-    Box(
-      contentAlignment = Alignment.Center,
-      modifier = Modifier.padding(6.dp)
-    ) {
+    modifier = Modifier.fillMaxWidth().clickable { clickHandler(formName) }
+  ) {
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(6.dp)) {
       Text(
         text = formName.uppercase(),
         color = colorResource(id = R.color.colorPrimary),
@@ -117,7 +118,6 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
 
   Surface(color = colorResource(id = R.color.white_smoke)) {
     Column {
-
       Toolbar(dataProvider)
 
       // full name with gender and age
@@ -127,11 +127,11 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
             .background(color = colorResource(id = R.color.colorPrimary))
             .padding(12.dp)
       ) {
-
         val patient = dataProvider.getDemographics().observeAsState().value
 
         Text(
-          text = "${patient?.extractName() ?: ""}, ${patient?.extractGender(LocalContext.current)?.first() ?: ""}, ${patient?.extractAge() ?: ""}",
+          text =
+            "${patient?.extractName() ?: ""}, ${patient?.extractGender(LocalContext.current)?.first() ?: ""}, ${patient?.extractAge() ?: ""}",
           color = colorResource(id = R.color.white),
           fontSize = 18.sp,
           fontWeight = FontWeight.Bold
@@ -147,11 +147,10 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
       // forms
       Column(
         modifier =
-        Modifier.fillMaxSize()
-          .verticalScroll(rememberScrollState())
-          .padding(start = 12.dp, end = 12.dp)
+          Modifier.fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(start = 12.dp, end = 12.dp)
       ) {
-
         Spacer(Modifier.height(24.dp))
         Text(
           text = "FORMS",
@@ -163,25 +162,20 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
         Card(
           elevation = 3.dp,
           backgroundColor = colorResource(id = R.color.white),
-          modifier = Modifier
-            .fillMaxWidth()
+          modifier = Modifier.fillMaxWidth()
         ) {
-          Column(
-            modifier = Modifier
-              .padding(16.dp)
-          ) {
-            val forms = listOf(
-              "Household Survey",
-              "Bednet Distribution Form",
-              "Malaria Diagnosis Form",
-              "Medicine Treatment Form",
-              "G6PD Test Result Form"
-            )
+          Column(modifier = Modifier.padding(16.dp)) {
+            val forms =
+              listOf(
+                "Household Survey",
+                "Bednet Distribution Form",
+                "Malaria Diagnosis Form",
+                "Medicine Treatment Form",
+                "G6PD Test Result Form"
+              )
 
             forms.forEachIndexed { index, it ->
-              FormItem (it) {
-
-              }
+              FormItem(it) {}
 
               if (index < forms.size.minus(1)) {
                 Spacer(Modifier.height(16.dp))
@@ -197,27 +191,33 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
 @Preview
 @Composable
 fun PreviewQuestionPatientDetailScreen() {
-  AppTheme {
-    QuestPatientDetailScreen(dummyQuestPatientDetailDataProvider())
-  }
+  AppTheme { QuestPatientDetailScreen(dummyQuestPatientDetailDataProvider()) }
 }
 
 fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
-  return object:QuestPatientDetailDataProvider {
+  return object : QuestPatientDetailDataProvider {
     override fun getDemographics(): LiveData<Patient> {
-      return MutableLiveData(Patient().apply {
-        name = listOf(HumanName().apply {
-          id = "5583145"
-          family = "Does"
-          given = listOf(StringType("John"))
-          gender = Enumerations.AdministrativeGender.MALE
-          birthDate = SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01")
-          address = listOf(Address().apply {
-            city = "Nairobi"
-            country = "Keynya"
-          })
-        })
-      })
+      return MutableLiveData(
+        Patient().apply {
+          name =
+            listOf(
+              HumanName().apply {
+                id = "5583145"
+                family = "Does"
+                given = listOf(StringType("John"))
+                gender = Enumerations.AdministrativeGender.MALE
+                birthDate = SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01")
+                address =
+                  listOf(
+                    Address().apply {
+                      city = "Nairobi"
+                      country = "Keynya"
+                    }
+                  )
+              }
+            )
+        }
+      )
     }
   }
 }
