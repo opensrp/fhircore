@@ -112,7 +112,7 @@ class RecordVaccineActivity : QuestionnaireActivity() {
     val titleText: String
     val vaccineDate = immunization.occurrenceDateTimeType.toHumanDisplay()
     val nextVaccineDate =
-      DateUtils.addDays(vaccineDate, 28, dateTimeFormat = "MMM d, yyyy, h:mm:ss a")
+      DateUtils.addDays(vaccineDate, 28, dateTimeFormat = "MMM d, yyyy h:mm:ss a")
     val currentDose = immunization.vaccineCode.coding.first().code
     val initialDose = vaccineSummary.initialDose
     val isSameAsFirstDose =

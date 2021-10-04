@@ -51,5 +51,5 @@ object DateUtils {
   fun Date.makeItReadable(): String = simpleDateFormat.format(this)
 
   fun Date.toHumanDisplay(): String =
-    SimpleDateFormat("MMM d, yyyy, h:mm:ss a", Locale.getDefault()).format(this)
+    SimpleDateFormat("MMM d, yyyy h:mm:ss a", Locale.getDefault()).format(this)
 }

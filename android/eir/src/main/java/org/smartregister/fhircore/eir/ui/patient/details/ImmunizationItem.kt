@@ -70,7 +70,7 @@ fun Immunization.getDoseLabel(context: Context, fullyImmunized: Boolean): Pair<S
       DateUtils.addDays(
         this.occurrenceDateTimeType.toHumanDisplay(),
         DAYS_IN_MONTH,
-        dateTimeFormat = "MMM d, yyyy, h:mm:ss a"
+        dateTimeFormat = "MMM d, yyyy h:mm:ss a"
       )
     val nextDoseNumber = doseNumber + 1
     val doseLabel =

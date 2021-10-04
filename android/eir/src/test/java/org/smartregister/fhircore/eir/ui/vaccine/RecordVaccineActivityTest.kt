@@ -133,7 +133,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
       val vaccineDate = immunization.occurrenceDateTimeType.toHumanDisplay()
       val nextVaccineDate =
-        DateUtils.addDays(vaccineDate, 28, dateTimeFormat = "MMM d, yyyy, h:mm:ss a")
+        DateUtils.addDays(vaccineDate, 28, dateTimeFormat = "MMM d, yyyy h:mm:ss a")
       val bundle = Bundle().apply { addEntry().apply { resource = immunization } }
 
       ReflectionHelpers.callInstanceMethod<Any>(
@@ -199,7 +199,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
         }
       occurrence =
         mockk<DateTimeType>().apply {
-          every { toHumanDisplay() } returns "Sep 16, 2021, 6:13:22 PM"
+          every { toHumanDisplay() } returns "Sep 16, 2021 6:13:22 PM"
         }
 
       protocolApplied =
