@@ -16,12 +16,15 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import org.smartregister.fhircore.engine.configuration.view.loadRegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
-import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
+import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
+import org.smartregister.fhircore.quest.R
 
 class PatientRegisterActivity : BaseRegisterActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,11 +32,25 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     configureViews(applicationContext.loadRegisterViewConfiguration("quest-app-patient-register"))
   }
 
-  override fun sideMenuOptions(): List<SideMenuOption> {
-    return listOf()
+  override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> {
+    return listOf(
+      NavigationMenuOption(
+        id = R.id.menu_item_clients,
+        title = getString(R.string.menu_clients),
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_users)!!
+      ),
+      NavigationMenuOption(
+        id = R.id.menu_item_settings,
+        title = getString(R.string.menu_settings),
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_settings)!!
+      )
+    )
   }
 
-  override fun onSideMenuOptionSelected(item: MenuItem): Boolean {
+  override fun onMenuOptionSelected(item: MenuItem): Boolean {
+    when (item.itemId) {
+      R.id.menu_item_clients -> startActivity(Intent(this, PatientRegisterActivity::class.java))
+    }
     return true
   }
 

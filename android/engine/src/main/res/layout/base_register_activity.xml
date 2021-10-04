@@ -44,8 +44,8 @@
                     android:id="@+id/list_pager"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/base_register_toolbar"
                     android:layout_above="@id/btn_register_new_client"
+                    android:layout_below="@id/base_register_toolbar"
                     android:layout_marginBottom="5dp">
 
                 </androidx.viewpager2.widget.ViewPager2>
@@ -54,11 +54,11 @@
                     android:id="@+id/btn_register_new_client"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_above="@id/bottomNavView"
                     android:layout_alignWithParentIfMissing="true"
+                    android:layout_above="@id/bottomNavView"
+                    android:layout_marginBottom="5dp"
                     android:layout_centerHorizontal="true"
                     android:background="?attr/colorPrimary"
-                    android:drawableStart="@drawable/ic_plus"
                     android:drawablePadding="5dp"
                     android:fontFamily="sans-serif-medium"
                     android:padding="10dp"
@@ -74,7 +74,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="75dp"
                     android:layout_alignParentBottom="true"
-                    app:menu="@menu/drawer_menu"/>
+                    app:menu="@menu/drawer_menu" />
             </RelativeLayout>
 
             <com.google.android.material.navigation.NavigationView

@@ -50,7 +50,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnSideMenuOptionSelectedShouldReturnTrue() {
-    Assert.assertTrue(patientRegisterActivity.onSideMenuOptionSelected(RoboMenuItem()))
+    Assert.assertTrue(patientRegisterActivity.onMenuOptionSelected(RoboMenuItem()))
   }
 
   @Test

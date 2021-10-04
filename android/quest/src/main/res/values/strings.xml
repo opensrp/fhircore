@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">Quest</string>
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.quest</string>
+
+    <string name="menu_clients">Clients</string>
+    <string name="menu_settings">Settings</string>
 </resources>

@@ -22,7 +22,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.Configuration
-import org.smartregister.fhircore.engine.ui.register.model.MenuOption
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.loadBinaryResourceConfiguration
 
@@ -34,6 +33,7 @@ data class RegisterViewConfiguration(
   var filterText: String,
   var searchBarHint: String,
   var newClientButtonText: String,
+  var newClientButtonStyle: String,
   var showSearchBar: Boolean = true,
   var showFilter: Boolean = true,
   var switchLanguages: Boolean = true,
@@ -42,7 +42,7 @@ data class RegisterViewConfiguration(
   var registrationForm: String = "patient-registration",
   var appTheme: String? = null,
   var showSideMenu: Boolean = true,
-  var bottomMenuOptions: List<MenuOption> = emptyList()
+  var showBottomMenu: Boolean = false
 ) : Configuration
 
 /**
@@ -67,6 +67,7 @@ fun Context.registerViewConfigurationOf(
   filterText: String = this.getString(R.string.show_overdue),
   searchBarHint: String = this.getString(R.string.search_hint),
   newClientButtonText: String = this.getString(R.string.register_new_client),
+  newClientButtonStyle: String = "",
   showSearchBar: Boolean = true,
   showFilter: Boolean = true,
   switchLanguages: Boolean = true,
@@ -75,7 +76,7 @@ fun Context.registerViewConfigurationOf(
   languages: List<String> = listOf("en"),
   registrationForm: String = "patient-registration",
   showSideMenu: Boolean = true,
-  bottomMenuOptions: List<MenuOption> = emptyList()
+  showBottomMenu: Boolean = false
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
     id = id,
@@ -83,6 +84,7 @@ fun Context.registerViewConfigurationOf(
     filterText = filterText,
     searchBarHint = searchBarHint,
     newClientButtonText = newClientButtonText,
+    newClientButtonStyle = newClientButtonStyle,
     showSearchBar = showSearchBar,
     showFilter = showFilter,
     switchLanguages = switchLanguages,
@@ -90,7 +92,7 @@ fun Context.registerViewConfigurationOf(
     showNewClientButton = showNewClientButton,
     registrationForm = registrationForm,
     showSideMenu = showSideMenu,
-    bottomMenuOptions = bottomMenuOptions
+    showBottomMenu = showBottomMenu
   )
 }
 

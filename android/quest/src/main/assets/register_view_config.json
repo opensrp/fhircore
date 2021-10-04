@@ -5,22 +5,14 @@
     "filterText": "Show overdue",
     "searchBarHint": "Search for ID or client name",
     "newClientButtonText": "Add new client",
+    "newClientButtonStyle": "rounded_corner",
     "showSearchBar": true,
     "showFilter": false,
     "switchLanguages": true,
     "showScanQRCode": false,
     "showNewClientButton": true,
     "showSideMenu": false,
-    "registrationForm": "patient-registration",
-    "bottomMenuOptions": [
-      {
-        "title": "Clients",
-        "iconResource": "ic_users"
-      },
-      {
-        "title": "Settings",
-        "iconResource": "ic_settings"
-      }
-    ]
+    "showBottomMenu": true,
+    "registrationForm": "patient-registration"
   }
 ]

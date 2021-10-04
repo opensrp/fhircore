@@ -68,7 +68,7 @@ fun Context.getDrawable(name: String): Drawable {
 @StyleRes
 fun Context.getTheme(name: String): Int {
   var resourceId = this.resources.getIdentifier(name, "style", packageName)
-  if (resourceId == 0) resourceId = R.style.AppTheme
+  if (resourceId == 0) resourceId = R.style.AppTheme_NoActionBar
   return resourceId
 }
 
