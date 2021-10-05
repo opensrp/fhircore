@@ -49,8 +49,7 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
       val inputHeight = getInputHeight(questionnaireResponse, isUnitModeMetric)
       val inputWeight = getInputWeight(questionnaireResponse, isUnitModeMetric)
       val computedBMI = calculateBMI(inputHeight, inputWeight, isUnitModeMetric)
-      if (computedBMI < 0)
-        showErrorAlert(getString(R.string.error_saving_form))
+      if (computedBMI < 0) showErrorAlert(getString(R.string.error_saving_form))
       else {
         val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!
         val height = getHeightAsPerSIUnit(inputHeight, isUnitModeMetric)
@@ -65,9 +64,7 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
       .setTitle(getString(R.string.try_again))
       .setMessage(message)
       .setCancelable(true)
-      .setPositiveButton("OK") { dialogInterface, _ ->
-        dialogInterface.dismiss()
-      }
+      .setPositiveButton("OK") { dialogInterface, _ -> dialogInterface.dismiss() }
       .show()
   }
 
@@ -82,9 +79,7 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
       .setTitle(getString(R.string.your_bmi))
       .setMessage("$computedBMI" + getBMICategories())
       .setCancelable(false)
-      .setNegativeButton(R.string.re_compute) { dialogInterface, _ ->
-        dialogInterface.dismiss()
-      }
+      .setNegativeButton(R.string.re_compute) { dialogInterface, _ -> dialogInterface.dismiss() }
       .setPositiveButton(R.string.str_save) { dialogInterface, _ ->
         dialogInterface.dismiss()
         proceedRecordBMI(questionnaireResponse, patientId, height, weight, computedBMI)
@@ -100,22 +95,23 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
     computedBMI: Double
   ) {
     lifecycleScope.launch {
-      val success = patientBmiRepository.recordComputedBMI(
-        questionnaire!!,
-        questionnaireResponse,
-        patientId,
-        encounterID,
-        height,
-        weight,
-        computedBMI
-      )
+      val success =
+        patientBmiRepository.recordComputedBMI(
+          questionnaire!!,
+          questionnaireResponse,
+          patientId,
+          encounterID,
+          height,
+          weight,
+          computedBMI
+        )
       showErrorAlert("saving bmi record success = $success")
     }
   }
 
   private fun isUnitModeMetric(questionnaireResponse: QuestionnaireResponse): Boolean {
     val unitMode = questionnaireResponse.find(KEY_UNIT_SELECTION)
-    return (unitMode?.answer?.get(0)?.valueCoding?.code?:"none" == "metric")
+    return (unitMode?.answer?.get(0)?.valueCoding?.code ?: "none" == "metric")
   }
 
   private fun getInputHeight(
@@ -166,16 +162,10 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
     }
   }
 
-  private fun calculateBMI(
-    height: Double,
-    weight: Double,
-    isUnitModeMetric: Boolean
-  ): Double {
+  private fun calculateBMI(height: Double, weight: Double, isUnitModeMetric: Boolean): Double {
     return try {
-      if (isUnitModeMetric)
-        computeBMIViaMetricUnits(heightInMeters = height, weightInKgs = weight)
-      else
-        computeBMIViaStandardUnits(heightInInches = height, weightInPounds = weight)
+      if (isUnitModeMetric) computeBMIViaMetricUnits(heightInMeters = height, weightInKgs = weight)
+      else computeBMIViaStandardUnits(heightInInches = height, weightInPounds = weight)
     } catch (e: Exception) {
       e.printStackTrace()
       -1.0
@@ -194,6 +184,6 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
   // Below BMI Categories information isn't required, it can be omit out
   private fun getBMICategories(): String {
     return "\n\n\nBMI Categories:\n\nUnderweight = <18.5\nNormal weight = 18.5–24.9" +
-            "\nOverweight = 25–29.9\nObesity = BMI of 30 or greater"
+      "\nOverweight = 25–29.9\nObesity = BMI of 30 or greater"
   }
 }

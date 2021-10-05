@@ -126,8 +126,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
 
     intent.getStringExtra(QUESTIONNAIRE_ARG_SAVE_BUTTON_TEXT)?.let {
-      if (it.isNotEmpty())
-        findViewById<Button>(R.id.btn_save_client_info).text = it
+      if (it.isNotEmpty()) findViewById<Button>(R.id.btn_save_client_info).text = it
     }
     findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
   }

@@ -19,17 +19,16 @@ package org.smartregister.fhircore.anc.util
 import java.math.RoundingMode
 import java.text.DecimalFormat
 
-
 fun computeBMIViaMetricUnits(heightInMeters: Double, weightInKgs: Double): Double {
-    return roundOffDecimal(weightInKgs / (heightInMeters * heightInMeters))
+  return roundOffDecimal(weightInKgs / (heightInMeters * heightInMeters))
 }
 
 fun computeBMIViaStandardUnits(heightInInches: Double, weightInPounds: Double): Double {
-    return roundOffDecimal(703.00 * (weightInPounds / (heightInInches * heightInInches)))
+  return roundOffDecimal(703.00 * (weightInPounds / (heightInInches * heightInInches)))
 }
 
 fun roundOffDecimal(number: Double): Double {
-    val df = DecimalFormat("#.##")
-    df.roundingMode = RoundingMode.CEILING
-    return df.format(number).toDouble()
+  val df = DecimalFormat("#.##")
+  df.roundingMode = RoundingMode.CEILING
+  return df.format(number).toDouble()
 }

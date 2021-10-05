@@ -70,17 +70,17 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
 
   override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
     val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
-        //val markAsAncClient = menu!!.findItem(R.id.mark_as_anc_client)
-        //val addVitals = menu!!.findItem(R.id.add_vitals)
-        //val addConditions = menu!!.findItem(R.id.add_conditions)
-        val viewPastEncounters = menu!!.findItem(R.id.view_past_encounters)
-        val bmiWidget = menu!!.findItem(R.id.bmi_widget)
+    // val markAsAncClient = menu!!.findItem(R.id.mark_as_anc_client)
+    // val addVitals = menu!!.findItem(R.id.add_vitals)
+    // val addConditions = menu!!.findItem(R.id.add_conditions)
+    val viewPastEncounters = menu!!.findItem(R.id.view_past_encounters)
+    val bmiWidget = menu!!.findItem(R.id.bmi_widget)
 
-        viewPastEncounters.isVisible = true
-        //markAsAncClient.isVisible = false
-        //addVitals.isVisible = true
-        //addConditions.isVisible = false
-        bmiWidget.isVisible = true
+    viewPastEncounters.isVisible = true
+    // markAsAncClient.isVisible = false
+    // addVitals.isVisible = true
+    // addConditions.isVisible = false
+    bmiWidget.isVisible = true
 
     val title = removeThisPerson.title.toString()
     val s = SpannableString(title)
@@ -96,42 +96,42 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
     return super.onPrepareOptionsMenu(menu)
   }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.view_past_encounters -> {
-                startActivity(
-                    Intent(this, EncounterListActivity::class.java).apply {
-                        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
-                    }
-                )
-                true
-            }
-            R.id.anc_enrollment -> {
-                this.startAncEnrollment(patientId)
-                true
-            }
-            R.id.bmi_widget -> {
-                startActivity(
-                    Intent(this, BMIQuestionnaireActivity::class.java)
-                        .putExtras(
-                            QuestionnaireActivity.requiredIntentArgs(
-                                clientIdentifier = patientId,
-                                form = FormConstants.FAMILY_PATIENT_BMI_FORM,
-                                saveBtnText = getString(R.string.compute_bmi)
-                            )
-                        )
-                )
-                true
-            }
-            R.id.remove_this_person -> {
-                startActivity(
-                    Intent(this, NonAncDetailsActivity::class.java).apply {
-                        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
-                    }
-                )
-                true
-            }
-            else -> return super.onOptionsItemSelected(item)
-        }
+  override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    return when (item.itemId) {
+      R.id.view_past_encounters -> {
+        startActivity(
+          Intent(this, EncounterListActivity::class.java).apply {
+            putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
+          }
+        )
+        true
+      }
+      R.id.anc_enrollment -> {
+        this.startAncEnrollment(patientId)
+        true
+      }
+      R.id.bmi_widget -> {
+        startActivity(
+          Intent(this, BMIQuestionnaireActivity::class.java)
+            .putExtras(
+              QuestionnaireActivity.requiredIntentArgs(
+                clientIdentifier = patientId,
+                form = FormConstants.FAMILY_PATIENT_BMI_FORM,
+                saveBtnText = getString(R.string.compute_bmi)
+              )
+            )
+        )
+        true
+      }
+      R.id.remove_this_person -> {
+        startActivity(
+          Intent(this, NonAncDetailsActivity::class.java).apply {
+            putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
+          }
+        )
+        true
+      }
+      else -> return super.onOptionsItemSelected(item)
     }
+  }
 }

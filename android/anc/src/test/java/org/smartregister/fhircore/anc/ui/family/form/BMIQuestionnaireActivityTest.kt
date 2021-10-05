@@ -19,7 +19,13 @@ package org.smartregister.fhircore.anc.ui.family.form
 import android.app.Activity
 import android.content.Intent
 import com.google.android.fhir.sync.Sync
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.spyk
+import io.mockk.unmockkObject
+import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.flowOf
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -38,7 +44,6 @@ import org.smartregister.fhircore.anc.ui.madx.details.form.BMIQuestionnaireActiv
 import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
 import org.smartregister.fhircore.anc.util.computeBMIViaStandardUnits
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
-import java.time.OffsetDateTime
 
 @Config(shadows = [AncApplicationShadow::class])
 internal class BMIQuestionnaireActivityTest : ActivityRobolectricTest() {
@@ -81,7 +86,6 @@ internal class BMIQuestionnaireActivityTest : ActivityRobolectricTest() {
 
     coVerify(timeout = 1000) { computeBMIViaMetricUnits(any(), any()) }
     coVerify(timeout = 1000) { computeBMIViaStandardUnits(any(), any()) }
-
   }
 
   override fun getActivity(): Activity {
