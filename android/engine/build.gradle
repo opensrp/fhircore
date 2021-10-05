@@ -12,6 +12,7 @@ android {
 
     testOptions {
         unitTests {
+            includeAndroidResources = true
             returnDefaultValues = true
             all {
                 jacoco {
@@ -199,5 +200,8 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     implementation deps.work.runtime
     testImplementation  group: 'org.json', name: 'json', version: '20210307'
+
+    debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
+    testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 
 }
