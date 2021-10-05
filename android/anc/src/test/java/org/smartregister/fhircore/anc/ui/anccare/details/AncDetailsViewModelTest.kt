@@ -193,7 +193,7 @@ internal class AncDetailsViewModelTest {
           fhirResourceDataSource,
           "https://hapi.fhir.org/baseR4/Library?_id=ANCDataElements,WHOCommon,ANCConcepts,ANCContactDataElements,FHIRHelpers,ANCStratifiers,ANCIND01,ANCCommon,ANCBaseDataElements,FHIRCommon,ANCBaseConcepts",
           "https://hapi.fhir.org/baseR4/Measure?_id=ANCIND01",
-                    ""
+          ""
         )
         .value!!
     Assert.assertNotNull(libraryDataLiveData)
