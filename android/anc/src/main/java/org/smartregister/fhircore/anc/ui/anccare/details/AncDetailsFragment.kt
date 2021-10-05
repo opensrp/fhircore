@@ -237,11 +237,21 @@ class AncDetailsFragment private constructor() : Fragment() {
   }
 
   fun buttonCQLSetOnClickListener() {
-    button_CQLEvaluate.setOnClickListener { loadCQLLibraryData() }
+    button_CQLEvaluate.setOnClickListener {
+      progress_circular_cql.visibility = View.VISIBLE
+      button_CQL_Measure_Evaluate.isEnabled = false
+      textView_CQLResults.visibility = View.GONE
+      loadCQLLibraryData()
+    }
   }
 
   fun buttonCQLMeasureEvaluateSetOnClickListener() {
-    button_CQL_Measure_Evaluate.setOnClickListener { loadMeasureEvaluateLibrary() }
+    button_CQL_Measure_Evaluate.setOnClickListener {
+      progress_circular_cql.visibility = View.VISIBLE
+      button_CQLEvaluate.isEnabled = false
+      textView_CQLResults.visibility = View.GONE
+      loadMeasureEvaluateLibrary()
+    }
   }
 
   fun loadCQLLibraryData() {
@@ -315,6 +325,8 @@ class AncDetailsFragment private constructor() : Fragment() {
       )
     val jsonObject = JSONObject(parameters)
     textView_CQLResults.text = jsonObject.toString(4)
+    progress_circular_cql.visibility = View.GONE
+    button_CQL_Measure_Evaluate.isEnabled = true
     textView_CQLResults.visibility = View.VISIBLE
   }
 
@@ -334,6 +346,8 @@ class AncDetailsFragment private constructor() : Fragment() {
       )
     val jsonObject = JSONObject(parameters)
     textView_CQLResults.text = jsonObject.toString(4)
+    progress_circular_cql.visibility = View.GONE
+    button_CQLEvaluate.isEnabled = true
     textView_CQLResults.visibility = View.VISIBLE
   }
 
