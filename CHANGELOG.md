@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2021-xx-xx
 
 ### Added
-
+- Added progerss bar to cql and measure reporting in ANC patien details page
 - Added measure reporting to ANC application
 - Added class for Measure report evaluation which will be used in ANC application
 - ANC | Added Condition resource to sync params list
