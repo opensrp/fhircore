@@ -30,11 +30,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 const val PROGRESS_MSG_TAG = "progressMsg"
+const val CIRCULAR_PROGRESS_BAR = "circularProgressBar"
 
 @Composable
 fun CircularProgressBar(modifier: Modifier = Modifier, text: String? = null) {
   Column(
-    modifier = modifier.padding(8.dp),
+    modifier = modifier.testTag(CIRCULAR_PROGRESS_BAR).padding(8.dp),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
