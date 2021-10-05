@@ -42,6 +42,10 @@ jobs:
       - name: Spotless check anc application
         run: ./gradlew :anc:spotlessCheck
         working-directory: android
+
+      - name: Spotless check quest application
+        run: ./gradlew :quest:spotlessCheck
+        working-directory: android
          
       - name: Run EIR unit tests with Gradle
         run: ./gradlew :eir:jacocoTestReport -x testReleaseUnitTest --stacktrace -Dorg.gradle.jvmargs="-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError"
@@ -55,6 +59,10 @@ jobs:
         run: ./gradlew :engine:jacocoTestReport -x testReleaseUnitTest --stacktrace -Dorg.gradle.jvmargs="-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError"
         working-directory: android
 
+      - name: Run Quest unit tests with Gradle
+        run: ./gradlew :quest:jacocoTestReport -x testReleaseUnitTest --stacktrace -Dorg.gradle.jvmargs="-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError"
+        working-directory: android
+
       - name: Upload EIR Test Report to codecov
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F eir -f "eir/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
@@ -66,5 +74,9 @@ jobs:
       - name: Upload Engine Test Report to codecov
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
+
+      - name: Upload Quest Test Report to codecov
+        working-directory: android
+        run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
 
 
