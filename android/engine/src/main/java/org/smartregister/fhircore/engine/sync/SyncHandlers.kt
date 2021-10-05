@@ -55,7 +55,7 @@ object SyncBroadcaster {
       this.syncInitiator = syncInitiator
       this.syncInitiator?.runSync() ?: Timber.e("Register at least one sync initiator")
     } else {
-      throw IllegalStateException(
+      Timber.w(
         "One time sync can only be triggered from one place within the entire application e.g." +
           " when loading the landing register page. Other views can register as listeners to respond to Sync State"
       )

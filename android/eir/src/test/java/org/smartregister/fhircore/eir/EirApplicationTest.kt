@@ -33,11 +33,12 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
+import org.smartregister.fhircore.eir.shadow.ShadowNpmPackageProvider
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.util.extension.lastSyncDateTime
 import org.smartregister.fhircore.engine.util.extension.runOneTimeSync
 
-@Config(shadows = [EirApplicationShadow::class])
+@Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
 class EirApplicationTest : RobolectricTest() {
 
   private val application = ApplicationProvider.getApplicationContext<EirApplication>()
