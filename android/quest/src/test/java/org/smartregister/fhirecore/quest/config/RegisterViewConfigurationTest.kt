@@ -26,7 +26,7 @@ import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
 import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
 
 @Config(shadows = [QuestApplicationShadow::class])
-class RegisterViewConfigTest : RobolectricTest() {
+class RegisterViewConfigurationTest : RobolectricTest() {
 
   @Test
   fun testLoadRegisterViewConfigShouldReturnValidConfig() {
