@@ -67,30 +67,29 @@ class AncDetailsViewModel(
       val listObservation = ancPatientRepository.fetchObservations(patientId = patientId)
       if (listObservation.isNotEmpty()) {
         for (i in listObservation.indices) {
-          if (listObservation[i].code != null)
-            if (listObservation[i].code.coding != null)
-              if (listObservation[i].code.coding.isNotEmpty())
-                for (j in listObservation[i].code.coding.indices) {
-                  val coding = listObservation[i].code.coding[j] as Coding
-                  if (coding.display != null) {
-                    if (coding.display.isNotEmpty()) {
-                      when {
-                        coding.display.lowercase().contains("edd") ->
-                          ancOverviewItem.EDD =
-                            listObservation[i].valueDateTimeType.value.makeItReadable()
-                        coding.display.lowercase().contains("ga") ->
-                          ancOverviewItem.GA = listObservation[i].valueIntegerType.valueAsString
-                        coding.display.lowercase().contains("fetuses") ->
-                          ancOverviewItem.noOfFetusses =
-                            listObservation[i].valueIntegerType.valueAsString
-                        coding.display.lowercase().contains("risk") ->
-                          ancOverviewItem.risk = listObservation[i].valueIntegerType.valueAsString
-                      }
-                    }
-                  }
+          if (listObservation[i].code != null &&
+              listObservation[i].code.coding != null &&
+              listObservation[i].code.coding.isNotEmpty()
+          )
+            for (j in listObservation[i].code.coding.indices) {
+              val coding = listObservation[i].code.coding[j] as Coding
+              if (coding.display != null && coding.display.isNotEmpty()) {
+                when {
+                  coding.display.lowercase().contains("edd") ->
+                    ancOverviewItem.EDD =
+                      listObservation[i].valueDateTimeType.value.makeItReadable()
+                  coding.display.lowercase().contains("ga") ->
+                    ancOverviewItem.GA = listObservation[i].valueIntegerType.valueAsString
+                  coding.display.lowercase().contains("fetuses") ->
+                    ancOverviewItem.noOfFetusses = listObservation[i].valueIntegerType.valueAsString
+                  coding.display.lowercase().contains("risk") ->
+                    ancOverviewItem.risk = listObservation[i].valueIntegerType.valueAsString
                 }
+              }
+            }
         }
       }
+
       patientAncOverviewItem.postValue(ancOverviewItem)
     }
     return patientAncOverviewItem
