@@ -19,10 +19,8 @@ package org.smartregister.fhircore.quest
 import android.app.Application
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
-import com.google.android.fhir.sync.PeriodicSyncConfiguration
-import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.Sync
-import java.util.concurrent.TimeUnit
+import com.google.android.fhir.sync.SyncJob
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.context.SimpleWorkerContext
@@ -35,6 +33,7 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
+import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
 class QuestApplication : Application(), ConfigurableApplication {
@@ -42,6 +41,9 @@ class QuestApplication : Application(), ConfigurableApplication {
   private val defaultDispatcherProvider = DefaultDispatcherProvider
 
   override lateinit var workerContextProvider: SimpleWorkerContext
+
+  override val syncJob: SyncJob
+    get() = Sync.basicSyncJob(getContext())
 
   override lateinit var applicationConfiguration: ApplicationConfiguration
 
@@ -62,12 +64,16 @@ class QuestApplication : Application(), ConfigurableApplication {
       )
 
   private fun constructFhirEngine(): FhirEngine {
-    schedulePolling()
     return FhirEngineProvider.getInstance(this)
   }
 
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
     this.applicationConfiguration = applicationConfiguration
+  }
+
+
+  override fun schedulePeriodicSync() {
+    this.runPeriodicSync<QuestFhirSyncWorker>()
   }
 
   override fun onCreate() {
@@ -91,6 +97,8 @@ class QuestApplication : Application(), ConfigurableApplication {
     CoroutineScope(defaultDispatcherProvider.io()).launch {
       workerContextProvider = this@QuestApplication.initializeWorkerContext()!!
     }
+
+    schedulePeriodicSync()
   }
 
   companion object {
@@ -98,14 +106,5 @@ class QuestApplication : Application(), ConfigurableApplication {
 
     fun getContext() = questApplication
 
-    // Make sure that it is called only from one place in app and is done after login
-    fun schedulePolling() =
-      Sync.basicSyncJob(questApplication)
-        .poll(
-          PeriodicSyncConfiguration(
-            repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
-          ),
-          QuestFhirSyncWorker::class.java
-        )
   }
 }
