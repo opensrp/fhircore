@@ -35,6 +35,8 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import java.util.Date
+import kotlinx.android.synthetic.main.fragment_anc_details.*
 import kotlinx.android.synthetic.main.fragment_anc_details.button_CQLEvaluate
 import kotlinx.android.synthetic.main.fragment_anc_details.textView_CQLResults
 import kotlinx.android.synthetic.main.fragment_anc_details.textView_EvaluateCQLHeader
@@ -324,6 +326,17 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   }
 
   @Test
+  fun handleMeasureEvaluateLibraryDataTest() {
+    val auxMeasureEvaluateLibraryData = "auxMeasureEvaluateLibraryData"
+    every { patientDetailsFragment.loadMeasureEvaluatePatient() } returns Unit
+    patientDetailsFragment.handleMeasureEvaluateLibrary(auxMeasureEvaluateLibraryData)
+    Assert.assertEquals(
+      auxMeasureEvaluateLibraryData,
+      patientDetailsFragment.measureEvaluateLibraryData
+    )
+  }
+
+  @Test
   fun handleCQLPatientDataTest() {
     val auxPatientData = "auxPatientData"
     val parameters = "{\"parameters\":\"parameters\"}"
@@ -345,6 +358,28 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
     Assert.assertNotNull(patientDetailsFragment.textView_CQLResults)
   }
 
+  @Test
+  fun handleMeasureEvaluatePatientTest() {
+    val auxPatientData = "auxPatientData"
+    val parameters = "{\"parameters\":\"parameters\"}"
+    every { patientDetailsFragment.libraryEvaluator.processCQLPatientBundle(any()) } returns
+      auxPatientData
+    every {
+      patientDetailsFragment.measureEvaluator.runMeasureEvaluate(
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any()
+      )
+    } returns parameters
+    patientDetailsFragment.handleMeasureEvaluatePatient(auxPatientData)
+    Assert.assertEquals(auxPatientData, patientDetailsFragment.testData)
+    Assert.assertNotNull(patientDetailsFragment.textView_CQLResults)
+  }
+
   @MockK lateinit var parser: IParser
   @MockK lateinit var fhirResourceDataSource: FhirResourceDataSource
   @Test
@@ -361,6 +396,28 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
     patientDetailsFragment.loadCQLLibraryData()
     Assert.assertNotNull(libraryData.value)
     Assert.assertEquals(auxCQLLibraryData, libraryData.value)
+  }
+
+  @Test
+  fun loadMeasureEvaluateLibraryTest() {
+    var auxCQLMeasureEvaluateData = "loadMeasureEvaluateLibraryData"
+    var libraMeasureEvaluateData = MutableLiveData<String>()
+    libraMeasureEvaluateData.postValue(auxCQLMeasureEvaluateData)
+
+    coroutinesTestRule.runBlockingTest {
+      coEvery {
+        patientDetailsViewModel.fetchCQLMeasureEvaluateLibraryAndValueSets(
+          parser,
+          fhirResourceDataSource,
+          any(),
+          any(),
+          any()
+        )
+      } returns libraMeasureEvaluateData
+    }
+    patientDetailsFragment.loadMeasureEvaluateLibrary()
+    Assert.assertNotNull(libraMeasureEvaluateData.value)
+    Assert.assertEquals(auxCQLMeasureEvaluateData, libraMeasureEvaluateData.value)
   }
 
   @Test
@@ -398,17 +455,33 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   @Test
   fun loadCQLPatientDataTest() {
     var auxCQLPatientData = "auxCQLPatientData"
-    var valueSetData = MutableLiveData<String>()
-    valueSetData.postValue(auxCQLPatientData)
+    var patientData = MutableLiveData<String>()
+    patientData.postValue(auxCQLPatientData)
 
     coroutinesTestRule.runBlockingTest {
       coEvery {
         patientDetailsViewModel.fetchCQLPatientData(parser, fhirResourceDataSource, any())
-      } returns valueSetData
+      } returns patientData
     }
     patientDetailsFragment.loadCQLPatientData()
-    Assert.assertNotNull(valueSetData.value)
-    Assert.assertEquals(auxCQLPatientData, valueSetData.value)
+    Assert.assertNotNull(patientData.value)
+    Assert.assertEquals(auxCQLPatientData, patientData.value)
+  }
+
+  @Test
+  fun loadMeasureEvaluatePatientDataTest() {
+    var auxCQLPatientData = "auxCQLPatientData"
+    var patientData = MutableLiveData<String>()
+    patientData.postValue(auxCQLPatientData)
+
+    coroutinesTestRule.runBlockingTest {
+      coEvery {
+        patientDetailsViewModel.fetchCQLPatientData(parser, fhirResourceDataSource, any())
+      } returns patientData
+    }
+    patientDetailsFragment.loadMeasureEvaluatePatient()
+    Assert.assertNotNull(patientData.value)
+    Assert.assertEquals(auxCQLPatientData, patientData.value)
   }
 
   @Test
@@ -416,15 +489,26 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
     val ANC_TEST_PATIENT_ID = "e8725b4c-6db0-4158-a24d-50a5ddf1c2ed"
     patientDetailsFragment.patientId = ANC_TEST_PATIENT_ID
     every { patientDetailsFragment.buttonCQLSetOnClickListener() } returns Unit
+    every { patientDetailsFragment.buttonCQLMeasureEvaluateSetOnClickListener() } returns Unit
     patientDetailsFragment.showCQLCard()
     Assert.assertEquals(patientDetailsFragment.textView_EvaluateCQLHeader.visibility, View.VISIBLE)
     Assert.assertEquals(ANC_TEST_PATIENT_ID, patientDetailsFragment.patientId)
   }
 
   @Test
-  fun buttonCQLSetOnClickListener() {
+  fun buttonCQLSetOnClickListenerTest() {
     every { patientDetailsFragment.loadCQLLibraryData() } returns Unit
     patientDetailsFragment.buttonCQLSetOnClickListener()
     Assert.assertEquals(true, patientDetailsFragment.button_CQLEvaluate.hasOnClickListeners())
+  }
+
+  @Test
+  fun buttonCQLMeasureEvaluateSetOnClickListenerTest() {
+    every { patientDetailsFragment.loadMeasureEvaluateLibrary() } returns Unit
+    patientDetailsFragment.buttonCQLMeasureEvaluateSetOnClickListener()
+    Assert.assertEquals(
+      true,
+      patientDetailsFragment.button_CQL_Measure_Evaluate.hasOnClickListeners()
+    )
   }
 }
