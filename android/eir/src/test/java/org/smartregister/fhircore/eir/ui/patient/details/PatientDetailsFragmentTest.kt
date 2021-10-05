@@ -261,7 +261,13 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
           CodeableConcept(Coding("system", "vaccine_code", "code display")).setText("Astrazeneca")
         protocolApplied =
           listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(1)))
-        occurrence = DateTimeType(Date())
+        occurrence =
+          mockk<DateTimeType>().apply {
+            every { toHumanDisplay() } returns "Sep 16, 2021 6:13:22 PM"
+            every { copy() } returns this
+            every { add(any(), any()) } returns Unit
+            every { after(any()) } returns true
+          }
       }
 
     val immunization2 =
@@ -270,7 +276,13 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
           CodeableConcept(Coding("system", "vaccine_code", "code display")).setText("Astrazeneca")
         protocolApplied =
           listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(2)))
-        occurrence = DateTimeType(Date())
+        occurrence =
+          mockk<DateTimeType>().apply {
+            every { toHumanDisplay() } returns "Sep 16, 2021 6:13:22 PM"
+            every { copy() } returns this
+            every { add(any(), any()) } returns Unit
+            every { after(any()) } returns true
+          }
       }
 
     val immunization3 =
@@ -279,7 +291,13 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
           CodeableConcept(Coding("system", "vaccine_code", "code display")).setText("Pfizer")
         protocolApplied =
           listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(2)))
-        occurrence = DateTimeType(Date())
+        occurrence =
+          mockk<DateTimeType>().apply {
+            every { toHumanDisplay() } returns "Sep 16, 2021 6:13:22 PM"
+            every { copy() } returns this
+            every { add(any(), any()) } returns Unit
+            every { after(any()) } returns true
+          }
       }
     return listOf(immunization1, immunization2, immunization3)
   }

@@ -198,9 +198,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
           this.coding = listOf(Coding("", "vaccineA", "vaccineA"))
         }
       occurrence =
-        mockk<DateTimeType>().apply {
-          every { toHumanDisplay() } returns "Sep 16, 2021 6:13:22 PM"
-        }
+        mockk<DateTimeType>().apply { every { toHumanDisplay() } returns "Sep 16, 2021 6:13:22 PM" }
 
       protocolApplied =
         listOf(
