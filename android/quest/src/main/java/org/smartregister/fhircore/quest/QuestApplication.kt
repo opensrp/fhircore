@@ -71,7 +71,6 @@ class QuestApplication : Application(), ConfigurableApplication {
     this.applicationConfiguration = applicationConfiguration
   }
 
-
   override fun schedulePeriodicSync() {
     this.runPeriodicSync<QuestFhirSyncWorker>()
   }
@@ -105,6 +104,5 @@ class QuestApplication : Application(), ConfigurableApplication {
     private lateinit var questApplication: QuestApplication
 
     fun getContext() = questApplication
-
   }
 }

@@ -22,7 +22,7 @@ import com.google.android.fhir.sync.FhirSyncWorker
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 
 class QuestFhirSyncWorker(context: Context, workerParams: WorkerParameters) :
-        FhirSyncWorker(context, workerParams) {
+  FhirSyncWorker(context, workerParams) {
 
   override fun getSyncData() = QuestApplication.getContext().resourceSyncParams
 
