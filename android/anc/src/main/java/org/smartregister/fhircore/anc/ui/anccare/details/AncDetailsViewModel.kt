@@ -64,9 +64,7 @@ class AncDetailsViewModel(
     var libraryData = MutableLiveData<String>()
     viewModelScope.launch(dispatcher.io()) {
       val auxCQLLibraryData =
-        parser.encodeResourceToString(
-          fhirResourceDataSource.loadData(libraryURL).entry[0].resource
-        )
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(libraryURL).entry[0].resource)
       libraryData.postValue(auxCQLLibraryData)
     }
     return libraryData
@@ -119,22 +117,19 @@ class AncDetailsViewModel(
     fhirResourceDataSource: FhirResourceDataSource,
     libAndValueSetURL: String,
     measureURL: String,
-    cqlMeasureReportLibInitialString:String
+    cqlMeasureReportLibInitialString: String
   ): LiveData<String> {
     var valueSetData = MutableLiveData<String>()
     val equalsIndexUrl: Int = libAndValueSetURL.indexOf("=")
 
-    var libStrAfterEquals =
-      libAndValueSetURL.substring(libAndValueSetURL.lastIndexOf("=") + 1)
+    var libStrAfterEquals = libAndValueSetURL.substring(libAndValueSetURL.lastIndexOf("=") + 1)
     var libList = libStrAfterEquals.split(",").map { it.trim() }
 
     var libURLStrBeforeEquals = libAndValueSetURL.substring(0, equalsIndexUrl) + "="
-    var initialStr =cqlMeasureReportLibInitialString
+    var initialStr = cqlMeasureReportLibInitialString
     viewModelScope.launch(dispatcher.io()) {
       val measureObject =
-        parser.encodeResourceToString(
-          fhirResourceDataSource.loadData(measureURL).entry[0].resource
-        )
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(measureURL).entry[0].resource)
       var jsonObjectResource = JSONObject()
       var jsonObjectResourceType = JSONObject(measureObject)
       jsonObjectResource.put("resource", jsonObjectResourceType)

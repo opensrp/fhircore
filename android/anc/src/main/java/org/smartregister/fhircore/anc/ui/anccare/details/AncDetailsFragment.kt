@@ -88,7 +88,7 @@ class AncDetailsFragment private constructor() : Fragment() {
   var cqlMeasureReportEndDate = ""
   var cqlMeasureReportReportType = ""
   var cqlMeasureReportSubject = ""
-  var cqlMeasureReportLibInitialString=""
+  var cqlMeasureReportLibInitialString = ""
   var cqlHelperURL = ""
   var valueSetURL = ""
   var patientURL = ""
@@ -146,17 +146,14 @@ class AncDetailsFragment private constructor() : Fragment() {
     cqlBaseURL =
       context?.let { fileUtil.getProperty("smart_register_base_url", it, cqlConfigFileName) }!!
     libraryURL =
-      cqlBaseURL +
-        context?.let { fileUtil.getProperty("cql_library_url", it, cqlConfigFileName) }
+      cqlBaseURL + context?.let { fileUtil.getProperty("cql_library_url", it, cqlConfigFileName) }
     cqlHelperURL =
       cqlBaseURL +
         context?.let { fileUtil.getProperty("cql_helper_library_url", it, cqlConfigFileName) }
     valueSetURL =
-      cqlBaseURL +
-        context?.let { fileUtil.getProperty("cql_value_set_url", it, cqlConfigFileName) }
+      cqlBaseURL + context?.let { fileUtil.getProperty("cql_value_set_url", it, cqlConfigFileName) }
     patientURL =
-      cqlBaseURL +
-        context?.let { fileUtil.getProperty("cql_patient_url", it, cqlConfigFileName) }
+      cqlBaseURL + context?.let { fileUtil.getProperty("cql_patient_url", it, cqlConfigFileName) }
 
     measureEvaluateLibraryURL =
       context?.let {
@@ -177,9 +174,7 @@ class AncDetailsFragment private constructor() : Fragment() {
       }!!
 
     cqlMeasureReportEndDate =
-      context?.let {
-        fileUtil.getProperty("cql_measure_report_end_date", it, cqlConfigFileName)
-      }!!
+      context?.let { fileUtil.getProperty("cql_measure_report_end_date", it, cqlConfigFileName) }!!
 
     cqlMeasureReportReportType =
       context?.let {
@@ -187,11 +182,9 @@ class AncDetailsFragment private constructor() : Fragment() {
       }!!
 
     cqlMeasureReportSubject =
-      context?.let {
-        fileUtil.getProperty("cql_measure_report_subject", it, cqlConfigFileName)
-      }!!
+      context?.let { fileUtil.getProperty("cql_measure_report_subject", it, cqlConfigFileName) }!!
 
-    cqlMeasureReportLibInitialString=
+    cqlMeasureReportLibInitialString =
       context?.let {
         fileUtil.getProperty("cql_measure_report_lib_initial_string", it, cqlConfigFileName)
       }!!
