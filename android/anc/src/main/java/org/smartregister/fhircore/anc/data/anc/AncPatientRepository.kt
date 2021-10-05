@@ -130,16 +130,16 @@ class AncPatientRepository(
               Patient::class.java,
               patient.link[0].other.reference.replace("Patient/", "")
             )
-          if (patientHead.address != null)
-            if (patientHead.address.isNotEmpty()) {
-              if (patientHead.address.size > 0)
-                when {
-                  patient.address[0].hasCountry() -> address = patientHead.address[0].country
-                  patient.address[0].hasCity() -> address = patientHead.address[0].city
-                  patient.address[0].hasState() -> address = patientHead.address[0].state
-                  patient.address[0].hasDistrict() -> address = patientHead.address[0].district
-                }
-            }
+          if (patientHead.address != null && patientHead.address.isNotEmpty()) {
+            address =
+              when {
+                patient.address[0].hasCountry() -> patientHead.address[0].country
+                patient.address[0].hasCity() -> patientHead.address[0].city
+                patient.address[0].hasState() -> patientHead.address[0].state
+                patient.address[0].hasDistrict() -> patientHead.address[0].district
+                else -> ""
+              }
+          }
           ancPatientItemHead =
             AncPatientItem(
               patientIdentifier = patient.logicalId,
@@ -322,20 +322,16 @@ class AncPatientRepository(
         var type = CodeableConcept()
         var typeCoding = Coding()
         var typeString = ""
-        if (encounters[i].type != null)
-          if (encounters[i].type.isNotEmpty()) type = encounters[i].type[0] as CodeableConcept
+        var typeDate = ""
+        if (encounters[i].type != null && encounters[i].type.isNotEmpty())
+          type = encounters[i].type[0] as CodeableConcept
         if (type.hasCoding()) typeCoding = type.coding[0] as Coding
         if (typeCoding.hasDisplayElement()) typeString = typeCoding.display
         else if (type.hasText()) typeString = type.text
-        if (typeString.isNotEmpty())
-          listCarePlan.add(
-            UpcomingServiceItem(
-              encounters[i].id,
-              patientId,
-              typeString,
-              encounters[i].period.start.makeItReadable()
-            )
-          )
+        if (type.hasText()) typeString = type.text
+        if (encounters[i].period.start != null)
+          typeDate = encounters[i].period.start.makeItReadable()
+        listCarePlan.add(UpcomingServiceItem(encounters[i].id, patientId, typeString, typeDate))
       }
     }
     return listCarePlan

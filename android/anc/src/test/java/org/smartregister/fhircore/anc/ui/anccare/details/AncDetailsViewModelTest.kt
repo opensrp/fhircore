@@ -173,11 +173,9 @@ internal class AncDetailsViewModelTest {
 
     val carePlanList = ancDetailsViewModel.fetchCarePlan().value
 
-    if (carePlanList != null) {
-      if (carePlanList.isNotEmpty()) {
-        Assert.assertEquals(1, carePlanList!!.size)
-        with(carePlanList!!.first()) { Assert.assertEquals(cpTitle, title) }
-      }
+    if (carePlanList != null && carePlanList.isNotEmpty()) {
+      Assert.assertEquals(1, carePlanList!!.size)
+      with(carePlanList!!.first()) { Assert.assertEquals(cpTitle, title) }
     }
   }
 

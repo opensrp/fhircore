@@ -163,11 +163,10 @@ class AncPatientRepositoryTest : RobolectricTest() {
       }
 
     val carePlans = runBlocking { repository.fetchCarePlan(PATIENT_ID_1) }
-    if (carePlans != null)
-      if (carePlans.isNotEmpty()) {
-        assertEquals(1, carePlans.size)
-        with(carePlans.first()) { assertEquals(cpTitle, title) }
-      }
+    if (carePlans != null && carePlans.isNotEmpty()) {
+      assertEquals(1, carePlans.size)
+      with(carePlans.first()) { assertEquals(cpTitle, title) }
+    }
 
     unmockkStatic(FhirContext::class)
   }
