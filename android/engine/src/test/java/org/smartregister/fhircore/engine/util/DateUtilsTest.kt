@@ -40,7 +40,7 @@ class DateUtilsTest {
     Assert.assertEquals("3-22-2020", finalDate)
   }
 
-  @Ignore //It's failing on CI/CD and passing locally
+  @Ignore("Tests passing locally but failing assertion on ci")
   @Test
   fun `toHumanDisplay() should return Date in the correct format`() {
     val date = Date("Fri, 1 Oct 2021 13:30:00 GMT+5")
