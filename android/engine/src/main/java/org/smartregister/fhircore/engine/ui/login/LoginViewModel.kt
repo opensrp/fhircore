@@ -181,13 +181,13 @@ class LoginViewModel(
   }
 
   fun onUsernameUpdated(username: String) {
-    _loginError.value = ""
-    _username.value = username
+    _loginError.postValue("")
+    _username.postValue(username)
   }
 
   fun onPasswordUpdated(password: String) {
-    _loginError.value = ""
-    _password.value = password
+    _loginError.postValue("")
+    _password.postValue(password)
   }
 
   override fun run(future: AccountManagerFuture<Bundle>?) {
