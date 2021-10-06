@@ -30,8 +30,11 @@ import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
+import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 
+@Config(shadows = [EirApplicationShadow::class])
 class PatientMapperTest : RobolectricTest() {
   private lateinit var immunizations: List<Immunization>
   private lateinit var patient: Patient
