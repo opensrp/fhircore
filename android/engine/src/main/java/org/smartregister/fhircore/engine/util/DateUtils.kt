@@ -17,12 +17,11 @@
 package org.smartregister.fhircore.engine.util
 
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 import org.hl7.fhir.r4.model.DateTimeType
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
+import java.util.*
 
 object DateUtils {
 
@@ -44,8 +43,6 @@ object DateUtils {
     copy.add(Calendar.DATE, days)
     return copy.after(DateTimeType.now())
   }
-
-  fun Date.makeItReadable(): String = simpleDateFormat.format(this)
 
   fun Date.toHumanDisplay(): String =
     SimpleDateFormat("MMM d, yyyy h:mm:ss a", Locale.getDefault()).format(this)
