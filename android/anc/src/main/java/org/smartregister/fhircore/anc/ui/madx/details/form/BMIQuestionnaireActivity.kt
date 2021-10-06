@@ -174,11 +174,11 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
 
   companion object {
     const val KEY_UNIT_SELECTION = "select-mode"
-    const val KEY_WEIGHT_SI = "vital-signs-body-wight-s"
-    const val KEY_HEIGHT_SI = "vital-signs-height-s"
-    const val KEY_HEIGHT_DP_SI = "vital-signs-height-double-prime"
-    const val KEY_WEIGHT_MU = "vital-signs-body-wight-m"
-    const val KEY_HEIGHT_MU = "vital-signs-height-m"
+    const val KEY_WEIGHT_SI = "vital-signs-body-wight_lb"
+    const val KEY_HEIGHT_SI = "vital-signs-height_ft"
+    const val KEY_HEIGHT_DP_SI = "vital-signs-height_in"
+    const val KEY_WEIGHT_MU = "vital-signs-body-wight_kg"
+    const val KEY_HEIGHT_MU = "vital-signs-height_cm"
   }
 
   // Below BMI Categories information isn't required, it can be omit out

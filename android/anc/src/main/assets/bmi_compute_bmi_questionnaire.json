@@ -116,10 +116,12 @@
               }
             }
           ],
-          "linkId": "vital-signs-body-wight-s",
+          "linkId": "vital-signs-body-wight_lb",
           "definition": "http://acme.org/devices/clinical-codes",
           "text": "Body Weight (lb)",
           "type": "decimal",
+          "maxValue": 999,
+          "minValue": 0,
           "enableWhen": [
             {
               "question": "select-mode",
@@ -140,10 +142,12 @@
               }
             }
           ],
-          "linkId": "vital-signs-height-s",
+          "linkId": "vital-signs-height_ft",
           "definition": "http://acme.org/devices/clinical-codes",
           "text": "Height (ft)",
           "type": "decimal",
+          "maxValue": "24",
+          "minValue": 0,
           "enableWhen": [
             {
               "question": "select-mode",
@@ -155,10 +159,12 @@
           ]
         },
         {
-          "linkId": "vital-signs-height-double-prime",
+          "linkId": "vital-signs-height_in",
           "definition": "http://acme.org/devices/clinical-codes",
           "text": "Height (inches)",
           "type": "decimal",
+          "maxValue": "11.99",
+          "minValue": 0,
           "enableWhen": [
             {
               "question": "select-mode",
@@ -179,10 +185,12 @@
               }
             }
           ],
-          "linkId": "vital-signs-body-wight-m",
+          "linkId": "vital-signs-body-wight_kg",
           "definition": "http://acme.org/devices/clinical-codes",
           "text": "Body Weight (kg)",
           "type": "decimal",
+          "maxValue": 999,
+          "minValue": 0,
           "enableWhen": [
             {
               "question": "select-mode",
@@ -203,10 +211,12 @@
               }
             }
           ],
-          "linkId": "vital-signs-height-m",
+          "linkId": "vital-signs-height_cm",
           "definition": "http://acme.org/devices/clinical-codes",
           "text": "Height (cm)",
           "type": "decimal",
+          "maxValue": 300,
+          "minValue": 0,
           "enableWhen": [
             {
               "question": "select-mode",

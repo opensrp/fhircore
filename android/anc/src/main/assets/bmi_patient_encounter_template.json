@@ -1,43 +1,36 @@
 {
-  "resourceType" : "Encounter",
+  "resourceType": "Encounter",
   "id": "#Id",
-  "status" : "in-progress",
-  "class" : {
-    "system" : "http://terminology.hl7.org/CodeSystem/v3-ActCode",
-    "code" : "TBD",
-    "display" : "BMI"
-  },
-  "type" : [
+  "status": "finished",
+  "type": [
     {
-      "coding" : [
+      "coding": [
         {
-          "system" : "http://example.org/CodeSystem/encounter-type",
-          "code" : "anc-contact",
-          "display" : "Antenatal care contact"
+          "system": "http://snomed.info/sct",
+          "code": "11429006",
+          "display": "Consultation"
         }
-      ],
-      "text" : "Antenatal care contact"
+      ]
     }
   ],
-  "subject" : {
-    "reference" : "#RefPatient"
+  "period": {
+    "start": "2015-01-17T16:00:00+10:00",
+    "end": "2015-01-17T16:30:00+10:00"
   },
-  "participant" : [
+  "subject": {
+    "reference": "#RefPatient",
+    "display": "Roel"
+  },
+  "participant": [
     {
-      "type" : [
-        {
-          "coding" : [
-            {
-              "system" : "http://terminology.hl7.org/CodeSystem/v3-ParticipationType",
-              "code" : "PPRF",
-              "display" : "primary performer"
-            }
-          ]
-        }
-      ],
-      "individual" : {
-        "reference" : "#RefPractitioner"
+      "individual": {
+        "reference": "#RefPractitioner"
       }
+    }
+  ],
+  "reasonCode": [
+    {
+      "text": "BMI Check"
     }
   ]
 }
