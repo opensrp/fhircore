@@ -39,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Refactor COVAX Immunization extraction to use StructureMap-based extractio
 
-## [0.0.8 EIR, 0.0.1 - ANC] - 2021-09-27
+## [0.0.8 EIR, 0.0.1 - ANC] - 2021-09-11
 
 ### Added
 

@@ -20,8 +20,11 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
+import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 
+@Config(shadows = [EirApplicationShadow::class])
 class EirAuthAndroidServiceTest : RobolectricTest() {
 
   private lateinit var accountService: EirAuthAndroidService
