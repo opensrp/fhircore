@@ -25,7 +25,8 @@ data class ApplicationConfiguration(
   var clientId: String = "",
   var clientSecret: String = "",
   var scope: String = "openid",
-  var languages: List<String> = listOf("en")
+  var languages: List<String> = listOf("en"),
+  var syncInterval: Long = 30
 )
 
 /**
@@ -40,6 +41,7 @@ data class ApplicationConfiguration(
  * on keycloak
  * @param scope Sets the scope of the access request. It may have multiple space delimited values
  * @param languages Sets the languages for the app
+ * @param syncInterval Sets the periodic sync interval in seconds. Default 30.
  */
 fun applicationConfigurationOf(
   oauthServerBaseUrl: String = "",
@@ -47,7 +49,8 @@ fun applicationConfigurationOf(
   clientId: String = "",
   clientSecret: String = "",
   scope: String = "openid",
-  languages: List<String> = listOf("en")
+  languages: List<String> = listOf("en"),
+  syncInterval: Long = 30
 ): ApplicationConfiguration =
   ApplicationConfiguration(
     oauthServerBaseUrl = oauthServerBaseUrl,
@@ -55,5 +58,6 @@ fun applicationConfigurationOf(
     clientId = clientId,
     clientSecret = clientSecret,
     scope = scope,
-    languages = languages
+    languages = languages,
+    syncInterval = syncInterval
   )

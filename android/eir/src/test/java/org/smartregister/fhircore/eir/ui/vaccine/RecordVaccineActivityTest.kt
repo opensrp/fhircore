@@ -54,12 +54,13 @@ import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
+import org.smartregister.fhircore.eir.shadow.ShadowNpmPackageProvider
 import org.smartregister.fhircore.eir.shadow.TestUtils
 import org.smartregister.fhircore.eir.util.RECORD_VACCINE_FORM
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.DateUtils
 
-@Config(shadows = [EirApplicationShadow::class])
+@Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
 @ExperimentalCoroutinesApi
 class RecordVaccineActivityTest : ActivityRobolectricTest() {
 

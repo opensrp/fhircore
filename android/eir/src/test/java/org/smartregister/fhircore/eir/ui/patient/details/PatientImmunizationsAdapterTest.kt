@@ -27,9 +27,12 @@ import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
+import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 
+@Config(shadows = [EirApplicationShadow::class])
 class PatientImmunizationsAdapterTest : RobolectricTest() {
 
   private lateinit var adapter: PatientImmunizationsAdapter
