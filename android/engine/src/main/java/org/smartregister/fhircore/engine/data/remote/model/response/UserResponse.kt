@@ -20,6 +20,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UserResponse(@SerialName("realm_access") var realmAccess: RealmAccess = RealmAccess())
-
-@Serializable data class RealmAccess(@SerialName("roles") var roles: List<String> = emptyList())
+data class UserResponse(
+  @SerialName("questionnaire_publisher") val questionnairePublisher: String? = null
+)
