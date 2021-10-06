@@ -20,6 +20,7 @@ import android.app.Activity
 import android.app.Application
 import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.Sync
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -48,7 +49,6 @@ import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
@@ -97,9 +97,11 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     val familyRepository = mockk<FamilyRepository>()
     coEvery { familyRepository.postProcessFamilyHead(any(), any()) } returns "1832"
 
-    runBlocking {
-      AncApplication.getContext().fhirEngine.save(Questionnaire().apply { id = "1832" })
-    }
+    val fhirEngine: FhirEngine = mockk()
+
+    coEvery { fhirEngine.save(any()) } answers {}
+
+    runBlocking { fhirEngine.save(Questionnaire().apply { id = "1832" }) }
 
     familyQuestionnaireActivity.questionnaireConfig =
       QuestionnaireConfig(FamilyFormConstants.FAMILY_REGISTER_FORM, "Add Family", "1832")
@@ -136,9 +138,11 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     val familyRepository = mockk<FamilyRepository>()
     coEvery { familyRepository.postProcessFamilyMember(any(), any(), any()) } returns "1832"
 
-    runBlocking {
-      AncApplication.getContext().fhirEngine.save(Questionnaire().apply { id = "1832" })
-    }
+    val fhirEngine: FhirEngine = mockk()
+
+    coEvery { fhirEngine.save(any()) } answers {}
+
+    runBlocking { fhirEngine.save(Questionnaire().apply { id = "1832" }) }
 
     familyQuestionnaireActivity.questionnaireConfig =
       QuestionnaireConfig(
@@ -189,9 +193,11 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     val familyRepository = mockk<FamilyRepository>()
     coEvery { familyRepository.enrollIntoAnc(any(), any(), any()) } just runs
 
-    runBlocking {
-      AncApplication.getContext().fhirEngine.save(Questionnaire().apply { id = "1832" })
-    }
+    val fhirEngine: FhirEngine = mockk()
+
+    coEvery { fhirEngine.save(any()) } answers {}
+
+    runBlocking { fhirEngine.save(Questionnaire().apply { id = "1832" }) }
 
     familyQuestionnaireActivity.questionnaireConfig =
       QuestionnaireConfig(FamilyFormConstants.ANC_ENROLLMENT_FORM, "Enroll into ANC", "1832")

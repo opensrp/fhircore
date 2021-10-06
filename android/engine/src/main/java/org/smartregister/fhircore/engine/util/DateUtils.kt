@@ -49,6 +49,8 @@ object DateUtils {
     return copy.after(DateTimeType.now())
   }
 
+  fun simpleDateFormat(pattern: String = "hh:mm aa, MMM d") =
+    SimpleDateFormat(pattern, Locale.getDefault())
   fun Date.makeItReadable(): String = simpleDateFormat.format(this)
 
   fun String.getDate(formatNeeded: String): Date {
