@@ -40,7 +40,6 @@ import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.G6PD
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.USER_SHARED_PREFERENCE_KEY
@@ -84,10 +83,10 @@ class LoginViewModel(
     sharedPreferences.write(USER_SHARED_PREFERENCE_KEY, responseBodyString)
 
     val userResponse = responseBodyString.decodeJson<UserResponse>()
-
-    if (userResponse.realmAccess.roles.contains(G6PD)) {
-      sharedPreferences.write(USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY, G6PD)
-    }
+    sharedPreferences.write(
+      USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY,
+      userResponse.questionnairePublisher
+    )
   }
 
   private val userInfoResponseCallback: ResponseCallback<ResponseBody> by lazy {
