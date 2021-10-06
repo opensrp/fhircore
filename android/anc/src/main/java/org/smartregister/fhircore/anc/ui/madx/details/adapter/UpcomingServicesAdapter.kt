@@ -20,9 +20,9 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.anc.data.madx.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.databinding.ItemServicesBinding
+import org.smartregister.fhircore.engine.ui.base.BaseSimpleRecyclerViewHolder
 
 /** Subclass of [ListAdapter] used to display upcoming services for the non ANC client */
 class UpcomingServicesAdapter :
@@ -31,9 +31,9 @@ class UpcomingServicesAdapter :
   ) {
 
   inner class PatientUpcomingServiceViewHolder(private val containerView: ItemServicesBinding) :
-    RecyclerView.ViewHolder(containerView.root) {
-    fun bindTo(upcomingServiceItem: UpcomingServiceItem) {
-      with(upcomingServiceItem) {
+    BaseSimpleRecyclerViewHolder<UpcomingServiceItem>(containerView.root) {
+    override fun bindTo(data: UpcomingServiceItem) {
+      with(data) {
         containerView.title = title
         containerView.date = date
       }

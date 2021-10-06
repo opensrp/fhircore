@@ -240,23 +240,6 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   }
 
   @Test
-  fun testThatUpcomingServicesViewsAreSetupCorrectly() {
-    fragmentScenario.moveToState(Lifecycle.State.RESUMED)
-    Assert.assertNotNull(patientDetailsFragment.view)
-
-    // No services scheduled available text displayed
-    val noVaccinesTextView =
-      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noUpcomingServices)
-    Assert.assertEquals(View.VISIBLE, noVaccinesTextView?.visibility)
-    Assert.assertEquals("No services scheduled", noVaccinesTextView?.text.toString())
-
-    // Upcoming list is not displayed
-    val immunizationsListView =
-      patientDetailsFragment.view?.findViewById<RecyclerView>(R.id.upcomingServicesListView)
-    Assert.assertEquals(View.GONE, immunizationsListView?.visibility)
-  }
-
-  @Test
   fun testThatLastViewsAreSetupCorrectly() {
     fragmentScenario.moveToState(Lifecycle.State.RESUMED)
     Assert.assertNotNull(patientDetailsFragment.view)

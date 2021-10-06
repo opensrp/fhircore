@@ -20,18 +20,18 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.anc.data.madx.model.CarePlanItem
 import org.smartregister.fhircore.anc.databinding.ItemCareplanBinding
+import org.smartregister.fhircore.engine.ui.base.BaseSimpleRecyclerViewHolder
 
 /** Subclass of [ListAdapter] used to display careplan for the ANC client */
 class CarePlanAdapter :
   ListAdapter<CarePlanItem, CarePlanAdapter.PatientCarePlanViewHolder>(CarePlanItemDiffCallback) {
 
   inner class PatientCarePlanViewHolder(private val containerView: ItemCareplanBinding) :
-    RecyclerView.ViewHolder(containerView.root) {
-    fun bindTo(carePlanItem: CarePlanItem) {
-      with(carePlanItem) {
+    BaseSimpleRecyclerViewHolder<CarePlanItem>(containerView.root) {
+    override fun bindTo(data: CarePlanItem) {
+      with(data) {
         containerView.carPlanDatePassed = overdue
         containerView.carPlanTitle = if (overdue) this.title + " Overdue" else this.title
       }

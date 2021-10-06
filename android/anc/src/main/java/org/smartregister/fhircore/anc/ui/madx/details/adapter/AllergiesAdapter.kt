@@ -20,9 +20,9 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.anc.data.madx.model.AllergiesItem
 import org.smartregister.fhircore.anc.databinding.ItemPlanTextBinding
+import org.smartregister.fhircore.engine.ui.base.BaseSimpleRecyclerViewHolder
 
 /** Subclass of [ListAdapter] used to display allergies for the non ANC client */
 class AllergiesAdapter :
@@ -31,9 +31,9 @@ class AllergiesAdapter :
   ) {
 
   inner class PatientAllergiesViewHolder(private val containerView: ItemPlanTextBinding) :
-    RecyclerView.ViewHolder(containerView.root) {
-    fun bindTo(allergiesItem: AllergiesItem) {
-      with(allergiesItem) { containerView.title = title }
+    BaseSimpleRecyclerViewHolder<AllergiesItem>(containerView.root) {
+    override fun bindTo(data: AllergiesItem) {
+      with(data) { containerView.title = title }
     }
   }
 
