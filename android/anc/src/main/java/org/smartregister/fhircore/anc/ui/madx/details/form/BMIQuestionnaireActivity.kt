@@ -49,7 +49,7 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
       val inputHeight = getInputHeight(questionnaireResponse, isUnitModeMetric)
       val inputWeight = getInputWeight(questionnaireResponse, isUnitModeMetric)
       val computedBMI = calculateBMI(inputHeight, inputWeight, isUnitModeMetric)
-      if (computedBMI < 0) showErrorAlert(getString(R.string.error_saving_form))
+      if (computedBMI < 0) showErrorAlert(getString(R.string.try_again), getString(R.string.error_saving_form))
       else {
         val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!
         val height = getHeightAsPerSIUnit(inputHeight, isUnitModeMetric)
@@ -59,9 +59,9 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
     }
   }
 
-  private fun showErrorAlert(message: String) {
+  private fun showErrorAlert(title: String, message: String) {
     AlertDialog.Builder(this)
-      .setTitle(getString(R.string.try_again))
+      .setTitle(title)
       .setMessage(message)
       .setCancelable(true)
       .setPositiveButton("OK") { dialogInterface, _ -> dialogInterface.dismiss() }
@@ -105,7 +105,7 @@ class BMIQuestionnaireActivity : QuestionnaireActivity() {
           weight,
           computedBMI
         )
-      showErrorAlert("saving bmi record success = $success")
+      showErrorAlert( getString(R.string.compute_bmi) , "BMI record saved success = $success")
     }
   }
 
