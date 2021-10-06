@@ -16,10 +16,10 @@
 
 package org.smartregister.fhircore.engine.util
 
+import java.util.Date
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.DateUtils.toHumanDisplay
-import java.util.*
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 24-09-2021. */
 class DateUtilsTest {
