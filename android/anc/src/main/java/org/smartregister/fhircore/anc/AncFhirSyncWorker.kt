@@ -19,16 +19,14 @@ package org.smartregister.fhircore.anc
 import android.content.Context
 import androidx.work.WorkerParameters
 import com.google.android.fhir.sync.FhirSyncWorker
-import org.smartregister.fhircore.engine.util.extension.buildDatasource
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 
-class AncFhirSyncWorker(appContext: Context, workerParams: WorkerParameters) :
-  FhirSyncWorker(appContext, workerParams) {
+class AncFhirSyncWorker(context: Context, workerParams: WorkerParameters) :
+  FhirSyncWorker(context, workerParams) {
 
   override fun getSyncData() = AncApplication.getContext().resourceSyncParams
 
-  override fun getDataSource() =
-    AncApplication.getContext()
-      .buildDatasource(AncApplication.getContext().applicationConfiguration)
+  override fun getDataSource() = FhirResourceDataSource.getInstance(AncApplication.getContext())
 
   override fun getFhirEngine() = AncApplication.getContext().fhirEngine
 }

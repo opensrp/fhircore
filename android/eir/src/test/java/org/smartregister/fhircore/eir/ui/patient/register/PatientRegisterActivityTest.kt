@@ -30,8 +30,9 @@ import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.FakeKeyStore
+import org.smartregister.fhircore.eir.shadow.ShadowNpmPackageProvider
 
-@Config(shadows = [EirApplicationShadow::class])
+@Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
 class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   private lateinit var patientRegisterActivity: PatientRegisterActivity

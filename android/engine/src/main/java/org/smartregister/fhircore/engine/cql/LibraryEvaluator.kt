@@ -184,7 +184,7 @@ class LibraryEvaluator {
 
   /**
    * This method removes multiple patients in a bundle entry and is left with the first occurrence
-   * and returns a bundle with patient enrty
+   * and returns a bundle with patient entry
    * @param patientData
    */
   fun processCQLPatientBundle(patientData: String): String {
