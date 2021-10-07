@@ -29,10 +29,12 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import io.mockk.verify
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.RelatedPerson
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -103,6 +105,11 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     questionnaireActivity = controller.create().resume().get()
     questionnaireActivity.questionnaireViewModel = questionnaireViewModel
     questionnaireActivity.supportFragmentManager.executePendingTransactions()
+  }
+
+  @After
+  fun cleanup() {
+    unmockkObject(DefaultDispatcherProvider)
   }
 
   @Test
