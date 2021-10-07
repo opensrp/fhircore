@@ -29,11 +29,13 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.robolectric.FhircoreTestRunner
 import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
 
 @RunWith(FhircoreTestRunner::class)
+@Config(sdk = [29])
 class AccountAuthenticatorTest {
   private lateinit var authService: AuthenticationService
   private lateinit var accountAuthenticator: AccountAuthenticator
