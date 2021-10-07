@@ -24,9 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
-import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.ListenerIntent
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
 
@@ -92,13 +90,15 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
       )
     }
 
+    registerViewModel.lastSyncTimestamp.observe(
+      viewLifecycleOwner,
+      { registerDataViewModel.setShowLoader(it.isNullOrEmpty()) }
+    )
+
     registerDataViewModel =
       initializeRegisterDataViewModel().apply {
         this.currentPage.observe(viewLifecycleOwner, { registerDataViewModel.loadPageData(it) })
       }
-
-    val lastSyncTimestamp = SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, "")
-    registerDataViewModel.setShowLoader(lastSyncTimestamp.isNullOrEmpty())
   }
 
   override fun onResume() {

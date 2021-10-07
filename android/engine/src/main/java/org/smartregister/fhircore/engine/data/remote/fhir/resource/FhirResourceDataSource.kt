@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.data.remote.fhir.resource
 
+import android.app.Application
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.sync.DataSource
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -24,7 +26,8 @@ import org.hl7.fhir.r4.model.OperationOutcome
 import org.hl7.fhir.r4.model.Resource
 
 /** Implementation of the [DataSource] that communicates with hapi fhir. */
-class FhirResourceDataSource(private val resourceService: FhirResourceService) : DataSource {
+class FhirResourceDataSource private constructor(private val resourceService: FhirResourceService) :
+  DataSource {
 
   override suspend fun loadData(path: String): Bundle {
     return resourceService.getResource(path)
@@ -52,5 +55,24 @@ class FhirResourceDataSource(private val resourceService: FhirResourceService) :
 
   override suspend fun delete(resourceType: String, resourceId: String): OperationOutcome {
     return resourceService.deleteResource(resourceType, resourceId)
+  }
+
+  companion object {
+
+    @Volatile private var instance: FhirResourceDataSource? = null
+
+    fun getInstance(
+      application: Application,
+    ): FhirResourceDataSource =
+      instance
+        ?: synchronized(this) {
+          FhirResourceDataSource(
+              FhirResourceService.create(
+                parser = FhirContext.forR4().newJsonParser(),
+                application = application
+              )
+            )
+            .also { instance = it }
+        }
   }
 }

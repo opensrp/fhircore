@@ -31,8 +31,9 @@ import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.runSync
+import org.smartregister.fhircore.engine.util.extension.runOneTimeSync
 import timber.log.Timber
 
 /**
@@ -46,7 +47,8 @@ class RegisterViewModel(
   val dispatcher: DispatcherProvider = DefaultDispatcherProvider
 ) : AndroidViewModel(application) {
 
-  private val _lastSyncTimestamp = MutableLiveData("")
+  private val _lastSyncTimestamp =
+    MutableLiveData(SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, ""))
   val lastSyncTimestamp
     get() = _lastSyncTimestamp
 
@@ -85,7 +87,7 @@ class RegisterViewModel(
   fun runSync() =
     viewModelScope.launch(dispatcher.io()) {
       try {
-        getApplication<Application>().runSync(sharedSyncStatus)
+        getApplication<Application>().runOneTimeSync(sharedSyncStatus)
       } catch (exception: Exception) {
         Timber.e("Error syncing data", exception)
       }
@@ -108,6 +110,9 @@ class RegisterViewModel(
   }
 
   fun setLastSyncTimestamp(lastSyncTimestamp: String) {
+    if (lastSyncTimestamp.isNotEmpty()) {
+      SharedPreferencesHelper.write(LAST_SYNC_TIMESTAMP, lastSyncTimestamp)
+    }
     _lastSyncTimestamp.value = lastSyncTimestamp
   }
 }

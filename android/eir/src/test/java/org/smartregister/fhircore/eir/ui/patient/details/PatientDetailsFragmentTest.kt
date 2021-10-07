@@ -27,6 +27,7 @@ import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -70,6 +71,7 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
 
   @Before
   fun setUp() {
+    clearAllMocks()
     patientDetailsViewModel =
       spyk(
         PatientDetailsViewModel(

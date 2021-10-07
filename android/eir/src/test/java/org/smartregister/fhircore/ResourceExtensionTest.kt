@@ -28,8 +28,8 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
+import org.smartregister.fhircore.eir.shadow.ShadowNpmPackageProvider
 import org.smartregister.fhircore.engine.util.extension.updateFrom
-import org.smartregister.fhircore.shadow.ShadowNpmPackageProvider
 
 @Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
 class ResourceExtensionTest : RobolectricTest() {
