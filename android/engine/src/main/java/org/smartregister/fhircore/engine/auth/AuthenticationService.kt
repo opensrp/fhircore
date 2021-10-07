@@ -37,12 +37,15 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.toSha1
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import timber.log.Timber
 
 abstract class AuthenticationService(open val context: Context) {
+  val secureSharedPreference by lazy { SecureSharedPreference(context) }
+  val accountManager by lazy { AccountManager.get(context) }
 
   fun getUserInfo(): Call<ResponseBody> =
     OAuthService.create(context, getApplicationConfigurations()).userInfo()
@@ -80,7 +83,7 @@ abstract class AuthenticationService(open val context: Context) {
     return payload
   }
 
-  fun isSessionActive(token: String?): Boolean {
+  fun isTokenActive(token: String?): Boolean {
     if (token.isNullOrEmpty()) return false
     return try {
       val tokenOnly = token.substring(0, token.lastIndexOf('.') + 1)
@@ -97,10 +100,41 @@ abstract class AuthenticationService(open val context: Context) {
     }
   }
 
+  fun getLocalSessionToken(): String? {
+    val token = getSecureStorage().retrieveSessionToken()
+    return if (isTokenActive(token)) token else null
+  }
+
+  fun getRefreshToken(): String? {
+    val token = getSecureStorage().retrieveCredentials()?.refreshToken
+    return if (isTokenActive(token)) token else null
+  }
+
+  fun hasActiveSession(): Boolean {
+    return getLocalSessionToken()?.isNotBlank() == true
+  }
+
+  fun validLocalCredentials(username: String, password: CharArray): Boolean {
+    return getSecureStorage().retrieveCredentials()?.let {
+      it.username.contentEquals(username) &&
+        it.password.contentEquals(password.contentToString().toSha1())
+    }
+      ?: false
+  }
+
+  fun updateSession(successResponse: OAuthResponse) {
+    val credentials =
+      getSecureStorage().retrieveCredentials()!!.apply {
+        this.sessionToken = successResponse.accessToken!!
+        this.refreshToken = successResponse.refreshToken!!
+      }
+    getSecureStorage().saveCredentials(credentials)
+  }
+
   fun addAuthenticatedAccount(
-    accountManager: AccountManager,
     successResponse: Response<OAuthResponse>,
-    username: String
+    username: String,
+    password: CharArray
   ) {
     Timber.i("Adding authenticated account %s", username)
 
@@ -109,41 +143,58 @@ abstract class AuthenticationService(open val context: Context) {
 
     val account = Account(username, getAccountType())
 
-    accountManager.addAccountExplicitly(account, refreshToken, null)
-    accountManager.setAuthToken(account, AUTH_TOKEN_TYPE, accessToken)
-    accountManager.setPassword(account, refreshToken)
+    getAccountService().addAccountExplicitly(account, null, null)
+    getSecureStorage()
+      .saveCredentials(
+        AuthCredentials(username, password.contentToString().toSha1(), accessToken, refreshToken)
+      )
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      accountManager.notifyAccountAuthenticated(account)
+      getAccountService().notifyAccountAuthenticated(account)
     }
   }
 
-  fun loadAccount(
-    accountManager: AccountManager,
-    username: String?,
+  fun getBlockingActiveAuthToken(): String? {
+    getLocalSessionToken()?.let {
+      return it
+    }
+    return getAccountService().blockingGetAuthToken(getActiveAccount(), AUTH_TOKEN_TYPE, true)
+  }
+
+  fun getActiveAccount(): Account? {
+    return getSecureStorage().retrieveSessionUsername()?.let { username ->
+      getAccountService().getAccountsByType(getAccountType()).find { it.name.equals(username) }
+    }
+  }
+
+  fun loadActiveAccount(
     callback: AccountManagerCallback<Bundle>,
     errorHandler: Handler = Handler(Looper.getMainLooper(), DefaultErrorHandler)
   ) {
-    val accounts = accountManager.getAccountsByType(getAccountType())
-
-    if (accounts.isEmpty()) return
-
-    val account = accounts.find { it.name.equals(username) } ?: return
-    Timber.i("Got account %s : ", account.name)
-    accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, Bundle(), true, callback, errorHandler)
+    getActiveAccount()?.let { loadAccount(it, callback, errorHandler) }
   }
 
-  fun logout(accountManager: AccountManager) {
-    val account = accountManager.getAccountsByType(getAccountType()).firstOrNull()
+  fun loadAccount(
+    account: Account,
+    callback: AccountManagerCallback<Bundle>,
+    errorHandler: Handler = Handler(Looper.getMainLooper(), DefaultErrorHandler)
+  ) {
+    Timber.i("Trying to getAuthToken for account %s", account.name)
+    getAccountService()
+      .getAuthToken(account, AUTH_TOKEN_TYPE, Bundle(), true, callback, errorHandler)
+  }
 
-    val refreshToken = getRefreshToken(accountManager)
+  fun logout() {
+    val account = getActiveAccount()
+
+    val refreshToken = getRefreshToken()
     if (refreshToken != null) {
       OAuthService.create(context, getApplicationConfigurations())
         .logout(clientId(), clientSecret(), refreshToken)
         .enqueue(
           object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-              accountManager.clearPassword(account)
+              getAccountService().clearPassword(account)
               cleanup()
             }
 
@@ -158,7 +209,7 @@ abstract class AuthenticationService(open val context: Context) {
   }
 
   fun cleanup() {
-    SecureSharedPreference(context).deleteCredentials()
+    getSecureStorage().deleteCredentials()
     context.startActivity(getLogoutUserIntent())
     if (context is Activity) (context as Activity).finish()
   }
@@ -171,11 +222,6 @@ abstract class AuthenticationService(open val context: Context) {
     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
     return intent
-  }
-
-  private fun getRefreshToken(accountManager: AccountManager): String? {
-    val account = accountManager.getAccountsByType(getAccountType()).firstOrNull()
-    return accountManager.getPassword(account)
   }
 
   abstract fun skipLogin(): Boolean
@@ -191,6 +237,14 @@ abstract class AuthenticationService(open val context: Context) {
   abstract fun providerScope(): String
 
   abstract fun getApplicationConfigurations(): ApplicationConfiguration
+
+  fun getSecureStorage(): SecureSharedPreference {
+    return secureSharedPreference
+  }
+
+  fun getAccountService(): AccountManager {
+    return accountManager
+  }
 
   companion object {
     const val AUTH_TOKEN_TYPE = "AUTH_TOKEN_TYPE"
