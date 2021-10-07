@@ -46,8 +46,6 @@ class EncounterListViewModelTest : RobolectricTest() {
     var count = 0
 
     viewModel.setAppBackClickListener { ++count }
-    viewModel.getAppBackClickListener().invoke()
-
-    Assert.assertEquals(1, count)
+    viewModel.getAppBackClickListener().invoke().also { Assert.assertEquals(1, count) }
   }
 }
