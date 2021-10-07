@@ -28,10 +28,10 @@ import androidx.core.os.bundleOf
 import java.util.Locale
 import timber.log.Timber
 
-class AccountAuthenticator(val context: Context, var authenticationService: AuthenticationService) :
+class AccountAuthenticator(val context: Context, val authenticationService: AuthenticationService) :
   AbstractAccountAuthenticator(context) {
 
-  var accountManager: AccountManager = AccountManager.get(context)
+  val accountManager: AccountManager = AccountManager.get(context)
 
   override fun addAccount(
     response: AccountAuthenticatorResponse,

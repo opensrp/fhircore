@@ -20,7 +20,7 @@ import android.content.Context
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
 import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
 
-class AuthenticationServiceImpl(override val context: Context) : AuthenticationService(context) {
+class AuthenticationServiceShadow(override val context: Context) : AuthenticationService(context) {
   override fun skipLogin() = false
 
   override fun getLoginActivityClass() = BaseLoginActivity::class.java

@@ -101,12 +101,12 @@ abstract class AuthenticationService(open val context: Context) {
   }
 
   fun getLocalSessionToken(): String? {
-    val token = getSecureStorage().retrieveSessionToken()
+    val token = secureSharedPreference.retrieveSessionToken()
     return if (isTokenActive(token)) token else null
   }
 
   fun getRefreshToken(): String? {
-    val token = getSecureStorage().retrieveCredentials()?.refreshToken
+    val token = secureSharedPreference.retrieveCredentials()?.refreshToken
     return if (isTokenActive(token)) token else null
   }
 
@@ -115,7 +115,7 @@ abstract class AuthenticationService(open val context: Context) {
   }
 
   fun validLocalCredentials(username: String, password: CharArray): Boolean {
-    return getSecureStorage().retrieveCredentials()?.let {
+    return secureSharedPreference.retrieveCredentials()?.let {
       it.username.contentEquals(username) &&
         it.password.contentEquals(password.contentToString().toSha1())
     }
@@ -124,11 +124,11 @@ abstract class AuthenticationService(open val context: Context) {
 
   fun updateSession(successResponse: OAuthResponse) {
     val credentials =
-      getSecureStorage().retrieveCredentials()!!.apply {
+      secureSharedPreference.retrieveCredentials()!!.apply {
         this.sessionToken = successResponse.accessToken!!
         this.refreshToken = successResponse.refreshToken!!
       }
-    getSecureStorage().saveCredentials(credentials)
+    secureSharedPreference.saveCredentials(credentials)
   }
 
   fun addAuthenticatedAccount(
@@ -143,14 +143,13 @@ abstract class AuthenticationService(open val context: Context) {
 
     val account = Account(username, getAccountType())
 
-    getAccountService().addAccountExplicitly(account, null, null)
-    getSecureStorage()
-      .saveCredentials(
-        AuthCredentials(username, password.contentToString().toSha1(), accessToken, refreshToken)
-      )
+    accountManager.addAccountExplicitly(account, null, null)
+    secureSharedPreference.saveCredentials(
+      AuthCredentials(username, password.contentToString().toSha1(), accessToken, refreshToken)
+    )
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      getAccountService().notifyAccountAuthenticated(account)
+      accountManager.notifyAccountAuthenticated(account)
     }
   }
 
@@ -158,12 +157,12 @@ abstract class AuthenticationService(open val context: Context) {
     getLocalSessionToken()?.let {
       return it
     }
-    return getAccountService().blockingGetAuthToken(getActiveAccount(), AUTH_TOKEN_TYPE, true)
+    return accountManager.blockingGetAuthToken(getActiveAccount(), AUTH_TOKEN_TYPE, true)
   }
 
   fun getActiveAccount(): Account? {
-    return getSecureStorage().retrieveSessionUsername()?.let { username ->
-      getAccountService().getAccountsByType(getAccountType()).find { it.name.equals(username) }
+    return secureSharedPreference.retrieveSessionUsername()?.let { username ->
+      accountManager.getAccountsByType(getAccountType()).find { it.name.equals(username) }
     }
   }
 
@@ -180,8 +179,7 @@ abstract class AuthenticationService(open val context: Context) {
     errorHandler: Handler = Handler(Looper.getMainLooper(), DefaultErrorHandler)
   ) {
     Timber.i("Trying to getAuthToken for account %s", account.name)
-    getAccountService()
-      .getAuthToken(account, AUTH_TOKEN_TYPE, Bundle(), true, callback, errorHandler)
+    accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, Bundle(), true, callback, errorHandler)
   }
 
   fun logout() {
@@ -194,7 +192,7 @@ abstract class AuthenticationService(open val context: Context) {
         .enqueue(
           object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-              getAccountService().clearPassword(account)
+              accountManager.clearPassword(account)
               cleanup()
             }
 
@@ -209,7 +207,7 @@ abstract class AuthenticationService(open val context: Context) {
   }
 
   fun cleanup() {
-    getSecureStorage().deleteCredentials()
+    secureSharedPreference.deleteCredentials()
     context.startActivity(getLogoutUserIntent())
     if (context is Activity) (context as Activity).finish()
   }
@@ -237,14 +235,6 @@ abstract class AuthenticationService(open val context: Context) {
   abstract fun providerScope(): String
 
   abstract fun getApplicationConfigurations(): ApplicationConfiguration
-
-  fun getSecureStorage(): SecureSharedPreference {
-    return secureSharedPreference
-  }
-
-  fun getAccountService(): AccountManager {
-    return accountManager
-  }
 
   companion object {
     const val AUTH_TOKEN_TYPE = "AUTH_TOKEN_TYPE"

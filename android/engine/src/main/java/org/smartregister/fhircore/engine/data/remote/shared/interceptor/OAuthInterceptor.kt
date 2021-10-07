@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.data.remote.shared.interceptor
 
 import android.content.Context
 import okhttp3.Interceptor
-import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import timber.log.Timber
 
@@ -29,15 +28,11 @@ class OAuthInterceptor(val context: Context) : Interceptor {
     var request = chain.request()
     val segments = mutableListOf("protocol", "openid-connect", "token")
     if (!request.url.pathSegments.containsAll(segments)) {
-      getAuthService().getBlockingActiveAuthToken()?.let { token ->
+      authenticationService.getBlockingActiveAuthToken()?.let { token ->
         Timber.d("Passing auth token for %s", request.url.toString())
         request = request.newBuilder().addHeader("Authorization", "Bearer $token").build()
       }
     }
     return chain.proceed(request)
-  }
-
-  fun getAuthService(): AuthenticationService {
-    return authenticationService
   }
 }

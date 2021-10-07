@@ -35,6 +35,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.robolectric.FhircoreTestRunner
@@ -64,9 +65,18 @@ class AuthenticationServiceTest : RobolectricTest() {
     every { OAuthService.create(any(), any()) } returns mockOauthService!!
 
     authenticationService =
-      spyk(AuthenticationServiceImpl(ApplicationProvider.getApplicationContext()))
-    every { authenticationService.getSecureStorage() } returns secureSharedPreference
-    every { authenticationService.getAccountService() } returns accountManager
+      spyk(AuthenticationServiceShadow(ApplicationProvider.getApplicationContext()))
+
+    ReflectionHelpers.setField(
+      authenticationService,
+      "secureSharedPreference\$delegate",
+      lazy { secureSharedPreference }
+    )
+    ReflectionHelpers.setField(
+      authenticationService,
+      "accountManager\$delegate",
+      lazy { accountManager }
+    )
 
     captor = slot()
   }

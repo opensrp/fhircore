@@ -30,6 +30,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.robolectric.FhircoreTestRunner
 import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
@@ -45,7 +46,7 @@ class AccountAuthenticatorTest {
   fun setUp() {
     authService = mockk()
     accountAuthenticator = AccountAuthenticator(context, authService)
-    accountAuthenticator.accountManager = mockk()
+    ReflectionHelpers.setField(accountAuthenticator, "accountManager", mockk<AccountManager>())
   }
 
   @Test
