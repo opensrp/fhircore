@@ -38,12 +38,13 @@ import org.junit.runner.RunWith
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.robolectric.FhircoreTestRunner
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import retrofit2.Call
 import retrofit2.Response
 
 @RunWith(FhircoreTestRunner::class)
-class AuthenticationServiceTest {
+class AuthenticationServiceTest : RobolectricTest() {
   private var mockOauthService: OAuthService? = null
   private lateinit var authenticationService: AuthenticationService
   private lateinit var accountManager: AccountManager
@@ -146,6 +147,7 @@ class AuthenticationServiceTest {
 
     every { accountManager.addAccountExplicitly(any(), any(), any()) } returns true
     every { secureSharedPreference.saveCredentials(any()) } just runs
+    every { accountManager.notifyAccountAuthenticated(any()) } returns true
 
     authenticationService.addAuthenticatedAccount(
       Response.success(oauth),
@@ -156,6 +158,7 @@ class AuthenticationServiceTest {
     val account = Account("testuser", "test-account-type")
 
     verify { accountManager.addAccountExplicitly(account, null, null) }
+    verify { accountManager.notifyAccountAuthenticated(any()) }
     verify { secureSharedPreference.saveCredentials(any()) }
   }
 
