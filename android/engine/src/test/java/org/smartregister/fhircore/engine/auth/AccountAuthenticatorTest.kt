@@ -47,7 +47,11 @@ class AccountAuthenticatorTest {
   fun setUp() {
     authService = mockk()
     accountAuthenticator = AccountAuthenticator(context, authService)
-    ReflectionHelpers.setField(accountAuthenticator, "accountManager", mockk<AccountManager>())
+    ReflectionHelpers.setField(
+      accountAuthenticator,
+      "accountManager",
+      mockk<AccountManager>(relaxed = true)
+    )
   }
 
   @Test

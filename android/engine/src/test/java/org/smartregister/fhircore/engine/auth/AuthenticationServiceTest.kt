@@ -389,7 +389,7 @@ class AuthenticationServiceTest : RobolectricTest() {
     every { accountManager.getAccountsByType(any()) } returns
       arrayOf(Account("testuser", "test-account-type"))
     every { secureSharedPreference.retrieveSessionUsername() } returns "testuser"
-    every { accountManager.getAuthToken(any(), any(), any(), true, any(), any()) } returns mockk()
+    every { accountManager.getAuthToken(any(), any(), any(), false, any(), any()) } returns mockk()
 
     authenticationService.loadActiveAccount(
       { assertNotNull(it.result.getString(AccountManager.KEY_AUTHTOKEN)) },
@@ -398,6 +398,6 @@ class AuthenticationServiceTest : RobolectricTest() {
 
     verify { secureSharedPreference.retrieveSessionUsername() }
     verify { accountManager.getAccountsByType(any()) }
-    verify(exactly = 1) { accountManager.getAuthToken(any(), any(), any(), true, any(), any()) }
+    verify(exactly = 1) { accountManager.getAuthToken(any(), any(), any(), false, any(), any()) }
   }
 }

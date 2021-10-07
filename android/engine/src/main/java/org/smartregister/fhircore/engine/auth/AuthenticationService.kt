@@ -89,7 +89,7 @@ abstract class AuthenticationService(open val context: Context) {
       val tokenOnly = token.substring(0, token.lastIndexOf('.') + 1)
       Jwts.parser().parseClaimsJwt(tokenOnly).body.expiration.after(Date())
     } catch (expiredJwtException: ExpiredJwtException) {
-      Timber.w("Refresh/Access token expired", expiredJwtException)
+      Timber.w("Token is expired", expiredJwtException)
       false
     } catch (unsupportedJwtException: UnsupportedJwtException) {
       Timber.w("JWT format not recognized", unsupportedJwtException)
@@ -101,20 +101,24 @@ abstract class AuthenticationService(open val context: Context) {
   }
 
   fun getLocalSessionToken(): String? {
+    Timber.v("Checking local storage for access token")
     val token = secureSharedPreference.retrieveSessionToken()
     return if (isTokenActive(token)) token else null
   }
 
   fun getRefreshToken(): String? {
+    Timber.v("Checking local storage for refresh token")
     val token = secureSharedPreference.retrieveCredentials()?.refreshToken
     return if (isTokenActive(token)) token else null
   }
 
   fun hasActiveSession(): Boolean {
+    Timber.v("Checking for an active session")
     return getLocalSessionToken()?.isNotBlank() == true
   }
 
   fun validLocalCredentials(username: String, password: CharArray): Boolean {
+    Timber.v("Validating credentials with local storage")
     return secureSharedPreference.retrieveCredentials()?.let {
       it.username.contentEquals(username) &&
         it.password.contentEquals(password.concatToString().toSha1())
@@ -123,6 +127,7 @@ abstract class AuthenticationService(open val context: Context) {
   }
 
   fun updateSession(successResponse: OAuthResponse) {
+    Timber.v("Updating tokens on local storage")
     val credentials =
       secureSharedPreference.retrieveCredentials()!!.apply {
         this.sessionToken = successResponse.accessToken!!
@@ -136,7 +141,7 @@ abstract class AuthenticationService(open val context: Context) {
     username: String,
     password: CharArray
   ) {
-    Timber.i("Adding authenticated account %s", username)
+    Timber.i("Adding authenticated account %s of type %s", username, getAccountType())
 
     val accessToken = successResponse.body()!!.accessToken!!
     val refreshToken = successResponse.body()!!.refreshToken!!
@@ -157,10 +162,12 @@ abstract class AuthenticationService(open val context: Context) {
     getLocalSessionToken()?.let {
       return it
     }
-    return accountManager.blockingGetAuthToken(getActiveAccount(), AUTH_TOKEN_TYPE, true)
+    Timber.v("Trying to get blocking auth token from account manager")
+    return accountManager.blockingGetAuthToken(getActiveAccount(), AUTH_TOKEN_TYPE, false)
   }
 
   fun getActiveAccount(): Account? {
+    Timber.v("Checking for an active account stored")
     return secureSharedPreference.retrieveSessionUsername()?.let { username ->
       accountManager.getAccountsByType(getAccountType()).find { it.name.equals(username) }
     }
@@ -178,8 +185,8 @@ abstract class AuthenticationService(open val context: Context) {
     callback: AccountManagerCallback<Bundle>,
     errorHandler: Handler = Handler(Looper.getMainLooper(), DefaultErrorHandler)
   ) {
-    Timber.i("Trying to getAuthToken for account %s", account.name)
-    accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, Bundle(), true, callback, errorHandler)
+    Timber.i("Trying to load from getAuthToken for account %s", account.name)
+    accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, Bundle(), false, callback, errorHandler)
   }
 
   fun logout() {

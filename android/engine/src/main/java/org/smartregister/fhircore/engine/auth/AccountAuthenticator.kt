@@ -57,7 +57,7 @@ class AccountAuthenticator(val context: Context, val authenticationService: Auth
     response: AccountAuthenticatorResponse,
     account: Account,
     authTokenType: String,
-    options: Bundle
+    options: Bundle?
   ): Bundle {
     var accessToken = authenticationService.getLocalSessionToken()
 
@@ -74,10 +74,6 @@ class AccountAuthenticator(val context: Context, val authenticationService: Auth
           authenticationService.refreshToken(it)?.let { newTokenResponse ->
             accessToken = newTokenResponse.accessToken!!
             authenticationService.updateSession(newTokenResponse)
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-              accountManager.notifyAccountAuthenticated(account)
-            }
           }
         }
           .onFailure {
@@ -88,6 +84,10 @@ class AccountAuthenticator(val context: Context, val authenticationService: Auth
     }
 
     if (accessToken?.isNotBlank() == true) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        accountManager.notifyAccountAuthenticated(account)
+      }
+
       return bundleOf(
         Pair(AccountManager.KEY_ACCOUNT_NAME, account.name),
         Pair(AccountManager.KEY_ACCOUNT_TYPE, account.type),
