@@ -40,7 +40,6 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.USER_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import retrofit2.Call
 import retrofit2.Response
@@ -55,11 +54,14 @@ class LoginViewModel(
 
   private val accountManager = AccountManager.get(application)
 
+  val sharedPreferences =
+    SharedPreferencesHelper.init(getApplication<Application>().applicationContext)
+
   val responseBodyHandler =
     object : ResponseHandler<ResponseBody> {
       override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
         response.body()?.run {
-          storeUserPreferences(application, this)
+          storeUserPreferences(this)
           _showProgressBar.postValue(false)
         }
       }
@@ -71,13 +73,9 @@ class LoginViewModel(
       }
     }
 
-  private fun storeUserPreferences(application: Application, responseBody: ResponseBody) {
+  private fun storeUserPreferences(responseBody: ResponseBody) {
     val responseBodyString = responseBody.string()
-    Timber.i(responseBodyString)
-
-    val sharedPreferences = SharedPreferencesHelper.init(application.applicationContext)
-    sharedPreferences.write(USER_SHARED_PREFERENCE_KEY, responseBodyString)
-
+    Timber.d(responseBodyString)
     val userResponse = responseBodyString.decodeJson<UserResponse>()
     sharedPreferences.write(
       USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY,
