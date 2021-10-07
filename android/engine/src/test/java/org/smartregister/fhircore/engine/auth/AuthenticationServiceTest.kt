@@ -29,8 +29,10 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -41,6 +43,7 @@ import org.smartregister.fhircore.engine.data.remote.model.response.OAuthRespons
 import org.smartregister.fhircore.engine.robolectric.FhircoreTestRunner
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.toSha1
 import retrofit2.Call
 import retrofit2.Response
 
@@ -122,21 +125,21 @@ class AuthenticationServiceTest : RobolectricTest() {
   }
 
   @Test
-  fun testIsSessionActiveShouldReturnFalseWithNullToken() {
+  fun testIsTokenActiveShouldReturnFalseWithNullToken() {
     val result = authenticationService.isTokenActive(null)
 
     assertFalse(result)
   }
 
   @Test
-  fun testIsSessionActiveShouldReturnFalseWithInvalidToken() {
+  fun testIsTokenActiveShouldReturnFalseWithInvalidToken() {
     val result = authenticationService.isTokenActive("my invalid token")
 
     assertFalse(result)
   }
 
   @Test
-  fun testIsSessionActiveShouldReturnFalseWithExpiredToken() {
+  fun testIsTokenActiveShouldReturnFalseWithExpiredToken() {
     val result =
       authenticationService.isTokenActive(
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
@@ -145,6 +148,104 @@ class AuthenticationServiceTest : RobolectricTest() {
       )
 
     assertFalse(result)
+  }
+
+  @Test
+  fun testGetLocalSessionTokenShouldReturnNullWithExpiredToken() {
+    val token =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
+        "eyJpc3MiOiJ0b3B0YWwuY29tIiwiZXhwIjoxNDI2NDIwODAwLCJodHRwOi8vdG9wdGFsLmNvbS9qd3RfY2xhaW1zL2lzX2FkbWluIjp0cnVlLCJjb21wYW55IjoiVG9wdGFsIiwiYXdlc29tZSI6dHJ1ZX0." +
+        "yRQYnWzskCZUxPwaQupWkiUzKELZ49eM7oWxAQK_ZXw"
+
+    every { secureSharedPreference.retrieveSessionToken() } returns token
+
+    val result = authenticationService.getLocalSessionToken()
+
+    assertNull(result)
+
+    verify { secureSharedPreference.retrieveSessionToken() }
+  }
+
+  @Test
+  fun testGetLocalSessionTokenShouldReturnNonEmptyStringWithActiveToken() {
+    every { secureSharedPreference.retrieveSessionToken() } returns "some-valid-token"
+    every { authenticationService.isTokenActive("some-valid-token") } returns true
+
+    val result = authenticationService.getLocalSessionToken()
+
+    assertEquals("some-valid-token", result)
+
+    verify { secureSharedPreference.retrieveSessionToken() }
+    every { authenticationService.isTokenActive("some-valid-token") }
+  }
+
+  @Test
+  fun testHasActiveShouldReturnTrueWithActiveToken() {
+    every { secureSharedPreference.retrieveSessionToken() } returns "some-valid-token"
+    every { authenticationService.isTokenActive("some-valid-token") } returns true
+
+    val result = authenticationService.hasActiveSession()
+
+    assertTrue(result)
+
+    verify { secureSharedPreference.retrieveSessionToken() }
+    every { authenticationService.isTokenActive("some-valid-token") }
+  }
+
+  @Test
+  fun testHasActiveShouldReturnTrueWithNonActiveToken() {
+    every { secureSharedPreference.retrieveSessionToken() } returns "some-invalid-token"
+    every { authenticationService.isTokenActive("some-valid-token") } returns false
+
+    val result = authenticationService.hasActiveSession()
+
+    assertFalse(result)
+
+    verify { secureSharedPreference.retrieveSessionToken() }
+    every { authenticationService.isTokenActive("some-invalid-token") }
+  }
+
+  @Test
+  fun testGetRefreshTokenShouldReturnNullWithExpiredToken() {
+    val token =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
+        "eyJpc3MiOiJ0b3B0YWwuY29tIiwiZXhwIjoxNDI2NDIwODAwLCJodHRwOi8vdG9wdGFsLmNvbS9qd3RfY2xhaW1zL2lzX2FkbWluIjp0cnVlLCJjb21wYW55IjoiVG9wdGFsIiwiYXdlc29tZSI6dHJ1ZX0." +
+        "yRQYnWzskCZUxPwaQupWkiUzKELZ49eM7oWxAQK_ZXw"
+
+    every { secureSharedPreference.retrieveCredentials() } returns
+      AuthCredentials("", "", "", token)
+
+    val result = authenticationService.getRefreshToken()
+
+    assertNull(result)
+
+    verify { secureSharedPreference.retrieveCredentials() }
+  }
+
+  @Test
+  fun testGetRefreshShouldReturnNonEmptyStringWithActiveToken() {
+    every { secureSharedPreference.retrieveCredentials() } returns
+      AuthCredentials("", "", "", "some-valid-token")
+    every { authenticationService.isTokenActive("some-valid-token") } returns true
+
+    val result = authenticationService.getRefreshToken()
+
+    assertEquals("some-valid-token", result)
+
+    verify { secureSharedPreference.retrieveCredentials() }
+    every { authenticationService.isTokenActive("some-valid-token") }
+  }
+
+  @Test
+  fun testValidLocalCredentialsShouldReturnTrueWithCorrectUserPwd() {
+    every { secureSharedPreference.retrieveCredentials() } returns
+      AuthCredentials("testuser", "testpwd".toSha1(), "", "")
+
+    val result = authenticationService.validLocalCredentials("testuser", "testpwd".toCharArray())
+
+    assertTrue(result)
+
+    verify { secureSharedPreference.retrieveCredentials() }
   }
 
   @Test

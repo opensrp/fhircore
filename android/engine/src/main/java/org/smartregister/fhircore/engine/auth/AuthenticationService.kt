@@ -117,7 +117,7 @@ abstract class AuthenticationService(open val context: Context) {
   fun validLocalCredentials(username: String, password: CharArray): Boolean {
     return secureSharedPreference.retrieveCredentials()?.let {
       it.username.contentEquals(username) &&
-        it.password.contentEquals(password.contentToString().toSha1())
+        it.password.contentEquals(password.concatToString().toSha1())
     }
       ?: false
   }
@@ -145,7 +145,7 @@ abstract class AuthenticationService(open val context: Context) {
 
     accountManager.addAccountExplicitly(account, null, null)
     secureSharedPreference.saveCredentials(
-      AuthCredentials(username, password.contentToString().toSha1(), accessToken, refreshToken)
+      AuthCredentials(username, password.concatToString().toSha1(), accessToken, refreshToken)
     )
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
