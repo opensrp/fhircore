@@ -26,6 +26,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -132,5 +133,32 @@ class AccountAuthenticatorTest {
     verify { authService.getRefreshToken() }
     verify { authService.refreshToken("some refresh token") }
     verify { authService.updateSession(oauth) }
+  }
+
+  @Test
+  fun testGetAuthTokenShouldCallUpdateCredentialsIfBothTokensNotExists() {
+    every { authService.getLocalSessionToken() } returns null
+    every { authService.getRefreshToken() } returns null
+    every { authService.getLoginActivityClass() } returns BaseLoginActivity::class.java
+
+    val result =
+      accountAuthenticator
+        .getAuthToken(
+          mockk(),
+          Account("testuser", "test-account-type"),
+          "test-token-type",
+          bundleOf()
+        )
+        .getParcelable<Intent>(AccountManager.KEY_INTENT)!!
+
+    assertEquals("testuser", result.getStringExtra(AccountManager.KEY_ACCOUNT_NAME))
+    assertEquals("test-account-type", result.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE))
+    assertNull(result.getStringExtra(AccountManager.KEY_AUTHTOKEN))
+
+    val expectedIntent = Intent(context, BaseLoginActivity::class.java)
+    assertEquals(expectedIntent.component, result.component)
+
+    verify { authService.getLocalSessionToken() }
+    verify { authService.getRefreshToken() }
   }
 }

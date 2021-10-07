@@ -249,6 +249,93 @@ class AuthenticationServiceTest : RobolectricTest() {
   }
 
   @Test
+  fun testValidLocalCredentialsShouldReturnFalseWithIncorrectCorrectUserPwd() {
+    every { secureSharedPreference.retrieveCredentials() } returns
+      AuthCredentials("testuser", "testpwd".toSha1(), "", "")
+
+    val result = authenticationService.validLocalCredentials("testuser", "test".toCharArray())
+
+    assertFalse(result)
+
+    verify { secureSharedPreference.retrieveCredentials() }
+  }
+
+  @Test
+  fun testGetBlockingActiveAuthTokenShouldReturnTokenIfExists() {
+    every { secureSharedPreference.retrieveSessionToken() } returns "some-valid-token"
+    every { authenticationService.isTokenActive("some-valid-token") } returns true
+
+    val result = authenticationService.getBlockingActiveAuthToken()
+
+    assertEquals("some-valid-token", result)
+
+    verify { secureSharedPreference.retrieveSessionToken() }
+    verify { authenticationService.isTokenActive(any()) }
+  }
+
+  @Test
+  fun testGetBlockingActiveAuthTokenShouldGetAuthTokenFromAuthenticatorIfNoTokenExists() {
+    every { secureSharedPreference.retrieveSessionToken() } returns null
+    every { secureSharedPreference.retrieveSessionUsername() } returns "testuser"
+    every { accountManager.getAccountsByType(any()) } returns
+      listOf(Account("testuser", "test")).toTypedArray()
+    every { accountManager.blockingGetAuthToken(any(), any(), any()) } returns "some-valid-token"
+
+    val result = authenticationService.getBlockingActiveAuthToken()
+
+    assertEquals("some-valid-token", result)
+
+    verify { secureSharedPreference.retrieveSessionToken() }
+    verify { accountManager.blockingGetAuthToken(any(), any(), any()) }
+  }
+
+  @Test
+  fun testUpdateSessionShouldReturnUpdateStorageCredentials() {
+    val oauth = OAuthResponse()
+    oauth.accessToken = "valid access token"
+    oauth.refreshToken = "valid refresh token"
+
+    val savedCreds = AuthCredentials("testuser", "testpwd".toSha1(), "", "")
+
+    every { secureSharedPreference.retrieveCredentials() } returns savedCreds
+    every { secureSharedPreference.saveCredentials(any()) } just runs
+
+    authenticationService.updateSession(oauth)
+
+    val updatedCreds =
+      savedCreds.copy(sessionToken = "valid access token", refreshToken = "valid refresh token")
+
+    verify { secureSharedPreference.retrieveCredentials() }
+    verify { secureSharedPreference.saveCredentials(updatedCreds) }
+  }
+
+  @Test
+  fun testLogoutShouldUpdateServer() {
+    every { secureSharedPreference.retrieveSessionUsername() } returns "testuser"
+    every { authenticationService.getRefreshToken() } returns "some-valid-token"
+    every { authenticationService.isTokenActive("some-valid-token") } returns true
+    every { accountManager.getAccountsByType(any()) } returns
+      listOf(Account("testuser", "acc")).toTypedArray()
+    every { mockOauthService!!.logout(any(), any(), any()).enqueue(any()) } returns mockk()
+
+    authenticationService.logout()
+
+    verify { mockOauthService!!.logout(any(), any(), any()) }
+  }
+
+  @Test
+  fun testLogoutShouldDeleteLocalCredentailsIfTokenNotFound() {
+    every { secureSharedPreference.retrieveSessionUsername() } returns "testuser"
+    every { authenticationService.getRefreshToken() } returns null
+    every { accountManager.getAccountsByType(any()) } returns
+      listOf(Account("testuser", "acc")).toTypedArray()
+    every { secureSharedPreference.deleteCredentials() } just runs
+    authenticationService.logout()
+
+    verify { secureSharedPreference.deleteCredentials() }
+  }
+
+  @Test
   fun testAddAuthenticatedAccountShouldAddAccountWithCorrectData() {
     val oauth = OAuthResponse()
     oauth.accessToken = "valid access token"

@@ -75,10 +75,8 @@ class AccountAuthenticator(val context: Context, val authenticationService: Auth
             accessToken = newTokenResponse.accessToken!!
             authenticationService.updateSession(newTokenResponse)
 
-            with(accountManager) {
-              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                notifyAccountAuthenticated(account)
-              }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+              accountManager.notifyAccountAuthenticated(account)
             }
           }
         }
