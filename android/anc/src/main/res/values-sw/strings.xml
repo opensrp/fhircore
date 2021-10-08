@@ -8,6 +8,11 @@
     <string name="compute_bmi">Kompyuta BMI</string>
     <string name="your_bmi">Yako BMI = </string>
     <string name="re_compute">Kompyuta</string>
+    <string name="bmi_categories_label">BMI Categories:</string>
+    <string name="bmi_category_1">Underweight = bmi below 18.5</string>
+    <string name="bmi_category_2">Normal weight = 18.5 – 24.9</string>
+    <string name="bmi_category_3">Overweight = 25 – 29.9</string>
+    <string name="bmi_category_4">Obesity = BMI of 30 or greater</string>
     <string name="view_past_encounters">Tazama mikutano ya zamani</string>
     <string name="remove_this_person">Ondoa mtu huyu</string>
     <string name="care_plan">Mpango wa huduma</string>
