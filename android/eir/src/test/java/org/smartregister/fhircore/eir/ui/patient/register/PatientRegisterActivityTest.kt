@@ -18,10 +18,14 @@ package org.smartregister.fhircore.eir.ui.patient.register
 
 import android.app.Activity
 import androidx.core.content.ContextCompat
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.spyk
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
@@ -29,6 +33,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
+import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.FakeKeyStore
 import org.smartregister.fhircore.eir.shadow.ShadowNpmPackageProvider
@@ -38,6 +43,7 @@ import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   private lateinit var patientRegisterActivity: PatientRegisterActivity
+  @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
   @Before
   fun setUp() {
@@ -69,16 +75,15 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testUpdateCountShouldSetRightValue() = runBlockingTest {
+    val spy = spyk(patientRegisterActivity)
+    every { spy.findSideMenuItem(any()) } returns
+      RoboMenuItem().apply { itemId = R.id.menu_item_covax }
+
     val sideMenuOption =
-      SideMenuOption(
-        R.id.menu_item_covax,
-        R.string.covax_app,
-        ContextCompat.getDrawable(patientRegisterActivity, R.drawable.drawer_menu_item_selector)!!,
-        countMethod = { 123 }
-      )
+      SideMenuOption(R.id.menu_item_covax, R.string.covax_app, mockk(), countMethod = { 123 })
     sideMenuOption.count = 0
 
-    patientRegisterActivity.updateCount(sideMenuOption)
+    spy.updateCount(sideMenuOption)
 
     Assert.assertEquals(123, sideMenuOption.count)
   }

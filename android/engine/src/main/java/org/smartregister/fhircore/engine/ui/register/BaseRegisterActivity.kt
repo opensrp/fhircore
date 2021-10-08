@@ -508,7 +508,7 @@ abstract class BaseRegisterActivity :
     }
   }
 
-  private fun findSideMenuItem(@IdRes id: Int): MenuItem? {
+  fun findSideMenuItem(@IdRes id: Int): MenuItem? {
     return registerActivityBinding.navView.menu.findItem(id)
   }
 
@@ -553,16 +553,15 @@ abstract class BaseRegisterActivity :
   }
 
   fun updateCount(sideMenuOption: SideMenuOption) {
-    // return immediately if item is not setup
-    val menuItem = findSideMenuItem(sideMenuOption.itemId) ?: return
-
     lifecycleScope.launch(registerViewModel.dispatcher.main()) {
       val count = sideMenuOption.countMethod()
 
       with(sideMenuOption) {
         this.count = count
 
-        (menuItem.actionView as TextView).text = if (this.count > 0) this.count.toString() else ""
+        findSideMenuItem(sideMenuOption.itemId)?.let {
+          (it.actionView as TextView).text = if (this.count > 0) this.count.toString() else ""
+        }
         if (selectedMenuOption != null && this.itemId == selectedMenuOption?.itemId) {
           selectedMenuOption?.count = this.count
         }
