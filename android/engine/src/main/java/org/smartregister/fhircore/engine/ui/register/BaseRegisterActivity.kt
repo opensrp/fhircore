@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.ui.register
 
-import android.accounts.AccountManager
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
@@ -417,7 +416,7 @@ abstract class BaseRegisterActivity :
       }
       R.id.menu_item_language -> renderSelectLanguageDialog(this)
       R.id.menu_item_logout -> {
-        configurableApplication().authenticationService.logout(AccountManager.get(this))
+        configurableApplication().authenticationService.logout()
         manipulateDrawer(open = false)
       }
       else -> {
