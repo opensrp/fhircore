@@ -102,7 +102,15 @@ class QuestApplication : Application(), ConfigurableApplication {
       workerContextProvider = this@QuestApplication.initializeWorkerContext()!!
     }
 
+    initializeWorkerContextProvider()
+
     schedulePeriodicSync()
+  }
+
+  fun initializeWorkerContextProvider() {
+    CoroutineScope(defaultDispatcherProvider.io()).launch {
+      workerContextProvider = this@QuestApplication.initializeWorkerContext()!!
+    }
   }
 
   companion object {
