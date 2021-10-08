@@ -28,7 +28,7 @@ class OAuthInterceptor(val context: Context) : Interceptor {
     var request = chain.request()
     val segments = mutableListOf("protocol", "openid-connect", "token")
     if (!request.url.pathSegments.containsAll(segments)) {
-      authenticationService.getBlockingActiveAuthToken()?.let { token ->
+      authenticationService.runCatching { getBlockingActiveAuthToken() }.getOrNull()?.let { token ->
         Timber.d("Passing auth token for %s", request.url.toString())
         request = request.newBuilder().addHeader("Authorization", "Bearer $token").build()
       }
