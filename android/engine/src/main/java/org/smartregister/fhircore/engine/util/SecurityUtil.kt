@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.auth
+package org.smartregister.fhircore.engine.util
 
-import kotlinx.serialization.Serializable
+import java.security.MessageDigest
+import java.util.Locale
+import javax.xml.bind.DatatypeConverter
 
-@Serializable
-data class AuthCredentials(
-  val username: String,
-  val password: String,
-  var sessionToken: String,
-  var refreshToken: String
-)
+fun String.toSha1() = hashString("SHA-1", this)
+
+private fun hashString(type: String, input: String): String {
+  val bytes = MessageDigest.getInstance(type).digest(input.toByteArray())
+  return DatatypeConverter.printHexBinary(bytes).uppercase(Locale.getDefault())
+}
