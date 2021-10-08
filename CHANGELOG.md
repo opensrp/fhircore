@@ -12,12 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added measure reporting to ANC application
 - Added class for Measure report evaluation which will be used in ANC application
 - ANC | Added Condition resource to sync params list
+- Moved Token to secure storage from AccountManager
 - QUEST | Patient List, Load Config from server
 - QUEST | Added Patient Profile View
 
 ### Fixed
 
 - Added dependecies that were missing and causing CQL Evaluation to fail
+- Out of memory issue on few tests
+- Authentication toekn expiry issue
 
 ### Changed
 
