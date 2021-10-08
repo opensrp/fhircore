@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.engine.data.remote.fhir.resource
 
-import android.content.Context
+import android.app.Application
 import ca.uhn.fhir.parser.IParser
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
@@ -24,7 +24,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.OperationOutcome
 import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.data.remote.shared.interceptor.OAuthInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -57,19 +57,17 @@ interface FhirResourceService {
 
   companion object {
 
-    fun create(
-      parser: IParser,
-      context: Context,
-      applicationConfiguration: ApplicationConfiguration
-    ): FhirResourceService {
+    fun create(parser: IParser, application: Application): FhirResourceService {
       val logger = HttpLoggingInterceptor()
       logger.level = HttpLoggingInterceptor.Level.BODY
 
-      val oauthInterceptor = OAuthInterceptor(context)
+      val oauthInterceptor = OAuthInterceptor(application)
 
       val client =
         OkHttpClient.Builder().addInterceptor(oauthInterceptor).addInterceptor(logger).build()
 
+      val applicationConfiguration =
+        (application as ConfigurableApplication).applicationConfiguration
       return Retrofit.Builder()
         .baseUrl(applicationConfiguration.fhirServerBaseUrl)
         .client(client)

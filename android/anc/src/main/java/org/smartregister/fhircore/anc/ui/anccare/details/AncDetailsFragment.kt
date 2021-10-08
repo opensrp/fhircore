@@ -39,7 +39,6 @@ import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.cql.MeasureEvaluator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.FileUtil
 import org.smartregister.fhircore.engine.util.extension.createFactory
@@ -58,8 +57,6 @@ class AncDetailsFragment private constructor() : Fragment() {
   lateinit var binding: FragmentAncDetailsBinding
 
   lateinit var parser: IParser
-
-  lateinit var fhirResourceService: FhirResourceService
 
   lateinit var fhirResourceDataSource: FhirResourceDataSource
 
@@ -109,14 +106,8 @@ class AncDetailsFragment private constructor() : Fragment() {
     libraryEvaluator = LibraryEvaluator()
     measureEvaluator = MeasureEvaluator()
     parser = FhirContext.forR4().newJsonParser()
-    fhirResourceService =
-      FhirResourceService.create(
-        parser,
-        activity?.applicationContext!!,
-        AncApplication.getContext().applicationConfiguration
-      )
 
-    fhirResourceDataSource = FhirResourceDataSource(fhirResourceService)
+    fhirResourceDataSource = FhirResourceDataSource.getInstance(AncApplication.getContext())
 
     fhirEngine = AncApplication.getContext().fhirEngine
 

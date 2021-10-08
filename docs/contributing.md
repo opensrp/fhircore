@@ -6,7 +6,7 @@ For us to accept your patches and contributions to this project there are a few 
 
 First, be aware of ABC - Always Be Committing! Make frequent and small commits.
 
-*Second, the 7 rules of writing great commit messages:*
+_Second, the 7 rules of writing great commit messages:_
 
 - Separate subject from body with a blank line
 - Limit the subject line to 50 characters
@@ -16,13 +16,11 @@ First, be aware of ABC - Always Be Committing! Make frequent and small commits.
 - Wrap the body at 72 characters
 - Use the body to explain what and why vs. how
 
-*Commits Rule of thumb:*
+_Commits Rule of thumb:_
 
-- Don’t commit broken code
 - Always commit at the end of the day before leaving the office
-- Don’t commit untested code
-- Don’t commit when the build is broken
-- Don’t go home after committing until the system builds and there are no broken features.
+- Commits should be specific on the change(s), additions, fixes e.t.c
+- Use the imperative form when writing your commit messages e.g. Make Class X Method Y return Type String or instead of Changed Method Y in Class X to return Y
 
 e.g. for version source control
 
@@ -82,5 +80,3 @@ Every time a feature is updated or a bug is fixed, a Peer review or Code review 
 - Delete the issue branch
 
 Please see [additional documentation on PRs here](https://github.com/opensrp/fhircore/issues/324).
-
-

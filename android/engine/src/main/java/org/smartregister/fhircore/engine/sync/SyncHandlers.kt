@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.sync
 import com.google.android.fhir.sync.State
 import java.lang.ref.WeakReference
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster.broadcastSync
+import timber.log.Timber
 
 /**
  * An interface the exposes a callback method [onSync] which accepts an application level FHIR Sync
@@ -30,13 +31,35 @@ interface OnSyncListener {
 }
 
 /**
+ * This interface qualifies an Activity/View to initiate sync. NOTE. There can only be one sync
+ * initiator for the entire application
+ */
+interface SyncInitiator {
+  /** Run one time sync */
+  fun runSync()
+}
+
+/**
  * A broadcaster that maintains a list of [OnSyncListener]. Whenever a new sync [State] is received
  * the [SyncBroadcaster] will transmit the [State] to every [OnSyncListener] that registered by
  * invoking [broadcastSync] method
  */
 object SyncBroadcaster {
 
-  private val syncListeners = mutableListOf<WeakReference<OnSyncListener>>()
+  var syncInitiator: SyncInitiator? = null
+
+  val syncListeners = mutableListOf<WeakReference<OnSyncListener>>()
+
+  fun registerSyncInitiator(syncInitiator: SyncInitiator) =
+    if (this.syncInitiator == null) {
+      this.syncInitiator = syncInitiator
+      this.syncInitiator?.runSync() ?: Timber.e("Register at least one sync initiator")
+    } else {
+      Timber.w(
+        "One time sync can only be triggered from one place within the entire application e.g." +
+          " when loading the landing register page. Other views can register as listeners to respond to Sync State"
+      )
+    }
 
   fun registerSyncListener(onSyncListener: OnSyncListener) {
     syncListeners.add(WeakReference(onSyncListener))

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.shadow
+package org.smartregister.fhircore.eir.shadow
 
 import android.content.Context
 import com.google.android.fhir.datacapture.utilities.NpmPackageProvider

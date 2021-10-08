@@ -9,7 +9,6 @@ plugins {
     id 'jacoco'
 }
 
-
 Properties props = new Properties()
 
 def arr = ["FHIR_BASE_URL", "OAUTH_BASE_URL", "OAUTH_CIENT_ID", "OAUTH_CLIENT_SECRET", "OAUTH_SCOPE"]
@@ -51,6 +50,16 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildTypes {
+        debug {
+            testCoverageEnabled true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
     packagingOptions {
         exclude 'META-INF/ASL-2.0.txt'
         exclude 'META-INF/LGPL-3.0.txt'
@@ -75,46 +84,37 @@ android {
         exclude("META-INF/LGPL2.1")
     }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
     buildFeatures {
         compose true
         viewBinding true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion '1.0.1'
-    }
-    testOptions {
-        unitTests {
-            includeAndroidResources = true
-        }
-    }
 
     testOptions {
-        execution 'ANDROIDX_TEST_ORCHESTRATOR'
-        animationsDisabled true
         unitTests {
-            returnDefaultValues = true
             includeAndroidResources = true
-        }
-        unitTests.all {
-            jacoco {
-                includeNoLocationClasses = true
-                excludes = ['jdk.internal.*']
+            returnDefaultValues = true
+            all {
+                jacoco {
+                    includeNoLocationClasses = true
+                    excludes = ['jdk.internal.*']
+                }
             }
         }
     }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.0.1'
+    }
+
 }
 
 dependencies {
