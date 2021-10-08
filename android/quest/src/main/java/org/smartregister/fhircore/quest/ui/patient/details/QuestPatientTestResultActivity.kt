@@ -23,7 +23,8 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.QuestApplication
-import org.smartregister.fhircore.quest.data.QuestPatientRepository
+import org.smartregister.fhircore.quest.data.patient.PatientRepository
+import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 
 class QuestPatientTestResultActivity : BaseMultiLanguageActivity() {
 
@@ -34,7 +35,7 @@ class QuestPatientTestResultActivity : BaseMultiLanguageActivity() {
 
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: "1"
     val fhirEngine = (QuestApplication.getContext() as ConfigurableApplication).fhirEngine
-    val repository = QuestPatientRepository(fhirEngine)
+    val repository = PatientRepository(fhirEngine, PatientItemMapper)
     val viewModel =
       QuestPatientDetailViewModel.get(this, application as QuestApplication, repository, patientId)
 

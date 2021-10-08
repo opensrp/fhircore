@@ -72,7 +72,7 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
           data.name.contains(value.toString(), ignoreCase = true) ||
             data.identifier.contentEquals(value.toString())
       }
-      else -> true
+      else -> false
     }
   }
 

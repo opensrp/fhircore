@@ -68,7 +68,6 @@ import org.smartregister.fhircore.engine.util.extension.DrawablePosition
 import org.smartregister.fhircore.engine.util.extension.addOnDrawableClickListener
 import org.smartregister.fhircore.engine.util.extension.asString
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
-import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.getDrawable
 import org.smartregister.fhircore.engine.util.extension.hide
@@ -553,14 +552,16 @@ abstract class BaseRegisterActivity :
     return application as ConfigurableApplication
   }
 
-  private fun updateCount(sideMenuOption: SideMenuOption) {
+  fun updateCount(sideMenuOption: SideMenuOption) {
     // return immediately if item is not setup
     val menuItem = findSideMenuItem(sideMenuOption.itemId) ?: return
 
     lifecycleScope.launch(registerViewModel.dispatcher.main()) {
-      sideMenuOption.count = sideMenuOption.countMethod()
+      val count = sideMenuOption.countMethod()
 
       with(sideMenuOption) {
+        this.count = count
+
         (menuItem.actionView as TextView).text = if (this.count > 0) this.count.toString() else ""
         if (selectedMenuOption != null && this.itemId == selectedMenuOption?.itemId) {
           selectedMenuOption?.count = this.count

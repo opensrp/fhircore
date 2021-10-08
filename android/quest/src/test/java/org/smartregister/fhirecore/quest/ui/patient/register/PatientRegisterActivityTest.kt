@@ -24,6 +24,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterFragment
 import org.smartregister.fhirecore.quest.robolectric.ActivityRobolectricTest
@@ -51,6 +52,17 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnSideMenuOptionSelectedShouldReturnTrue() {
     Assert.assertTrue(patientRegisterActivity.onMenuOptionSelected(RoboMenuItem()))
+  }
+
+  @Test
+  fun testBottomMenuOptionsShouldReturnNonZeroOptions() {
+    val menu = patientRegisterActivity.bottomNavigationMenuOptions()
+
+    Assert.assertEquals(2, menu.size)
+    Assert.assertEquals(R.id.menu_item_clients, menu[0].id)
+    Assert.assertEquals(getString(R.string.menu_clients), menu[0].title)
+    Assert.assertEquals(R.id.menu_item_settings, menu[1].id)
+    Assert.assertEquals(getString(R.string.menu_settings), menu[1].title)
   }
 
   @Test

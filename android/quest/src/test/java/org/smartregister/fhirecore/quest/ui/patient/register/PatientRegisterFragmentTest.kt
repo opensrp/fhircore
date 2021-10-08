@@ -30,6 +30,7 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
+import org.smartregister.fhircore.quest.ui.patient.register.OpenPatientProfile
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterFragment
 import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
@@ -50,10 +51,13 @@ class PatientRegisterFragmentTest : RobolectricTest() {
   }
 
   @Test
-  fun testPerformFilterShouldReturnTrue() {
-
+  fun testPerformFilterShouldReturnTrueWithMatchingDataAndSearchFilter() {
     Assert.assertTrue(
-      registerFragment.performFilter(RegisterFilterType.SEARCH_FILTER, PatientItem(), "")
+      registerFragment.performFilter(
+        RegisterFilterType.SEARCH_FILTER,
+        PatientItem(name = "Samia"),
+        "samia"
+      )
     )
     Assert.assertTrue(
       registerFragment.performFilter(
@@ -65,8 +69,27 @@ class PatientRegisterFragmentTest : RobolectricTest() {
   }
 
   @Test
+  fun testPerformFilterShouldReturnFalseForUnhandledFilterType() {
+    Assert.assertFalse(
+      registerFragment.performFilter(RegisterFilterType.OVERDUE_FILTER, PatientItem(), "222")
+    )
+  }
+
+  @Test
   fun testNavigateToDetailsShouldGotoToPatientDetailActivity() {
     registerFragment.navigateToDetails("")
+
+    val expectedIntent = Intent(registerFragment.context, QuestPatientDetailActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<QuestApplication>())
+        .nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testOnItemClickedWithOpenPatientProfileShouldReturnNavigateToDetails() {
+    registerFragment.onItemClicked(OpenPatientProfile, PatientItem())
 
     val expectedIntent = Intent(registerFragment.context, QuestPatientDetailActivity::class.java)
     val actualIntent =

@@ -18,10 +18,17 @@ package org.smartregister.fhirecore.quest.config
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.Binary
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
 import org.smartregister.fhircore.engine.configuration.app.loadApplicationConfiguration
+import org.smartregister.fhircore.engine.util.extension.encodeJson
+import org.smartregister.fhircore.engine.util.extension.loadBinaryResourceConfiguration
+import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
 import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
 
@@ -38,5 +45,24 @@ class ApplicationConfigurationTest : RobolectricTest() {
     assertEquals(2, result.languages.size)
     assertEquals("en", result.languages[0])
     assertEquals("sw", result.languages[1])
+  }
+
+  @Test
+  fun testLoadBinaryResourceConfigurationShouldReturnValidConfig() = runBlockingTest {
+    val context = ApplicationProvider.getApplicationContext<QuestApplication>()
+    context.fhirEngine.save(
+      Binary().apply {
+        id = "quest-app"
+        data =
+          applicationConfigurationOf(id = "quest-app", theme = "QuestDefault")
+            .encodeJson()
+            .encodeToByteArray()
+      }
+    )
+
+    val result = context.loadBinaryResourceConfiguration<ApplicationConfiguration>("quest-app")!!
+
+    assertEquals("quest-app", result.id)
+    assertEquals("QuestDefault", result.theme)
   }
 }

@@ -23,11 +23,11 @@ import androidx.lifecycle.ViewModelStoreOwner
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.quest.QuestApplication
-import org.smartregister.fhircore.quest.data.QuestPatientRepository
+import org.smartregister.fhircore.quest.data.patient.PatientRepository
 
 class QuestPatientDetailViewModel(
   application: QuestApplication,
-  private val repository: QuestPatientRepository,
+  private val repository: PatientRepository,
   private val patientId: String
 ) : AndroidViewModel(application), QuestPatientDetailDataProvider {
 
@@ -58,7 +58,7 @@ class QuestPatientDetailViewModel(
     fun get(
       owner: ViewModelStoreOwner,
       application: QuestApplication,
-      repository: QuestPatientRepository,
+      repository: PatientRepository,
       patientId: String
     ): QuestPatientDetailViewModel {
       return ViewModelProvider(

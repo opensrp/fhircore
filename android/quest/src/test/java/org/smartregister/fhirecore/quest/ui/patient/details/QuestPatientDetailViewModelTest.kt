@@ -27,7 +27,7 @@ import org.junit.Before
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.quest.data.QuestPatientRepository
+import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
 import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailViewModel
 import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
@@ -37,7 +37,7 @@ import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
 class QuestPatientDetailViewModelTest : RobolectricTest() {
 
   private lateinit var viewModel: QuestPatientDetailViewModel
-  private lateinit var repository: QuestPatientRepository
+  private lateinit var repository: PatientRepository
 
   @Before
   fun setUp() {

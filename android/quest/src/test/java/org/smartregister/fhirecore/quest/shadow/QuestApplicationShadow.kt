@@ -116,7 +116,7 @@ class QuestApplicationShadow : ShadowApplication() {
   }
 
   @Implementation
-  fun schedulePolling() {
+  fun schedulePeriodicSync() {
     Timber.i("Scheduled polling for Shadow")
   }
 

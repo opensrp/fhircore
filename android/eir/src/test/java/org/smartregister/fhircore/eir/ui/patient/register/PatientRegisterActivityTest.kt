@@ -18,6 +18,7 @@ package org.smartregister.fhircore.eir.ui.patient.register
 
 import android.app.Activity
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
@@ -31,6 +32,7 @@ import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.FakeKeyStore
 import org.smartregister.fhircore.eir.shadow.ShadowNpmPackageProvider
+import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 
 @Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
 class PatientRegisterActivityTest : ActivityRobolectricTest() {
@@ -63,6 +65,22 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnSideMenuOptionSelectedShouldReturnTrue() {
     Assert.assertTrue(patientRegisterActivity.onMenuOptionSelected(RoboMenuItem()))
+  }
+
+  @Test
+  fun testUpdateCountShouldSetRightValue() = runBlockingTest {
+    val sideMenuOption =
+      SideMenuOption(
+        R.id.menu_item_covax,
+        R.string.covax_app,
+        ContextCompat.getDrawable(patientRegisterActivity, R.drawable.drawer_menu_item_selector)!!,
+        countMethod = { 123 }
+      )
+    sideMenuOption.count = 0
+
+    patientRegisterActivity.updateCount(sideMenuOption)
+
+    Assert.assertEquals(123, sideMenuOption.count)
   }
 
   @Test

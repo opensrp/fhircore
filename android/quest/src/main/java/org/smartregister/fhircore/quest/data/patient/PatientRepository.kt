@@ -16,7 +16,11 @@
 
 package org.smartregister.fhircore.quest.data.patient
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.google.android.fhir.FhirEngine
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
@@ -48,4 +52,12 @@ class PatientRepository(
 
   override suspend fun countAll(): Long =
     withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
+
+  fun fetchDemographics(patientId: String): LiveData<Patient> {
+    val data = MutableLiveData<Patient>()
+    CoroutineScope(dispatcherProvider.io()).launch {
+      data.postValue(fhirEngine.load(Patient::class.java, patientId))
+    }
+    return data
+  }
 }
