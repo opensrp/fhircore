@@ -17,12 +17,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Filter [Questionnaires](http://hl7.org/fhir/questionnaire.html) by [publisher](http://hl7.org/fhir/questionnaire-definitions.html#Questionnaire.publisher) using user attribute as per above. (#571)
 - Quest | Patient List, Load Config from server
 - Quest | Added Patient Profile View
+- Quest | Patient Registration Questionnaire
 
 ### Fixed
 
 - Added dependecies that were missing and causing CQL Evaluation to fail
 - Out of memory issue on few tests
 - Authentication toekn expiry issue
+- Fhir Resource Converter issue after resource update
+- Inteceptor handling for missing account
 
 ### Changed
 

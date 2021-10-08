@@ -163,7 +163,9 @@ abstract class AuthenticationService(open val context: Context) {
       return it
     }
     Timber.v("Trying to get blocking auth token from account manager")
-    return accountManager.blockingGetAuthToken(getActiveAccount(), AUTH_TOKEN_TYPE, false)
+    return getActiveAccount()?.let {
+      accountManager.blockingGetAuthToken(it, AUTH_TOKEN_TYPE, false)
+    }
   }
 
   fun getActiveAccount(): Account? {
