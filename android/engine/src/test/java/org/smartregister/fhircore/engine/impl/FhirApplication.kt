@@ -66,6 +66,7 @@ class FhirApplication : Application(), ConfigurableApplication {
       AuthCredentials(
         username = "demo",
         password = "Amani123",
+        refreshToken = "",
         sessionToken = "same-gibberish-string-as-token"
       )
     secureSharedPreferenceSpy
