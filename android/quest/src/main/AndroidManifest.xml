@@ -24,7 +24,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <activity android:name=".ui.patient.register.PatientRegisterActivity"/>
+        <activity android:name=".ui.patient.details.QuestPatientDetailActivity" />
+        <activity android:name=".ui.patient.details.QuestPatientTestResultActivity" />
+        <activity android:name="org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity"/>
         <service android:name=".QuestAuthAndroidService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
