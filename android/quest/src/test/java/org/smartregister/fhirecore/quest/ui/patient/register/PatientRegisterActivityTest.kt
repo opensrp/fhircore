@@ -17,13 +17,17 @@
 package org.smartregister.fhirecore.quest.ui.patient.register
 
 import android.app.Activity
+import android.content.Intent
+import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
+import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterFragment
@@ -52,6 +56,19 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnSideMenuOptionSelectedShouldReturnTrue() {
     Assert.assertTrue(patientRegisterActivity.onMenuOptionSelected(RoboMenuItem()))
+  }
+
+  @Test
+  fun testOnClientMenuOptionSelectedShouldCallRegisterActivity() {
+    patientRegisterActivity.onMenuOptionSelected(
+      RoboMenuItem().apply { itemId = R.id.menu_item_clients }
+    )
+    val expectedIntent = Intent(patientRegisterActivity, PatientRegisterActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<QuestApplication>())
+        .nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test

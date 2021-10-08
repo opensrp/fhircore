@@ -56,7 +56,7 @@ class PatientRegisterFragmentTest : RobolectricTest() {
       registerFragment.performFilter(
         RegisterFilterType.SEARCH_FILTER,
         PatientItem(name = "Samia"),
-        "samia"
+        ""
       )
     )
     Assert.assertTrue(
@@ -64,6 +64,14 @@ class PatientRegisterFragmentTest : RobolectricTest() {
         RegisterFilterType.SEARCH_FILTER,
         PatientItem(identifier = "12345"),
         "12345"
+      )
+    )
+
+    Assert.assertTrue(
+      registerFragment.performFilter(
+        RegisterFilterType.SEARCH_FILTER,
+        PatientItem(name = "Razi"),
+        "Razi"
       )
     )
   }

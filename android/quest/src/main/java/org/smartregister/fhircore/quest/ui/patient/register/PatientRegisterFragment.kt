@@ -53,10 +53,8 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
   }
 
   override fun onItemClicked(listenerIntent: ListenerIntent, data: PatientItem) {
-    if (listenerIntent is PatientRowClickListenerIntent) {
-      when (listenerIntent) {
-        OpenPatientProfile -> navigateToDetails(data.id)
-      }
+    when (listenerIntent) {
+      OpenPatientProfile -> navigateToDetails(data.id)
     }
   }
 
