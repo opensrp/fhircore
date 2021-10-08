@@ -28,6 +28,10 @@ if (rootProject.file("local.properties").exists()) {
 android {
     compileSdk 30
 
+    dataBinding {
+        enabled true
+    }
+
     defaultConfig {
         applicationId "org.smartregister.fhircore.quest"
         minSdk 21
@@ -120,7 +124,20 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.work:work-runtime-ktx:2.6.0'
-    testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+
+    testImplementation deps.junit5_api
+    testRuntimeOnly deps.junit5_engine
+    testRuntimeOnly deps.junit5_engine_vintage
+    testImplementation deps.robolectric
+    testImplementation deps.atsl.ext_junit
+    testImplementation deps.atsl.ext_junit_ktx
+    testImplementation deps.coroutines.test
+    testImplementation deps.androidx.core_test
+    debugImplementation deps.fragment_testing
+    releaseImplementation deps.fragment_testing
+    testImplementation deps.mockk
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1'
+
+    androidTestImplementation deps.atsl.ext_junit
+    androidTestImplementation deps.atsl.espresso
 }

@@ -17,12 +17,20 @@
 package org.smartregister.fhircore.engine.ui.base
 
 import android.content.Context
+import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import java.util.Locale
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.getTheme
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
 abstract class BaseMultiLanguageActivity : AppCompatActivity() {
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+
+    val themePref = SharedPreferencesHelper.read(SharedPreferencesHelper.THEME, "")!!
+    theme.applyStyle(getTheme(themePref), true)
+  }
 
   override fun attachBaseContext(baseContext: Context) {
     val lang =
