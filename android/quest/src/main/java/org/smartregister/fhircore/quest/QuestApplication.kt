@@ -37,6 +37,7 @@ import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARE
 import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
+import com.google.android.fhir.datacapture.DataCaptureConfig
 
 class QuestApplication : Application(), ConfigurableApplication {
 
@@ -65,6 +66,7 @@ class QuestApplication : Application(), ConfigurableApplication {
         ResourceType.Patient to mapOf(),
         ResourceType.Questionnaire to buildQuestionnaireFilterMap(),
         ResourceType.QuestionnaireResponse to mapOf()
+        ResourceType.Binary to mapOf()
       )
     }
 
@@ -120,6 +122,10 @@ class QuestApplication : Application(), ConfigurableApplication {
     CoroutineScope(defaultDispatcherProvider.io()).launch {
       workerContextProvider = this@QuestApplication.initializeWorkerContext()!!
     }
+
+    schedulePeriodicSync()
+
+    DataCaptureConfig.attachmentResolver = ReferenceAttachmentResolver(this)
   }
 
   companion object {
