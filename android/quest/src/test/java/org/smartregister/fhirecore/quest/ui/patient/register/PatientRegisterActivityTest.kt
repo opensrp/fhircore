@@ -17,7 +17,9 @@
 package org.smartregister.fhirecore.quest.ui.patient.register
 
 import android.app.Activity
+import android.app.Application
 import android.content.Intent
+import androidx.core.view.size
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert
 import org.junit.Before
@@ -27,6 +29,9 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.engine.configuration.view.loadRegisterViewConfiguration
+import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
@@ -69,6 +74,32 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
         .nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testSetupConfigurableViewsShouldUpdateViews() {
+    val config =
+      ApplicationProvider.getApplicationContext<Application>()
+        .loadRegisterViewConfiguration("quest-app-patient-register")
+
+    val activityBinding =
+      ReflectionHelpers.getField<BaseRegisterActivityBinding>(
+        patientRegisterActivity,
+        "registerActivityBinding"
+      )
+    with(activityBinding) {
+      this.btnRegisterNewClient.text = ""
+      this.toolbarLayout.tvClientsListTitle.text
+      this.bottomNavView.menu.clear()
+    }
+
+    patientRegisterActivity.setupConfigurableViews(config)
+
+    with(activityBinding) {
+      Assert.assertEquals("Add new client", this.btnRegisterNewClient.text)
+      Assert.assertEquals("Clients", this.toolbarLayout.tvClientsListTitle.text)
+      Assert.assertEquals(2, this.bottomNavView.menu.size)
+    }
   }
 
   @Test

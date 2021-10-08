@@ -49,14 +49,19 @@ class ApplicationConfigurationTest : RobolectricTest() {
 
   @Test
   fun testLoadBinaryResourceConfigurationShouldReturnValidConfig() = runBlockingTest {
+    val expectedConfig =
+      applicationConfigurationOf(
+        id = "quest-app",
+        theme = "QuestDefault",
+        languages = listOf("en", "sw"),
+        syncInterval = 30
+      )
+
     val context = ApplicationProvider.getApplicationContext<QuestApplication>()
     context.fhirEngine.save(
       Binary().apply {
         id = "quest-app"
-        data =
-          applicationConfigurationOf(id = "quest-app", theme = "QuestDefault")
-            .encodeJson()
-            .encodeToByteArray()
+        data = expectedConfig.encodeJson().encodeToByteArray()
       }
     )
 
@@ -64,5 +69,7 @@ class ApplicationConfigurationTest : RobolectricTest() {
 
     assertEquals("quest-app", result.id)
     assertEquals("QuestDefault", result.theme)
+    assertEquals("en", result.languages[0])
+    assertEquals(30, result.syncInterval)
   }
 }

@@ -18,10 +18,17 @@ package org.smartregister.fhirecore.quest.config
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.Binary
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.loadRegisterViewConfiguration
+import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
+import org.smartregister.fhircore.engine.util.extension.encodeJson
+import org.smartregister.fhircore.engine.util.extension.loadBinaryResourceConfiguration
+import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
 import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
 
@@ -47,6 +54,55 @@ class RegisterViewConfigurationTest : RobolectricTest() {
     assertEquals(true, result.showNewClientButton)
     assertEquals(false, result.showSideMenu)
     assertEquals(true, result.showBottomMenu)
+    assertEquals("patient-registration", result.registrationForm)
+  }
+
+  @Test
+  fun testLoadBinaryRegisterViewConfigurationShouldReturnValidConfig() = runBlockingTest {
+    val expectedConfig =
+      ApplicationProvider.getApplicationContext<Application>()
+        .registerViewConfigurationOf(
+          id = "test-config-id",
+          appTitle = "My title",
+          filterText = "Filter label",
+          searchBarHint = "Search hint",
+          newClientButtonText = "Add new client",
+          newClientButtonStyle = "rounded_corner",
+          showSearchBar = true,
+          showFilter = true,
+          switchLanguages = true,
+          showScanQRCode = true,
+          showNewClientButton = true,
+          languages = listOf("en"),
+          registrationForm = "patient-registration",
+          showSideMenu = true,
+          showBottomMenu = false
+        )
+
+    val context = ApplicationProvider.getApplicationContext<QuestApplication>()
+    context.fhirEngine.save(
+      Binary().apply {
+        id = "test-config-id"
+        data = expectedConfig.encodeJson().encodeToByteArray()
+      }
+    )
+
+    val result =
+      context.loadBinaryResourceConfiguration<RegisterViewConfiguration>("test-config-id")!!
+
+    assertEquals("test-config-id", result.id)
+    assertEquals("My title", result.appTitle)
+    assertEquals("Filter label", result.filterText)
+    assertEquals("Search hint", result.searchBarHint)
+    assertEquals("Add new client", result.newClientButtonText)
+    assertEquals("rounded_corner", result.newClientButtonStyle)
+    assertEquals(true, result.showSearchBar)
+    assertEquals(true, result.showFilter)
+    assertEquals(true, result.switchLanguages)
+    assertEquals(true, result.showScanQRCode)
+    assertEquals(true, result.showNewClientButton)
+    assertEquals(true, result.showSideMenu)
+    assertEquals(false, result.showBottomMenu)
     assertEquals("patient-registration", result.registrationForm)
   }
 }

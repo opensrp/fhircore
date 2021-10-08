@@ -28,7 +28,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
@@ -82,11 +81,7 @@ class LoginViewModel(
       override fun handleResponse(call: Call<OAuthResponse>, response: Response<OAuthResponse>) {
         if (!response.isSuccessful) {
           val errorResponse = response.errorBody()?.string()
-          val errorMessage =
-            kotlin
-              .runCatching { errorResponse?.decodeJson<LoginError>()?.errorDescription!! }
-              .getOrElse { application.getString(R.string.login_call_fail_error_message)!! }
-          _loginError.postValue(errorMessage)
+          _loginError.postValue(errorResponse?.decodeJson<LoginError>()?.errorDescription)
           Timber.e("Error fetching access token %s", errorResponse)
           if (attemptLocalLogin()) _navigateToHome.value = true
           _showProgressBar.postValue(false)

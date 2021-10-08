@@ -40,7 +40,6 @@ data class RegisterViewConfiguration(
   var showScanQRCode: Boolean = true,
   var showNewClientButton: Boolean = true,
   var registrationForm: String = "patient-registration",
-  var appTheme: String? = null,
   var showSideMenu: Boolean = true,
   var showBottomMenu: Boolean = false
 ) : Configuration
