@@ -32,6 +32,7 @@ import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.view.loadRegisterViewConfiguration
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
@@ -74,6 +75,24 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
         .nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testRegisterClientShouldStartFamilyQuestionnaireActivity() {
+    ReflectionHelpers.callInstanceMethod<PatientRegisterActivity>(
+      patientRegisterActivity,
+      "registerClient"
+    )
+
+    val expectedIntent = Intent(patientRegisterActivity, PatientRegisterActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<Application>()).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    Assert.assertEquals(
+      "patient-registration",
+      actualIntent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM)
+    )
   }
 
   @Test

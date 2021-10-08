@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.data.remote.fhir.resource
 import ca.uhn.fhir.parser.IParser
 import java.lang.reflect.Type
 import okhttp3.ResponseBody
-import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Resource
 import retrofit2.Converter
 import retrofit2.Retrofit
@@ -37,7 +36,7 @@ class FhirConverterFactory(private val parser: IParser) : Converter.Factory() {
 
 /** [FhirConverter] uses the provided [IParser] to parse JSON into a FHIR [Resource] */
 class FhirConverter(private val parser: IParser) : Converter<ResponseBody, Resource> {
-  override fun convert(value: ResponseBody): Resource? {
-    return parser.parseResource(Bundle::class.java, value.string())
+  override fun convert(value: ResponseBody): Resource {
+    return parser.parseResource(value.string()) as Resource
   }
 }
