@@ -77,11 +77,15 @@ class EirApplication : Application(), ConfigurableApplication {
       Timber.plant(Timber.DebugTree())
     }
 
+    initializeWorkerContextProvider()
+
+    schedulePeriodicSync()
+  }
+
+  fun initializeWorkerContextProvider() {
     CoroutineScope(defaultDispatcherProvider.io()).launch {
       workerContextProvider = this@EirApplication.initializeWorkerContext()!!
     }
-
-    schedulePeriodicSync()
   }
 
   companion object {

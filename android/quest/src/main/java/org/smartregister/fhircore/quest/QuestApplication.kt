@@ -29,7 +29,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
-import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
+import org.smartregister.fhircore.engine.configuration.app.loadApplicationConfiguration
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -60,9 +60,10 @@ class QuestApplication : Application(), ConfigurableApplication {
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() {
       return mapOf(
+        ResourceType.Binary to mapOf("_id" to CONFIG_RESOURCE_IDS),
+        ResourceType.CarePlan to mapOf(),
         ResourceType.Patient to mapOf(),
-        ResourceType.Questionnaire to buildQuestionnaireFilterMap(),
-        ResourceType.CarePlan to mapOf()
+        ResourceType.Questionnaire to buildQuestionnaireFilterMap()
       )
     }
 
@@ -80,6 +81,18 @@ class QuestApplication : Application(), ConfigurableApplication {
 
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
     this.applicationConfiguration = applicationConfiguration
+    SharedPreferencesHelper.write(SharedPreferencesHelper.THEME, applicationConfiguration.theme)
+  }
+
+  fun applyApplicationConfiguration() {
+    configureApplication(
+      loadApplicationConfiguration(CONFIG_APP).apply {
+        fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL
+        oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL
+        clientId = BuildConfig.OAUTH_CIENT_ID
+        clientSecret = BuildConfig.OAUTH_CLIENT_SECRET
+      }
+    )
   }
 
   override fun schedulePeriodicSync() {
@@ -90,29 +103,34 @@ class QuestApplication : Application(), ConfigurableApplication {
     super.onCreate()
     SharedPreferencesHelper.init(this)
     questApplication = this
-    configureApplication(
-      applicationConfigurationOf(
-        oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL,
-        fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL,
-        clientId = BuildConfig.OAUTH_CIENT_ID,
-        clientSecret = BuildConfig.OAUTH_CLIENT_SECRET,
-        languages = listOf("en", "sw")
-      )
-    )
 
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
 
+    applyApplicationConfiguration()
+
     CoroutineScope(defaultDispatcherProvider.io()).launch {
       workerContextProvider = this@QuestApplication.initializeWorkerContext()!!
     }
 
+    initializeWorkerContextProvider()
+
     schedulePeriodicSync()
+  }
+
+  fun initializeWorkerContextProvider() {
+    CoroutineScope(defaultDispatcherProvider.io()).launch {
+      workerContextProvider = this@QuestApplication.initializeWorkerContext()!!
+    }
   }
 
   companion object {
     private lateinit var questApplication: QuestApplication
+    const val CONFIG_APP = "quest-app"
+    private const val CONFIG_PATIENT_REGISTER = "quest-app-patient-register"
+
+    private const val CONFIG_RESOURCE_IDS = "$CONFIG_APP,$CONFIG_PATIENT_REGISTER"
 
     fun getContext() = questApplication
   }
