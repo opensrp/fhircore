@@ -50,8 +50,6 @@ class LoginViewModel(
   private val dispatcher: DispatcherProvider = DefaultDispatcherProvider
 ) : AndroidViewModel(application), AccountManagerCallback<Bundle> {
 
-  private val accountManager = AccountManager.get(application)
-
   val sharedPreferences =
     SharedPreferencesHelper.init(getApplication<Application>().applicationContext)
 

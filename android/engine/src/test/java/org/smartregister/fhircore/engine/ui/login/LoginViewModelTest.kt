@@ -21,22 +21,32 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.spyk
+import io.mockk.verify
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runBlockingTest
 import okhttp3.ResponseBody
 import okhttp3.internal.http.RealResponseBody
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.data.remote.model.response.UserResponse
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.shadow.FakeKeyStore
 import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import retrofit2.Response
 
+@ExperimentalCoroutinesApi
 internal class LoginViewModelTest : RobolectricTest() {
+
+  @get:Rule val coroutineTestRule: CoroutineTestRule = CoroutineTestRule()
 
   @get:Rule val instantTaskExecutorRule = InstantTaskExecutorRule()
 
@@ -46,16 +56,28 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   private lateinit var configurableApplication: ConfigurableApplication
 
+  private lateinit var authenticationService: AuthenticationService
+
+  companion object {
+    @JvmStatic
+    @BeforeClass
+    fun resetMocks() {
+      FakeKeyStore.setup
+    }
+  }
+
   @Before
   fun setUp() {
     configurableApplication = application as ConfigurableApplication
+    authenticationService = spyk(configurableApplication.authenticationService)
     loginViewModel =
       spyk(
         objToCopy =
           LoginViewModel(
             application = ApplicationProvider.getApplicationContext(),
-            authenticationService = configurableApplication.authenticationService,
-            loginViewConfiguration = loginViewConfigurationOf()
+            authenticationService = authenticationService,
+            loginViewConfiguration = loginViewConfigurationOf(),
+            dispatcher = coroutineTestRule.testDispatcherProvider
           ),
         recordPrivateCalls = true
       )
@@ -70,6 +92,30 @@ internal class LoginViewModelTest : RobolectricTest() {
       onPasswordUpdated("")
     }
   }
+
+  @Test
+  fun testLoginUserNavigateToHomeWithActiveSession() =
+    coroutineTestRule.runBlockingTest {
+      every { authenticationService.hasActiveSession() } returns true
+      every { authenticationService.skipLogin() } returns true
+
+      loginViewModel.loginUser()
+
+      // Navigate home is set to true
+      Assert.assertNotNull(loginViewModel.navigateToHome.value)
+      Assert.assertTrue(loginViewModel.navigateToHome.value!!)
+    }
+
+  @Test
+  fun testLoginUserShouldTryLoadActiveWithNonActiveSession() =
+    coroutineTestRule.runBlockingTest {
+      every { authenticationService.hasActiveSession() } returns false
+      every { authenticationService.skipLogin() } returns false
+
+      loginViewModel.loginUser()
+
+      verify { authenticationService.loadActiveAccount(any(), any()) }
+    }
 
   @Test
   fun testThatViewModelIsInitialized() {
@@ -134,9 +180,11 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @Test
   fun testOauthResponseHandlerWithFailureWithSuccessfulPreviousLogin() {
-    // set username = 'demo' and password = 'Amani123' (Assume successfully logged in previously)
+    // set username = 'demo' and password = 'Amani123' for local login
     loginViewModel.onUsernameUpdated("demo")
     loginViewModel.onPasswordUpdated("Amani123")
+
+    every { authenticationService.validLocalCredentials(any(), any()) } returns true
 
     val errorMessage = "We have a problem login you in"
     loginViewModel.oauthResponseHandler.handleFailure(spyk(), IllegalStateException(errorMessage))
@@ -148,6 +196,10 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @Test
   fun testOauthResponseHandlerWithFailureWithFailedPreviousLogin() {
+    // set username = 'demo' and password = 'Amani123' for local login
+    loginViewModel.onUsernameUpdated("demo")
+    loginViewModel.onPasswordUpdated("Amani123")
+
     val errorMessage = "We have a problem login you in"
     loginViewModel.oauthResponseHandler.handleFailure(spyk(), IllegalStateException(errorMessage))
 

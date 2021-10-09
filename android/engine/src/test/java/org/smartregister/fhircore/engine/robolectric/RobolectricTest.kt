@@ -19,8 +19,10 @@ package org.smartregister.fhircore.engine.robolectric
 import android.os.Build
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import io.mockk.clearAllMocks
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import org.junit.AfterClass
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.impl.FhirApplication
@@ -49,5 +51,13 @@ abstract class RobolectricTest {
     liveData.observeForever(observer)
     latch.await(3, TimeUnit.SECONDS)
     return data[0] as T?
+  }
+
+  companion object {
+    @JvmStatic
+    @AfterClass
+    fun resetMocks() {
+      clearAllMocks()
+    }
   }
 }
