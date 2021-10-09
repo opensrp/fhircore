@@ -22,7 +22,6 @@ import android.accounts.AccountManager
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import android.os.Parcel
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
@@ -90,19 +89,18 @@ class AccountAuthenticatorTest : RobolectricTest() {
     val accountManager = mockk<AccountManager>()
     ReflectionHelpers.setField(accountAuthenticator, "accountManager", accountManager)
 
-    every { accountManager.peekAuthToken(account, authTokenType) } returns null
-    every { accountManager.getPassword(account) } returns "12345"
-    every { accountManager.setPassword(account, "12345") } returns Unit
-    every { accountManager.setAuthToken(account, authTokenType, "6789") } returns Unit
+    every { authenticationService.getLocalSessionToken() } returns null
+    every { authenticationService.getRefreshToken() } returns "12345"
+    every { authenticationService.refreshToken("12345") } returns OAuthResponse("6789")
+    every { authenticationService.updateSession(any()) } returns Unit
     every { accountManager.notifyAccountAuthenticated(account) } returns true
-    every { authenticationService.refreshToken(any()) } returns OAuthResponse("6789")
 
     var bundle = accountAuthenticator.getAuthToken(response, account, authTokenType, options)
 
-    verify(exactly = 1) { accountManager.peekAuthToken(account, authTokenType) }
-    verify(exactly = 1) { accountManager.getPassword(account) }
-    verify(exactly = 1) { accountManager.setPassword(account, "12345") }
-    verify(exactly = 1) { accountManager.setAuthToken(account, authTokenType, "6789") }
+    verify(exactly = 1) { authenticationService.getLocalSessionToken() }
+    verify(exactly = 1) { authenticationService.getRefreshToken() }
+    verify(exactly = 1) { authenticationService.refreshToken("12345") }
+    verify(exactly = 1) { authenticationService.updateSession(any()) }
     verify(exactly = 1) { accountManager.notifyAccountAuthenticated(account) }
 
     assertEquals(account.name, bundle.getString(AccountManager.KEY_ACCOUNT_NAME))
@@ -111,11 +109,22 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     every { authenticationService.refreshToken(any()) } throws RuntimeException()
     bundle = accountAuthenticator.getAuthToken(response, account, authTokenType, options)
-    verifyIntentData(bundle, account, response, authTokenType)
 
-    every { accountManager.getPassword(account) } returns null
-    bundle = accountAuthenticator.getAuthToken(response, account, authTokenType, options)
-    verifyIntentData(bundle, account, response, authTokenType)
+    val intent = bundle.getParcelable<Intent>(AccountManager.KEY_INTENT)
+
+    assertNotNull(intent)
+    assertEquals(BaseLoginActivity::class.java.canonicalName, intent?.component?.className)
+    assertEquals(account.name, intent?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME))
+    assertEquals(account.type, intent?.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE))
+    assertEquals(
+      response.javaClass.canonicalName,
+      intent?.getParcelableExtra<AccountAuthenticatorResponse>(
+          AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE
+        )
+        ?.javaClass
+        ?.canonicalName
+    )
+    assertEquals(authTokenType, intent?.getStringExtra(AuthenticationService.AUTH_TOKEN_TYPE))
   }
 
   @Test
@@ -145,29 +154,6 @@ class AccountAuthenticatorTest : RobolectricTest() {
     assertFalse(bundle.getBoolean(AccountManager.KEY_BOOLEAN_RESULT, true))
   }
 
-  private fun verifyIntentData(
-    bundle: Bundle,
-    account: Account,
-    response: AccountAuthenticatorResponse,
-    authTokenType: String
-  ) {
-    val intent = bundle.getParcelable<Intent>(AccountManager.KEY_INTENT)
-
-    assertNotNull(intent)
-    assertEquals(BaseLoginActivity::class.java.canonicalName, intent?.component?.className)
-    assertEquals(account.name, intent?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME))
-    assertEquals(account.type, intent?.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE))
-    assertEquals(
-      response.javaClass.canonicalName,
-      intent?.getParcelableExtra<AccountAuthenticatorResponse>(
-          AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE
-        )
-        ?.javaClass
-        ?.canonicalName
-    )
-    assertEquals(authTokenType, intent?.getStringExtra(AuthenticationService.AUTH_TOKEN_TYPE))
-  }
-
   class FakeAuthenticationService(override val context: Context) : AuthenticationService(context) {
 
     private val applicationConfiguration =
@@ -176,9 +162,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
         "https://fhir.labs.smartregister.org/fhir/",
         "fhir-core-client",
         "1528b638-9344-4409-9cbf-10680b4ca5f5",
-        "openid",
-        listOf("en"),
-        30
+        "openid"
       )
 
     override fun skipLogin() = true
