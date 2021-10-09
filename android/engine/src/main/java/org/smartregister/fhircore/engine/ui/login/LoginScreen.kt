@@ -51,6 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -67,6 +68,13 @@ import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.theme.LoginBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
+
+const val APP_NAME_TEXT_TAG = "aapNameTextTag"
+const val USERNAME_FIELD_TAG = "usernameFieldTag"
+const val PASSWORD_FIELD_TAG = "passwordFieldTag"
+const val LOGIN_BUTTON_TAG = "loginButtonTag"
+const val LOGIN_ERROR_TEXT_TAG = "loginErrorTextTag"
+const val LOGIN_FOOTER = "loginFooter"
 
 @Composable
 fun LoginScreen(loginViewModel: LoginViewModel) {
@@ -113,9 +121,9 @@ fun LoginPage(
     color = backgroundColor,
     contentColor = contentColorFor(backgroundColor = contentColor)
   ) {
-    Column(modifier = modifier.padding(horizontal = 16.dp)) {
+    Box(modifier = modifier.fillMaxSize().padding(horizontal = 16.dp)) {
       Column(
-        modifier = modifier.weight(1f).padding(4.dp),
+        modifier = modifier.fillMaxSize().padding(4.dp),
         verticalArrangement = Arrangement.Center
       ) {
         Text(
@@ -125,7 +133,11 @@ fun LoginPage(
           fontWeight = FontWeight.Bold,
           fontSize = 32.sp,
           modifier =
-            modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.CenterHorizontally)
+            modifier
+              .wrapContentWidth()
+              .padding(vertical = 8.dp)
+              .align(Alignment.CenterHorizontally)
+              .testTag(APP_NAME_TEXT_TAG)
         )
         Spacer(modifier = modifier.height(80.dp))
         TextField(
@@ -143,7 +155,7 @@ fun LoginPage(
               modifier = modifier.padding(vertical = 4.dp)
             )
           },
-          modifier = modifier.fillMaxWidth().padding(vertical = 4.dp)
+          modifier = modifier.fillMaxWidth().padding(vertical = 4.dp).testTag(USERNAME_FIELD_TAG)
         )
         TextField(
           value = password,
@@ -163,7 +175,7 @@ fun LoginPage(
           visualTransformation =
             if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
           keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-          modifier = modifier.fillMaxWidth().padding(vertical = 4.dp),
+          modifier = modifier.fillMaxWidth().padding(vertical = 4.dp).testTag(PASSWORD_FIELD_TAG),
           trailingIcon = {
             val image = if (showPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
             IconButton(onClick = { showPassword = !showPassword }) {
@@ -177,7 +189,12 @@ fun LoginPage(
             fontSize = 14.sp,
             color = MaterialTheme.colors.error,
             text = stringResource(id = R.string.login_error, loginError),
-            modifier = modifier.wrapContentWidth().padding(0.dp).align(Alignment.Start)
+            modifier =
+              modifier
+                .wrapContentWidth()
+                .padding(0.dp)
+                .align(Alignment.Start)
+                .testTag(LOGIN_ERROR_TEXT_TAG)
           )
         }
         Spacer(modifier = modifier.height(40.dp))
@@ -191,7 +208,7 @@ fun LoginPage(
                   if (viewConfiguration.darkMode) LoginFieldBackgroundColor else Color.LightGray
               ),
             onClick = onLoginButtonClicked,
-            modifier = modifier.fillMaxWidth()
+            modifier = modifier.fillMaxWidth().testTag(LOGIN_BUTTON_TAG)
           ) {
             Text(
               color = Color.White,
@@ -204,29 +221,31 @@ fun LoginPage(
           }
         }
       }
-      Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = modifier.fillMaxWidth().padding(vertical = 16.dp),
-        verticalAlignment = Alignment.Bottom
-      ) {
-        Column {
+      Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.fillMaxSize()) {
+        Row(
+          horizontalArrangement = Arrangement.SpaceBetween,
+          modifier = modifier.fillMaxWidth().padding(vertical = 16.dp).testTag(LOGIN_FOOTER),
+          verticalAlignment = Alignment.Bottom
+        ) {
+          Column {
+            Text(
+              color = contentColor,
+              text = stringResource(id = R.string.powered_by),
+              modifier = modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.Start)
+            )
+            Image(
+              painter = painterResource(id = R.drawable.ic_opensrp_logo),
+              contentDescription = stringResource(id = R.string.app_logo),
+              modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(40.dp)
+            )
+          }
           Text(
             color = contentColor,
-            text = stringResource(id = R.string.powered_by),
-            modifier = modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.Start)
-          )
-          Image(
-            painter = painterResource(id = R.drawable.ic_opensrp_logo),
-            contentDescription = stringResource(id = R.string.app_logo),
-            modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(40.dp)
+            fontSize = 16.sp,
+            text = stringResource(id = R.string.app_version, viewConfiguration.applicationVersion),
+            modifier = modifier.wrapContentWidth().padding(0.dp)
           )
         }
-        Text(
-          color = contentColor,
-          fontSize = 16.sp,
-          text = stringResource(id = R.string.app_version, viewConfiguration.applicationVersion),
-          modifier = modifier.wrapContentWidth().padding(0.dp)
-        )
       }
     }
   }
