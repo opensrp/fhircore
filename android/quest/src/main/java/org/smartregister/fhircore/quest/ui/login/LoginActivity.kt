@@ -16,17 +16,21 @@
 
 package org.smartregister.fhircore.quest.ui.login
 
+import android.content.Intent
 import android.os.Bundle
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
-import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
 
 class LoginActivity : BaseLoginActivity() {
 
   override fun navigateToHome() {
-    this.showToast("Show quest")
+    val intent = Intent(this, PatientRegisterActivity::class.java)
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    startActivity(intent)
+    finish()
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
