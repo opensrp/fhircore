@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util
+package org.smartregister.fhircore.engine.shadow.activity
 
-const val LAST_SYNC_TIMESTAMP = "last_sync_timestamp"
-const val USER_SHARED_PREFERENCE_KEY = "USER"
-const val USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY = "USER_QUESTIONNAIRE_PUBLISHER"
+import org.robolectric.annotation.Implements
+import org.robolectric.shadows.ShadowActivity
+import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
+
+@Implements(BaseLoginActivity::class) class ShadowLoginActivity : ShadowActivity()

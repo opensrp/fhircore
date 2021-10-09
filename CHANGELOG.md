@@ -13,9 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added class for Measure report evaluation which will be used in ANC application
 - ANC | Added Condition resource to sync params list
 - Moved Token to secure storage from AccountManager
-- QUEST | Patient List, Load Config from server
-- QUEST | Added Patient Profile View
-- QUEST | Patient Registration Questionnaire
+- Expose [custom user attribute](https://www.keycloak.org/docs/latest/server_admin/index.html#_user-attributes) `questionnaire_publisher` available in SharedPreferences with key `USER_QUESTIONNAIRE_PUBLISHER` (#607)
+- Quest | Filter [Questionnaires](http://hl7.org/fhir/questionnaire.html) by [publisher](http://hl7.org/fhir/questionnaire-definitions.html#Questionnaire.publisher) using user attribute as per above. (#571)
+- Quest | Patient List, Load Config from server
+- Quest | Added Patient Profile View
+- Quest | Patient Registration Questionnaire
 
 ### Fixed
 

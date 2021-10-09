@@ -93,8 +93,6 @@ class EirApplication : Application(), ConfigurableApplication {
     private lateinit var eirApplication: EirApplication
 
     fun getContext() = eirApplication
-
-    fun getSyncJob() = Sync.basicSyncJob(eirApplication)
   }
 
   override val syncJob: SyncJob

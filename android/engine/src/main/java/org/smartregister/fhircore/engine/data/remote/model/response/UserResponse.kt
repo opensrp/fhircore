@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util
+package org.smartregister.fhircore.engine.data.remote.model.response
 
-const val LAST_SYNC_TIMESTAMP = "last_sync_timestamp"
-const val USER_SHARED_PREFERENCE_KEY = "USER"
-const val USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY = "USER_QUESTIONNAIRE_PUBLISHER"
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class UserResponse(
+  @SerialName("questionnaire_publisher") val questionnairePublisher: String? = null
+)
