@@ -77,11 +77,15 @@ class EirApplication : Application(), ConfigurableApplication {
       Timber.plant(Timber.DebugTree())
     }
 
+    initializeWorkerContextProvider()
+
+    schedulePeriodicSync()
+  }
+
+  fun initializeWorkerContextProvider() {
     CoroutineScope(defaultDispatcherProvider.io()).launch {
       workerContextProvider = this@EirApplication.initializeWorkerContext()!!
     }
-
-    schedulePeriodicSync()
   }
 
   companion object {
@@ -89,8 +93,6 @@ class EirApplication : Application(), ConfigurableApplication {
     private lateinit var eirApplication: EirApplication
 
     fun getContext() = eirApplication
-
-    fun getSyncJob() = Sync.basicSyncJob(eirApplication)
   }
 
   override val syncJob: SyncJob
