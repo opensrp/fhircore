@@ -52,10 +52,7 @@ open class QuestionnaireViewModel(
   var structureMapProvider: (suspend (String) -> StructureMap?)? = null
 
   suspend fun loadQuestionnaire(): Questionnaire? =
-    FhirContext.forR4().newJsonParser().parseResource(
-      getApplication<Application>().assets.open(questionnaireConfig.identifier)
-        .bufferedReader().use { it.readText() }) as Questionnaire
-    // TODO ????????????????????????? defaultRepository.loadResource(questionnaireConfig.identifier)
+    defaultRepository.loadResource(questionnaireConfig.identifier)
 
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
@@ -72,6 +69,8 @@ open class QuestionnaireViewModel(
     questionnaireResponse: QuestionnaireResponse
   ) {
     viewModelScope.launch {
+      defaultRepository.save(questionnaireResponse)
+
       val bundle = performExtraction(questionnaire, questionnaireResponse, context)
 
       saveBundleResources(bundle, resourceId)
