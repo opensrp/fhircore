@@ -74,15 +74,6 @@ fun FamilyRow(
       )
       Spacer(modifier = modifier.height(8.dp))
       Row {
-        Text(
-          color = SubtitleTextColor,
-          text = familyItem.address,
-          fontSize = 12.sp,
-          modifier = modifier.wrapContentWidth()
-        )
-      }
-      Spacer(modifier = modifier.height(8.dp))
-      Row {
         if (familyItem.isPregnant) {
           Image(
             painter = painterResource(R.drawable.ic_pregnant),
@@ -98,11 +89,18 @@ fun FamilyRow(
             modifier = Modifier.size(20.dp)
           )
         }
+
+        Text(
+          color = SubtitleTextColor,
+          text = familyItem.address,
+          fontSize = 15.sp,
+          modifier = modifier.wrapContentWidth()
+        )
       }
     }
 
     if (familyItem.servicesOverdue > 0) {
-      Column(modifier = modifier.weight(0.15f)) {
+      Column(modifier = modifier.weight(0.08f), horizontalAlignment = Alignment.End) {
         servicesCard(
           modifier = modifier,
           text = familyItem.servicesOverdue.toString(),
@@ -111,7 +109,7 @@ fun FamilyRow(
       }
     }
     if (familyItem.servicesDue > 0) {
-      Column(modifier = modifier.weight(0.15f)) {
+      Column(modifier = modifier.weight(0.08f), horizontalAlignment = Alignment.End) {
         servicesCard(
           modifier = modifier,
           text = familyItem.servicesDue.toString(),
@@ -127,9 +125,15 @@ fun servicesCard(modifier: Modifier, text: String, color: Color) {
   Card(
     backgroundColor = color,
     shape = CircleShape,
-    modifier = modifier.size(50.dp).padding(5.dp)
+    modifier = modifier.size(36.dp).padding(5.dp)
   ) {
-    Text(color = Color.White, text = text, fontSize = 25.sp, modifier = modifier.wrapContentWidth())
+    Text(
+      color = Color.White,
+      text = text,
+      fontSize = 13.sp,
+      modifier = modifier.wrapContentWidth().padding(4.dp),
+      softWrap = false
+    )
   }
 }
 
