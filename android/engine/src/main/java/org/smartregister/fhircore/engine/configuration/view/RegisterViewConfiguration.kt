@@ -18,23 +18,30 @@ package org.smartregister.fhircore.engine.configuration.view
 
 import android.content.Context
 import androidx.compose.runtime.Stable
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.loadBinaryResourceConfiguration
 
 @Serializable
 @Stable
 data class RegisterViewConfiguration(
+  var id: String,
   var appTitle: String,
   var filterText: String,
   var searchBarHint: String,
   var newClientButtonText: String,
+  var newClientButtonStyle: String,
   var showSearchBar: Boolean = true,
   var showFilter: Boolean = true,
   var switchLanguages: Boolean = true,
   var showScanQRCode: Boolean = true,
   var showNewClientButton: Boolean = true,
   var registrationForm: String = "patient-registration",
+  var showSideMenu: Boolean = true,
+  var showBottomMenu: Boolean = false
 ) : Configuration
 
 /**
@@ -54,28 +61,48 @@ data class RegisterViewConfiguration(
  */
 @Stable
 fun Context.registerViewConfigurationOf(
+  id: String = this.getString(R.string.default_app_title),
   appTitle: String = this.getString(R.string.default_app_title),
   filterText: String = this.getString(R.string.show_overdue),
   searchBarHint: String = this.getString(R.string.search_hint),
   newClientButtonText: String = this.getString(R.string.register_new_client),
+  newClientButtonStyle: String = "",
   showSearchBar: Boolean = true,
   showFilter: Boolean = true,
   switchLanguages: Boolean = true,
   showScanQRCode: Boolean = true,
   showNewClientButton: Boolean = true,
   languages: List<String> = listOf("en"),
-  registrationForm: String = "patient-registration"
+  registrationForm: String = "patient-registration",
+  showSideMenu: Boolean = true,
+  showBottomMenu: Boolean = false
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
+    id = id,
     appTitle = appTitle,
     filterText = filterText,
     searchBarHint = searchBarHint,
     newClientButtonText = newClientButtonText,
+    newClientButtonStyle = newClientButtonStyle,
     showSearchBar = showSearchBar,
     showFilter = showFilter,
     switchLanguages = switchLanguages,
     showScanQRCode = showScanQRCode,
     showNewClientButton = showNewClientButton,
     registrationForm = registrationForm,
+    showSideMenu = showSideMenu,
+    showBottomMenu = showBottomMenu
   )
+}
+
+private const val REGISTER_VIEW_CONFIG_FILE = "register_view_config.json"
+
+fun Context.loadRegisterViewConfiguration(id: String): RegisterViewConfiguration {
+  return runBlocking { loadBinaryResourceConfiguration(id) }
+    ?: assets
+      .open(REGISTER_VIEW_CONFIG_FILE)
+      .bufferedReader()
+      .use { it.readText() }
+      .decodeJson<List<RegisterViewConfiguration>>()
+      .first { it.id == id }
 }

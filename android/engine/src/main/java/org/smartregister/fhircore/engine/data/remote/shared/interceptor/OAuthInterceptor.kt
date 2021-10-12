@@ -18,20 +18,20 @@ package org.smartregister.fhircore.engine.data.remote.shared.interceptor
 
 import android.content.Context
 import okhttp3.Interceptor
-import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import timber.log.Timber
 
 class OAuthInterceptor(val context: Context) : Interceptor {
+  val authenticationService by lazy { (context as ConfigurableApplication).authenticationService }
 
   override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
-    Timber.i("Intercepted request for auth headers if needed")
     var request = chain.request()
     val segments = mutableListOf("protocol", "openid-connect", "token")
     if (!request.url.pathSegments.containsAll(segments)) {
-      val token = SecureSharedPreference(context).retrieveSessionToken()
-      //      if (token.isNullOrEmpty()) throw IllegalStateException("No session token found")
-      Timber.i("Passing auth token for %s", request.url.toString())
-      request = request.newBuilder().addHeader("Authorization", "Bearer $token").build()
+      authenticationService.runCatching { getBlockingActiveAuthToken() }.getOrNull()?.let { token ->
+        Timber.d("Passing auth token for %s", request.url.toString())
+        request = request.newBuilder().addHeader("Authorization", "Bearer $token").build()
+      }
     }
     return chain.proceed(request)
   }

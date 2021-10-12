@@ -26,13 +26,12 @@ import android.os.Build
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import java.util.Locale
-import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import timber.log.Timber
 
-class AccountAuthenticator(val context: Context, var authenticationService: AuthenticationService) :
+class AccountAuthenticator(val context: Context, val authenticationService: AuthenticationService) :
   AbstractAccountAuthenticator(context) {
 
-  var accountManager: AccountManager = AccountManager.get(context)
+  val accountManager: AccountManager = AccountManager.get(context)
 
   override fun addAccount(
     response: AccountAuthenticatorResponse,
@@ -58,43 +57,37 @@ class AccountAuthenticator(val context: Context, var authenticationService: Auth
     response: AccountAuthenticatorResponse,
     account: Account,
     authTokenType: String,
-    options: Bundle
+    options: Bundle?
   ): Bundle {
-    var accessToken = accountManager.peekAuthToken(account, authTokenType)
-    var tokenResponse: OAuthResponse
+    var accessToken = authenticationService.getLocalSessionToken()
 
-    Timber.i("Access token for user ${account.name} available:${accessToken?.isNotBlank()}")
+    Timber.i(
+      "Access token for user ${account.name}, account type ${account.type}, token type $authTokenType is available:${accessToken?.isNotBlank()}"
+    )
 
-    // Use saved refresh token to try to get new access token. Logout user otherwise
-    if (accessToken.isNullOrEmpty()) {
-      val savedRefreshToken = accountManager.getPassword(account)
+    if (accessToken.isNullOrBlank()) {
+      // Use saved refresh token to try to get new access token. Logout user otherwise
+      authenticationService.getRefreshToken()?.let {
+        Timber.i("Saved active refresh token is available")
 
-      Timber.i("Saved refresh token is available: ${savedRefreshToken?.isNotBlank()}")
-
-      if (!savedRefreshToken.isNullOrEmpty()) {
         runCatching {
-          authenticationService.refreshToken(savedRefreshToken)?.let { newTokenResponse ->
-            tokenResponse = newTokenResponse
-            accessToken = tokenResponse.accessToken
-            with(accountManager) {
-              setPassword(account, savedRefreshToken)
-              setAuthToken(account, authTokenType, accessToken)
-
-              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                notifyAccountAuthenticated(account)
-              }
-            }
+          authenticationService.refreshToken(it)?.let { newTokenResponse ->
+            accessToken = newTokenResponse.accessToken!!
+            authenticationService.updateSession(newTokenResponse)
           }
         }
           .onFailure {
             Timber.e("Refresh token expired before it was used", it.stackTraceToString())
-            return updateCredentials(response, account, authTokenType, options)
           }
           .onSuccess { Timber.i("Got new accessToken") }
       }
     }
 
-    if (!accessToken.isNullOrEmpty()) {
+    if (accessToken?.isNotBlank() == true) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        accountManager.notifyAccountAuthenticated(account)
+      }
+
       return bundleOf(
         Pair(AccountManager.KEY_ACCOUNT_NAME, account.name),
         Pair(AccountManager.KEY_ACCOUNT_TYPE, account.type),

@@ -56,7 +56,7 @@ class EirApplicationTest : RobolectricTest() {
 
   @Test
   fun testSyncJobShouldReturnNonNull() {
-    Assert.assertNotNull(EirApplication.getSyncJob())
+    Assert.assertNotNull(EirApplication.getContext().syncJob)
   }
 
   @Test

@@ -32,7 +32,7 @@
         {
           "linkId": "PR-name",
           "type": "group",
-          "text": "Family Head Information",
+          "text": "Demographic Information",
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name",
           "item": [
             {
