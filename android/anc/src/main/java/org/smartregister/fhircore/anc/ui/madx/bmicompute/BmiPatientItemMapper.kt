@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.madx.details
+package org.smartregister.fhircore.anc.ui.madx.bmicompute
 
 import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.Patient
@@ -24,7 +24,7 @@ import org.smartregister.fhircore.engine.util.extension.extractHeight
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractWeight
 
-object PatientBmiItemMapper : DomainMapper<Patient, PatientBMIItem> {
+object BmiPatientItemMapper : DomainMapper<Patient, PatientBMIItem> {
 
   override fun mapToDomainModel(dto: Patient): PatientBMIItem {
     val name = dto.extractName()

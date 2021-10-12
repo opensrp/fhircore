@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.madx.details.form
+package org.smartregister.fhircore.anc.ui.madx.bmicompute
 
 import kotlinx.serialization.Serializable
 

@@ -29,8 +29,8 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.databinding.ActivityAncDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
 import org.smartregister.fhircore.anc.ui.madx.details.NonAncDetailsActivity
-import org.smartregister.fhircore.anc.ui.madx.details.form.BMIQuestionnaireActivity
-import org.smartregister.fhircore.anc.ui.madx.details.form.FormConstants
+import org.smartregister.fhircore.anc.ui.madx.bmicompute.BmiComputeActivity
+import org.smartregister.fhircore.anc.ui.madx.bmicompute.FormConstants
 import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -112,7 +112,7 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
       }
       R.id.bmi_widget -> {
         startActivity(
-          Intent(this, BMIQuestionnaireActivity::class.java)
+          Intent(this, BmiComputeActivity::class.java)
             .putExtras(
               QuestionnaireActivity.requiredIntentArgs(
                 clientIdentifier = patientId,
