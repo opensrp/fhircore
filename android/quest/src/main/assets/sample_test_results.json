@@ -10,11 +10,17 @@
   "useContext": {
     "code": [
       {
+        "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
+        "code": "focus"
+      }
+    ],
+    "valueCodeableConcept": {
+      "coding": {
         "system": "http://fhir.ona.com",
         "code": "000002",
         "display": "G6PD Test Results"
       }
-    ]
+    }
   },
   "extension": [
     {
