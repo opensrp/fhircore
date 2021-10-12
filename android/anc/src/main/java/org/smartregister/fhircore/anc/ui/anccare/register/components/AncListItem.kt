@@ -20,11 +20,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -58,31 +60,36 @@ fun AncRow(
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
-    modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min)
+    modifier = modifier.fillMaxWidth()
   ) {
     Column(
       modifier =
         modifier
           .clickable { clickListener(OpenPatientProfile, ancPatientItem) }
-          .padding(10.dp)
+          .padding(vertical = 4.dp, horizontal = 10.dp)
           .weight(0.55f)
     ) {
       Text(
         text = ancPatientItem.demographics,
-        fontSize = 18.sp,
-        modifier = modifier.wrapContentWidth()
+        fontSize = 14.sp,
+        modifier = modifier.wrapContentWidth(),
+        letterSpacing = (-0.23).sp
       )
       Spacer(modifier = modifier.height(8.dp))
       Row {
         Text(
           color = SubtitleTextColor,
           text = ancPatientItem.address,
-          fontSize = 12.sp,
-          modifier = modifier.wrapContentWidth()
+          fontSize = 14.sp,
+          modifier = modifier.wrapContentWidth(),
+          letterSpacing = (-0.23).sp
         )
       }
     }
-    Column(modifier = modifier.padding(20.dp).weight(0.45f)) {
+    Column(
+      modifier = modifier.padding(vertical = 5.dp, horizontal = 10.dp).weight(0.45f).width(IntrinsicSize.Min),
+      horizontalAlignment = Alignment.End
+    ) {
       when (ancPatientItem.visitStatus) {
         AncVisitStatus.DUE -> ancVisitButton(DueColor, DueLightColor, ancPatientItem, clickListener)
         AncVisitStatus.OVERDUE ->
@@ -101,12 +108,15 @@ fun ancVisitButton(
 ) {
   Button(
     onClick = { clickListener(RecordAncVisit, ancPatientItem) },
-    colors = ButtonDefaults.textButtonColors(backgroundColor = bgColor)
+    colors = ButtonDefaults.textButtonColors(backgroundColor = bgColor),
+    contentPadding = PaddingValues(vertical = 0.dp),
+    modifier = Modifier.height(22.dp)
   ) {
     Text(
       text = stringResource(R.string.anc_record_visit_button_title),
       color = textColor,
-      fontSize = 18.sp
+      fontSize = 14.sp,
+      softWrap = false
     )
   }
 }
