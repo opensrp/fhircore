@@ -24,7 +24,9 @@ import io.mockk.mockk
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.DateType
+import org.hl7.fhir.r4.model.DiagnosticReport
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
@@ -76,6 +78,25 @@ class PatientRepositoryTest : RobolectricTest() {
     Assert.assertEquals("1234", data[0].id)
     Assert.assertEquals("John Doe", data[0].name)
     Assert.assertEquals("1", data[0].age)
+  }
+
+  @Test
+  fun testFetchTestResultsShouldReturnListOfTestReports() {
+
+    coEvery { fhirEngine.search<DiagnosticReport>(any()) } returns
+      listOf(
+        DiagnosticReport().apply {
+          status = DiagnosticReport.DiagnosticReportStatus.FINAL
+          code = CodeableConcept().apply { text = "Blood Count" }
+        }
+      )
+
+    val results = repository.fetchTestResults("1").value
+
+    with(results!!.first()) {
+      Assert.assertEquals(DiagnosticReport.DiagnosticReportStatus.FINAL, status)
+      Assert.assertEquals("Blood Count", code.text)
+    }
   }
 
   private fun buildPatient(id: String, family: String, given: String, age: Int): Patient {
