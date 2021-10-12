@@ -19,9 +19,11 @@ package org.smartregister.fhircore.quest.data.patient
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.search
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.DiagnosticReport
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
@@ -57,6 +59,18 @@ class PatientRepository(
     val data = MutableLiveData<Patient>()
     CoroutineScope(dispatcherProvider.io()).launch {
       data.postValue(fhirEngine.load(Patient::class.java, patientId))
+    }
+    return data
+  }
+
+  fun fetchTestResults(patientId: String): LiveData<List<DiagnosticReport>> {
+    val data = MutableLiveData<List<DiagnosticReport>>()
+    CoroutineScope(dispatcherProvider.io()).launch {
+      val result =
+        fhirEngine.search<DiagnosticReport> {
+          filter(DiagnosticReport.SUBJECT) { value = "Patient/$patientId" }
+        }
+      data.postValue(result)
     }
     return data
   }
