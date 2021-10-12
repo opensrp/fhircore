@@ -1,0 +1,56 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "test-results",
+  "language": "en",
+  "status": "active",
+  "publisher": "ONA",
+  "subjectType": [
+    "DiagnosticReport"
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+      "valueExpression": {
+        "language": "application/x-fhir-query",
+        "expression": "DiagnosticReport",
+        "name": "diagnosticReport"
+      }
+    }
+  ],
+  "item": [
+    {
+      "linkId": "step1",
+      "type": "group",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page"
+              }
+            ],
+            "text": "Page"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "run_test_instruction",
+          "text": "Run the test and then press Next",
+          "_text": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/rendering-xhtml",
+                "valueString": "<p style='text-align: center'><b><big><big><big><big>Run the test</big></big></big></big></p><p><b><big><big>Then press next</p>"
+              }
+            ]
+          },
+          "type": "display"
+        }
+      ]
+    }
+  ]
+}

@@ -51,6 +51,15 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
   }
 
   private fun onMenuItemClickListener(menuItem: String) {
+    if(true) {
+      startActivity(
+        Intent(this, QuestionnaireActivity::class.java).apply {
+          putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
+          putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, "test-results")
+        }
+      )
+      return
+    }
     startActivity(
       Intent(this, QuestPatientTestResultActivity::class.java).apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
