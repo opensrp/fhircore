@@ -297,7 +297,6 @@ class AncDetailsFragment : Fragment() {
   private fun populateUpcomingServicesList(upcomingServiceItem: List<UpcomingServiceItem>) {
     upcomingServicesAdapter.submitList(upcomingServiceItem)
   }
-
   private fun populateLastSeenList(upcomingServiceItem: List<UpcomingServiceItem>) {
     lastSeen.submitList(upcomingServiceItem)
   }

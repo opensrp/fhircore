@@ -121,35 +121,6 @@ class BmiComputeViewModel(
     }
   }
 
-  //  fun getVaccineSummary(logicalId: String): LiveData<PatientVaccineSummary> {
-  //    val mutableLiveData: MutableLiveData<PatientVaccineSummary> = MutableLiveData()
-  //    viewModelScope.launch(dispatcherProvider.io()) {
-  //      val immunizations = patientRepository.getPatientImmunizations(logicalId = logicalId)
-  //      if (!immunizations.isNullOrEmpty()) {
-  //        val immunization = immunizations.first()
-  //        mutableLiveData.postValue(
-  //          PatientVaccineSummary(
-  //            doseNumber = (immunization.protocolApplied[0].doseNumber as PositiveIntType).value,
-  //            initialDose = immunization.vaccineCode.coding.first().code
-  //          )
-  //        )
-  //      } else mutableLiveData.postValue(PatientVaccineSummary(doseNumber = 0, initialDose = ""))
-  //    }
-  //    return mutableLiveData
-  //  }
-
-  //    override suspend fun getPopulationResources(intent: Intent): Array<Resource> {
-  //        val resourcesList = mutableListOf<Resource>()
-  //
-  //        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
-  //            ?.let { patientId ->
-  //                loadPatient(patientId)?.run { resourcesList.add(this) }
-  //                loadImmunization(patientId)?.run { resourcesList.add(this) }
-  //            }
-  //
-  //        return resourcesList.toTypedArray()
-  //    }
-
   fun getBMIResult(computedBMI: Double, activityContext: Context): SpannableString {
     val message = getBMICategories(activityContext)
     val matchedCategoryIndex = getBMIResultCategoryIndex(computedBMI)
@@ -248,8 +219,4 @@ class BmiComputeViewModel(
       computedBMI
     )
   }
-
-  //    suspend fun loadImmunization(patientId: String): Immunization? {
-  //        return defaultRepository.loadImmunizations(patientId)?.firstOrNull()
-  //    }
 }
