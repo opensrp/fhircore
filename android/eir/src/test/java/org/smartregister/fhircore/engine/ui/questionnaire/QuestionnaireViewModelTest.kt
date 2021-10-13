@@ -99,9 +99,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { defaultRepo.save(any()) } returns Unit
     coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
 
-    val config =
-      QuestionnaireConfig(form = "patient-registration", title = "Add Patient", identifier = "1452")
-    questionnaireViewModel = spyk(QuestionnaireViewModel(EirApplication.getContext(), config))
+    questionnaireViewModel = spyk(QuestionnaireViewModel(EirApplication.getContext()))
     ReflectionHelpers.setField(questionnaireViewModel, "defaultRepository", defaultRepo)
   }
 

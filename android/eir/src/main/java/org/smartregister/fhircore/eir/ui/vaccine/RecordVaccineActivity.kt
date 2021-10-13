@@ -41,13 +41,11 @@ class RecordVaccineActivity : QuestionnaireActivity() {
 
   override fun createViewModel(
     application: Application,
-    questionnaireConfig: QuestionnaireConfig
   ): QuestionnaireViewModel {
     return ViewModelProvider(
         this@RecordVaccineActivity,
         RecordVaccineViewModel(
             application,
-            questionnaireConfig,
             PatientRepository(
               (application as ConfigurableApplication).fhirEngine,
               PatientItemMapper

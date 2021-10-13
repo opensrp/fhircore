@@ -55,15 +55,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 
-  lateinit var questionnaireConfig: QuestionnaireConfig
-
   lateinit var questionnaireViewModel: QuestionnaireViewModel
 
-  protected var questionnaire: Questionnaire? = null
+  protected lateinit var questionnaire: Questionnaire
 
   protected var clientIdentifier: String? = null
-
-  protected lateinit var form: String
 
   private val parser = FhirContext.forR4().newJsonParser()
 
@@ -71,36 +67,36 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_questionnaire)
     application.assertIsConfigurable()
-    if (!intent.hasExtra(QUESTIONNAIRE_ARG_FORM)) {
+    if (!intent.hasExtra(QUESTIONNAIRE_ARG_FORM) && !intent.hasExtra(QUESTIONNAIRE_ARG_ID)) {
       showToast(getString(R.string.error_loading_form))
       finish()
     }
 
     clientIdentifier = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
-    form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
 
     lifecycleScope.launchWhenCreated {
-      val loadConfig =
-        withContext(dispatcherProvider.io()) {
-          FormConfigUtil.loadConfig<List<QuestionnaireConfig>>(
-            FORM_CONFIGURATIONS,
-            this@QuestionnaireActivity
-          )
-        }
+      questionnaireViewModel = createViewModel(application)
 
-      questionnaireConfig = loadConfig.associateBy { it.form }.getValue(form)
+      var questionnaireId = intent.getStringExtra(QUESTIONNAIRE_ARG_ID)
+      var questionnaireTitle: String? = null
+
+      if (questionnaireId == null) {
+        val form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)
+        val config = getQuestionnaireConfig(form!!)
+
+        questionnaireTitle = config.title
+        questionnaireId = config.identifier
+      }
+
+      questionnaire = questionnaireViewModel.loadQuestionnaire(questionnaireId)!!
 
       supportActionBar?.apply {
         setDisplayHomeAsUpEnabled(true)
-        title = questionnaireConfig.title
+        title = questionnaireTitle?:questionnaire.title?:""
       }
 
-      questionnaireViewModel = createViewModel(application, questionnaireConfig)
-
-      questionnaire = questionnaireViewModel.loadQuestionnaire()
-
       // Only add the fragment once, when the activity is first created.
-      if (savedInstanceState == null && questionnaire != null) {
+      if (savedInstanceState == null) {
         val fragment =
           QuestionnaireFragment().apply {
             val parsedQuestionnaire = parser.encodeResourceToString(questionnaire)
@@ -128,10 +124,22 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
   }
 
-  open fun createViewModel(application: Application, questionnaireConfig: QuestionnaireConfig) =
+  suspend fun getQuestionnaireConfig(form: String): QuestionnaireConfig {
+    val loadConfig =
+      withContext(dispatcherProvider.io()) {
+        FormConfigUtil.loadConfig<List<QuestionnaireConfig>>(
+          FORM_CONFIGURATIONS,
+          this@QuestionnaireActivity
+        )
+      }
+
+    return loadConfig.associateBy { it.form }.getValue(form)
+  }
+
+  open fun createViewModel(application: Application) =
     ViewModelProvider(
       this@QuestionnaireActivity,
-      QuestionnaireViewModel(application, questionnaireConfig).createFactory()
+      QuestionnaireViewModel(application).createFactory()
     )[QuestionnaireViewModel::class.java]
 
   override fun onClick(view: View) {
@@ -168,7 +176,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         context = this@QuestionnaireActivity,
         questionnaire = questionnaire!!,
         questionnaireResponse = questionnaireResponse,
-        resourceId = null
+        resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
       )
     }
   }
@@ -186,16 +194,17 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   companion object {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
     const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"
-    const val QUESTIONNAIRE_PATH_KEY = "questionnaire-path-key"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire_form"
+    const val QUESTIONNAIRE_ARG_ID = "questionnaire_id"
     const val FORM_CONFIGURATIONS = "form_configurations.json"
 
-    fun requiredIntentArgs(clientIdentifier: String?, form: String) =
+    fun requiredIntentArgs(clientIdentifier: String?, form: String? = null, questionnaireId: String? = null) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
-        Pair(QUESTIONNAIRE_ARG_FORM, form)
+        Pair(QUESTIONNAIRE_ARG_FORM, form),
+        Pair(QUESTIONNAIRE_ARG_ID, questionnaireId)
       )
   }
 

@@ -67,9 +67,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
     context = ApplicationProvider.getApplicationContext()
-    val questionnaireConfig =
-      QuestionnaireConfig(form = "patient-registration", title = "Add Patient", identifier = "1452")
-    questionnaireViewModel = spyk(QuestionnaireViewModel(context, questionnaireConfig))
+    questionnaireViewModel = spyk(QuestionnaireViewModel(context))
     val samplePatientRegisterQuestionnaire =
       TestUtils.loadQuestionnaire(context, REGISTER_QUESTIONNAIRE_ID)
 

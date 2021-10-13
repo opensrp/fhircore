@@ -35,10 +35,9 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class RecordVaccineViewModel(
   application: Application,
-  questionnaireConfig: QuestionnaireConfig,
   val patientRepository: PatientRepository,
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
-) : QuestionnaireViewModel(application, questionnaireConfig) {
+) : QuestionnaireViewModel(application) {
 
   fun getVaccineSummary(logicalId: String): LiveData<PatientVaccineSummary> {
     val mutableLiveData: MutableLiveData<PatientVaccineSummary> = MutableLiveData()

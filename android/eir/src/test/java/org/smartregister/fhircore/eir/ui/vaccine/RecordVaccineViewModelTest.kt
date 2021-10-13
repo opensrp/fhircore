@@ -70,7 +70,6 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
       spyk(
         RecordVaccineViewModel(
           ApplicationProvider.getApplicationContext(),
-          mockk(),
           patientRepository
         )
       )
