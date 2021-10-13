@@ -30,6 +30,7 @@ import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
+import com.google.android.fhir.logicalId
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -55,6 +56,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 
+  lateinit var questionnaireConfig: QuestionnaireConfig
+
   lateinit var questionnaireViewModel: QuestionnaireViewModel
 
   protected lateinit var questionnaire: Questionnaire
@@ -78,21 +81,24 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireViewModel = createViewModel(application)
 
       var questionnaireId = intent.getStringExtra(QUESTIONNAIRE_ARG_ID)
-      var questionnaireTitle: String? = null
 
       if (questionnaireId == null) {
         val form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)
-        val config = getQuestionnaireConfig(form!!)
-
-        questionnaireTitle = config.title
-        questionnaireId = config.identifier
+        questionnaireConfig = getQuestionnaireConfig(form!!)
+        questionnaire = questionnaireViewModel.loadQuestionnaire(questionnaireConfig.identifier)!!
+      } else {
+        questionnaire = questionnaireViewModel.loadQuestionnaire(questionnaireId)!!
+        questionnaireConfig =
+          QuestionnaireConfig(
+            form = questionnaire.name,
+            title = questionnaire.title,
+            identifier = questionnaire.logicalId
+          )
       }
-
-      questionnaire = questionnaireViewModel.loadQuestionnaire(questionnaireId)!!
 
       supportActionBar?.apply {
         setDisplayHomeAsUpEnabled(true)
-        title = questionnaireTitle ?: questionnaire.title ?: ""
+        title = questionnaireConfig.title
       }
 
       // Only add the fragment once, when the activity is first created.
