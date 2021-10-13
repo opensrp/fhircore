@@ -20,19 +20,23 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import org.hl7.fhir.r4.model.DiagnosticReport
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 
 class QuestPatientDetailViewModel(
-  application: QuestApplication,
+  val application: QuestApplication,
   private val repository: PatientRepository,
   private val patientId: String
 ) : AndroidViewModel(application), QuestPatientDetailDataProvider {
 
   private var mOnBackPressListener: () -> Unit = {}
   private var mOnMenuItemClickListener: (menuItem: String) -> Unit = {}
+  private var mOnFormItemClickListener: (item: QuestionnaireConfig) -> Unit = {}
+  private var mOnTestResultItemClickListener: (item: DiagnosticReport) -> Unit = {}
 
   override fun getDemographics(): LiveData<Patient> {
     return repository.fetchDemographics(patientId)
@@ -46,12 +50,41 @@ class QuestPatientDetailViewModel(
     return mOnMenuItemClickListener
   }
 
+  override fun getAllForms(): LiveData<List<QuestionnaireConfig>> {
+    return repository.fetchTestForms(
+      QuestPatientDetailActivity.CODE,
+      QuestPatientDetailActivity.SYSTEM
+    )
+  }
+
+  override fun getAllResults(): LiveData<List<DiagnosticReport>> {
+    return repository.fetchTestResults(patientId)
+  }
+
+  override fun onFormItemClickListener(): (item: QuestionnaireConfig) -> Unit {
+    return mOnFormItemClickListener
+  }
+
+  override fun onTestResultItemClickListener(): (item: DiagnosticReport) -> Unit {
+    return mOnTestResultItemClickListener
+  }
+
   fun setOnBackPressListener(onBackPressListener: () -> Unit) {
     this.mOnBackPressListener = onBackPressListener
   }
 
   fun setOnMenuItemClickListener(onMenuItemClickListener: (menuItem: String) -> Unit) {
     this.mOnMenuItemClickListener = onMenuItemClickListener
+  }
+
+  fun setOnFormItemClickListener(onFormItemClickListener: (item: QuestionnaireConfig) -> Unit) {
+    this.mOnFormItemClickListener = onFormItemClickListener
+  }
+
+  fun setOnTestResultItemClickListener(
+    onTestResultItemClickListener: (item: DiagnosticReport) -> Unit
+  ) {
+    this.mOnTestResultItemClickListener = onTestResultItemClickListener
   }
 
   companion object {

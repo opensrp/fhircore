@@ -190,7 +190,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire_form"
-    private const val FORM_CONFIGURATIONS = "form_configurations.json"
+    const val FORM_CONFIGURATIONS = "form_configurations.json"
 
     fun requiredIntentArgs(clientIdentifier: String?, form: String) =
       bundleOf(
