@@ -25,7 +25,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.DiagnosticReport
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -68,26 +67,15 @@ class PatientRepository(
     return data
   }
 
-  fun fetchTestResults(patientId: String): LiveData<List<DiagnosticReport>> {
-    val data = MutableLiveData<List<DiagnosticReport>>()
+  fun fetchTestResults(patientId: String): LiveData<List<QuestionnaireResponse>> {
+    val data = MutableLiveData<List<QuestionnaireResponse>>()
     CoroutineScope(dispatcherProvider.io()).launch {
       val result =
         fhirEngine.search<QuestionnaireResponse> {
           filter(QuestionnaireResponse.SUBJECT) { value = "Patient/$patientId" }
         }
 
-      val k =
-        result.map {
-          DiagnosticReport().apply {
-            code =
-              CodeableConcept().apply {
-                coding = it.meta.tag
-                text = it.meta.tagFirstRep.display
-              }
-          }
-        }
-
-      data.postValue(k)
+      data.postValue(result)
     }
     return data
   }

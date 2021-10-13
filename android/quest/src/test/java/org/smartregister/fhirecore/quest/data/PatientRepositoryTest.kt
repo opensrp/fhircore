@@ -24,7 +24,9 @@ import io.mockk.mockk
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateType
+import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -86,16 +88,12 @@ class PatientRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.search<QuestionnaireResponse>(any()) } returns
       listOf(
         QuestionnaireResponse().apply {
-          meta.addTag().apply {
-            code = "12345"
-            display = "Blood Count"
-            system = "http://1234"
-          }
+          meta = Meta().apply { tag = listOf(Coding().apply { display = "Blood Count" }) }
         }
       )
 
     val results = repository.fetchTestResults("1").value
-    Assert.assertEquals("Blood Count", results?.first()?.code?.text)
+    Assert.assertEquals("Blood Count", results?.first()?.meta?.tagFirstRep?.display)
   }
 
   @Test

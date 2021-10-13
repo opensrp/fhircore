@@ -20,10 +20,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk
-import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DiagnosticReport
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.codesystems.DiagnosticReportStatus
 import org.junit.Assert
@@ -117,19 +119,15 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
     every { repository.fetchTestResults(patientId) } returns
       MutableLiveData(
         listOf(
-          DiagnosticReport().apply {
-            status = DiagnosticReport.DiagnosticReportStatus.FINAL
-            code = CodeableConcept().apply { text = "Blood Count" }
+          QuestionnaireResponse().apply {
+            meta = Meta().apply { tag = listOf(Coding().apply { display = "Blood Count" }) }
           }
         )
       )
 
     val results = viewModel.getAllResults().value
 
-    with(results!!.first()) {
-      Assert.assertEquals(DiagnosticReport.DiagnosticReportStatus.FINAL, status)
-      Assert.assertEquals("Blood Count", code.text)
-    }
+    with(results!!.first()) { Assert.assertEquals("Blood Count", meta?.tagFirstRep?.display) }
   }
 
   @Test
@@ -149,15 +147,14 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
 
     viewModel.setOnTestResultItemClickListener {
       Assert.assertEquals(DiagnosticReport.DiagnosticReportStatus.FINAL, it.status)
-      Assert.assertEquals("Blood Count", it.code.text)
+      Assert.assertEquals("Blood Count", it.meta?.tagFirstRep?.display)
     }
 
     viewModel
       .onTestResultItemClickListener()
       .invoke(
-        DiagnosticReport().apply {
-          status = DiagnosticReport.DiagnosticReportStatus.FINAL
-          code = CodeableConcept().apply { text = "Blood Count" }
+        QuestionnaireResponse().apply {
+          meta = Meta().apply { tag = listOf(Coding().apply { display = "Blood Count" }) }
         }
       )
   }
