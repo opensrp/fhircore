@@ -24,10 +24,11 @@ import io.mockk.mockk
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.test.runBlockingTest
-import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.DateType
-import org.hl7.fhir.r4.model.DiagnosticReport
+import org.hl7.fhir.r4.model.Narrative
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
@@ -83,19 +84,28 @@ class PatientRepositoryTest : RobolectricTest() {
   @Test
   fun testFetchTestResultsShouldReturnListOfTestReports() {
 
-    coEvery { fhirEngine.search<DiagnosticReport>(any()) } returns
+    coEvery { fhirEngine.search<QuestionnaireResponse>(any()) } returns
+      listOf(QuestionnaireResponse().apply { text = Narrative().apply { id = "Blood Count" } })
+
+    val results = repository.fetchTestResults("1").value
+    Assert.assertEquals("Blood Count", results?.first()?.code?.text)
+  }
+
+  @Test
+  fun testFetchTestFormShouldReturnListOfQuestionnaireConfig() {
+    coEvery { fhirEngine.search<Questionnaire>(any()) } returns
       listOf(
-        DiagnosticReport().apply {
-          status = DiagnosticReport.DiagnosticReportStatus.FINAL
-          code = CodeableConcept().apply { text = "Blood Count" }
+        Questionnaire().apply {
+          name = "g6pd-test"
+          title = "G6PD Test"
         }
       )
 
-    val results = repository.fetchTestResults("1").value
+    val results = repository.fetchTestForms("code", "system").value
 
     with(results!!.first()) {
-      Assert.assertEquals(DiagnosticReport.DiagnosticReportStatus.FINAL, status)
-      Assert.assertEquals("Blood Count", code.text)
+      Assert.assertEquals("g6pd-test", form)
+      Assert.assertEquals("G6PD Test", title)
     }
   }
 

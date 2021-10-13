@@ -99,13 +99,15 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
   @Test
   fun testGetAllFormsShouldReturnListOfQuestionnaireConfig() {
 
-    val forms = viewModel.getAllForms()
+    every { repository.fetchTestForms(any(), any()) } returns
+      MutableLiveData(listOf(QuestionnaireConfig("g6pd-test-result", "G6PD Test Result", "3440")))
 
-    Assert.assertEquals(1, forms.size)
-    with(forms.first()) {
+    val forms = viewModel.getAllForms().value
+
+    with(forms!!.first()) {
       Assert.assertEquals("3440", identifier)
       Assert.assertEquals("g6pd-test-result", form)
-      Assert.assertEquals("+ G6PD Test Result", title)
+      Assert.assertEquals("G6PD Test Result", title)
     }
   }
 
