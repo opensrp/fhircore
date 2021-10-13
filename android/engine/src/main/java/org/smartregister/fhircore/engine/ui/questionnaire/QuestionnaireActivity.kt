@@ -109,16 +109,17 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                 clientIdentifier == null ->
                   bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
                 clientIdentifier != null -> {
-                  val parsedQuestionnaireResponse =
-                    parser.encodeResourceToString(
-                      questionnaireViewModel.generateQuestionnaireResponse(questionnaire!!, intent)
-                    )
+//                  TODO it is not working. Takes forever to load form first time
+//                  val parsedQuestionnaireResponse =
+//                    parser.encodeResourceToString(
+//                      questionnaireViewModel.generateQuestionnaireResponse(questionnaire!!, intent)
+//                    )
                   bundleOf(
                     Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire),
-                    Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
+                  //  Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
                   )
                 }
-                else -> bundleOf()
+                else -> bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
               }
           }
         supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
