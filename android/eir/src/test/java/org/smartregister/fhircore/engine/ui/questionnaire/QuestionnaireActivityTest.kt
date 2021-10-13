@@ -31,6 +31,7 @@ import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
+import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.RelatedPerson
@@ -113,6 +114,25 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @Test
   fun testActivityShouldNotNull() {
     Assert.assertNotNull(questionnaireActivity)
+  }
+
+  @Test
+  fun testRequiredIntentShouldInsertValues() {
+    val result = QuestionnaireActivity.requiredIntentArgs("1234", "my-form", "quest-id")
+    Assert.assertEquals("my-form", result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM))
+    Assert.assertEquals(
+      "1234",
+      result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
+    )
+    Assert.assertEquals("quest-id", result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_ID))
+  }
+
+  @Test
+  fun testGetQuestionnaireConfigShouldLoadRightConfig() = runBlockingTest {
+    val result = questionnaireActivity.getQuestionnaireConfig("patient-registration")
+    Assert.assertEquals("patient-registration", result.form)
+    Assert.assertEquals("Add Patient", result.title)
+    Assert.assertEquals("1903", result.identifier)
   }
 
   @Test

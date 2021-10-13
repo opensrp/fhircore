@@ -70,16 +70,15 @@ open class QuestionnaireViewModel(
     questionnaireResponse: QuestionnaireResponse
   ) {
     viewModelScope.launch {
-      questionnaireResponse.id = UUID.randomUUID().toString()
-      questionnaire.useContext.firstOrNull()?.let {
-        if (it.hasValue() && it.hasValueCodeableConcept())
-          questionnaireResponse.meta.tag = it.valueCodeableConcept.coding
-      }
       resourceId?.let {
+        questionnaireResponse.id = UUID.randomUUID().toString()
+        questionnaire.useContext.firstOrNull()?.let {
+          if (it.hasValue() && it.hasValueCodeableConcept())
+            questionnaireResponse.meta.tag = it.valueCodeableConcept.coding
+        }
         questionnaireResponse.subject = Reference().apply { reference = "Patient/$it" }
+        defaultRepository.save(questionnaireResponse)
       }
-
-      defaultRepository.save(questionnaireResponse)
 
       val bundle = performExtraction(questionnaire, questionnaireResponse, context)
 
