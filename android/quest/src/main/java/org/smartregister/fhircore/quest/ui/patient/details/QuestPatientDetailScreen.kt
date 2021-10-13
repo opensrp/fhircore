@@ -16,10 +16,13 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,6 +31,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
+import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
@@ -46,22 +50,29 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.google.android.fhir.logicalId
 import java.text.SimpleDateFormat
+import java.util.Date
 import org.hl7.fhir.r4.model.Address
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.DiagnosticReport
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
@@ -96,15 +107,15 @@ fun Toolbar(dataProvider: QuestPatientDetailDataProvider) {
 }
 
 @Composable
-fun FormItem(formName: String, clickHandler: (formName: String) -> Unit) {
+fun FormItem(form: QuestionnaireConfig, clickHandler: (form: QuestionnaireConfig) -> Unit) {
   Card(
     backgroundColor = colorResource(id = R.color.cornflower_blue),
     elevation = 0.dp,
-    modifier = Modifier.fillMaxWidth().clickable { clickHandler(formName) }
+    modifier = Modifier.fillMaxWidth().clickable { clickHandler(form) }
   ) {
     Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(6.dp)) {
       Text(
-        text = formName.uppercase(),
+        text = form.title.uppercase(),
         color = colorResource(id = R.color.colorPrimary),
         fontSize = 15.sp,
         fontWeight = FontWeight.Bold,
@@ -136,15 +147,8 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
           fontSize = 18.sp,
           fontWeight = FontWeight.Bold
         )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-          text = "${patient?.address?.first()?.city ?: ""} - ID: ${patient?.logicalId ?: ""}",
-          color = colorResource(id = R.color.cornflower_blue),
-          fontSize = 16.sp
-        )
       }
 
-      // forms
       Column(
         modifier =
           Modifier.fillMaxSize()
@@ -152,37 +156,77 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
             .padding(start = 12.dp, end = 12.dp)
       ) {
         Spacer(Modifier.height(24.dp))
-        Text(
-          text = "FORMS",
-          color = colorResource(id = R.color.grayText),
-          fontSize = 16.sp,
-          fontWeight = FontWeight.Bold
-        )
-        Spacer(Modifier.height(8.dp))
         Card(
           elevation = 3.dp,
           backgroundColor = colorResource(id = R.color.white),
           modifier = Modifier.fillMaxWidth()
         ) {
           Column(modifier = Modifier.padding(16.dp)) {
-            val forms =
-              listOf(
-                "Household Survey",
-                "Bednet Distribution Form",
-                "Malaria Diagnosis Form",
-                "Medicine Treatment Form",
-                "G6PD Test Result Form"
-              )
 
-            forms.forEachIndexed { index, it ->
-              FormItem(it) {}
+            // fetch forms
+            val forms = dataProvider.getAllForms().observeAsState()
+            forms.value?.let { allForms ->
+              allForms.forEachIndexed { index, it ->
+                FormItem(it) { dataProvider.onFormItemClickListener().invoke(it) }
 
-              if (index < forms.size.minus(1)) {
-                Spacer(Modifier.height(16.dp))
+                if (index < allForms.size.minus(1)) {
+                  Spacer(Modifier.height(16.dp))
+                }
               }
             }
           }
         }
+
+        // responses section
+        Spacer(Modifier.height(24.dp))
+        Text(
+          text = "RESPONSES",
+          color = colorResource(id = R.color.grayText),
+          fontSize = 16.sp,
+          fontWeight = FontWeight.Bold
+        )
+        Card(
+          elevation = 4.dp,
+          modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+        ) {
+          Column() {
+            // fetch responses
+            val results = dataProvider.getAllResults().observeAsState()
+
+            val totalResultsCount = results.value?.count() ?: 0
+            results.value?.forEachIndexed { index, item ->
+              Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier =
+                  Modifier.fillMaxWidth().padding(12.dp).clickable {
+                    dataProvider.onTestResultItemClickListener().invoke(item)
+                  }
+              ) {
+                Text(
+                  text = item.code.text,
+                  color = colorResource(id = R.color.black),
+                  fontSize = 17.sp,
+                  textAlign = TextAlign.Start,
+                  modifier = Modifier.padding(end = 12.dp)
+                )
+
+                Image(
+                  painter = painterResource(id = R.drawable.ic_forward_arrow),
+                  contentDescription = "",
+                  colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray))
+                )
+              }
+
+              if (index < totalResultsCount) {
+                Divider(color = colorResource(id = R.color.white_smoke))
+              }
+            }
+          }
+        }
+
+        // for bottom padding
+        Spacer(Modifier.height(24.dp))
       }
     }
   }
@@ -214,10 +258,42 @@ fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
                       country = "Keynya"
                     }
                   )
+                identifier = listOf(Identifier().apply { value = "12345" })
               }
             )
         }
       )
+    }
+
+    override fun getAllForms(): LiveData<List<QuestionnaireConfig>> {
+      return MutableLiveData(
+        listOf(QuestionnaireConfig("g6pd-test-result", "+ G6PD Test Result", "3435"))
+      )
+    }
+
+    override fun getAllResults(): LiveData<List<DiagnosticReport>> {
+      return MutableLiveData(
+        listOf(
+          DiagnosticReport().apply {
+            status = DiagnosticReport.DiagnosticReportStatus.FINAL
+            code = CodeableConcept().apply { text = "Simple Test 1" }
+            // issued = Date()
+          },
+          DiagnosticReport().apply {
+            status = DiagnosticReport.DiagnosticReportStatus.FINAL
+            code = CodeableConcept().apply { text = "Simple Test 2" }
+            issued = Date()
+          }
+        )
+      )
+    }
+
+    override fun onFormItemClickListener(): (item: QuestionnaireConfig) -> Unit {
+      return {}
+    }
+
+    override fun onTestResultItemClickListener(): (item: DiagnosticReport) -> Unit {
+      return {}
     }
   }
 }
