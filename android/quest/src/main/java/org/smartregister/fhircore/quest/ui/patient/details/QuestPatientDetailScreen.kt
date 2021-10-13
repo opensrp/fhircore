@@ -204,7 +204,7 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
                   }
               ) {
                 Text(
-                  text = item.code.text,
+                  text = item.code.text?:"",
                   color = colorResource(id = R.color.black),
                   fontSize = 17.sp,
                   textAlign = TextAlign.Start,
