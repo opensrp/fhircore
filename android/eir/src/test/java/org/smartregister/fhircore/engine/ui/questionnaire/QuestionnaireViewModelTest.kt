@@ -33,8 +33,6 @@ import io.mockk.spyk
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
@@ -243,37 +241,5 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     runBlocking { structureMapProvider.invoke(resourceUrl) }
 
     coVerify { questionnaireViewModel.fetchStructureMap(resourceUrl) }
-  }
-
-  @Test
-  fun testLoadQuestionnaireShouldCallFhirEngine() {
-    coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns
-      Questionnaire().apply { id = "12345" }
-    val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345") }
-    Assert.assertEquals("12345", result!!.logicalId)
-  }
-
-  @Test
-  fun testExtractAndSaveResourcesWithResourceIdShouldSaveQuestionnaireResponse() {
-    val questionnaireResponseSlot = slot<QuestionnaireResponse>()
-    val questionnaire =
-      Questionnaire().apply {
-        addUseContext().apply {
-          code = Coding().apply { code = "focus" }
-          value = CodeableConcept().apply { addCoding().apply { code = "1234567" } }
-        }
-      }
-
-    questionnaireViewModel.extractAndSaveResources(
-      "12345",
-      context,
-      questionnaire,
-      questionnaireResponse
-    )
-
-    coVerify { defaultRepo.save(capture(questionnaireResponseSlot)) }
-
-    Assert.assertEquals("12345", questionnaireResponse.subject.reference.replace("Patient/", ""))
-    Assert.assertEquals("1234567", questionnaireResponse.meta.tagFirstRep.code)
   }
 }
