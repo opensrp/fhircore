@@ -31,7 +31,6 @@ import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
 import com.google.android.fhir.logicalId
-import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -39,7 +38,6 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.FormConfigUtil
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -84,7 +82,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
       if (questionnaireId == null) {
         val form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)
-        questionnaireConfig = getQuestionnaireConfig(form!!)
+        questionnaireConfig = questionnaireViewModel.getQuestionnaireConfig(form!!)
         questionnaire = questionnaireViewModel.loadQuestionnaire(questionnaireConfig.identifier)!!
       } else {
         questionnaire = questionnaireViewModel.loadQuestionnaire(questionnaireId)!!
@@ -128,18 +126,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
 
     findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
-  }
-
-  suspend fun getQuestionnaireConfig(form: String): QuestionnaireConfig {
-    val loadConfig =
-      withContext(dispatcherProvider.io()) {
-        FormConfigUtil.loadConfig<List<QuestionnaireConfig>>(
-          FORM_CONFIGURATIONS,
-          this@QuestionnaireActivity
-        )
-      }
-
-    return loadConfig.associateBy { it.form }.getValue(form)
   }
 
   open fun createViewModel(application: Application) =

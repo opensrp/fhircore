@@ -27,6 +27,7 @@ import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -37,6 +38,8 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.FormConfigUtil
 
 open class QuestionnaireViewModel(
   application: Application,
@@ -52,6 +55,15 @@ open class QuestionnaireViewModel(
   var structureMapProvider: (suspend (String) -> StructureMap?)? = null
 
   suspend fun loadQuestionnaire(id: String): Questionnaire? = defaultRepository.loadResource(id)
+
+  suspend fun getQuestionnaireConfig(form: String): QuestionnaireConfig {
+    val loadConfig =
+      withContext(DefaultDispatcherProvider.io()) {
+        FormConfigUtil.loadConfig(QuestionnaireActivity.FORM_CONFIGURATIONS, getApplication())
+      }
+
+    return loadConfig.associateBy { it.form }.getValue(form)
+  }
 
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null

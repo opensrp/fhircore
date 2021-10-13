@@ -23,9 +23,12 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -39,6 +42,7 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.FormConfigUtil
 
 class QuestionnaireViewModelTest : RobolectricTest() {
 
@@ -72,6 +76,25 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       Questionnaire().apply { id = "12345" }
     val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345") }
     Assert.assertEquals("12345", result!!.logicalId)
+  }
+
+  @Test
+  fun testGetQuestionnaireConfigShouldLoadRightConfig() {
+    mockkObject(FormConfigUtil)
+    every { FormConfigUtil.loadConfig(any(), any()) } returns
+      listOf(
+        QuestionnaireConfig("my-form", "My Form", "0001"),
+        QuestionnaireConfig("patient-registration", "Add Patient", "1903")
+      )
+
+    val result = runBlocking {
+      questionnaireViewModel.getQuestionnaireConfig("patient-registration")
+    }
+    Assert.assertEquals("patient-registration", result.form)
+    Assert.assertEquals("Add Patient", result.title)
+    Assert.assertEquals("1903", result.identifier)
+
+    unmockkObject(FormConfigUtil)
   }
 
   @Test
