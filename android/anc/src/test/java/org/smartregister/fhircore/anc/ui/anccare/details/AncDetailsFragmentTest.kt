@@ -77,8 +77,6 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   private val patientId = "samplePatientId"
   var ancPatientDetailItem = spyk<AncPatientDetailItem>()
 
-  val fileUtil = FileUtil()
-
   @Before
   fun setUp() {
 
