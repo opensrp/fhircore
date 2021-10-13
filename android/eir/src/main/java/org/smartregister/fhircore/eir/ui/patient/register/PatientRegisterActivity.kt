@@ -47,7 +47,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
       )
     )
 
-  override fun onSideMenuOptionSelected(item: MenuItem): Boolean {
+  override fun onMenuOptionSelected(item: MenuItem): Boolean {
     return true
   }
 

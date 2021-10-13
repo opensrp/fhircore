@@ -16,12 +16,18 @@
 
 package org.smartregister.fhircore.engine.configuration.app
 
+import android.content.Context
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.loadBinaryResourceConfiguration
 
 @Serializable
 data class ApplicationConfiguration(
-  var oauthServerBaseUrl: String,
-  var fhirServerBaseUrl: String,
+  var id: String = "",
+  var theme: String = "",
+  var oauthServerBaseUrl: String = "",
+  var fhirServerBaseUrl: String = "",
   var clientId: String = "",
   var clientSecret: String = "",
   var scope: String = "openid",
@@ -44,6 +50,8 @@ data class ApplicationConfiguration(
  * @param syncInterval Sets the periodic sync interval in seconds. Default 30.
  */
 fun applicationConfigurationOf(
+  id: String = "",
+  theme: String = "",
   oauthServerBaseUrl: String = "",
   fhirServerBaseUrl: String = "",
   clientId: String = "",
@@ -53,6 +61,8 @@ fun applicationConfigurationOf(
   syncInterval: Long = 30
 ): ApplicationConfiguration =
   ApplicationConfiguration(
+    id = id,
+    theme = theme,
     oauthServerBaseUrl = oauthServerBaseUrl,
     fhirServerBaseUrl = fhirServerBaseUrl,
     clientId = clientId,
@@ -61,3 +71,15 @@ fun applicationConfigurationOf(
     languages = languages,
     syncInterval = syncInterval
   )
+
+private const val APPLICATION_CONFIG_FILE = "application_config.json"
+
+fun Context.loadApplicationConfiguration(id: String): ApplicationConfiguration {
+  return runBlocking { loadBinaryResourceConfiguration(id) }
+    ?: assets
+      .open(APPLICATION_CONFIG_FILE)
+      .bufferedReader()
+      .use { it.readText() }
+      .decodeJson<List<ApplicationConfiguration>>()
+      .first { it.id == id }
+}

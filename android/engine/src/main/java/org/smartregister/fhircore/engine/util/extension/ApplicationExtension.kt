@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Application
+import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.utilities.SimpleWorkerContextProvider
@@ -39,6 +40,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
@@ -92,6 +94,17 @@ fun <T> Application.loadResourceTemplate(
   return if (Resource::class.java.isAssignableFrom(clazz))
     FhirContext.forR4().newJsonParser().parseResource(json) as T
   else Gson().fromJson(json, clazz)
+}
+
+suspend inline fun <reified T> Context.loadBinaryResourceConfiguration(id: String): T? {
+  val fhirEngine = (applicationContext as ConfigurableApplication).fhirEngine
+  return kotlin
+    .runCatching {
+      val binaryConfig = fhirEngine.load(Binary::class.java, id).content.decodeToString()
+      binaryConfig.decodeJson() as T
+    }
+    .onFailure { Timber.w(it) }
+    .getOrNull()
 }
 
 suspend fun FhirEngine.searchActivePatients(

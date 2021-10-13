@@ -9,14 +9,19 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+ FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
+ FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
+ CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
 jobs:
-  unit-tests:
+  engine-tests:
     runs-on: ubuntu-latest
     env:
      FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
      FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
+     
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v2
@@ -35,46 +40,100 @@ jobs:
       - name: Spotless check engine module
         run: ./gradlew :engine:spotlessCheck
         working-directory: android
+         
+      - name: Run Engine unit tests with Gradle
+        run: ./gradlew :engine:jacocoTestReport -x testReleaseUnitTest --stacktrace
+        working-directory: android
+
+      - name: Upload Engine Test Report to codecov
+        working-directory: android
+        run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
+
+  eir-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        working-directory: android
 
       - name: Spotless check eir application
         run: ./gradlew :eir:spotlessCheck
         working-directory: android
-
-      - name: Spotless check anc application
-        run: ./gradlew :anc:spotlessCheck
-        working-directory: android
-
-      - name: Spotless check quest application
-        run: ./gradlew :quest:spotlessCheck
-        working-directory: android
          
       - name: Run EIR unit tests with Gradle
-        run: ./gradlew :eir:jacocoTestReport -x testReleaseUnitTest --stacktrace -Dorg.gradle.jvmargs="-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError"
-        working-directory: android
-
-      - name: Run ANC unit tests with Gradle
-        run: ./gradlew :anc:jacocoTestReport -x testReleaseUnitTest --stacktrace -Dorg.gradle.jvmargs="-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError"
-        working-directory: android
-         
-      - name: Run Engine unit tests with Gradle
-        run: ./gradlew :engine:jacocoTestReport -x testReleaseUnitTest --stacktrace -Dorg.gradle.jvmargs="-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError"
-        working-directory: android
-
-      - name: Run Quest unit tests with Gradle
-        run: ./gradlew :quest:jacocoTestReport -x testReleaseUnitTest --stacktrace -Dorg.gradle.jvmargs="-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError"
+        run: ./gradlew :eir:jacocoTestReport -x testReleaseUnitTest --stacktrace
         working-directory: android
 
       - name: Upload EIR Test Report to codecov
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F eir -f "eir/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
 
+  anc-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        working-directory: android
+
+      - name: Spotless check anc application
+        run: ./gradlew :anc:spotlessCheck
+        working-directory: android
+
+      - name: Run ANC unit tests with Gradle
+        run: ./gradlew :anc:jacocoTestReport -x testReleaseUnitTest --stacktrace
+        working-directory: android
+
       - name: Upload ANC Test Report to codecov
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F anc -f "anc/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
 
-      - name: Upload Engine Test Report to codecov
+  quest-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
         working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
+ 
+      - name: Spotless check quest application
+        run: ./gradlew :quest:spotlessCheck
+        working-directory: android
+
+      - name: Run Quest unit tests with Gradle
+        run: ./gradlew :quest:jacocoTestReport -x testReleaseUnitTest --stacktrace
+        working-directory: android
 
       - name: Upload Quest Test Report to codecov
         working-directory: android

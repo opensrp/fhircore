@@ -26,9 +26,10 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="5"
+                android:layout_marginTop="10dp"
                 android:fontFamily="sans-serif-medium"
-                android:gravity="center"
-                android:text="@string/default_app_title"
+                android:gravity="left"
+                android:text="@string/app_name"
                 android:textColor="@color/white"
                 android:textSize="21sp"
                 tools:textColor="@color/white" />
