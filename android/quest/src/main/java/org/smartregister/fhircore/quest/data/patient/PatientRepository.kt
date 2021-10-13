@@ -78,7 +78,13 @@ class PatientRepository(
 
       val k =
         result.map {
-          DiagnosticReport().apply { code = CodeableConcept().apply { text = it.text?.id ?: "" } }
+          DiagnosticReport().apply {
+            code =
+              CodeableConcept().apply {
+                coding = it.meta.tag
+                text = it.meta.tagFirstRep.display
+              }
+          }
         }
 
       data.postValue(k)

@@ -92,7 +92,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
       supportActionBar?.apply {
         setDisplayHomeAsUpEnabled(true)
-        title = questionnaireTitle?:questionnaire.title?:""
+        title = questionnaireTitle ?: questionnaire.title ?: ""
       }
 
       // Only add the fragment once, when the activity is first created.
@@ -200,7 +200,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_ARG_ID = "questionnaire_id"
     const val FORM_CONFIGURATIONS = "form_configurations.json"
 
-    fun requiredIntentArgs(clientIdentifier: String?, form: String? = null, questionnaireId: String? = null) =
+    fun requiredIntentArgs(
+      clientIdentifier: String?,
+      form: String? = null,
+      questionnaireId: String? = null
+    ) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
         Pair(QUESTIONNAIRE_ARG_FORM, form),

@@ -65,7 +65,12 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
   private fun onFormItemClickListener(item: QuestionnaireConfig) {
     startActivity(
       Intent(this, QuestionnaireActivity::class.java).apply {
-        putExtras(QuestionnaireActivity.requiredIntentArgs(clientIdentifier = patientId, questionnaireId = item.identifier))
+        putExtras(
+          QuestionnaireActivity.requiredIntentArgs(
+            clientIdentifier = patientId,
+            questionnaireId = item.identifier
+          )
+        )
       }
     )
   }

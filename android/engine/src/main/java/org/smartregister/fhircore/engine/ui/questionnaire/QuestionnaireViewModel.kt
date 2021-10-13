@@ -25,6 +25,7 @@ import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.targetStructureMap
+import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle
@@ -38,7 +39,6 @@ import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
-import java.util.UUID
 
 open class QuestionnaireViewModel(
   application: Application,
@@ -53,8 +53,7 @@ open class QuestionnaireViewModel(
 
   var structureMapProvider: (suspend (String) -> StructureMap?)? = null
 
-  suspend fun loadQuestionnaire(id: String): Questionnaire? =
-    defaultRepository.loadResource(id)
+  suspend fun loadQuestionnaire(id: String): Questionnaire? = defaultRepository.loadResource(id)
 
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
@@ -73,7 +72,8 @@ open class QuestionnaireViewModel(
     viewModelScope.launch {
       questionnaireResponse.id = UUID.randomUUID().toString()
       questionnaire.useContext.firstOrNull()?.let {
-        questionnaireResponse.meta.addTag(it.code)
+        if (it.hasValue() && it.hasValueCodeableConcept())
+          questionnaireResponse.meta.tag = it.valueCodeableConcept.coding
       }
       resourceId?.let {
         questionnaireResponse.subject = Reference().apply { reference = "Patient/$it" }
@@ -92,25 +92,25 @@ open class QuestionnaireViewModel(
     questionnaireResponse: QuestionnaireResponse,
     context: Context
   ): Bundle {
-    val transformSupportServices = questionnaire.targetStructureMap?.let {
-      val contextR4 = (getApplication<Application>() as ConfigurableApplication).workerContextProvider
-      TransformSupportServices(mutableListOf(), contextR4)
+    val transformSupportServices =
+      questionnaire.targetStructureMap?.let {
+        val contextR4 =
+          (getApplication<Application>() as ConfigurableApplication).workerContextProvider
+        TransformSupportServices(mutableListOf(), contextR4)
       }
-      return ResourceMapper.extract(
-        questionnaire = questionnaire,
-        questionnaireResponse = questionnaireResponse,
-        structureMapProvider = retrieveStructureMapProvider(),
-        context = context,
-        transformSupportServices = transformSupportServices
-      )
+    return ResourceMapper.extract(
+      questionnaire = questionnaire,
+      questionnaireResponse = questionnaireResponse,
+      structureMapProvider = retrieveStructureMapProvider(),
+      context = context,
+      transformSupportServices = transformSupportServices
+    )
   }
 
   fun saveBundleResources(bundle: Bundle) {
     viewModelScope.launch {
       if (!bundle.isEmpty) {
-        bundle.entry.forEach { bundleEntry ->
-          defaultRepository.addOrUpdate(bundleEntry.resource)
-        }
+        bundle.entry.forEach { bundleEntry -> defaultRepository.addOrUpdate(bundleEntry.resource) }
       }
 
       viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
