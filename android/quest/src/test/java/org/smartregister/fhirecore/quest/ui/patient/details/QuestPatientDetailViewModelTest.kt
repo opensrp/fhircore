@@ -21,13 +21,11 @@ import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.DiagnosticReport
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
-import org.hl7.fhir.r4.model.codesystems.DiagnosticReportStatus
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -146,7 +144,6 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
   fun testVerifyTestResultItemClickListener() {
 
     viewModel.setOnTestResultItemClickListener {
-      Assert.assertEquals(DiagnosticReport.DiagnosticReportStatus.FINAL, it.status)
       Assert.assertEquals("Blood Count", it.meta?.tagFirstRep?.display)
     }
 
