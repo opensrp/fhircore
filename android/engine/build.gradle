@@ -1,3 +1,4 @@
+
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
@@ -11,6 +12,7 @@ android {
 
     testOptions {
         unitTests {
+            includeAndroidResources = true
             returnDefaultValues = true
             all {
                 jacoco {
@@ -116,9 +118,8 @@ dependencies {
     implementation 'org.opencds.cqf.cql:evaluator.dagger:1.2.1-SNAPSHOT'
 
 
-
     //Configure Jetpack Compose
-    def composeVersion = "1.0.2"
+    def composeVersion = "1.0.1"
     api("androidx.compose.ui:ui:$composeVersion")
     api("androidx.compose.ui:ui-tooling:$composeVersion")
     api("androidx.compose.foundation:foundation:$composeVersion")
@@ -129,6 +130,7 @@ dependencies {
     api("androidx.paging:paging-compose:1.0.0-alpha12")
     api("androidx.activity:activity-compose:1.3.1")
     api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2'
+    api ("androidx.work:work-runtime-ktx:2.3.4")
 
     def coroutineVersion = '1.5.1'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
@@ -197,5 +199,8 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     implementation deps.work.runtime
     testImplementation  group: 'org.json', name: 'json', version: '20210307'
+
+    debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
+    testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 
 }

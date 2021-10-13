@@ -76,7 +76,7 @@ class AncRegisterActivity : BaseRegisterActivity() {
       )
     )
 
-  override fun onSideMenuOptionSelected(item: MenuItem): Boolean {
+  override fun onMenuOptionSelected(item: MenuItem): Boolean {
     when (item.itemId) {
       R.id.menu_item_family -> startActivity(Intent(this, FamilyRegisterActivity::class.java))
       R.id.menu_item_anc -> startActivity(Intent(this, AncRegisterActivity::class.java))

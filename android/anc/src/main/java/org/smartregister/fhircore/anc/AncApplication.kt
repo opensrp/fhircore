@@ -19,16 +19,11 @@ package org.smartregister.fhircore.anc
 import android.app.Application
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
-import com.google.android.fhir.sync.PeriodicSyncConfiguration
-import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.Sync
-import java.util.concurrent.TimeUnit
+import com.google.android.fhir.sync.SyncJob
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.context.SimpleWorkerContext
-import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -38,9 +33,13 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
+import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
 class AncApplication : Application(), ConfigurableApplication {
+
+  override val syncJob: SyncJob
+    get() = Sync.basicSyncJob(getContext())
 
   private val defaultDispatcherProvider = DefaultDispatcherProvider
 
@@ -51,7 +50,7 @@ class AncApplication : Application(), ConfigurableApplication {
   override val authenticationService: AuthenticationService
     get() = AncAuthenticationService(applicationContext)
 
-  override val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
+  override val fhirEngine: FhirEngine by lazy { FhirEngineProvider.getInstance(this) }
 
   override val secureSharedPreference: SecureSharedPreference
     get() = SecureSharedPreference(applicationContext)
@@ -65,13 +64,12 @@ class AncApplication : Application(), ConfigurableApplication {
         ResourceType.Condition to mapOf(),
       )
 
-  private fun constructFhirEngine(): FhirEngine {
-    schedulePolling()
-    return FhirEngineProvider.getInstance(this)
-  }
-
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
     this.applicationConfiguration = applicationConfiguration
+  }
+
+  override fun schedulePeriodicSync() {
+    this.runPeriodicSync<AncFhirSyncWorker>()
   }
 
   override fun onCreate() {
@@ -92,6 +90,12 @@ class AncApplication : Application(), ConfigurableApplication {
       Timber.plant(Timber.DebugTree())
     }
 
+    initializeWorkerContextProvider()
+
+    schedulePeriodicSync()
+  }
+
+  fun initializeWorkerContextProvider() {
     CoroutineScope(defaultDispatcherProvider.io()).launch {
       workerContextProvider = this@AncApplication.initializeWorkerContext()!!
     }
@@ -99,17 +103,6 @@ class AncApplication : Application(), ConfigurableApplication {
 
   companion object {
     private lateinit var ancApplication: AncApplication
-
     fun getContext() = ancApplication
-
-    // Make sure that it is called only from one place in app and is done after login
-    fun schedulePolling() =
-      Sync.basicSyncJob(ancApplication)
-        .poll(
-          PeriodicSyncConfiguration(
-            repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
-          ),
-          AncFhirSyncWorker::class.java
-        )
   }
 }

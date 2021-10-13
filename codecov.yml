@@ -29,4 +29,4 @@ flags:
       - "/home/runner/work/fhircore/fhircore/android/engine"
   quest:
     paths:
-      - "/home/runner/work/fhircore/fhircore/android/quest"      
+      - "/home/runner/work/fhircore/fhircore/android/quest"

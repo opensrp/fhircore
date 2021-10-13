@@ -54,12 +54,13 @@ import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
+import org.smartregister.fhircore.eir.shadow.ShadowNpmPackageProvider
 import org.smartregister.fhircore.eir.shadow.TestUtils
 import org.smartregister.fhircore.eir.util.RECORD_VACCINE_FORM
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.DateUtils
 
-@Config(shadows = [EirApplicationShadow::class])
+@Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
 @ExperimentalCoroutinesApi
 class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
@@ -94,34 +95,32 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testVerifyRecordedVaccineSavedDialogProperty() {
-    coroutinesTestRule.runBlockingTest {
-      val spyViewModel =
-        spyk((recordVaccineActivity.questionnaireViewModel as RecordVaccineViewModel))
-      recordVaccineActivity.questionnaireViewModel = spyViewModel
+  fun testVerifyRecordedVaccineSavedDialogProperty() = runBlockingTest {
+    val spyViewModel =
+      spyk((recordVaccineActivity.questionnaireViewModel as RecordVaccineViewModel))
+    recordVaccineActivity.questionnaireViewModel = spyViewModel
 
-      val callback = slot<Observer<PatientVaccineSummary>>()
+    val callback = slot<Observer<PatientVaccineSummary>>()
 
-      coEvery { spyViewModel.performExtraction(any(), any(), any()) } returns
-        Bundle().apply { addEntry().apply { resource = getImmunization() } }
+    coEvery { spyViewModel.performExtraction(any(), any(), any()) } returns
+      Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
-      every { spyViewModel.getVaccineSummary(any()) } returns
-        mockk<LiveData<PatientVaccineSummary>>().apply {
-          every { observe(any(), capture(callback)) } answers
-            {
-              callback.captured.onChanged(PatientVaccineSummary(1, "vaccine"))
-            }
-        }
+    every { spyViewModel.getVaccineSummary(any()) } returns
+      mockk<LiveData<PatientVaccineSummary>>().apply {
+        every { observe(any(), capture(callback)) } answers
+          {
+            callback.captured.onChanged(PatientVaccineSummary(1, "vaccine"))
+          }
+      }
 
-      Assert.assertNull(ShadowAlertDialog.getLatestAlertDialog())
-      recordVaccineActivity.handleQuestionnaireResponse(mockk())
+    Assert.assertNull(ShadowAlertDialog.getLatestAlertDialog())
+    recordVaccineActivity.handleQuestionnaireResponse(mockk())
 
-      val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
 
-      Assert.assertNotNull(dialog)
-      Assert.assertEquals("Initially received vaccine", dialog.title)
-      Assert.assertEquals("Second vaccine dose should be same as first", dialog.message)
-    }
+    Assert.assertNotNull(dialog)
+    Assert.assertEquals("Initially received vaccine", dialog.title)
+    Assert.assertEquals("Second vaccine dose should be same as first", dialog.message)
   }
 
   @Test

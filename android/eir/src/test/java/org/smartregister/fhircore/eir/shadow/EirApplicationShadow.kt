@@ -119,4 +119,7 @@ class EirApplicationShadow : ShadowApplication() {
     field.isAccessible = true
     return field.get(search) as MutableList<T>
   }
+  @Implementation fun schedulePeriodicSync() {}
+
+  @Implementation fun initializeWorkerContextProvider() {}
 }

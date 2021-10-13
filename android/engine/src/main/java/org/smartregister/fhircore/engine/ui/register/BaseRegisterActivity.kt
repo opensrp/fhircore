@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.ui.register
 
-import android.accounts.AccountManager
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
@@ -29,6 +28,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import androidx.annotation.IdRes
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
@@ -40,6 +40,8 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
 import com.google.android.material.navigation.NavigationView
+import java.text.ParseException
+import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -51,18 +53,20 @@ import org.smartregister.fhircore.engine.configuration.view.registerViewConfigur
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
 import org.smartregister.fhircore.engine.sync.OnSyncListener
+import org.smartregister.fhircore.engine.sync.SyncInitiator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.model.Language
+import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
+import org.smartregister.fhircore.engine.util.DateUtils
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.DrawablePosition
 import org.smartregister.fhircore.engine.util.extension.addOnDrawableClickListener
 import org.smartregister.fhircore.engine.util.extension.asString
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
-import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.getDrawable
 import org.smartregister.fhircore.engine.util.extension.hide
@@ -77,13 +81,12 @@ abstract class BaseRegisterActivity :
   BaseMultiLanguageActivity(),
   NavigationView.OnNavigationItemSelectedListener,
   ConfigurableView<RegisterViewConfiguration>,
-  OnSyncListener {
+  OnSyncListener,
+  SyncInitiator {
 
   private lateinit var registerViewModel: RegisterViewModel
 
   private lateinit var registerActivityBinding: BaseRegisterActivityBinding
-
-  private lateinit var drawerMenuHeaderBinding: DrawerMenuHeaderBinding
 
   override val configurableViews: Map<String, View> = mutableMapOf()
 
@@ -100,7 +103,8 @@ abstract class BaseRegisterActivity :
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     application.assertIsConfigurable()
-    (application as ConfigurableApplication).syncBroadcaster.registerSyncListener(this)
+    val syncBroadcaster = (application as ConfigurableApplication).syncBroadcaster
+    syncBroadcaster.registerSyncListener(this)
 
     registerViewModel =
       ViewModelProvider(
@@ -112,16 +116,16 @@ abstract class BaseRegisterActivity :
           .createFactory()
       )[RegisterViewModel::class.java]
 
+    // Initiate sync after registerViewModel is initialized
+    syncBroadcaster.registerSyncInitiator(this)
+
     registerViewModel.registerViewConfiguration.observe(this, this::setupConfigurableViews)
 
     registerViewModel.lastSyncTimestamp.observe(
       this,
-      { syncTimeStamp ->
-        if (!syncTimeStamp.isNullOrEmpty()) {
-          SharedPreferencesHelper.write(LAST_SYNC_TIMESTAMP, syncTimeStamp)
-        }
-        // TODO this is blocking the flow and does not allow proceeding if sync fails for any reason
-        // registerActivityBinding.btnRegisterNewClient.isEnabled = !syncTimeStamp.isNullOrEmpty()
+      {
+        registerActivityBinding.btnRegisterNewClient.isEnabled = !it.isNullOrEmpty()
+        registerActivityBinding.tvLastSyncTimestamp.text = it?.formatSyncDate() ?: ""
       }
     )
 
@@ -138,12 +142,7 @@ abstract class BaseRegisterActivity :
     registerActivityBinding = DataBindingUtil.setContentView(this, R.layout.base_register_activity)
     registerActivityBinding.lifecycleOwner = this
 
-    drawerMenuHeaderBinding =
-      DataBindingUtil.bind(registerActivityBinding.navView.getHeaderView(0))!!
-
     fhirEngine = (application as ConfigurableApplication).fhirEngine
-
-    setUpViews()
   }
 
   override fun onResume() {
@@ -154,61 +153,79 @@ abstract class BaseRegisterActivity :
   private fun BaseRegisterActivityBinding.updateSyncStatus(state: State) {
     when (state) {
       is State.Started, is State.InProgress -> {
-        tvLastSyncTimestamp.text = getString(R.string.syncing_in_progress)
-        containerProgressSync.background = null
         progressSync.show()
+        tvLastSyncTimestamp.text = getString(R.string.syncing_in_progress)
+        containerProgressSync.apply {
+          background = null
+          setOnClickListener(null)
+        }
       }
-      is State.Finished -> {
-        progressSync.hide()
-        val syncTimestamp = state.result.timestamp.asString()
-        tvLastSyncTimestamp.text = syncTimestamp
-        registerViewModel.setLastSyncTimestamp(syncTimestamp)
-        containerProgressSync.background = containerProgressSync.getDrawable(R.drawable.ic_sync)
-      }
-      is State.Failed -> {
-        progressSync.hide()
-        tvLastSyncTimestamp.text =
-          SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, getString(R.string.syncing_failed))
-        containerProgressSync.background = containerProgressSync.getDrawable(R.drawable.ic_sync)
-      }
+      is State.Finished, is State.Failed -> setLastSyncTimestamp(state)
       is State.Glitch -> {
         progressSync.hide()
-        tvLastSyncTimestamp.text =
+        val lastSyncTimestamp =
           SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, getString(R.string.syncing_retry))
-        containerProgressSync.background = containerProgressSync.getDrawable(R.drawable.ic_sync)
+        tvLastSyncTimestamp.text = lastSyncTimestamp?.formatSyncDate() ?: ""
+        containerProgressSync.apply {
+          background = this.getDrawable(R.drawable.ic_sync)
+          setOnClickListener { syncButtonClick() }
+        }
       }
     }
   }
 
+  private fun BaseRegisterActivityBinding.setLastSyncTimestamp(state: State) {
+    val syncTimestamp =
+      when (state) {
+        is State.Finished -> state.result.timestamp.asString()
+        is State.Failed -> state.result.timestamp.asString()
+        else -> ""
+      }
+    progressSync.hide()
+    registerViewModel.setLastSyncTimestamp(syncTimestamp)
+    containerProgressSync.apply {
+      background = containerProgressSync.getDrawable(R.drawable.ic_sync)
+      setOnClickListener { syncButtonClick() }
+    }
+  }
+
   private fun setUpViews() {
-    setupSideMenu()
+    setupDrawer(registerViewModel.registerViewConfiguration.value!!)
+
     with(registerActivityBinding) {
       toolbarLayout.btnDrawerMenu.setOnClickListener { manipulateDrawer(open = true) }
       btnRegisterNewClient.setOnClickListener { registerClient() }
-      containerProgressSync.setOnClickListener {
-        progressSync.show()
-        manipulateDrawer(false)
-        this@BaseRegisterActivity.registerViewModel.runSync()
-      }
-    }
-    registerActivityBinding.navView.apply {
-      setNavigationItemSelectedListener(this@BaseRegisterActivity)
-      menu.findItem(R.id.menu_item_logout).title =
-        getString(
-          R.string.logout_user,
-          configurableApplication().secureSharedPreference.retrieveSessionUsername()
-        )
+      containerProgressSync.setOnClickListener { syncButtonClick() }
     }
 
     // Setup view pager
     registerPagerAdapter = RegisterPagerAdapter(this, supportedFragments = supportedFragments())
     registerActivityBinding.listPager.adapter = registerPagerAdapter
 
+    setupNewClientButtonView(registerViewModel.registerViewConfiguration.value!!)
+
+    updateRegisterTitle()
+
     setupSearchView()
     setupDueButtonView()
+  }
 
-    val lastSyncTimestamp = SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, "")
-    lastSyncTimestamp?.let { registerViewModel.setLastSyncTimestamp(it) }
+  private fun syncButtonClick() {
+    registerActivityBinding.progressSync.show()
+    manipulateDrawer(false)
+    registerViewModel.runSync()
+  }
+
+  private fun String.formatSyncDate(): String {
+    if (this.isEmpty()) return ""
+    val date =
+      try {
+        Date(this)
+      } catch (paceException: ParseException) {
+        null
+      } ?: return ""
+    val formattedDate: String = DateUtils.simpleDateFormat().format(date)
+    return getString(R.string.last_sync_timestamp, formattedDate)
   }
 
   @SuppressLint("ClickableViewAccessibility")
@@ -265,6 +282,16 @@ abstract class BaseRegisterActivity :
     }
   }
 
+  private fun setupNewClientButtonView(registerViewConfiguration: RegisterViewConfiguration) {
+    with(registerActivityBinding.btnRegisterNewClient) {
+      this.setOnClickListener { registerClient() }
+      if (registerViewConfiguration.newClientButtonStyle.isNotEmpty()) {
+        this.background = getDrawable(registerViewConfiguration.newClientButtonStyle)
+      }
+      this.text = registerViewConfiguration.newClientButtonText
+    }
+  }
+
   private fun setupDueButtonView() {
     with(registerActivityBinding.toolbarLayout) {
       btnShowOverdue.setOnCheckedChangeListener { _, isChecked ->
@@ -274,6 +301,35 @@ abstract class BaseRegisterActivity :
           registerViewModel.updateFilterValue(RegisterFilterType.OVERDUE_FILTER, null)
         }
       }
+    }
+  }
+
+  private fun setupDrawer(viewConfiguration: RegisterViewConfiguration) {
+    if (!viewConfiguration.showSideMenu) {
+      with(registerActivityBinding) {
+        toolbarLayout.btnDrawerMenu.hide(true)
+        // TODO uncomment this when sync issue is resolved
+        // drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+      }
+      return
+    }
+
+    val drawerMenuHeaderBinding: DrawerMenuHeaderBinding =
+      DataBindingUtil.bind(registerActivityBinding.navView.getHeaderView(0))!!
+    drawerMenuHeaderBinding.tvNavHeader.text = viewConfiguration.appTitle
+
+    setupSideMenu()
+
+    val languageMenuItem = findSideMenuItem(R.id.menu_item_language)!!
+    languageMenuItem.isVisible = viewConfiguration.switchLanguages
+
+    registerActivityBinding.navView.apply {
+      setNavigationItemSelectedListener(this@BaseRegisterActivity)
+      menu.findItem(R.id.menu_item_logout)?.title =
+        getString(
+          R.string.logout_user,
+          configurableApplication().secureSharedPreference.retrieveSessionUsername()
+        )
     }
   }
 
@@ -312,8 +368,6 @@ abstract class BaseRegisterActivity :
       2,
       ""
     ) // Hack to add last menu divider
-
-    updateRegisterTitle()
   }
 
   private fun manipulateDrawer(open: Boolean = false) {
@@ -333,6 +387,8 @@ abstract class BaseRegisterActivity :
       is State.Failed, is State.Glitch -> {
         showToast(getString(R.string.sync_failed))
         registerActivityBinding.updateSyncStatus(state)
+        sideMenuOptions().forEach { updateCount(it) }
+        manipulateDrawer(open = false)
         this.registerViewModel.setRefreshRegisterData(true)
       }
       is State.Finished -> {
@@ -349,16 +405,16 @@ abstract class BaseRegisterActivity :
     }
   }
 
+  override fun runSync() {
+    registerViewModel.runSync()
+  }
+
   override fun configureViews(viewConfiguration: RegisterViewConfiguration) {
     registerViewModel.updateViewConfigurations(viewConfiguration)
   }
 
   override fun setupConfigurableViews(viewConfiguration: RegisterViewConfiguration) {
-    drawerMenuHeaderBinding.tvNavHeader.text = viewConfiguration.appTitle
-    val navView = registerActivityBinding.navView
-
-    val languageMenuItem = navView.menu.findItem(R.id.menu_item_language)
-    languageMenuItem.isVisible = viewConfiguration.switchLanguages
+    setUpViews()
 
     with(registerActivityBinding.toolbarLayout) {
       btnShowOverdue.apply {
@@ -370,6 +426,17 @@ abstract class BaseRegisterActivity :
         hint = viewConfiguration.searchBarHint
       }
       layoutScanBarcode.toggleVisibility(viewConfiguration.showScanQRCode)
+    }
+
+    setupBottomNavigationMenu(viewConfiguration)
+  }
+
+  open fun setupBottomNavigationMenu(viewConfiguration: RegisterViewConfiguration) {
+    val bottomMenu = registerActivityBinding.bottomNavView.menu
+    if (!viewConfiguration.showBottomMenu) registerActivityBinding.bottomNavView.hide(true)
+
+    bottomNavigationMenuOptions().forEach {
+      bottomMenu.add(it.title).apply { it.iconResource?.let { ic -> this.icon = ic } }
     }
   }
 
@@ -384,12 +451,12 @@ abstract class BaseRegisterActivity :
       }
       R.id.menu_item_language -> renderSelectLanguageDialog(this)
       R.id.menu_item_logout -> {
-        configurableApplication().authenticationService.logout(AccountManager.get(this))
+        configurableApplication().authenticationService.logout()
         manipulateDrawer(open = false)
       }
       else -> {
         manipulateDrawer(open = false)
-        return onSideMenuOptionSelected(item)
+        return onMenuOptionSelected(item)
       }
     }
     return true
@@ -398,6 +465,7 @@ abstract class BaseRegisterActivity :
   private fun updateRegisterTitle() {
     registerActivityBinding.toolbarLayout.tvClientsListTitle.text =
       selectedMenuOption?.titleResource?.let { getString(it) }
+        ?: registerViewModel.registerViewConfiguration.value?.appTitle
   }
 
   private fun renderSelectLanguageDialog(context: Activity): AlertDialog {
@@ -434,18 +502,31 @@ abstract class BaseRegisterActivity :
   }
 
   private fun updateLanguage(language: Language) {
-    (registerActivityBinding.navView.menu.findItem(R.id.menu_item_language).actionView as TextView)
-      .text = language.displayName
+    findSideMenuItem(R.id.menu_item_language)?.let {
+      (it.actionView as TextView).text = language.displayName
+    }
+  }
+
+  fun findSideMenuItem(@IdRes id: Int): MenuItem? {
+    return registerActivityBinding.navView.menu.findItem(id)
   }
 
   /** List of [SideMenuOption] representing individual menu items listed in the DrawerLayout */
-  abstract fun sideMenuOptions(): List<SideMenuOption>
+  open fun sideMenuOptions(): List<SideMenuOption> {
+    return emptyList()
+  }
+
+  /** List of [SideMenuOption] representing individual menu items listed in the DrawerLayout */
+  open fun bottomNavigationMenuOptions(): List<NavigationMenuOption> {
+    return emptyList()
+  }
 
   /**
    * Abstract method to be implemented by the subclass to provide actions for the menu [item]
    * options. Refer to the selected menu item using the view tag that was set by [sideMenuOptions]
+   * or [bottomNavigationMenuOptions]
    */
-  abstract fun onSideMenuOptionSelected(item: MenuItem): Boolean
+  abstract fun onMenuOptionSelected(item: MenuItem): Boolean
 
   protected open fun registerClient() {
     startActivity(
@@ -470,20 +551,16 @@ abstract class BaseRegisterActivity :
     return application as ConfigurableApplication
   }
 
-  private fun updateCount(sideMenuOption: SideMenuOption) {
+  fun updateCount(sideMenuOption: SideMenuOption) {
     lifecycleScope.launch(registerViewModel.dispatcher.main()) {
       val count = sideMenuOption.countMethod()
-      if (count == -1L) {
-        sideMenuOption.count =
-          (application as ConfigurableApplication).fhirEngine.countActivePatients()
-      } else {
-        sideMenuOption.count = count
-      }
+
       with(sideMenuOption) {
-        val counter =
-          registerActivityBinding.navView.menu.findItem(sideMenuOption.itemId).actionView as
-            TextView
-        counter.text = if (this.count > 0) this.count.toString() else null
+        this.count = count
+
+        findSideMenuItem(sideMenuOption.itemId)?.let {
+          (it.actionView as TextView).text = if (this.count > 0) this.count.toString() else ""
+        }
         if (selectedMenuOption != null && this.itemId == selectedMenuOption?.itemId) {
           selectedMenuOption?.count = this.count
         }

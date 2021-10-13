@@ -19,22 +19,23 @@ package org.smartregister.fhircore.quest
 import android.app.Application
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
-import com.google.android.fhir.sync.PeriodicSyncConfiguration
-import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.Sync
-import java.util.concurrent.TimeUnit
+import com.google.android.fhir.sync.SyncJob
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
-import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
+import org.smartregister.fhircore.engine.configuration.app.loadApplicationConfiguration
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
+import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
 class QuestApplication : Application(), ConfigurableApplication {
@@ -42,6 +43,9 @@ class QuestApplication : Application(), ConfigurableApplication {
   private val defaultDispatcherProvider = DefaultDispatcherProvider
 
   override lateinit var workerContextProvider: SimpleWorkerContext
+
+  override val syncJob: SyncJob
+    get() = Sync.basicSyncJob(getContext())
 
   override lateinit var applicationConfiguration: ApplicationConfiguration
 
@@ -54,40 +58,68 @@ class QuestApplication : Application(), ConfigurableApplication {
     get() = SecureSharedPreference(applicationContext)
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
-    get() =
-      mapOf(
+    get() {
+      return mapOf(
+        ResourceType.Binary to mapOf("_id" to CONFIG_RESOURCE_IDS),
+        ResourceType.CarePlan to mapOf(),
         ResourceType.Patient to mapOf(),
-        ResourceType.Questionnaire to mapOf(),
-        ResourceType.CarePlan to mapOf()
+        ResourceType.Questionnaire to buildQuestionnaireFilterMap()
       )
+    }
+
+  private fun buildQuestionnaireFilterMap(): MutableMap<String, String> {
+    val questionnaireFilterMap: MutableMap<String, String> = HashMap()
+    val publisher =
+      SharedPreferencesHelper.read(USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY, null)
+    if (publisher != null) questionnaireFilterMap[Questionnaire.SP_PUBLISHER] = publisher
+    return questionnaireFilterMap
+  }
 
   private fun constructFhirEngine(): FhirEngine {
-    schedulePolling()
     return FhirEngineProvider.getInstance(this)
   }
 
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
     this.applicationConfiguration = applicationConfiguration
+    SharedPreferencesHelper.write(SharedPreferencesHelper.THEME, applicationConfiguration.theme)
+  }
+
+  fun applyApplicationConfiguration() {
+    configureApplication(
+      loadApplicationConfiguration(CONFIG_APP).apply {
+        fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL
+        oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL
+        clientId = BuildConfig.OAUTH_CIENT_ID
+        clientSecret = BuildConfig.OAUTH_CLIENT_SECRET
+      }
+    )
+  }
+
+  override fun schedulePeriodicSync() {
+    this.runPeriodicSync<QuestFhirSyncWorker>()
   }
 
   override fun onCreate() {
     super.onCreate()
     SharedPreferencesHelper.init(this)
     questApplication = this
-    configureApplication(
-      applicationConfigurationOf(
-        oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL,
-        fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL,
-        clientId = BuildConfig.OAUTH_CIENT_ID,
-        clientSecret = BuildConfig.OAUTH_CLIENT_SECRET,
-        languages = listOf("en", "sw")
-      )
-    )
 
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
 
+    applyApplicationConfiguration()
+
+    CoroutineScope(defaultDispatcherProvider.io()).launch {
+      workerContextProvider = this@QuestApplication.initializeWorkerContext()!!
+    }
+
+    initializeWorkerContextProvider()
+
+    schedulePeriodicSync()
+  }
+
+  fun initializeWorkerContextProvider() {
     CoroutineScope(defaultDispatcherProvider.io()).launch {
       workerContextProvider = this@QuestApplication.initializeWorkerContext()!!
     }
@@ -95,17 +127,11 @@ class QuestApplication : Application(), ConfigurableApplication {
 
   companion object {
     private lateinit var questApplication: QuestApplication
+    const val CONFIG_APP = "quest-app"
+    private const val CONFIG_PATIENT_REGISTER = "quest-app-patient-register"
+
+    private const val CONFIG_RESOURCE_IDS = "$CONFIG_APP,$CONFIG_PATIENT_REGISTER"
 
     fun getContext() = questApplication
-
-    // Make sure that it is called only from one place in app and is done after login
-    fun schedulePolling() =
-      Sync.basicSyncJob(questApplication)
-        .poll(
-          PeriodicSyncConfiguration(
-            repeat = RepeatInterval(interval = 1, timeUnit = TimeUnit.HOURS)
-          ),
-          QuestFhirSyncWorker::class.java
-        )
   }
 }

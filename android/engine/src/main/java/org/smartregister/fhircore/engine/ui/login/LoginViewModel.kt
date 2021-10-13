@@ -26,20 +26,18 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.google.android.fhir.sync.State
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
-import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.auth.AuthenticationService
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.data.remote.model.response.UserResponse
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import retrofit2.Call
 import retrofit2.Response
@@ -52,16 +50,14 @@ class LoginViewModel(
   private val dispatcher: DispatcherProvider = DefaultDispatcherProvider
 ) : AndroidViewModel(application), AccountManagerCallback<Bundle> {
 
-  val sharedSyncStatus = MutableSharedFlow<State>()
-
-  private val accountManager = AccountManager.get(application)
+  val sharedPreferences =
+    SharedPreferencesHelper.init(getApplication<Application>().applicationContext)
 
   val responseBodyHandler =
     object : ResponseHandler<ResponseBody> {
       override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
         response.body()?.run {
-          Timber.i(this.string())
-          SharedPreferencesHelper.init(application.applicationContext).write("USER", this.string())
+          storeUserPreferences(this)
           _showProgressBar.postValue(false)
         }
       }
@@ -73,12 +69,19 @@ class LoginViewModel(
       }
     }
 
+  private fun storeUserPreferences(responseBody: ResponseBody) {
+    val responseBodyString = responseBody.string()
+    Timber.d(responseBodyString)
+    val userResponse = responseBodyString.decodeJson<UserResponse>()
+    sharedPreferences.write(
+      USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY,
+      userResponse.questionnairePublisher
+    )
+  }
+
   private val userInfoResponseCallback: ResponseCallback<ResponseBody> by lazy {
     object : ResponseCallback<ResponseBody>(responseBodyHandler) {}
   }
-
-  private val secureSharedPreference =
-    (application as ConfigurableApplication).secureSharedPreference
 
   val oauthResponseHandler =
     object : ResponseHandler<OAuthResponse> {
@@ -92,10 +95,7 @@ class LoginViewModel(
           return
         }
         with(authenticationService) {
-          addAuthenticatedAccount(accountManager, response, username.value!!)
-          secureSharedPreference.saveCredentials(
-            AuthCredentials(username.value!!, password.value!!, response.body()?.accessToken!!)
-          )
+          addAuthenticatedAccount(response, username.value!!, password.value?.toCharArray()!!)
           getUserInfo().enqueue(userInfoResponseCallback)
           _navigateToHome.value = true
           _showProgressBar.postValue(false)
@@ -114,10 +114,10 @@ class LoginViewModel(
     }
 
   private fun attemptLocalLogin(): Boolean {
-    val (localUsername, localPassword) =
-      secureSharedPreference.retrieveCredentials() ?: return false
-    return (localUsername.contentEquals(username.value, ignoreCase = false) &&
-      localPassword.contentEquals(password.value))
+    return authenticationService.validLocalCredentials(
+      username.value!!,
+      password.value!!.toCharArray()
+    )
   }
 
   private val oauthResponseCallback: ResponseCallback<OAuthResponse> by lazy {
@@ -150,16 +150,11 @@ class LoginViewModel(
 
   fun loginUser() {
     viewModelScope.launch(dispatcher.io()) {
-      if (authenticationService.skipLogin() ||
-          authenticationService.isSessionActive(secureSharedPreference.retrieveSessionToken())
-      ) {
+      if (authenticationService.skipLogin() || authenticationService.hasActiveSession()) {
+        Timber.v("Login not needed .. navigating to home directly")
         _navigateToHome.postValue(true)
       } else {
-        authenticationService.loadAccount(
-          accountManager,
-          secureSharedPreference.retrieveSessionUsername(),
-          this@LoginViewModel
-        )
+        authenticationService.loadActiveAccount(this@LoginViewModel)
       }
     }
   }
@@ -169,19 +164,19 @@ class LoginViewModel(
   }
 
   fun onUsernameUpdated(username: String) {
-    _loginError.value = ""
-    _username.value = username
+    _loginError.postValue("")
+    _username.postValue(username)
   }
 
   fun onPasswordUpdated(password: String) {
-    _loginError.value = ""
-    _password.value = password
+    _loginError.postValue("")
+    _password.postValue(password)
   }
 
   override fun run(future: AccountManagerFuture<Bundle>?) {
     val bundle = future?.result ?: bundleOf()
     bundle.getString(AccountManager.KEY_AUTHTOKEN)?.run {
-      if (this.isNotEmpty() && authenticationService.isSessionActive(this)) {
+      if (this.isNotEmpty() && authenticationService.isTokenActive(this)) {
         _navigateToHome.value = true
       }
     }
