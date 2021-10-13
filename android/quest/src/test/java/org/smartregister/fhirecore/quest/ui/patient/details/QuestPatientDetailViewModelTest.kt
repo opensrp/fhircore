@@ -17,16 +17,21 @@
 package org.smartregister.fhirecore.quest.ui.patient.details
 
 import androidx.lifecycle.MutableLiveData
+import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.DiagnosticReport
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.codesystems.DiagnosticReportStatus
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
 import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailViewModel
@@ -38,6 +43,7 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
 
   private lateinit var viewModel: QuestPatientDetailViewModel
   private lateinit var repository: PatientRepository
+  private val patientId = "0"
 
   @Before
   fun setUp() {
@@ -45,9 +51,9 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
     viewModel =
       QuestPatientDetailViewModel.get(
         Robolectric.buildActivity(QuestPatientDetailActivity::class.java).get(),
-        mockk(),
+        ApplicationProvider.getApplicationContext(),
         repository,
-        ""
+        patientId
       )
   }
 
@@ -63,18 +69,15 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
 
   @Test
   fun testVerifyMenuItemClickListener() {
-    var menuItem = ""
 
-    viewModel.setOnMenuItemClickListener { menuItem = it }
-
+    viewModel.setOnMenuItemClickListener { Assert.assertEquals("ONE", it) }
     viewModel.onMenuItemClickListener().invoke("ONE")
-    Assert.assertEquals("ONE", menuItem)
   }
 
   @Test
   fun testGetDemographicsShouldReturnDummyPatient() {
 
-    every { repository.fetchDemographics(any()) } returns
+    every { repository.fetchDemographics(patientId) } returns
       MutableLiveData(
         Patient().apply {
           name =
@@ -91,5 +94,71 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
 
     Assert.assertEquals("john", patient?.name?.first()?.given?.first()?.value)
     Assert.assertEquals("doe", patient?.name?.first()?.family)
+  }
+
+  @Test
+  fun testGetAllFormsShouldReturnListOfQuestionnaireConfig() {
+
+    every { repository.fetchTestForms(any(), any()) } returns
+      MutableLiveData(listOf(QuestionnaireConfig("g6pd-test-result", "G6PD Test Result", "3440")))
+
+    val forms = viewModel.getAllForms().value
+
+    with(forms!!.first()) {
+      Assert.assertEquals("3440", identifier)
+      Assert.assertEquals("g6pd-test-result", form)
+      Assert.assertEquals("G6PD Test Result", title)
+    }
+  }
+
+  @Test
+  fun testGetAllResultsShouldReturnListOfTestReports() {
+
+    every { repository.fetchTestResults(patientId) } returns
+      MutableLiveData(
+        listOf(
+          DiagnosticReport().apply {
+            status = DiagnosticReport.DiagnosticReportStatus.FINAL
+            code = CodeableConcept().apply { text = "Blood Count" }
+          }
+        )
+      )
+
+    val results = viewModel.getAllResults().value
+
+    with(results!!.first()) {
+      Assert.assertEquals(DiagnosticReport.DiagnosticReportStatus.FINAL, status)
+      Assert.assertEquals("Blood Count", code.text)
+    }
+  }
+
+  @Test
+  fun testVerifyFormItemClickListener() {
+
+    viewModel.setOnFormItemClickListener {
+      Assert.assertEquals("test", it.form)
+      Assert.assertEquals("Test", it.title)
+      Assert.assertEquals("0", it.identifier)
+    }
+
+    viewModel.onFormItemClickListener().invoke(QuestionnaireConfig("test", "Test", "0"))
+  }
+
+  @Test
+  fun testVerifyTestResultItemClickListener() {
+
+    viewModel.setOnTestResultItemClickListener {
+      Assert.assertEquals(DiagnosticReport.DiagnosticReportStatus.FINAL, it.status)
+      Assert.assertEquals("Blood Count", it.code.text)
+    }
+
+    viewModel
+      .onTestResultItemClickListener()
+      .invoke(
+        DiagnosticReport().apply {
+          status = DiagnosticReport.DiagnosticReportStatus.FINAL
+          code = CodeableConcept().apply { text = "Blood Count" }
+        }
+      )
   }
 }
