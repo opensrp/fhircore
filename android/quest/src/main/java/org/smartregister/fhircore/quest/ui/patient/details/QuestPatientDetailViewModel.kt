@@ -22,9 +22,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import org.hl7.fhir.r4.model.DiagnosticReport
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.engine.util.FormConfigUtil
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
@@ -52,12 +50,11 @@ class QuestPatientDetailViewModel(
     return mOnMenuItemClickListener
   }
 
-  override fun getAllForms(): List<QuestionnaireConfig> {
-    return FormConfigUtil.loadConfig<List<QuestionnaireConfig>>(
-        QuestionnaireActivity.FORM_CONFIGURATIONS,
-        application
-      )
-      .filter { it.form == "g6pd-test-result" }
+  override fun getAllForms(): LiveData<List<QuestionnaireConfig>> {
+    return repository.fetchTestForms(
+      QuestPatientDetailActivity.CODE,
+      QuestPatientDetailActivity.SYSTEM
+    )
   }
 
   override fun getAllResults(): LiveData<List<DiagnosticReport>> {

@@ -3,10 +3,5 @@
     "form": "patient-registration",
     "title": "Add Patient",
     "identifier": "3435"
-  },
-  {
-    "form": "g6pd-test-result",
-    "title": "+ G6PD Test Result",
-    "identifier": "3440"
   }
 ]

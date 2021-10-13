@@ -71,4 +71,9 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
   }
 
   private fun onTestResultItemClickListener(item: DiagnosticReport) {}
+
+  companion object {
+    const val CODE = "000002"
+    const val SYSTEM = "http://fhir.ona.com"
+  }
 }

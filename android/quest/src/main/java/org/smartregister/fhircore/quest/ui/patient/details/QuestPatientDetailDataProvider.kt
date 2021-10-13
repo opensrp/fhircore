@@ -26,7 +26,7 @@ interface QuestPatientDetailDataProvider {
   fun getDemographics(): LiveData<Patient>
   fun onBackPressListener(): () -> Unit = {}
   fun onMenuItemClickListener(): (menuItem: String) -> Unit = {}
-  fun getAllForms(): List<QuestionnaireConfig>
+  fun getAllForms(): LiveData<List<QuestionnaireConfig>>
   fun getAllResults(): LiveData<List<DiagnosticReport>>
   fun onFormItemClickListener(): (item: QuestionnaireConfig) -> Unit
   fun onTestResultItemClickListener(): (item: DiagnosticReport) -> Unit

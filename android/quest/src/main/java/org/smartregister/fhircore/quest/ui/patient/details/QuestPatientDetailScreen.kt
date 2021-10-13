@@ -164,12 +164,14 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
           Column(modifier = Modifier.padding(16.dp)) {
 
             // fetch forms
-            val forms = dataProvider.getAllForms()
-            forms.forEachIndexed { index, it ->
-              FormItem(it) { dataProvider.onFormItemClickListener().invoke(it) }
+            val forms = dataProvider.getAllForms().observeAsState()
+            forms.value?.let { allForms ->
+              allForms.forEachIndexed { index, it ->
+                FormItem(it) { dataProvider.onFormItemClickListener().invoke(it) }
 
-              if (index < forms.size.minus(1)) {
-                Spacer(Modifier.height(16.dp))
+                if (index < allForms.size.minus(1)) {
+                  Spacer(Modifier.height(16.dp))
+                }
               }
             }
           }
@@ -202,8 +204,7 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
                   }
               ) {
                 Text(
-                  text =
-                    "${item.code.text} ${item.issued?.let { "(" + SimpleDateFormat.getDateInstance().format(it) + ")" }}",
+                  text = item.code.text,
                   color = colorResource(id = R.color.black),
                   fontSize = 17.sp,
                   textAlign = TextAlign.Start,
@@ -264,8 +265,10 @@ fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
       )
     }
 
-    override fun getAllForms(): List<QuestionnaireConfig> {
-      return listOf(QuestionnaireConfig("g6pd-test-result", "+ G6PD Test Result", "3435"))
+    override fun getAllForms(): LiveData<List<QuestionnaireConfig>> {
+      return MutableLiveData(
+        listOf(QuestionnaireConfig("g6pd-test-result", "+ G6PD Test Result", "3435"))
+      )
     }
 
     override fun getAllResults(): LiveData<List<DiagnosticReport>> {
@@ -274,7 +277,7 @@ fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
           DiagnosticReport().apply {
             status = DiagnosticReport.DiagnosticReportStatus.FINAL
             code = CodeableConcept().apply { text = "Simple Test 1" }
-            issued = Date()
+            // issued = Date()
           },
           DiagnosticReport().apply {
             status = DiagnosticReport.DiagnosticReportStatus.FINAL
