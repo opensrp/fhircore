@@ -118,7 +118,7 @@ internal class AncRegisterActivityTest : ActivityRobolectricTest() {
   fun testOnSideMenuOptionSelectedShouldVerifyActivityStarting() {
 
     val menuItemFamily = RoboMenuItem(R.id.menu_item_family)
-    ancRegisterActivity.onSideMenuOptionSelected(menuItemFamily)
+    ancRegisterActivity.onMenuOptionSelected(menuItemFamily)
 
     var expectedIntent = Intent(ancRegisterActivity, FamilyRegisterActivity::class.java)
     var actualIntent =
@@ -127,7 +127,7 @@ internal class AncRegisterActivityTest : ActivityRobolectricTest() {
     assertEquals(expectedIntent.component, actualIntent.component)
 
     val menuItemAnc = RoboMenuItem(R.id.menu_item_anc)
-    ancRegisterActivity.onSideMenuOptionSelected(menuItemAnc)
+    ancRegisterActivity.onMenuOptionSelected(menuItemAnc)
 
     expectedIntent = Intent(ancRegisterActivity, AncRegisterActivity::class.java)
     actualIntent =
