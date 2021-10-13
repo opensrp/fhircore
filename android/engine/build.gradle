@@ -136,7 +136,8 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
 
-    api('com.google.android.fhir:datacapture:0.1.0.5-alpha04') {
+    api('com.google.android.fhir:datacapture:0.1.0-alpha04') {
+        transitive = true
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
