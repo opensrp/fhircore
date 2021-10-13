@@ -32,6 +32,8 @@
       }
     }
   ],
+  "name": "G6PD Test Result",
+  "title": "G6PD Test Result",
   "item": [
     {
       "linkId": "result_type",

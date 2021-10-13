@@ -64,7 +64,7 @@ class QuestApplication : Application(), ConfigurableApplication {
         ResourceType.CarePlan to mapOf(),
         ResourceType.Patient to mapOf(),
         ResourceType.Questionnaire to buildQuestionnaireFilterMap(),
-        ResourceType.QuestionnaireResponse to buildQuestionnaireFilterMap()
+        ResourceType.QuestionnaireResponse to mapOf()
       )
     }
 
