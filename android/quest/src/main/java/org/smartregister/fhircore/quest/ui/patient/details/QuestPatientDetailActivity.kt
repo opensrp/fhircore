@@ -19,7 +19,7 @@ package org.smartregister.fhircore.quest.ui.patient.details
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import org.hl7.fhir.r4.model.DiagnosticReport
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -65,12 +65,17 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
   private fun onFormItemClickListener(item: QuestionnaireConfig) {
     startActivity(
       Intent(this, QuestionnaireActivity::class.java).apply {
-        putExtras(QuestionnaireActivity.requiredIntentArgs(patientId, item.form))
+        putExtras(
+          QuestionnaireActivity.requiredIntentArgs(
+            clientIdentifier = patientId,
+            questionnaireId = item.identifier
+          )
+        )
       }
     )
   }
 
-  private fun onTestResultItemClickListener(item: DiagnosticReport) {}
+  private fun onTestResultItemClickListener(item: QuestionnaireResponse) {}
 
   companion object {
     const val CODE = "000002"

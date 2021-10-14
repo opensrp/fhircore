@@ -3,5 +3,10 @@
     "form": "patient-registration",
     "title": "Add Patient",
     "identifier": "3435"
+  },
+  {
+    "form": "test-results",
+    "title": "Add Test Results",
+    "identifier": "3440"
   }
 ]

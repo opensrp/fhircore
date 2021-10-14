@@ -1,0 +1,136 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "3440",
+  "language": "en",
+  "status": "active",
+  "publisher": "ONA",
+  "subjectType": [
+    "DiagnosticReport"
+  ],
+  "useContext": {
+    "code": [
+      {
+        "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
+        "code": "focus"
+      }
+    ],
+    "valueCodeableConcept": {
+      "coding": {
+        "system": "http://fhir.ona.com",
+        "code": "000002",
+        "display": "G6PD Test Results"
+      }
+    }
+  },
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+      "valueExpression": {
+        "language": "application/x-fhir-query",
+        "expression": "DiagnosticReport",
+        "name": "diagnosticReport"
+      }
+    }
+  ],
+  "name": "G6PD Test Result",
+  "title": "G6PD Test Result",
+  "item": [
+    {
+      "linkId": "result_type",
+      "type": "choice",
+      "text": "G6PD Result Type",
+      "code": [
+        {
+          "system": "http://fhir.ona.com",
+          "code": "000001",
+          "display": "G6PD Result Type"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "https://www.snomed.org",
+            "code": "410680006",
+            "display": "Number"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "https://www.snomed.org",
+            "code": "405358009",
+            "display": "Error"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "https://www.snomed.org",
+            "code": "385432009",
+            "display": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "g6pd",
+      "type": "decimal",
+      "text": "G6PD",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "32546-4",
+          "display": "Glucose-6-Phosphate dehydrogenase in Red Blood Cells"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "result_type",
+          "operator": "=",
+          "answerCoding": {
+            "system": "https://www.snomed.org",
+            "code": "410680006"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "g6pd",
+      "type": "decimal",
+      "text": "Hemoglobin (Hb)",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "718-7",
+          "display": "Hemoglobin in Blood"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "result_type",
+          "operator": "=",
+          "answerCoding": {
+            "system": "https://www.snomed.org",
+            "code": "410680006"
+          }
+        }
+      ]
+    }
+  ]
+}
