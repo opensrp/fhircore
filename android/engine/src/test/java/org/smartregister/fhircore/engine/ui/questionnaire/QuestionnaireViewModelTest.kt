@@ -20,6 +20,7 @@ import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.logicalId
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -30,10 +31,12 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -95,6 +98,37 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals("1903", result.identifier)
 
     unmockkObject(FormConfigUtil)
+  }
+
+  @Test
+  fun testExtractAndSaveResourcesWithTargetStructureMapShouldCallExtractionService() {
+    mockkObject(ResourceMapper)
+
+    coEvery { fhirEngine.load(StructureMap::class.java, any()) } returns StructureMap()
+
+    val questionnaire =
+      Questionnaire().apply {
+        addUseContext().apply {
+          code = Coding().apply { code = "focus" }
+          value = CodeableConcept().apply { addCoding().apply { code = "1234567" } }
+        }
+        addExtension(
+          "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+          CanonicalType("1234")
+        )
+      }
+
+    questionnaireViewModel.extractAndSaveResources(
+      "12345",
+      context,
+      questionnaire,
+      QuestionnaireResponse()
+    )
+
+    coVerify { defaultRepo.save(any()) }
+    coVerify { ResourceMapper.extract(any(), any(), any(), any()) }
+
+    unmockkObject(ResourceMapper)
   }
 
   @Test
