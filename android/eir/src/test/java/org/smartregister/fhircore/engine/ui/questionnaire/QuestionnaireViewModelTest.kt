@@ -189,6 +189,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         }
       )
     )
+    questionnaire.addSubjectType("Patient")
     val questionnaireResponse = QuestionnaireResponse()
     val questionnaireResponseSlot = slot<QuestionnaireResponse>()
 

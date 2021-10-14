@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import java.text.SimpleDateFormat
+import java.util.Date
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
@@ -74,6 +75,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
@@ -204,7 +206,8 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
                   }
               ) {
                 Text(
-                  text = item.meta?.tagFirstRep?.display ?: "",
+                  text = (item.meta?.tagFirstRep?.display
+                      ?: "") + " (${item.authored?.asDdMmmYyyy() ?: ""}) ",
                   color = colorResource(id = R.color.black),
                   fontSize = 17.sp,
                   textAlign = TextAlign.Start,
@@ -276,6 +279,7 @@ fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
         listOf(
           QuestionnaireResponse().apply {
             meta = Meta().apply { tag = listOf(Coding().apply { display = "G6PD Test" }) }
+            authored = Date()
           }
         )
       )

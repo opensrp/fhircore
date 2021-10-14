@@ -24,6 +24,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import com.google.android.fhir.datacapture.targetStructureMap
+import java.util.Date
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,11 +37,13 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FormConfigUtil
+import org.smartregister.fhircore.engine.util.extension.isIn
 
 open class QuestionnaireViewModel(
   application: Application,
@@ -80,19 +84,44 @@ open class QuestionnaireViewModel(
     questionnaireResponse: QuestionnaireResponse
   ) {
     viewModelScope.launch {
-      resourceId?.let {
-        questionnaireResponse.id = UUID.randomUUID().toString()
-        questionnaire.useContext.firstOrNull()?.let {
-          if (it.hasValue() && it.hasValueCodeableConcept())
-            questionnaireResponse.meta.tag = it.valueCodeableConcept.coding
+      saveQuestionnaireResponse(resourceId, questionnaire, questionnaireResponse)
+
+      // if no structure-map and no extraction is configured return without further processing
+      if (questionnaire.targetStructureMap != null ||
+          questionnaire.extension.any { it.url.contains("sdc-questionnaire-itemExtractionContext") }
+      ) {
+        val bundle = performExtraction(questionnaire, questionnaireResponse, context)
+
+        bundle.entry.forEach { bun ->
+          // if it is a registration questionnaire add tags to entities representing individuals
+          if (resourceId == null &&
+              bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)
+          ) {
+            questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
+              it.valueCodeableConcept.coding.forEach { bun.resource.meta.addTag(it) }
+            }
+          }
         }
-        questionnaireResponse.subject = Reference().apply { reference = "Patient/$it" }
-        defaultRepository.save(questionnaireResponse)
+
+        saveBundleResources(bundle)
+      } else viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
+    }
+  }
+
+  suspend fun saveQuestionnaireResponse(
+    resourceId: String?,
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse
+  ) {
+    val subjectType = questionnaire.subjectType.firstOrNull()?.code ?: ResourceType.Patient.name
+    if (resourceId?.isNotBlank() == true) {
+      questionnaireResponse.id = UUID.randomUUID().toString()
+      questionnaireResponse.authored = Date()
+      questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
+        it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
       }
-
-      val bundle = performExtraction(questionnaire, questionnaireResponse, context)
-
-      saveBundleResources(bundle)
+      questionnaireResponse.subject = Reference().apply { reference = "$subjectType/$resourceId" }
+      defaultRepository.save(questionnaireResponse)
     }
   }
 

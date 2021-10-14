@@ -5,7 +5,7 @@
   "status": "active",
   "publisher": "ONA",
   "subjectType": [
-    "DiagnosticReport"
+    "Patient"
   ],
   "useContext": {
     "code": [
@@ -22,16 +22,6 @@
       }
     }
   },
-  "extension": [
-    {
-      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
-      "valueExpression": {
-        "language": "application/x-fhir-query",
-        "expression": "DiagnosticReport",
-        "name": "diagnosticReport"
-      }
-    }
-  ],
   "name": "G6PD Test Result",
   "title": "G6PD Test Result",
   "item": [
@@ -39,6 +29,7 @@
       "linkId": "result_type",
       "type": "choice",
       "text": "G6PD Result Type",
+      "required": true,
       "code": [
         {
           "system": "http://fhir.ona.com",
@@ -80,6 +71,7 @@
       "linkId": "g6pd",
       "type": "decimal",
       "text": "G6PD",
+      "required": true,
       "code": [
         {
           "system": "http://loinc.org",
@@ -108,6 +100,7 @@
       "linkId": "g6pd",
       "type": "decimal",
       "text": "Hemoglobin (Hb)",
+      "required": true,
       "code": [
         {
           "system": "http://loinc.org",

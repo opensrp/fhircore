@@ -13,6 +13,11 @@
     "showNewClientButton": true,
     "showSideMenu": false,
     "showBottomMenu": true,
-    "registrationForm": "patient-registration"
+    "registrationForm": "patient-registration",
+    "primaryFilter": {
+      "key": "_tag",
+      "system": "http://fhir.ona.com",
+      "code": "000003"
+    }
   }
 ]
