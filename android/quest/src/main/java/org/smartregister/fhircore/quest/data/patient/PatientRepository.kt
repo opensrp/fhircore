@@ -22,6 +22,7 @@ import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
@@ -29,7 +30,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -48,14 +48,16 @@ class PatientRepository(
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : RegisterRepository<Patient, PatientItem> {
 
-  suspend fun getPrimaryFilter(): Coding {
-    val registrationQuest =
-      fhirEngine.load(Questionnaire::class.java, registrationQuestConfig!!.identifier)
-    return registrationQuest.useContext.firstOrNull()?.valueCodeableConcept?.codingFirstRep
-      ?: Coding().apply {
-        code = ""
-        system = ""
-      }
+  suspend fun applyPrimaryFilter(search: Search) {
+    val registrationUseContext =
+      fhirEngine
+        .load(Questionnaire::class.java, registrationQuestConfig!!.identifier)
+        .useContext
+        .firstOrNull()
+        ?.valueCodeableConcept
+    if (registrationUseContext != null) {
+      search.filter(TokenClientParam("_tag"), registrationUseContext.codingFirstRep)
+    } else search.filter(Patient.ACTIVE, true)
   }
 
   override suspend fun loadData(
@@ -67,7 +69,7 @@ class PatientRepository(
       val patients =
         fhirEngine.search<Patient> {
           // TODO make is more dynamic for future i.e. load from Binary or Extend SearchParam
-          filter(TokenClientParam("_tag"), getPrimaryFilter())
+          applyPrimaryFilter(this)
 
           if (query.isNotBlank()) {
             filter(Patient.NAME) {
@@ -85,9 +87,7 @@ class PatientRepository(
   }
 
   override suspend fun countAll(): Long =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.count<Patient> { filter(TokenClientParam("_tag"), getPrimaryFilter()) }
-    }
+    withContext(dispatcherProvider.io()) { fhirEngine.count<Patient> { applyPrimaryFilter(this) } }
 
   fun fetchDemographics(patientId: String): LiveData<Patient> {
     val data = MutableLiveData<Patient>()

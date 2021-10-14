@@ -20,6 +20,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider.fhirEngine
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import java.util.Calendar
 import java.util.Date
@@ -37,6 +38,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
@@ -56,7 +58,12 @@ class PatientRepositoryTest : RobolectricTest() {
     fhirEngine = mockk()
 
     repository =
-      PatientRepository(fhirEngine, PatientItemMapper, coroutinesTestRule.testDispatcherProvider)
+      PatientRepository(
+        fhirEngine,
+        PatientItemMapper,
+        QuestionnaireConfig("my-form", "My Form", "1234"),
+        coroutinesTestRule.testDispatcherProvider
+      )
   }
 
   @Test
@@ -71,6 +78,7 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @Test
   fun testLoadDataShouldReturnPatientItemList() = runBlockingTest {
+    coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns Questionnaire()
     coEvery { fhirEngine.search<Patient>(any()) } returns
       listOf(buildPatient("1234", "Doe", "John", 1))
     coEvery { fhirEngine.count(any()) } returns 1
@@ -80,6 +88,9 @@ class PatientRepositoryTest : RobolectricTest() {
     Assert.assertEquals("1234", data[0].id)
     Assert.assertEquals("John Doe", data[0].name)
     Assert.assertEquals("1", data[0].age)
+
+    coVerify { fhirEngine.load(Questionnaire::class.java, any()) }
+    coVerify { fhirEngine.search<Patient>(any()) }
   }
 
   @Test
