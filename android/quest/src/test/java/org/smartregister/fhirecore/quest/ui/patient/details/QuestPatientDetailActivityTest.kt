@@ -81,7 +81,7 @@ class QuestPatientDetailActivityTest : ActivityRobolectricTest() {
       "onFormItemClickListener",
       ReflectionHelpers.ClassParameter(
         QuestionnaireConfig::class.java,
-        QuestionnaireConfig("", "", "")
+        QuestionnaireConfig("test-form", "Title", "1234")
       )
     )
 
