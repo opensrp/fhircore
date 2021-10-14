@@ -18,30 +18,45 @@ package org.smartregister.fhircore.quest.data.patient
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.StringFilterModifier
+import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
+import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.countActivePatients
-import org.smartregister.fhircore.engine.util.extension.searchActivePatients
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 
 class PatientRepository(
   override val fhirEngine: FhirEngine,
   override val domainMapper: DomainMapper<Patient, PatientItem>,
+  private val registrationQuestConfig: QuestionnaireConfig? = null,
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : RegisterRepository<Patient, PatientItem> {
+
+  suspend fun getPrimaryFilter(): Coding {
+    val registrationQuest =
+      fhirEngine.load(Questionnaire::class.java, registrationQuestConfig!!.identifier)
+    return registrationQuest.useContext.firstOrNull()?.valueCodeableConcept?.codingFirstRep
+      ?: Coding().apply {
+        code = ""
+        system = ""
+      }
+  }
 
   override suspend fun loadData(
     query: String,
@@ -50,14 +65,29 @@ class PatientRepository(
   ): List<PatientItem> {
     return withContext(dispatcherProvider.io()) {
       val patients =
-        fhirEngine.searchActivePatients(query = query, pageNumber = pageNumber, loadAll = loadAll)
+        fhirEngine.search<Patient> {
+          // TODO make is more dynamic for future i.e. load from Binary or Extend SearchParam
+          filter(TokenClientParam("_tag"), getPrimaryFilter())
+
+          if (query.isNotBlank()) {
+            filter(Patient.NAME) {
+              modifier = StringFilterModifier.CONTAINS
+              value = query.trim()
+            }
+          }
+          sort(Patient.NAME, Order.ASCENDING)
+          count = if (loadAll) countAll()?.toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
+          from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+        }
 
       patients.map { domainMapper.mapToDomainModel(it) }
     }
   }
 
   override suspend fun countAll(): Long =
-    withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.count<Patient> { filter(TokenClientParam("_tag"), getPrimaryFilter()) }
+    }
 
   fun fetchDemographics(patientId: String): LiveData<Patient> {
     val data = MutableLiveData<Patient>()
