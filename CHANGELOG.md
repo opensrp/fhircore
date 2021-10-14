@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Patient List, Load Config from server
 - Quest | Added Patient Profile View
 - Quest | Patient Registration Questionnaire
+- Quest | Test Results Questionnaire
 
 ### Fixed
 
