@@ -99,9 +99,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { defaultRepo.save(any()) } returns Unit
     coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
 
-    val config =
-      QuestionnaireConfig(form = "patient-registration", title = "Add Patient", identifier = "1452")
-    questionnaireViewModel = spyk(QuestionnaireViewModel(EirApplication.getContext(), config))
+    questionnaireViewModel = spyk(QuestionnaireViewModel(EirApplication.getContext()))
     ReflectionHelpers.setField(questionnaireViewModel, "defaultRepository", defaultRepo)
   }
 
@@ -127,7 +125,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     bundle.total = size
 
     // call the method under test
-    questionnaireViewModel.saveBundleResources(bundle, resourceId)
+    questionnaireViewModel.saveBundleResources(bundle)
 
     coVerify(exactly = size) { defaultRepo.addOrUpdate(any()) }
   }
@@ -153,11 +151,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     bundle.total = size
 
     // call the method under test
-    questionnaireViewModel.saveBundleResources(bundle, resourceId)
+    questionnaireViewModel.saveBundleResources(bundle)
 
     coVerify(exactly = 1) { defaultRepo.addOrUpdate(capture(resource)) }
-
-    Assert.assertEquals(resourceId, resource.captured.id)
   }
 
   @Test
@@ -194,9 +190,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       )
     )
     val questionnaireResponse = QuestionnaireResponse()
-    val resourceIdSlot = slot<String>()
+    val questionnaireResponseSlot = slot<QuestionnaireResponse>()
 
-    every { questionnaireViewModel.saveBundleResources(any(), any()) } just runs
+    every { questionnaireViewModel.saveBundleResources(any()) } just runs
 
     ReflectionHelpers.setField(context, "workerContextProvider", mockk<SimpleWorkerContext>())
 
@@ -207,11 +203,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireResponse
     )
 
-    coVerify(exactly = 1) {
-      questionnaireViewModel.saveBundleResources(any(), capture(resourceIdSlot))
-    }
+    coVerify(exactly = 1) { defaultRepo.save(capture(questionnaireResponseSlot)) }
 
-    Assert.assertEquals("0993ldsfkaljlsnldm", resourceIdSlot.captured)
+    coVerify(exactly = 1) { questionnaireViewModel.saveBundleResources(any()) }
+
+    Assert.assertEquals(
+      "0993ldsfkaljlsnldm",
+      questionnaireResponseSlot.captured.subject.reference.replace("Patient/", "")
+    )
   }
 
   @Test

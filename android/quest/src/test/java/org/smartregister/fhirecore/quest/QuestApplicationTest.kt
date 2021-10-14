@@ -20,6 +20,7 @@ import androidx.test.core.app.ApplicationProvider
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 import org.robolectric.annotation.Config
@@ -31,8 +32,6 @@ import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
 
 @Config(shadows = [QuestApplicationShadow::class])
 class QuestApplicationTest : RobolectricTest() {
-
-  val application = ApplicationProvider.getApplicationContext<QuestApplication>()
 
   @Test
   fun testConstructFhirEngineShouldReturnNonNull() {
@@ -55,5 +54,18 @@ class QuestApplicationTest : RobolectricTest() {
     verify { application.configureApplication(capture(config)) }
 
     Assert.assertEquals(QuestApplication.CONFIG_APP, config.captured.id)
+  }
+
+  @Test
+  fun testResourceSyncParam() {
+    val application = spyk(ApplicationProvider.getApplicationContext<QuestApplication>())
+
+    val syncParam = application.resourceSyncParams
+    Assert.assertEquals(5, syncParam.size)
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Patient))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Binary))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.CarePlan))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Questionnaire))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.QuestionnaireResponse))
   }
 }
