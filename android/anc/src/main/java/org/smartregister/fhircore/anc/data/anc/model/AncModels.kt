@@ -47,7 +47,6 @@ data class AncPatientDetailItem(
 @Stable
 data class CarePlanItem(
   var carePlanIdentifier: String = "",
-  var patientIdentifier: String = "",
   var title: String = "",
   var due: Boolean,
   var overdue: Boolean
@@ -56,7 +55,6 @@ data class CarePlanItem(
 @Stable
 data class UpcomingServiceItem(
   var encounterIdentifier: String = "",
-  var patientIdentifier: String = "",
   var title: String = "",
   var date: String = ""
 )

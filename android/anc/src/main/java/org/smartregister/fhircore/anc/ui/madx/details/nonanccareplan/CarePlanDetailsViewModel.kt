@@ -48,8 +48,7 @@ class CarePlanDetailsViewModel(
     val patientEncounters = MutableLiveData<List<UpcomingServiceItem>>()
     viewModelScope.launch(dispatcher.io()) {
       val listEncounters = ancPatientRepository.fetchCarePlan(patientId = patientId)
-      val listEncountersItem =
-        ancPatientRepository.fetchUpcomingServiceItem(patientId = patientId, listEncounters)
+      val listEncountersItem = ancPatientRepository.fetchUpcomingServiceItem(listEncounters)
       patientEncounters.postValue(listEncountersItem)
     }
     return patientEncounters

@@ -1,0 +1,41 @@
+[
+  {
+    "id": "anc_overview",
+    "eddFilter": {
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "",
+        "code": "edd"
+      }
+    },
+    "gaFilter": {
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "",
+        "code": "ga"
+      }
+    },
+    "fetusesFilter": {
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "",
+        "code": "fetuses"
+      }
+    },
+    "riskFilter": {
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "",
+        "code": "risk"
+      }
+    }
+  }
+]

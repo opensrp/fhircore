@@ -58,6 +58,9 @@ import org.junit.Test
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
 import org.smartregister.fhircore.anc.data.anc.model.AncVisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.ui.anccare.details.CarePlanItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.details.LastSceneItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.details.UpcomingServiceItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
@@ -72,7 +75,16 @@ class AncPatientRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     fhirEngine = spyk()
-    repository = spyk(AncPatientRepository(fhirEngine, AncItemMapper))
+    repository =
+      spyk(
+        AncPatientRepository(
+          fhirEngine,
+          AncItemMapper,
+          CarePlanItemMapper,
+          UpcomingServiceItemMapper,
+          LastSceneItemMapper
+        )
+      )
   }
 
   @Test
@@ -198,9 +210,8 @@ class AncPatientRepositoryTest : RobolectricTest() {
   fun fetchCarePlanItemTest() {
     val patientId = "1111"
     val carePlan = listOf(buildCarePlanWithActive(patientId))
-    val listCarePlan = repository.fetchCarePlanItem(carePlan = carePlan, patientId = patientId)
+    val listCarePlan = repository.fetchCarePlanItem(carePlan = carePlan)
     if (listCarePlan.isNotEmpty()) {
-      assertEquals(patientId, listCarePlan[0].patientIdentifier)
       assertEquals("ABC", listCarePlan[0].title)
     }
   }
@@ -209,9 +220,7 @@ class AncPatientRepositoryTest : RobolectricTest() {
   fun fetchUpcomingServiceItemTest() {
     val patientId = "1111"
     val carePlan = listOf(buildCarePlanWithActive(patientId))
-    val listUpcomingServiceItem =
-      repository.fetchUpcomingServiceItem(patientId = patientId, carePlan = carePlan)
-    assertEquals(patientId, listUpcomingServiceItem[0].patientIdentifier)
+    val listUpcomingServiceItem = repository.fetchUpcomingServiceItem(carePlan = carePlan)
     assertEquals("ABC", listUpcomingServiceItem[0].title)
     assertEquals(Date().makeItReadable(), listUpcomingServiceItem[0].date)
   }
@@ -220,8 +229,7 @@ class AncPatientRepositoryTest : RobolectricTest() {
   fun fetchLastSceneItemTest() {
     val patientId = "1111"
     val encounter = listOf(getEncounter(patientId))
-    val listLastItem = repository.fetchLastSeenItem(patientId = patientId, encounter)
-    assertEquals(patientId, listLastItem[0].patientIdentifier)
+    val listLastItem = repository.fetchLastSeenItem(encounter)
     assertEquals("ABC", listLastItem[0].title)
   }
 

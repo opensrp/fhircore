@@ -146,7 +146,7 @@ internal class VitalSignsDetailsFragmentTest : FragmentRobolectricTest() {
       "handleEncounters",
       ReflectionHelpers.ClassParameter(
         List::class.java,
-        listOf(EncounterItem("1111", patientId, "ABC", "2020-02-01"))
+        listOf(EncounterItem("1111", "ABC", "2020-02-01"))
       )
     )
 

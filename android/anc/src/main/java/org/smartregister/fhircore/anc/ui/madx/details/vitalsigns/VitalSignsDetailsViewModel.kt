@@ -36,8 +36,7 @@ class VitalSignsDetailsViewModel(
     val patientEncounters = MutableLiveData<List<EncounterItem>>()
     viewModelScope.launch(dispatcher.io()) {
       val listEncounters = ancPatientRepository.fetchEncounters(patientId = patientId)
-      val listEncountersItem =
-        ancPatientRepository.fetchEncounterItem(patientId = patientId, listEncounters)
+      val listEncountersItem = ancPatientRepository.fetchEncounterItem(listEncounters)
       patientEncounters.postValue(listEncountersItem)
     }
     return patientEncounters

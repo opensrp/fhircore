@@ -58,20 +58,20 @@ class AllergiesAdapterTest : RobolectricTest() {
   fun testAdapterDiffUtilEquatesDifferentObjectsWithSameId() {
 
     val diffCallback = AllergiesAdapter.AllergiesItemDiffCallback
-    val item = AllergiesItem("1111", "1110", "first")
+    val item = AllergiesItem("1111", "first")
 
     // change title only
-    val itemDifferentVaccine = AllergiesItem("1111", "1110", "second")
+    val itemDifferentVaccine = AllergiesItem("1111", "second")
     Assert.assertFalse(diffCallback.areItemsTheSame(item, itemDifferentVaccine))
     Assert.assertFalse(diffCallback.areContentsTheSame(item, itemDifferentVaccine))
 
     // same title with different content
-    val itemWithMatchingVaccine = AllergiesItem("1111", "1112", "first")
+    val itemWithMatchingVaccine = AllergiesItem("1112", "first")
     Assert.assertTrue(diffCallback.areItemsTheSame(item, itemWithMatchingVaccine))
     Assert.assertFalse(diffCallback.areContentsTheSame(item, itemWithMatchingVaccine))
 
     // identical items
-    val identical = AllergiesItem("1111", "1110", "first")
+    val identical = AllergiesItem("1111", "first")
     Assert.assertTrue(diffCallback.areItemsTheSame(item, identical))
     Assert.assertTrue(diffCallback.areContentsTheSame(item, identical))
   }

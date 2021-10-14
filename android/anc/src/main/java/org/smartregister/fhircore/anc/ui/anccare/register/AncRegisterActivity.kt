@@ -27,6 +27,9 @@ import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
+import org.smartregister.fhircore.anc.ui.anccare.details.CarePlanItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.details.LastSceneItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.details.UpcomingServiceItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
@@ -53,7 +56,13 @@ class AncRegisterActivity : BaseRegisterActivity() {
       FamilyRepository((application as AncApplication).fhirEngine, FamilyItemMapper)
 
     ancPatientRepository =
-      AncPatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
+      AncPatientRepository(
+        (application as AncApplication).fhirEngine,
+        AncItemMapper,
+        CarePlanItemMapper,
+        UpcomingServiceItemMapper,
+        LastSceneItemMapper
+      )
 
     findViewById<Button>(R.id.btn_register_new_client).hide()
   }

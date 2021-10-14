@@ -157,7 +157,7 @@ internal class CarePlanDetailsFragmentTest : FragmentRobolectricTest() {
       "handleCarePlan",
       ReflectionHelpers.ClassParameter(
         List::class.java,
-        listOf(CarePlanItem("1111", patientId, "", due = true, overdue = false))
+        listOf(CarePlanItem("1111", "", due = true, overdue = false))
       )
     )
 
@@ -192,7 +192,7 @@ internal class CarePlanDetailsFragmentTest : FragmentRobolectricTest() {
       "handleEncounters",
       ReflectionHelpers.ClassParameter(
         List::class.java,
-        listOf(UpcomingServiceItem("1111", patientId, "ABC", "2020-02-01"))
+        listOf(UpcomingServiceItem("1111", "ABC", "2020-02-01"))
       )
     )
 

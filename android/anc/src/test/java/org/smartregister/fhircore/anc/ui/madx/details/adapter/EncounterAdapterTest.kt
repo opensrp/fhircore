@@ -58,20 +58,20 @@ class EncounterAdapterTest : RobolectricTest() {
   fun testAdapterDiffUtilEquatesDifferentObjectsWithSameId() {
 
     val diffCallback = EncounterAdapter.EncounterItemDiffCallback
-    val item = EncounterItem("1111", "1110", "first", date = "2021-02-01")
+    val item = EncounterItem("1111", "first", date = "2021-02-01")
 
     // change title only
-    val itemDifferentVaccine = EncounterItem("1111", "1110", "second", date = "2021-02-01")
+    val itemDifferentVaccine = EncounterItem("1111", "second", date = "2021-02-01")
     Assert.assertFalse(diffCallback.areItemsTheSame(item, itemDifferentVaccine))
     Assert.assertFalse(diffCallback.areContentsTheSame(item, itemDifferentVaccine))
 
     // same title with different content
-    val itemWithMatchingVaccine = EncounterItem("1111", "1110", "first", date = "2021-02-02")
+    val itemWithMatchingVaccine = EncounterItem("1111", "first", date = "2021-02-02")
     Assert.assertTrue(diffCallback.areItemsTheSame(item, itemWithMatchingVaccine))
     Assert.assertFalse(diffCallback.areContentsTheSame(item, itemWithMatchingVaccine))
 
     // identical items
-    val identical = EncounterItem("1111", "1110", "first", date = "2021-02-01")
+    val identical = EncounterItem("1111", "first", date = "2021-02-01")
     Assert.assertTrue(diffCallback.areItemsTheSame(item, identical))
     Assert.assertTrue(diffCallback.areContentsTheSame(item, identical))
   }

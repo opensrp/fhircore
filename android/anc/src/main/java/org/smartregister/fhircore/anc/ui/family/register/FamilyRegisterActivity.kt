@@ -26,6 +26,9 @@ import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
+import org.smartregister.fhircore.anc.ui.anccare.details.CarePlanItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.details.LastSceneItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.details.UpcomingServiceItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
@@ -50,7 +53,13 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
       FamilyRepository((application as AncApplication).fhirEngine, FamilyItemMapper)
 
     ancPatientRepository =
-      AncPatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
+      AncPatientRepository(
+        (application as AncApplication).fhirEngine,
+        AncItemMapper,
+        CarePlanItemMapper,
+        UpcomingServiceItemMapper,
+        LastSceneItemMapper
+      )
   }
 
   override fun sideMenuOptions(): List<SideMenuOption> =

@@ -26,6 +26,9 @@ import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
 import org.smartregister.fhircore.anc.data.anc.model.AncVisitStatus
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
+import org.smartregister.fhircore.anc.ui.anccare.details.CarePlanItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.details.LastSceneItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.details.UpcomingServiceItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.components.AncPatientList
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
@@ -84,7 +87,10 @@ class AncRegisterFragment : ComposeRegisterFragment<Anc, AncPatientItem>() {
     val ancPatientRepository =
       AncPatientRepository(
         (requireActivity().application as AncApplication).fhirEngine,
-        AncItemMapper
+        AncItemMapper,
+        CarePlanItemMapper,
+        UpcomingServiceItemMapper,
+        LastSceneItemMapper
       )
     return ViewModelProvider(
       requireActivity(),

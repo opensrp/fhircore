@@ -420,7 +420,10 @@ class AncDetailsFragment : Fragment() {
   fun getAncPatientRepository(): AncPatientRepository {
     return AncPatientRepository(
       (requireActivity().application as AncApplication).fhirEngine,
-      AncPatientItemMapper
+      AncPatientItemMapper,
+      CarePlanItemMapper,
+      UpcomingServiceItemMapper,
+      LastSceneItemMapper
     )
   }
 }

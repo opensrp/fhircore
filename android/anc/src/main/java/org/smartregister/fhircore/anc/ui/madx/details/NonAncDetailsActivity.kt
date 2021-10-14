@@ -66,7 +66,12 @@ class NonAncDetailsActivity : BaseMultiLanguageActivity() {
 
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
-    ancPatientRepository = NonAncPatientRepository((application as AncApplication).fhirEngine)
+    ancPatientRepository =
+      NonAncPatientRepository(
+        (application as AncApplication).fhirEngine,
+        CarePlanItemMapper,
+        UpcomingServiceItemMapper
+      )
 
     ancDetailsViewModel =
       ViewModelProvider(
