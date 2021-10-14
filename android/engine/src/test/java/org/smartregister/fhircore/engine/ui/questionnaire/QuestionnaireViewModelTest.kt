@@ -31,9 +31,11 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StructureMap
@@ -105,6 +107,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     mockkObject(ResourceMapper)
 
     coEvery { fhirEngine.load(StructureMap::class.java, any()) } returns StructureMap()
+    coEvery { ResourceMapper.extract(any(), any(), any(), any()) } returns
+      Bundle().apply { addEntry().apply { this.resource = Patient().apply { id = "123456" } } }
 
     val questionnaire =
       Questionnaire().apply {
@@ -127,6 +131,43 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coVerify { defaultRepo.save(any()) }
     coVerify { ResourceMapper.extract(any(), any(), any(), any()) }
+
+    unmockkObject(ResourceMapper)
+  }
+
+  @Test
+  fun testExtractAndSaveResourcesWithExtrcationExtensionAndNullResourceShouldAssignTags() {
+    mockkObject(ResourceMapper)
+
+    coEvery { fhirEngine.load(StructureMap::class.java, any()) } returns StructureMap()
+    coEvery { ResourceMapper.extract(any(), any(), any(), any()) } returns
+      Bundle().apply { addEntry().apply { this.resource = Patient().apply { id = "123456" } } }
+
+    val questionnaire =
+      Questionnaire().apply {
+        addUseContext().apply {
+          code = Coding().apply { code = "focus" }
+          value = CodeableConcept().apply { addCoding().apply { code = "1234567" } }
+        }
+        addExtension(
+          "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+          CanonicalType("1234")
+        )
+      }
+
+    questionnaireViewModel.extractAndSaveResources(
+      null,
+      context,
+      questionnaire,
+      QuestionnaireResponse()
+    )
+
+    val patientSlot = slot<Patient>()
+
+    coVerify { ResourceMapper.extract(any(), any(), any(), any()) }
+    coVerify { defaultRepo.addOrUpdate(capture(patientSlot)) }
+
+    Assert.assertEquals("1234567", patientSlot.captured.meta.tagFirstRep.code)
 
     unmockkObject(ResourceMapper)
   }

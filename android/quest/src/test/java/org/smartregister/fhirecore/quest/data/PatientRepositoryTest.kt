@@ -28,11 +28,13 @@ import java.util.Date
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateType
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -43,6 +45,7 @@ import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
+import org.smartregister.fhircore.quest.data.patient.model.genderFull
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
 import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
@@ -88,7 +91,7 @@ class PatientRepositoryTest : RobolectricTest() {
   @Test
   fun testLoadDataShouldReturnPatientItemList() = runBlockingTest {
     coEvery { fhirEngine.search<Patient>(any()) } returns
-      listOf(buildPatient("1234", "Doe", "John", 1))
+      listOf(buildPatient("1234", "Doe", "John", 1, Enumerations.AdministrativeGender.FEMALE))
     coEvery { fhirEngine.count(any()) } returns 1
 
     val data = repository.loadData("", 0, true)
@@ -96,6 +99,8 @@ class PatientRepositoryTest : RobolectricTest() {
     Assert.assertEquals("1234", data[0].id)
     Assert.assertEquals("John Doe", data[0].name)
     Assert.assertEquals("1", data[0].age)
+    Assert.assertEquals("F", data[0].gender)
+    Assert.assertEquals("Female", data[0].genderFull())
 
     coVerify { fhirEngine.search<Patient>(any()) }
   }
@@ -132,7 +137,13 @@ class PatientRepositoryTest : RobolectricTest() {
     }
   }
 
-  private fun buildPatient(id: String, family: String, given: String, age: Int): Patient {
+  private fun buildPatient(
+    id: String,
+    family: String,
+    given: String,
+    age: Int,
+    gender: Enumerations.AdministrativeGender = Enumerations.AdministrativeGender.MALE
+  ): Patient {
     return Patient().apply {
       this.id = id
       this.identifierFirstRep.value = id
@@ -140,6 +151,7 @@ class PatientRepositoryTest : RobolectricTest() {
         this.family = family
         this.given.add(StringType(given))
       }
+      this.gender = gender
       this.birthDate = DateType(Date()).apply { add(Calendar.YEAR, -age) }.dateTimeValue().value
 
       this.addAddress().apply {
