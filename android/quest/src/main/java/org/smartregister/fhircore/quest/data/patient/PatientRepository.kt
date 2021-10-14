@@ -30,9 +30,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
@@ -44,19 +46,20 @@ import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 class PatientRepository(
   override val fhirEngine: FhirEngine,
   override val domainMapper: DomainMapper<Patient, PatientItem>,
-  private val registrationQuestConfig: QuestionnaireConfig? = null,
+  private val registerViewConfiguration: MutableLiveData<RegisterViewConfiguration>? = null,
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : RegisterRepository<Patient, PatientItem> {
 
-  suspend fun applyPrimaryFilter(search: Search) {
-    val registrationUseContext =
-      fhirEngine
-        .load(Questionnaire::class.java, registrationQuestConfig!!.identifier)
-        .useContext
-        .firstOrNull()
-        ?.valueCodeableConcept
-    if (registrationUseContext != null) {
-      search.filter(TokenClientParam("_tag"), registrationUseContext.codingFirstRep)
+  fun applyPrimaryFilter(search: Search) {
+    val filter = registerViewConfiguration?.value?.primaryFilter
+    if (filter != null) {
+      search.filter(
+        TokenClientParam(filter.key),
+        Coding().apply {
+          code = filter.code
+          system = filter.system
+        }
+      )
     } else search.filter(Patient.ACTIVE, true)
   }
 
@@ -68,7 +71,6 @@ class PatientRepository(
     return withContext(dispatcherProvider.io()) {
       val patients =
         fhirEngine.search<Patient> {
-          // TODO make is more dynamic for future i.e. load from Binary or Extend SearchParam
           applyPrimaryFilter(this)
 
           if (query.isNotBlank()) {

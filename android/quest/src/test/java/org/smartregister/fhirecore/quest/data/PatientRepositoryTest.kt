@@ -17,8 +17,9 @@
 package org.smartregister.fhirecore.quest.data
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.MutableLiveData
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.FhirEngineProvider.fhirEngine
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -38,7 +39,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.view.SearchFilter
+import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
+import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
@@ -57,11 +60,17 @@ class PatientRepositoryTest : RobolectricTest() {
   fun setUp() {
     fhirEngine = mockk()
 
+    val config =
+      ApplicationProvider.getApplicationContext<QuestApplication>()
+        .registerViewConfigurationOf(
+          primaryFilter = SearchFilter("_tag", "1111", "http://mysystem")
+        )
+
     repository =
       PatientRepository(
         fhirEngine,
         PatientItemMapper,
-        QuestionnaireConfig("my-form", "My Form", "1234"),
+        MutableLiveData(config),
         coroutinesTestRule.testDispatcherProvider
       )
   }
@@ -78,7 +87,6 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @Test
   fun testLoadDataShouldReturnPatientItemList() = runBlockingTest {
-    coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns Questionnaire()
     coEvery { fhirEngine.search<Patient>(any()) } returns
       listOf(buildPatient("1234", "Doe", "John", 1))
     coEvery { fhirEngine.count(any()) } returns 1
@@ -89,7 +97,6 @@ class PatientRepositoryTest : RobolectricTest() {
     Assert.assertEquals("John Doe", data[0].name)
     Assert.assertEquals("1", data[0].age)
 
-    coVerify { fhirEngine.load(Questionnaire::class.java, any()) }
     coVerify { fhirEngine.search<Patient>(any()) }
   }
 
