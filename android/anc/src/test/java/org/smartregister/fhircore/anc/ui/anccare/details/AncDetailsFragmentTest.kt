@@ -40,6 +40,7 @@ import kotlinx.android.synthetic.main.fragment_anc_details.textView_CQLResults
 import kotlinx.android.synthetic.main.fragment_anc_details.textView_EvaluateCQLHeader
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -57,7 +58,6 @@ import org.smartregister.fhircore.anc.data.anc.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.robolectric.FragmentRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.util.FileUtil
 
 @ExperimentalCoroutinesApi
 @Config(shadows = [AncApplicationShadow::class])
@@ -78,8 +78,6 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
 
   private val patientId = "samplePatientId"
   var ancPatientDetailItem = spyk<AncPatientDetailItem>()
-
-  val fileUtil = FileUtil()
 
   @Before
   fun setUp() {
@@ -474,5 +472,21 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
       true,
       patientDetailsFragment.button_CQL_Measure_Evaluate.hasOnClickListeners()
     )
+  }
+
+  @Test
+  fun handleParametersQCLMeasureTest() {
+    var dummyJson = "{ \"id\": 0, \"name\": \"Dominique Prince\" }"
+    val jsonObject = JSONObject(dummyJson)
+    val auxText = jsonObject.toString(4)
+
+    patientDetailsFragment.handleParametersQCLMeasure(dummyJson)
+    Assert.assertEquals(patientDetailsFragment.textView_CQLResults.text, auxText)
+  }
+
+  @Test
+  fun startProgressBarAndTextViewCQLResultsTest() {
+    patientDetailsFragment.startProgressBarAndTextViewCQLResults()
+    Assert.assertEquals(View.VISIBLE, patientDetailsFragment.progress_circular_cql?.visibility)
   }
 }
