@@ -53,7 +53,31 @@ fun Search.filterBy(filter: SearchFilter) {
   }
 }
 
+fun Search.filterBy(filter: SearchFilterAnc) {
+  when (filter.filterType) {
+    Enumerations.SearchParamType.TOKEN -> filterToken(filter)
+    Enumerations.SearchParamType.STRING ->
+      filter(StringClientParam(filter.key)) {
+        this.modifier = StringFilterModifier.MATCHES_EXACTLY
+        this.value = filter.valueString!!
+      }
+    else ->
+      throw UnsupportedOperationException("Can not apply ${filter.filterType} as search filter")
+  }
+}
+
 fun Search.filterToken(filter: SearchFilter) {
+  // TODO TokenFilter in SDK is not fully implemented and ignores all types but Coding
+  when (filter.valueType) {
+    Enumerations.DataType.CODING -> filter(TokenClientParam(filter.key), filter.valueCoding!!)
+    Enumerations.DataType.CODEABLECONCEPT ->
+      filter(TokenClientParam(filter.key), filter.valueCoding!!.asCodeableConcept()!!)
+    else ->
+      throw UnsupportedOperationException("SDK does not support value type ${filter.valueType}")
+  }
+}
+
+fun Search.filterToken(filter: SearchFilterAnc) {
   // TODO TokenFilter in SDK is not fully implemented and ignores all types but Coding
   when (filter.valueType) {
     Enumerations.DataType.CODING -> filter(TokenClientParam(filter.key), filter.valueCoding!!)

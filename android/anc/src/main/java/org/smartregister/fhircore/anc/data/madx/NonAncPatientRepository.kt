@@ -32,7 +32,7 @@ import org.smartregister.fhircore.anc.data.madx.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.madx.model.ConditionItem
 import org.smartregister.fhircore.anc.data.madx.model.EncounterItem
 import org.smartregister.fhircore.anc.data.madx.model.UpcomingServiceItem
-import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
+import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.due
@@ -43,6 +43,8 @@ import org.smartregister.fhircore.engine.util.extension.overdue
 
 class NonAncPatientRepository(
   val fhirEngine: FhirEngine,
+  private val domainMapperCarePlan: DomainMapper<CarePlan, CarePlanItem>,
+  private val domainMapperUpcomingService: DomainMapper<CarePlan, UpcomingServiceItem>,
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) {
 
@@ -108,62 +110,33 @@ class NonAncPatientRepository(
       listCarePlanList.addAll(carePlan.filter { it.due() })
       listCarePlanList.addAll(carePlan.filter { it.overdue() })
       for (i in listCarePlanList.indices) {
-        for (j in listCarePlanList[i].activity.indices) {
-          var typeString = ""
-          if (listCarePlanList[i].activity[j].hasDetail())
-            if (listCarePlanList[i].activity[j].detail.hasDescription())
-              typeString = listCarePlanList[i].activity[j].detail.description
-          listCarePlan.add(
-            CarePlanItem(
-              listCarePlanList[i].id,
-              patientId,
-              typeString,
-              listCarePlanList[i].due(),
-              listCarePlanList[i].overdue()
-            )
-          )
-        }
+        listCarePlan.add(domainMapperCarePlan.mapToDomainModel(listCarePlanList[i]))
       }
     }
     return listCarePlan
   }
 
-  fun fetchEncounterItem(patientId: String, listEncounters: List<Encounter>): List<EncounterItem> {
-    return arrayListOf()
-  }
-
-  fun fetchUpcomingServiceItem(
-    patientId: String,
-    carePlan: List<CarePlan>
-  ): List<UpcomingServiceItem> {
+  fun fetchUpcomingServiceItem(carePlan: List<CarePlan>): List<UpcomingServiceItem> {
     val listCarePlan = arrayListOf<UpcomingServiceItem>()
     val listCarePlanList = arrayListOf<CarePlan>()
     if (carePlan.isNotEmpty()) {
       listCarePlanList.addAll(carePlan.filter { it.due() })
       for (i in listCarePlanList.indices) {
-        for (j in listCarePlanList[i].activity.indices) {
-          var typeString = ""
-          var dateString = ""
-          if (listCarePlanList[i].activity[j].hasDetail())
-            if (listCarePlanList[i].activity[j].detail.hasDescription())
-              typeString = listCarePlanList[i].activity[j].detail.description
-          if (listCarePlanList[i].activity[j].detail.hasScheduledPeriod())
-            dateString =
-              listCarePlanList[i].activity[j].detail.scheduledPeriod.start.makeItReadable()
-          listCarePlan.add(
-            UpcomingServiceItem(listCarePlanList[i].id, patientId, typeString, dateString)
-          )
-        }
+        listCarePlan.add(domainMapperUpcomingService.mapToDomainModel(listCarePlanList[i]))
       }
     }
     return listCarePlan
   }
 
-  fun fetchConditionItem(patientId: String, listCondition: List<Condition>): List<ConditionItem> {
+  fun fetchConditionItem(listCondition: List<Condition>): List<ConditionItem> {
     return arrayListOf()
   }
 
-  fun fetchAllergiesItem(patientId: String, listCondition: List<Condition>): List<AllergiesItem> {
+  fun fetchAllergiesItem(listCondition: List<Condition>): List<AllergiesItem> {
+    return arrayListOf()
+  }
+
+  fun fetchEncounterItem(listEncounters: List<Encounter>): List<EncounterItem> {
     return arrayListOf()
   }
 }

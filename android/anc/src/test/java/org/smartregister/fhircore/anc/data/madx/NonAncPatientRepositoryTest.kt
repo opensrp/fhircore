@@ -40,6 +40,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.madx.model.AncPatientItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.ui.madx.details.CarePlanItemMapper
+import org.smartregister.fhircore.anc.ui.madx.details.UpcomingServiceItemMapper
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
@@ -53,7 +55,8 @@ class NonAncPatientRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     fhirEngine = spyk()
-    repository = spyk(NonAncPatientRepository(fhirEngine))
+    repository =
+      spyk(NonAncPatientRepository(fhirEngine, CarePlanItemMapper, UpcomingServiceItemMapper))
   }
 
   @Test
@@ -80,7 +83,6 @@ class NonAncPatientRepositoryTest : RobolectricTest() {
     val carePlan = listOf(buildCarePlanWithActive(patientId))
     val listCarePlan = repository.fetchCarePlanItem(carePlan = carePlan, patientId = patientId)
     if (listCarePlan.isNotEmpty()) {
-      Assert.assertEquals(patientId, listCarePlan[0].patientIdentifier)
       Assert.assertEquals("ABC", listCarePlan[0].title)
     }
   }
@@ -89,7 +91,7 @@ class NonAncPatientRepositoryTest : RobolectricTest() {
   fun fetchConditionItemTest() {
     val patientId = "1111"
     val conditionList = listOf(buildCondition(patientId))
-    val listConditionList = repository.fetchConditionItem(patientId = patientId, conditionList)
+    val listConditionList = repository.fetchConditionItem(conditionList)
     Assert.assertEquals(listConditionList.isEmpty(), true)
   }
 
@@ -97,14 +99,14 @@ class NonAncPatientRepositoryTest : RobolectricTest() {
   fun fetchAllergiesItemTest() {
     val patientId = "1111"
     val conditionList = listOf(buildCondition(patientId))
-    val listConditionList = repository.fetchAllergiesItem(patientId = patientId, conditionList)
+    val listConditionList = repository.fetchAllergiesItem(conditionList)
     Assert.assertEquals(listConditionList.isEmpty(), true)
   }
 
   @Test
   fun fetchEncounterItemTest() {
     val patientId = "1111"
-    val listConditionList = repository.fetchEncounterItem(patientId = patientId, arrayListOf())
+    val listConditionList = repository.fetchEncounterItem(arrayListOf())
     Assert.assertEquals(listConditionList.isEmpty(), true)
   }
 
@@ -112,9 +114,7 @@ class NonAncPatientRepositoryTest : RobolectricTest() {
   fun fetchUpcomingServiceItemTest() {
     val patientId = "1111"
     val carePlan = listOf(buildCarePlanWithActive(patientId))
-    val listUpcomingServiceItem =
-      repository.fetchUpcomingServiceItem(patientId = patientId, carePlan = carePlan)
-    Assert.assertEquals(patientId, listUpcomingServiceItem[0].patientIdentifier)
+    val listUpcomingServiceItem = repository.fetchUpcomingServiceItem(carePlan = carePlan)
     Assert.assertEquals("ABC", listUpcomingServiceItem[0].title)
     Assert.assertEquals(Date().makeItReadable(), listUpcomingServiceItem[0].date)
   }

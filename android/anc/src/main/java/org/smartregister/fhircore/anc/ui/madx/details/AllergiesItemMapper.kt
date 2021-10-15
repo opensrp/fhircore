@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util
+package org.smartregister.fhircore.anc.ui.madx.details
 
-import android.content.Context
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.hl7.fhir.r4.model.Condition
+import org.smartregister.fhircore.anc.data.madx.model.AllergiesItem
+import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 
-object FormConfigUtil {
+object AllergiesItemMapper : DomainMapper<Condition, AllergiesItem> {
 
-  /** Load configs from asset directory */
-  fun loadConfig(config: String, context: Context): List<QuestionnaireConfig> =
-    context.assets.open(config).bufferedReader().use { it.readText() }.decodeJson()
+  override fun mapToDomainModel(dto: Condition): AllergiesItem {
+    return AllergiesItem()
+  }
 }

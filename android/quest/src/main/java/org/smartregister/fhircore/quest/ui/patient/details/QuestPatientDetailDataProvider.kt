@@ -18,10 +18,16 @@ package org.smartregister.fhircore.quest.ui.patient.details
 
 import androidx.lifecycle.LiveData
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 
 interface QuestPatientDetailDataProvider {
 
   fun getDemographics(): LiveData<Patient>
   fun onBackPressListener(): () -> Unit = {}
   fun onMenuItemClickListener(): (menuItem: String) -> Unit = {}
+  fun getAllForms(): LiveData<List<QuestionnaireConfig>>
+  fun getAllResults(): LiveData<List<QuestionnaireResponse>>
+  fun onFormItemClickListener(): (item: QuestionnaireConfig) -> Unit
+  fun onTestResultItemClickListener(): (item: QuestionnaireResponse) -> Unit
 }

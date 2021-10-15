@@ -36,8 +36,8 @@ class MadxModelsTest : RobolectricTest() {
       AncPatientItem("111", "anb", "M", "25", "PD", "none", "xyz", AncVisitStatus.PLANNED)
     ancPatientItemHead =
       AncPatientItem("111", "anb", "M", "25", "PD", "none", "xyz", AncVisitStatus.PLANNED)
-    encounterItem = EncounterItem("111", "111", "abc", "2020-02-12")
-    upcomingServiceItem = UpcomingServiceItem("111", "111", "1bc", "2020-02-12")
+    encounterItem = EncounterItem("111", "abc", "2020-02-12")
+    upcomingServiceItem = UpcomingServiceItem("111", "1bc", "2020-02-12")
     ancPatientDetailItem = AncPatientDetailItem(ancPatientItem, ancPatientItemHead)
     patientBMIItem = PatientBMIItem("1111", "testBMI1", "5'7", "50lbs", "22.22")
   }
@@ -56,7 +56,6 @@ class MadxModelsTest : RobolectricTest() {
   @Test
   fun testUpcomingServiceItem() {
     Assert.assertEquals("111", encounterItem.encounterIdentifier)
-    Assert.assertEquals("111", encounterItem.patientIdentifier)
     Assert.assertEquals("abc", encounterItem.title)
     Assert.assertEquals("2020-02-12", encounterItem.date)
   }
@@ -64,7 +63,6 @@ class MadxModelsTest : RobolectricTest() {
   @Test
   fun testEncounterItem() {
     Assert.assertEquals("111", upcomingServiceItem.encounterIdentifier)
-    Assert.assertEquals("111", upcomingServiceItem.patientIdentifier)
     Assert.assertEquals("1bc", upcomingServiceItem.title)
     Assert.assertEquals("2020-02-12", upcomingServiceItem.date)
   }

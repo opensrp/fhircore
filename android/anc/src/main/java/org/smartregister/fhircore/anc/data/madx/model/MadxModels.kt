@@ -45,7 +45,6 @@ data class AncPatientDetailItem(
 @Stable
 data class CarePlanItem(
   var carePlanIdentifier: String = "",
-  var patientIdentifier: String = "",
   var title: String = "",
   var due: Boolean,
   var overdue: Boolean
@@ -54,32 +53,20 @@ data class CarePlanItem(
 @Stable
 data class UpcomingServiceItem(
   var encounterIdentifier: String = "",
-  var patientIdentifier: String = "",
   var title: String = "",
-  var date: String
+  var date: String = ""
 )
 
 @Stable
 data class EncounterItem(
   var encounterIdentifier: String = "",
-  var patientIdentifier: String = "",
   var title: String = "",
-  var date: String
+  var date: String = ""
 )
 
-@Stable
-data class AllergiesItem(
-  var allergiesIdentifier: String = "",
-  var patientIdentifier: String = "",
-  var title: String = ""
-)
+@Stable data class AllergiesItem(var allergiesIdentifier: String = "", var title: String = "")
 
-@Stable
-data class ConditionItem(
-  var conditionIdentifier: String = "",
-  var patientIdentifier: String = "",
-  var title: String = ""
-)
+@Stable data class ConditionItem(var conditionIdentifier: String = "", var title: String = "")
 
 @Stable
 data class PatientBMIItem(

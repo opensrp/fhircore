@@ -29,6 +29,8 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
 import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientTestResultActivity
@@ -65,6 +67,25 @@ class QuestPatientDetailActivityTest : ActivityRobolectricTest() {
     )
 
     val expectedIntent = Intent(activity, QuestPatientTestResultActivity::class.java)
+    val actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<QuestApplication>()).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testOnFormItemClickListenerShouldStartQuestionnaireActivity() {
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      activity,
+      "onFormItemClickListener",
+      ReflectionHelpers.ClassParameter(
+        QuestionnaireConfig::class.java,
+        QuestionnaireConfig("test-form", "Title", "1234")
+      )
+    )
+
+    val expectedIntent = Intent(activity, QuestionnaireActivity::class.java)
     val actualIntent =
       shadowOf(ApplicationProvider.getApplicationContext<QuestApplication>()).nextStartedActivity
 

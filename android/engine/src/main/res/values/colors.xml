@@ -21,4 +21,5 @@
     <color name="grayText">#929496</color>
     <color name="darkGrayText">#6F7274</color>
     <color name="backgroundGray">#f2f5f6</color>
+    <color name="status_gray">#9e9b9b</color>
 </resources>

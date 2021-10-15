@@ -39,7 +39,7 @@ class AncModelsTest : RobolectricTest() {
     ancPatientItemHead =
       AncPatientItem("111", "anb", "M", "25", "PD", "none", "xyz", AncVisitStatus.PLANNED)
     encounterItem = EncounterItem("111", status = Encounter.EncounterStatus.ARRIVED, "abc", Date())
-    upcomingServiceItem = UpcomingServiceItem("111", "111", "1bc", "2020-02-12")
+    upcomingServiceItem = UpcomingServiceItem("111", "1bc", "2020-02-12")
     ancPatientDetailItem = AncPatientDetailItem(ancPatientItem, ancPatientItemHead)
     ancOverviewItem = AncOverviewItem("2020-02-12", "2", "1", "1")
   }
@@ -65,7 +65,6 @@ class AncModelsTest : RobolectricTest() {
   @Test
   fun testEncounterItem() {
     Assert.assertEquals("111", upcomingServiceItem.encounterIdentifier)
-    Assert.assertEquals("111", upcomingServiceItem.patientIdentifier)
     Assert.assertEquals("1bc", upcomingServiceItem.title)
     Assert.assertEquals("2020-02-12", upcomingServiceItem.date)
   }
