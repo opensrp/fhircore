@@ -43,6 +43,7 @@ import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
+import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
@@ -50,7 +51,7 @@ import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
 @ExperimentalCoroutinesApi
 @Config(shadows = [AncApplicationShadow::class])
-internal class AncDetailsViewModelTest {
+internal class AncDetailsViewModelTest: RobolectricTest() {
   private lateinit var fhirEngine: FhirEngine
 
   private lateinit var ancDetailsViewModel: AncDetailsViewModel
