@@ -37,7 +37,6 @@ import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterFragment
-import org.smartregister.fhircore.quest.ui.patient.register.form.PatientQuestionnaireActivity
 import org.smartregister.fhirecore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhirecore.quest.shadow.FakeKeyStore
 import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
@@ -85,7 +84,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
       "registerClient"
     )
 
-    val expectedIntent = Intent(patientRegisterActivity, PatientQuestionnaireActivity::class.java)
+    val expectedIntent = Intent(patientRegisterActivity, QuestionnaireActivity::class.java)
     val actualIntent =
       Shadows.shadowOf(ApplicationProvider.getApplicationContext<Application>()).nextStartedActivity
 
