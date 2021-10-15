@@ -390,14 +390,12 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   }
 
   @Test
-  fun handleParametersQCLMeasureTest(){
-    var dummyJson="{ \"id\": 0, \"name\": \"Dominique Prince\" }"
+  fun handleParametersQCLMeasureTest() {
+    var dummyJson = "{ \"id\": 0, \"name\": \"Dominique Prince\" }"
     val jsonObject = JSONObject(dummyJson)
     val auxText = jsonObject.toString(4)
 
     patientDetailsFragment.handleParametersQCLMeasure(dummyJson)
-    Assert.assertEquals(
-      patientDetailsFragment.textView_CQLResults.text,auxText
-    )
+    Assert.assertEquals(patientDetailsFragment.textView_CQLResults.text, auxText)
   }
 }

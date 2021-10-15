@@ -334,7 +334,7 @@ class AncDetailsFragment private constructor() : Fragment() {
     button_CQLEvaluate.isEnabled = true
   }
 
-  fun handleParametersQCLMeasure(parameters:String){
+  fun handleParametersQCLMeasure(parameters: String) {
     val jsonObject = JSONObject(parameters)
     textView_CQLResults.text = jsonObject.toString(4)
     progress_circular_cql.visibility = View.GONE
