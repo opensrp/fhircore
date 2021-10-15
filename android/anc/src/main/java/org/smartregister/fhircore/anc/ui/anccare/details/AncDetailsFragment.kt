@@ -32,11 +32,12 @@ import kotlinx.android.synthetic.main.fragment_anc_details.button_CQLEvaluate
 import org.json.JSONObject
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.anc.model.AncOverviewItem
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
-import org.smartregister.fhircore.anc.data.anc.model.UpcomingServiceItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.sharedmodel.CarePlanItem
+import org.smartregister.fhircore.anc.data.sharedmodel.EncounterItem
+import org.smartregister.fhircore.anc.data.sharedmodel.UpcomingServiceItem
 import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.cql.MeasureEvaluator
@@ -53,13 +54,13 @@ class AncDetailsFragment : Fragment() {
 
   lateinit var ancDetailsViewModel: AncDetailsViewModel
 
-  private lateinit var ancPatientRepository: AncPatientRepository
+  private lateinit var patientRepository: PatientRepository
 
   private var carePlanAdapter = CarePlanAdapter()
 
   private val upcomingServicesAdapter = UpcomingServicesAdapter()
 
-  private val lastSeen = UpcomingServicesAdapter()
+  private val lastSeen = EncounterAdapter()
 
   lateinit var binding: FragmentAncDetailsBinding
 
@@ -120,12 +121,12 @@ class AncDetailsFragment : Fragment() {
 
     setupViews()
 
-    ancPatientRepository = getAncPatientRepository()
+    patientRepository = getAncPatientRepository()
 
     ancDetailsViewModel =
       ViewModelProvider(
         this,
-        AncDetailsViewModel(ancPatientRepository, patientId = patientId).createFactory()
+        AncDetailsViewModel(patientRepository, patientId = patientId).createFactory()
       )[AncDetailsViewModel::class.java]
 
     binding.txtViewPatientId.text = patientId
@@ -198,9 +199,9 @@ class AncDetailsFragment : Fragment() {
   }
 
   private fun handleObservation(ancOverviewItem: AncOverviewItem) {
-    binding.txtViewEDDDoseDate.text = ancOverviewItem.EDD
-    binding.txtViewGAPeriod.text = ancOverviewItem.GA
-    binding.txtViewFetusesCount.text = ancOverviewItem.noOfFetusses
+    binding.txtViewEDDDoseDate.text = ancOverviewItem.edd
+    binding.txtViewGAPeriod.text = ancOverviewItem.ga
+    binding.txtViewFetusesCount.text = ancOverviewItem.noOfFetuses
     binding.txtViewRiskValue.text = ancOverviewItem.risk
   }
 
@@ -222,7 +223,7 @@ class AncDetailsFragment : Fragment() {
     }
   }
 
-  private fun handleLastSeen(listEncounters: List<UpcomingServiceItem>) {
+  private fun handleLastSeen(listEncounters: List<EncounterItem>) {
     when {
       listEncounters.isEmpty() -> {
         binding.txtViewNoLastSeenServices.visibility = View.VISIBLE
@@ -297,7 +298,7 @@ class AncDetailsFragment : Fragment() {
   private fun populateUpcomingServicesList(upcomingServiceItem: List<UpcomingServiceItem>) {
     upcomingServicesAdapter.submitList(upcomingServiceItem)
   }
-  private fun populateLastSeenList(upcomingServiceItem: List<UpcomingServiceItem>) {
+  private fun populateLastSeenList(upcomingServiceItem: List<EncounterItem>) {
     lastSeen.submitList(upcomingServiceItem)
   }
 
@@ -432,13 +433,10 @@ class AncDetailsFragment : Fragment() {
     }
   }
 
-  fun getAncPatientRepository(): AncPatientRepository {
-    return AncPatientRepository(
+  fun getAncPatientRepository(): PatientRepository {
+    return PatientRepository(
       (requireActivity().application as AncApplication).fhirEngine,
-      AncPatientItemMapper,
-      CarePlanItemMapper,
-      UpcomingServiceItemMapper,
-      LastSceneItemMapper
+      AncPatientItemMapper
     )
   }
 }

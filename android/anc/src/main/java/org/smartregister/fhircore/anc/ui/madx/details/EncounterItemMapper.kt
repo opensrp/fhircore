@@ -17,12 +17,12 @@
 package org.smartregister.fhircore.anc.ui.madx.details
 
 import org.hl7.fhir.r4.model.Encounter
-import org.smartregister.fhircore.anc.data.madx.model.EncounterItem
+import org.smartregister.fhircore.anc.data.sharedmodel.EncounterItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 
 object EncounterItemMapper : DomainMapper<Encounter, EncounterItem> {
 
   override fun mapToDomainModel(dto: Encounter): EncounterItem {
-    return EncounterItem()
+    return EncounterItem(status = Encounter.EncounterStatus.FINISHED)
   }
 }

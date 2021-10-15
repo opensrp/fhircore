@@ -30,9 +30,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
-import org.smartregister.fhircore.anc.data.madx.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.madx.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientItem
 
 @ExperimentalCoroutinesApi
 internal class NonAncDetailsViewModelTest {
@@ -40,7 +40,7 @@ internal class NonAncDetailsViewModelTest {
 
   private lateinit var patientDetailsViewModel: NonAncDetailsViewModel
 
-  private lateinit var patientRepository: NonAncPatientRepository
+  private lateinit var patientRepository: PatientRepository
 
   private val patientId = "samplePatientId"
 

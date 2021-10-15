@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.data.anc
+package org.smartregister.fhircore.anc.data.patient
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
@@ -31,17 +31,20 @@ import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
-import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
-import org.smartregister.fhircore.anc.data.anc.model.UpcomingServiceItem
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientItem
+import org.smartregister.fhircore.anc.data.sharedmodel.CarePlanItem
+import org.smartregister.fhircore.anc.data.sharedmodel.EncounterItem
+import org.smartregister.fhircore.anc.data.sharedmodel.UpcomingServiceItem
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asPatientReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
+import org.smartregister.fhircore.anc.ui.anccare.details.CarePlanItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.Anc
 import org.smartregister.fhircore.anc.util.AncOverviewType
 import org.smartregister.fhircore.anc.util.RegisterType
-import org.smartregister.fhircore.anc.util.SearchFilterAnc
+import org.smartregister.fhircore.anc.util.SearchFilter
 import org.smartregister.fhircore.anc.util.filterBy
 import org.smartregister.fhircore.anc.util.filterByPatient
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
@@ -62,12 +65,9 @@ import org.smartregister.fhircore.engine.util.extension.overdue
 import org.smartregister.fhircore.engine.util.extension.plusMonthsAsString
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
-class AncPatientRepository(
+class PatientRepository(
   override val fhirEngine: FhirEngine,
   override val domainMapper: DomainMapper<Anc, AncPatientItem>,
-  private val domainMapperCarePlan: DomainMapper<CarePlan, CarePlanItem>,
-  private val domainMapperUpcomingService: DomainMapper<CarePlan, UpcomingServiceItem>,
-  private val domainMapperLastScene: DomainMapper<Encounter, UpcomingServiceItem>,
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : RegisterRepository<Anc, AncPatientItem> {
 
@@ -175,7 +175,7 @@ class AncPatientRepository(
       listCarePlanList.addAll(carePlan.filter { it.due() })
       listCarePlanList.addAll(carePlan.filter { it.overdue() })
       for (i in listCarePlanList.indices) {
-        listCarePlan.add(domainMapperCarePlan.mapToDomainModel(listCarePlanList[i]))
+        listCarePlan.add(CarePlanItemMapper.mapToDomainModel(listCarePlanList[i]))
       }
     }
     return listCarePlan
@@ -187,7 +187,7 @@ class AncPatientRepository(
     }
 
   suspend fun fetchObservations(patientId: String, searchFilterString: String): Observation {
-    val searchFilter: SearchFilterAnc =
+    val searchFilter: SearchFilter =
       when (searchFilterString) {
         "edd" -> ancOverviewConfig.eddFilter!!
         "risk" -> ancOverviewConfig.riskFilter!!
@@ -305,17 +305,17 @@ class AncPatientRepository(
     if (carePlan.isNotEmpty()) {
       listCarePlanList.addAll(carePlan.filter { it.due() })
       for (i in listCarePlanList.indices) {
-        listCarePlan.add(domainMapperUpcomingService.mapToDomainModel(listCarePlanList[i]))
+        listCarePlan.add(CarePlanItemMapper.mapToUpcomingServiceItem(listCarePlanList[i]))
       }
     }
     return listCarePlan
   }
 
-  fun fetchLastSeenItem(encounters: List<Encounter>): List<UpcomingServiceItem> {
-    val listCarePlan = arrayListOf<UpcomingServiceItem>()
+  fun fetchLastSeenItem(encounters: List<Encounter>): List<EncounterItem> {
+    val listCarePlan = arrayListOf<EncounterItem>()
     if (encounters.isNotEmpty()) {
       for (i in encounters.indices) {
-        listCarePlan.add(domainMapperLastScene.mapToDomainModel(encounters[i]))
+        listCarePlan.add(EncounterItemMapper.mapToDomainModel(encounters[i]))
       }
     }
     return listCarePlan

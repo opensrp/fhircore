@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.data.madx.model
+package org.smartregister.fhircore.anc.data.sharedmodel
 
+import java.util.Date
+import org.hl7.fhir.r4.model.Encounter
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
-class MadxModelsTest : RobolectricTest() {
+class PatientModelsTest : RobolectricTest() {
 
   private lateinit var ancPatientItem: AncPatientItem
   private lateinit var ancPatientItemHead: AncPatientItem
@@ -32,10 +34,10 @@ class MadxModelsTest : RobolectricTest() {
   @Before
   fun setUp() {
     ancPatientItem =
-      AncPatientItem("111", "anb", "M", "25", "PD", "none", "xyz", AncVisitStatus.PLANNED)
+      AncPatientItem("111", "anb", "M", "25", "PD", "none", "xyz", VisitStatus.PLANNED)
     ancPatientItemHead =
-      AncPatientItem("111", "anb", "M", "25", "PD", "none", "xyz", AncVisitStatus.PLANNED)
-    encounterItem = EncounterItem("111", "abc", "2020-02-12")
+      AncPatientItem("111", "anb", "M", "25", "PD", "none", "xyz", VisitStatus.PLANNED)
+    encounterItem = EncounterItem("111", status = Encounter.EncounterStatus.ARRIVED, "abc", Date())
     upcomingServiceItem = UpcomingServiceItem("111", "1bc", "2020-02-12")
     ancPatientDetailItem = AncPatientDetailItem(ancPatientItem, ancPatientItemHead)
   }
@@ -48,14 +50,14 @@ class MadxModelsTest : RobolectricTest() {
     Assert.assertEquals("PD", ancPatientItem.demographics)
     Assert.assertEquals("none", ancPatientItem.atRisk)
     Assert.assertEquals("xyz", ancPatientItem.address)
-    Assert.assertEquals(AncVisitStatus.PLANNED, ancPatientItem.visitStatus)
+    Assert.assertEquals(VisitStatus.PLANNED, ancPatientItem.visitStatus)
   }
 
   @Test
   fun testUpcomingServiceItem() {
-    Assert.assertEquals("111", encounterItem.encounterIdentifier)
-    Assert.assertEquals("abc", encounterItem.title)
-    Assert.assertEquals("2020-02-12", encounterItem.date)
+    Assert.assertEquals("111", encounterItem.id)
+    Assert.assertEquals(Encounter.EncounterStatus.ARRIVED, encounterItem.status)
+    Assert.assertEquals("abc", encounterItem.display)
   }
 
   @Test
@@ -73,13 +75,13 @@ class MadxModelsTest : RobolectricTest() {
     Assert.assertEquals("PD", ancPatientDetailItem.patientDetails.demographics)
     Assert.assertEquals("none", ancPatientDetailItem.patientDetails.atRisk)
     Assert.assertEquals("xyz", ancPatientDetailItem.patientDetails.address)
-    Assert.assertEquals(AncVisitStatus.PLANNED, ancPatientDetailItem.patientDetails.visitStatus)
+    Assert.assertEquals(VisitStatus.PLANNED, ancPatientDetailItem.patientDetails.visitStatus)
     Assert.assertEquals("111", ancPatientDetailItem.patientDetailsHead.patientIdentifier)
     Assert.assertEquals("anb", ancPatientDetailItem.patientDetailsHead.name)
     Assert.assertEquals("M", ancPatientDetailItem.patientDetailsHead.gender)
     Assert.assertEquals("PD", ancPatientDetailItem.patientDetailsHead.demographics)
     Assert.assertEquals("none", ancPatientDetailItem.patientDetailsHead.atRisk)
     Assert.assertEquals("xyz", ancPatientDetailItem.patientDetailsHead.address)
-    Assert.assertEquals(AncVisitStatus.PLANNED, ancPatientDetailItem.patientDetailsHead.visitStatus)
+    Assert.assertEquals(VisitStatus.PLANNED, ancPatientDetailItem.patientDetailsHead.visitStatus)
   }
 }

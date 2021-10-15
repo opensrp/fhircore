@@ -39,9 +39,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientItem
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
@@ -52,7 +52,7 @@ internal class AncDetailsViewModelTest {
 
   private lateinit var ancDetailsViewModel: AncDetailsViewModel
 
-  private lateinit var patientRepository: AncPatientRepository
+  private lateinit var patientRepository: PatientRepository
 
   private val patientId = "samplePatientId"
 

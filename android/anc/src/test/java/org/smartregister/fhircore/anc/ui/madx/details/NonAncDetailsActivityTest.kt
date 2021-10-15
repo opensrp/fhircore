@@ -34,9 +34,9 @@ import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
-import org.smartregister.fhircore.anc.data.madx.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.madx.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientItem
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 
 @ExperimentalCoroutinesApi
@@ -51,7 +51,7 @@ internal class NonAncDetailsActivityTest : ActivityRobolectricTest() {
 
   private lateinit var patientDetailsViewModel: NonAncDetailsViewModel
 
-  private lateinit var patientRepository: NonAncPatientRepository
+  private lateinit var patientRepository: PatientRepository
 
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
 

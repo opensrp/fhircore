@@ -25,11 +25,8 @@ import androidx.fragment.app.Fragment
 import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
-import org.smartregister.fhircore.anc.ui.anccare.details.CarePlanItemMapper
-import org.smartregister.fhircore.anc.ui.anccare.details.LastSceneItemMapper
-import org.smartregister.fhircore.anc.ui.anccare.details.UpcomingServiceItemMapper
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
@@ -39,7 +36,7 @@ import org.smartregister.fhircore.engine.util.extension.hide
 
 class AncRegisterActivity : BaseRegisterActivity() {
   private lateinit var familyRepository: FamilyRepository
-  private lateinit var ancPatientRepository: AncPatientRepository
+  private lateinit var patientRepository: PatientRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -55,14 +52,7 @@ class AncRegisterActivity : BaseRegisterActivity() {
     familyRepository =
       FamilyRepository((application as AncApplication).fhirEngine, FamilyItemMapper)
 
-    ancPatientRepository =
-      AncPatientRepository(
-        (application as AncApplication).fhirEngine,
-        AncItemMapper,
-        CarePlanItemMapper,
-        UpcomingServiceItemMapper,
-        LastSceneItemMapper
-      )
+    patientRepository = PatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
 
     findViewById<Button>(R.id.btn_register_new_client).hide()
   }
@@ -74,7 +64,7 @@ class AncRegisterActivity : BaseRegisterActivity() {
         titleResource = R.string.anc_register_title,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
         opensMainRegister = true,
-        countMethod = { runBlocking { ancPatientRepository.countAll() } }
+        countMethod = { runBlocking { patientRepository.countAll() } }
       ),
       SideMenuOption(
         itemId = R.id.menu_item_family,

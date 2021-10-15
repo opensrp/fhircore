@@ -47,11 +47,11 @@ import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
-import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
-import org.smartregister.fhircore.anc.data.anc.model.UpcomingServiceItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientItem
+import org.smartregister.fhircore.anc.data.sharedmodel.CarePlanItem
+import org.smartregister.fhircore.anc.data.sharedmodel.UpcomingServiceItem
 import org.smartregister.fhircore.anc.robolectric.FragmentRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -63,12 +63,12 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   private lateinit var fhirEngine: FhirEngine
   private lateinit var patientDetailsViewModel: AncDetailsViewModel
   private lateinit var patientDetailsActivity: AncDetailsActivity
-  private lateinit var patientRepository: AncPatientRepository
+  private lateinit var patientRepository: PatientRepository
   private lateinit var fragmentScenario: FragmentScenario<AncDetailsFragment>
   private lateinit var patientDetailsFragment: AncDetailsFragment
   private lateinit var carePlanAdapter: CarePlanAdapter
   private lateinit var upcomingServicesAdapter: UpcomingServicesAdapter
-  private lateinit var lastSeen: UpcomingServicesAdapter
+  private lateinit var lastSeen: EncounterAdapter
 
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
