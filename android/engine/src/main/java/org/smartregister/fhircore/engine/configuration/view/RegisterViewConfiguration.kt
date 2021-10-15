@@ -41,8 +41,13 @@ data class RegisterViewConfiguration(
   var showNewClientButton: Boolean = true,
   var registrationForm: String = "patient-registration",
   var showSideMenu: Boolean = true,
-  var showBottomMenu: Boolean = false
+  var showBottomMenu: Boolean = false,
+  var primaryFilter: SearchFilter? = null
 ) : Configuration
+
+@Serializable
+@Stable
+data class SearchFilter(val key: String, val code: String, val system: String)
 
 /**
  * A function providing a DSL for configuring [RegisterViewConfiguration]. The configurations
@@ -75,7 +80,8 @@ fun Context.registerViewConfigurationOf(
   languages: List<String> = listOf("en"),
   registrationForm: String = "patient-registration",
   showSideMenu: Boolean = true,
-  showBottomMenu: Boolean = false
+  showBottomMenu: Boolean = false,
+  primaryFilter: SearchFilter? = null
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
     id = id,
@@ -91,7 +97,8 @@ fun Context.registerViewConfigurationOf(
     showNewClientButton = showNewClientButton,
     registrationForm = registrationForm,
     showSideMenu = showSideMenu,
-    showBottomMenu = showBottomMenu
+    showBottomMenu = showBottomMenu,
+    primaryFilter = primaryFilter
   )
 }
 

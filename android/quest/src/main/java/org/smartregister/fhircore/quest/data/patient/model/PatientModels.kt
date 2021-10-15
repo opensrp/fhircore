@@ -27,3 +27,11 @@ data class PatientItem(
   val age: String = "",
   val address: String = ""
 )
+
+fun PatientItem.genderFull(): String {
+  return when (gender) {
+    "M" -> "Male"
+    "F" -> "Female"
+    else -> gender
+  }
+}

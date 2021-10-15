@@ -79,7 +79,8 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
     val patientRepository =
       PatientRepository(
         (requireActivity().application as QuestApplication).fhirEngine,
-        PatientItemMapper
+        PatientItemMapper,
+        registerViewModel.registerViewConfiguration
       )
     return ViewModelProvider(
       requireActivity(),
