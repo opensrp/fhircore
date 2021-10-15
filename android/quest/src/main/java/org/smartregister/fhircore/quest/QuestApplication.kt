@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest
 import android.app.Application
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
+import com.google.android.fhir.datacapture.DataCaptureConfig
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJob
 import kotlinx.coroutines.CoroutineScope
@@ -37,7 +38,6 @@ import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARE
 import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
-import com.google.android.fhir.datacapture.DataCaptureConfig
 
 class QuestApplication : Application(), ConfigurableApplication {
 
@@ -65,7 +65,7 @@ class QuestApplication : Application(), ConfigurableApplication {
         ResourceType.CarePlan to mapOf(),
         ResourceType.Patient to mapOf(),
         ResourceType.Questionnaire to buildQuestionnaireFilterMap(),
-        ResourceType.QuestionnaireResponse to mapOf()
+        ResourceType.QuestionnaireResponse to mapOf(),
         ResourceType.Binary to mapOf()
       )
     }
