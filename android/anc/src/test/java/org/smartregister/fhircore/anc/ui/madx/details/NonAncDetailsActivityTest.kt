@@ -38,6 +38,7 @@ import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientItem
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
+import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
 
 @ExperimentalCoroutinesApi
 @Config(shadows = [AncApplicationShadow::class])
@@ -49,7 +50,7 @@ internal class NonAncDetailsActivityTest : ActivityRobolectricTest() {
 
   private lateinit var fhirEngine: FhirEngine
 
-  private lateinit var patientDetailsViewModel: NonAncDetailsViewModel
+  private lateinit var patientDetailsViewModel: AncDetailsViewModel
 
   private lateinit var patientRepository: PatientRepository
 
@@ -74,11 +75,7 @@ internal class NonAncDetailsActivityTest : ActivityRobolectricTest() {
 
     patientDetailsViewModel =
       spyk(
-        NonAncDetailsViewModel(
-          patientRepository,
-          coroutinesTestRule.testDispatcherProvider,
-          patientId
-        )
+        AncDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider, patientId)
       )
 
     patientDetailsActivity =

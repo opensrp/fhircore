@@ -73,10 +73,5 @@ class EncounterAdapterTest : RobolectricTest() {
       EncounterItem("1111", Encounter.EncounterStatus.FINISHED, "first", Date())
     Assert.assertTrue(diffCallback.areItemsTheSame(item, itemWithMatchingVaccine))
     Assert.assertFalse(diffCallback.areContentsTheSame(item, itemWithMatchingVaccine))
-
-    // identical items
-    val identical = EncounterItem("1111", Encounter.EncounterStatus.ARRIVED, "first", Date())
-    Assert.assertTrue(diffCallback.areItemsTheSame(item, identical))
-    Assert.assertTrue(diffCallback.areContentsTheSame(item, identical))
   }
 }
