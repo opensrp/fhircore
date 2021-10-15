@@ -398,4 +398,10 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
     patientDetailsFragment.handleParametersQCLMeasure(dummyJson)
     Assert.assertEquals(patientDetailsFragment.textView_CQLResults.text, auxText)
   }
+
+  @Test
+  fun startProgressBarAndTextViewCQLResultsTest() {
+    patientDetailsFragment.startProgressBarAndTextViewCQLResults()
+    Assert.assertEquals(View.VISIBLE, patientDetailsFragment.progress_circular_cql?.visibility)
+  }
 }

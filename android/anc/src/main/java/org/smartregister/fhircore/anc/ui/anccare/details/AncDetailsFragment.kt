@@ -235,10 +235,14 @@ class AncDetailsFragment private constructor() : Fragment() {
     button_CQL_Measure_Evaluate.setOnClickListener { loadMeasureEvaluateLibrary() }
   }
 
-  fun loadCQLLibraryData() {
+  fun startProgressBarAndTextViewCQLResults() {
     progress_circular_cql.visibility = View.VISIBLE
-    button_CQL_Measure_Evaluate.isEnabled = false
     textView_CQLResults.visibility = View.GONE
+  }
+
+  fun loadCQLLibraryData() {
+    button_CQL_Measure_Evaluate.isEnabled = false
+    startProgressBarAndTextViewCQLResults()
 
     ancDetailsViewModel
       .fetchCQLLibraryData(parser, fhirResourceDataSource, libraryURL)
@@ -264,10 +268,8 @@ class AncDetailsFragment private constructor() : Fragment() {
   }
 
   fun loadMeasureEvaluateLibrary() {
-    progress_circular_cql.visibility = View.VISIBLE
     button_CQLEvaluate.isEnabled = false
-    textView_CQLResults.visibility = View.GONE
-
+    startProgressBarAndTextViewCQLResults()
     ancDetailsViewModel
       .fetchCQLMeasureEvaluateLibraryAndValueSets(
         parser,
