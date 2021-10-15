@@ -374,12 +374,17 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   @Test
   fun buttonCQLSetOnClickListenerTest() {
     every { patientDetailsFragment.loadCQLLibraryData() } returns Unit
-    patientDetailsFragment.button_CQLEvaluate.performClick()
+    patientDetailsFragment.buttonCQLSetOnClickListener()
+    Assert.assertEquals(true, patientDetailsFragment.button_CQLEvaluate.hasOnClickListeners())
   }
 
   @Test
   fun buttonCQLMeasureEvaluateSetOnClickListenerTest() {
     every { patientDetailsFragment.loadMeasureEvaluateLibrary() } returns Unit
-    patientDetailsFragment.button_CQL_Measure_Evaluate.performClick()
+    patientDetailsFragment.buttonCQLMeasureEvaluateSetOnClickListener()
+    Assert.assertEquals(
+      true,
+      patientDetailsFragment.button_CQL_Measure_Evaluate.hasOnClickListeners()
+    )
   }
 }
