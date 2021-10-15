@@ -68,7 +68,7 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
         putExtras(
           QuestionnaireActivity.requiredIntentArgs(
             clientIdentifier = patientId,
-            questionnaireId = item.identifier
+            form = item.identifier
           )
         )
       }
@@ -76,9 +76,4 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
   }
 
   private fun onTestResultItemClickListener(item: QuestionnaireResponse) {}
-
-  companion object {
-    const val CODE = "000002"
-    const val SYSTEM = "http://fhir.ona.com"
-  }
 }

@@ -270,7 +270,7 @@ fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
 
     override fun getAllForms(): LiveData<List<QuestionnaireConfig>> {
       return MutableLiveData(
-        listOf(QuestionnaireConfig("g6pd-test-result", "+ G6PD Test Result", "3435"))
+        listOf(QuestionnaireConfig("sample-test-result", "+ Sample Test Result", "12345"))
       )
     }
 
@@ -278,7 +278,7 @@ fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
       return MutableLiveData(
         listOf(
           QuestionnaireResponse().apply {
-            meta = Meta().apply { tag = listOf(Coding().apply { display = "G6PD Test" }) }
+            meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Test" }) }
             authored = Date()
           }
         )
