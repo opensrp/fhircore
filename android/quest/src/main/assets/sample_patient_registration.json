@@ -16,7 +16,7 @@
     ],
     "valueCodeableConcept": {
       "coding": {
-        "system": "http://fhir.ona.com",
+        "system": "http://fhir.ona.io",
         "code": "000003",
         "display": "G6PD Patient"
       }
@@ -32,6 +32,8 @@
       }
     }
   ],
+  "name": "Add Patient",
+  "title": "Add Patient",
   "item": [
     {
       "linkId": "bio",

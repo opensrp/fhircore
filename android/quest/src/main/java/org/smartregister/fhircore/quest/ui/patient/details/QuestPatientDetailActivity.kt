@@ -68,7 +68,7 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
         putExtras(
           QuestionnaireActivity.requiredIntentArgs(
             clientIdentifier = patientId,
-            questionnaireId = item.identifier
+            form = item.identifier
           )
         )
       }
