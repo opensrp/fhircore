@@ -78,6 +78,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireViewModel = createViewModel(application)
 
       val form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
+      // form is either name of form in asset/form-config or questionnaire-id
+      // load from assets and get questionnaire or if not found build it from questionnaire
       questionnaireConfig =
         kotlin.runCatching { questionnaireViewModel.getQuestionnaireConfig(form) }.getOrElse {
           // load questionnaire from db and build config
@@ -90,8 +92,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           )
         }
 
-      // if questionnaire is still null load using config loaded from assets
-      if (questionnaire == null)
+      // if questionnaire is still not initialized load using config loaded from assets
+      if (!::questionnaire.isInitialized)
         questionnaire = questionnaireViewModel.loadQuestionnaire(questionnaireConfig.identifier)!!
 
       supportActionBar?.apply {
