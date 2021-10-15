@@ -84,8 +84,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           questionnaire = questionnaireViewModel.loadQuestionnaire(form)!!
 
           QuestionnaireConfig(
-            form = questionnaire.name?:"",
-            title = questionnaire.title?:"",
+            form = questionnaire.name ?: "",
+            title = questionnaire.title ?: "",
             identifier = questionnaire.logicalId
           )
         }

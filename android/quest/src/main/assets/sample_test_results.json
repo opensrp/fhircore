@@ -32,7 +32,7 @@
       "required": true,
       "code": [
         {
-          "system": "http://fhir.ona.com",
+          "system": "http://fhir.ona.io",
           "code": "000001",
           "display": "G6PD Result Type"
         }
