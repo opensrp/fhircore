@@ -228,24 +228,18 @@ class AncDetailsFragment private constructor() : Fragment() {
   }
 
   fun buttonCQLSetOnClickListener() {
-    button_CQLEvaluate.setOnClickListener {
-      loadCQLLibraryData()
-      progress_circular_cql.visibility = View.VISIBLE
-      button_CQL_Measure_Evaluate.isEnabled = false
-      textView_CQLResults.visibility = View.GONE
-    }
+    button_CQLEvaluate.setOnClickListener { loadCQLLibraryData() }
   }
 
   fun buttonCQLMeasureEvaluateSetOnClickListener() {
-    button_CQL_Measure_Evaluate.setOnClickListener {
-      loadMeasureEvaluateLibrary()
-      progress_circular_cql.visibility = View.VISIBLE
-      button_CQLEvaluate.isEnabled = false
-      textView_CQLResults.visibility = View.GONE
-    }
+    button_CQL_Measure_Evaluate.setOnClickListener { loadMeasureEvaluateLibrary() }
   }
 
   fun loadCQLLibraryData() {
+    progress_circular_cql.visibility = View.VISIBLE
+    button_CQL_Measure_Evaluate.isEnabled = false
+    textView_CQLResults.visibility = View.GONE
+
     ancDetailsViewModel
       .fetchCQLLibraryData(parser, fhirResourceDataSource, libraryURL)
       .observe(viewLifecycleOwner, this::handleCQLLibraryData)
@@ -270,6 +264,10 @@ class AncDetailsFragment private constructor() : Fragment() {
   }
 
   fun loadMeasureEvaluateLibrary() {
+    progress_circular_cql.visibility = View.VISIBLE
+    button_CQLEvaluate.isEnabled = false
+    textView_CQLResults.visibility = View.GONE
+
     ancDetailsViewModel
       .fetchCQLMeasureEvaluateLibraryAndValueSets(
         parser,
