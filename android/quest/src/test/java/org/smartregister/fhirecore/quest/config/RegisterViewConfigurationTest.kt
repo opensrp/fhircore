@@ -55,9 +55,9 @@ class RegisterViewConfigurationTest : RobolectricTest() {
     assertEquals(true, result.showNewClientButton)
     assertEquals(false, result.showSideMenu)
     assertEquals(true, result.showBottomMenu)
-    assertEquals("patient-registration", result.registrationForm)
+    assertEquals("3435", result.registrationForm)
     assertEquals("000003", result.primaryFilter!!.code)
-    assertEquals("http://fhir.ona.com", result.primaryFilter!!.system)
+    assertEquals("http://fhir.ona.io", result.primaryFilter!!.system)
     assertEquals("_tag", result.primaryFilter!!.key)
   }
 
@@ -78,10 +78,10 @@ class RegisterViewConfigurationTest : RobolectricTest() {
           showScanQRCode = true,
           showNewClientButton = true,
           languages = listOf("en"),
-          registrationForm = "patient-registration",
+          registrationForm = "3435",
           showSideMenu = true,
           showBottomMenu = false,
-          primaryFilter = SearchFilter("_tag", "000003", "http://fhir.ona.com")
+          primaryFilter = SearchFilter("_tag", "000003", "http://fhir.ona.io")
         )
 
     val context = ApplicationProvider.getApplicationContext<QuestApplication>()
@@ -108,9 +108,9 @@ class RegisterViewConfigurationTest : RobolectricTest() {
     assertEquals(true, result.showNewClientButton)
     assertEquals(true, result.showSideMenu)
     assertEquals(false, result.showBottomMenu)
-    assertEquals("patient-registration", result.registrationForm)
+    assertEquals("3435", result.registrationForm)
     assertEquals("000003", result.primaryFilter!!.code)
-    assertEquals("http://fhir.ona.com", result.primaryFilter!!.system)
+    assertEquals("http://fhir.ona.io", result.primaryFilter!!.system)
     assertEquals("_tag", result.primaryFilter!!.key)
   }
 }

@@ -67,7 +67,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_questionnaire)
     application.assertIsConfigurable()
-    if (!intent.hasExtra(QUESTIONNAIRE_ARG_FORM) && !intent.hasExtra(QUESTIONNAIRE_ARG_ID)) {
+    if (!intent.hasExtra(QUESTIONNAIRE_ARG_FORM)) {
       showToast(getString(R.string.error_loading_form))
       finish()
     }
@@ -77,21 +77,24 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     lifecycleScope.launchWhenCreated {
       questionnaireViewModel = createViewModel(application)
 
-      var questionnaireId = intent.getStringExtra(QUESTIONNAIRE_ARG_ID)
+      val form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
+      // form is either name of form in asset/form-config or questionnaire-id
+      // load from assets and get questionnaire or if not found build it from questionnaire
+      questionnaireConfig =
+        kotlin.runCatching { questionnaireViewModel.getQuestionnaireConfig(form) }.getOrElse {
+          // load questionnaire from db and build config
+          questionnaire = questionnaireViewModel.loadQuestionnaire(form)!!
 
-      if (questionnaireId == null) {
-        val form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)
-        questionnaireConfig = questionnaireViewModel.getQuestionnaireConfig(form!!)
-        questionnaire = questionnaireViewModel.loadQuestionnaire(questionnaireConfig.identifier)!!
-      } else {
-        questionnaire = questionnaireViewModel.loadQuestionnaire(questionnaireId)!!
-        questionnaireConfig =
           QuestionnaireConfig(
-            form = questionnaire.name,
-            title = questionnaire.title,
+            form = questionnaire.name ?: "",
+            title = questionnaire.title ?: "",
             identifier = questionnaire.logicalId
           )
-      }
+        }
+
+      // if questionnaire is still not initialized load using config loaded from assets
+      if (!::questionnaire.isInitialized)
+        questionnaire = questionnaireViewModel.loadQuestionnaire(questionnaireConfig.identifier)!!
 
       supportActionBar?.apply {
         setDisplayHomeAsUpEnabled(true)
@@ -190,18 +193,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire_form"
-    const val QUESTIONNAIRE_ARG_ID = "questionnaire_id"
     const val FORM_CONFIGURATIONS = "form_configurations.json"
 
-    fun requiredIntentArgs(
-      clientIdentifier: String?,
-      form: String? = null,
-      questionnaireId: String? = null
-    ) =
+    fun requiredIntentArgs(clientIdentifier: String?, form: String) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
         Pair(QUESTIONNAIRE_ARG_FORM, form),
-        Pair(QUESTIONNAIRE_ARG_ID, questionnaireId)
       )
   }
 

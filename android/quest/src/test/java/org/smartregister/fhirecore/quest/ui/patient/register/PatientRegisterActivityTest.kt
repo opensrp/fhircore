@@ -90,7 +90,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
     Assert.assertEquals(
-      "patient-registration",
+      "3435",
       actualIntent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM)
     )
   }
