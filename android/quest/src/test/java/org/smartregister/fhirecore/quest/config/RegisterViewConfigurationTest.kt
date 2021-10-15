@@ -24,6 +24,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.configuration.view.loadRegisterViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.util.extension.encodeJson
@@ -55,6 +56,9 @@ class RegisterViewConfigurationTest : RobolectricTest() {
     assertEquals(false, result.showSideMenu)
     assertEquals(true, result.showBottomMenu)
     assertEquals("patient-registration", result.registrationForm)
+    assertEquals("000003", result.primaryFilter!!.code)
+    assertEquals("http://fhir.ona.com", result.primaryFilter!!.system)
+    assertEquals("_tag", result.primaryFilter!!.key)
   }
 
   @Test
@@ -76,7 +80,8 @@ class RegisterViewConfigurationTest : RobolectricTest() {
           languages = listOf("en"),
           registrationForm = "patient-registration",
           showSideMenu = true,
-          showBottomMenu = false
+          showBottomMenu = false,
+          primaryFilter = SearchFilter("_tag", "000003", "http://fhir.ona.com")
         )
 
     val context = ApplicationProvider.getApplicationContext<QuestApplication>()
@@ -104,5 +109,8 @@ class RegisterViewConfigurationTest : RobolectricTest() {
     assertEquals(true, result.showSideMenu)
     assertEquals(false, result.showBottomMenu)
     assertEquals("patient-registration", result.registrationForm)
+    assertEquals("000003", result.primaryFilter!!.code)
+    assertEquals("http://fhir.ona.com", result.primaryFilter!!.system)
+    assertEquals("_tag", result.primaryFilter!!.key)
   }
 }

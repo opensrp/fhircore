@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import org.hl7.fhir.r4.model.DateType
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Ignore
 import org.junit.Test
@@ -24,6 +25,15 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @Ignore("Tests passing locally but failing assertion on ci")
 class DateTimeExtensionTest : RobolectricTest() {
+
+  @Test
+  fun testAsDdMmmYyyyShouldReturnFormattedDate() {
+    val date = DateType("2012-10-12").dateTimeValue().value
+
+    val result = date.asDdMmmYyyy()
+
+    assertEquals("12-Oct-2012", result)
+  }
 
   @Test
   fun testPlusWeeksAsStringShouldAddWeeksAndReturnFormattedDate() {
