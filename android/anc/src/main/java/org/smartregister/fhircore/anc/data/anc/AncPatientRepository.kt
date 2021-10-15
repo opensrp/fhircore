@@ -39,11 +39,13 @@ import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asPatientReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
 import org.smartregister.fhircore.anc.ui.anccare.register.Anc
+import org.smartregister.fhircore.anc.util.AncOverviewType
 import org.smartregister.fhircore.anc.util.RegisterType
 import org.smartregister.fhircore.anc.util.SearchFilterAnc
 import org.smartregister.fhircore.anc.util.filterBy
 import org.smartregister.fhircore.anc.util.filterByPatient
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
+import org.smartregister.fhircore.anc.util.loadRegisterConfigAnc
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
@@ -71,6 +73,9 @@ class AncPatientRepository(
 
   private val registerConfig =
     AncApplication.getContext().loadRegisterConfig(RegisterType.ANC_REGISTER_ID)
+
+  private val ancOverviewConfig =
+    AncApplication.getContext().loadRegisterConfigAnc(AncOverviewType.ANC_OVERVIEW_ID)
 
   override suspend fun loadData(
     query: String,
@@ -181,7 +186,15 @@ class AncPatientRepository(
       fhirEngine.search { filter(CarePlan.SUBJECT) { value = "Patient/$patientId" } }
     }
 
-  suspend fun fetchObservations(patientId: String, searchFilter: SearchFilterAnc): Observation {
+  suspend fun fetchObservations(patientId: String, searchFilterString: String): Observation {
+    val searchFilter: SearchFilterAnc =
+      when (searchFilterString) {
+        "edd" -> ancOverviewConfig.eddFilter!!
+        "risk" -> ancOverviewConfig.riskFilter!!
+        "fetueses" -> ancOverviewConfig.fetusesFilter!!
+        "ga" -> ancOverviewConfig.gaFilter!!
+        else -> ancOverviewConfig.eddFilter!!
+      }
     var finalObservation = Observation()
     val observations =
       withContext(dispatcherProvider.io()) {
