@@ -312,11 +312,8 @@ class AncDetailsFragment private constructor() : Fragment() {
         contextCQL,
         contextLabel
       )
-    val jsonObject = JSONObject(parameters)
-    textView_CQLResults.text = jsonObject.toString(4)
-    progress_circular_cql.visibility = View.GONE
+    handleParametersQCLMeasure(parameters)
     button_CQL_Measure_Evaluate.isEnabled = true
-    textView_CQLResults.visibility = View.VISIBLE
   }
 
   fun handleMeasureEvaluatePatient(auxPatientData: String) {
@@ -333,10 +330,14 @@ class AncDetailsFragment private constructor() : Fragment() {
         cqlMeasureReportReportType,
         cqlMeasureReportSubject
       )
+    handleParametersQCLMeasure(parameters)
+    button_CQLEvaluate.isEnabled = true
+  }
+
+  fun handleParametersQCLMeasure(parameters:String){
     val jsonObject = JSONObject(parameters)
     textView_CQLResults.text = jsonObject.toString(4)
     progress_circular_cql.visibility = View.GONE
-    button_CQLEvaluate.isEnabled = true
     textView_CQLResults.visibility = View.VISIBLE
   }
 

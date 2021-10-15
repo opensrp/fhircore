@@ -41,6 +41,7 @@ import kotlinx.android.synthetic.main.fragment_anc_details.textView_CQLResults
 import kotlinx.android.synthetic.main.fragment_anc_details.textView_EvaluateCQLHeader
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -385,6 +386,18 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
     Assert.assertEquals(
       true,
       patientDetailsFragment.button_CQL_Measure_Evaluate.hasOnClickListeners()
+    )
+  }
+
+  @Test
+  fun handleParametersQCLMeasureTest(){
+    var dummyJson="{ \"id\": 0, \"name\": \"Dominique Prince\" }"
+    val jsonObject = JSONObject(dummyJson)
+    val auxText = jsonObject.toString(4)
+
+    patientDetailsFragment.handleParametersQCLMeasure(dummyJson)
+    Assert.assertEquals(
+      patientDetailsFragment.textView_CQLResults.text,auxText
     )
   }
 }
