@@ -27,11 +27,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
-import org.smartregister.fhircore.anc.data.madx.model.EncounterItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.sharedmodel.EncounterItem
 import org.smartregister.fhircore.anc.databinding.FragmentVitalDetailsBinding
-import org.smartregister.fhircore.anc.ui.madx.details.CarePlanItemMapper
-import org.smartregister.fhircore.anc.ui.madx.details.UpcomingServiceItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
 import org.smartregister.fhircore.anc.ui.madx.details.adapter.AllergiesAdapter
 import org.smartregister.fhircore.anc.ui.madx.details.adapter.ConditionsAdapter
 import org.smartregister.fhircore.anc.ui.madx.details.adapter.EncounterAdapter
@@ -49,7 +48,7 @@ class VitalSignsDetailsFragment : Fragment() {
   private val conditionsAdapter = ConditionsAdapter()
   private val encounterAdapter = EncounterAdapter()
 
-  private lateinit var ancPatientRepository: NonAncPatientRepository
+  private lateinit var ancPatientRepository: PatientRepository
 
   lateinit var binding: FragmentVitalDetailsBinding
 
@@ -71,10 +70,9 @@ class VitalSignsDetailsFragment : Fragment() {
     setupViews()
 
     ancPatientRepository =
-      NonAncPatientRepository(
+      PatientRepository(
         (requireActivity().application as AncApplication).fhirEngine,
-        CarePlanItemMapper,
-        UpcomingServiceItemMapper
+        AncPatientItemMapper
       )
 
     ancDetailsViewModel =

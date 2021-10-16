@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.madx.details.adapter
+package org.smartregister.fhircore.anc.ui.anccare.details
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

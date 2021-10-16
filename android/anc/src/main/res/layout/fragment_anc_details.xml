@@ -44,7 +44,9 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout_details">
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout_details"
+            app:layout_constraintVertical_bias="1.0"
+            tools:layout_editor_absoluteX="129dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -183,39 +185,51 @@
                         android:orientation="vertical">
 
                         <LinearLayout
-                        android:id="@+id/linearLayout_CQLButtons"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <Button android:id="@+id/button_CQLEvaluate"
-                            android:layout_width="wrap_content"
+                            android:id="@+id/linearLayout_CQLButtons"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@string/button_cql_evaluate"
-                            android:layout_weight="1"
-                            android:layout_margin="2dp"
-                            android:layout_marginLeft="1dp"/>
+                            android:orientation="horizontal">
 
-                        <Button android:id="@+id/button_CQL_Measure_Evaluate"
-                            android:layout_width="wrap_content"
+                            <Button
+                                android:id="@+id/button_CQLEvaluate"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="2dp"
+                                android:layout_marginLeft="1dp"
+                                android:layout_weight="1"
+                                android:text="@string/button_cql_evaluate" />
+
+                            <Button
+                                android:id="@+id/button_CQL_Measure_Evaluate"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="2dp"
+                                android:layout_marginLeft="1dp"
+                                android:layout_weight="1"
+                                android:text="@string/button_cql_measure_report" />
+
+                        </LinearLayout>
+
+                        <ProgressBar
+                            android:id="@+id/progress_circular_cql"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@string/button_cql_measure_report"
-                            android:layout_weight="1"
-                            android:layout_margin="2dp"
-                            android:layout_marginLeft="1dp"/>
+                            android:layout_gravity="center"
+                            android:visibility="gone"
+                            android:indeterminate="true" />
 
-                    </LinearLayout>
-                    <TextView
-                        android:id="@+id/textView_CQLResults"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text=""
-                        android:textAllCaps="true"
-                        android:textColor="@color/darkGrayText"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:visibility="gone"
-                        app:layout_constraintLeft_toLeftOf="parent" />
+                        <TextView
+                            android:id="@+id/textView_CQLResults"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text=""
+                            android:textAllCaps="true"
+                            android:textColor="@color/darkGrayText"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:visibility="gone"
+                            android:padding="3dp"
+                            app:layout_constraintLeft_toLeftOf="parent" />
                     </LinearLayout>
 
                 </androidx.cardview.widget.CardView>

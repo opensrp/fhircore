@@ -42,11 +42,11 @@ import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
-import org.smartregister.fhircore.anc.data.anc.model.UpcomingServiceItem
-import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
-import org.smartregister.fhircore.anc.data.madx.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.madx.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientItem
+import org.smartregister.fhircore.anc.data.sharedmodel.CarePlanItem
+import org.smartregister.fhircore.anc.data.sharedmodel.UpcomingServiceItem
 import org.smartregister.fhircore.anc.robolectric.FragmentRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.ui.madx.details.NonAncDetailsActivity
@@ -63,7 +63,7 @@ internal class CarePlanDetailsFragmentTest : FragmentRobolectricTest() {
 
   private lateinit var patientDetailsActivity: NonAncDetailsActivity
 
-  private lateinit var patientRepository: NonAncPatientRepository
+  private lateinit var patientRepository: PatientRepository
 
   private lateinit var fragmentScenario: FragmentScenario<CarePlanDetailsFragment>
 

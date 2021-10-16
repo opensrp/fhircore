@@ -24,7 +24,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Rule
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 
 @ExperimentalCoroutinesApi
 internal class VitalSignsDetailsViewModelTest {
@@ -32,7 +32,7 @@ internal class VitalSignsDetailsViewModelTest {
 
   private lateinit var patientDetailsViewModel: VitalSignsDetailsViewModel
 
-  private lateinit var patientRepository: NonAncPatientRepository
+  private lateinit var patientRepository: PatientRepository
 
   private val patientId = "samplePatientId"
 

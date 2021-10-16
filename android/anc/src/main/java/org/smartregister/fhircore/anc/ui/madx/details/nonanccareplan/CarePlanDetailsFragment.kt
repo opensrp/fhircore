@@ -27,12 +27,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
-import org.smartregister.fhircore.anc.data.madx.model.CarePlanItem
-import org.smartregister.fhircore.anc.data.madx.model.UpcomingServiceItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.sharedmodel.CarePlanItem
+import org.smartregister.fhircore.anc.data.sharedmodel.UpcomingServiceItem
 import org.smartregister.fhircore.anc.databinding.FragmentNonAncDetailsBinding
-import org.smartregister.fhircore.anc.ui.madx.details.CarePlanItemMapper
-import org.smartregister.fhircore.anc.ui.madx.details.UpcomingServiceItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.madx.details.adapter.CarePlanAdapter
 import org.smartregister.fhircore.anc.ui.madx.details.adapter.UpcomingServicesAdapter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -45,7 +44,7 @@ class CarePlanDetailsFragment : Fragment() {
 
   lateinit var ancDetailsViewModel: CarePlanDetailsViewModel
 
-  private lateinit var ancPatientRepository: NonAncPatientRepository
+  private lateinit var ancPatientRepository: PatientRepository
 
   private val carePlanAdapter = CarePlanAdapter()
   private val upcomingServicesAdapter = UpcomingServicesAdapter()
@@ -70,11 +69,7 @@ class CarePlanDetailsFragment : Fragment() {
     setupViews()
 
     ancPatientRepository =
-      NonAncPatientRepository(
-        (requireActivity().application as AncApplication).fhirEngine,
-        CarePlanItemMapper,
-        UpcomingServiceItemMapper
-      )
+      PatientRepository((requireActivity().application as AncApplication).fhirEngine, AncItemMapper)
 
     ancDetailsViewModel =
       ViewModelProvider(

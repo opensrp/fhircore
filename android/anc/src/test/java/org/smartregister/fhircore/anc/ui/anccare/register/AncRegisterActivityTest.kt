@@ -44,8 +44,8 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
-import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
@@ -54,7 +54,7 @@ import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 internal class AncRegisterActivityTest : ActivityRobolectricTest() {
 
   private lateinit var ancRegisterActivity: AncRegisterActivity
-  private lateinit var ancPatientRepository: AncPatientRepository
+  private lateinit var patientRepository: PatientRepository
   private lateinit var familyRepository: FamilyRepository
 
   @Before
@@ -63,13 +63,13 @@ internal class AncRegisterActivityTest : ActivityRobolectricTest() {
     every { Sync.basicSyncJob(any()).stateFlow() } returns flowOf()
     every { Sync.basicSyncJob(any()).lastSyncTimestamp() } returns OffsetDateTime.now()
 
-    ancPatientRepository = mockk()
+    patientRepository = mockk()
     familyRepository = mockk()
 
     ancRegisterActivity =
       Robolectric.buildActivity(AncRegisterActivity::class.java, null).create().get()
 
-    ReflectionHelpers.setField(ancRegisterActivity, "ancPatientRepository", ancPatientRepository)
+    ReflectionHelpers.setField(ancRegisterActivity, "patientRepository", patientRepository)
     ReflectionHelpers.setField(ancRegisterActivity, "familyRepository", familyRepository)
   }
 
@@ -86,7 +86,7 @@ internal class AncRegisterActivityTest : ActivityRobolectricTest() {
   @Test
   fun testActivityHasCorrectSideMenuItem() {
 
-    coEvery { ancPatientRepository.countAll() } returns 1
+    coEvery { patientRepository.countAll() } returns 1
     coEvery { familyRepository.countAll() } returns 1
 
     val sideMenu = ancRegisterActivity.sideMenuOptions()

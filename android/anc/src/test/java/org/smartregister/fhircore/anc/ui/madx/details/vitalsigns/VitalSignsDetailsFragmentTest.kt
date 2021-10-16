@@ -31,8 +31,10 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.Encounter
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -42,10 +44,10 @@ import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
-import org.smartregister.fhircore.anc.data.madx.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.madx.model.AncPatientItem
-import org.smartregister.fhircore.anc.data.madx.model.EncounterItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientItem
+import org.smartregister.fhircore.anc.data.sharedmodel.EncounterItem
 import org.smartregister.fhircore.anc.robolectric.FragmentRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.ui.madx.details.NonAncDetailsActivity
@@ -61,7 +63,7 @@ internal class VitalSignsDetailsFragmentTest : FragmentRobolectricTest() {
 
   private lateinit var patientDetailsActivity: NonAncDetailsActivity
 
-  private lateinit var patientRepository: NonAncPatientRepository
+  private lateinit var patientRepository: PatientRepository
 
   private lateinit var fragmentScenario: FragmentScenario<VitalSignsDetailsFragment>
 
@@ -146,7 +148,7 @@ internal class VitalSignsDetailsFragmentTest : FragmentRobolectricTest() {
       "handleEncounters",
       ReflectionHelpers.ClassParameter(
         List::class.java,
-        listOf(EncounterItem("1111", "ABC", "2020-02-01"))
+        listOf(EncounterItem("1111", Encounter.EncounterStatus.ARRIVED, "first", Date()))
       )
     )
 

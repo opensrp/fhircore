@@ -20,7 +20,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import org.smartregister.fhircore.anc.data.madx.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.sharedmodel.CarePlanItem
 import org.smartregister.fhircore.anc.databinding.ItemCareplanBinding
 import org.smartregister.fhircore.engine.ui.base.BaseSimpleRecyclerViewHolder
 

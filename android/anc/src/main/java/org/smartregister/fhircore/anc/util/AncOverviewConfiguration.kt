@@ -16,25 +16,10 @@
 
 package org.smartregister.fhircore.anc.util
 
-import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.Enumerations
-
 data class AncOverviewConfiguration(
   val id: String,
-  val eddFilter: SearchFilterAnc?,
-  val gaFilter: SearchFilterAnc?,
-  val fetusesFilter: SearchFilterAnc?,
-  val riskFilter: SearchFilterAnc?
-)
-
-/**
- * Only TokenClientParam, and StringClientParam supported as Anc Overview EDD, GA, Fetuses and Risk
- * Filter
- */
-data class SearchFilterAnc(
-  val key: String,
-  val filterType: Enumerations.SearchParamType,
-  val valueType: Enumerations.DataType,
-  val valueCoding: Coding? = null,
-  val valueString: String? = null
+  val eddFilter: SearchFilter?,
+  val gaFilter: SearchFilter?,
+  val fetusesFilter: SearchFilter?,
+  val riskFilter: SearchFilter?
 )

@@ -34,12 +34,10 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.android.synthetic.main.fragment_anc_details.button_CQLEvaluate
-import kotlinx.android.synthetic.main.fragment_anc_details.button_CQL_Measure_Evaluate
-import kotlinx.android.synthetic.main.fragment_anc_details.textView_CQLResults
-import kotlinx.android.synthetic.main.fragment_anc_details.textView_EvaluateCQLHeader
+import kotlinx.android.synthetic.main.fragment_anc_details.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -49,15 +47,14 @@ import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
-import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
-import org.smartregister.fhircore.anc.data.anc.model.UpcomingServiceItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientItem
+import org.smartregister.fhircore.anc.data.sharedmodel.CarePlanItem
+import org.smartregister.fhircore.anc.data.sharedmodel.UpcomingServiceItem
 import org.smartregister.fhircore.anc.robolectric.FragmentRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.util.FileUtil
 
 @ExperimentalCoroutinesApi
 @Config(shadows = [AncApplicationShadow::class])
@@ -66,20 +63,18 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   private lateinit var fhirEngine: FhirEngine
   private lateinit var patientDetailsViewModel: AncDetailsViewModel
   private lateinit var patientDetailsActivity: AncDetailsActivity
-  private lateinit var patientRepository: AncPatientRepository
+  private lateinit var patientRepository: PatientRepository
   private lateinit var fragmentScenario: FragmentScenario<AncDetailsFragment>
   private lateinit var patientDetailsFragment: AncDetailsFragment
   private lateinit var carePlanAdapter: CarePlanAdapter
   private lateinit var upcomingServicesAdapter: UpcomingServicesAdapter
-  private lateinit var lastSeen: UpcomingServicesAdapter
+  private lateinit var lastSeen: EncounterAdapter
 
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   private val patientId = "samplePatientId"
   var ancPatientDetailItem = spyk<AncPatientDetailItem>()
-
-  val fileUtil = FileUtil()
 
   @Before
   fun setUp() {
@@ -474,5 +469,21 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
       true,
       patientDetailsFragment.button_CQL_Measure_Evaluate.hasOnClickListeners()
     )
+  }
+
+  @Test
+  fun handleParametersQCLMeasureTest() {
+    var dummyJson = "{ \"id\": 0, \"name\": \"Dominique Prince\" }"
+    val jsonObject = JSONObject(dummyJson)
+    val auxText = jsonObject.toString(4)
+
+    patientDetailsFragment.handleParametersQCLMeasure(dummyJson)
+    Assert.assertEquals(patientDetailsFragment.textView_CQLResults.text, auxText)
+  }
+
+  @Test
+  fun startProgressBarAndTextViewCQLResultsTest() {
+    patientDetailsFragment.startProgressBarAndTextViewCQLResults()
+    Assert.assertEquals(View.VISIBLE, patientDetailsFragment.progress_circular_cql?.visibility)
   }
 }

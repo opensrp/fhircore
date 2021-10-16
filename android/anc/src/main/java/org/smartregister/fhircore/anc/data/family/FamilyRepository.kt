@@ -26,13 +26,10 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
 import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
-import org.smartregister.fhircore.anc.ui.anccare.details.CarePlanItemMapper
-import org.smartregister.fhircore.anc.ui.anccare.details.LastSceneItemMapper
-import org.smartregister.fhircore.anc.ui.anccare.details.UpcomingServiceItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.Family
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
@@ -57,14 +54,7 @@ class FamilyRepository(
   private val registerConfig =
     AncApplication.getContext().loadRegisterConfig(RegisterType.FAMILY_REGISTER_ID)
 
-  private val ancPatientRepository =
-    AncPatientRepository(
-      fhirEngine,
-      AncItemMapper,
-      CarePlanItemMapper,
-      UpcomingServiceItemMapper,
-      LastSceneItemMapper
-    )
+  private val ancPatientRepository = PatientRepository(fhirEngine, AncItemMapper)
 
   private val resourceMapperExtended = ResourceMapperExtended(fhirEngine)
 

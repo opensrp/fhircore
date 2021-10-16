@@ -38,8 +38,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
-import org.smartregister.fhircore.anc.data.anc.model.AncVisitStatus
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientItem
+import org.smartregister.fhircore.anc.data.sharedmodel.VisitStatus
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
 import org.smartregister.fhircore.anc.ui.anccare.register.RecordAncVisit
@@ -84,8 +84,8 @@ fun AncRow(
     }
     Column(modifier = modifier.padding(20.dp).weight(0.45f)) {
       when (ancPatientItem.visitStatus) {
-        AncVisitStatus.DUE -> ancVisitButton(DueColor, DueLightColor, ancPatientItem, clickListener)
-        AncVisitStatus.OVERDUE ->
+        VisitStatus.DUE -> ancVisitButton(DueColor, DueLightColor, ancPatientItem, clickListener)
+        VisitStatus.OVERDUE ->
           ancVisitButton(OverdueColor, OverdueLightColor, ancPatientItem, clickListener)
       }
     }
@@ -124,7 +124,7 @@ fun previewAncItemDue() {
         name = "Anna Bell",
         atRisk = "yes riskyy",
         address = "Nairobi",
-        visitStatus = AncVisitStatus.DUE
+        visitStatus = VisitStatus.DUE
       )
   )
 }
@@ -142,7 +142,7 @@ fun previewAncItemOverDue() {
         name = "Anna Bell",
         atRisk = "yes riskyy",
         address = "Nairobi",
-        visitStatus = AncVisitStatus.OVERDUE
+        visitStatus = VisitStatus.OVERDUE
       )
   )
 }

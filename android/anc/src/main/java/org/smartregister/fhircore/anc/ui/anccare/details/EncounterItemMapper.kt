@@ -19,13 +19,14 @@ package org.smartregister.fhircore.anc.ui.anccare.details
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
-import org.smartregister.fhircore.anc.data.anc.model.UpcomingServiceItem
+import org.smartregister.fhircore.anc.data.sharedmodel.EncounterItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
+import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 
-object LastSceneItemMapper : DomainMapper<Encounter, UpcomingServiceItem> {
+object EncounterItemMapper : DomainMapper<Encounter, EncounterItem> {
 
-  override fun mapToDomainModel(dto: Encounter): UpcomingServiceItem {
+  override fun mapToDomainModel(dto: Encounter): EncounterItem {
     var type = CodeableConcept()
     var typeCoding = Coding()
     var typeString = ""
@@ -36,6 +37,6 @@ object LastSceneItemMapper : DomainMapper<Encounter, UpcomingServiceItem> {
     else if (type.hasText()) typeString = type.text
     if (type.hasText()) typeString = type.text
     if (dto.period.start != null) typeDate = dto.period.start.makeItReadable()
-    return UpcomingServiceItem(dto.id, typeString, typeDate)
+    return EncounterItem(dto.id, dto.status, typeString, typeDate.getDate("yyyy-MM-dd"))
   }
 }

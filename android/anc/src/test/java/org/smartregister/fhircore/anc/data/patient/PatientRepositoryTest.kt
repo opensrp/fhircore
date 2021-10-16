@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.data.anc
+package org.smartregister.fhircore.anc.data.patient
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import ca.uhn.fhir.context.FhirContext
@@ -51,23 +51,20 @@ import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
-import org.junit.Assert.assertEquals
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
-import org.smartregister.fhircore.anc.data.anc.model.AncVisitStatus
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientItem
+import org.smartregister.fhircore.anc.data.sharedmodel.VisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.ui.anccare.details.CarePlanItemMapper
-import org.smartregister.fhircore.anc.ui.anccare.details.LastSceneItemMapper
-import org.smartregister.fhircore.anc.ui.anccare.details.UpcomingServiceItemMapper
-import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
-class AncPatientRepositoryTest : RobolectricTest() {
-  private lateinit var repository: AncPatientRepository
+class PatientRepositoryTest : RobolectricTest() {
+  private lateinit var repository: PatientRepository
   private lateinit var fhirEngine: FhirEngine
 
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
@@ -75,67 +72,7 @@ class AncPatientRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     fhirEngine = spyk()
-    repository =
-      spyk(
-        AncPatientRepository(
-          fhirEngine,
-          AncItemMapper,
-          CarePlanItemMapper,
-          UpcomingServiceItemMapper,
-          LastSceneItemMapper
-        )
-      )
-  }
-
-  @Test
-  fun testLoadAllShouldReturnListOfFamilyItem() {
-    coEvery { fhirEngine.search<Condition>(any()) } returns listOf(buildCondition("1111"))
-    coEvery { repository.searchCarePlan(any()) } returns listOf(buildCarePlan("1111"))
-    coEvery { fhirEngine.load(Patient::class.java, "1111") } returns
-      buildPatient("1111", "Test", "Abc")
-    coEvery { fhirEngine.load(Patient::class.java, "1110") } returns
-      buildPatient("1110", "Test0", "Abc0")
-    coEvery { fhirEngine.count(any()) } returns 10
-
-    runBlocking {
-      val ancList = repository.loadData("", 0, true)
-
-      assertEquals("Abc Test", ancList[0].name)
-      assertEquals("1111", ancList[0].patientIdentifier)
-
-      assertEquals(AncVisitStatus.DUE, ancList[0].visitStatus)
-    }
-  }
-
-  @Test
-  fun testEnrollIntoAncShouldSaveEntities() {
-    coEvery { fhirEngine.save(any()) } just runs
-
-    val condition = slot<Condition>()
-    val episode = slot<EpisodeOfCare>()
-    val encounter = slot<Encounter>()
-    val goal = slot<Goal>()
-    val carePlan = slot<CarePlan>()
-
-    runBlocking {
-      repository.enrollIntoAnc("1111", DateType(Date()))
-
-      coVerifyOrder {
-        fhirEngine.save(capture(condition))
-        fhirEngine.save(capture(episode))
-        fhirEngine.save(capture(encounter))
-        fhirEngine.save(capture(goal))
-        fhirEngine.save(capture(carePlan))
-      }
-
-      val subject = "Patient/1111"
-
-      assertEquals(subject, condition.captured.subject.reference)
-      assertEquals(subject, episode.captured.patient.reference)
-      assertEquals(subject, encounter.captured.subject.reference)
-      assertEquals(subject, goal.captured.subject.reference)
-      assertEquals(subject, carePlan.captured.subject.reference)
-    }
+    repository = spyk(PatientRepository(fhirEngine, AncPatientItemMapper))
   }
 
   @Test
@@ -157,62 +94,12 @@ class AncPatientRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun testFetchCarePlanShouldReturnExpectedCarePlan() {
-    mockkStatic(FhirContext::class)
-
-    val fhirContext = mockk<FhirContext>()
-    val parser = mockk<IParser>()
-
-    val cpTitle = "First Care Plan"
-    val cpPeriodStartDate = SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01")
-
-    every { FhirContext.forR4() } returns fhirContext
-    every { fhirContext.newJsonParser() } returns parser
-    every { parser.parseResource(any<String>()) } returns
-      CarePlan().apply {
-        title = cpTitle
-        period = Period().apply { start = cpPeriodStartDate }
-      }
-
-    val carePlans = runBlocking { repository.fetchCarePlan(PATIENT_ID_1) }
-    if (carePlans != null && carePlans.isNotEmpty()) {
-      assertEquals(1, carePlans.size)
-      with(carePlans.first()) { assertEquals(cpTitle, title) }
-    }
-
-    unmockkStatic(FhirContext::class)
-  }
-
-  private fun buildCondition(subject: String): Condition {
-    return Condition().apply {
-      this.id = id
-      this.code = CodeableConcept().apply { addCoding().apply { code = "123456" } }
-      this.subject = Reference().apply { reference = "Patient/$subject" }
-    }
-  }
-
-  private fun buildPatient(id: String, family: String, given: String): Patient {
-    return Patient().apply {
-      this.id = id
-      this.addName().apply {
-        this.family = family
-        this.given.add(StringType(given))
-      }
-      this.addAddress().apply {
-        district = "Dist 1"
-        city = "City 1"
-      }
-      this.addLink().apply { this.other = Reference().apply { reference = "Patient/1110" } }
-    }
-  }
-
-  @Test
   fun fetchCarePlanItemTest() {
     val patientId = "1111"
     val carePlan = listOf(buildCarePlanWithActive(patientId))
     val listCarePlan = repository.fetchCarePlanItem(carePlan = carePlan)
     if (listCarePlan.isNotEmpty()) {
-      assertEquals("ABC", listCarePlan[0].title)
+      Assert.assertEquals("ABC", listCarePlan[0].title)
     }
   }
 
@@ -221,26 +108,8 @@ class AncPatientRepositoryTest : RobolectricTest() {
     val patientId = "1111"
     val carePlan = listOf(buildCarePlanWithActive(patientId))
     val listUpcomingServiceItem = repository.fetchUpcomingServiceItem(carePlan = carePlan)
-    assertEquals("ABC", listUpcomingServiceItem[0].title)
-    assertEquals(Date().makeItReadable(), listUpcomingServiceItem[0].date)
-  }
-
-  @Test
-  fun fetchLastSceneItemTest() {
-    val patientId = "1111"
-    val encounter = listOf(getEncounter(patientId))
-    val listLastItem = repository.fetchLastSeenItem(encounter)
-    assertEquals("ABC", listLastItem[0].title)
-  }
-
-  private fun buildCarePlan(subject: String): CarePlan {
-    return CarePlan().apply {
-      this.subject = Reference().apply { reference = "Patient/$subject" }
-      this.addActivity().detail.apply {
-        this.scheduledPeriod.start = Date()
-        this.status = CarePlan.CarePlanActivityStatus.SCHEDULED
-      }
-    }
+    Assert.assertEquals("ABC", listUpcomingServiceItem[0].title)
+    Assert.assertEquals(Date().makeItReadable(), listUpcomingServiceItem[0].date)
   }
 
   private fun buildCarePlanWithActive(subject: String): CarePlan {
@@ -260,53 +129,11 @@ class AncPatientRepositoryTest : RobolectricTest() {
     }
   }
 
-  private fun getEncounter(patientId: String): Encounter {
-    return Encounter().apply {
-      id = "1"
-      type = listOf(getCodeableConcept())
-      subject = Reference().apply { reference = "Patient/$patientId" }
-      status = Encounter.EncounterStatus.FINISHED
-      class_ = Coding("", "", "ABC")
-      period = Period().apply { start = SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01") }
-    }
-  }
-
-  private fun getCodeableConcept(): CodeableConcept {
-    return CodeableConcept().apply {
-      id = "1"
-      coding = listOf(getCodingList())
-      text = "ABC"
-    }
-  }
-
-  private fun getCodingList(): Coding {
-    return Coding().apply {
-      id = "1"
-      system = "123"
-      code = "123"
-      display = "ABC"
-    }
-  }
-
-  private fun verifyPatient(patient: AncPatientItem) {
-    with(patient) {
-      assertEquals(PATIENT_ID_1, patientIdentifier)
-      assertEquals("Jane Mc", name)
-      assertEquals("Male", gender)
-      assertEquals("0", age)
-      assertEquals("", demographics)
-      assertEquals("", atRisk)
-    }
-  }
-
-  private fun verifyHeadPatient(patient: AncPatientItem) {
-    with(patient) {
-      assertEquals(PATIENT_ID_1, patientIdentifier)
-      assertEquals("Salina Jetly", name)
-      assertEquals("Female", gender)
-      assertEquals("0", age)
-      assertEquals("Kenya", demographics)
-      assertEquals("", atRisk)
+  private fun buildCondition(subject: String): Condition {
+    return Condition().apply {
+      this.id = id
+      this.code = CodeableConcept().apply { addCoding().apply { code = "123456" } }
+      this.subject = Reference().apply { reference = "Patient/$subject" }
     }
   }
 
@@ -362,6 +189,167 @@ class AncPatientRepositoryTest : RobolectricTest() {
             Enumeration(Patient.LinkTypeEnumFactory())
           )
         )
+    }
+  }
+
+  private fun verifyPatient(patient: AncPatientItem) {
+    with(patient) {
+      Assert.assertEquals(PATIENT_ID_1, patientIdentifier)
+      Assert.assertEquals("Jane Mc", name)
+      Assert.assertEquals("Male", gender)
+      Assert.assertEquals("0", age)
+      Assert.assertEquals("", demographics)
+      Assert.assertEquals("", atRisk)
+    }
+  }
+
+  private fun verifyHeadPatient(patient: AncPatientItem) {
+    with(patient) {
+      Assert.assertEquals(PATIENT_ID_1, patientIdentifier)
+      Assert.assertEquals("Salina Jetly", name)
+      Assert.assertEquals("Female", gender)
+      Assert.assertEquals("0", age)
+      Assert.assertEquals("Kenya", demographics)
+      Assert.assertEquals("", atRisk)
+    }
+  }
+
+  @Test
+  fun testLoadAllShouldReturnListOfFamilyItem() {
+    coEvery { fhirEngine.search<Condition>(any()) } returns listOf(buildCondition("1111"))
+    coEvery { repository.searchCarePlan(any()) } returns listOf(buildCarePlan("1111"))
+    coEvery { fhirEngine.load(Patient::class.java, "1111") } returns
+      buildPatient("1111", "Test", "Abc")
+    coEvery { fhirEngine.load(Patient::class.java, "1110") } returns
+      buildPatient("1110", "Test0", "Abc0")
+    coEvery { fhirEngine.count(any()) } returns 10
+
+    runBlocking {
+      val ancList = repository.loadData("", 0, true)
+
+      Assert.assertEquals("Abc Test", ancList[0].name)
+      Assert.assertEquals("1111", ancList[0].patientIdentifier)
+
+      Assert.assertEquals(VisitStatus.PLANNED, ancList[0].visitStatus)
+    }
+  }
+
+  @Test
+  fun testEnrollIntoAncShouldSaveEntities() {
+    coEvery { fhirEngine.save(any()) } just runs
+
+    val condition = slot<Condition>()
+    val episode = slot<EpisodeOfCare>()
+    val encounter = slot<Encounter>()
+    val goal = slot<Goal>()
+    val carePlan = slot<CarePlan>()
+
+    runBlocking {
+      repository.enrollIntoAnc("1111", DateType(Date()))
+
+      coVerifyOrder {
+        fhirEngine.save(capture(condition))
+        fhirEngine.save(capture(episode))
+        fhirEngine.save(capture(encounter))
+        fhirEngine.save(capture(goal))
+        fhirEngine.save(capture(carePlan))
+      }
+
+      val subject = "Patient/1111"
+
+      Assert.assertEquals(subject, condition.captured.subject.reference)
+      Assert.assertEquals(subject, episode.captured.patient.reference)
+      Assert.assertEquals(subject, encounter.captured.subject.reference)
+      Assert.assertEquals(subject, goal.captured.subject.reference)
+      Assert.assertEquals(subject, carePlan.captured.subject.reference)
+    }
+  }
+
+  @Test
+  fun testFetchCarePlanShouldReturnExpectedCarePlan() {
+    mockkStatic(FhirContext::class)
+
+    val fhirContext = mockk<FhirContext>()
+    val parser = mockk<IParser>()
+
+    val cpTitle = "First Care Plan"
+    val cpPeriodStartDate = SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01")
+
+    every { FhirContext.forR4() } returns fhirContext
+    every { fhirContext.newJsonParser() } returns parser
+    every { parser.parseResource(any<String>()) } returns
+      CarePlan().apply {
+        title = cpTitle
+        period = Period().apply { start = cpPeriodStartDate }
+      }
+
+    val carePlans = runBlocking { repository.fetchCarePlan(PATIENT_ID_1) }
+    if (carePlans != null && carePlans.isNotEmpty()) {
+      Assert.assertEquals(1, carePlans.size)
+      with(carePlans.first()) { Assert.assertEquals(cpTitle, title) }
+    }
+
+    unmockkStatic(FhirContext::class)
+  }
+
+  private fun buildPatient(id: String, family: String, given: String): Patient {
+    return Patient().apply {
+      this.id = id
+      this.addName().apply {
+        this.family = family
+        this.given.add(StringType(given))
+      }
+      this.addAddress().apply {
+        district = "Dist 1"
+        city = "City 1"
+      }
+      this.addLink().apply { this.other = Reference().apply { reference = "Patient/1110" } }
+    }
+  }
+
+  @Test
+  fun fetchLastSceneItemTest() {
+    val patientId = "1111"
+    val encounter = listOf(getEncounter(patientId))
+    val listLastItem = repository.fetchLastSeenItem(encounter)
+    Assert.assertEquals("ABC", listLastItem[0].display)
+  }
+
+  private fun buildCarePlan(subject: String): CarePlan {
+    return CarePlan().apply {
+      this.subject = Reference().apply { reference = "Patient/$subject" }
+      this.addActivity().detail.apply {
+        this.scheduledPeriod.start = Date()
+        this.status = CarePlan.CarePlanActivityStatus.SCHEDULED
+      }
+    }
+  }
+
+  private fun getEncounter(patientId: String): Encounter {
+    return Encounter().apply {
+      id = "1"
+      type = listOf(getCodeableConcept())
+      subject = Reference().apply { reference = "Patient/$patientId" }
+      status = Encounter.EncounterStatus.FINISHED
+      class_ = Coding("", "", "ABC")
+      period = Period().apply { start = SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01") }
+    }
+  }
+
+  private fun getCodeableConcept(): CodeableConcept {
+    return CodeableConcept().apply {
+      id = "1"
+      coding = listOf(getCodingList())
+      text = "ABC"
+    }
+  }
+
+  private fun getCodingList(): Coding {
+    return Coding().apply {
+      id = "1"
+      system = "123"
+      code = "123"
+      display = "ABC"
     }
   }
 

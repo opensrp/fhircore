@@ -23,34 +23,29 @@ import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.parser.IParser
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.anc.model.AncOverviewItem
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
-import org.smartregister.fhircore.anc.data.anc.model.UpcomingServiceItem
-import org.smartregister.fhircore.anc.util.AncOverviewType
-import org.smartregister.fhircore.anc.util.loadRegisterConfigAnc
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.sharedmodel.CarePlanItem
+import org.smartregister.fhircore.anc.data.sharedmodel.EncounterItem
+import org.smartregister.fhircore.anc.data.sharedmodel.UpcomingServiceItem
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class AncDetailsViewModel(
-  val ancPatientRepository: AncPatientRepository,
+  val patientRepository: PatientRepository,
   var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
   val patientId: String
 ) : ViewModel() {
 
   lateinit var patientDemographics: MutableLiveData<AncPatientDetailItem>
 
-  private val ancOverviewConfig =
-    AncApplication.getContext().loadRegisterConfigAnc(AncOverviewType.ANC_OVERVIEW_ID)
-
   fun fetchDemographics(): LiveData<AncPatientDetailItem> {
     patientDemographics = MutableLiveData<AncPatientDetailItem>()
     viewModelScope.launch(dispatcher.io()) {
-      val ancPatientDetailItem = ancPatientRepository.fetchDemographics(patientId = patientId)
+      val ancPatientDetailItem = patientRepository.fetchDemographics(patientId = patientId)
       patientDemographics.postValue(ancPatientDetailItem)
     }
     return patientDemographics
@@ -59,8 +54,8 @@ class AncDetailsViewModel(
   fun fetchCarePlan(): LiveData<List<CarePlanItem>> {
     val patientCarePlan = MutableLiveData<List<CarePlanItem>>()
     viewModelScope.launch(dispatcher.io()) {
-      val listCarePlan = ancPatientRepository.searchCarePlan(id = patientId)
-      val listCarePlanItem = ancPatientRepository.fetchCarePlanItem(listCarePlan)
+      val listCarePlan = patientRepository.searchCarePlan(id = patientId)
+      val listCarePlanItem = patientRepository.fetchCarePlanItem(listCarePlan)
       patientCarePlan.postValue(listCarePlanItem)
     }
     return patientCarePlan
@@ -70,33 +65,24 @@ class AncDetailsViewModel(
     val patientAncOverviewItem = MutableLiveData<AncOverviewItem>()
     val ancOverviewItem = AncOverviewItem()
     viewModelScope.launch(dispatcher.io()) {
-      val listObservationEDD =
-        ancPatientRepository.fetchObservations(patientId = patientId, ancOverviewConfig.eddFilter!!)
-      val listObservationGA =
-        ancPatientRepository.fetchObservations(patientId = patientId, ancOverviewConfig.gaFilter!!)
+      val listObservationEDD = patientRepository.fetchObservations(patientId = patientId, "edd")
+      val listObservationGA = patientRepository.fetchObservations(patientId = patientId, "ga")
       val listObservationFetuses =
-        ancPatientRepository.fetchObservations(
-          patientId = patientId,
-          ancOverviewConfig.fetusesFilter!!
-        )
-      val listObservationRisk =
-        ancPatientRepository.fetchObservations(
-          patientId = patientId,
-          ancOverviewConfig.riskFilter!!
-        )
+        patientRepository.fetchObservations(patientId = patientId, "fetuses")
+      val listObservationRisk = patientRepository.fetchObservations(patientId = patientId, "risk")
 
       if (listObservationEDD.valueDateTimeType != null &&
           listObservationEDD.valueDateTimeType.value != null
       )
-        ancOverviewItem.EDD = listObservationEDD.valueDateTimeType.value.makeItReadable()
+        ancOverviewItem.edd = listObservationEDD.valueDateTimeType.value.makeItReadable()
       if (listObservationGA.valueIntegerType != null &&
           listObservationGA.valueIntegerType.valueAsString != null
       )
-        ancOverviewItem.GA = listObservationGA.valueIntegerType.valueAsString
+        ancOverviewItem.ga = listObservationGA.valueIntegerType.valueAsString
       if (listObservationFetuses.valueIntegerType != null &&
           listObservationFetuses.valueIntegerType.valueAsString != null
       )
-        ancOverviewItem.noOfFetusses = listObservationFetuses.valueIntegerType.valueAsString
+        ancOverviewItem.noOfFetuses = listObservationFetuses.valueIntegerType.valueAsString
       if (listObservationRisk.valueIntegerType != null &&
           listObservationRisk.valueIntegerType.valueAsString != null
       )
@@ -110,18 +96,18 @@ class AncDetailsViewModel(
   fun fetchUpcomingServices(): LiveData<List<UpcomingServiceItem>> {
     val patientEncounters = MutableLiveData<List<UpcomingServiceItem>>()
     viewModelScope.launch(dispatcher.io()) {
-      val listEncounters = ancPatientRepository.fetchCarePlan(patientId = patientId)
-      val listEncountersItem = ancPatientRepository.fetchUpcomingServiceItem(listEncounters)
+      val listEncounters = patientRepository.fetchCarePlan(patientId = patientId)
+      val listEncountersItem = patientRepository.fetchUpcomingServiceItem(listEncounters)
       patientEncounters.postValue(listEncountersItem)
     }
     return patientEncounters
   }
 
-  fun fetchLastSeen(): LiveData<List<UpcomingServiceItem>> {
-    val patientEncounters = MutableLiveData<List<UpcomingServiceItem>>()
+  fun fetchLastSeen(): LiveData<List<EncounterItem>> {
+    val patientEncounters = MutableLiveData<List<EncounterItem>>()
     viewModelScope.launch(dispatcher.io()) {
-      val listEncounters = ancPatientRepository.fetchEncounters(patientId = patientId)
-      val listEncountersItem = ancPatientRepository.fetchLastSeenItem(listEncounters)
+      val listEncounters = patientRepository.fetchEncounters(patientId = patientId)
+      val listEncountersItem = patientRepository.fetchLastSeenItem(listEncounters)
       patientEncounters.postValue(listEncountersItem)
     }
     return patientEncounters

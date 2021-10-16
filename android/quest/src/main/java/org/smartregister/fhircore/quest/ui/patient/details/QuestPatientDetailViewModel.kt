@@ -22,6 +22,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.json.JSONObject
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.quest.QuestApplication
@@ -51,10 +52,11 @@ class QuestPatientDetailViewModel(
   }
 
   override fun getAllForms(): LiveData<List<QuestionnaireConfig>> {
-    return repository.fetchTestForms(
-      QuestPatientDetailActivity.CODE,
-      QuestPatientDetailActivity.SYSTEM
-    )
+
+    val codingJson =
+      JSONObject(application.assets.open(PROFILE_CONFIG).bufferedReader().use { it.readText() })
+
+    return repository.fetchTestForms(codingJson.getString(CODE), codingJson.getString(SYSTEM))
   }
 
   override fun getAllResults(): LiveData<List<QuestionnaireResponse>> {
@@ -88,6 +90,11 @@ class QuestPatientDetailViewModel(
   }
 
   companion object {
+
+    private const val CODE = "code"
+    private const val SYSTEM = "system"
+    const val PROFILE_CONFIG = "profile_config.json"
+
     fun get(
       owner: ViewModelStoreOwner,
       application: QuestApplication,

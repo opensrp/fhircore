@@ -18,7 +18,7 @@ package org.smartregister.fhircore.anc.ui.anccare.encounters
 
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
-import org.smartregister.fhircore.anc.data.anc.model.EncounterItem
+import org.smartregister.fhircore.anc.data.sharedmodel.EncounterItem
 
 interface EncounterDataProvider {
 
