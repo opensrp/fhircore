@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.ui.madx.bmicompute
 
 import android.os.Bundle
+import android.widget.Button
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
@@ -32,9 +33,12 @@ class BmiComputeActivity : QuestionnaireActivity() {
   lateinit var bmiComputeViewModel: BmiComputeViewModel
   internal lateinit var patientBmiRepository: BmiPatientRepository
   private var encounterID = QuestionnaireUtils.getUniqueId()
+  private lateinit var saveBtn: Button
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
+    saveBtn.text = getString(R.string.compute_bmi)
     patientBmiRepository =
       BmiPatientRepository(AncApplication.getContext().fhirEngine, BmiPatientItemMapper)
     bmiComputeViewModel =
