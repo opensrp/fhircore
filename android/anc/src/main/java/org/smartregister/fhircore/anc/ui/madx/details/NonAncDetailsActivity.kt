@@ -30,9 +30,11 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.material.tabs.TabLayoutMediator
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
-import org.smartregister.fhircore.anc.data.madx.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientDetailItem
 import org.smartregister.fhircore.anc.databinding.ActivityNonAncDetailsBinding
+import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
+import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.madx.details.adapter.ViewPagerAdapter
 import org.smartregister.fhircore.anc.ui.madx.details.form.NonAncDetailsFormConfig
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
@@ -46,9 +48,9 @@ class NonAncDetailsActivity : BaseMultiLanguageActivity() {
 
   private lateinit var fhirEngine: FhirEngine
 
-  lateinit var ancDetailsViewModel: NonAncDetailsViewModel
+  lateinit var ancDetailsViewModel: AncDetailsViewModel
 
-  private lateinit var ancPatientRepository: NonAncPatientRepository
+  private lateinit var patientRepository: PatientRepository
 
   private lateinit var activityAncDetailsBinding: ActivityNonAncDetailsBinding
 
@@ -66,13 +68,13 @@ class NonAncDetailsActivity : BaseMultiLanguageActivity() {
 
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
-    ancPatientRepository = NonAncPatientRepository((application as AncApplication).fhirEngine)
+    patientRepository = PatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
 
     ancDetailsViewModel =
       ViewModelProvider(
         this,
-        NonAncDetailsViewModel(ancPatientRepository, patientId = patientId).createFactory()
-      )[NonAncDetailsViewModel::class.java]
+        AncDetailsViewModel(patientRepository, patientId = patientId).createFactory()
+      )[AncDetailsViewModel::class.java]
 
     activityAncDetailsBinding.txtViewPatientId.text = patientId
 

@@ -21,13 +21,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
-import org.smartregister.fhircore.anc.data.madx.model.EncounterItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.sharedmodel.EncounterItem
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class VitalSignsDetailsViewModel(
-  val ancPatientRepository: NonAncPatientRepository,
+  val ancPatientRepository: PatientRepository,
   var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
   val patientId: String
 ) : ViewModel() {
@@ -36,8 +36,7 @@ class VitalSignsDetailsViewModel(
     val patientEncounters = MutableLiveData<List<EncounterItem>>()
     viewModelScope.launch(dispatcher.io()) {
       val listEncounters = ancPatientRepository.fetchEncounters(patientId = patientId)
-      val listEncountersItem =
-        ancPatientRepository.fetchEncounterItem(patientId = patientId, listEncounters)
+      val listEncountersItem = arrayListOf<EncounterItem>()
       patientEncounters.postValue(listEncountersItem)
     }
     return patientEncounters

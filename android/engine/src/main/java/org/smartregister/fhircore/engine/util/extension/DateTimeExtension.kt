@@ -16,14 +16,22 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
+import java.util.Date
 import org.hl7.fhir.r4.model.DateType
+
+val SDF_DD_MMM_YYYY = SimpleDateFormat("dd-MMM-yyyy")
 
 fun OffsetDateTime.asString(): String {
   return this.format(DateTimeFormatter.RFC_1123_DATE_TIME)
+}
+
+fun Date.asDdMmmYyyy(): String {
+  return SDF_DD_MMM_YYYY.format(this)
 }
 
 fun DateType.plusWeeksAsString(weeks: Int): String {

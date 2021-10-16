@@ -22,9 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.LazyPagingItems
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
-import org.smartregister.fhircore.anc.data.anc.model.AncVisitStatus
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientItem
+import org.smartregister.fhircore.anc.data.sharedmodel.VisitStatus
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
 import org.smartregister.fhircore.anc.ui.anccare.register.components.AncPatientList
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -74,7 +74,7 @@ class AncRegisterFragment : ComposeRegisterFragment<Anc, AncPatientItem>() {
             data.patientIdentifier.contentEquals(value.toString())
       }
       RegisterFilterType.OVERDUE_FILTER -> {
-        return data.visitStatus == AncVisitStatus.OVERDUE
+        return data.visitStatus == VisitStatus.OVERDUE
       }
     }
   }
@@ -82,10 +82,7 @@ class AncRegisterFragment : ComposeRegisterFragment<Anc, AncPatientItem>() {
   @Suppress("UNCHECKED_CAST")
   override fun initializeRegisterDataViewModel(): RegisterDataViewModel<Anc, AncPatientItem> {
     val ancPatientRepository =
-      AncPatientRepository(
-        (requireActivity().application as AncApplication).fhirEngine,
-        AncItemMapper
-      )
+      PatientRepository((requireActivity().application as AncApplication).fhirEngine, AncItemMapper)
     return ViewModelProvider(
       requireActivity(),
       RegisterDataViewModel(

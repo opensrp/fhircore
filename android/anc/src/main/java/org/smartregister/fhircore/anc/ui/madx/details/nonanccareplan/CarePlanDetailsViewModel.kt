@@ -21,14 +21,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.anc.data.madx.NonAncPatientRepository
-import org.smartregister.fhircore.anc.data.madx.model.CarePlanItem
-import org.smartregister.fhircore.anc.data.madx.model.UpcomingServiceItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.sharedmodel.CarePlanItem
+import org.smartregister.fhircore.anc.data.sharedmodel.UpcomingServiceItem
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class CarePlanDetailsViewModel(
-  val ancPatientRepository: NonAncPatientRepository,
+  val ancPatientRepository: PatientRepository,
   var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
   val patientId: String
 ) : ViewModel() {
@@ -37,8 +37,7 @@ class CarePlanDetailsViewModel(
     val patientCarePlan = MutableLiveData<List<CarePlanItem>>()
     viewModelScope.launch(dispatcher.io()) {
       val listCarePlan = ancPatientRepository.fetchCarePlan(patientId = patientId)
-      val listCarePlanItem =
-        ancPatientRepository.fetchCarePlanItem(listCarePlan, patientId = patientId)
+      val listCarePlanItem = ancPatientRepository.fetchCarePlanItem(listCarePlan)
       patientCarePlan.postValue(listCarePlanItem)
     }
     return patientCarePlan
@@ -48,8 +47,7 @@ class CarePlanDetailsViewModel(
     val patientEncounters = MutableLiveData<List<UpcomingServiceItem>>()
     viewModelScope.launch(dispatcher.io()) {
       val listEncounters = ancPatientRepository.fetchCarePlan(patientId = patientId)
-      val listEncountersItem =
-        ancPatientRepository.fetchUpcomingServiceItem(patientId = patientId, listEncounters)
+      val listEncountersItem = ancPatientRepository.fetchUpcomingServiceItem(listEncounters)
       patientEncounters.postValue(listEncountersItem)
     }
     return patientEncounters

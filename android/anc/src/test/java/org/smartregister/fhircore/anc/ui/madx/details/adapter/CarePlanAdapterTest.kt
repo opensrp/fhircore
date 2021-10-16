@@ -25,7 +25,7 @@ import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.smartregister.fhircore.anc.data.madx.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.sharedmodel.CarePlanItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 class CarePlanAdapterTest : RobolectricTest() {
@@ -58,20 +58,20 @@ class CarePlanAdapterTest : RobolectricTest() {
   fun testAdapterDiffUtilEquatesDifferentObjectsWithSameId() {
 
     val diffCallback = CarePlanAdapter.CarePlanItemDiffCallback
-    val item = CarePlanItem("1111", "1110", "first", due = false, overdue = true)
+    val item = CarePlanItem("1111", "first", due = false, overdue = true)
 
     // change title only
-    val itemDifferentVaccine = CarePlanItem("1111", "1110", "second", due = false, overdue = true)
+    val itemDifferentVaccine = CarePlanItem("1111", "second", due = false, overdue = true)
     Assert.assertFalse(diffCallback.areItemsTheSame(item, itemDifferentVaccine))
     Assert.assertFalse(diffCallback.areContentsTheSame(item, itemDifferentVaccine))
 
     // same title with different content
-    val itemWithMatchingVaccine = CarePlanItem("1111", "1110", "first", due = true, overdue = false)
+    val itemWithMatchingVaccine = CarePlanItem("1111", "first", due = true, overdue = false)
     Assert.assertTrue(diffCallback.areItemsTheSame(item, itemWithMatchingVaccine))
     Assert.assertFalse(diffCallback.areContentsTheSame(item, itemWithMatchingVaccine))
 
     // identical items
-    val identical = CarePlanItem("1111", "1110", "first", due = false, overdue = true)
+    val identical = CarePlanItem("1111", "first", due = false, overdue = true)
     Assert.assertTrue(diffCallback.areItemsTheSame(item, identical))
     Assert.assertTrue(diffCallback.areContentsTheSame(item, identical))
   }

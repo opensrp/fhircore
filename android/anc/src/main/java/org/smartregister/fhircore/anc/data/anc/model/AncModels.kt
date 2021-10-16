@@ -17,62 +17,11 @@
 package org.smartregister.fhircore.anc.data.anc.model
 
 import androidx.compose.runtime.Stable
-import java.util.Date
-import org.hl7.fhir.r4.model.Encounter
-
-enum class AncVisitStatus {
-  DUE,
-  OVERDUE,
-  PLANNED
-}
-
-@Stable
-data class AncPatientItem(
-  var patientIdentifier: String = "",
-  var name: String = "",
-  var gender: String = "",
-  var age: String = "",
-  var demographics: String = "",
-  var atRisk: String = "",
-  val address: String = "",
-  val visitStatus: AncVisitStatus = AncVisitStatus.PLANNED
-)
-
-@Stable
-data class AncPatientDetailItem(
-  var patientDetails: AncPatientItem = AncPatientItem(),
-  var patientDetailsHead: AncPatientItem = AncPatientItem(),
-)
-
-@Stable
-data class CarePlanItem(
-  var carePlanIdentifier: String = "",
-  var patientIdentifier: String = "",
-  var title: String = "",
-  var due: Boolean,
-  var overdue: Boolean
-)
-
-@Stable
-data class UpcomingServiceItem(
-  var encounterIdentifier: String = "",
-  var patientIdentifier: String = "",
-  var title: String = "",
-  var date: String = ""
-)
 
 @Stable
 data class AncOverviewItem(
-  var EDD: String = "",
-  var GA: String = "",
-  var noOfFetusses: String = "",
+  var edd: String = "",
+  var ga: String = "",
+  var noOfFetuses: String = "",
   var risk: String = "None"
-)
-
-@Stable
-data class EncounterItem(
-  val id: String = "",
-  val status: Encounter.EncounterStatus,
-  val display: String = "",
-  val periodStartDate: Date = Date()
 )

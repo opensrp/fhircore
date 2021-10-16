@@ -20,9 +20,10 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import org.smartregister.fhircore.anc.data.madx.model.EncounterItem
+import org.smartregister.fhircore.anc.data.sharedmodel.EncounterItem
 import org.smartregister.fhircore.anc.databinding.ItemEncountersBinding
 import org.smartregister.fhircore.engine.ui.base.BaseSimpleRecyclerViewHolder
+import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 
 /** Subclass of [ListAdapter] used to display encounter for the non ANC client */
 class EncounterAdapter :
@@ -33,7 +34,10 @@ class EncounterAdapter :
   inner class PatientEncounterViewHolder(private val containerView: ItemEncountersBinding) :
     BaseSimpleRecyclerViewHolder<EncounterItem>(containerView.root) {
     override fun bindTo(data: EncounterItem) {
-      with(data) { containerView.date = "$date Encounter" }
+      with(data) {
+        val dateString = this.periodStartDate.makeItReadable()
+        containerView.date = "$dateString Encounter"
+      }
     }
   }
 
@@ -49,7 +53,7 @@ class EncounterAdapter :
 
   object EncounterItemDiffCallback : DiffUtil.ItemCallback<EncounterItem>() {
     override fun areItemsTheSame(oldItem: EncounterItem, newItem: EncounterItem) =
-      oldItem.title == newItem.title
+      oldItem.display == newItem.display
 
     override fun areContentsTheSame(oldItem: EncounterItem, newItem: EncounterItem) =
       oldItem.equals(newItem)

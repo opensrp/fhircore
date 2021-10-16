@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.data.anc
+package org.smartregister.fhircore.anc.data.patient
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
@@ -22,8 +22,6 @@ import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
@@ -33,22 +31,27 @@ import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
-import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
-import org.smartregister.fhircore.anc.data.anc.model.UpcomingServiceItem
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientItem
+import org.smartregister.fhircore.anc.data.sharedmodel.CarePlanItem
+import org.smartregister.fhircore.anc.data.sharedmodel.EncounterItem
+import org.smartregister.fhircore.anc.data.sharedmodel.UpcomingServiceItem
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asPatientReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
+import org.smartregister.fhircore.anc.ui.anccare.details.CarePlanItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.Anc
+import org.smartregister.fhircore.anc.util.AncOverviewType
 import org.smartregister.fhircore.anc.util.RegisterType
+import org.smartregister.fhircore.anc.util.SearchFilter
 import org.smartregister.fhircore.anc.util.filterBy
 import org.smartregister.fhircore.anc.util.filterByPatient
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
+import org.smartregister.fhircore.anc.util.loadRegisterConfigAnc
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
-import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.due
@@ -62,7 +65,7 @@ import org.smartregister.fhircore.engine.util.extension.overdue
 import org.smartregister.fhircore.engine.util.extension.plusMonthsAsString
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
-class AncPatientRepository(
+class PatientRepository(
   override val fhirEngine: FhirEngine,
   override val domainMapper: DomainMapper<Anc, AncPatientItem>,
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
@@ -70,6 +73,9 @@ class AncPatientRepository(
 
   private val registerConfig =
     AncApplication.getContext().loadRegisterConfig(RegisterType.ANC_REGISTER_ID)
+
+  private val ancOverviewConfig =
+    AncApplication.getContext().loadRegisterConfigAnc(AncOverviewType.ANC_OVERVIEW_ID)
 
   override suspend fun loadData(
     query: String,
@@ -162,28 +168,14 @@ class AncPatientRepository(
     return ancPatientDetailItem
   }
 
-  fun fetchCarePlanItem(carePlan: List<CarePlan>, patientId: String): List<CarePlanItem> {
+  fun fetchCarePlanItem(carePlan: List<CarePlan>): List<CarePlanItem> {
     val listCarePlan = arrayListOf<CarePlanItem>()
     val listCarePlanList = arrayListOf<CarePlan>()
     if (carePlan.isNotEmpty()) {
       listCarePlanList.addAll(carePlan.filter { it.due() })
       listCarePlanList.addAll(carePlan.filter { it.overdue() })
       for (i in listCarePlanList.indices) {
-        for (j in listCarePlanList[i].activity.indices) {
-          var typeString = ""
-          if (listCarePlanList[i].activity[j].hasDetail())
-            if (listCarePlanList[i].activity[j].detail.hasDescription())
-              typeString = listCarePlanList[i].activity[j].detail.description
-          listCarePlan.add(
-            CarePlanItem(
-              listCarePlanList[i].id,
-              patientId,
-              typeString,
-              listCarePlanList[i].due(),
-              listCarePlanList[i].overdue()
-            )
-          )
-        }
+        listCarePlan.add(CarePlanItemMapper.mapToDomainModel(listCarePlanList[i]))
       }
     }
     return listCarePlan
@@ -194,10 +186,29 @@ class AncPatientRepository(
       fhirEngine.search { filter(CarePlan.SUBJECT) { value = "Patient/$patientId" } }
     }
 
-  suspend fun fetchObservations(patientId: String): List<Observation> =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.search { filter(Observation.SUBJECT) { value = "Patient/$patientId" } }
-    }
+  suspend fun fetchObservations(patientId: String, searchFilterString: String): Observation {
+    val searchFilter: SearchFilter =
+      when (searchFilterString) {
+        "edd" -> ancOverviewConfig.eddFilter!!
+        "risk" -> ancOverviewConfig.riskFilter!!
+        "fetueses" -> ancOverviewConfig.fetusesFilter!!
+        "ga" -> ancOverviewConfig.gaFilter!!
+        else -> ancOverviewConfig.eddFilter!!
+      }
+    var finalObservation = Observation()
+    val observations =
+      withContext(dispatcherProvider.io()) {
+        fhirEngine.search<Observation> {
+          filterBy(searchFilter)
+          // for patient filter use extension created
+          filterByPatient(Observation.SUBJECT, patientId)
+        }
+      }
+    if (observations.isNotEmpty())
+      finalObservation = observations.sortedBy { it.effectiveDateTimeType.value }.first()
+
+    return finalObservation
+  }
 
   suspend fun fetchEncounters(patientId: String): List<Encounter> =
     withContext(dispatcherProvider.io()) {
@@ -288,50 +299,23 @@ class AncPatientRepository(
     )
   }
 
-  fun fetchUpcomingServiceItem(
-    patientId: String,
-    carePlan: List<CarePlan>
-  ): List<UpcomingServiceItem> {
+  fun fetchUpcomingServiceItem(carePlan: List<CarePlan>): List<UpcomingServiceItem> {
     val listCarePlan = arrayListOf<UpcomingServiceItem>()
     val listCarePlanList = arrayListOf<CarePlan>()
     if (carePlan.isNotEmpty()) {
       listCarePlanList.addAll(carePlan.filter { it.due() })
       for (i in listCarePlanList.indices) {
-        for (j in listCarePlanList[i].activity.indices) {
-          var typeString = ""
-          var dateString = ""
-          if (listCarePlanList[i].activity[j].hasDetail())
-            if (listCarePlanList[i].activity[j].detail.hasDescription())
-              typeString = listCarePlanList[i].activity[j].detail.description
-          if (listCarePlanList[i].activity[j].detail.hasScheduledPeriod())
-            dateString =
-              listCarePlanList[i].activity[j].detail.scheduledPeriod.start.makeItReadable()
-          listCarePlan.add(
-            UpcomingServiceItem(listCarePlanList[i].id, patientId, typeString, dateString)
-          )
-        }
+        listCarePlan.add(CarePlanItemMapper.mapToUpcomingServiceItem(listCarePlanList[i]))
       }
     }
     return listCarePlan
   }
 
-  fun fetchLastSeenItem(patientId: String, encounters: List<Encounter>): List<UpcomingServiceItem> {
-    val listCarePlan = arrayListOf<UpcomingServiceItem>()
+  fun fetchLastSeenItem(encounters: List<Encounter>): List<EncounterItem> {
+    val listCarePlan = arrayListOf<EncounterItem>()
     if (encounters.isNotEmpty()) {
       for (i in encounters.indices) {
-        var type = CodeableConcept()
-        var typeCoding = Coding()
-        var typeString = ""
-        var typeDate = ""
-        if (encounters[i].type != null && encounters[i].type.isNotEmpty())
-          type = encounters[i].type[0] as CodeableConcept
-        if (type.hasCoding()) typeCoding = type.coding[0] as Coding
-        if (typeCoding.hasDisplayElement()) typeString = typeCoding.display
-        else if (type.hasText()) typeString = type.text
-        if (type.hasText()) typeString = type.text
-        if (encounters[i].period.start != null)
-          typeDate = encounters[i].period.start.makeItReadable()
-        listCarePlan.add(UpcomingServiceItem(encounters[i].id, patientId, typeString, typeDate))
+        listCarePlan.add(EncounterItemMapper.mapToDomainModel(encounters[i]))
       }
     }
     return listCarePlan
