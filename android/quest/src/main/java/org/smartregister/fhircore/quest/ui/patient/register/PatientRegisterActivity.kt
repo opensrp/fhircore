@@ -23,11 +23,9 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.loadRegisterViewConfiguration
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.patient.register.form.PatientQuestionnaireActivity
 
 class PatientRegisterActivity : BaseRegisterActivity() {
   private lateinit var registerViewConfiguration: RegisterViewConfiguration
@@ -64,17 +62,5 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   override fun supportedFragments(): List<Fragment> {
     return listOf(PatientRegisterFragment())
-  }
-
-  override fun registerClient() {
-    startActivity(
-      Intent(this, PatientQuestionnaireActivity::class.java)
-        .putExtras(
-          QuestionnaireActivity.requiredIntentArgs(
-            clientIdentifier = null,
-            form = registerViewConfiguration.registrationForm
-          )
-        )
-    )
   }
 }

@@ -18,6 +18,8 @@ package org.smartregister.fhircore.engine.data.local
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.logicalId
+import java.util.UUID
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.RelatedPerson
@@ -57,10 +59,11 @@ class DefaultRepository(
   suspend fun <R : Resource> addOrUpdate(resource: R) {
     return withContext(dispatcherProvider.io()) {
       try {
-        fhirEngine.load(resource::class.java, resource.idElement.idPart).run {
+        fhirEngine.load(resource::class.java, resource.logicalId).run {
           fhirEngine.update(updateFrom(resource))
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
+        if (resource.logicalId.isBlank()) resource.id = UUID.randomUUID().toString()
         fhirEngine.save(resource)
       }
     }

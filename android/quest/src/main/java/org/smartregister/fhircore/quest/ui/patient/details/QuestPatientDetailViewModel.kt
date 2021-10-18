@@ -20,8 +20,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
-import org.hl7.fhir.r4.model.DiagnosticReport
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.json.JSONObject
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.quest.QuestApplication
@@ -36,7 +37,7 @@ class QuestPatientDetailViewModel(
   private var mOnBackPressListener: () -> Unit = {}
   private var mOnMenuItemClickListener: (menuItem: String) -> Unit = {}
   private var mOnFormItemClickListener: (item: QuestionnaireConfig) -> Unit = {}
-  private var mOnTestResultItemClickListener: (item: DiagnosticReport) -> Unit = {}
+  private var mOnTestResultItemClickListener: (item: QuestionnaireResponse) -> Unit = {}
 
   override fun getDemographics(): LiveData<Patient> {
     return repository.fetchDemographics(patientId)
@@ -51,13 +52,14 @@ class QuestPatientDetailViewModel(
   }
 
   override fun getAllForms(): LiveData<List<QuestionnaireConfig>> {
-    return repository.fetchTestForms(
-      QuestPatientDetailActivity.CODE,
-      QuestPatientDetailActivity.SYSTEM
-    )
+
+    val codingJson =
+      JSONObject(application.assets.open(PROFILE_CONFIG).bufferedReader().use { it.readText() })
+
+    return repository.fetchTestForms(codingJson.getString(CODE), codingJson.getString(SYSTEM))
   }
 
-  override fun getAllResults(): LiveData<List<DiagnosticReport>> {
+  override fun getAllResults(): LiveData<List<QuestionnaireResponse>> {
     return repository.fetchTestResults(patientId)
   }
 
@@ -65,7 +67,7 @@ class QuestPatientDetailViewModel(
     return mOnFormItemClickListener
   }
 
-  override fun onTestResultItemClickListener(): (item: DiagnosticReport) -> Unit {
+  override fun onTestResultItemClickListener(): (item: QuestionnaireResponse) -> Unit {
     return mOnTestResultItemClickListener
   }
 
@@ -82,12 +84,17 @@ class QuestPatientDetailViewModel(
   }
 
   fun setOnTestResultItemClickListener(
-    onTestResultItemClickListener: (item: DiagnosticReport) -> Unit
+    onTestResultItemClickListener: (item: QuestionnaireResponse) -> Unit
   ) {
     this.mOnTestResultItemClickListener = onTestResultItemClickListener
   }
 
   companion object {
+
+    private const val CODE = "code"
+    private const val SYSTEM = "system"
+    const val PROFILE_CONFIG = "profile_config.json"
+
     fun get(
       owner: ViewModelStoreOwner,
       application: QuestApplication,

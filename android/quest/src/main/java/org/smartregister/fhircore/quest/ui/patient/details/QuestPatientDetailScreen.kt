@@ -65,15 +65,17 @@ import androidx.lifecycle.MutableLiveData
 import java.text.SimpleDateFormat
 import java.util.Date
 import org.hl7.fhir.r4.model.Address
-import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.DiagnosticReport
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
@@ -204,7 +206,8 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
                   }
               ) {
                 Text(
-                  text = item.code.text,
+                  text = (item.meta?.tagFirstRep?.display
+                      ?: "") + " (${item.authored?.asDdMmmYyyy() ?: ""}) ",
                   color = colorResource(id = R.color.black),
                   fontSize = 17.sp,
                   textAlign = TextAlign.Start,
@@ -267,22 +270,16 @@ fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
 
     override fun getAllForms(): LiveData<List<QuestionnaireConfig>> {
       return MutableLiveData(
-        listOf(QuestionnaireConfig("g6pd-test-result", "+ G6PD Test Result", "3435"))
+        listOf(QuestionnaireConfig("sample-test-result", "+ Sample Test Result", "12345"))
       )
     }
 
-    override fun getAllResults(): LiveData<List<DiagnosticReport>> {
+    override fun getAllResults(): LiveData<List<QuestionnaireResponse>> {
       return MutableLiveData(
         listOf(
-          DiagnosticReport().apply {
-            status = DiagnosticReport.DiagnosticReportStatus.FINAL
-            code = CodeableConcept().apply { text = "Simple Test 1" }
-            // issued = Date()
-          },
-          DiagnosticReport().apply {
-            status = DiagnosticReport.DiagnosticReportStatus.FINAL
-            code = CodeableConcept().apply { text = "Simple Test 2" }
-            issued = Date()
+          QuestionnaireResponse().apply {
+            meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Test" }) }
+            authored = Date()
           }
         )
       )
@@ -292,7 +289,7 @@ fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
       return {}
     }
 
-    override fun onTestResultItemClickListener(): (item: DiagnosticReport) -> Unit {
+    override fun onTestResultItemClickListener(): (item: QuestionnaireResponse) -> Unit {
       return {}
     }
   }
