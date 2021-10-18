@@ -19,7 +19,7 @@ package org.smartregister.fhircore.anc.ui.anccare.details
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
-import org.smartregister.fhircore.anc.data.sharedmodel.EncounterItem
+import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable

@@ -31,12 +31,12 @@ import com.google.android.material.tabs.TabLayoutMediator
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.databinding.ActivityNonAncDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.madx.details.adapter.ViewPagerAdapter
-import org.smartregister.fhircore.anc.ui.madx.details.form.NonAncDetailsFormConfig
+import org.smartregister.fhircore.anc.ui.madx.details.form.FormConfig
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.createFactory
@@ -63,8 +63,6 @@ class NonAncDetailsActivity : BaseMultiLanguageActivity() {
     setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
 
     fhirEngine = AncApplication.getContext().fhirEngine
-
-    //        if (savedInstanceState == null) {
 
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
@@ -96,8 +94,6 @@ class NonAncDetailsActivity : BaseMultiLanguageActivity() {
         tab.text = details[position]
       }
       .attach()
-
-    //        }
 
     activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
   }
@@ -168,7 +164,7 @@ class NonAncDetailsActivity : BaseMultiLanguageActivity() {
         .putExtras(
           QuestionnaireActivity.requiredIntentArgs(
             clientIdentifier = patientId,
-            form = NonAncDetailsFormConfig.ANC_VITAL_SIGNS_METRIC
+            form = FormConfig.ANC_VITAL_SIGNS_METRIC
           )
         )
     )
@@ -180,7 +176,7 @@ class NonAncDetailsActivity : BaseMultiLanguageActivity() {
         .putExtras(
           QuestionnaireActivity.requiredIntentArgs(
             clientIdentifier = patientId,
-            form = NonAncDetailsFormConfig.ANC_VITAL_SIGNS_STANDARD
+            form = FormConfig.ANC_VITAL_SIGNS_STANDARD
           )
         )
     )

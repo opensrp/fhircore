@@ -27,7 +27,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.smartregister.fhircore.anc.data.sharedmodel.EncounterItem
+import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 class EncounterAdapterTest : RobolectricTest() {

@@ -44,7 +44,6 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
     activityAncDetailsBinding = DataBindingUtil.setContentView(this, R.layout.activity_anc_details)
     setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
 
-    //        if (savedInstanceState == null) {
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
     supportFragmentManager
@@ -56,7 +55,6 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
         )
       )
       .commitNow()
-    //        }
 
     activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
   }

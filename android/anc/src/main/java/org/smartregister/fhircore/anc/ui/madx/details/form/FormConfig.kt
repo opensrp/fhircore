@@ -19,7 +19,7 @@ package org.smartregister.fhircore.anc.ui.madx.details.form
 import kotlinx.serialization.Serializable
 
 @Serializable
-object NonAncDetailsFormConfig {
+object FormConfig {
   const val ANC_VITAL_SIGNS_METRIC = "non-anc-patient-vital-signs_metric"
   const val ANC_VITAL_SIGNS_STANDARD = "non-anc-patient-vital-signs_standard"
 }

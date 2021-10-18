@@ -62,7 +62,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.sharedmodel.EncounterItem
+import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 @Composable

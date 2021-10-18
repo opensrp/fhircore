@@ -35,8 +35,8 @@ import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
 

@@ -28,7 +28,7 @@ import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.anc.data.sharedmodel.EncounterItem
+import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.databinding.FragmentVitalDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
 import org.smartregister.fhircore.anc.ui.madx.details.adapter.AllergiesAdapter

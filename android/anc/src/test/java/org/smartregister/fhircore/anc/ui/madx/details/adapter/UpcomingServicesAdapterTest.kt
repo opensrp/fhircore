@@ -25,7 +25,7 @@ import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.smartregister.fhircore.anc.data.sharedmodel.UpcomingServiceItem
+import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 class UpcomingServicesAdapterTest : RobolectricTest() {

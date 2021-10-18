@@ -43,10 +43,10 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientItem
-import org.smartregister.fhircore.anc.data.sharedmodel.CarePlanItem
-import org.smartregister.fhircore.anc.data.sharedmodel.UpcomingServiceItem
+import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.robolectric.FragmentRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.ui.madx.details.NonAncDetailsActivity

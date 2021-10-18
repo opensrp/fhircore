@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.data.sharedmodel
+package org.smartregister.fhircore.anc.data.model
 
 import java.util.Date
 import org.hl7.fhir.r4.model.Encounter

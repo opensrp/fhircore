@@ -25,7 +25,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.smartregister.fhircore.anc.data.sharedmodel.VisitStatus
+import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 class AncItemMapperTest : RobolectricTest() {
