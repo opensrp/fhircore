@@ -44,7 +44,8 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
       registerViewConfigurationOf(
         showScanQRCode = false,
         appTitle = getString(R.string.family_register_title),
-        newClientButtonText = getString(R.string.add_family)
+        newClientButtonText = getString(R.string.add_family),
+        showSideMenu = false
       )
     )
 
