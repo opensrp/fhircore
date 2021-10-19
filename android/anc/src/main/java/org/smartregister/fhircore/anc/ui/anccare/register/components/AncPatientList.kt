@@ -39,7 +39,7 @@ fun AncPatientList(
 
   LazyColumn {
     items(pagingItems, key = { it.patientIdentifier }) {
-      AncRow(it!!, clickListener, modifier = modifier)
+      AncRow(ancPatientItem = it!!, clickListener = clickListener, modifier = modifier)
       Divider(color = DividerColor, thickness = 1.dp)
     }
 

@@ -20,11 +20,12 @@ import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.ui.graphics.Color
 
-val DividerColor = Color.LightGray
+val DividerColor = Color(0xFFdddddd)
 val SubtitleTextColor = Color(0xFF7A7A7A)
 val GreyTextColor = Color(0xFF5A5A5A)
 val SuccessColor = Color(0xFF1DB11B)
 val OverdueColor = Color(0xFFFF333F)
+val OverdueDarkRedColor = Color(0xFFDF0E1A)
 val OverdueLightColor = Color(0xFFF9CFD1)
 val WarningColor = Color(0xFFFFA500)
 val LoginBackgroundColor = Color(0xFF091D2B)
