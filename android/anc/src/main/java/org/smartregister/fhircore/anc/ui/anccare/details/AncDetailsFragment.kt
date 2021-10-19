@@ -32,9 +32,12 @@ import kotlinx.android.synthetic.main.fragment_anc_details.button_CQLEvaluate
 import org.json.JSONObject
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.model.AncOverviewItem
+import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.model.EncounterItem
+import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.cql.MeasureEvaluator
@@ -42,17 +45,22 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.FileUtil
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import timber.log.Timber
 
-class AncDetailsFragment private constructor() : Fragment() {
+class AncDetailsFragment : Fragment() {
 
   lateinit var patientId: String
   private lateinit var fhirEngine: FhirEngine
 
   lateinit var ancDetailsViewModel: AncDetailsViewModel
 
-  private lateinit var ancPatientRepository: AncPatientRepository
+  private lateinit var patientRepository: PatientRepository
 
   private var carePlanAdapter = CarePlanAdapter()
+
+  private val upcomingServicesAdapter = UpcomingServicesAdapter()
+
+  private val lastSeen = EncounterAdapter()
 
   lateinit var binding: FragmentAncDetailsBinding
 
@@ -113,25 +121,30 @@ class AncDetailsFragment private constructor() : Fragment() {
 
     setupViews()
 
-    ancPatientRepository = getAncPatientRepository()
+    patientRepository = getAncPatientRepository()
 
     ancDetailsViewModel =
       ViewModelProvider(
         this,
-        AncDetailsViewModel(ancPatientRepository, patientId = patientId).createFactory()
+        AncDetailsViewModel(patientRepository, patientId = patientId).createFactory()
       )[AncDetailsViewModel::class.java]
 
     binding.txtViewPatientId.text = patientId
+
+    Timber.d(patientId)
 
     ancDetailsViewModel
       .fetchDemographics()
       .observe(viewLifecycleOwner, this::handlePatientDemographics)
 
+    ancDetailsViewModel.fetchCarePlan().observe(viewLifecycleOwner, this::handleCarePlan)
+
+    ancDetailsViewModel.fetchObservation().observe(viewLifecycleOwner, this::handleObservation)
+
     ancDetailsViewModel
-      .fetchCarePlan(
-        context?.assets?.open("careplan_sample.json")?.bufferedReader().use { it?.readText() }
-      )
-      .observe(viewLifecycleOwner, this::handleCarePlan)
+      .fetchUpcomingServices()
+      .observe(viewLifecycleOwner, this::handleUpcomingServices)
+    ancDetailsViewModel.fetchCarePlan().observe(viewLifecycleOwner, this::handleCarePlan)
 
     fileUtil = FileUtil()
     cqlBaseURL =
@@ -181,12 +194,63 @@ class AncDetailsFragment private constructor() : Fragment() {
       }!!
 
     showCQLCard()
+
+    ancDetailsViewModel.fetchLastSeen().observe(viewLifecycleOwner, this::handleLastSeen)
+  }
+
+  private fun handleObservation(ancOverviewItem: AncOverviewItem) {
+    binding.txtViewEDDDoseDate.text = ancOverviewItem.edd
+    binding.txtViewGAPeriod.text = ancOverviewItem.ga
+    binding.txtViewFetusesCount.text = ancOverviewItem.noOfFetuses
+    binding.txtViewRiskValue.text = ancOverviewItem.risk
+  }
+
+  private fun handleUpcomingServices(listEncounters: List<UpcomingServiceItem>) {
+    when {
+      listEncounters.isEmpty() -> {
+        binding.txtViewNoUpcomingServices.visibility = View.VISIBLE
+        binding.upcomingServicesListView.visibility = View.GONE
+        binding.txtViewUpcomingServicesSeeAllHeading.visibility = View.GONE
+        binding.imageViewUpcomingServicesSeeAllArrow.visibility = View.GONE
+      }
+      else -> {
+        binding.txtViewNoUpcomingServices.visibility = View.GONE
+        binding.upcomingServicesListView.visibility = View.VISIBLE
+        binding.txtViewUpcomingServicesSeeAllHeading.visibility = View.VISIBLE
+        binding.txtViewUpcomingServicesSeeAllHeading.visibility = View.VISIBLE
+        populateUpcomingServicesList(listEncounters)
+      }
+    }
+  }
+
+  private fun handleLastSeen(listEncounters: List<EncounterItem>) {
+    when {
+      listEncounters.isEmpty() -> {
+        binding.txtViewNoLastSeenServices.visibility = View.VISIBLE
+        binding.lastSeenListView.visibility = View.GONE
+      }
+      else -> {
+        binding.txtViewNoLastSeenServices.visibility = View.GONE
+        binding.lastSeenListView.visibility = View.VISIBLE
+        populateLastSeenList(listEncounters)
+      }
+    }
   }
 
   private fun setupViews() {
     binding.carePlanListView.apply {
       adapter = carePlanAdapter
-      layoutManager = LinearLayoutManager(requireContext())
+      layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+    }
+
+    binding.upcomingServicesListView.apply {
+      adapter = upcomingServicesAdapter
+      layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+    }
+
+    binding.lastSeenListView.apply {
+      adapter = lastSeen
+      layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
     }
   }
 
@@ -213,10 +277,14 @@ class AncDetailsFragment private constructor() : Fragment() {
     when {
       immunizations.isEmpty() -> {
         binding.txtViewNoCarePlan.visibility = View.VISIBLE
+        binding.txtViewCarePlanSeeAllHeading.visibility = View.GONE
+        binding.imageViewSeeAllArrow.visibility = View.GONE
         binding.carePlanListView.visibility = View.GONE
       }
       else -> {
         binding.txtViewNoCarePlan.visibility = View.GONE
+        binding.txtViewCarePlanSeeAllHeading.visibility = View.VISIBLE
+        binding.imageViewSeeAllArrow.visibility = View.VISIBLE
         binding.carePlanListView.visibility = View.VISIBLE
         populateImmunizationList(immunizations)
       }
@@ -225,6 +293,13 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   private fun populateImmunizationList(listCarePlan: List<CarePlanItem>) {
     carePlanAdapter.submitList(listCarePlan)
+  }
+
+  private fun populateUpcomingServicesList(upcomingServiceItem: List<UpcomingServiceItem>) {
+    upcomingServicesAdapter.submitList(upcomingServiceItem)
+  }
+  private fun populateLastSeenList(upcomingServiceItem: List<EncounterItem>) {
+    lastSeen.submitList(upcomingServiceItem)
   }
 
   fun buttonCQLSetOnClickListener() {
@@ -358,8 +433,8 @@ class AncDetailsFragment private constructor() : Fragment() {
     }
   }
 
-  fun getAncPatientRepository(): AncPatientRepository {
-    return AncPatientRepository(
+  fun getAncPatientRepository(): PatientRepository {
+    return PatientRepository(
       (requireActivity().application as AncApplication).fhirEngine,
       AncPatientItemMapper
     )

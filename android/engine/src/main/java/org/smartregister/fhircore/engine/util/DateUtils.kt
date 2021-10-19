@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util
 
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -26,6 +27,8 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 
 object DateUtils {
+
+  private var simpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault())
 
   fun addDays(
     initialDate: String,
@@ -51,4 +54,17 @@ object DateUtils {
 
   fun simpleDateFormat(pattern: String = "hh:mm aa, MMM d") =
     SimpleDateFormat(pattern, Locale.getDefault())
+  fun Date.makeItReadable(): String = simpleDateFormat.format(this)
+
+  fun String.getDate(formatNeeded: String): Date {
+    val format = SimpleDateFormat(formatNeeded)
+    var date = Date()
+    try {
+      date = format.parse(this)
+      println(date)
+    } catch (e: ParseException) {
+      e.printStackTrace()
+    }
+    return date
+  }
 }
