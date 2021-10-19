@@ -160,7 +160,7 @@ fun PreviewAncItemOverDue() {
         age = "27y",
         demographics = "Anna Bell, 27",
         name = "Anna Bell",
-        atRisk = "yes riskyy",
+        atRisk = "yes risky",
         address = "Nairobi",
         visitStatus = AncVisitStatus.OVERDUE
       ),
