@@ -18,7 +18,6 @@ package org.smartregister.fhircore.anc.data.family
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.search
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
@@ -40,7 +39,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
@@ -65,7 +64,7 @@ class FamilyRepositoryTest : RobolectricTest() {
     val patients =
       listOf(buildPatient("1111", "Family1", "Given1"), buildPatient("2222", "Family2", "Given2"))
 
-    val ancRepository = mockk<AncPatientRepository>()
+    val ancRepository = mockk<PatientRepository>()
     ReflectionHelpers.setField(
       FamilyRepository::class.java,
       repository,
@@ -116,7 +115,7 @@ class FamilyRepositoryTest : RobolectricTest() {
 
   @Test
   fun postEnrollIntoAncShouldExtractEntitiesAndCallAncRepository() = runBlockingTest {
-    val ancRepository = mockk<AncPatientRepository>()
+    val ancRepository = mockk<PatientRepository>()
     ReflectionHelpers.setField(
       FamilyRepository::class.java,
       repository,
