@@ -41,9 +41,12 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     configureViews(
-      registerViewConfigurationOf(showScanQRCode = false).apply {
-        appTitle = getString(R.string.family_register_title)
-      }
+      registerViewConfigurationOf(
+        showScanQRCode = false,
+        appTitle = getString(R.string.family_register_title),
+        newClientButtonText = getString(R.string.add_family),
+        showSideMenu = false
+      )
     )
 
     familyRepository =

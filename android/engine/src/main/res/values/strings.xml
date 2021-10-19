@@ -12,7 +12,7 @@
     <string name="default_app_title" translatable="false">Fhir App</string>
     <string name="app_logo">Application logo</string>
     <string name="powered_by">Powered By</string>
-    <string name="app_version">Version %1$s</string>
+    <string name="app_version">App version %1$s</string>
     <string name="login_text">LOGIN</string>
     <string name="username_input_hint">Enter username</string>
     <string name="password_input_hint">Enter password</string>
@@ -50,4 +50,12 @@
     <string name="error_loading_form">Error loading form</string>
     <string name="error_saving_form">Error encountered cannot save form</string>
     <string name="saving_registration">Saving data. Please wait</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="forgot_password">Forgot Password</string>
+    <string name="forgot_password_title">Forgot Password!</string>
+    <string name="more">More</string>
+    <string name="call_supervisor">Please call your supervisor at %1$s</string>
+    <string name="cancel">CANCEL</string>
+    <string name="dial_number">DIAL NUMBER</string>
 </resources>
