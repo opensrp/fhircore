@@ -24,6 +24,7 @@ import com.google.android.fhir.sync.SyncJob
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -32,6 +33,7 @@ import org.smartregister.fhircore.engine.configuration.app.loadApplicationConfig
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
@@ -56,12 +58,23 @@ class QuestApplication : Application(), ConfigurableApplication {
     get() = SecureSharedPreference(applicationContext)
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
-    get() =
-      mapOf(
+    get() {
+      return mapOf(
+        ResourceType.Binary to mapOf("_id" to CONFIG_RESOURCE_IDS),
+        ResourceType.CarePlan to mapOf(),
         ResourceType.Patient to mapOf(),
-        ResourceType.Questionnaire to mapOf(),
-        ResourceType.Binary to mapOf("_id" to CONFIG_RESOURCE_IDS)
+        ResourceType.Questionnaire to buildQuestionnaireFilterMap(),
+        ResourceType.QuestionnaireResponse to mapOf()
       )
+    }
+
+  private fun buildQuestionnaireFilterMap(): MutableMap<String, String> {
+    val questionnaireFilterMap: MutableMap<String, String> = HashMap()
+    val publisher =
+      SharedPreferencesHelper.read(USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY, null)
+    if (publisher != null) questionnaireFilterMap[Questionnaire.SP_PUBLISHER] = publisher
+    return questionnaireFilterMap
+  }
 
   private fun constructFhirEngine(): FhirEngine {
     return FhirEngineProvider.getInstance(this)
@@ -97,10 +110,6 @@ class QuestApplication : Application(), ConfigurableApplication {
     }
 
     applyApplicationConfiguration()
-
-    CoroutineScope(defaultDispatcherProvider.io()).launch {
-      workerContextProvider = this@QuestApplication.initializeWorkerContext()!!
-    }
 
     initializeWorkerContextProvider()
 

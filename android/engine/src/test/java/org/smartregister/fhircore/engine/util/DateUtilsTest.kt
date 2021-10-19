@@ -18,6 +18,8 @@ package org.smartregister.fhircore.engine.util
 
 import org.junit.Assert
 import org.junit.Test
+import org.smartregister.fhircore.engine.util.DateUtils.getDate
+import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 24-09-2021. */
 class DateUtilsTest {
@@ -35,5 +37,10 @@ class DateUtilsTest {
       DateUtils.addDays("2020-03-10 01:23:00 AM", 12, dateTimeFormat = "yyyy-MM-dd h:mm:ss a")
 
     Assert.assertEquals("3-22-2020", finalDate)
+  }
+
+  @Test
+  fun testDateToStringFunction() {
+    Assert.assertEquals("2020-03-10".getDate("yyyy-MM-dd").makeItReadable(), "03-10-2020")
   }
 }

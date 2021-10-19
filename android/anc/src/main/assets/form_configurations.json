@@ -7,7 +7,17 @@
   {
     "form": "family-member-registration",
     "title": "Add Family Member",
+    "identifier": "1832"
+  },
+  {
+    "form": "non-anc-patient-vital-signs_metric",
+    "title": "Add Vital Signs ",
     "identifier": "1923"
+  },
+  {
+    "form": "non-anc-patient-vital-signs_standard",
+    "title": "Add Vital Signs ",
+    "identifier": "2007"
   },
   {
     "form": "family-registration",

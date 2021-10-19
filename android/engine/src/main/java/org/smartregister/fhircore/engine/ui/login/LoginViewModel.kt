@@ -31,11 +31,13 @@ import okhttp3.ResponseBody
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.data.remote.model.response.UserResponse
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import retrofit2.Call
 import retrofit2.Response
@@ -48,12 +50,18 @@ class LoginViewModel(
   private val dispatcher: DispatcherProvider = DefaultDispatcherProvider
 ) : AndroidViewModel(application), AccountManagerCallback<Bundle> {
 
+  private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
+  val launchDialPad
+    get() = _launchDialPad
+
+  val sharedPreferences =
+    SharedPreferencesHelper.init(getApplication<Application>().applicationContext)
+
   val responseBodyHandler =
     object : ResponseHandler<ResponseBody> {
       override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
         response.body()?.run {
-          Timber.i(this.string())
-          SharedPreferencesHelper.init(application.applicationContext).write("USER", this.string())
+          storeUserPreferences(this)
           _showProgressBar.postValue(false)
         }
       }
@@ -64,6 +72,16 @@ class LoginViewModel(
         _showProgressBar.postValue(false)
       }
     }
+
+  private fun storeUserPreferences(responseBody: ResponseBody) {
+    val responseBodyString = responseBody.string()
+    Timber.d(responseBodyString)
+    val userResponse = responseBodyString.decodeJson<UserResponse>()
+    sharedPreferences.write(
+      USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY,
+      userResponse.questionnairePublisher
+    )
+  }
 
   private val userInfoResponseCallback: ResponseCallback<ResponseBody> by lazy {
     object : ResponseCallback<ResponseBody>(responseBodyHandler) {}
@@ -150,13 +168,13 @@ class LoginViewModel(
   }
 
   fun onUsernameUpdated(username: String) {
-    _loginError.value = ""
-    _username.value = username
+    _loginError.postValue("")
+    _username.postValue(username)
   }
 
   fun onPasswordUpdated(password: String) {
-    _loginError.value = ""
-    _password.value = password
+    _loginError.postValue("")
+    _password.postValue(password)
   }
 
   override fun run(future: AccountManagerFuture<Bundle>?) {
@@ -176,5 +194,10 @@ class LoginViewModel(
         .fetchToken(username.value!!, password.value!!.toCharArray())
         .enqueue(oauthResponseCallback)
     }
+  }
+
+  fun forgotPassword() {
+    // TODO load supervisor contact e.g.
+    _launchDialPad.value = "tel:0123456789"
   }
 }

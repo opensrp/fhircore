@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -59,6 +61,7 @@ abstract class BaseLoginActivity :
     loginViewModel.apply {
       loginUser()
       navigateToHome.observe(this@BaseLoginActivity, { navigateToHome() })
+      launchDialPad.observe(this@BaseLoginActivity, { if (!it.isNullOrEmpty()) launchDialPad(it) })
     }
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
@@ -82,5 +85,9 @@ abstract class BaseLoginActivity :
 
   override fun configurableApplication(): ConfigurableApplication {
     return application as ConfigurableApplication
+  }
+
+  private fun launchDialPad(phone: String) {
+    startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
   }
 }

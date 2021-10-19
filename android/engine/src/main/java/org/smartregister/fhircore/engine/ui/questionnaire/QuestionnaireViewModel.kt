@@ -24,22 +24,29 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import com.google.android.fhir.datacapture.targetStructureMap
+import java.util.Date
+import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.FormConfigUtil
+import org.smartregister.fhircore.engine.util.extension.isIn
 
 open class QuestionnaireViewModel(
   application: Application,
-  private val questionnaireConfig: QuestionnaireConfig
 ) : AndroidViewModel(application) {
 
   val extractionProgress = MutableLiveData<Boolean>()
@@ -51,8 +58,16 @@ open class QuestionnaireViewModel(
 
   var structureMapProvider: (suspend (String) -> StructureMap?)? = null
 
-  suspend fun loadQuestionnaire(): Questionnaire? =
-    defaultRepository.loadResource(questionnaireConfig.identifier)
+  suspend fun loadQuestionnaire(id: String): Questionnaire? = defaultRepository.loadResource(id)
+
+  suspend fun getQuestionnaireConfig(form: String): QuestionnaireConfig {
+    val loadConfig =
+      withContext(DefaultDispatcherProvider.io()) {
+        FormConfigUtil.loadConfig(QuestionnaireActivity.FORM_CONFIGURATIONS, getApplication())
+      }
+
+    return loadConfig.associateBy { it.form }.getValue(form)
+  }
 
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
@@ -69,9 +84,44 @@ open class QuestionnaireViewModel(
     questionnaireResponse: QuestionnaireResponse
   ) {
     viewModelScope.launch {
-      val bundle = performExtraction(questionnaire, questionnaireResponse, context)
+      saveQuestionnaireResponse(resourceId, questionnaire, questionnaireResponse)
 
-      saveBundleResources(bundle, resourceId)
+      // if no structure-map and no extraction is configured return without further processing
+      if (questionnaire.targetStructureMap != null ||
+          questionnaire.extension.any { it.url.contains("sdc-questionnaire-itemExtractionContext") }
+      ) {
+        val bundle = performExtraction(questionnaire, questionnaireResponse, context)
+
+        bundle.entry.forEach { bun ->
+          // if it is a registration questionnaire add tags to entities representing individuals
+          if (resourceId == null &&
+              bun.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)
+          ) {
+            questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
+              it.valueCodeableConcept.coding.forEach { bun.resource.meta.addTag(it) }
+            }
+          }
+        }
+
+        saveBundleResources(bundle)
+      } else viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
+    }
+  }
+
+  suspend fun saveQuestionnaireResponse(
+    resourceId: String?,
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse
+  ) {
+    val subjectType = questionnaire.subjectType.firstOrNull()?.code ?: ResourceType.Patient.name
+    if (resourceId?.isNotBlank() == true) {
+      questionnaireResponse.id = UUID.randomUUID().toString()
+      questionnaireResponse.authored = Date()
+      questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
+        it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
+      }
+      questionnaireResponse.subject = Reference().apply { reference = "$subjectType/$resourceId" }
+      defaultRepository.save(questionnaireResponse)
     }
   }
 
@@ -80,26 +130,18 @@ open class QuestionnaireViewModel(
     questionnaireResponse: QuestionnaireResponse,
     context: Context
   ): Bundle {
-    val contextR4 = (getApplication<Application>() as ConfigurableApplication).workerContextProvider
-    val transformSupportServices = TransformSupportServices(mutableListOf(), contextR4)
     return ResourceMapper.extract(
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
       structureMapProvider = retrieveStructureMapProvider(),
-      context = context,
-      transformSupportServices = transformSupportServices
+      context = context
     )
   }
 
-  fun saveBundleResources(bundle: Bundle, resourceId: String? = null) {
+  fun saveBundleResources(bundle: Bundle) {
     viewModelScope.launch {
       if (!bundle.isEmpty) {
-        bundle.entry.forEach { bundleEntry ->
-          if (resourceId != null && bundleEntry.hasResource()) {
-            bundleEntry.resource.id = resourceId
-          }
-          defaultRepository.addOrUpdate(bundleEntry.resource)
-        }
+        bundle.entry.forEach { bundleEntry -> defaultRepository.addOrUpdate(bundleEntry.resource) }
       }
 
       viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }

@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
+import org.smartregister.fhircore.quest.data.patient.model.genderFull
 import org.smartregister.fhircore.quest.ui.patient.register.OpenPatientProfile
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRowClickListenerIntent
 
@@ -57,7 +58,7 @@ fun PatientRow(
           .weight(0.65f)
     ) {
       Text(
-        text = "${patientItem.name}, ${patientItem.age}, ${patientItem.gender}",
+        text = "${patientItem.name}, ${patientItem.age}",
         fontSize = 18.sp,
         modifier = modifier.wrapContentWidth()
       )
@@ -65,7 +66,7 @@ fun PatientRow(
       Row {
         Text(
           color = SubtitleTextColor,
-          text = patientItem.address,
+          text = patientItem.genderFull(),
           fontSize = 16.sp,
           modifier = modifier.wrapContentWidth()
         )

@@ -20,24 +20,20 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
-import java.util.Date
-import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.databinding.ItemCareplanBinding
+import org.smartregister.fhircore.engine.ui.base.BaseSimpleRecyclerViewHolder
 
 /** Subclass of [ListAdapter] used to display careplan for the ANC client */
 class CarePlanAdapter :
-  ListAdapter<CarePlanItem, CarePlanAdapter.PatientCarePlanViewHolder>(
-    ImmunizationItemDiffCallback
-  ) {
+  ListAdapter<CarePlanItem, CarePlanAdapter.PatientCarePlanViewHolder>(CarePlanItemDiffCallback) {
 
   inner class PatientCarePlanViewHolder(private val containerView: ItemCareplanBinding) :
-    RecyclerView.ViewHolder(containerView.root) {
-    fun bindTo(carePlanItem: CarePlanItem) {
-      with(carePlanItem) {
-        val datePassed = this.periodStartDate.before(Date())
-        containerView.carPlanDatePassed = datePassed
-        containerView.carPlanTitle = if (datePassed) this.title + " Overdue" else this.title
+    BaseSimpleRecyclerViewHolder<CarePlanItem>(containerView.root) {
+    override fun bindTo(data: CarePlanItem) {
+      with(data) {
+        containerView.carPlanDatePassed = overdue
+        containerView.carPlanTitle = if (overdue) this.title + " Overdue" else this.title
       }
     }
   }
@@ -52,7 +48,7 @@ class CarePlanAdapter :
     holder.bindTo(getItem(position))
   }
 
-  object ImmunizationItemDiffCallback : DiffUtil.ItemCallback<CarePlanItem>() {
+  object CarePlanItemDiffCallback : DiffUtil.ItemCallback<CarePlanItem>() {
     override fun areItemsTheSame(oldItem: CarePlanItem, newItem: CarePlanItem) =
       oldItem.title == newItem.title
 
