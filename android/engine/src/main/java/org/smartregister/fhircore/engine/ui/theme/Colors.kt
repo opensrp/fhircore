@@ -32,7 +32,7 @@ val LoginBackgroundColor = Color(0xFF091D2B)
 val LoginDarkColor = Color(0xFF272727)
 val LoginFieldBackgroundColor = Color(0xFF273844)
 val LoginButtonColor = Color(0xFF006EB8)
-val DueColor = Color(0xFF0075EB)
+val DueColor = Color(0xFF006EB8)
 val DueLightColor = Color(0xFFC1E1EC)
 
 private val PrimaryColor = Color(0xFF005084)
