@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.data.anc.model
+package org.smartregister.fhircore.anc.data.model
 
 import androidx.compose.runtime.Stable
 import java.util.Date
 import org.hl7.fhir.r4.model.Encounter
 
-enum class AncVisitStatus {
+enum class VisitStatus {
   DUE,
   OVERDUE,
   PLANNED
@@ -35,7 +35,7 @@ data class AncPatientItem(
   var demographics: String = "",
   var atRisk: String = "",
   val address: String = "",
-  val visitStatus: AncVisitStatus = AncVisitStatus.PLANNED
+  val visitStatus: VisitStatus = VisitStatus.PLANNED
 )
 
 @Stable
@@ -44,12 +44,29 @@ data class AncPatientDetailItem(
   var patientDetailsHead: AncPatientItem = AncPatientItem(),
 )
 
-@Stable data class CarePlanItem(var title: String, var periodStartDate: Date)
+@Stable
+data class CarePlanItem(
+  var carePlanIdentifier: String = "",
+  var title: String = "",
+  var due: Boolean,
+  var overdue: Boolean
+)
+
+@Stable
+data class UpcomingServiceItem(
+  var encounterIdentifier: String = "",
+  var title: String = "",
+  var date: String = ""
+)
 
 @Stable
 data class EncounterItem(
-  val id: String,
+  val id: String = "",
   val status: Encounter.EncounterStatus,
-  val display: String,
-  val periodStartDate: Date
+  val display: String = "",
+  val periodStartDate: Date = Date()
 )
+
+@Stable data class AllergiesItem(var allergiesIdentifier: String = "", var title: String = "")
+
+@Stable data class ConditionItem(var conditionIdentifier: String = "", var title: String = "")

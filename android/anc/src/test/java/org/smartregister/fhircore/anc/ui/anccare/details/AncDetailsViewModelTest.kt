@@ -25,23 +25,26 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.spyk
-import java.text.SimpleDateFormat
+import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
-import org.bouncycastle.asn1.x500.style.RFC4519Style.title
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
-import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.util.DateUtils.getDate
+import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
 @ExperimentalCoroutinesApi
 internal class AncDetailsViewModelTest {
@@ -49,7 +52,7 @@ internal class AncDetailsViewModelTest {
 
   private lateinit var ancDetailsViewModel: AncDetailsViewModel
 
-  private lateinit var patientRepository: AncPatientRepository
+  private lateinit var patientRepository: PatientRepository
 
   private val patientId = "samplePatientId"
 
@@ -164,17 +167,32 @@ internal class AncDetailsViewModelTest {
   fun testFetchCarePlanShouldReturnExpectedCarePlan() {
 
     val cpTitle = "First Care Plan"
-    val cpPeriodStartDate = SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01")
 
-    coEvery { patientRepository.fetchCarePlan(any(), any()) } returns
-      listOf(CarePlanItem(cpTitle, cpPeriodStartDate!!))
+    coEvery { patientRepository.fetchCarePlan(any()) } returns
+      listOf(buildCarePlanWithActive("1111"))
 
-    val carePlanList = ancDetailsViewModel.fetchCarePlan("")
+    val carePlanList = ancDetailsViewModel.fetchCarePlan().value
 
-    Assert.assertEquals(1, carePlanList.value!!.size)
-    with(carePlanList.value!!.first()) {
-      Assert.assertEquals(cpTitle, title)
-      Assert.assertEquals(cpPeriodStartDate.time, periodStartDate.time)
+    if (carePlanList != null && carePlanList.isNotEmpty()) {
+      Assert.assertEquals(1, carePlanList!!.size)
+      with(carePlanList!!.first()) { Assert.assertEquals(cpTitle, title) }
+    }
+  }
+
+  private fun buildCarePlanWithActive(subject: String): CarePlan {
+    val date = DateType(Date())
+    val end = date.plusWeeksAsString(4).getDate("yyyy-MM-dd")
+    return CarePlan().apply {
+      this.id = "11190"
+      this.status = CarePlan.CarePlanStatus.ACTIVE
+      this.period.start = date.value
+      this.period.end = end
+      this.subject = Reference().apply { reference = "Patient/$subject" }
+      this.addActivity().detail.apply {
+        this.description = "First Care Plan"
+        this.scheduledPeriod.start = Date()
+        this.status = CarePlan.CarePlanActivityStatus.SCHEDULED
+      }
     }
   }
 
