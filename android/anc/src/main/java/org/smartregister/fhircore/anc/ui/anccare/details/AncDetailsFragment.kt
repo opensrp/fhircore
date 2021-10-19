@@ -32,7 +32,7 @@ import kotlinx.android.synthetic.main.fragment_anc_details.button_CQLEvaluate
 import org.json.JSONObject
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.anc.model.AncOverviewItem
+import org.smartregister.fhircore.anc.data.model.AncOverviewItem
 import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
