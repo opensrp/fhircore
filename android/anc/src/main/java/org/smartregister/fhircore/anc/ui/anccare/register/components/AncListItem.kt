@@ -86,13 +86,6 @@ fun AncRow(
         )
       }
     }
-    Column(modifier = modifier.padding(20.dp).weight(0.45f)) {
-      when (ancPatientItem.visitStatus) {
-        VisitStatus.DUE -> ancVisitButton(DueColor, DueLightColor, ancPatientItem, clickListener)
-        VisitStatus.OVERDUE ->
-          ancVisitButton(OverdueColor, OverdueLightColor, ancPatientItem, clickListener)
-      }
-    }
     AncVisitButton(
       modifier = modifier.wrapContentWidth(Alignment.End).padding(horizontal = 16.dp),
       ancPatientItem = ancPatientItem,
@@ -110,16 +103,16 @@ fun AncVisitButton(
 
   val textColor =
     when (ancPatientItem.visitStatus) {
-      AncVisitStatus.DUE -> DueColor
-      AncVisitStatus.OVERDUE -> OverdueDarkRedColor
-      AncVisitStatus.PLANNED -> Color.Transparent
+      VisitStatus.DUE -> DueColor
+      VisitStatus.OVERDUE -> OverdueDarkRedColor
+      VisitStatus.PLANNED -> Color.Transparent
     }
 
   val bgColor =
     when (ancPatientItem.visitStatus) {
-      AncVisitStatus.DUE -> DueLightColor
-      AncVisitStatus.OVERDUE -> OverdueLightColor
-      AncVisitStatus.PLANNED -> Color.Transparent
+      VisitStatus.DUE -> DueLightColor
+      VisitStatus.OVERDUE -> OverdueLightColor
+      VisitStatus.PLANNED -> Color.Transparent
     }
 
   Text(
