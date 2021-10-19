@@ -17,31 +17,47 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:background="@color/colorPrimaryLightDull"
-        android:background="@{carPlanDatePassed ? @drawable/bg_recctangle_red : @drawable/bg_recctangle_blue}"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:layout_marginTop="12dp"
-        android:padding="6dp">
+        android:orientation="vertical">
 
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            tools:src="@drawable/ic_plus_blue"
-            android:src="@{carPlanDatePassed ? @drawable/ic_plus_red : @drawable/ic_plus_blue}" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="6dp"
+            android:background="@color/white" />
 
-        <TextView
-            android:id="@+id/txtView_ANCDose"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@{carPlanTitle}"
-            tools:text = "ANC Visit"
-            android:textAllCaps="true"
-            android:textColor="@{carPlanDatePassed ? @color/colorError : @color/colorPrimaryLight}"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:background="@{carPlanDatePassed ? @drawable/bg_recctangle_red : @drawable/bg_recctangle_blue}"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="6dp"
+            tools:background="@color/colorPrimaryLightDull">
 
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@{carPlanDatePassed ? @drawable/ic_plus_red : @drawable/ic_plus_blue}"
+                tools:src="@drawable/ic_plus_blue" />
+
+            <TextView
+                android:id="@+id/txtView_ANCDose"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{carPlanTitle}"
+                android:textAllCaps="true"
+                android:textColor="@{carPlanDatePassed ? @color/colorError : @color/colorPrimaryLight}"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="ANC Visit" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="6dp"
+            android:background="@color/white" />
     </LinearLayout>
 </layout>
