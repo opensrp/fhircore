@@ -8,9 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2021-xx-xx
 
 ### Added
-- ANC | - ANC | Added progerss bar to cql and measure reporting in ANC patien details page
+- ANC | ANC | Optimized memory use for measure reporting by using String builder and loading only once cql and measure reporting libraries
+- ANC | ANC | Added progerss bar to cql and measure reporting in ANC patien details page
 - ANC | Added progerss bar to cql and measure reporting in ANC patien details page
-- ANC |Added measure reporting to ANC application
+- ANC | Added measure reporting to ANC application
 - Engine |Added class for Measure report evaluation which will be used in ANC application
 - ANC | Added Condition resource to sync params list
 - Moved Token to secure storage from AccountManager
