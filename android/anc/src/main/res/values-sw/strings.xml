@@ -21,5 +21,9 @@
     <string name="no_care_plan">Hana mpango wa huduma</string>
     <string name="no_services_scheduled">Hakuna huduma zilizopangwa</string>
     <string name="family_register_title">Familia</string>
+    <string name="mark_as_anc_client">Andika kama mteja wa ANC</string>
+    <string name="add_vitals">Ongeza Vitamini</string>
+    <string name="add_conditions">Ongeza Masharti</string>
+    <string name="bmi_widget">Wijeti ya BMI</string>
 
 </resources>

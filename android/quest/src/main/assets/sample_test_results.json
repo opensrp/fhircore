@@ -16,7 +16,7 @@
     ],
     "valueCodeableConcept": {
       "coding": {
-        "system": "http://fhir.ona.com",
+        "system": "http://fhir.ona.io",
         "code": "000002",
         "display": "G6PD Test Results"
       }
@@ -32,7 +32,7 @@
       "required": true,
       "code": [
         {
-          "system": "http://fhir.ona.com",
+          "system": "http://fhir.ona.io",
           "code": "000001",
           "display": "G6PD Result Type"
         }
