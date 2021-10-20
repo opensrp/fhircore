@@ -19,22 +19,34 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 import android.app.Activity
 import android.app.Application
 import android.content.Intent
+import android.widget.Button
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.datacapture.QuestionnaireFragment
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.unmockkObject
+import io.mockk.verify
 import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.shadows.ShadowAlertDialog
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_FRAGMENT_TAG
 import org.smartregister.fhircore.engine.util.FormConfigUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -68,10 +80,15 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, "patient-registration")
       }
 
+    val questionnaireFragment = spyk<QuestionnaireFragment>()
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
     questionnaireActivity = controller.create().resume().get()
     questionnaireActivity.questionnaireViewModel = questionnaireViewModel
-    questionnaireActivity.supportFragmentManager.executePendingTransactions()
+    questionnaireActivity.supportFragmentManager.commitNow {
+      add(questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
+    }
   }
 
   @After
@@ -92,6 +109,58 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     Assert.assertEquals(
       "1234",
       result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
+    )
+  }
+
+  @Test
+  fun testOnBackPressedShouldShowAlert() {
+    questionnaireActivity.onBackPressed()
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+
+    Assert.assertEquals(
+      getString(R.string.questionnaire_alert_back_pressed_message),
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+    )
+    Assert.assertEquals(
+      getString(R.string.questionnaire_alert_back_pressed_button_title),
+      alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
+    )
+  }
+
+  @Test
+  fun testHandleQuestionnaireResponseShouldCallExtractAndSaveResources() {
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", Questionnaire())
+
+    questionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
+
+    verify { questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any()) }
+  }
+
+  @Test
+  fun testHandleQuestionnaireSubmitShouldShowProgress() {
+    questionnaireActivity.handleQuestionnaireSubmit()
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+
+    Assert.assertEquals(
+      getString(R.string.saving_registration),
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+    )
+  }
+
+  @Test
+  fun testOnClickSaveButtonShouldShowSubmitConfirmationAlert() {
+    questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).performClick()
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+
+    Assert.assertEquals(
+      getString(R.string.questionnaire_alert_submit_message),
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
     )
   }
 
