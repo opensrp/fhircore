@@ -77,65 +77,62 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     clientIdentifier = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
 
-    lifecycleScope
-      .launchWhenCreated {
-        questionnaireViewModel = createViewModel(application)
+    lifecycleScope.launchWhenCreated {
+      questionnaireViewModel = createViewModel(application)
 
-        val form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
-        // form is either name of form in asset/form-config or questionnaire-id
-        // load from assets and get questionnaire or if not found build it from questionnaire
-        questionnaireConfig =
-          kotlin.runCatching { questionnaireViewModel.getQuestionnaireConfig(form) }.getOrElse {
-            // load questionnaire from db and build config
-            questionnaire = questionnaireViewModel.loadQuestionnaire(form)!!
+      val form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
+      // form is either name of form in asset/form-config or questionnaire-id
+      // load from assets and get questionnaire or if not found build it from questionnaire
+      questionnaireConfig =
+        kotlin.runCatching { questionnaireViewModel.getQuestionnaireConfig(form) }.getOrElse {
+          // load questionnaire from db and build config
+          questionnaire = questionnaireViewModel.loadQuestionnaire(form)!!
 
-            QuestionnaireConfig(
-              form = questionnaire.name ?: "",
-              title = questionnaire.title ?: "",
-              identifier = questionnaire.logicalId
-            )
-          }
-
-        // if questionnaire is still not initialized load using config loaded from assets
-        if (!::questionnaire.isInitialized)
-          questionnaire = questionnaireViewModel.loadQuestionnaire(questionnaireConfig.identifier)!!
-
-        supportActionBar?.apply {
-          setDisplayHomeAsUpEnabled(true)
-          title = questionnaireConfig.title
+          QuestionnaireConfig(
+            form = questionnaire.name ?: "",
+            title = questionnaire.title ?: "",
+            identifier = questionnaire.logicalId
+          )
         }
 
-        // Only add the fragment once, when the activity is first created.
-        if (savedInstanceState == null) {
-          val fragment =
-            QuestionnaireFragment().apply {
-              val parsedQuestionnaire = parser.encodeResourceToString(questionnaire)
-              arguments =
-                when {
-                  clientIdentifier == null ->
-                    bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
-                  clientIdentifier != null -> {
-                    //                  TODO it is not working. Takes forever to load form first
-                    // time
-                    //                  val parsedQuestionnaireResponse =
-                    //                    parser.encodeResourceToString(
-                    //
-                    // questionnaireViewModel.generateQuestionnaireResponse(questionnaire!!, intent)
-                    //                    )
-                    bundleOf(
-                      Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire),
-                      //  Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
-                      )
-                  }
-                  else -> bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
-                }
-            }
-          supportFragmentManager.commit {
-            add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG)
-          }
-        }
+      // if questionnaire is still not initialized load using config loaded from assets
+      if (!::questionnaire.isInitialized)
+        questionnaire = questionnaireViewModel.loadQuestionnaire(questionnaireConfig.identifier)!!
+
+      supportActionBar?.apply {
+        setDisplayHomeAsUpEnabled(true)
+        title = questionnaireConfig.title
       }
-      .invokeOnCompletion { loadProgress.dismiss() }
+
+      // Only add the fragment once, when the activity is first created.
+      if (savedInstanceState == null) {
+        val fragment =
+          QuestionnaireFragment().apply {
+            val parsedQuestionnaire = parser.encodeResourceToString(questionnaire)
+            arguments =
+              when {
+                clientIdentifier == null ->
+                  bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
+                clientIdentifier != null -> {
+                  //                  TODO it is not working. Takes forever to load form first
+                  // time
+                  //                  val parsedQuestionnaireResponse =
+                  //                    parser.encodeResourceToString(
+                  //
+                  // questionnaireViewModel.generateQuestionnaireResponse(questionnaire!!, intent)
+                  //                    )
+                  bundleOf(
+                    Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire),
+                    //  Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
+                    )
+                }
+                else -> bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
+              }
+          }
+        supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
+      }
+      loadProgress.dismiss()
+    }
 
     findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
   }
