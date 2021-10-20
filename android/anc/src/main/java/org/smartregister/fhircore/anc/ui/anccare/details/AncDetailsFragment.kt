@@ -330,11 +330,6 @@ class AncDetailsFragment : Fragment() {
     textView_CQLResults.visibility = View.GONE
   }
 
-  fun startProgressBarAndTextViewCQLResults() {
-    progress_circular_cql.visibility = View.VISIBLE
-    textView_CQLResults.visibility = View.GONE
-  }
-
   fun loadCQLLibraryData() {
     button_CQL_Measure_Evaluate.isEnabled = false
     startProgressBarAndTextViewCQLResults()
@@ -409,9 +404,7 @@ class AncDetailsFragment : Fragment() {
         contextCQL,
         contextLabel
       )
-    val jsonObject = JSONObject(parameters)
-    textView_CQLResults.text = jsonObject.toString(4)
-    textView_CQLResults.visibility = View.VISIBLE
+    parametersCQLToggleFinalView()
   }
 
   fun handleMeasureEvaluatePatient(auxPatientData: String) {
@@ -428,6 +421,19 @@ class AncDetailsFragment : Fragment() {
         cqlMeasureReportReportType,
         cqlMeasureReportSubject
       )
+    parametersCQLMeasureToggleFinalView()
+  }
+  fun parametersCQLToggleFinalView() {
+    handleParametersQCLMeasure(parametersEvaluate)
+    button_CQL_Measure_Evaluate.isEnabled = true
+  }
+
+  fun parametersCQLMeasureToggleFinalView() {
+    handleParametersQCLMeasure(parametersMeasure)
+    button_CQLEvaluate.isEnabled = true
+  }
+
+  fun handleParametersQCLMeasure(parameters: String) {
     val jsonObject = JSONObject(parameters)
     textView_CQLResults.text = jsonObject.toString(4)
     progress_circular_cql.visibility = View.GONE

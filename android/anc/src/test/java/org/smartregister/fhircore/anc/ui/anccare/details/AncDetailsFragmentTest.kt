@@ -35,6 +35,9 @@ import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.android.synthetic.main.fragment_anc_details.*
+import kotlinx.android.synthetic.main.fragment_anc_details.button_CQLEvaluate
+import kotlinx.android.synthetic.main.fragment_anc_details.textView_CQLResults
+import kotlinx.android.synthetic.main.fragment_anc_details.textView_EvaluateCQLHeader
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.json.JSONObject
@@ -119,12 +122,6 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
     fragmentScenario.onFragment {
       patientDetailsFragment = it
       ReflectionHelpers.setField(patientDetailsFragment, "carePlanAdapter", carePlanAdapter)
-      ReflectionHelpers.setField(
-        patientDetailsFragment,
-        "upcomingServicesAdapter",
-        upcomingServicesAdapter
-      )
-      ReflectionHelpers.setField(patientDetailsFragment, "lastSeen", lastSeen)
     }
   }
 
@@ -515,21 +512,5 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
     every { patientDetailsFragment.handleParametersQCLMeasure(any()) } returns Unit
     patientDetailsFragment.parametersCQLMeasureToggleFinalView()
     Assert.assertEquals(true, patientDetailsFragment.button_CQLEvaluate.isEnabled)
-  }
-
-  @Test
-  fun handleParametersQCLMeasureTest() {
-    var dummyJson = "{ \"id\": 0, \"name\": \"Dominique Prince\" }"
-    val jsonObject = JSONObject(dummyJson)
-    val auxText = jsonObject.toString(4)
-
-    patientDetailsFragment.handleParametersQCLMeasure(dummyJson)
-    Assert.assertEquals(patientDetailsFragment.textView_CQLResults.text, auxText)
-  }
-
-  @Test
-  fun startProgressBarAndTextViewCQLResultsTest() {
-    patientDetailsFragment.startProgressBarAndTextViewCQLResults()
-    Assert.assertEquals(View.VISIBLE, patientDetailsFragment.progress_circular_cql?.visibility)
   }
 }
