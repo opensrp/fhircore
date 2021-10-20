@@ -30,6 +30,7 @@ class PatientModelsTest : RobolectricTest() {
   private lateinit var encounterItem: EncounterItem
   private lateinit var upcomingServiceItem: UpcomingServiceItem
   private lateinit var ancPatientDetailItem: AncPatientDetailItem
+  private lateinit var patientBMIItem: PatientBMIItem
 
   @Before
   fun setUp() {
@@ -40,6 +41,7 @@ class PatientModelsTest : RobolectricTest() {
     encounterItem = EncounterItem("111", status = Encounter.EncounterStatus.ARRIVED, "abc", Date())
     upcomingServiceItem = UpcomingServiceItem("111", "1bc", "2020-02-12")
     ancPatientDetailItem = AncPatientDetailItem(ancPatientItem, ancPatientItemHead)
+    patientBMIItem = PatientBMIItem("1111", "testBMI1", "5'7", "50lbs", "22.22")
   }
 
   @Test
@@ -83,5 +85,14 @@ class PatientModelsTest : RobolectricTest() {
     Assert.assertEquals("none", ancPatientDetailItem.patientDetailsHead.atRisk)
     Assert.assertEquals("xyz", ancPatientDetailItem.patientDetailsHead.address)
     Assert.assertEquals(VisitStatus.PLANNED, ancPatientDetailItem.patientDetailsHead.visitStatus)
+  }
+
+  @Test
+  fun testPatientBMIItem() {
+    Assert.assertEquals("1111", patientBMIItem.patientIdentifier)
+    Assert.assertEquals("testBMI1", patientBMIItem.name)
+    Assert.assertEquals("5'7", patientBMIItem.height)
+    Assert.assertEquals("50lbs", patientBMIItem.weight)
+    Assert.assertEquals("22.22", patientBMIItem.bmi)
   }
 }

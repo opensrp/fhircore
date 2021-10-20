@@ -38,12 +38,7 @@
             android:name="org.smartregister.fhircore.anc.ui.details.form.NonAncDetailsQuestionnaireActivity"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".ui.madx.details.NonAncDetailsActivity"/>
-        <activity
-            android:name=".ui.madx.details.form.NonAncDetailsQuestionnaireActivity"
-            android:theme="@style/AppTheme" />
-        <activity
-            android:name=".ui.madx.bmicompute.BmiComputeActivity"
+            android:name=".ui.details.bmicompute.BmiComputeActivity"
             android:theme="@style/AppTheme" />
         <activity android:name=".ui.anccare.details.AncDetailsActivity" />
         <activity

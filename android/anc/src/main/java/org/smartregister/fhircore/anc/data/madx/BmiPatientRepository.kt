@@ -28,7 +28,7 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.sharedmodel.PatientBMIItem
+import org.smartregister.fhircore.anc.data.model.PatientBMIItem
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils
 import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.util.RegisterType

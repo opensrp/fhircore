@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.madx.bmicompute
+package org.smartregister.fhircore.anc.ui.details.bmicompute
 
 import android.app.Application
 import android.content.Context

@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.madx.details.form
+package org.smartregister.fhircore.anc.ui.details.bmicompute
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-object NonAncDetailsFormConfig {
-  const val ANC_VITAL_SIGNS_METRIC = "non-anc-patient-vital-signs_metric"
-  const val ANC_VITAL_SIGNS_STANDARD = "non-anc-patient-vital-signs_standard"
+object FormConstants {
+  const val FAMILY_PATIENT_BMI_FORM = "family-patient_bmi_compute"
 }
