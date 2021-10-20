@@ -72,11 +72,11 @@ fun PatientRow(
         modifier
           .clickable { clickListener(OpenPatientProfile, patientItem) }
           .padding(24.dp)
-          .weight(0.65f)
+          .weight(0.7f)
     ) {
       Text(
         text = patientItem.demographics,
-        fontSize = 16.sp,
+        fontSize = 18.sp,
         modifier = modifier.wrapContentWidth()
       )
       Spacer(modifier = modifier.height(8.dp))
@@ -84,13 +84,13 @@ fun PatientRow(
         Text(
           color = SubtitleTextColor,
           text = stringResource(id = R.string.date_last_seen, patientItem.lastSeen),
-          fontSize = 12.sp,
+          fontSize = 14.sp,
           modifier = modifier.wrapContentWidth()
         )
         Text(
           color = WarningColor,
           text = patientItem.atRisk,
-          fontSize = 12.sp,
+          fontSize = 14.sp,
           modifier = modifier.wrapContentWidth().padding(horizontal = 8.dp)
         )
       }
@@ -106,7 +106,7 @@ fun PatientRow(
     VaccineStatusItem(
       patientItem = patientItem,
       clickListener = clickListener,
-      modifier = modifier.weight(0.35f)
+      modifier = modifier.weight(0.3f)
     )
   }
 }
@@ -130,7 +130,11 @@ fun VaccineStatusItem(
     }
     when (patientItem.vaccineStatus.status) {
       VaccineStatus.VACCINATED ->
-        Text(text = stringResource(id = R.string.status_vaccinated), color = SuccessColor)
+        Text(
+          fontSize = 14.sp,
+          text = stringResource(id = R.string.status_vaccinated),
+          color = SuccessColor
+        )
       VaccineStatus.OVERDUE ->
         Column(
           verticalArrangement = Arrangement.Center,
@@ -138,6 +142,7 @@ fun VaccineStatusItem(
           modifier = modifier.background(color = OverdueColor).fillMaxHeight().fillMaxWidth()
         ) {
           Text(
+            fontSize = 14.sp,
             text = stringResource(id = R.string.status_overdue),
             color = Color.White,
             modifier = modifier.wrapContentHeight().wrapContentWidth()
@@ -151,11 +156,13 @@ fun VaccineStatusItem(
               1,
               patientItem.vaccineStatus.date
             ),
+          fontSize = 14.sp,
           color = SubtitleTextColor,
           modifier = modifier.clickable { clickListener(RecordPatientVaccine, patientItem) }
         )
       VaccineStatus.DUE ->
         Text(
+          fontSize = 14.sp,
           text = stringResource(id = R.string.record_vaccine_nl),
           color = MaterialTheme.colors.primary,
           modifier = modifier.clickable { clickListener(RecordPatientVaccine, patientItem) }

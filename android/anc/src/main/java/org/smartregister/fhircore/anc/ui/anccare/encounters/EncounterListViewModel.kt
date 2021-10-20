@@ -26,7 +26,7 @@ import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.EncounterRepository
-import org.smartregister.fhircore.anc.data.anc.model.EncounterItem
+import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
