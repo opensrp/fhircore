@@ -33,8 +33,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    registerViewConfiguration =
-      applicationContext.loadRegisterViewConfiguration("quest-app-patient-register")
+    registerViewConfiguration = loadRegisterViewConfiguration("quest-app-patient-register")
     configureViews(registerViewConfiguration)
   }
 

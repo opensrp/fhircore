@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.register.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,14 +27,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.capitalize
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,27 +49,27 @@ import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
 import org.smartregister.fhircore.anc.ui.anccare.register.RecordAncVisit
 import org.smartregister.fhircore.engine.ui.theme.DueColor
 import org.smartregister.fhircore.engine.ui.theme.DueLightColor
-import org.smartregister.fhircore.engine.ui.theme.OverdueColor
+import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueLightColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 
 @Composable
 fun AncRow(
   ancPatientItem: AncPatientItem,
-  clickListener: (AncRowClickListenerIntent, AncPatientItem) -> Unit = { _, _ -> },
+  clickListener: (AncRowClickListenerIntent, AncPatientItem) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
-    modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min)
+    modifier =
+      modifier.fillMaxWidth().height(IntrinsicSize.Min).clickable {
+        clickListener(OpenPatientProfile, ancPatientItem)
+      }
   ) {
     Column(
       modifier =
-        modifier
-          .clickable { clickListener(OpenPatientProfile, ancPatientItem) }
-          .padding(10.dp)
-          .weight(0.55f)
+        modifier.wrapContentWidth(Alignment.Start).padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
       Text(
         text = ancPatientItem.demographics,
@@ -76,44 +80,59 @@ fun AncRow(
       Row {
         Text(
           color = SubtitleTextColor,
-          text = ancPatientItem.address,
-          fontSize = 12.sp,
+          text = ancPatientItem.address.capitalize(Locale.current),
+          fontSize = 14.sp,
           modifier = modifier.wrapContentWidth()
         )
       }
     }
-    Column(modifier = modifier.padding(20.dp).weight(0.45f)) {
-      when (ancPatientItem.visitStatus) {
-        VisitStatus.DUE -> ancVisitButton(DueColor, DueLightColor, ancPatientItem, clickListener)
-        VisitStatus.OVERDUE ->
-          ancVisitButton(OverdueColor, OverdueLightColor, ancPatientItem, clickListener)
-      }
-    }
-  }
-}
-
-@Composable
-fun ancVisitButton(
-  textColor: Color,
-  bgColor: Color,
-  ancPatientItem: AncPatientItem,
-  clickListener: (AncRowClickListenerIntent, AncPatientItem) -> Unit
-) {
-  Button(
-    onClick = { clickListener(RecordAncVisit, ancPatientItem) },
-    colors = ButtonDefaults.textButtonColors(backgroundColor = bgColor)
-  ) {
-    Text(
-      text = stringResource(R.string.anc_record_visit_button_title),
-      color = textColor,
-      fontSize = 18.sp
+    AncVisitButton(
+      modifier = modifier.wrapContentWidth(Alignment.End).padding(horizontal = 16.dp),
+      ancPatientItem = ancPatientItem,
+      clickListener = clickListener
     )
   }
 }
 
 @Composable
+fun AncVisitButton(
+  ancPatientItem: AncPatientItem,
+  clickListener: (AncRowClickListenerIntent, AncPatientItem) -> Unit,
+  modifier: Modifier = Modifier
+) {
+
+  val textColor =
+    when (ancPatientItem.visitStatus) {
+      VisitStatus.DUE -> DueColor
+      VisitStatus.OVERDUE -> OverdueDarkRedColor
+      VisitStatus.PLANNED -> Color.Transparent
+    }
+
+  val bgColor =
+    when (ancPatientItem.visitStatus) {
+      VisitStatus.DUE -> DueLightColor
+      VisitStatus.OVERDUE -> OverdueLightColor
+      VisitStatus.PLANNED -> Color.Transparent
+    }
+
+  Text(
+    text = stringResource(R.string.anc_record_visit_button_title),
+    color = textColor,
+    fontSize = 16.sp,
+    fontWeight = FontWeight.Bold,
+    modifier =
+      modifier
+        .clip(RoundedCornerShape(2.8.dp))
+        .wrapContentWidth()
+        .background(color = bgColor)
+        .padding(4.8.dp)
+        .clickable { clickListener(RecordAncVisit, ancPatientItem) },
+  )
+}
+
+@Composable
 @Preview(showBackground = true)
-fun previewAncItemDue() {
+fun PreviewAncItemDue() {
   AncRow(
     ancPatientItem =
       AncPatientItem(
@@ -125,13 +144,14 @@ fun previewAncItemDue() {
         atRisk = "yes risky",
         address = "Nairobi",
         visitStatus = VisitStatus.DUE
-      )
+      ),
+    clickListener = { _, _ -> }
   )
 }
 
 @Composable
 @Preview(showBackground = true)
-fun previewAncItemOverDue() {
+fun PreviewAncItemOverDue() {
   AncRow(
     ancPatientItem =
       AncPatientItem(
@@ -143,6 +163,7 @@ fun previewAncItemOverDue() {
         atRisk = "yes risky",
         address = "Nairobi",
         visitStatus = VisitStatus.OVERDUE
-      )
+      ),
+    clickListener = { _, _ -> }
   )
 }

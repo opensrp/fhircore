@@ -39,7 +39,8 @@ class LoginActivity : BaseLoginActivity() {
       loginViewConfigurationOf(
         applicationName = getString(R.string.app_name),
         applicationVersion = BuildConfig.VERSION_NAME,
-        darkMode = false
+        darkMode = false,
+        showLogo = true
       )
     )
   }

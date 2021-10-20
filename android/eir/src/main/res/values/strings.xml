@@ -23,7 +23,6 @@
     <string name="add_client">Add Client</string>
     <string name="menu_sync_resources">Sync Resources</string>
 
-    <string name="app_version">Version %s</string>
     <string name="authenticator_label" translatable="false">Authenticate FHIR Core</string>
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.eir</string>
 

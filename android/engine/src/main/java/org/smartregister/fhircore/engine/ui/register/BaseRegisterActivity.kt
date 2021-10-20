@@ -34,6 +34,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.databinding.DataBindingUtil
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -207,6 +208,7 @@ abstract class BaseRegisterActivity :
     updateRegisterTitle()
 
     setupSearchView()
+
     setupDueButtonView()
   }
 
@@ -308,10 +310,10 @@ abstract class BaseRegisterActivity :
     if (!viewConfiguration.showSideMenu) {
       with(registerActivityBinding) {
         toolbarLayout.btnDrawerMenu.hide(true)
-        // TODO uncomment this when sync issue is resolved
-        // drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+        toolbarLayout.topToolbarSection.toggleVisibility(!viewConfiguration.showSideMenu)
+        toolbarLayout.middleToolbarSection.toggleVisibility(viewConfiguration.showSideMenu)
       }
-      return
     }
 
     val drawerMenuHeaderBinding: DrawerMenuHeaderBinding =
@@ -425,7 +427,7 @@ abstract class BaseRegisterActivity :
         toggleVisibility(viewConfiguration.showSearchBar)
         hint = viewConfiguration.searchBarHint
       }
-      layoutScanBarcode.toggleVisibility(viewConfiguration.showScanQRCode)
+      btnScanBarcode.toggleVisibility(viewConfiguration.showScanQRCode)
     }
 
     setupBottomNavigationMenu(viewConfiguration)
