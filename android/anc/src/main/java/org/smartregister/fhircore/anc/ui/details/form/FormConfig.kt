@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.data.anc.model
+package org.smartregister.fhircore.anc.ui.details.form
 
-import androidx.compose.runtime.Stable
+import kotlinx.serialization.Serializable
 
-@Stable
-data class AncOverviewItem(
-  var edd: String = "",
-  var ga: String = "",
-  var noOfFetuses: String = "",
-  var risk: String = "None"
-)
+@Serializable
+object FormConfig {
+  const val ANC_VITAL_SIGNS_METRIC = "non-anc-patient-vital-signs_metric"
+  const val ANC_VITAL_SIGNS_STANDARD = "non-anc-patient-vital-signs_standard"
+}

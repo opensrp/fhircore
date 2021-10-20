@@ -31,6 +31,7 @@ import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivit
 import org.smartregister.fhircore.anc.ui.madx.bmicompute.BmiComputeActivity
 import org.smartregister.fhircore.anc.ui.madx.bmicompute.FormConstants
 import org.smartregister.fhircore.anc.ui.madx.details.NonAncDetailsActivity
+import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -46,7 +47,6 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
     activityAncDetailsBinding = DataBindingUtil.setContentView(this, R.layout.activity_anc_details)
     setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
 
-    //        if (savedInstanceState == null) {
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
     supportFragmentManager
@@ -58,7 +58,6 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
         )
       )
       .commitNow()
-    //        }
 
     activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
   }
@@ -108,6 +107,14 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
       }
       R.id.anc_enrollment -> {
         this.startAncEnrollment(patientId)
+        true
+      }
+      R.id.remove_this_person -> {
+        startActivity(
+          Intent(this, PatientDetailsActivity::class.java).apply {
+            putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
+          }
+        )
         true
       }
       R.id.bmi_widget -> {

@@ -4,7 +4,6 @@
     <string name="edit_info">Hariri maelezo</string>
     <string name="mark_as_ANC_client">Alamisha kama mteja wa ANC</string>
     <string name="view_family">Angalia Familia</string>
-    <string name="bmi_widget">Wijeti ya BMI</string>
     <string name="compute_bmi">Kompyuta BMI</string>
     <string name="your_bmi">Yako BMI = </string>
     <string name="re_compute">Kompyuta</string>
@@ -33,5 +32,6 @@
     <string name="mark_as_anc_client">Andika kama mteja wa ANC</string>
     <string name="add_vitals">Ongeza Vitamini</string>
     <string name="add_conditions">Ongeza Masharti</string>
+    <string name="bmi_widget">Wijeti ya BMI</string>
 
 </resources>

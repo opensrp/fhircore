@@ -1,6 +1,6 @@
 <resources>
     <string name="anc_register_title" translatable="false">ANC</string>
-    <string name="app_name">ANC</string>
+    <string name="app_name">FHIR ANC</string>
     <string name="sync_wait_message">Wait while syncing data</string>
 
     <string name="menu_anc">ANC</string>
@@ -17,7 +17,7 @@
     <string name="family_register_ok_title">Yes</string>
     <string name="family_register_cancel_title">No</string>
 
-    <string name="anc_record_visit_button_title">+ Anc Visit</string>
+    <string name="anc_record_visit_button_title">+ ANC Visit</string>
 
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.anc</string>
     <string name="back_to_anc_clients">Back to ANC Clients</string>
@@ -25,7 +25,6 @@
     <string name="edit_info">Edit info</string>
     <string name="mark_as_ANC_client">Mark as ANC client</string>
     <string name="view_family">View family</string>
-    <string name="bmi_widget">BMI Widget</string>
     <string name="compute_bmi">Compute BMI</string>
     <string name="your_bmi">Your BMI = </string>
     <string name="re_compute">Re-Compute</string>
@@ -54,6 +53,7 @@
     <string name="mark_as_anc_client">Mark as ANC client</string>
     <string name="add_vitals">Add Vitals</string>
     <string name="add_conditions">Add Conditions</string>
+    <string name="bmi_widget">BMI Widget</string>
     <string name="alergies">Allergies</string>
     <string name="none">None</string>
     <string name="health_conditions">Health conditions</string>
@@ -64,7 +64,6 @@
     <string name="height">Height</string>
     <string name="weight">Weight</string>
     <string name="sp02">Sp02</string>
-    <string name="encounters">Encounters</string>
     <string name="new_consultation">New Consultation</string>
     <string name="select_unit">Select unit</string>
     <string name="pregnancy_outcome">Pregnancy outcome</string>
@@ -72,10 +71,13 @@
 
     <string name="all_families">All Families</string>
     <string name="add_member">Add Member</string>
+    <string name="encounters">Encounters</string>
     <string name="members">Members</string>
 
     <string name="text_view_evaluate_cql_header">Evaluate</string>
     <string name="button_cql_measure_report">Measure</string>
     <string name="button_cql_evaluate">CQL</string>
+    <string name="pregnant_woman">Pregnant woman</string>
+    <string name="add_family">ADD FAMILY</string>
 
 </resources>

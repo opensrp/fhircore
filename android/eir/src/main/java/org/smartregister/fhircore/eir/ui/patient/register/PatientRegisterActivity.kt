@@ -30,10 +30,11 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     configureViews(
-      registerViewConfigurationOf().apply {
-        appTitle = getString(R.string.covax_app)
-        registrationForm = "patient-registration"
-      }
+      registerViewConfigurationOf(
+        appTitle = getString(R.string.covax_app),
+        registrationForm = "patient-registration",
+        showSideMenu = true
+      )
     )
   }
 

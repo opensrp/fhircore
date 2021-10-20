@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.items
-import org.smartregister.fhircore.anc.data.sharedmodel.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
@@ -39,7 +39,7 @@ fun AncPatientList(
 
   LazyColumn {
     items(pagingItems, key = { it.patientIdentifier }) {
-      AncRow(it!!, clickListener, modifier = modifier)
+      AncRow(ancPatientItem = it!!, clickListener = clickListener, modifier = modifier)
       Divider(color = DividerColor, thickness = 1.dp)
     }
 
