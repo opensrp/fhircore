@@ -430,12 +430,12 @@ class PatientRepository(
     bmiEncounter: Encounter? = null,
     height: Double? = null,
     weight: Double? = null,
-    computedBMI: Double? = null, // refObsEncounterId: String? = null,
+    computedBMI: Double? = null,
     refObsWeightFormId: String? = null,
     refObsHeightFormId: String? = null
   ): Map<String, String?> {
     return mapOf(
-      "#Id" to recordId, // QuestionnaireUtils.getUniqueId(),
+      "#Id" to recordId,
       "#RefPatient" to asPatientReference(patientId).reference,
       "#RefEncounter" to bmiEncounter?.id,
       "#RefPractitioner" to "Practitioner/399",

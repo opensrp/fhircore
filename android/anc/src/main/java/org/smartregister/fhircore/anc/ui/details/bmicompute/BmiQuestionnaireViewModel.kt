@@ -95,7 +95,8 @@ class BmiQuestionnaireViewModel(
       val heightInches = questionnaireResponse.find(KEY_HEIGHT_INCH)
       val heightInFeets = heightFeets?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
       val heightInInches = heightInches?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-      val height = (heightInFeets.toDouble() * HEIGHT_FEET_INCHES_MULTIPLIER) + heightInInches.toDouble()
+      val height =
+        (heightInFeets.toDouble() * HEIGHT_FEET_INCHES_MULTIPLIER) + heightInInches.toDouble()
       height
     }
   }
