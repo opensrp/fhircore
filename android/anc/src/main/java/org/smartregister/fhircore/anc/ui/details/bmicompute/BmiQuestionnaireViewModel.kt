@@ -213,7 +213,7 @@ class BmiQuestionnaireViewModel(
     weight: Double,
     computedBMI: Double
   ): Boolean {
-    return bmiPatientRepository.recordComputedBMI(
+    return bmiPatientRepository.recordComputedBmi(
       questionnaire,
       questionnaireResponse,
       patientId,

@@ -72,7 +72,7 @@ data class EncounterItem(
 @Stable data class ConditionItem(var conditionIdentifier: String = "", var title: String = "")
 
 @Stable
-data class PatientBMIItem(
+data class PatientBmiItem(
   var patientIdentifier: String = "",
   var name: String = "",
   var height: String = "",

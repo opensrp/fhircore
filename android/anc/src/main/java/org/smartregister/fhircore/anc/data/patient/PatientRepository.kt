@@ -341,7 +341,7 @@ class PatientRepository(
     }
   }
 
-  suspend fun recordComputedBMI(
+  suspend fun recordComputedBmi(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     patientId: String,
