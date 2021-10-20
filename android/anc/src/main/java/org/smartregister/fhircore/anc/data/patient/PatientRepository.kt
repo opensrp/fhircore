@@ -348,10 +348,10 @@ class PatientRepository(
     encounterID: String,
     height: Double,
     weight: Double,
-    computedBMI: Double
+    computedBmi: Double
   ): Boolean {
     resourceMapperExtended.saveParsedResource(questionnaireResponse, questionnaire, patientId, null)
-    return recordBmi(patientId, encounterID, height, weight, computedBMI)
+    return recordBmi(patientId, encounterID, height, weight, computedBmi)
   }
 
   private suspend fun recordBmi(
@@ -363,25 +363,25 @@ class PatientRepository(
   ): Boolean {
     try {
       val bmiEncounterData =
-        buildBMIConfigData(
+        buildBmiConfigData(
           patientId = patientId,
           recordId = formEncounterId,
           height = height,
           weight = weight,
-          computedBMI = computedBMI
+          computedBmi = computedBMI
         )
       val bmiEncounter = loadConfig(Template.BMI_ENCOUNTER, Encounter::class.java, bmiEncounterData)
       fhirEngine.save(bmiEncounter)
 
       val bmiWeightObservationRecordId = getUniqueId()
       val bmiWeightObservationData =
-        buildBMIConfigData(
+        buildBmiConfigData(
           patientId = patientId,
           recordId = bmiWeightObservationRecordId,
           bmiEncounter = bmiEncounter,
           height = height,
           weight = weight,
-          computedBMI = computedBMI
+          computedBmi = computedBMI
         )
       val bmiWeightObservation =
         loadConfig(Template.BMI_PATIENT_WEIGHT, Observation::class.java, bmiWeightObservationData)
@@ -389,13 +389,13 @@ class PatientRepository(
 
       val bmiHeightObservationRecordId = getUniqueId()
       val bmiHeightObservationData =
-        buildBMIConfigData(
+        buildBmiConfigData(
           patientId = patientId,
           recordId = bmiHeightObservationRecordId,
           bmiEncounter = bmiEncounter,
           height = height,
           weight = weight,
-          computedBMI = computedBMI,
+          computedBmi = computedBMI,
           refObsWeightFormId = bmiWeightObservationRecordId
         )
       val bmiHeightObservation =
@@ -404,13 +404,13 @@ class PatientRepository(
 
       val bmiObservationRecordId = getUniqueId()
       val bmiObservationData =
-        buildBMIConfigData(
+        buildBmiConfigData(
           patientId = patientId,
           recordId = bmiObservationRecordId,
           bmiEncounter = bmiEncounter,
           height = height,
           weight = weight,
-          computedBMI = computedBMI,
+          computedBmi = computedBMI,
           refObsWeightFormId = bmiWeightObservationRecordId,
           refObsHeightFormId = bmiHeightObservationRecordId
         )
@@ -424,13 +424,13 @@ class PatientRepository(
     }
   }
 
-  private fun buildBMIConfigData(
+  private fun buildBmiConfigData(
     recordId: String,
     patientId: String,
     bmiEncounter: Encounter? = null,
     height: Double? = null,
     weight: Double? = null,
-    computedBMI: Double? = null,
+    computedBmi: Double? = null,
     refObsWeightFormId: String? = null,
     refObsHeightFormId: String? = null
   ): Map<String, String?> {
@@ -442,7 +442,7 @@ class PatientRepository(
       "#EffectiveDate" to DateType(Date()).format(),
       "#ValueWeight" to weight?.toString(),
       "#ValueHeight" to height?.toString(),
-      "#ValueBMI" to computedBMI.toString(),
+      "#ValueBmi" to computedBmi.toString(),
       "#RefIdObservationBodyHeight" to refObsHeightFormId,
       "#RefIdObservationBodyWeight" to refObsWeightFormId,
     )
