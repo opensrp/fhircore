@@ -35,9 +35,6 @@ import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.android.synthetic.main.fragment_anc_details.*
-import kotlinx.android.synthetic.main.fragment_anc_details.button_CQLEvaluate
-import kotlinx.android.synthetic.main.fragment_anc_details.textView_CQLResults
-import kotlinx.android.synthetic.main.fragment_anc_details.textView_EvaluateCQLHeader
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.json.JSONObject
@@ -122,6 +119,12 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
     fragmentScenario.onFragment {
       patientDetailsFragment = it
       ReflectionHelpers.setField(patientDetailsFragment, "carePlanAdapter", carePlanAdapter)
+      ReflectionHelpers.setField(
+        patientDetailsFragment,
+        "upcomingServicesAdapter",
+        upcomingServicesAdapter
+      )
+      ReflectionHelpers.setField(patientDetailsFragment, "lastSeen", lastSeen)
     }
   }
 
