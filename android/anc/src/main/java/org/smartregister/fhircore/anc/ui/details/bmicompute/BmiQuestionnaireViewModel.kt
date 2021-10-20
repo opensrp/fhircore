@@ -35,17 +35,21 @@ import org.smartregister.fhircore.anc.util.computeBMIViaStandardUnits
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.find
 
-class BmiComputeViewModel(application: Application, val bmiPatientRepository: PatientRepository) :
-  ViewModel() {
+class BmiQuestionnaireViewModel(
+  application: Application,
+  val bmiPatientRepository: PatientRepository
+) : ViewModel() {
 
   companion object {
     fun get(
       owner: ViewModelStoreOwner,
       application: AncApplication,
       repository: PatientRepository
-    ): BmiComputeViewModel {
-      return ViewModelProvider(owner, BmiComputeViewModel(application, repository).createFactory())[
-        BmiComputeViewModel::class.java]
+    ): BmiQuestionnaireViewModel {
+      return ViewModelProvider(
+        owner,
+        BmiQuestionnaireViewModel(application, repository).createFactory()
+      )[BmiQuestionnaireViewModel::class.java]
     }
 
     const val KEY_UNIT_SELECTION = "select-mode"

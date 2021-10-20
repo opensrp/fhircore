@@ -68,9 +68,7 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
 
   override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
     val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
-    val viewPastEncounters = menu.findItem(R.id.view_past_encounters)
     val bmiWidget = menu.findItem(R.id.bmi_widget)
-    viewPastEncounters.isVisible = true
     bmiWidget.isVisible = true
 
     val title = removeThisPerson.title.toString()
