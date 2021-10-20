@@ -24,14 +24,15 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.madx.BmiPatientRepository
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils
+import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
-class BmiComputeActivity : QuestionnaireActivity() {
+class BmiQuestionnaireActivity : QuestionnaireActivity() {
 
   lateinit var bmiComputeViewModel: BmiComputeViewModel
-  internal lateinit var patientBmiRepository: BmiPatientRepository
+  internal lateinit var patientBmiRepository: PatientRepository
   private var encounterID = QuestionnaireUtils.getUniqueId()
   private lateinit var saveBtn: Button
 
@@ -40,7 +41,7 @@ class BmiComputeActivity : QuestionnaireActivity() {
     saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
     saveBtn.text = getString(R.string.compute_bmi)
     patientBmiRepository =
-      BmiPatientRepository(AncApplication.getContext().fhirEngine, BmiPatientItemMapper)
+      PatientRepository(AncApplication.getContext().fhirEngine, AncPatientItemMapper)
     bmiComputeViewModel =
       BmiComputeViewModel.get(this, application as AncApplication, patientBmiRepository)
     encounterID = QuestionnaireUtils.getUniqueId()

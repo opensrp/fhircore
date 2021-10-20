@@ -29,22 +29,20 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.madx.BmiPatientRepository
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
 import org.smartregister.fhircore.anc.util.computeBMIViaStandardUnits
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.find
 
-class BmiComputeViewModel(
-  application: Application,
-  val bmiPatientRepository: BmiPatientRepository
-) : ViewModel() {
+class BmiComputeViewModel(application: Application, val bmiPatientRepository: PatientRepository) :
+  ViewModel() {
 
   companion object {
     fun get(
       owner: ViewModelStoreOwner,
       application: AncApplication,
-      repository: BmiPatientRepository
+      repository: PatientRepository
     ): BmiComputeViewModel {
       return ViewModelProvider(owner, BmiComputeViewModel(application, repository).createFactory())[
         BmiComputeViewModel::class.java]
@@ -148,13 +146,13 @@ class BmiComputeViewModel(
     return "\n\n" +
       activityContext.getString(R.string.bmi_categories_label) +
       "\n" +
-      activityContext.getString(R.string.bmi_category_1) +
+      activityContext.getString(R.string.bmi_category_underweight) +
       "\n" +
-      activityContext.getString(R.string.bmi_category_2) +
+      activityContext.getString(R.string.bmi_category_normal) +
       "\n" +
-      activityContext.getString(R.string.bmi_category_3) +
+      activityContext.getString(R.string.bmi_category_overweight) +
       "\n" +
-      activityContext.getString(R.string.bmi_category_4)
+      activityContext.getString(R.string.bmi_category_obesity)
   }
 
   private fun getBMIResultCategoryIndex(computedBMI: Double): Int {
@@ -170,16 +168,16 @@ class BmiComputeViewModel(
     return when (index) {
       1 ->
         getBMICategories(activityContext)
-          .indexOf(activityContext.getString(R.string.bmi_category_1))
+          .indexOf(activityContext.getString(R.string.bmi_category_underweight))
       2 ->
         getBMICategories(activityContext)
-          .indexOf(activityContext.getString(R.string.bmi_category_2))
+          .indexOf(activityContext.getString(R.string.bmi_category_normal))
       3 ->
         getBMICategories(activityContext)
-          .indexOf(activityContext.getString(R.string.bmi_category_3))
+          .indexOf(activityContext.getString(R.string.bmi_category_overweight))
       else ->
         getBMICategories(activityContext)
-          .indexOf(activityContext.getString(R.string.bmi_category_4))
+          .indexOf(activityContext.getString(R.string.bmi_category_obesity))
     }
   }
 
@@ -187,16 +185,16 @@ class BmiComputeViewModel(
     return when (index) {
       1 ->
         getStartingIndexInCategories(1, activityContext) +
-          activityContext.getString(R.string.bmi_category_1).length
+          activityContext.getString(R.string.bmi_category_underweight).length
       2 ->
         getStartingIndexInCategories(2, activityContext) +
-          activityContext.getString(R.string.bmi_category_2).length
+          activityContext.getString(R.string.bmi_category_normal).length
       3 ->
         getStartingIndexInCategories(3, activityContext) +
-          activityContext.getString(R.string.bmi_category_3).length
+          activityContext.getString(R.string.bmi_category_overweight).length
       else ->
         getStartingIndexInCategories(4, activityContext) +
-          activityContext.getString(R.string.bmi_category_4).length
+          activityContext.getString(R.string.bmi_category_obesity).length
     }
   }
 

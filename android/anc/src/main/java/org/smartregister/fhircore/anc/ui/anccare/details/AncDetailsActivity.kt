@@ -29,8 +29,8 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.databinding.ActivityAncDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
-import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiComputeActivity
-import org.smartregister.fhircore.anc.ui.details.bmicompute.FormConstants
+import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
+import org.smartregister.fhircore.anc.ui.details.form.FormConfig
 import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -68,16 +68,9 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
 
   override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
     val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
-    // val markAsAncClient = menu!!.findItem(R.id.mark_as_anc_client)
-    // val addVitals = menu!!.findItem(R.id.add_vitals)
-    // val addConditions = menu!!.findItem(R.id.add_conditions)
-    val viewPastEncounters = menu!!.findItem(R.id.view_past_encounters)
-    val bmiWidget = menu!!.findItem(R.id.bmi_widget)
-
+    val viewPastEncounters = menu.findItem(R.id.view_past_encounters)
+    val bmiWidget = menu.findItem(R.id.bmi_widget)
     viewPastEncounters.isVisible = true
-    // markAsAncClient.isVisible = false
-    // addVitals.isVisible = true
-    // addConditions.isVisible = false
     bmiWidget.isVisible = true
 
     val title = removeThisPerson.title.toString()
@@ -118,11 +111,11 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
       }
       R.id.bmi_widget -> {
         startActivity(
-          Intent(this, BmiComputeActivity::class.java)
+          Intent(this, BmiQuestionnaireActivity::class.java)
             .putExtras(
               QuestionnaireActivity.requiredIntentArgs(
                 clientIdentifier = patientId,
-                form = FormConstants.FAMILY_PATIENT_BMI_FORM
+                form = FormConfig.FAMILY_PATIENT_BMI_FORM
               )
             )
         )

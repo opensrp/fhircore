@@ -20,6 +20,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
+import java.util.Date
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
@@ -29,6 +30,8 @@ import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Goal
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
@@ -39,6 +42,7 @@ import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asPatientReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
+import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.anccare.details.CarePlanItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.Anc
@@ -76,6 +80,8 @@ class PatientRepository(
 
   private val ancOverviewConfig =
     AncApplication.getContext().loadRegisterConfigAnc(AncOverviewType.ANC_OVERVIEW_ID)
+
+  private val resourceMapperExtended = ResourceMapperExtended(fhirEngine)
 
   override suspend fun loadData(
     query: String,
@@ -328,6 +334,117 @@ class PatientRepository(
       const val PREGNANCY_FIRST_ENCOUNTER = "pregnancy_first_encounter_template.json"
       const val PREGNANCY_GOAL = "pregnancy_goal_template.json"
       const val PREGNANCY_CARE_PLAN = "pregnancy_careplan_template.json"
+      const val BMI_ENCOUNTER = "bmi_patient_encounter_template.json"
+      const val BMI_PATIENT_WEIGHT = "bmi_patient_weight_observation_template.json"
+      const val BMI_PATIENT_HEIGHT = "bmi_patient_height_observation_template.json"
+      const val BMI_PATIENT_BMI = "bmi_patient_computed_bmi_observation_template.json"
     }
+  }
+
+  suspend fun recordComputedBMI(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    patientId: String,
+    encounterID: String,
+    height: Double,
+    weight: Double,
+    computedBMI: Double
+  ): Boolean {
+    resourceMapperExtended.saveParsedResource(questionnaireResponse, questionnaire, patientId, null)
+    return recordBmi(patientId, encounterID, height, weight, computedBMI)
+  }
+
+  private suspend fun recordBmi(
+    patientId: String,
+    formEncounterId: String,
+    height: Double? = null,
+    weight: Double? = null,
+    computedBMI: Double? = null
+  ): Boolean {
+    try {
+      val bmiEncounterData =
+        buildBMIConfigData(
+          patientId = patientId,
+          recordId = formEncounterId,
+          height = height,
+          weight = weight,
+          computedBMI = computedBMI
+        )
+      val bmiEncounter = loadConfig(Template.BMI_ENCOUNTER, Encounter::class.java, bmiEncounterData)
+      fhirEngine.save(bmiEncounter)
+
+      val bmiWeightObservationRecordId = getUniqueId()
+      val bmiWeightObservationData =
+        buildBMIConfigData(
+          patientId = patientId,
+          recordId = bmiWeightObservationRecordId,
+          bmiEncounter = bmiEncounter,
+          height = height,
+          weight = weight,
+          computedBMI = computedBMI
+        )
+      val bmiWeightObservation =
+        loadConfig(Template.BMI_PATIENT_WEIGHT, Observation::class.java, bmiWeightObservationData)
+      fhirEngine.save(bmiWeightObservation)
+
+      val bmiHeightObservationRecordId = getUniqueId()
+      val bmiHeightObservationData =
+        buildBMIConfigData(
+          patientId = patientId,
+          recordId = bmiHeightObservationRecordId,
+          bmiEncounter = bmiEncounter,
+          height = height,
+          weight = weight,
+          computedBMI = computedBMI,
+          refObsWeightFormId = bmiWeightObservationRecordId
+        )
+      val bmiHeightObservation =
+        loadConfig(Template.BMI_PATIENT_HEIGHT, Observation::class.java, bmiHeightObservationData)
+      fhirEngine.save(bmiHeightObservation)
+
+      val bmiObservationRecordId = getUniqueId()
+      val bmiObservationData =
+        buildBMIConfigData(
+          patientId = patientId,
+          recordId = bmiObservationRecordId,
+          bmiEncounter = bmiEncounter,
+          height = height,
+          weight = weight,
+          computedBMI = computedBMI,
+          refObsWeightFormId = bmiWeightObservationRecordId,
+          refObsHeightFormId = bmiHeightObservationRecordId
+        )
+      val bmiObservation =
+        loadConfig(Template.BMI_PATIENT_BMI, Observation::class.java, bmiObservationData)
+      fhirEngine.save(bmiObservation)
+      return true
+    } catch (e: Exception) {
+      e.printStackTrace()
+      return false
+    }
+  }
+
+  private fun buildBMIConfigData(
+    recordId: String,
+    patientId: String,
+    bmiEncounter: Encounter? = null,
+    height: Double? = null,
+    weight: Double? = null,
+    computedBMI: Double? = null, // refObsEncounterId: String? = null,
+    refObsWeightFormId: String? = null,
+    refObsHeightFormId: String? = null
+  ): Map<String, String?> {
+    return mapOf(
+      "#Id" to recordId, // QuestionnaireUtils.getUniqueId(),
+      "#RefPatient" to asPatientReference(patientId).reference,
+      "#RefEncounter" to bmiEncounter?.id,
+      "#RefPractitioner" to "Practitioner/399",
+      "#EffectiveDate" to DateType(Date()).format(),
+      "#ValueWeight" to weight?.toString(),
+      "#ValueHeight" to height?.toString(),
+      "#ValueBMI" to computedBMI.toString(),
+      "#RefIdObservationBodyHeight" to refObsHeightFormId,
+      "#RefIdObservationBodyWeight" to refObsWeightFormId,
+    )
   }
 }

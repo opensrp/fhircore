@@ -29,10 +29,10 @@
     <string name="your_bmi">Your BMI = </string>
     <string name="re_compute">Re-Compute</string>
     <string name="bmi_categories_label">BMI Categories : </string>
-    <string name="bmi_category_1">Underweight = bmi below 18.5</string>
-    <string name="bmi_category_2">Normal weight = 18.5 – 24.9</string>
-    <string name="bmi_category_3">Overweight = 25 – 29.9</string>
-    <string name="bmi_category_4">Obesity = BMI of 30 or greater</string>
+    <string name="bmi_category_underweight">Underweight = bmi below 18.5</string>
+    <string name="bmi_category_normal">Normal weight = 18.5 – 24.9</string>
+    <string name="bmi_category_overweight">Overweight = 25 – 29.9</string>
+    <string name="bmi_category_obesity">Obesity = BMI of 30 or greater</string>
     <string name="view_past_encounters">View past encounters</string>
     <string name="remove_this_person">Remove this person</string>
     <string name="care_plan">Care plan</string>

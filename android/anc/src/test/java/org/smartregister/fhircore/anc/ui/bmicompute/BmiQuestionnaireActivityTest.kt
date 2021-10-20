@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.madx.bmicompute
+package org.smartregister.fhircore.anc.ui.bmicompute
 
 import android.app.Activity
 import android.content.Intent
@@ -35,15 +35,15 @@ import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
-import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiComputeActivity
+import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
 
 @Config(shadows = [AncApplicationShadow::class])
-internal class BmiComputeActivityTest : ActivityRobolectricTest() {
+internal class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
 
-  private lateinit var bmiComputeActivity: BmiComputeActivity
+  private lateinit var bmiQuestionnaireActivity: BmiQuestionnaireActivity
 
-  private lateinit var bmiComputeActivitySpy: BmiComputeActivity
+  private lateinit var bmiQuestionnaireActivitySpy: BmiQuestionnaireActivity
 
   @Before
   fun setUp() {
@@ -53,9 +53,9 @@ internal class BmiComputeActivityTest : ActivityRobolectricTest() {
 
     val intent = Intent().apply { putExtra(QUESTIONNAIRE_ARG_FORM, "family-patient_bmi_compute") }
 
-    bmiComputeActivity =
-      Robolectric.buildActivity(BmiComputeActivity::class.java, intent).create().get()
-    bmiComputeActivitySpy = spyk(objToCopy = bmiComputeActivity)
+    bmiQuestionnaireActivity =
+      Robolectric.buildActivity(BmiQuestionnaireActivity::class.java, intent).create().get()
+    bmiQuestionnaireActivitySpy = spyk(objToCopy = bmiQuestionnaireActivity)
   }
 
   @After
@@ -68,21 +68,8 @@ internal class BmiComputeActivityTest : ActivityRobolectricTest() {
     assertNotNull(getActivity())
   }
 
-  //  @Test
-  //  fun testHandleQuestionnaireResposne() {
-  //    coEvery { computeBMIViaMetricUnits(any(), any()) } returns 12.34
-  //    coEvery { computeBMIViaStandardUnits(any(), any()) } returns 56.78
-  //
-  //    ReflectionHelpers.setField(bmiComputeActivity, "questionnaire", Questionnaire())
-  //
-  //    bmiComputeActivity.handleQuestionnaireResponse(QuestionnaireResponse())
-  //
-  //    coVerify(timeout = 1000) { computeBMIViaMetricUnits(any(), any()) }
-  //    coVerify(timeout = 1000) { computeBMIViaStandardUnits(any(), any()) }
-  //  }
-
   override fun getActivity(): Activity {
-    return bmiComputeActivity
+    return bmiQuestionnaireActivity
   }
 
   companion object {

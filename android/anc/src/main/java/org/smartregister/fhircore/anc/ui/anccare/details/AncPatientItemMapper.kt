@@ -40,4 +40,16 @@ object AncPatientItemMapper : DomainMapper<Anc, AncPatientItem> {
       demographics = "$name, $gender, $age",
     )
   }
+
+  //  override fun mapToDomainModel(dto: Anc): PatientBMIItem {
+  //    val name = dto.extractName()
+  //    val height = dto.extractHeight()
+  //    val weight = dto.extractWeight()
+  //    return PatientBMIItem(
+  //      patientIdentifier = dto.logicalId,
+  //      name = name,
+  //      height = height,
+  //      weight = weight
+  //    )
+  //  }
 }
