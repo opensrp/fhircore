@@ -86,6 +86,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
     questionnaireActivity = controller.create().resume().get()
     questionnaireActivity.questionnaireViewModel = questionnaireViewModel
+    questionnaireActivity.supportFragmentManager.executePendingTransactions()
     questionnaireActivity.supportFragmentManager.commitNow {
       add(questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
     }
