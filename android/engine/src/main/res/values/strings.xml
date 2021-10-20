@@ -50,6 +50,14 @@
     <string name="error_loading_form">Error loading form</string>
     <string name="error_saving_form">Error encountered cannot save form</string>
     <string name="saving_registration">Saving data. Please wait</string>
+    <string name="questionnaire_alert_back_pressed_message">Are you sure you want to go back. Changes made into form would be lost</string>
+    <string name="questionnaire_alert_back_pressed_title">Discard changes</string>
+    <string name="questionnaire_alert_back_pressed_button_title">Discard</string>
+    <string name="questionnaire_alert_submit_message">Confirm that you are finished filling out the client details. You can edit client information later</string>
+    <string name="questionnaire_alert_submit_title">Save client data</string>
+    <string name="questionnaire_alert_submit_button_title">Save</string>
+    <string name="questionnaire_alert_neutral_button_title">Cancel</string>
+    <string name="questionnaire_alert_confirm_button_title">Yes</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="forgot_password">Forgot Password</string>
