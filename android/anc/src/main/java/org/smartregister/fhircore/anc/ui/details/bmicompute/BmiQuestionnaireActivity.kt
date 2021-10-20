@@ -55,13 +55,13 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
       val inputWeight =
         bmiQuestionnaireViewModel.getInputWeight(questionnaireResponse, isUnitModeMetric)
       val computedBMI =
-        bmiQuestionnaireViewModel.calculateBMI(inputHeight, inputWeight, isUnitModeMetric)
+        bmiQuestionnaireViewModel.calculateBmi(inputHeight, inputWeight, isUnitModeMetric)
       if (computedBMI < 0)
         showErrorAlert(getString(R.string.try_again), getString(R.string.error_saving_form))
       else {
         val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!
-        val height = bmiQuestionnaireViewModel.getHeightAsPerSIUnit(inputHeight, isUnitModeMetric)
-        val weight = bmiQuestionnaireViewModel.getWeightAsPerSIUnit(inputWeight, isUnitModeMetric)
+        val height = bmiQuestionnaireViewModel.getHeightAsPerSiUnit(inputHeight, isUnitModeMetric)
+        val weight = bmiQuestionnaireViewModel.getWeightAsPerSiUnit(inputWeight, isUnitModeMetric)
         showBmiDataAlert(questionnaireResponse, patientId, height, weight, computedBMI)
       }
     }
@@ -87,7 +87,7 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
     weight: Double,
     computedBMI: Double
   ) {
-    val message = bmiQuestionnaireViewModel.getBMIResult(computedBMI, this)
+    val message = bmiQuestionnaireViewModel.getBmiResult(computedBMI, this)
     AlertDialog.Builder(this)
       .setTitle(getString(R.string.your_bmi) + " $computedBMI")
       .setMessage(message)
@@ -109,7 +109,7 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
   ) {
     lifecycleScope.launch {
       val success =
-        bmiQuestionnaireViewModel.saveComputedBMI(
+        bmiQuestionnaireViewModel.saveComputedBmi(
           questionnaire!!,
           questionnaireResponse,
           patientId,
