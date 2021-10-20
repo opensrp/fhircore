@@ -37,7 +37,7 @@ class AdverseEventViewModel(
   questionnaireConfig: QuestionnaireConfig,
   private val patientRepository: PatientRepository,
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
-) : QuestionnaireViewModel(application, questionnaireConfig) {
+) : QuestionnaireViewModel(application) {
 
   fun getPatientImmunizations(patientId: String): LiveData<List<Immunization>> {
     val mutableLiveData: MutableLiveData<List<Immunization>> = MutableLiveData()

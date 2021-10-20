@@ -30,17 +30,13 @@ import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import timber.log.Timber
 
 class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
 
-  override fun createViewModel(
-    application: Application,
-    questionnaireConfig: QuestionnaireConfig
-  ): QuestionnaireViewModel {
+  override fun createViewModel(application: Application): QuestionnaireViewModel {
     return ViewModelProvider(
         this@AdverseEventQuestionnaireActivity,
         AdverseEventViewModel(

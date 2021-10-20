@@ -20,9 +20,9 @@ import java.util.Date
 import org.junit.Assert
 import org.junit.Ignore
 import org.junit.Test
-import org.smartregister.fhircore.engine.util.DateUtils.toHumanDisplay
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
+import org.smartregister.fhircore.engine.util.DateUtils.toHumanDisplay
 
 class DateUtilsTest {
 
@@ -47,10 +47,9 @@ class DateUtilsTest {
     val date = Date("Fri, 1 Oct 2021 13:30:00 GMT+5")
     val formattedDate = date.toHumanDisplay()
     Assert.assertEquals("Oct 1, 2021 1:30:00 PM", formattedDate)
-
+  }
   @Test
   fun testDateToStringFunction() {
     Assert.assertEquals("2020-03-10".getDate("yyyy-MM-dd").makeItReadable(), "03-10-2020")
-
   }
 }
