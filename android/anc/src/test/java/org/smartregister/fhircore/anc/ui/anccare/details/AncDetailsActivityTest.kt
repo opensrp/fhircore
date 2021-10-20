@@ -38,7 +38,6 @@ import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
-import org.smartregister.fhircore.anc.ui.madx.details.NonAncDetailsActivity
 
 @Config(shadows = [AncApplicationShadow::class])
 internal class AncDetailsActivityTest : ActivityRobolectricTest() {
