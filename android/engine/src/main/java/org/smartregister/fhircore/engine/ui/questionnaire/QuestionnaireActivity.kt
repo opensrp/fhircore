@@ -33,9 +33,9 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.ui.base.showConfirmAlert
-import org.smartregister.fhircore.engine.ui.base.showProgressAlert
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
@@ -73,66 +73,69 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       finish()
     }
 
-    val loadProgress = this.showProgressAlert(R.string.loading)
+    val loadProgress = showProgressAlert(this, R.string.loading)
 
     clientIdentifier = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
 
-    lifecycleScope.launchWhenCreated {
-      questionnaireViewModel = createViewModel(application)
+    lifecycleScope
+      .launchWhenCreated {
+        questionnaireViewModel = createViewModel(application)
 
-      val form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
-      // form is either name of form in asset/form-config or questionnaire-id
-      // load from assets and get questionnaire or if not found build it from questionnaire
-      questionnaireConfig =
-        kotlin.runCatching { questionnaireViewModel.getQuestionnaireConfig(form) }.getOrElse {
-          // load questionnaire from db and build config
-          questionnaire = questionnaireViewModel.loadQuestionnaire(form)!!
+        val form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
+        // form is either name of form in asset/form-config or questionnaire-id
+        // load from assets and get questionnaire or if not found build it from questionnaire
+        questionnaireConfig =
+          kotlin.runCatching { questionnaireViewModel.getQuestionnaireConfig(form) }.getOrElse {
+            // load questionnaire from db and build config
+            questionnaire = questionnaireViewModel.loadQuestionnaire(form)!!
 
-          QuestionnaireConfig(
-            form = questionnaire.name ?: "",
-            title = questionnaire.title ?: "",
-            identifier = questionnaire.logicalId
-          )
+            QuestionnaireConfig(
+              form = questionnaire.name ?: "",
+              title = questionnaire.title ?: "",
+              identifier = questionnaire.logicalId
+            )
+          }
+
+        // if questionnaire is still not initialized load using config loaded from assets
+        if (!::questionnaire.isInitialized)
+          questionnaire = questionnaireViewModel.loadQuestionnaire(questionnaireConfig.identifier)!!
+
+        supportActionBar?.apply {
+          setDisplayHomeAsUpEnabled(true)
+          title = questionnaireConfig.title
         }
 
-      // if questionnaire is still not initialized load using config loaded from assets
-      if (!::questionnaire.isInitialized)
-        questionnaire = questionnaireViewModel.loadQuestionnaire(questionnaireConfig.identifier)!!
-
-      supportActionBar?.apply {
-        setDisplayHomeAsUpEnabled(true)
-        title = questionnaireConfig.title
-      }
-
-      // Only add the fragment once, when the activity is first created.
-      if (savedInstanceState == null) {
-        val fragment =
-          QuestionnaireFragment().apply {
-            val parsedQuestionnaire = parser.encodeResourceToString(questionnaire)
-            arguments =
-              when {
-                clientIdentifier == null ->
-                  bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
-                clientIdentifier != null -> {
-                  //                  TODO it is not working. Takes forever to load form first time
-                  //                  val parsedQuestionnaireResponse =
-                  //                    parser.encodeResourceToString(
-                  //
-                  // questionnaireViewModel.generateQuestionnaireResponse(questionnaire!!, intent)
-                  //                    )
-                  bundleOf(
-                    Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire),
-                    //  Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
-                    )
+        // Only add the fragment once, when the activity is first created.
+        if (savedInstanceState == null) {
+          val fragment =
+            QuestionnaireFragment().apply {
+              val parsedQuestionnaire = parser.encodeResourceToString(questionnaire)
+              arguments =
+                when {
+                  clientIdentifier == null ->
+                    bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
+                  clientIdentifier != null -> {
+                    //                  TODO it is not working. Takes forever to load form first
+                    // time
+                    //                  val parsedQuestionnaireResponse =
+                    //                    parser.encodeResourceToString(
+                    //
+                    // questionnaireViewModel.generateQuestionnaireResponse(questionnaire!!, intent)
+                    //                    )
+                    bundleOf(
+                      Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire),
+                      //  Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
+                      )
+                  }
+                  else -> bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
                 }
-                else -> bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
-              }
+            }
+          supportFragmentManager.commit {
+            add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG)
           }
-        supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
+        }
       }
-    }.invokeOnCompletion {
-      loadProgress.dismiss()
-    }
+      .invokeOnCompletion { loadProgress.dismiss() }
 
     findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
   }
@@ -145,7 +148,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   override fun onClick(view: View) {
     if (view.id == R.id.btn_save_client_info) {
-      this.showConfirmAlert(
+      showConfirmAlert(
+        context = this,
         message = R.string.questionnaire_alert_submit_message,
         title = R.string.questionnaire_alert_submit_title,
         confirmButtonListener = { handleQuestionnaireSubmit() },
@@ -163,7 +167,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   open fun handleQuestionnaireSubmit() {
-    val alertDialog = this.showProgressAlert(R.string.saving_registration)
+    val alertDialog = showProgressAlert(this, R.string.saving_registration)
 
     // TODO validate https://github.com/opensrp/fhircore/issues/616
 
@@ -217,7 +221,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   override fun onBackPressed() {
-    this.showConfirmAlert(
+    showConfirmAlert(
+      this,
       R.string.questionnaire_alert_back_pressed_message,
       R.string.questionnaire_alert_back_pressed_title,
       { finish() },
