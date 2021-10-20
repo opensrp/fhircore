@@ -188,6 +188,7 @@ fun LoginPage(
               .fillMaxWidth()
               .padding(vertical = 4.dp)
               .background(color = textFieldBackgroundColor)
+              .testTag(USERNAME_FIELD_TAG)
         )
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier.fillMaxWidth()) {
           Text(
@@ -222,7 +223,8 @@ fun LoginPage(
             modifier
               .fillMaxWidth()
               .padding(vertical = 4.dp)
-              .background(color = textFieldBackgroundColor),
+              .background(color = textFieldBackgroundColor)
+              .testTag(PASSWORD_FIELD_TAG),
           trailingIcon = {
             val image = if (showPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
             IconButton(onClick = { showPassword = !showPassword }) {
@@ -278,7 +280,7 @@ fun LoginPage(
             color = contentColor,
             fontSize = 16.sp,
             text = stringResource(id = R.string.app_version, viewConfiguration.applicationVersion),
-            modifier = modifier.wrapContentWidth().padding(0.dp)
+            modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER)
           )
         }
       }

@@ -21,7 +21,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
@@ -107,13 +106,9 @@ class LoginScreenTest : RobolectricTest() {
 
     // verify login button properties and behaviour
     composeRule.onNodeWithTag(LOGIN_BUTTON_TAG).assertExists()
-    composeRule.onNodeWithTag(LOGIN_BUTTON_TAG).assertIsDisplayed()
     composeRule.onNodeWithTag(LOGIN_BUTTON_TAG).assertTextEquals(app.getString(R.string.login_text))
-    composeRule.onNodeWithTag(LOGIN_BUTTON_TAG).performClick()
-    verify(exactly = 1) { loginViewModel.attemptRemoteLogin() }
 
     // verify login footer group properties
     composeRule.onNodeWithTag(LOGIN_FOOTER).assertExists()
-    composeRule.onNodeWithTag(LOGIN_FOOTER).assertIsDisplayed()
   }
 }
