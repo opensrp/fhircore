@@ -80,28 +80,4 @@ fun Patient.extractAddress(): String {
   return with(addressFirstRep) { "${district ?: ""} ${city ?: ""}" }
 }
 
-fun Patient.extractHeight(): String {
-  // Todo: update patient height attribute here
-  if (!hasName()) return ""
-  val humanName = this.name.firstOrNull()
-  return if (humanName != null) {
-    "${
-    humanName.given.joinToString(" ")
-    { it.toString().trim().toTitleCase() }
-    } ${humanName.family?.toTitleCase() ?: ""}"
-  } else ""
-}
-
-fun Patient.extractWeight(): String {
-  // Todo: update patient weight attribute here
-  if (!hasName()) return ""
-  val humanName = this.name.firstOrNull()
-  return if (humanName != null) {
-    "${
-    humanName.given.joinToString(" ")
-    { it.toString().trim().toTitleCase() }
-    } ${humanName.family?.toTitleCase() ?: ""}"
-  } else ""
-}
-
 fun Patient.isPregnant() = this.extension.any { it.value.toString().contains("pregnant", true) }

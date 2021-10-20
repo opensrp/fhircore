@@ -53,11 +53,27 @@ class BmiQuestionnaireViewModel(
     }
 
     const val KEY_UNIT_SELECTION = "select-mode"
-    const val KEY_WEIGHT_SI = "vital-signs-body-wight_lb"
-    const val KEY_HEIGHT_SI = "vital-signs-height_ft"
-    const val KEY_HEIGHT_DP_SI = "vital-signs-height_in"
-    const val KEY_WEIGHT_MU = "vital-signs-body-wight_kg"
-    const val KEY_HEIGHT_MU = "vital-signs-height_cm"
+    const val KEY_WEIGHT_LB = "vital-signs-body-wight_lb"
+    const val KEY_HEIGHT_FT = "vital-signs-height_ft"
+    const val KEY_HEIGHT_INCH = "vital-signs-height_in"
+    const val KEY_WEIGHT_KG = "vital-signs-body-wight_kg"
+    const val KEY_HEIGHT_CM = "vital-signs-height_cm"
+
+    const val HEIGHT_FEET_INCHES_MULTIPLIER = 12
+    const val HEIGHT_METER_CENTIMETER_MULTIPLIER = 100
+    const val HEIGHT_INCH_METER_MULTIPLIER = 39.3701
+    const val WEIGHT_POUND_KG_MULTIPLIER = 2.20462
+
+    const val BMI_CATEGORY_UNDERWEIGHT_MAX_THRESHOLD = 18.5
+    const val BMI_CATEGORY_NORMAL_MAX_THRESHOLD = 25
+    const val BMI_CATEGORY_OVERWEIGHT_MAX_THRESHOLD = 30
+  }
+
+  enum class BMI_CATEGORY(val value: Int) {
+    UNDERWEIGHT(1),
+    NORMAL(2),
+    OVERWEIGHT(3),
+    OBESITY(4)
   }
 
   fun isUnitModeMetric(questionnaireResponse: QuestionnaireResponse): Boolean {
@@ -70,16 +86,16 @@ class BmiQuestionnaireViewModel(
     isUnitModeMetric: Boolean
   ): Double {
     return if (isUnitModeMetric) {
-      val heightCms = questionnaireResponse.find(KEY_HEIGHT_MU)
+      val heightCms = questionnaireResponse.find(KEY_HEIGHT_CM)
       val height = heightCms?.answer?.firstOrNull()?.valueDecimalType?.value?.toDouble() ?: 0.0
-      val heightInMeters = height.div(100)
+      val heightInMeters = height.div(HEIGHT_METER_CENTIMETER_MULTIPLIER)
       heightInMeters
     } else {
-      val heightFeets = questionnaireResponse.find(KEY_HEIGHT_SI)
-      val heightInches = questionnaireResponse.find(KEY_HEIGHT_DP_SI)
+      val heightFeets = questionnaireResponse.find(KEY_HEIGHT_FT)
+      val heightInches = questionnaireResponse.find(KEY_HEIGHT_INCH)
       val heightInFeets = heightFeets?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
       val heightInInches = heightInches?.answer?.firstOrNull()?.valueDecimalType?.value ?: 0
-      val height = (heightInFeets.toDouble() * 12) + heightInInches.toDouble()
+      val height = (heightInFeets.toDouble() * HEIGHT_FEET_INCHES_MULTIPLIER) + heightInInches.toDouble()
       height
     }
   }
@@ -89,17 +105,17 @@ class BmiQuestionnaireViewModel(
     isUnitModeMetric: Boolean
   ): Double {
     return if (isUnitModeMetric) {
-      val weightKgs = questionnaireResponse.find(KEY_WEIGHT_MU)
+      val weightKgs = questionnaireResponse.find(KEY_WEIGHT_KG)
       weightKgs?.answer?.firstOrNull()?.valueDecimalType?.value?.toDouble() ?: 0.0
     } else {
-      val weightPounds = questionnaireResponse.find(KEY_WEIGHT_SI)
+      val weightPounds = questionnaireResponse.find(KEY_WEIGHT_LB)
       weightPounds?.answer?.firstOrNull()?.valueDecimalType?.value?.toDouble() ?: 0.0
     }
   }
 
   fun getHeightAsPerSIUnit(inputHeight: Double, unitModeMetric: Boolean): Double {
     return if (unitModeMetric) {
-      inputHeight * 39.3701
+      inputHeight * HEIGHT_INCH_METER_MULTIPLIER
     } else {
       inputHeight
     }
@@ -107,7 +123,7 @@ class BmiQuestionnaireViewModel(
 
   fun getWeightAsPerSIUnit(inputWeight: Double, unitModeMetric: Boolean): Double {
     return if (unitModeMetric) {
-      inputWeight * 2.20462
+      inputWeight * WEIGHT_POUND_KG_MULTIPLIER
     } else {
       inputWeight
     }
@@ -137,11 +153,9 @@ class BmiQuestionnaireViewModel(
     return mSpannableString
   }
 
-  private fun getBmiResultHighlightColor(matchedCategoryIndex: Int): Int {
+  private fun getBmiResultHighlightColor(matchedCategoryIndex: BMI_CATEGORY): Int {
     return when (matchedCategoryIndex) {
-      1 -> Color.RED
-      2 -> Color.parseColor("#5AAB61")
-      3 -> Color.RED
+      BMI_CATEGORY.NORMAL -> Color.parseColor("#5AAB61")
       else -> Color.RED
     }
   }
@@ -159,24 +173,24 @@ class BmiQuestionnaireViewModel(
       activityContext.getString(R.string.bmi_category_obesity)
   }
 
-  private fun getBMIResultCategoryIndex(computedBMI: Double): Int {
+  private fun getBMIResultCategoryIndex(computedBMI: Double): BMI_CATEGORY {
     return when {
-      computedBMI < 18.5 -> 1
-      computedBMI < 25 -> 2
-      computedBMI < 30 -> 3
-      else -> 4
+      computedBMI < BMI_CATEGORY_UNDERWEIGHT_MAX_THRESHOLD -> BMI_CATEGORY.UNDERWEIGHT
+      computedBMI < BMI_CATEGORY_NORMAL_MAX_THRESHOLD -> BMI_CATEGORY.NORMAL
+      computedBMI < BMI_CATEGORY_OVERWEIGHT_MAX_THRESHOLD -> BMI_CATEGORY.OVERWEIGHT
+      else -> BMI_CATEGORY.OBESITY
     }
   }
 
-  private fun getStartingIndexInCategories(index: Int, activityContext: Context): Int {
+  private fun getStartingIndexInCategories(index: BMI_CATEGORY, activityContext: Context): Int {
     return when (index) {
-      1 ->
+      BMI_CATEGORY.UNDERWEIGHT ->
         getBMICategories(activityContext)
           .indexOf(activityContext.getString(R.string.bmi_category_underweight))
-      2 ->
+      BMI_CATEGORY.NORMAL ->
         getBMICategories(activityContext)
           .indexOf(activityContext.getString(R.string.bmi_category_normal))
-      3 ->
+      BMI_CATEGORY.OVERWEIGHT ->
         getBMICategories(activityContext)
           .indexOf(activityContext.getString(R.string.bmi_category_overweight))
       else ->
@@ -185,19 +199,19 @@ class BmiQuestionnaireViewModel(
     }
   }
 
-  private fun getEndingIndexInCategories(index: Int, activityContext: Context): Int {
+  private fun getEndingIndexInCategories(index: BMI_CATEGORY, activityContext: Context): Int {
     return when (index) {
-      1 ->
-        getStartingIndexInCategories(1, activityContext) +
+      BMI_CATEGORY.UNDERWEIGHT ->
+        getStartingIndexInCategories(BMI_CATEGORY.UNDERWEIGHT, activityContext) +
           activityContext.getString(R.string.bmi_category_underweight).length
-      2 ->
-        getStartingIndexInCategories(2, activityContext) +
+      BMI_CATEGORY.NORMAL ->
+        getStartingIndexInCategories(BMI_CATEGORY.NORMAL, activityContext) +
           activityContext.getString(R.string.bmi_category_normal).length
-      3 ->
-        getStartingIndexInCategories(3, activityContext) +
+      BMI_CATEGORY.OVERWEIGHT ->
+        getStartingIndexInCategories(BMI_CATEGORY.OVERWEIGHT, activityContext) +
           activityContext.getString(R.string.bmi_category_overweight).length
       else ->
-        getStartingIndexInCategories(4, activityContext) +
+        getStartingIndexInCategories(BMI_CATEGORY.OBESITY, activityContext) +
           activityContext.getString(R.string.bmi_category_obesity).length
     }
   }
