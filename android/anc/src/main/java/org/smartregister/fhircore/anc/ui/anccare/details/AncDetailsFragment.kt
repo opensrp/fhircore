@@ -91,6 +91,9 @@ class AncDetailsFragment private constructor() : Fragment() {
   var patientURL = ""
   var cqlConfigFileName = "configs/cql_configs.properties"
 
+  var parametersEvaluate = ""
+  var parametersMeasure = ""
+
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
@@ -228,11 +231,23 @@ class AncDetailsFragment private constructor() : Fragment() {
   }
 
   fun buttonCQLSetOnClickListener() {
-    button_CQLEvaluate.setOnClickListener { loadCQLLibraryData() }
+    button_CQLEvaluate.setOnClickListener {
+      if (parametersEvaluate.isEmpty()) {
+        loadCQLLibraryData()
+      } else {
+        parametersCQLToggleFinalView()
+      }
+    }
   }
 
   fun buttonCQLMeasureEvaluateSetOnClickListener() {
-    button_CQL_Measure_Evaluate.setOnClickListener { loadMeasureEvaluateLibrary() }
+    button_CQL_Measure_Evaluate.setOnClickListener {
+      if (parametersMeasure.isEmpty()) {
+        loadMeasureEvaluateLibrary()
+      } else {
+        parametersCQLMeasureToggleFinalView()
+      }
+    }
   }
 
   fun startProgressBarAndTextViewCQLResults() {
@@ -304,7 +319,7 @@ class AncDetailsFragment private constructor() : Fragment() {
 
   fun handleCQLPatientData(auxPatientData: String) {
     testData = libraryEvaluator.processCQLPatientBundle(auxPatientData)
-    val parameters =
+    parametersEvaluate =
       libraryEvaluator.runCql(
         libraryData,
         helperData,
@@ -314,15 +329,14 @@ class AncDetailsFragment private constructor() : Fragment() {
         contextCQL,
         contextLabel
       )
-    handleParametersQCLMeasure(parameters)
-    button_CQL_Measure_Evaluate.isEnabled = true
+    parametersCQLToggleFinalView()
   }
 
   fun handleMeasureEvaluatePatient(auxPatientData: String) {
     testData = libraryEvaluator.processCQLPatientBundle(auxPatientData)
     var patientResources: ArrayList<String> = ArrayList()
     patientResources.add(testData)
-    val parameters =
+    parametersMeasure =
       measureEvaluator.runMeasureEvaluate(
         measureEvaluateLibraryData,
         patientResources,
@@ -332,7 +346,15 @@ class AncDetailsFragment private constructor() : Fragment() {
         cqlMeasureReportReportType,
         cqlMeasureReportSubject
       )
-    handleParametersQCLMeasure(parameters)
+    parametersCQLMeasureToggleFinalView()
+  }
+  fun parametersCQLToggleFinalView() {
+    handleParametersQCLMeasure(parametersEvaluate)
+    button_CQL_Measure_Evaluate.isEnabled = true
+  }
+
+  fun parametersCQLMeasureToggleFinalView() {
+    handleParametersQCLMeasure(parametersMeasure)
     button_CQLEvaluate.isEnabled = true
   }
 

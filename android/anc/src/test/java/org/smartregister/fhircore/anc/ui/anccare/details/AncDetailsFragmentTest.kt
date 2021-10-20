@@ -374,14 +374,30 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
 
   @Test
   fun buttonCQLSetOnClickListenerTest() {
+    patientDetailsFragment.parametersEvaluate = ""
     every { patientDetailsFragment.loadCQLLibraryData() } returns Unit
+    patientDetailsFragment.buttonCQLSetOnClickListener()
+    Assert.assertEquals(true, patientDetailsFragment.button_CQLEvaluate.hasOnClickListeners())
+
+    patientDetailsFragment.parametersEvaluate = "Test"
+    every { patientDetailsFragment.parametersCQLToggleFinalView() } returns Unit
     patientDetailsFragment.buttonCQLSetOnClickListener()
     Assert.assertEquals(true, patientDetailsFragment.button_CQLEvaluate.hasOnClickListeners())
   }
 
   @Test
   fun buttonCQLMeasureEvaluateSetOnClickListenerTest() {
+
+    patientDetailsFragment.parametersMeasure = ""
     every { patientDetailsFragment.loadMeasureEvaluateLibrary() } returns Unit
+    patientDetailsFragment.buttonCQLMeasureEvaluateSetOnClickListener()
+    Assert.assertEquals(
+      true,
+      patientDetailsFragment.button_CQL_Measure_Evaluate.hasOnClickListeners()
+    )
+
+    patientDetailsFragment.parametersMeasure = "Test"
+    every { patientDetailsFragment.parametersCQLMeasureToggleFinalView() } returns Unit
     patientDetailsFragment.buttonCQLMeasureEvaluateSetOnClickListener()
     Assert.assertEquals(
       true,
@@ -403,5 +419,19 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   fun startProgressBarAndTextViewCQLResultsTest() {
     patientDetailsFragment.startProgressBarAndTextViewCQLResults()
     Assert.assertEquals(View.VISIBLE, patientDetailsFragment.progress_circular_cql?.visibility)
+  }
+
+  @Test
+  fun testParametersQCLToggleFinalView() {
+    every { patientDetailsFragment.handleParametersQCLMeasure(any()) } returns Unit
+    patientDetailsFragment.parametersCQLToggleFinalView()
+    Assert.assertEquals(true, patientDetailsFragment.button_CQL_Measure_Evaluate.isEnabled)
+  }
+
+  @Test
+  fun testParametersCQLMeasureToggleFinalView() {
+    every { patientDetailsFragment.handleParametersQCLMeasure(any()) } returns Unit
+    patientDetailsFragment.parametersCQLMeasureToggleFinalView()
+    Assert.assertEquals(true, patientDetailsFragment.button_CQLEvaluate.isEnabled)
   }
 }
