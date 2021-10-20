@@ -139,7 +139,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testHandleQuestionnaireSubmitShouldShowProgress() {
+  fun testHandleQuestionnaireSubmitShouldShowProgressAndCallExtractAndSaveResources() {
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", Questionnaire())
     questionnaireActivity.handleQuestionnaireSubmit()
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
@@ -149,6 +150,10 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       getString(R.string.saving_registration),
       alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
     )
+
+    verify(timeout = 2000) {
+      questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any())
+    }
   }
 
   @Test
