@@ -105,14 +105,24 @@ class BmiQuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testBmiResultStringIndexInCategories() {
-    val expectedIndex = 27
+    val expectedIndex = 48
     val resultIndex =
       viewModel.getStartingIndexInCategories(BmiQuestionnaireViewModel.BmiCategory.NORMAL)
     Assert.assertEquals(expectedIndex, resultIndex)
 
-    val expectedIndex2 = 43
+    val expectedIndex2 = 75
     val resultIndex2 =
-      viewModel.getStartingIndexInCategories(BmiQuestionnaireViewModel.BmiCategory.NORMAL)
+      viewModel.getEndingIndexInCategories(BmiQuestionnaireViewModel.BmiCategory.NORMAL)
     Assert.assertEquals(expectedIndex2, resultIndex2)
+
+    val expectedIndex3 = 99
+    val resultIndex3 =
+      viewModel.getStartingIndexInCategories(BmiQuestionnaireViewModel.BmiCategory.OBESITY)
+    Assert.assertEquals(expectedIndex3, resultIndex3)
+
+    val expectedIndex4 = 129
+    val resultIndex4 =
+      viewModel.getEndingIndexInCategories(BmiQuestionnaireViewModel.BmiCategory.OBESITY)
+    Assert.assertEquals(expectedIndex4, resultIndex4)
   }
 }
