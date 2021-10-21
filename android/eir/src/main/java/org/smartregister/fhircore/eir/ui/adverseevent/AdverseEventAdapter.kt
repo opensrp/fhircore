@@ -25,15 +25,15 @@ import org.smartregister.fhircore.eir.databinding.AdverseEventListItemBinding
 import org.smartregister.fhircore.eir.ui.adverseevent.AdverseEventAdapter.AdverseEventViewHolder
 import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
 
-class AdverseEventAdapter(val vaccine: String) :
+class AdverseEventAdapter(val vaccine: String, val adverseEventDoseNumber: List<String>) :
   ListAdapter<AdverseEventItem, AdverseEventViewHolder>(AdverseEventItemDiffCallback) {
 
   inner class AdverseEventViewHolder(private val binding: AdverseEventListItemBinding) :
     RecyclerView.ViewHolder(binding.root) {
-    fun bindTo(immunizationAdverseEventItem: AdverseEventItem) {
+    fun bindTo(immunizationAdverseEventItem: AdverseEventItem, position: Int) {
       with(immunizationAdverseEventItem) {
         binding.root.tag = this
-        binding.vaccine = vaccine
+        binding.vaccine = vaccine + " - Dose "+  adverseEventDoseNumber[position]
         binding.immunizationItem = immunizationAdverseEventItem
       }
     }
@@ -46,7 +46,7 @@ class AdverseEventAdapter(val vaccine: String) :
   }
 
   override fun onBindViewHolder(holder: AdverseEventViewHolder, position: Int) {
-    holder.bindTo(getItem(position))
+    holder.bindTo(getItem(position),position)
   }
 
   object AdverseEventItemDiffCallback : DiffUtil.ItemCallback<AdverseEventItem>() {

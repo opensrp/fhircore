@@ -36,7 +36,7 @@ class MainAdverseEventAdapter :
     fun bindTo(immunizationAdverseEventItem: ImmunizationAdverseEventItem) {
       with(immunizationAdverseEventItem) {
         binding.root.tag = this
-        val childMembersAdapter = AdverseEventAdapter(immunizationAdverseEventItem.vaccine)
+        val childMembersAdapter = AdverseEventAdapter(immunizationAdverseEventItem.vaccine, getAdverseEventDoseNumber(immunizationAdverseEventItem.dosesWithAdverseEvents))
         childMembersAdapter.submitList(
           getAdverseEvent(immunizationAdverseEventItem.dosesWithAdverseEvents)
         )
@@ -54,6 +54,18 @@ class MainAdverseEventAdapter :
     dosesWithAdverseEvents.forEach { item ->
       item.second.forEach { adverseEventReactionItem ->
         listOfAdverseEvent.add(adverseEventReactionItem)
+      }
+    }
+    return listOfAdverseEvent
+  }
+
+  private fun getAdverseEventDoseNumber(
+    dosesWithAdverseEvents: List<Pair<String, List<AdverseEventItem>>>
+  ): List<String> {
+    val listOfAdverseEvent = arrayListOf<String>()
+    dosesWithAdverseEvents.forEach { item ->
+      item.first.forEach { adverseEventReactionItem ->
+        listOfAdverseEvent.add(adverseEventReactionItem.toString())
       }
     }
     return listOfAdverseEvent
