@@ -24,12 +24,10 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.fragment.app.commitNow
-import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import io.mockk.coEvery
 import io.mockk.every
-import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.unmockkObject
@@ -131,19 +129,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       getString(R.string.questionnaire_alert_back_pressed_button_title),
       alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
     )
-  }
-
-  @Test
-  fun `handle-questionnaire-submit should call savedExtractedResources()`() {
-
-    val viewModel = mockk<QuestionnaireViewModel>()
-    every { viewModel.extractionProgress } returns MutableLiveData(false)
-    every { viewModel.extractAndSaveResources(any(), any(), any(), any()) } answers {}
-    questionnaireActivity.questionnaireViewModel = viewModel
-
-    questionnaireActivity.handleQuestionnaireSubmit()
-
-    verify(exactly = 1) { viewModel.extractAndSaveResources(any(), any(), any(), any()) }
   }
 
   @Test
