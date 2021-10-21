@@ -21,7 +21,6 @@ jobs:
      FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
      FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-     
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v2
