@@ -17,19 +17,19 @@
 package org.smartregister.fhircore.engine.ui.base
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.DialogInterface
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AlertDialog
-import androidx.compose.material.AlertDialog
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.engine.util.extension.show
 
 enum class AlertIntent {
   PROGRESS,
-  CONFIRM
+  CONFIRM,
+  ERROR
 }
 
 object AlertDialogue {
@@ -51,15 +51,14 @@ object AlertDialogue {
           title?.let { setTitle(it) }
           setCancelable(false)
 
-          neutralButtonListener?.apply {
+          neutralButtonListener?.let {
             setNeutralButton(neutralButtonText) { d, _ -> neutralButtonListener.invoke(d) }
           }
-          confirmButtonListener?.apply {
+          confirmButtonListener?.let {
             setPositiveButton(confirmButtonText) { d, _ -> confirmButtonListener.invoke(d) }
           }
         }
-        .create()
-        .apply { show() }
+        .show()
 
     dialog.findViewById<View>(R.id.pr_circular)?.apply {
       if (alertIntent == AlertIntent.PROGRESS) {
@@ -72,6 +71,21 @@ object AlertDialogue {
     return dialog
   }
 
+  fun showErrorAlert(
+    context: Activity,
+    @StringRes message: Int,
+    @StringRes title: Int? = null
+  ): AlertDialog {
+    return showAlert(
+      context = context,
+      alertIntent = AlertIntent.ERROR,
+      message = message,
+      title = title,
+      confirmButtonListener = { d -> d.dismiss() },
+      confirmButtonText = R.string.questionnaire_alert_ack_button_title
+    )
+  }
+
   fun showProgressAlert(context: Activity, @StringRes message: Int): AlertDialog {
     return showAlert(context, AlertIntent.PROGRESS, message)
   }
@@ -82,8 +96,8 @@ object AlertDialogue {
     @StringRes title: Int? = null,
     confirmButtonListener: ((d: DialogInterface) -> Unit),
     @StringRes confirmButtonText: Int
-  ) {
-    showAlert(
+  ): AlertDialog {
+    return showAlert(
       context = context,
       alertIntent = AlertIntent.CONFIRM,
       message = message,

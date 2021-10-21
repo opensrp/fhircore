@@ -17,23 +17,26 @@
 package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.Application
 import android.content.Intent
 import android.widget.Button
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.fragment.app.commitNow
+import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.StringType
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -131,6 +134,19 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun `handle-questionnaire-submit should call savedExtractedResources()`() {
+
+    val viewModel = mockk<QuestionnaireViewModel>()
+    every { viewModel.extractionProgress } returns MutableLiveData(false)
+    every { viewModel.extractAndSaveResources(any(), any(), any(), any()) } answers {}
+    questionnaireActivity.questionnaireViewModel = viewModel
+
+    questionnaireActivity.handleQuestionnaireSubmit()
+
+    verify(exactly = 1) { viewModel.extractAndSaveResources(any(), any(), any(), any()) }
+  }
+
+  @Test
   fun testHandleQuestionnaireResponseShouldCallExtractAndSaveResources() {
     ReflectionHelpers.setField(questionnaireActivity, "questionnaire", Questionnaire())
 
@@ -158,6 +174,26 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testHandleQuestionnaireSubmitShouldShowErrorAlertOnInvalidData() {
+    val questionnaire = buildQuestionnaireWithConstraints()
+
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
+    questionnaireActivity.handleQuestionnaireSubmit()
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+
+    Assert.assertEquals(
+      getString(R.string.questionnaire_alert_invalid_message),
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+    )
+
+    verify(inverse = true) {
+      questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any())
+    }
+  }
+
+  @Test
   fun testOnClickSaveButtonShouldShowSubmitConfirmationAlert() {
     questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).performClick()
 
@@ -168,6 +204,54 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       getString(R.string.questionnaire_alert_submit_message),
       alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
     )
+  }
+
+  @Test
+  fun testValidQuestionnaireResponseShouldReturnTrueForValidData() {
+    val questionnaire = buildQuestionnaireWithConstraints()
+
+    val questionnaireResponse = QuestionnaireResponse()
+    questionnaireResponse.apply {
+      addItem().apply {
+        addAnswer().apply { this.value = StringType("v1") }
+        linkId = "1"
+      }
+    }
+
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
+
+    val result = questionnaireActivity.validQuestionnaireResponse(questionnaireResponse)
+
+    Assert.assertTrue(result)
+  }
+
+  @Test
+  fun testValidQuestionnaireResponseShouldReturnFalseForInvalidData() {
+    val questionnaire = buildQuestionnaireWithConstraints()
+
+    val questionnaireResponse = QuestionnaireResponse()
+    questionnaireResponse.apply { addItem().apply { linkId = "1" } }
+
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
+
+    val result = questionnaireActivity.validQuestionnaireResponse(questionnaireResponse)
+
+    Assert.assertFalse(result)
+  }
+
+  private fun buildQuestionnaireWithConstraints(): Questionnaire {
+    return Questionnaire().apply {
+      addItem().apply {
+        required = true
+        linkId = "1"
+        type = Questionnaire.QuestionnaireItemType.STRING
+      }
+      addItem().apply {
+        maxLength = 4
+        linkId = "2"
+        type = Questionnaire.QuestionnaireItemType.STRING
+      }
+    }
   }
 
   override fun getActivity(): Activity {

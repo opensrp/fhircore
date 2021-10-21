@@ -28,12 +28,14 @@ import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
+import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showErrorAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -164,11 +166,22 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   open fun handleQuestionnaireSubmit() {
-    val alertDialog = showProgressAlert(this, R.string.saving_registration)
+    val progressAlert = showProgressAlert(this, R.string.saving_registration)
 
-    // TODO validate https://github.com/opensrp/fhircore/issues/616
+    val questionnaireResponse = getQuestionnaireResponse()
 
-    handleQuestionnaireResponse(getQuestionnaireResponse())
+    if (!validQuestionnaireResponse(questionnaireResponse)) {
+      progressAlert.dismiss()
+
+      showErrorAlert(
+        this,
+        R.string.questionnaire_alert_invalid_message,
+        R.string.questionnaire_alert_invalid_title
+      )
+      return
+    }
+
+    handleQuestionnaireResponse(questionnaireResponse)
 
     questionnaireViewModel.extractionProgress.observe(
       this,
@@ -178,9 +191,20 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         } else {
           Timber.e("An error occurred during extraction")
         }
-        alertDialog.dismiss()
+        progressAlert.dismiss()
       }
     )
+  }
+
+  fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
+    return QuestionnaireResponseValidator.validate(
+        questionnaire.item,
+        questionnaireResponse.item,
+        this
+      )
+      .values
+      .flatten()
+      .all { it.isValid }
   }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
