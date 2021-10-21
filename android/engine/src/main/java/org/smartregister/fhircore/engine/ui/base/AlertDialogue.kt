@@ -76,6 +76,10 @@ object AlertDialogue {
     return showAlert(context, AlertIntent.PROGRESS, message)
   }
 
+  fun hideProgressAlert(alert: AlertDialog) {
+    if (alert.isShowing) alert.dismiss()
+  }
+
   fun showConfirmAlert(
     context: Activity,
     @StringRes message: Int,

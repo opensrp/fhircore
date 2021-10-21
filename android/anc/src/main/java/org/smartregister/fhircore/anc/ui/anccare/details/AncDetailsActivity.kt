@@ -29,6 +29,8 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.databinding.ActivityAncDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
+import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
+import org.smartregister.fhircore.anc.ui.details.form.FormConfig
 import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -66,6 +68,8 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
 
   override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
     val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
+    val bmiWidget = menu.findItem(R.id.bmi_widget)
+    bmiWidget.isVisible = true
 
     val title = removeThisPerson.title.toString()
     val s = SpannableString(title)
@@ -100,6 +104,18 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
           Intent(this, PatientDetailsActivity::class.java).apply {
             putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
           }
+        )
+        true
+      }
+      R.id.bmi_widget -> {
+        startActivity(
+          Intent(this, BmiQuestionnaireActivity::class.java)
+            .putExtras(
+              QuestionnaireActivity.requiredIntentArgs(
+                clientIdentifier = patientId,
+                form = FormConfig.FAMILY_PATIENT_BMI_FORM
+              )
+            )
         )
         true
       }
