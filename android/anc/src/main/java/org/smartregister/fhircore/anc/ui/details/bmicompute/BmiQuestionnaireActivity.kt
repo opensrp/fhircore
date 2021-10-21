@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.ui.details.bmicompute
 
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
@@ -47,6 +48,12 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
     encounterID = QuestionnaireUtils.getUniqueId()
   }
 
+  override fun onClick(view: View) {
+    if (view.id == org.smartregister.fhircore.engine.R.id.btn_save_client_info) {
+      handleQuestionnaireSubmit()
+    }
+  }
+
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
       val isUnitModeMetric = bmiQuestionnaireViewModel.isUnitModeMetric(questionnaireResponse)
@@ -63,7 +70,6 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
         val height = bmiQuestionnaireViewModel.getHeightAsPerSiUnit(inputHeight, isUnitModeMetric)
         val weight = bmiQuestionnaireViewModel.getWeightAsPerSiUnit(inputWeight, isUnitModeMetric)
         showBmiDataAlert(questionnaireResponse, patientId, height, weight, computedBMI)
-        // questionnaireViewModel.extractionProgress.postValue(false)
       }
     }
   }
@@ -81,7 +87,7 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
   }
 
   private fun resumeForm() {
-    this.onResume()
+    dismissSaveProcessing()
   }
 
   private fun exitForm() {
@@ -102,7 +108,7 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
       .setCancelable(false)
       .setNegativeButton(R.string.re_compute) { dialogInterface, _ ->
         dialogInterface.dismiss()
-        resumeForm() // dismissSaveProcessing()
+        resumeForm()
       }
       .setPositiveButton(R.string.str_save) { dialogInterface, _ ->
         dialogInterface.dismiss()

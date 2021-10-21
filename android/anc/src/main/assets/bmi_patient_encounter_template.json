@@ -13,10 +13,6 @@
       ]
     }
   ],
-  "period": {
-    "start": "null",
-    "end": "null"
-  },
   "subject": {
     "reference": "#RefPatient"
   },
