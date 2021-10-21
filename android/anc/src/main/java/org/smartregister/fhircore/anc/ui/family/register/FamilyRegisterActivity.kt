@@ -23,8 +23,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
@@ -35,7 +35,7 @@ import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 
 class FamilyRegisterActivity : BaseRegisterActivity() {
   private lateinit var familyRepository: FamilyRepository
-  private lateinit var ancPatientRepository: AncPatientRepository
+  private lateinit var patientRepository: PatientRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -52,8 +52,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
     familyRepository =
       FamilyRepository((application as AncApplication).fhirEngine, FamilyItemMapper)
 
-    ancPatientRepository =
-      AncPatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
+    patientRepository = PatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
   }
 
   override fun onMenuOptionSelected(item: MenuItem): Boolean {

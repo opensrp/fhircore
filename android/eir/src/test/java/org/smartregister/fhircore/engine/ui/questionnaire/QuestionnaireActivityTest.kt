@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
-import android.widget.Button
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
@@ -47,7 +46,6 @@ import org.robolectric.annotation.RealObject
 import org.robolectric.shadows.ShadowBuild
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.eir.EirApplication
-import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
@@ -118,14 +116,14 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun `save-button click should call savedExtractedResources()`() {
+  fun `handle-questionnaire-submit should call savedExtractedResources()`() {
 
     val viewModel = mockk<QuestionnaireViewModel>()
     every { viewModel.extractionProgress } returns MutableLiveData(false)
     every { viewModel.extractAndSaveResources(any(), any(), any(), any()) } answers {}
     questionnaireActivity.questionnaireViewModel = viewModel
 
-    questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).performClick()
+    questionnaireActivity.handleQuestionnaireSubmit()
 
     verify(exactly = 1) { viewModel.extractAndSaveResources(any(), any(), any(), any()) }
   }

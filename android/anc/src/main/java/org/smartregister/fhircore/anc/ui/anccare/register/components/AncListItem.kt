@@ -42,8 +42,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
-import org.smartregister.fhircore.anc.data.anc.model.AncVisitStatus
+import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
 import org.smartregister.fhircore.anc.ui.anccare.register.RecordAncVisit
@@ -103,16 +103,16 @@ fun AncVisitButton(
 
   val textColor =
     when (ancPatientItem.visitStatus) {
-      AncVisitStatus.DUE -> DueColor
-      AncVisitStatus.OVERDUE -> OverdueDarkRedColor
-      AncVisitStatus.PLANNED -> Color.Transparent
+      VisitStatus.DUE -> DueColor
+      VisitStatus.OVERDUE -> OverdueDarkRedColor
+      VisitStatus.PLANNED -> Color.Transparent
     }
 
   val bgColor =
     when (ancPatientItem.visitStatus) {
-      AncVisitStatus.DUE -> DueLightColor
-      AncVisitStatus.OVERDUE -> OverdueLightColor
-      AncVisitStatus.PLANNED -> Color.Transparent
+      VisitStatus.DUE -> DueLightColor
+      VisitStatus.OVERDUE -> OverdueLightColor
+      VisitStatus.PLANNED -> Color.Transparent
     }
 
   Text(
@@ -141,9 +141,9 @@ fun PreviewAncItemDue() {
         age = "27y",
         demographics = "Anna Bell, 27",
         name = "Anna Bell",
-        atRisk = "yes riskyy",
-        address = "nairobi",
-        visitStatus = AncVisitStatus.DUE
+        atRisk = "yes risky",
+        address = "Nairobi",
+        visitStatus = VisitStatus.DUE
       ),
     clickListener = { _, _ -> }
   )
@@ -160,9 +160,9 @@ fun PreviewAncItemOverDue() {
         age = "27y",
         demographics = "Anna Bell, 27",
         name = "Anna Bell",
-        atRisk = "yes riskyy",
+        atRisk = "yes risky",
         address = "Nairobi",
-        visitStatus = AncVisitStatus.OVERDUE
+        visitStatus = VisitStatus.OVERDUE
       ),
     clickListener = { _, _ -> }
   )
