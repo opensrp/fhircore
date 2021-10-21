@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.ui.login
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
@@ -30,7 +29,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
@@ -59,7 +57,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -78,6 +76,13 @@ import org.smartregister.fhircore.engine.ui.theme.LoginBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
+
+const val APP_NAME_TEXT_TAG = "aapNameTextTag"
+const val USERNAME_FIELD_TAG = "usernameFieldTag"
+const val PASSWORD_FIELD_TAG = "passwordFieldTag"
+const val LOGIN_BUTTON_TAG = "loginButtonTag"
+const val LOGIN_ERROR_TEXT_TAG = "loginErrorTextTag"
+const val LOGIN_FOOTER = "loginFooter"
 
 @Composable
 fun LoginScreen(loginViewModel: LoginViewModel) {
@@ -146,7 +151,7 @@ fun LoginPage(
         modifier = modifier.size(48.dp).padding(vertical = 8.dp).align(Alignment.End)
       )
       Column(
-        modifier = modifier.weight(1f).padding(4.dp),
+        modifier = modifier.fillMaxSize().padding(4.dp),
         verticalArrangement = Arrangement.Center
       ) {
         // TODO Add configurable logo. Images to be downloaded from server
@@ -156,7 +161,11 @@ fun LoginPage(
           fontWeight = FontWeight.Bold,
           fontSize = 32.sp,
           modifier =
-            modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.CenterHorizontally)
+            modifier
+              .wrapContentWidth()
+              .padding(vertical = 8.dp)
+              .align(Alignment.CenterHorizontally)
+              .testTag(APP_NAME_TEXT_TAG)
         )
         Spacer(modifier = modifier.height(60.dp))
         Text(
@@ -179,6 +188,7 @@ fun LoginPage(
               .fillMaxWidth()
               .padding(vertical = 4.dp)
               .background(color = textFieldBackgroundColor)
+              .testTag(USERNAME_FIELD_TAG)
         )
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier.fillMaxWidth()) {
           Text(
@@ -213,7 +223,8 @@ fun LoginPage(
             modifier
               .fillMaxWidth()
               .padding(vertical = 4.dp)
-              .background(color = textFieldBackgroundColor),
+              .background(color = textFieldBackgroundColor)
+              .testTag(PASSWORD_FIELD_TAG),
           trailingIcon = {
             val image = if (showPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
             IconButton(onClick = { showPassword = !showPassword }) {
@@ -227,7 +238,12 @@ fun LoginPage(
             fontSize = 14.sp,
             color = MaterialTheme.colors.error,
             text = stringResource(id = R.string.login_error, loginError),
-            modifier = modifier.wrapContentWidth().padding(0.dp).align(Alignment.Start)
+            modifier =
+              modifier
+                .wrapContentWidth()
+                .padding(0.dp)
+                .align(Alignment.Start)
+                .testTag(LOGIN_ERROR_TEXT_TAG)
           )
         }
         Spacer(modifier = modifier.height(40.dp))
@@ -241,7 +257,7 @@ fun LoginPage(
                   if (viewConfiguration.darkMode) LoginFieldBackgroundColor else Color.LightGray
               ),
             onClick = onLoginButtonClicked,
-            modifier = modifier.fillMaxWidth()
+            modifier = modifier.fillMaxWidth().testTag(LOGIN_BUTTON_TAG)
           ) {
             Text(
               color = Color.White,
@@ -262,21 +278,11 @@ fun LoginPage(
         Column {
           Text(
             color = contentColor,
-            text = stringResource(id = R.string.powered_by),
-            modifier = modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.Start)
-          )
-          Image(
-            painter = painterResource(id = R.drawable.ic_opensrp_logo),
-            contentDescription = stringResource(id = R.string.app_logo),
-            modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(40.dp)
+            fontSize = 16.sp,
+            text = stringResource(id = R.string.app_version, viewConfiguration.applicationVersion),
+            modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER)
           )
         }
-        Text(
-          color = contentColor,
-          fontSize = 16.sp,
-          text = stringResource(id = R.string.app_version, viewConfiguration.applicationVersion),
-          modifier = modifier.wrapContentWidth().padding(0.dp)
-        )
       }
     }
   }
