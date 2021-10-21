@@ -1,0 +1,31 @@
+{
+  "resourceType": "Encounter",
+  "id": "#Id",
+  "status": "finished",
+  "type": [
+    {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "11429006",
+          "display": "Consultation"
+        }
+      ]
+    }
+  ],
+  "subject": {
+    "reference": "#RefPatient"
+  },
+  "participant": [
+    {
+      "individual": {
+        "reference": "#RefPractitioner"
+      }
+    }
+  ],
+  "reasonCode": [
+    {
+      "text": "BMI Check"
+    }
+  ]
+}

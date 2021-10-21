@@ -14,13 +14,24 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.details.form
+package org.smartregister.fhircore.anc.util
 
-import kotlinx.serialization.Serializable
+import org.junit.Assert.assertEquals
+import org.junit.Test
 
-@Serializable
-object FormConfig {
-  const val ANC_VITAL_SIGNS_METRIC = "non-anc-patient-vital-signs_metric"
-  const val ANC_VITAL_SIGNS_STANDARD = "non-anc-patient-vital-signs_standard"
-  const val FAMILY_PATIENT_BMI_FORM = "family-patient_bmi_compute"
+class CalculationUtilsTest {
+
+  @Test
+  fun testBMI_viaStandardUnit() {
+    val expectedBMI = 22.96
+    val computedBMI = computeBMIViaStandardUnits(70.0, 160.0)
+    assertEquals(expectedBMI, computedBMI, 0.1)
+  }
+
+  @Test
+  fun testBMI_viaMetricUnit() {
+    val expectedBMI = 22.90
+    val computedBMI = computeBMIViaMetricUnits(1.78, 72.57)
+    assertEquals(expectedBMI, computedBMI, 0.1)
+  }
 }
