@@ -58,4 +58,8 @@
     <string name="call_supervisor">Please call your supervisor at %1$s</string>
     <string name="cancel">CANCEL</string>
     <string name="dial_number">DIAL NUMBER</string>
+    <string name="register">Register</string>
+    <string name="tasks">Tasks</string>
+    <string name="reports">Reports</string>
+    <string name="profile">Profile</string>
 </resources>

@@ -88,7 +88,12 @@ fun FamilyRow(
           fontSize = 14.sp,
           modifier = modifier.wrapContentWidth()
         )
-        Dot(modifier, familyItem.address.isNotEmpty())
+        Dot(
+          modifier = modifier,
+          showDot =
+            familyItem.address.isNotEmpty() &&
+              (familyItem.isPregnant || familyItem.members.any { it.pregnant })
+        )
         if (familyItem.isPregnant) {
           Image(
             painter = painterResource(R.drawable.ic_pregnant),

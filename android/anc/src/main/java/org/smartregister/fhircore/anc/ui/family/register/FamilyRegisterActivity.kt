@@ -21,7 +21,6 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
@@ -32,7 +31,7 @@ import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.util.getFamilyQuestionnaireIntent
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
-import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
+import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 
 class FamilyRegisterActivity : BaseRegisterActivity() {
   private lateinit var familyRepository: FamilyRepository
@@ -45,7 +44,8 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         showScanQRCode = false,
         appTitle = getString(R.string.family_register_title),
         newClientButtonText = getString(R.string.add_family),
-        showSideMenu = false
+        showSideMenu = false,
+        showBottomMenu = true
       )
     )
 
@@ -55,24 +55,6 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
     ancPatientRepository =
       AncPatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
   }
-
-  override fun sideMenuOptions(): List<SideMenuOption> =
-    listOf(
-      SideMenuOption(
-        itemId = R.id.menu_item_family,
-        titleResource = R.string.family_register_title,
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_calender)!!,
-        opensMainRegister = true,
-        countMethod = { runBlocking { familyRepository.countAll() } }
-      ),
-      SideMenuOption(
-        itemId = R.id.menu_item_anc,
-        titleResource = R.string.anc_register_title,
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
-        opensMainRegister = false,
-        countMethod = { runBlocking { ancPatientRepository.countAll() } }
-      )
-    )
 
   override fun onMenuOptionSelected(item: MenuItem): Boolean {
     when (item.itemId) {
@@ -87,4 +69,23 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
   }
 
   override fun supportedFragments(): List<Fragment> = listOf(FamilyRegisterFragment())
+
+  override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> =
+    listOf(
+      NavigationMenuOption(
+        id = R.id.menu_item_register,
+        title = getString(R.string.register),
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_home)!!
+      ),
+      NavigationMenuOption(
+        id = R.id.menu_item_reports,
+        title = getString(R.string.reports),
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_reports)!!
+      ),
+      NavigationMenuOption(
+        id = R.id.menu_item_profile,
+        title = getString(R.string.profile),
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_user)!!
+      )
+    )
 }
