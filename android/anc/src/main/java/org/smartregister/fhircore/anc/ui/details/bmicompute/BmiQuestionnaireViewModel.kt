@@ -151,7 +151,7 @@ class BmiQuestionnaireViewModel(
     return mSpannableString
   }
 
-  private fun getBmiResultHighlightColor(matchedCategoryIndex: BmiCategory): Int {
+  fun getBmiResultHighlightColor(matchedCategoryIndex: BmiCategory): Int {
     return when (matchedCategoryIndex) {
       BmiCategory.NORMAL -> Color.parseColor("#5AAB61")
       else -> Color.RED
@@ -169,7 +169,7 @@ class BmiQuestionnaireViewModel(
     )
   }
 
-  private fun getBmiResultCategoryIndex(computedBmi: Double): BmiCategory {
+  fun getBmiResultCategoryIndex(computedBmi: Double): BmiCategory {
     return when {
       computedBmi < BMI_CATEGORY_UNDERWEIGHT_MAX_THRESHOLD -> BmiCategory.UNDERWEIGHT
       computedBmi < BMI_CATEGORY_NORMAL_MAX_THRESHOLD -> BmiCategory.NORMAL

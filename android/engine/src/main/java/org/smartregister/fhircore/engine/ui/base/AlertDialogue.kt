@@ -77,7 +77,7 @@ object AlertDialogue {
   }
 
   fun hideProgressAlert(alert: AlertDialog) {
-    alert.dismiss()
+    if (alert.isShowing) alert.dismiss()
   }
 
   fun showConfirmAlert(
