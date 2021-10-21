@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Feedback on UI
 - Quest | Remove custom activity
 - Quest | Add tags to patient via questionnaire
+- Engine | AlertDialog on questionnaire activity load, back, submit, progress
 
 ### Fixed
 
