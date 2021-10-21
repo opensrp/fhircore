@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.ui.questionnaire
 
-import android.app.AlertDialog
 import android.app.Application
 import android.os.Bundle
 import android.view.MenuItem
@@ -34,6 +33,8 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -71,6 +72,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       showToast(getString(R.string.error_loading_form))
       finish()
     }
+
+    val loadProgress = showProgressAlert(this, R.string.loading)
 
     clientIdentifier = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
 
@@ -111,7 +114,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                 clientIdentifier == null ->
                   bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
                 clientIdentifier != null -> {
-                  //                  TODO it is not working. Takes forever to load form first time
+                  //                  TODO it is not working. Takes forever to load form first
+                  // time
                   //                  val parsedQuestionnaireResponse =
                   //                    parser.encodeResourceToString(
                   //
@@ -127,6 +131,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           }
         supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
       }
+      loadProgress.dismiss()
     }
 
     findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
@@ -140,51 +145,51 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   override fun onClick(view: View) {
     if (view.id == R.id.btn_save_client_info) {
-      val questionnaireFragment =
-        supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
-          QuestionnaireFragment
-      handleQuestionnaireResponse(questionnaireFragment.getQuestionnaireResponse())
+      showConfirmAlert(
+        context = this,
+        message = R.string.questionnaire_alert_submit_message,
+        title = R.string.questionnaire_alert_submit_title,
+        confirmButtonListener = { handleQuestionnaireSubmit() },
+        confirmButtonText = R.string.questionnaire_alert_submit_button_title
+      )
     } else {
       showToast(getString(R.string.error_saving_form))
     }
   }
 
-  open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
-    if (questionnaire != null) {
-      val alertDialog = showDialog()
-
-      questionnaireViewModel.extractionProgress.observe(
-        this,
-        { result ->
-
-          // TODO: Unregister this observer
-
-          if (result) {
-            alertDialog.dismiss()
-            finish()
-          } else {
-            Timber.e("An error occurred during extraction")
-          }
-        }
-      )
-
-      questionnaireViewModel.extractAndSaveResources(
-        context = this@QuestionnaireActivity,
-        questionnaire = questionnaire!!,
-        questionnaireResponse = questionnaireResponse,
-        resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
-      )
-    }
+  fun getQuestionnaireResponse(): QuestionnaireResponse {
+    val questionnaireFragment =
+      supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
+    return questionnaireFragment.getQuestionnaireResponse()
   }
 
-  fun showDialog(): AlertDialog {
-    val dialogBuilder =
-      AlertDialog.Builder(this).apply {
-        setView(R.layout.dialog_saving)
-        setCancelable(false)
-      }
+  open fun handleQuestionnaireSubmit() {
+    val alertDialog = showProgressAlert(this, R.string.saving_registration)
 
-    return dialogBuilder.create().apply { show() }
+    // TODO validate https://github.com/opensrp/fhircore/issues/616
+
+    handleQuestionnaireResponse(getQuestionnaireResponse())
+
+    questionnaireViewModel.extractionProgress.observe(
+      this,
+      { result ->
+        if (result) {
+          finish()
+        } else {
+          Timber.e("An error occurred during extraction")
+        }
+        alertDialog.dismiss()
+      }
+    )
+  }
+
+  open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
+    questionnaireViewModel.extractAndSaveResources(
+      context = this@QuestionnaireActivity,
+      questionnaire = questionnaire!!,
+      questionnaireResponse = questionnaireResponse,
+      resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
+    )
   }
 
   companion object {
@@ -213,6 +218,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   override fun onBackPressed() {
-    finish()
+    showConfirmAlert(
+      this,
+      R.string.questionnaire_alert_back_pressed_message,
+      R.string.questionnaire_alert_back_pressed_title,
+      { finish() },
+      R.string.questionnaire_alert_back_pressed_button_title
+    )
   }
 }

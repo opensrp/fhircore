@@ -1,6 +1,6 @@
 <resources>
     <string name="anc_register_title" translatable="false">ANC</string>
-    <string name="app_name">ANC</string>
+    <string name="app_name">FHIR ANC</string>
     <string name="sync_wait_message">Wait while syncing data</string>
 
     <string name="menu_anc">ANC</string>
@@ -17,7 +17,7 @@
     <string name="family_register_ok_title">Yes</string>
     <string name="family_register_cancel_title">No</string>
 
-    <string name="anc_record_visit_button_title">+ Anc Visit</string>
+    <string name="anc_record_visit_button_title">+ ANC Visit</string>
 
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.anc</string>
     <string name="back_to_anc_clients">Back to ANC Clients</string>
@@ -42,6 +42,23 @@
     <string name="no_care_plan">No care plan</string>
     <string name="no_services_scheduled">No services scheduled</string>
     <string name="family_register_title">Family</string>
+    <string name="mark_as_anc_client">Mark as ANC client</string>
+    <string name="add_vitals">Add Vitals</string>
+    <string name="add_conditions">Add Conditions</string>
+    <string name="bmi_widget">BMI Widget</string>
+    <string name="alergies">Allergies</string>
+    <string name="none">None</string>
+    <string name="health_conditions">Health conditions</string>
+    <string name="vitals_7_12_2021">Vitals (7/12/2021)</string>
+    <string name="bp">BP</string>
+    <string name="pulse">Pulse</string>
+    <string name="bg">BG</string>
+    <string name="height">Height</string>
+    <string name="weight">Weight</string>
+    <string name="sp02">Sp02</string>
+    <string name="new_consultation">New Consultation</string>
+    <string name="select_unit">Select unit</string>
+    <string name="pregnancy_outcome">Pregnancy outcome</string>
     <string name="past_encounters">Past encounters</string>
 
     <string name="all_families">All Families</string>
@@ -52,6 +69,7 @@
     <string name="text_view_evaluate_cql_header">Evaluate</string>
     <string name="button_cql_measure_report">Measure</string>
     <string name="button_cql_evaluate">CQL</string>
-
+    <string name="pregnant_woman">Pregnant woman</string>
+    <string name="add_family">ADD FAMILY</string>
 
 </resources>
