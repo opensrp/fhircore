@@ -361,67 +361,62 @@ class PatientRepository(
     weight: Double? = null,
     computedBMI: Double? = null
   ): Boolean {
-    try {
-      val bmiEncounterData =
-        buildBmiConfigData(
-          patientId = patientId,
-          recordId = formEncounterId,
-          height = height,
-          weight = weight,
-          computedBmi = computedBMI
-        )
-      val bmiEncounter = loadConfig(Template.BMI_ENCOUNTER, Encounter::class.java, bmiEncounterData)
-      fhirEngine.save(bmiEncounter)
+    val bmiEncounterData =
+      buildBmiConfigData(
+        patientId = patientId,
+        recordId = formEncounterId,
+        height = height,
+        weight = weight,
+        computedBmi = computedBMI
+      )
+    val bmiEncounter = loadConfig(Template.BMI_ENCOUNTER, Encounter::class.java, bmiEncounterData)
+    fhirEngine.save(bmiEncounter)
 
-      val bmiWeightObservationRecordId = getUniqueId()
-      val bmiWeightObservationData =
-        buildBmiConfigData(
-          patientId = patientId,
-          recordId = bmiWeightObservationRecordId,
-          bmiEncounter = bmiEncounter,
-          height = height,
-          weight = weight,
-          computedBmi = computedBMI
-        )
-      val bmiWeightObservation =
-        loadConfig(Template.BMI_PATIENT_WEIGHT, Observation::class.java, bmiWeightObservationData)
-      fhirEngine.save(bmiWeightObservation)
+    val bmiWeightObservationRecordId = getUniqueId()
+    val bmiWeightObservationData =
+      buildBmiConfigData(
+        patientId = patientId,
+        recordId = bmiWeightObservationRecordId,
+        bmiEncounter = bmiEncounter,
+        height = height,
+        weight = weight,
+        computedBmi = computedBMI
+      )
+    val bmiWeightObservation =
+      loadConfig(Template.BMI_PATIENT_WEIGHT, Observation::class.java, bmiWeightObservationData)
+    fhirEngine.save(bmiWeightObservation)
 
-      val bmiHeightObservationRecordId = getUniqueId()
-      val bmiHeightObservationData =
-        buildBmiConfigData(
-          patientId = patientId,
-          recordId = bmiHeightObservationRecordId,
-          bmiEncounter = bmiEncounter,
-          height = height,
-          weight = weight,
-          computedBmi = computedBMI,
-          refObsWeightFormId = bmiWeightObservationRecordId
-        )
-      val bmiHeightObservation =
-        loadConfig(Template.BMI_PATIENT_HEIGHT, Observation::class.java, bmiHeightObservationData)
-      fhirEngine.save(bmiHeightObservation)
+    val bmiHeightObservationRecordId = getUniqueId()
+    val bmiHeightObservationData =
+      buildBmiConfigData(
+        patientId = patientId,
+        recordId = bmiHeightObservationRecordId,
+        bmiEncounter = bmiEncounter,
+        height = height,
+        weight = weight,
+        computedBmi = computedBMI,
+        refObsWeightFormId = bmiWeightObservationRecordId
+      )
+    val bmiHeightObservation =
+      loadConfig(Template.BMI_PATIENT_HEIGHT, Observation::class.java, bmiHeightObservationData)
+    fhirEngine.save(bmiHeightObservation)
 
-      val bmiObservationRecordId = getUniqueId()
-      val bmiObservationData =
-        buildBmiConfigData(
-          patientId = patientId,
-          recordId = bmiObservationRecordId,
-          bmiEncounter = bmiEncounter,
-          height = height,
-          weight = weight,
-          computedBmi = computedBMI,
-          refObsWeightFormId = bmiWeightObservationRecordId,
-          refObsHeightFormId = bmiHeightObservationRecordId
-        )
-      val bmiObservation =
-        loadConfig(Template.BMI_PATIENT_BMI, Observation::class.java, bmiObservationData)
-      fhirEngine.save(bmiObservation)
-      return true
-    } catch (e: Exception) {
-      e.printStackTrace()
-      return false
-    }
+    val bmiObservationRecordId = getUniqueId()
+    val bmiObservationData =
+      buildBmiConfigData(
+        patientId = patientId,
+        recordId = bmiObservationRecordId,
+        bmiEncounter = bmiEncounter,
+        height = height,
+        weight = weight,
+        computedBmi = computedBMI,
+        refObsWeightFormId = bmiWeightObservationRecordId,
+        refObsHeightFormId = bmiHeightObservationRecordId
+      )
+    val bmiObservation =
+      loadConfig(Template.BMI_PATIENT_BMI, Observation::class.java, bmiObservationData)
+    fhirEngine.save(bmiObservation)
+    return bmiObservationData.isNotEmpty()
   }
 
   private fun buildBmiConfigData(

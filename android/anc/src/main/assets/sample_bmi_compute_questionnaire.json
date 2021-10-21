@@ -23,8 +23,7 @@
                 "code": "radio-button",
                 "display": "Radio Button"
               }
-            ],
-            "text": "A control where choices are listed with a button beside them. The button can be toggled to select or de-select a given choice. Selecting one item deselects all others."
+            ]
           }
         },
         {

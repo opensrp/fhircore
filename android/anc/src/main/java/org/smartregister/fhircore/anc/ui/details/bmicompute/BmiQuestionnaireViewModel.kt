@@ -131,13 +131,10 @@ class BmiQuestionnaireViewModel(
   }
 
   fun calculateBmi(height: Double, weight: Double, isUnitModeMetric: Boolean): Double {
-    return try {
-      if (isUnitModeMetric) computeBMIViaMetricUnits(heightInMeters = height, weightInKgs = weight)
-      else computeBMIViaStandardUnits(heightInInches = height, weightInPounds = weight)
-    } catch (e: Exception) {
-      e.printStackTrace()
-      -1.0
-    }
+    return if (height <= 0 || weight <= 0) -1.0
+    else if (isUnitModeMetric)
+      computeBMIViaMetricUnits(heightInMeters = height, weightInKgs = weight)
+    else computeBMIViaStandardUnits(heightInInches = height, weightInPounds = weight)
   }
 
   fun getBmiResult(computedBMI: Double, activityContext: Context): SpannableString {
@@ -162,16 +159,14 @@ class BmiQuestionnaireViewModel(
   }
 
   private fun getBmiCategories(activityContext: Context): String {
-    return "\n\n" +
-      activityContext.getString(R.string.bmi_categories_label) +
-      "\n" +
-      activityContext.getString(R.string.bmi_category_underweight) +
-      "\n" +
-      activityContext.getString(R.string.bmi_category_normal) +
-      "\n" +
-      activityContext.getString(R.string.bmi_category_overweight) +
-      "\n" +
+    return activityContext.getString(
+      R.string.bmi_categories_text,
+      activityContext.getString(R.string.bmi_categories_label),
+      activityContext.getString(R.string.bmi_category_underweight),
+      activityContext.getString(R.string.bmi_category_normal),
+      activityContext.getString(R.string.bmi_category_overweight),
       activityContext.getString(R.string.bmi_category_obesity)
+    )
   }
 
   private fun getBmiResultCategoryIndex(computedBmi: Double): BmiCategory {
@@ -183,25 +178,38 @@ class BmiQuestionnaireViewModel(
     }
   }
 
-  private fun getActivityContextStringForBmiCategory(
-    bmiCategory: BmiCategory,
-    activityContext: Context
-  ): String {
-    return activityContext.getString(bmiCategory.value)
+  private fun getStartingIndexInCategories(index: BmiCategory, activityContext: Context): Int {
+    return when (index) {
+      BmiCategory.UNDERWEIGHT ->
+        getBmiCategories(activityContext)
+          .indexOf(activityContext.getString(R.string.bmi_category_underweight))
+      BmiCategory.NORMAL ->
+        getBmiCategories(activityContext)
+          .indexOf(activityContext.getString(R.string.bmi_category_normal))
+      BmiCategory.OVERWEIGHT ->
+        getBmiCategories(activityContext)
+          .indexOf(activityContext.getString(R.string.bmi_category_overweight))
+      else ->
+        getBmiCategories(activityContext)
+          .indexOf(activityContext.getString(R.string.bmi_category_obesity))
+    }
   }
 
-  private fun getStartingIndexInCategories(
-    bmiCategory: BmiCategory,
-    activityContext: Context
-  ): Int {
-    return getBmiCategories(activityContext)
-      .indexOf(getActivityContextStringForBmiCategory(bmiCategory, activityContext))
-  }
-
-  private fun getEndingIndexInCategories(bmiCategory: BmiCategory, activityContext: Context): Int {
-    return getStartingIndexInCategories(bmiCategory, activityContext) +
-      getBmiCategories(activityContext)
-        .indexOf(getActivityContextStringForBmiCategory(bmiCategory, activityContext))
+  private fun getEndingIndexInCategories(index: BmiCategory, activityContext: Context): Int {
+    return when (index) {
+      BmiCategory.UNDERWEIGHT ->
+        getStartingIndexInCategories(BmiCategory.UNDERWEIGHT, activityContext) +
+          activityContext.getString(R.string.bmi_category_underweight).length
+      BmiCategory.NORMAL ->
+        getStartingIndexInCategories(BmiCategory.NORMAL, activityContext) +
+          activityContext.getString(R.string.bmi_category_normal).length
+      BmiCategory.OVERWEIGHT ->
+        getStartingIndexInCategories(BmiCategory.OVERWEIGHT, activityContext) +
+          activityContext.getString(R.string.bmi_category_overweight).length
+      else ->
+        getStartingIndexInCategories(BmiCategory.OBESITY, activityContext) +
+          activityContext.getString(R.string.bmi_category_obesity).length
+    }
   }
 
   suspend fun saveComputedBmi(

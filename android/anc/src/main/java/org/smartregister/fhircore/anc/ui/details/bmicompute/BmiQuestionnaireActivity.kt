@@ -63,6 +63,7 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
         val height = bmiQuestionnaireViewModel.getHeightAsPerSiUnit(inputHeight, isUnitModeMetric)
         val weight = bmiQuestionnaireViewModel.getWeightAsPerSiUnit(inputWeight, isUnitModeMetric)
         showBmiDataAlert(questionnaireResponse, patientId, height, weight, computedBMI)
+        // questionnaireViewModel.extractionProgress.postValue(false)
       }
     }
   }
@@ -72,8 +73,15 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
       .setTitle(title)
       .setMessage(message)
       .setCancelable(true)
-      .setPositiveButton("OK") { dialogInterface, _ -> dialogInterface.dismiss() }
+      .setPositiveButton("OK") { dialogInterface, _ ->
+        dialogInterface.dismiss()
+        resumeForm()
+      }
       .show()
+  }
+
+  private fun resumeForm() {
+    this.onResume()
   }
 
   private fun exitForm() {
@@ -92,7 +100,10 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
       .setTitle(getString(R.string.your_bmi) + " $computedBMI")
       .setMessage(message)
       .setCancelable(false)
-      .setNegativeButton(R.string.re_compute) { dialogInterface, _ -> dialogInterface.dismiss() }
+      .setNegativeButton(R.string.re_compute) { dialogInterface, _ ->
+        dialogInterface.dismiss()
+        resumeForm() // dismissSaveProcessing()
+      }
       .setPositiveButton(R.string.str_save) { dialogInterface, _ ->
         dialogInterface.dismiss()
         proceedRecordBMI(questionnaireResponse, patientId, height, weight, computedBMI)
