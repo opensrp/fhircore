@@ -177,36 +177,13 @@ class BmiQuestionnaireViewModel(
     }
   }
 
-  fun getStartingIndexInCategories(index: BmiCategory): Int {
-    return when (index) {
-      BmiCategory.UNDERWEIGHT ->
-        getBmiCategories()
-          .indexOf(application.baseContext.getString(R.string.bmi_category_underweight))
-      BmiCategory.NORMAL ->
-        getBmiCategories().indexOf(application.baseContext.getString(R.string.bmi_category_normal))
-      BmiCategory.OVERWEIGHT ->
-        getBmiCategories()
-          .indexOf(application.baseContext.getString(R.string.bmi_category_overweight))
-      else ->
-        getBmiCategories().indexOf(application.baseContext.getString(R.string.bmi_category_obesity))
-    }
+  fun getStartingIndexInCategories(bmiCategory: BmiCategory): Int {
+    return getBmiCategories().indexOf(application.baseContext.getString(bmiCategory.value))
   }
 
-  fun getEndingIndexInCategories(index: BmiCategory): Int {
-    return when (index) {
-      BmiCategory.UNDERWEIGHT ->
-        getStartingIndexInCategories(BmiCategory.UNDERWEIGHT) +
-          application.baseContext.getString(R.string.bmi_category_underweight).length
-      BmiCategory.NORMAL ->
-        getStartingIndexInCategories(BmiCategory.NORMAL) +
-          application.baseContext.getString(R.string.bmi_category_normal).length
-      BmiCategory.OVERWEIGHT ->
-        getStartingIndexInCategories(BmiCategory.OVERWEIGHT) +
-          application.baseContext.getString(R.string.bmi_category_overweight).length
-      else ->
-        getStartingIndexInCategories(BmiCategory.OBESITY) +
-          application.baseContext.getString(R.string.bmi_category_obesity).length
-    }
+  fun getEndingIndexInCategories(bmiCategory: BmiCategory): Int {
+    return getStartingIndexInCategories(bmiCategory) +
+      application.baseContext.getString(bmiCategory.value).length
   }
 
   suspend fun saveComputedBmi(
@@ -227,49 +204,5 @@ class BmiQuestionnaireViewModel(
       weight,
       computedBMI
     )
-  }
-
-  // below function isn't working,
-  // TODO: need to replace above 2 functions getStarting/EndingIndex....
-  fun getStringIndexInCategories(index: BmiCategory, isForStartingIndex: Boolean): Int {
-    return when (index) {
-      BmiCategory.UNDERWEIGHT ->
-        if (isForStartingIndex) {
-          getBmiCategories()
-            .indexOf(application.baseContext.getString(R.string.bmi_category_underweight))
-        } else {
-          getBmiCategories()
-            .indexOf(application.baseContext.getString(R.string.bmi_category_underweight))
-          +application.baseContext.getString(R.string.bmi_category_underweight).length
-        }
-      BmiCategory.NORMAL ->
-        if (isForStartingIndex) {
-          getBmiCategories()
-            .indexOf(application.baseContext.getString(R.string.bmi_category_normal))
-        } else {
-          getBmiCategories()
-            .indexOf(application.baseContext.getString(R.string.bmi_category_normal))
-          +application.baseContext.getString(R.string.bmi_category_normal).length
-        }
-      BmiCategory.OVERWEIGHT ->
-        if (isForStartingIndex) {
-          getBmiCategories()
-            .indexOf(application.baseContext.getString(R.string.bmi_category_overweight))
-        } else {
-          getBmiCategories()
-            .indexOf(application.baseContext.getString(R.string.bmi_category_overweight))
-          +application.baseContext.getString(R.string.bmi_category_overweight).length
-        }
-      else ->
-        if (isForStartingIndex) {
-          getBmiCategories()
-            .indexOf(application.baseContext.getString(R.string.bmi_category_obesity))
-        } else {
-          getBmiCategories()
-            .indexOf(application.baseContext.getString(R.string.bmi_category_obesity))
-          +application.baseContext.getString(R.string.bmi_category_obesity).length
-        }
-    }
-    // Log.e("aw", "category index $resultStringIndex - isForStartingIndex = $isForStartingIndex")
   }
 }
