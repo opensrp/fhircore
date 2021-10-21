@@ -20,8 +20,11 @@
 
     <data>
         <variable
+            name="vaccine"
+            type="String" />
+        <variable
             name="immunizationItem"
-            type="org.smartregister.fhircore.eir.ui.patient.details.ImmunizationAdverseEventItem" />
+            type="org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem" />
     </data>
 
     <LinearLayout
@@ -42,6 +45,7 @@
             android:layout_marginEnd="@dimen/text_margin"
             android:layout_weight="3"
             android:paddingBottom="8dp"
+            android:text="@{immunizationItem.date}"
             android:textColor="@color/black"
             android:textSize="18sp"
             android:layout_gravity="center"
@@ -63,6 +67,7 @@
                 android:layout_marginEnd="@dimen/text_margin"
                 android:paddingBottom="8dp"
                 android:textColor="@color/black"
+                android:text="@{immunizationItem.detail}"
                 android:textStyle="bold"
                 android:textSize="18sp"
                 app:layout_constraintStart_toStartOf="parent"
@@ -78,7 +83,7 @@
                 android:paddingBottom="8dp"
                 android:textColor="@color/black"
                 android:textSize="18sp"
-                android:text="@{immunizationItem.vaccine}"
+                android:text="@{vaccine}"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="Moderna Dose 1" />

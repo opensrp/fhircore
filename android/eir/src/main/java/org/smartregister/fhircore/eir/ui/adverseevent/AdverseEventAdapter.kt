@@ -24,33 +24,17 @@ import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.fhircore.eir.databinding.AdverseEventListItemBinding
 import org.smartregister.fhircore.eir.ui.adverseevent.AdverseEventAdapter.AdverseEventViewHolder
 import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
-import org.smartregister.fhircore.eir.ui.patient.details.ImmunizationAdverseEventItem
 
-class AdverseEventAdapter :
-  ListAdapter<ImmunizationAdverseEventItem, AdverseEventViewHolder>(AdverseEventItemDiffCallback) {
+class AdverseEventAdapter(val vaccine: String) :
+  ListAdapter<AdverseEventItem, AdverseEventViewHolder>(AdverseEventItemDiffCallback) {
 
   inner class AdverseEventViewHolder(private val binding: AdverseEventListItemBinding) :
     RecyclerView.ViewHolder(binding.root) {
-    fun bindTo(immunizationAdverseEventItem: ImmunizationAdverseEventItem) {
+    fun bindTo(immunizationAdverseEventItem: AdverseEventItem) {
       with(immunizationAdverseEventItem) {
         binding.root.tag = this
+        binding.vaccine = vaccine
         binding.immunizationItem = immunizationAdverseEventItem
-        addVaccineAdverseEventViews(
-          binding = binding,
-          immunizationAdverseEventItem.dosesWithAdverseEvents
-        )
-      }
-    }
-  }
-
-  private fun addVaccineAdverseEventViews(
-    binding: AdverseEventListItemBinding,
-    dosesWithAdverseEvents: List<Pair<String, List<AdverseEventItem>>>
-  ) {
-    dosesWithAdverseEvents.forEach { dosesWithAdverseEvents ->
-      dosesWithAdverseEvents.second.forEach { adverseEventReactionItem ->
-        binding.txtViewAdverseEventDate.text = adverseEventReactionItem.date
-        binding.txtViewAdverseEventName.text = adverseEventReactionItem.detail
       }
     }
   }
@@ -65,15 +49,11 @@ class AdverseEventAdapter :
     holder.bindTo(getItem(position))
   }
 
-  object AdverseEventItemDiffCallback : DiffUtil.ItemCallback<ImmunizationAdverseEventItem>() {
-    override fun areItemsTheSame(
-      oldItem: ImmunizationAdverseEventItem,
-      newItem: ImmunizationAdverseEventItem
-    ) = oldItem.vaccine == newItem.vaccine
+  object AdverseEventItemDiffCallback : DiffUtil.ItemCallback<AdverseEventItem>() {
+    override fun areItemsTheSame(oldItem: AdverseEventItem, newItem: AdverseEventItem) =
+      oldItem.date == newItem.date
 
-    override fun areContentsTheSame(
-      oldItem: ImmunizationAdverseEventItem,
-      newItem: ImmunizationAdverseEventItem
-    ) = oldItem == newItem
+    override fun areContentsTheSame(oldItem: AdverseEventItem, newItem: AdverseEventItem) =
+      oldItem == newItem
   }
 }
