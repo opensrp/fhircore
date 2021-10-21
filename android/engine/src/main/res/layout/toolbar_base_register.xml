@@ -12,9 +12,8 @@
             android:id="@+id/top_toolbar_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginVertical="8dp"
+            android:layout_marginVertical="12dp"
             android:visibility="gone">
-
             <TextView
                 android:id="@+id/register_filter_textview"
                 android:layout_width="wrap_content"
@@ -44,7 +43,7 @@
             android:id="@+id/middle_toolbar_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginVertical="8dp"
+            android:layout_marginVertical="12dp"
             android:layout_marginStart="5dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">

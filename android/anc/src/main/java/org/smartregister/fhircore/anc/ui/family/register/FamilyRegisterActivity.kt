@@ -77,6 +77,11 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_home)!!
       ),
       NavigationMenuOption(
+        id = R.id.menu_item_tasks,
+        title = getString(R.string.tasks),
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_tasks)!!
+      ),
+      NavigationMenuOption(
         id = R.id.menu_item_reports,
         title = getString(R.string.reports),
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_reports)!!

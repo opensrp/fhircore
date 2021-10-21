@@ -30,6 +30,7 @@ class RegisterPagerAdapter(
 ) : FragmentStateAdapter(activity) {
 
   override fun getItemCount() = supportedFragments.size
+
   override fun createFragment(position: Int): Fragment {
     if (supportedFragments.isEmpty())
       throw IllegalAccessException(

@@ -87,8 +87,9 @@ const val LOGIN_FOOTER = "loginFooter"
 @Composable
 fun LoginScreen(loginViewModel: LoginViewModel) {
 
-  val viewConfiguration by
-    loginViewModel.loginViewConfiguration.observeAsState(loginViewConfigurationOf())
+  val viewConfiguration by loginViewModel.loginViewConfiguration.observeAsState(
+    loginViewConfigurationOf()
+  )
   val username by loginViewModel.username.observeAsState("")
   val password by loginViewModel.password.observeAsState("")
   val loginError by loginViewModel.loginError.observeAsState("")
