@@ -183,14 +183,15 @@ class AncDetailsViewModel(
     var libList = libStrAfterEquals.split(",").map { it.trim() }
 
     var libURLStrBeforeEquals = libAndValueSetURL.substring(0, equalsIndexUrl) + "="
-    var initialStr = cqlMeasureReportLibInitialString
+    var initialStr = StringBuilder(cqlMeasureReportLibInitialString)
+
     viewModelScope.launch(dispatcher.io()) {
       val measureObject =
         parser.encodeResourceToString(fhirResourceDataSource.loadData(measureURL).entry[0].resource)
       var jsonObjectResource = JSONObject()
       var jsonObjectResourceType = JSONObject(measureObject)
       jsonObjectResource.put("resource", jsonObjectResourceType)
-      initialStr += jsonObjectResource
+      initialStr.append(jsonObjectResource)
 
       for (lib in libList) {
         val auxCQLValueSetData =
@@ -200,13 +201,12 @@ class AncDetailsViewModel(
         var jsonObjectResource = JSONObject()
         var jsonObjectResourceType = JSONObject(auxCQLValueSetData)
         jsonObjectResource.put("resource", jsonObjectResourceType)
-
-        initialStr = "$initialStr,$jsonObjectResource"
+        initialStr.append(",")
+        initialStr.append(jsonObjectResource)
       }
-      var sb = StringBuffer(initialStr)
-      sb.deleteCharAt(sb.length - 1)
-      sb.append("}]}")
-      valueSetData.postValue(sb.toString())
+      initialStr.deleteCharAt(initialStr.length - 1)
+      initialStr.append("}]}")
+      valueSetData.postValue(initialStr.toString())
     }
     return valueSetData
   }
