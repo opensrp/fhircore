@@ -21,6 +21,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
+import androidx.appcompat.app.AlertDialog
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
@@ -34,6 +35,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.hideProgressAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showErrorAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
@@ -165,13 +167,19 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     return questionnaireFragment.getQuestionnaireResponse()
   }
 
+  fun dismissSaveProcessing() {
+    hideProgressAlert(saveProcessingAlertDialog)
+  }
+
+  private lateinit var saveProcessingAlertDialog: AlertDialog
+
   open fun handleQuestionnaireSubmit() {
-    val progressAlert = showProgressAlert(this, R.string.saving_registration)
+    saveProcessingAlertDialog = showProgressAlert(this, R.string.saving_registration)
 
     val questionnaireResponse = getQuestionnaireResponse()
 
     if (!validQuestionnaireResponse(questionnaireResponse)) {
-      progressAlert.dismiss()
+      saveProcessingAlertDialog.dismiss()
 
       showErrorAlert(
         this,
@@ -191,7 +199,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         } else {
           Timber.e("An error occurred during extraction")
         }
-        progressAlert.dismiss()
+
+        saveProcessingAlertDialog.dismiss()
       }
     )
   }
