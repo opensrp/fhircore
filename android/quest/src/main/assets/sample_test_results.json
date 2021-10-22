@@ -71,7 +71,6 @@
       "linkId": "haemoglobin_level",
       "type": "choice",
       "text": "Hemoglobin Levels",
-      "required": true,
       "code": [
         {
           "system": "https://www.snomed.org",
