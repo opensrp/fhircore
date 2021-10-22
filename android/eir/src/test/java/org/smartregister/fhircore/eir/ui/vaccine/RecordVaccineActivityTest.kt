@@ -113,7 +113,6 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
           }
       }
 
-    Assert.assertNull(ShadowAlertDialog.getLatestAlertDialog())
     recordVaccineActivity.handleQuestionnaireResponse(mockk())
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
