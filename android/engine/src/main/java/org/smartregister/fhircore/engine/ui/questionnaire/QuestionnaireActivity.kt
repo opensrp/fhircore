@@ -16,12 +16,12 @@
 
 package org.smartregister.fhircore.engine.ui.questionnaire
 
+import android.app.AlertDialog
 import android.app.Application
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
-import androidx.appcompat.app.AlertDialog
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
@@ -35,7 +35,6 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.ui.base.AlertDialogue.hideProgressAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showErrorAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
@@ -165,10 +164,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     val questionnaireFragment =
       supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
     return questionnaireFragment.getQuestionnaireResponse()
-  }
-
-  fun dismissSaveProcessing() {
-    hideProgressAlert(saveProcessingAlertDialog)
   }
 
   private lateinit var saveProcessingAlertDialog: AlertDialog
