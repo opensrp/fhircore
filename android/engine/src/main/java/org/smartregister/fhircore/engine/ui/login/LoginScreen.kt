@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.login
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
@@ -29,6 +30,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
@@ -58,6 +60,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -143,17 +146,17 @@ fun LoginPage(
         onDismissDialog = { showForgotPasswordDialog = false }
       )
     }
-    Column(modifier = modifier.padding(horizontal = 16.dp)) {
+    Column(
+      modifier = modifier.padding(horizontal = 16.dp),
+      verticalArrangement = Arrangement.SpaceAround
+    ) {
       Icon(
         imageVector = Icons.Outlined.MoreVert,
         contentDescription = stringResource(R.string.more),
         tint = contentColor,
         modifier = modifier.size(48.dp).padding(vertical = 8.dp).align(Alignment.End)
       )
-      Column(
-        modifier = modifier.fillMaxSize().padding(4.dp),
-        verticalArrangement = Arrangement.Center
-      ) {
+      Column(modifier = modifier.padding(4.dp), verticalArrangement = Arrangement.Center) {
         // TODO Add configurable logo. Images to be downloaded from server
         Text(
           color = if (viewConfiguration.darkMode) Color.White else LoginDarkColor,
@@ -272,17 +275,27 @@ fun LoginPage(
       }
       Row(
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
+        modifier = modifier.fillMaxWidth().padding(vertical = 4.dp),
         verticalAlignment = Alignment.Bottom
       ) {
         Column {
           Text(
             color = contentColor,
-            fontSize = 16.sp,
-            text = stringResource(id = R.string.app_version, viewConfiguration.applicationVersion),
-            modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER)
+            text = stringResource(id = R.string.powered_by),
+            modifier = modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.Start)
+          )
+          Image(
+            painter = painterResource(id = R.drawable.ic_opensrp_logo),
+            contentDescription = stringResource(id = R.string.app_logo),
+            modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(40.dp)
           )
         }
+        Text(
+          color = contentColor,
+          fontSize = 16.sp,
+          text = stringResource(id = R.string.app_version, viewConfiguration.applicationVersion),
+          modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER)
+        )
       }
     }
   }
