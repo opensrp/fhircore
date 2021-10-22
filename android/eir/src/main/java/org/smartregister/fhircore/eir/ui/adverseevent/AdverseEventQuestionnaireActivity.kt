@@ -102,6 +102,15 @@ class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
     }
   }
 
+  private fun showDialog(): AlertDialog {
+    return AlertDialog.Builder(this)
+      .setTitle(getString(R.string.error_reading_immunization_details))
+      .setMessage(getString(R.string.kindly_retry_contact_devs_problem_persists))
+      .setPositiveButton(android.R.string.ok) { dialogInterface, _ -> dialogInterface.dismiss() }
+      .setCancelable(true)
+      .show()
+  }
+
   private fun handleExtractionError() {
     AlertDialog.Builder(this)
       .setTitle(getString(R.string.error_reading_immunization_details))

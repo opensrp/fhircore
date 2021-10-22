@@ -33,10 +33,10 @@ class MainAdverseEventAdapter :
 
   inner class MainAdverseEventViewHolder(private val binding: ItemAdverseEventMainBinding) :
     RecyclerView.ViewHolder(binding.root) {
-    fun bindTo(immunizationAdverseEventItem: ImmunizationAdverseEventItem) {
+    fun bindTo(immunizationAdverseEventItem: ImmunizationAdverseEventItem, position: Int) {
       with(immunizationAdverseEventItem) {
         binding.root.tag = this
-        val childMembersAdapter = AdverseEventAdapter(immunizationAdverseEventItem.vaccine, getAdverseEventDoseNumber(immunizationAdverseEventItem.dosesWithAdverseEvents))
+        val childMembersAdapter = AdverseEventAdapter(immunizationAdverseEventItem.vaccine, getAdverseEventDoseNumber(immunizationAdverseEventItem.dosesWithAdverseEvents)[position])
         childMembersAdapter.submitList(
           getAdverseEvent(immunizationAdverseEventItem.dosesWithAdverseEvents)
         )
@@ -78,7 +78,7 @@ class MainAdverseEventAdapter :
   }
 
   override fun onBindViewHolder(holder: MainAdverseEventViewHolder, position: Int) {
-    holder.bindTo(getItem(position))
+    holder.bindTo(getItem(position),position)
   }
 
   object AdverseEventItemDiffCallback : DiffUtil.ItemCallback<ImmunizationAdverseEventItem>() {
