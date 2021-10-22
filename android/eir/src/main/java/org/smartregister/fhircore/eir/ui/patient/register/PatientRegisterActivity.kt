@@ -44,13 +44,15 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         itemId = R.id.menu_item_covax,
         titleResource = R.string.client_list_title_covax,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
-        opensMainRegister = true,
       )
     )
+
+  override fun mainFragmentTag() = PatientRegisterFragment.TAG
 
   override fun onMenuOptionSelected(item: MenuItem): Boolean {
     return true
   }
 
-  override fun supportedFragments(): List<Fragment> = listOf(PatientRegisterFragment())
+  override fun supportedFragments(): Map<String, Fragment> =
+    mapOf(Pair(PatientRegisterFragment.TAG, PatientRegisterFragment()))
 }

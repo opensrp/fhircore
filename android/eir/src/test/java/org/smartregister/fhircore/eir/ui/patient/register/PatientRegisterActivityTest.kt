@@ -59,7 +59,6 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
     with(menu.first()) {
       Assert.assertEquals(R.id.menu_item_covax, itemId)
       Assert.assertEquals(R.string.client_list_title_covax, titleResource)
-      Assert.assertTrue(opensMainRegister)
       Assert.assertEquals(
         shadowOf(ContextCompat.getDrawable(patientRegisterActivity, R.drawable.ic_baby_mother))
           .createdFromResId,
@@ -93,10 +92,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
     val fragments = patientRegisterActivity.supportedFragments()
 
     Assert.assertEquals(1, fragments.size)
-    Assert.assertEquals(
-      PatientRegisterFragment::class.java.simpleName,
-      fragments.first().javaClass.simpleName
-    )
+    Assert.assertTrue(fragments.containsKey(PatientRegisterFragment.TAG))
   }
 
   override fun getActivity(): Activity {

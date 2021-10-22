@@ -16,9 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.family.register
 
-import android.content.Intent
 import android.os.Bundle
-import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import org.smartregister.fhircore.anc.AncApplication
@@ -26,15 +24,18 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
-import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterActivity
+import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.util.getFamilyQuestionnaireIntent
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
+import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 
 class FamilyRegisterActivity : BaseRegisterActivity() {
+
   private lateinit var familyRepository: FamilyRepository
+
   private lateinit var patientRepository: PatientRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,19 +56,15 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
     patientRepository = PatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
   }
 
-  override fun onMenuOptionSelected(item: MenuItem): Boolean {
-    when (item.itemId) {
-      R.id.menu_item_family -> startActivity(Intent(this, FamilyRegisterActivity::class.java))
-      R.id.menu_item_anc -> startActivity(Intent(this, AncRegisterActivity::class.java))
-    }
-    return true
-  }
-
   override fun registerClient() {
     startActivity(getFamilyQuestionnaireIntent(form = FamilyFormConstants.FAMILY_REGISTER_FORM))
   }
 
-  override fun supportedFragments(): List<Fragment> = listOf(FamilyRegisterFragment())
+  override fun supportedFragments(): Map<String, Fragment> =
+    mapOf(
+      Pair(FamilyRegisterFragment.TAG, FamilyRegisterFragment()),
+      Pair(AncRegisterFragment.TAG, AncRegisterFragment()),
+    )
 
   override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> =
     listOf(
@@ -92,4 +89,20 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_user)!!
       )
     )
+
+  override fun registersList() =
+    listOf(
+      RegisterItem(
+        uniqueTag = FamilyRegisterFragment.TAG,
+        title = getString(R.string.families),
+        isSelected = true
+      ),
+      RegisterItem(
+        uniqueTag = AncRegisterFragment.TAG,
+        title = getString(R.string.anc_clients),
+        isSelected = false
+      )
+    )
+
+  override fun mainFragmentTag() = FamilyRegisterFragment.TAG
 }

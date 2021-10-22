@@ -59,7 +59,8 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     return true
   }
 
-  override fun supportedFragments(): List<Fragment> {
-    return listOf(PatientRegisterFragment())
-  }
+  override fun mainFragmentTag() = PatientRegisterFragment.TAG
+
+  override fun supportedFragments(): Map<String, Fragment> =
+    mapOf(Pair(PatientRegisterFragment.TAG, PatientRegisterFragment()))
 }

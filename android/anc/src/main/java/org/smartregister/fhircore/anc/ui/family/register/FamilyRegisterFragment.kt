@@ -87,7 +87,7 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
         FamilyItemMapper
       )
     return ViewModelProvider(
-      requireActivity(),
+      viewModelStore,
       RegisterDataViewModel(
           application = requireActivity().application,
           registerRepository = familyRepository
@@ -95,5 +95,9 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
         .createFactory()
     )[RegisterDataViewModel::class.java] as
       RegisterDataViewModel<Family, FamilyItem>
+  }
+
+  companion object {
+    const val TAG = "FamilyRegisterFragment"
   }
 }

@@ -71,4 +71,7 @@
     <string name="button_cql_evaluate">CQL</string>
     <string name="pregnant_woman">Pregnant woman</string>
     <string name="add_family">ADD FAMILY</string>
+
+    <string name="families">Families</string>
+    <string name="anc_clients">ANC Clients</string>
 </resources>

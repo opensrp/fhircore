@@ -70,4 +70,6 @@
     <string name="tasks">Tasks</string>
     <string name="reports">Reports</string>
     <string name="profile">Profile</string>
+    <string name="select_register">Select register</string>
+    <string name="tick">Tick</string>
 </resources>

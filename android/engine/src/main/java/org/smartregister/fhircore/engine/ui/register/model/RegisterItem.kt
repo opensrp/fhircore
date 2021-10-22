@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.family.register
+package org.smartregister.fhircore.engine.ui.register.model
 
-import org.smartregister.fhircore.engine.util.ListenerIntent
+import androidx.compose.runtime.Stable
 
-/** [ListenerIntent] used on individual rows click listeners for family register. */
-sealed class FamilyListenerIntent : ListenerIntent
-
-object OpenFamilyProfile : FamilyListenerIntent()
+@Stable
+/**
+ * @property uniqueTag Unique identifier for the register. Typically the fragment TAG
+ * @property title Name of the register
+ * @property isSelected Flag indicating whether the register is currently opened
+ */
+data class RegisterItem(val uniqueTag: String, val title: String, var isSelected: Boolean = false)

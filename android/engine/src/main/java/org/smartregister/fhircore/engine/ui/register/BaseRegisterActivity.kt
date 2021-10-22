@@ -36,6 +36,7 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.FhirEngine
@@ -56,10 +57,12 @@ import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncInitiator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.ui.navigation.NavigationBottomSheet
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
+import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.util.DateUtils
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
@@ -91,21 +94,23 @@ abstract class BaseRegisterActivity :
 
   override val configurableViews: Map<String, View> = mutableMapOf()
 
-  private var mainRegisterSideMenuOption: SideMenuOption? = null
-
   private var selectedMenuOption: SideMenuOption? = null
 
   private lateinit var sideMenuOptionMap: Map<Int, SideMenuOption>
 
-  private lateinit var registerPagerAdapter: RegisterPagerAdapter
-
   protected lateinit var fhirEngine: FhirEngine
+
+  protected lateinit var navigationBottomSheet: NavigationBottomSheet
+
+  private lateinit var registerFragments: Map<String, Fragment>
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     application.assertIsConfigurable()
     val syncBroadcaster = (application as ConfigurableApplication).syncBroadcaster
     syncBroadcaster.registerSyncListener(this)
+
+    registerFragments = supportedFragments()
 
     registerViewModel =
       ViewModelProvider(
@@ -144,6 +149,8 @@ abstract class BaseRegisterActivity :
     registerActivityBinding.lifecycleOwner = this
 
     fhirEngine = (application as ConfigurableApplication).fhirEngine
+
+    navigationBottomSheet = NavigationBottomSheet.getInstance(this::onSelectRegister)
   }
 
   override fun onResume() {
@@ -191,17 +198,13 @@ abstract class BaseRegisterActivity :
   }
 
   private fun setUpViews() {
-    setupDrawer(registerViewModel.registerViewConfiguration.value!!)
+    setupNavigation(registerViewModel.registerViewConfiguration.value!!)
 
     with(registerActivityBinding) {
       toolbarLayout.btnDrawerMenu.setOnClickListener { manipulateDrawer(open = true) }
       btnRegisterNewClient.setOnClickListener { registerClient() }
       containerProgressSync.setOnClickListener { syncButtonClick() }
     }
-
-    // Setup view pager
-    registerPagerAdapter = RegisterPagerAdapter(this, supportedFragments = supportedFragments())
-    registerActivityBinding.listPager.adapter = registerPagerAdapter
 
     setupNewClientButtonView(registerViewModel.registerViewConfiguration.value!!)
 
@@ -210,6 +213,8 @@ abstract class BaseRegisterActivity :
     setupSearchView()
 
     setupDueButtonView()
+
+    switchFragment(mainFragmentTag())
   }
 
   private fun syncButtonClick() {
@@ -306,13 +311,19 @@ abstract class BaseRegisterActivity :
     }
   }
 
-  private fun setupDrawer(viewConfiguration: RegisterViewConfiguration) {
+  private fun setupNavigation(viewConfiguration: RegisterViewConfiguration) {
     if (!viewConfiguration.showSideMenu) {
       with(registerActivityBinding) {
-        toolbarLayout.btnDrawerMenu.hide(true)
         drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-        toolbarLayout.topToolbarSection.toggleVisibility(!viewConfiguration.showSideMenu)
-        toolbarLayout.middleToolbarSection.toggleVisibility(viewConfiguration.showSideMenu)
+        toolbarLayout.apply {
+          btnDrawerMenu.hide(true)
+          topToolbarSection.toggleVisibility(!viewConfiguration.showSideMenu)
+          middleToolbarSection.toggleVisibility(viewConfiguration.showSideMenu)
+          registerFilterTextview.setOnClickListener {
+            supportFragmentManager.commit { remove(navigationBottomSheet) }
+            navigationBottomSheet.show(supportFragmentManager, NavigationBottomSheet.TAG)
+          }
+        }
       }
     }
 
@@ -337,9 +348,6 @@ abstract class BaseRegisterActivity :
 
   private fun setupSideMenu() {
     sideMenuOptionMap = sideMenuOptions().associateBy { it.itemId }
-    sideMenuOptionMap.values.firstOrNull { it.opensMainRegister }?.let {
-      selectedMenuOption = sideMenuOptionMap.values.elementAt(0)
-    }
 
     val menu = registerActivityBinding.navView.menu
 
@@ -349,10 +357,6 @@ abstract class BaseRegisterActivity :
           icon = menuOption.iconResource
           actionView = layoutInflater.inflate(R.layout.drawable_menu_item_layout, null, false)
         }
-      if (menuOption.opensMainRegister) {
-        mainRegisterSideMenuOption = sideMenuOptionMap[menuOption.itemId]
-        selectedMenuOption = mainRegisterSideMenuOption
-      }
     }
 
     // Add language and logout menu items
@@ -447,10 +451,6 @@ abstract class BaseRegisterActivity :
     updateRegisterTitle()
 
     when (item.itemId) {
-      mainRegisterSideMenuOption?.itemId -> {
-        registerActivityBinding.listPager.currentItem = 0
-        manipulateDrawer(open = false)
-      }
       R.id.menu_item_language -> renderSelectLanguageDialog(this)
       R.id.menu_item_logout -> {
         configurableApplication().authenticationService.logout()
@@ -509,8 +509,25 @@ abstract class BaseRegisterActivity :
     }
   }
 
-  fun findSideMenuItem(@IdRes id: Int): MenuItem? {
-    return registerActivityBinding.navView.menu.findItem(id)
+  fun findSideMenuItem(@IdRes id: Int): MenuItem? =
+    registerActivityBinding.navView.menu.findItem(id)
+
+  private fun switchFragment(tag: String) {
+    registerActivityBinding.btnRegisterNewClient.toggleVisibility(tag == mainFragmentTag())
+    if (registerFragments.isEmpty() && !registerFragments.containsKey(tag)) {
+      throw IllegalAccessException("No fragment exists with the tag $tag")
+    }
+    navigationBottomSheet.registersList =
+      registersList().onEach { registerItem ->
+        registerItem.isSelected = false
+        if (registerItem.uniqueTag.equals(tag, true)) {
+          registerItem.isSelected = true
+          registerActivityBinding.toolbarLayout.registerFilterTextview.text = registerItem.title
+        }
+      }
+    supportFragmentManager.commit {
+      replace(R.id.register_content, registerFragments.getValue(tag), tag)
+    }
   }
 
   /** List of [SideMenuOption] representing individual menu items listed in the DrawerLayout */
@@ -524,11 +541,19 @@ abstract class BaseRegisterActivity :
   }
 
   /**
+   * Override this method to provide a pair of register fragment tag plus their title This MUST be
+   * implemented when bottom navigation is used.
+   */
+  open fun registersList(): List<RegisterItem> {
+    return emptyList()
+  }
+
+  /**
    * Abstract method to be implemented by the subclass to provide actions for the menu [item]
    * options. Refer to the selected menu item using the view tag that was set by [sideMenuOptions]
    * or [bottomNavigationMenuOptions]
    */
-  abstract fun onMenuOptionSelected(item: MenuItem): Boolean
+  open fun onMenuOptionSelected(item: MenuItem): Boolean = true
 
   protected open fun registerClient() {
     startActivity(
@@ -543,11 +568,23 @@ abstract class BaseRegisterActivity :
   }
 
   /**
-   * Implement this method to provide the view pager with a list of [Fragment]. App will throw an
-   * exception if you attempt to use [BaseRegisterActivity] without at least one subclass of
+   * Implement this method to provide the list of [Fragment] used on the register. App will throw an
+   * exception when you attempt to use [BaseRegisterActivity] without at least one subclass of
    * [BaseRegisterFragment]
    */
-  abstract fun supportedFragments(): List<Fragment>
+  abstract fun supportedFragments(): Map<String, Fragment>
+
+  /** Open the fragment identified with [fragmentTag from the map of [supportedFragments] */
+  open fun onSelectRegister(fragmentTag: String) {
+    navigationBottomSheet.dismiss()
+    switchFragment(fragmentTag)
+  }
+
+  /**
+   * Provide the tag for the main fragment. A register activity MUST have a least one
+   * [BaseRegisterFragment]
+   */
+  abstract fun mainFragmentTag(): String
 
   override fun configurableApplication(): ConfigurableApplication {
     return application as ConfigurableApplication
