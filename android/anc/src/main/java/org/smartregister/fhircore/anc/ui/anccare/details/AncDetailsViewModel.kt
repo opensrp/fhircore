@@ -23,15 +23,19 @@ import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.parser.IParser
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.anc.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.model.AncOverviewItem
+import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.model.EncounterItem
+import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class AncDetailsViewModel(
-  val ancPatientRepository: AncPatientRepository,
+  val patientRepository: PatientRepository,
   var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
   val patientId: String
 ) : ViewModel() {
@@ -41,19 +45,72 @@ class AncDetailsViewModel(
   fun fetchDemographics(): LiveData<AncPatientDetailItem> {
     patientDemographics = MutableLiveData<AncPatientDetailItem>()
     viewModelScope.launch(dispatcher.io()) {
-      val ancPatientDetailItem = ancPatientRepository.fetchDemographics(patientId = patientId)
+      val ancPatientDetailItem = patientRepository.fetchDemographics(patientId = patientId)
       patientDemographics.postValue(ancPatientDetailItem)
     }
     return patientDemographics
   }
 
-  fun fetchCarePlan(cJson: String?): LiveData<List<CarePlanItem>> {
+  fun fetchCarePlan(): LiveData<List<CarePlanItem>> {
     val patientCarePlan = MutableLiveData<List<CarePlanItem>>()
     viewModelScope.launch(dispatcher.io()) {
-      val listCarePlan = ancPatientRepository.fetchCarePlan(patientId = patientId, cJson)
-      patientCarePlan.postValue(listCarePlan)
+      val listCarePlan = patientRepository.searchCarePlan(id = patientId)
+      val listCarePlanItem = patientRepository.fetchCarePlanItem(listCarePlan)
+      patientCarePlan.postValue(listCarePlanItem)
     }
     return patientCarePlan
+  }
+
+  fun fetchObservation(): LiveData<AncOverviewItem> {
+    val patientAncOverviewItem = MutableLiveData<AncOverviewItem>()
+    val ancOverviewItem = AncOverviewItem()
+    viewModelScope.launch(dispatcher.io()) {
+      val listObservationEDD = patientRepository.fetchObservations(patientId = patientId, "edd")
+      val listObservationGA = patientRepository.fetchObservations(patientId = patientId, "ga")
+      val listObservationFetuses =
+        patientRepository.fetchObservations(patientId = patientId, "fetuses")
+      val listObservationRisk = patientRepository.fetchObservations(patientId = patientId, "risk")
+
+      if (listObservationEDD.valueDateTimeType != null &&
+          listObservationEDD.valueDateTimeType.value != null
+      )
+        ancOverviewItem.edd = listObservationEDD.valueDateTimeType.value.makeItReadable()
+      if (listObservationGA.valueIntegerType != null &&
+          listObservationGA.valueIntegerType.valueAsString != null
+      )
+        ancOverviewItem.ga = listObservationGA.valueIntegerType.valueAsString
+      if (listObservationFetuses.valueIntegerType != null &&
+          listObservationFetuses.valueIntegerType.valueAsString != null
+      )
+        ancOverviewItem.noOfFetuses = listObservationFetuses.valueIntegerType.valueAsString
+      if (listObservationRisk.valueIntegerType != null &&
+          listObservationRisk.valueIntegerType.valueAsString != null
+      )
+        ancOverviewItem.risk = listObservationRisk.valueIntegerType.valueAsString
+
+      patientAncOverviewItem.postValue(ancOverviewItem)
+    }
+    return patientAncOverviewItem
+  }
+
+  fun fetchUpcomingServices(): LiveData<List<UpcomingServiceItem>> {
+    val patientEncounters = MutableLiveData<List<UpcomingServiceItem>>()
+    viewModelScope.launch(dispatcher.io()) {
+      val listEncounters = patientRepository.fetchCarePlan(patientId = patientId)
+      val listEncountersItem = patientRepository.fetchUpcomingServiceItem(listEncounters)
+      patientEncounters.postValue(listEncountersItem)
+    }
+    return patientEncounters
+  }
+
+  fun fetchLastSeen(): LiveData<List<EncounterItem>> {
+    val patientEncounters = MutableLiveData<List<EncounterItem>>()
+    viewModelScope.launch(dispatcher.io()) {
+      val listEncounters = patientRepository.fetchEncounters(patientId = patientId)
+      val listEncountersItem = patientRepository.fetchLastSeenItem(listEncounters)
+      patientEncounters.postValue(listEncountersItem)
+    }
+    return patientEncounters
   }
 
   fun fetchCQLLibraryData(
@@ -126,14 +183,15 @@ class AncDetailsViewModel(
     var libList = libStrAfterEquals.split(",").map { it.trim() }
 
     var libURLStrBeforeEquals = libAndValueSetURL.substring(0, equalsIndexUrl) + "="
-    var initialStr = cqlMeasureReportLibInitialString
+    var initialStr = StringBuilder(cqlMeasureReportLibInitialString)
+
     viewModelScope.launch(dispatcher.io()) {
       val measureObject =
         parser.encodeResourceToString(fhirResourceDataSource.loadData(measureURL).entry[0].resource)
       var jsonObjectResource = JSONObject()
       var jsonObjectResourceType = JSONObject(measureObject)
       jsonObjectResource.put("resource", jsonObjectResourceType)
-      initialStr += jsonObjectResource
+      initialStr.append(jsonObjectResource)
 
       for (lib in libList) {
         val auxCQLValueSetData =
@@ -143,13 +201,12 @@ class AncDetailsViewModel(
         var jsonObjectResource = JSONObject()
         var jsonObjectResourceType = JSONObject(auxCQLValueSetData)
         jsonObjectResource.put("resource", jsonObjectResourceType)
-
-        initialStr = "$initialStr,$jsonObjectResource"
+        initialStr.append(",")
+        initialStr.append(jsonObjectResource)
       }
-      var sb = StringBuffer(initialStr)
-      sb.deleteCharAt(sb.length - 1)
-      sb.append("}]}")
-      valueSetData.postValue(sb.toString())
+      initialStr.deleteCharAt(initialStr.length - 1)
+      initialStr.append("}]}")
+      valueSetData.postValue(initialStr.toString())
     }
     return valueSetData
   }
