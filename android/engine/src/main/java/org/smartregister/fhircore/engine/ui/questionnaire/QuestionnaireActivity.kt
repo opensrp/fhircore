@@ -168,6 +168,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   private lateinit var saveProcessingAlertDialog: AlertDialog
 
+  fun dismissSaveProcessing() {
+    saveProcessingAlertDialog.dismiss()
+  }
+
   open fun handleQuestionnaireSubmit() {
     saveProcessingAlertDialog = showProgressAlert(this, R.string.saving_registration)
 
