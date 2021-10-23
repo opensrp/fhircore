@@ -84,9 +84,11 @@ class FamilyDetailScreenKtTest : RobolectricTest() {
     val familyMembers = listOf(familyMember)
 
     composeRule.setContent {
-      MembersList(familyMembers, { listenerObjectSpy.onAddMemberItemClick() }) {
-        listenerObjectSpy.onMemberItemClick(familyMember)
-      }
+      MembersList(
+        familyMembers,
+        { listenerObjectSpy.onMemberItemClick(familyMember) },
+        { listenerObjectSpy.onAddMemberItemClick() }
+      )
     }
 
     // Member name is displayed
