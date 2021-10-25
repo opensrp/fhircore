@@ -70,3 +70,12 @@ data class EncounterItem(
 @Stable data class AllergiesItem(var allergiesIdentifier: String = "", var title: String = "")
 
 @Stable data class ConditionItem(var conditionIdentifier: String = "", var title: String = "")
+
+@Stable
+data class PatientBmiItem(
+  var patientIdentifier: String = "",
+  var name: String = "",
+  var height: String = "",
+  var weight: String = "",
+  var bmi: String = ""
+)
