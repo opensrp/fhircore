@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import androidx.annotation.VisibleForTesting
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.AttachmentResolver
 import org.hl7.fhir.r4.model.Binary
@@ -32,19 +33,21 @@ class ReferenceAttachmentResolver(val context: Context) : AttachmentResolver {
     }
   }
 
-  override suspend fun resolveImageUrl(uri: String): Bitmap? {
+  @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+  fun getFhirService(): FhirResourceService {
     return FhirResourceService.create(
-        FhirContext.forR4().newJsonParser(),
-        QuestApplication.getContext()
-      )
-      .fetchImage(uri)
-      .execute()
-      .run {
-        if (this.body() != null) {
-          BitmapFactory.decodeStream(this.body()?.byteStream())
-        } else {
-          null
-        }
+      FhirContext.forR4().newJsonParser(),
+      QuestApplication.getContext()
+    )
+  }
+
+  override suspend fun resolveImageUrl(uri: String): Bitmap? {
+    return getFhirService().fetchImage(uri).execute().run {
+      if (this.body() != null) {
+        BitmapFactory.decodeStream(this.body()?.byteStream())
+      } else {
+        null
       }
+    }
   }
 }
