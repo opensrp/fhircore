@@ -41,7 +41,6 @@ class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
         this@AdverseEventQuestionnaireActivity,
         AdverseEventViewModel(
             application,
-            questionnaireConfig,
             PatientRepository(
               (application as ConfigurableApplication).fhirEngine,
               PatientItemMapper

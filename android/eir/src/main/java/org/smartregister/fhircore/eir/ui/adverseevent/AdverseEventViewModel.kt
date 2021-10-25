@@ -27,14 +27,12 @@ import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class AdverseEventViewModel(
   application: Application,
-  questionnaireConfig: QuestionnaireConfig,
   private val patientRepository: PatientRepository,
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : QuestionnaireViewModel(application) {

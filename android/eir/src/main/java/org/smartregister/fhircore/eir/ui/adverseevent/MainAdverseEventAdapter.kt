@@ -36,7 +36,11 @@ class MainAdverseEventAdapter :
     fun bindTo(immunizationAdverseEventItem: ImmunizationAdverseEventItem, position: Int) {
       with(immunizationAdverseEventItem) {
         binding.root.tag = this
-        val childMembersAdapter = AdverseEventAdapter(immunizationAdverseEventItem.vaccine, getAdverseEventDoseNumber(immunizationAdverseEventItem.dosesWithAdverseEvents)[position])
+        val childMembersAdapter =
+          AdverseEventAdapter(
+            immunizationAdverseEventItem.vaccine,
+            getAdverseEventDoseNumber(immunizationAdverseEventItem.dosesWithAdverseEvents)[position]
+          )
         childMembersAdapter.submitList(
           getAdverseEvent(immunizationAdverseEventItem.dosesWithAdverseEvents)
         )
@@ -78,7 +82,7 @@ class MainAdverseEventAdapter :
   }
 
   override fun onBindViewHolder(holder: MainAdverseEventViewHolder, position: Int) {
-    holder.bindTo(getItem(position),position)
+    holder.bindTo(getItem(position), position)
   }
 
   object AdverseEventItemDiffCallback : DiffUtil.ItemCallback<ImmunizationAdverseEventItem>() {
