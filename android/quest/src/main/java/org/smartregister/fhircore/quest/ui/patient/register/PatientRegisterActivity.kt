@@ -52,7 +52,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     )
   }
 
-  override fun onMenuOptionSelected(item: MenuItem): Boolean {
+  override fun onNavigationOptionItemSelected(item: MenuItem): Boolean {
     when (item.itemId) {
       R.id.menu_item_clients -> startActivity(Intent(this, PatientRegisterActivity::class.java))
     }

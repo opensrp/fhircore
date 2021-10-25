@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.eir.ui.patient.register
 
 import android.os.Bundle
-import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import org.smartregister.fhircore.eir.R
@@ -48,10 +47,6 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     )
 
   override fun mainFragmentTag() = PatientRegisterFragment.TAG
-
-  override fun onMenuOptionSelected(item: MenuItem): Boolean {
-    return true
-  }
 
   override fun supportedFragments(): Map<String, Fragment> =
     mapOf(Pair(PatientRegisterFragment.TAG, PatientRegisterFragment()))

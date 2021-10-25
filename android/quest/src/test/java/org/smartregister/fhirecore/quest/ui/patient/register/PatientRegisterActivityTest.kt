@@ -61,12 +61,12 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnSideMenuOptionSelectedShouldReturnTrue() {
-    Assert.assertTrue(patientRegisterActivity.onMenuOptionSelected(RoboMenuItem()))
+    Assert.assertTrue(patientRegisterActivity.onNavigationOptionItemSelected(RoboMenuItem()))
   }
 
   @Test
   fun testOnClientMenuOptionSelectedShouldCallRegisterActivity() {
-    patientRegisterActivity.onMenuOptionSelected(
+    patientRegisterActivity.onNavigationOptionItemSelected(
       RoboMenuItem().apply { itemId = R.id.menu_item_clients }
     )
     val expectedIntent = Intent(patientRegisterActivity, PatientRegisterActivity::class.java)

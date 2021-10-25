@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.ui.family.register
 
 import android.os.Bundle
+import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import org.smartregister.fhircore.anc.AncApplication
@@ -31,6 +32,7 @@ import org.smartregister.fhircore.engine.configuration.view.registerViewConfigur
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
+import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 
 class FamilyRegisterActivity : BaseRegisterActivity() {
 
@@ -64,6 +66,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
     mapOf(
       Pair(FamilyRegisterFragment.TAG, FamilyRegisterFragment()),
       Pair(AncRegisterFragment.TAG, AncRegisterFragment()),
+      Pair(UserProfileFragment.TAG, UserProfileFragment())
     )
 
   override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> =
@@ -89,6 +92,19 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_user)!!
       )
     )
+
+  override fun onNavigationOptionItemSelected(item: MenuItem): Boolean {
+    when (item.itemId) {
+      R.id.menu_item_profile ->
+        switchFragment(
+          tag = UserProfileFragment.TAG,
+          isRegisterFragment = false,
+          toolbarTitle = getString(R.string.profile)
+        )
+      R.id.menu_item_register -> switchFragment(mainFragmentTag())
+    }
+    return true
+  }
 
   override fun registersList() =
     listOf(
