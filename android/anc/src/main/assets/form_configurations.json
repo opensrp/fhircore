@@ -23,5 +23,10 @@
     "form": "family-registration",
     "title": "Add Family",
     "identifier": "1922"
+  },
+  {
+    "form": "family-patient_bmi_compute",
+    "title": "Compute BMI",
+    "identifier": "1999"
   }
 ]
