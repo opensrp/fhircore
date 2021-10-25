@@ -47,7 +47,7 @@ import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
 import org.smartregister.fhircore.anc.ui.anccare.register.RecordAncVisit
-import org.smartregister.fhircore.engine.ui.theme.DueColor
+import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DueLightColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueLightColor
@@ -103,7 +103,7 @@ fun AncVisitButton(
 
   val textColor =
     when (ancPatientItem.visitStatus) {
-      VisitStatus.DUE -> DueColor
+      VisitStatus.DUE -> BlueTextColor
       VisitStatus.OVERDUE -> OverdueDarkRedColor
       VisitStatus.PLANNED -> Color.Transparent
     }

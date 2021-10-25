@@ -50,7 +50,7 @@ import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.family.register.FamilyListenerIntent
 import org.smartregister.fhircore.anc.ui.family.register.OpenFamilyProfile
 import org.smartregister.fhircore.engine.ui.components.Dot
-import org.smartregister.fhircore.engine.ui.theme.DueColor
+import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 
@@ -124,7 +124,7 @@ fun FamilyRow(
         ServicesCard(
           modifier = modifier,
           text = familyItem.servicesDue.toString(),
-          color = DueColor
+          color = BlueTextColor
         )
       }
     }

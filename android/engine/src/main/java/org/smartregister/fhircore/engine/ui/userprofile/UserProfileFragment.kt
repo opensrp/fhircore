@@ -20,20 +20,34 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.material.Text
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class UserProfileFragment : Fragment() {
+
+  private lateinit var userProfileViewModel: UserProfileViewModel
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    return ComposeView(requireContext()).apply { setContent { AppTheme { Text("I am profile") } } }
+    return ComposeView(requireContext()).apply {
+      setContent { AppTheme { UserProfileScreen(userProfileViewModel) } }
+    }
   }
+
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    userProfileViewModel =
+      ViewModelProvider(
+        viewModelStore,
+        UserProfileViewModel(application = requireActivity().application).createFactory()
+      )[UserProfileViewModel::class.java]
+  }
+
   companion object {
     const val TAG = "UserProfileFragment"
   }
