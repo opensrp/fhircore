@@ -557,6 +557,9 @@ abstract class BaseRegisterActivity :
         setCompoundDrawablesWithIntrinsicBounds(null, null, null, null)
         setOnClickListener(null)
       }
+    } else {
+      registerActivityBinding.toolbarLayout.registerFilterTextview.text =
+        getString(R.string.clients)
     }
 
     // Show searchbar/filter button for registers, hide otherwise

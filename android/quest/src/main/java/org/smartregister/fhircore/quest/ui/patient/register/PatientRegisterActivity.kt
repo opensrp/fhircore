@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
@@ -25,6 +24,8 @@ import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfigur
 import org.smartregister.fhircore.engine.configuration.view.loadRegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
+import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
+import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.quest.R
 
 class PatientRegisterActivity : BaseRegisterActivity() {
@@ -54,7 +55,13 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   override fun onNavigationOptionItemSelected(item: MenuItem): Boolean {
     when (item.itemId) {
-      R.id.menu_item_clients -> startActivity(Intent(this, PatientRegisterActivity::class.java))
+      R.id.menu_item_clients -> switchFragment(mainFragmentTag())
+      R.id.menu_item_settings ->
+        switchFragment(
+          tag = UserProfileFragment.TAG,
+          isRegisterFragment = false,
+          toolbarTitle = getString(R.string.settings)
+        )
     }
     return true
   }
@@ -62,5 +69,17 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   override fun mainFragmentTag() = PatientRegisterFragment.TAG
 
   override fun supportedFragments(): Map<String, Fragment> =
-    mapOf(Pair(PatientRegisterFragment.TAG, PatientRegisterFragment()))
+    mapOf(
+      Pair(PatientRegisterFragment.TAG, PatientRegisterFragment()),
+      Pair(UserProfileFragment.TAG, UserProfileFragment())
+    )
+
+  override fun registersList(): List<RegisterItem> =
+    listOf(
+      RegisterItem(
+        uniqueTag = PatientRegisterFragment.TAG,
+        title = getString(R.string.clients),
+        isSelected = true
+      )
+    )
 }
