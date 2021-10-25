@@ -26,12 +26,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -49,7 +49,6 @@ import androidx.compose.material.contentColorFor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -147,15 +146,10 @@ fun LoginPage(
       )
     }
     Column(
-      modifier = modifier.padding(horizontal = 16.dp),
-      verticalArrangement = Arrangement.SpaceAround
+      modifier = modifier.padding(horizontal = 16.dp).fillMaxHeight(),
+      verticalArrangement = Arrangement.SpaceBetween
     ) {
-      Icon(
-        imageVector = Icons.Outlined.MoreVert,
-        contentDescription = stringResource(R.string.more),
-        tint = contentColor,
-        modifier = modifier.size(48.dp).padding(vertical = 8.dp).align(Alignment.End)
-      )
+      Spacer(modifier = modifier.height(20.dp))
       Column(modifier = modifier.padding(4.dp), verticalArrangement = Arrangement.Center) {
         // TODO Add configurable logo. Images to be downloaded from server
         Text(
@@ -275,7 +269,7 @@ fun LoginPage(
       }
       Row(
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = modifier.fillMaxWidth().padding(vertical = 4.dp),
+        modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
         verticalAlignment = Alignment.Bottom
       ) {
         Column {
