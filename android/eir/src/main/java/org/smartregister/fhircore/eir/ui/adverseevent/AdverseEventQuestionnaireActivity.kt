@@ -29,6 +29,7 @@ import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
 import org.smartregister.fhircore.engine.util.extension.createFactory
@@ -60,7 +61,11 @@ class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
           if (oldImmunization != null) {
             lifecycleScope.launch {
               questionnaire?.let { questionnaire ->
-                val alertDialog = showDialog()
+                val alertDialog =
+                  AlertDialogue.showProgressAlert(
+                    this@AdverseEventQuestionnaireActivity,
+                    R.string.loading
+                  )
                 questionnaireViewModel.extractionProgress.observe(
                   this@AdverseEventQuestionnaireActivity,
                   { result ->
@@ -99,15 +104,6 @@ class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
         }
       }
     }
-  }
-
-  private fun showDialog(): AlertDialog {
-    return AlertDialog.Builder(this)
-      .setTitle(getString(R.string.error_reading_immunization_details))
-      .setMessage(getString(R.string.kindly_retry_contact_devs_problem_persists))
-      .setPositiveButton(android.R.string.ok) { dialogInterface, _ -> dialogInterface.dismiss() }
-      .setCancelable(true)
-      .show()
   }
 
   private fun handleExtractionError() {
