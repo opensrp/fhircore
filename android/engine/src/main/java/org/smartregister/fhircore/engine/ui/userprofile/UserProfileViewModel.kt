@@ -18,9 +18,12 @@ package org.smartregister.fhircore.engine.ui.userprofile
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.MutableLiveData
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 
 class UserProfileViewModel(application: Application) : AndroidViewModel(application) {
+
+  val onLogout = MutableLiveData<Boolean?>(null)
 
   val configurableApplication = getApplication<Application>() as ConfigurableApplication
 
@@ -30,6 +33,7 @@ class UserProfileViewModel(application: Application) : AndroidViewModel(applicat
 
   fun logoutUser() {
     configurableApplication.authenticationService.logout()
+    onLogout.postValue(true)
   }
 
   fun retrieveUsername(): String? =

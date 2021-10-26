@@ -46,6 +46,13 @@ class UserProfileFragment : Fragment() {
         viewModelStore,
         UserProfileViewModel(application = requireActivity().application).createFactory()
       )[UserProfileViewModel::class.java]
+
+    userProfileViewModel.onLogout.observe(
+      viewLifecycleOwner,
+      { shouldLogout: Boolean? ->
+        if (shouldLogout != null && !shouldLogout) requireActivity().finish()
+      }
+    )
   }
 
   companion object {

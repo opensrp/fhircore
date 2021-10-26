@@ -152,7 +152,7 @@ abstract class BaseRegisterActivity :
 
     fhirEngine = (application as ConfigurableApplication).fhirEngine
 
-    navigationBottomSheet = NavigationBottomSheet.getInstance(this::onSelectRegister)
+    navigationBottomSheet = NavigationBottomSheet(this::onSelectRegister)
   }
 
   override fun onResume() {
@@ -456,6 +456,7 @@ abstract class BaseRegisterActivity :
     when (item.itemId) {
       R.id.menu_item_language -> renderSelectLanguageDialog(this)
       R.id.menu_item_logout -> {
+        finish()
         configurableApplication().authenticationService.logout()
         manipulateDrawer(open = false)
       }

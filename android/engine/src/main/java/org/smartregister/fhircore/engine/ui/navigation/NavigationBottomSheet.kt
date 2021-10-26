@@ -25,7 +25,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
-class NavigationBottomSheet private constructor(private val itemListener: (String) -> Unit) :
+class NavigationBottomSheet(private val itemListener: (String) -> Unit) :
   BottomSheetDialogFragment() {
 
   var registersList: List<RegisterItem> = emptyList()
@@ -45,10 +45,5 @@ class NavigationBottomSheet private constructor(private val itemListener: (Strin
   companion object {
 
     const val TAG = "NavigationBottomSheetTag"
-
-    @Volatile private var instance: NavigationBottomSheet? = null
-
-    fun getInstance(itemListener: (String) -> Unit): NavigationBottomSheet =
-      instance ?: synchronized(this) { NavigationBottomSheet(itemListener).also { instance = it } }
   }
 }
