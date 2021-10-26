@@ -33,7 +33,7 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.view.loadRegisterViewConfiguration
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.quest.QuestApplication
+import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterFragment
@@ -69,12 +69,11 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
     patientRegisterActivity.onNavigationOptionItemSelected(
       RoboMenuItem().apply { itemId = R.id.menu_item_clients }
     )
-    val expectedIntent = Intent(patientRegisterActivity, PatientRegisterActivity::class.java)
-    val actualIntent =
-      Shadows.shadowOf(ApplicationProvider.getApplicationContext<QuestApplication>())
-        .nextStartedActivity
-
-    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    //switched to patient register fragment
+    Assert.assertEquals(1, patientRegisterActivity.supportFragmentManager.fragments.size)
+    Assert.assertTrue(
+      patientRegisterActivity.supportFragmentManager.fragments[0] is PatientRegisterFragment
+    )
   }
 
   @Test
@@ -135,12 +134,9 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   @Test
   fun testSupportedFragmentsShouldReturnPatientRegisterFragmentList() {
     val fragments = patientRegisterActivity.supportedFragments()
-
-    Assert.assertEquals(1, fragments.size)
-    Assert.assertEquals(
-      PatientRegisterFragment::class.java.simpleName,
-      fragments.first().javaClass.simpleName
-    )
+    Assert.assertEquals(2, fragments.size)
+    Assert.assertTrue(fragments.containsKey(PatientRegisterFragment.TAG))
+    Assert.assertTrue(fragments.containsKey(UserProfileFragment.TAG))
   }
 
   override fun getActivity(): Activity {

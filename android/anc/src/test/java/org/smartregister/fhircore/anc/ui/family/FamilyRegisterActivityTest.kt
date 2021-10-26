@@ -49,6 +49,7 @@ import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
+import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 
 @Config(shadows = [AncApplicationShadow::class])
 internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
@@ -105,9 +106,10 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
   fun testSupportedFragmentsShouldReturnAncRegisterFragment() {
     val fragments = familyRegisterActivity.supportedFragments()
 
-    assertEquals(2, fragments.size)
+    assertEquals(3, fragments.size)
     assertTrue(fragments.containsKey(FamilyRegisterFragment.TAG))
     assertTrue(fragments.containsKey(AncRegisterFragment.TAG))
+    assertTrue(fragments.containsKey(UserProfileFragment.TAG))
   }
 
   override fun getActivity(): Activity {
