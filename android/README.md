@@ -8,24 +8,6 @@
 
 ## Build instructions
 
-You need a [GitHub token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token#creating-a-token) to pull packages from the [Android FHIR SDK repo](https://github.com/orgs/google/packages?repo_name=android-fhir).
-
-When creating the token, select the `read:packages` permission.
-
-Add your token details to the file `.gradle/gradle.properties` or `android/local.properties` in the format below:
-
-```
-GITHUB_USER=xxxxxx
-GITHUB_PERSONAL_ACCESS_TOKEN=xxxxxx
-```
-
-or export them to your system environment variables with the commands:
-
-```sh
-export GITHUB_USER=xxxxxx
-export GITHUB_PERSONAL_ACCESS_TOKEN=xxxxxx
-```
-
 If you would like to log into remote servers and authenticate against remote FHIR APIs, you will need Keycloak credentials. For this, add the following properties to `~/local.properties`:
 
 ```
