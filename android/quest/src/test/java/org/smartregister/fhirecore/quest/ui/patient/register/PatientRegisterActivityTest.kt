@@ -19,6 +19,9 @@ package org.smartregister.fhirecore.quest.ui.patient.register
 import android.app.Activity
 import android.app.Application
 import android.content.Intent
+import android.view.View
+import android.widget.ImageButton
+import android.widget.TextView
 import androidx.core.view.size
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert
@@ -65,14 +68,42 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnClientMenuOptionSelectedShouldCallRegisterActivity() {
+  fun testOnClientMenuOptionSelectedShouldLaunchPatientRegisterFragment() {
     patientRegisterActivity.onNavigationOptionItemSelected(
       RoboMenuItem().apply { itemId = R.id.menu_item_clients }
     )
-    //switched to patient register fragment
-    Assert.assertEquals(1, patientRegisterActivity.supportFragmentManager.fragments.size)
-    Assert.assertTrue(
-      patientRegisterActivity.supportFragmentManager.fragments[0] is PatientRegisterFragment
+    // switched to patient register fragment
+    Assert.assertEquals(
+      "Clients",
+      patientRegisterActivity.findViewById<TextView>(R.id.register_filter_textview).text
+    )
+    Assert.assertEquals(
+      View.VISIBLE,
+      patientRegisterActivity.findViewById<View>(R.id.filter_register_button).visibility
+    )
+    Assert.assertEquals(
+      View.VISIBLE,
+      patientRegisterActivity.findViewById<View>(R.id.edit_text_search).visibility
+    )
+  }
+
+  @Test
+  fun testOnSettingMenuOptionSelectedShouldLaunchUserProfileFragment() {
+    patientRegisterActivity.onNavigationOptionItemSelected(
+      RoboMenuItem().apply { itemId = R.id.menu_item_settings }
+    )
+    // switched to user profile fragment
+    Assert.assertEquals(
+      "Settings",
+      patientRegisterActivity.findViewById<TextView>(R.id.register_filter_textview).text
+    )
+    Assert.assertEquals(
+      View.GONE,
+      patientRegisterActivity.findViewById<View>(R.id.middle_toolbar_section).visibility
+    )
+    Assert.assertEquals(
+      View.GONE,
+      patientRegisterActivity.findViewById<ImageButton>(R.id.filter_register_button).visibility
     )
   }
 
