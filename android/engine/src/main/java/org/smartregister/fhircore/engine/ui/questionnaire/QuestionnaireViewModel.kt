@@ -138,7 +138,8 @@ open class QuestionnaireViewModel(
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
       structureMapProvider = retrieveStructureMapProvider(),
-      context = context
+      context = context,
+      transformSupportServices = transformSupportServices
     )
   }
 
