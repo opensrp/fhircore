@@ -52,6 +52,7 @@ import org.smartregister.fhircore.engine.ui.theme.DueLightColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueLightColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
 fun AncRow(
@@ -132,6 +133,7 @@ fun AncVisitButton(
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun PreviewAncItemDue() {
   AncRow(
     ancPatientItem =
@@ -151,6 +153,7 @@ fun PreviewAncItemDue() {
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun PreviewAncItemOverDue() {
   AncRow(
     ancPatientItem =

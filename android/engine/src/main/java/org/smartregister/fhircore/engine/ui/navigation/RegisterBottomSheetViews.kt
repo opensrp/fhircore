@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
 fun RegisterBottomSheet(
@@ -109,6 +110,7 @@ fun RegisterListItem(
 }
 
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 @Composable
 fun RegisterListItemPreview() {
   RegisterListItem(
@@ -118,6 +120,7 @@ fun RegisterListItemPreview() {
 }
 
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 @Composable
 fun RegisterBottomSheetPreview() {
   RegisterBottomSheet(

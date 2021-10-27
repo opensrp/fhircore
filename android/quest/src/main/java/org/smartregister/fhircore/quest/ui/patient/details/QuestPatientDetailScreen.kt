@@ -75,6 +75,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
@@ -237,6 +238,7 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
 
 @Preview
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun PreviewQuestionPatientDetailScreen() {
   AppTheme { QuestPatientDetailScreen(dummyQuestPatientDetailDataProvider()) }
 }

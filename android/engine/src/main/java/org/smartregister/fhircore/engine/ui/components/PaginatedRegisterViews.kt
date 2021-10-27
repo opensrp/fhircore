@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 const val SEARCH_HEADER_TEXT_TAG = "searchHeaderTestTag"
 const val SEARCH_FOOTER_TAG = "searchFooterTag"
@@ -64,6 +65,7 @@ fun SearchHeader(resultCount: Int, modifier: Modifier = Modifier) {
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun SearchHeaderPreview() {
   SearchHeader(resultCount = 2)
 }
@@ -134,24 +136,28 @@ fun SearchFooter(
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoPreviousButton() {
   SearchFooter(10, 1, 20, {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoNextButton() {
   SearchFooter(10, 20, 20, {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithBothPreviousAndNextButtons() {
   SearchFooter(10, 6, 20, {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithZeroResults() {
   SearchFooter(0, 6, 20, {}, {})
 }
@@ -225,12 +231,14 @@ fun NoResults(modifier: Modifier = Modifier) {
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun NoResultsPreview() {
   NoResults(modifier = Modifier)
 }
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun PaginatedRegisterPreviewWithResults() {
   PaginatedRegister(
     loadState = LoadState.Loading,
@@ -246,6 +254,7 @@ fun PaginatedRegisterPreviewWithResults() {
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun PaginatedRegisterPreviewWithoutResults() {
   PaginatedRegister(
     loadState = LoadState.Loading,

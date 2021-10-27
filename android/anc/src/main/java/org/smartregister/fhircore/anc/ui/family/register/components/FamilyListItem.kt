@@ -53,6 +53,7 @@ import org.smartregister.fhircore.engine.ui.components.Dot
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
 fun FamilyRow(
@@ -142,6 +143,7 @@ fun ServicesCard(modifier: Modifier, text: String, color: Color) {
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun FamilyRowPreview() {
   val fmi = FamilyMemberItem("fmname", "fm1", "21", "F", true)
 
