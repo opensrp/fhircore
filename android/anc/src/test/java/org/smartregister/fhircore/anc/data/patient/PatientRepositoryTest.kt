@@ -39,6 +39,7 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.ContactPoint
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumeration
@@ -46,6 +47,8 @@ import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Goal
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.IntegerType
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Reference
@@ -154,6 +157,8 @@ class PatientRepositoryTest : RobolectricTest() {
           Address().apply {
             city = "Nairobi"
             country = "Kenya"
+            addLine("12 B")
+            addLine("Gulshan")
           }
         )
       active = true
@@ -209,7 +214,7 @@ class PatientRepositoryTest : RobolectricTest() {
       Assert.assertEquals("Salina Jetly", name)
       Assert.assertEquals("Female", gender)
       Assert.assertEquals("0", age)
-      Assert.assertEquals("Kenya", demographics)
+      Assert.assertEquals("12 B, Gulshan, Nairobi Kenya", demographics)
       Assert.assertEquals("", atRisk)
     }
   }
@@ -313,6 +318,25 @@ class PatientRepositoryTest : RobolectricTest() {
     val encounter = listOf(getEncounter(patientId))
     val listLastItem = repository.fetchLastSeenItem(encounter)
     Assert.assertEquals("ABC", listLastItem[0].display)
+  }
+
+  @Test
+  fun testFetchObservationsShouldReturnCorrectObs() {
+    coEvery { fhirEngine.search<Observation>(any()) } returns
+      listOf(
+        Observation().apply {
+          value = IntegerType(4)
+          effective = DateTimeType.now()
+        }
+      )
+    val result = runBlocking { repository.fetchObservations("1111", "edd") }
+    Assert.assertEquals(4, result.valueIntegerType.value)
+  }
+
+  @Test(expected = UnsupportedOperationException::class)
+  fun testFetchObservationsShouldThrowExceptionOnUnrecognizedFilterType() {
+    val result = runBlocking { repository.fetchObservations("1111", "not known") }
+    Assert.assertEquals(4, result.valueIntegerType.value)
   }
 
   private fun buildCarePlan(subject: String): CarePlan {
