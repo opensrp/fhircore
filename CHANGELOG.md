@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Authentication toekn expiry issue
 - Fhir Resource Converter issue after resource update
 - Inteceptor handling for missing account
+- Engine: Fixes Structure map based resource extraction not working
 
 ### Changed
 

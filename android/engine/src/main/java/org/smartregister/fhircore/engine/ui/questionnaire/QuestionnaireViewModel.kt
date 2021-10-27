@@ -44,6 +44,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FormConfigUtil
 import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 open class QuestionnaireViewModel(
   application: Application,
@@ -130,11 +131,15 @@ open class QuestionnaireViewModel(
     questionnaireResponse: QuestionnaireResponse,
     context: Context
   ): Bundle {
+    val contextR4 = (getApplication<Application>() as ConfigurableApplication).workerContextProvider
+    val transformSupportServices = TransformSupportServices(mutableListOf(), contextR4)
+
     return ResourceMapper.extract(
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
       structureMapProvider = retrieveStructureMapProvider(),
-      context = context
+      context = context,
+      transformSupportServices = transformSupportServices
     )
   }
 
