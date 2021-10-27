@@ -29,8 +29,8 @@ import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import timber.log.Timber
@@ -39,13 +39,11 @@ class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
 
   override fun createViewModel(
     application: Application,
-    questionnaireConfig: QuestionnaireConfig
   ): QuestionnaireViewModel {
     return ViewModelProvider(
         this@AdverseEventQuestionnaireActivity,
         AdverseEventViewModel(
             application,
-            questionnaireConfig,
             PatientRepository(
               (application as ConfigurableApplication).fhirEngine,
               PatientItemMapper
@@ -65,7 +63,11 @@ class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
           if (oldImmunization != null) {
             lifecycleScope.launch {
               questionnaire?.let { questionnaire ->
-                val alertDialog = showDialog()
+                val alertDialog =
+                  AlertDialogue.showProgressAlert(
+                    this@AdverseEventQuestionnaireActivity,
+                    R.string.loading
+                  )
                 questionnaireViewModel.extractionProgress.observe(
                   this@AdverseEventQuestionnaireActivity,
                   { result ->
