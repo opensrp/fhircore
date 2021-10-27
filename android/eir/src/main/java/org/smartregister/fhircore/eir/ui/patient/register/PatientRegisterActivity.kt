@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.eir.ui.patient.register
 
 import android.os.Bundle
-import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import org.smartregister.fhircore.eir.R
@@ -44,13 +43,11 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         itemId = R.id.menu_item_covax,
         titleResource = R.string.client_list_title_covax,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
-        opensMainRegister = true,
       )
     )
 
-  override fun onMenuOptionSelected(item: MenuItem): Boolean {
-    return true
-  }
+  override fun mainFragmentTag() = PatientRegisterFragment.TAG
 
-  override fun supportedFragments(): List<Fragment> = listOf(PatientRegisterFragment())
+  override fun supportedFragments(): Map<String, Fragment> =
+    mapOf(Pair(PatientRegisterFragment.TAG, PatientRegisterFragment()))
 }

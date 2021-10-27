@@ -77,7 +77,7 @@ class VitalSignsDetailsFragment : Fragment() {
 
     ancDetailsViewModel =
       ViewModelProvider(
-        this,
+        viewModelStore,
         VitalSignsDetailsViewModel(ancPatientRepository, patientId = patientId).createFactory()
       )[VitalSignsDetailsViewModel::class.java]
 

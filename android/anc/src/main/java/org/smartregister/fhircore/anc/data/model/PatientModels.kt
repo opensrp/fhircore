@@ -28,35 +28,35 @@ enum class VisitStatus {
 
 @Stable
 data class AncPatientItem(
-  var patientIdentifier: String = "",
-  var name: String = "",
-  var gender: String = "",
-  var age: String = "",
-  var demographics: String = "",
-  var atRisk: String = "",
+  val patientIdentifier: String = "",
+  val name: String = "",
+  val gender: String = "",
+  val age: String = "",
+  val demographics: String = "",
+  val atRisk: String = "",
   val address: String = "",
   val visitStatus: VisitStatus = VisitStatus.PLANNED
 )
 
 @Stable
 data class AncPatientDetailItem(
-  var patientDetails: AncPatientItem = AncPatientItem(),
-  var patientDetailsHead: AncPatientItem = AncPatientItem(),
+  val patientDetails: AncPatientItem = AncPatientItem(),
+  val patientDetailsHead: AncPatientItem = AncPatientItem(),
 )
 
 @Stable
 data class CarePlanItem(
-  var carePlanIdentifier: String = "",
-  var title: String = "",
-  var due: Boolean,
-  var overdue: Boolean
+  val carePlanIdentifier: String = "",
+  val title: String = "",
+  val due: Boolean,
+  val overdue: Boolean
 )
 
 @Stable
 data class UpcomingServiceItem(
-  var encounterIdentifier: String = "",
-  var title: String = "",
-  var date: String = ""
+  val encounterIdentifier: String = "",
+  val title: String = "",
+  val date: String = ""
 )
 
 @Stable
@@ -67,9 +67,9 @@ data class EncounterItem(
   val periodStartDate: Date = Date()
 )
 
-@Stable data class AllergiesItem(var allergiesIdentifier: String = "", var title: String = "")
+@Stable data class AllergiesItem(val allergiesIdentifier: String = "", val title: String = "")
 
-@Stable data class ConditionItem(var conditionIdentifier: String = "", var title: String = "")
+@Stable data class ConditionItem(val conditionIdentifier: String = "", val title: String = "")
 
 @Stable
 data class PatientBmiItem(

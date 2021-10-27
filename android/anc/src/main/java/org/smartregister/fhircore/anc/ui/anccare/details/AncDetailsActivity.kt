@@ -72,8 +72,8 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
     bmiWidget.isVisible = true
 
     val title = removeThisPerson.title.toString()
-    val s = SpannableString(title)
-    with(s) {
+    val spannableString = SpannableString(title)
+    with(spannableString) {
       setSpan(
         ForegroundColorSpan(Color.parseColor("#DD0000")),
         0,
@@ -81,7 +81,7 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
         android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE
       )
     } // provide whatever color you want here.
-    removeThisPerson.title = s
+    removeThisPerson.title = spannableString
     return super.onPrepareOptionsMenu(menu)
   }
 
