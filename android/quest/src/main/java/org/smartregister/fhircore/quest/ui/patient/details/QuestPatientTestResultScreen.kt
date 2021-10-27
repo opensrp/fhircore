@@ -45,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
@@ -113,6 +114,7 @@ fun QuestPatientTestResultScreen(dataProvider: QuestPatientDetailDataProvider) {
 
 @Preview
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun PreviewQuestPatientTestResultScreen() {
   AppTheme { QuestPatientTestResultScreen(dummyQuestPatientDetailDataProvider()) }
 }

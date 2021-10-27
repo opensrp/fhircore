@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.login
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
@@ -25,11 +26,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -47,7 +49,6 @@ import androidx.compose.material.contentColorFor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -58,6 +59,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -76,6 +78,7 @@ import org.smartregister.fhircore.engine.ui.theme.LoginBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.LoginButtonColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 const val APP_NAME_TEXT_TAG = "aapNameTextTag"
 const val USERNAME_FIELD_TAG = "usernameFieldTag"
@@ -143,17 +146,12 @@ fun LoginPage(
         onDismissDialog = { showForgotPasswordDialog = false }
       )
     }
-    Column(modifier = modifier.padding(horizontal = 16.dp)) {
-      Icon(
-        imageVector = Icons.Outlined.MoreVert,
-        contentDescription = stringResource(R.string.more),
-        tint = contentColor,
-        modifier = modifier.size(48.dp).padding(vertical = 8.dp).align(Alignment.End)
-      )
-      Column(
-        modifier = modifier.fillMaxSize().padding(4.dp),
-        verticalArrangement = Arrangement.Center
-      ) {
+    Column(
+      modifier = modifier.padding(horizontal = 16.dp).fillMaxHeight(),
+      verticalArrangement = Arrangement.SpaceBetween
+    ) {
+      Spacer(modifier = modifier.height(20.dp))
+      Column(modifier = modifier.padding(4.dp), verticalArrangement = Arrangement.Center) {
         // TODO Add configurable logo. Images to be downloaded from server
         Text(
           color = if (viewConfiguration.darkMode) Color.White else LoginDarkColor,
@@ -278,11 +276,21 @@ fun LoginPage(
         Column {
           Text(
             color = contentColor,
-            fontSize = 16.sp,
-            text = stringResource(id = R.string.app_version, viewConfiguration.applicationVersion),
-            modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER)
+            text = stringResource(id = R.string.powered_by),
+            modifier = modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.Start)
+          )
+          Image(
+            painter = painterResource(id = R.drawable.ic_opensrp_logo),
+            contentDescription = stringResource(id = R.string.app_logo),
+            modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(40.dp)
           )
         }
+        Text(
+          color = contentColor,
+          fontSize = 16.sp,
+          text = stringResource(id = R.string.app_version, viewConfiguration.applicationVersion),
+          modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER)
+        )
       }
     }
   }
@@ -330,6 +338,7 @@ fun ForgotPasswordDialog(
 }
 
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 @Composable
 fun LoginScreenPreview() {
   LoginPage(
@@ -344,6 +353,7 @@ fun LoginScreenPreview() {
 }
 
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 @Composable
 fun LoginScreenPreviewDarkMode() {
   LoginPage(

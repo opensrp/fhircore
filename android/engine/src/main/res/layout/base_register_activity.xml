@@ -40,15 +40,15 @@
 
                 </androidx.appcompat.widget.Toolbar>
 
-                <androidx.viewpager2.widget.ViewPager2
-                    android:id="@+id/list_pager"
+                <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/register_content"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_above="@id/btn_register_new_client"
                     android:layout_below="@id/base_register_toolbar"
                     android:layout_marginBottom="5dp">
 
-                </androidx.viewpager2.widget.ViewPager2>
+                </androidx.fragment.app.FragmentContainerView>
 
                 <Button
                     android:id="@+id/btn_register_new_client"
@@ -72,6 +72,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="72dp"
                     android:layout_alignParentBottom="true"
+                    app:labelVisibilityMode="labeled"
                     app:menu="@menu/drawer_menu" />
             </RelativeLayout>
 

@@ -64,6 +64,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
 fun EncounterListScreen(dataProvider: EncounterDataProvider) {
@@ -104,6 +105,7 @@ fun EncounterListScreen(dataProvider: EncounterDataProvider) {
 
 @Preview
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun EncounterItem(
   @PreviewParameter(DummyItem::class) item: EncounterItem,
   isLastItem: Boolean = false
@@ -168,6 +170,7 @@ fun LoadingItem() {
 
 @Preview
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun EncounterListScreenPreview() {
   AppTheme { EncounterListScreen(dummyData()) }
 }
