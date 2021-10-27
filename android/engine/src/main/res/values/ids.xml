@@ -6,4 +6,5 @@
     <item name="menu_group_app_actions" type="id" />
     <item name="menu_group_empty" type="id" />
     <item name="menu_group_empty_item_id" type="id" />
+    <item name="menu_group_default_item_id" type="id" />
 </resources>

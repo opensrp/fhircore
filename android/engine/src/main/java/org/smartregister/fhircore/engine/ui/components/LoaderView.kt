@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 const val LOADER_DIALOG_PROGRESS_BAR_TAG = "loaderDialogProgressBarTag"
 const val LOADER_DIALOG_PROGRESS_MSG_TAG = "loaderDialogProgressMsgTag"
@@ -89,6 +90,7 @@ fun LoaderDialog(modifier: Modifier = Modifier) {
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun LoaderPreview() {
   LoaderDialog()
 }

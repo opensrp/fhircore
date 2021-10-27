@@ -55,6 +55,7 @@ import org.smartregister.fhircore.engine.ui.theme.OverdueColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.ui.theme.WarningColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
 fun PatientRow(
@@ -174,6 +175,7 @@ fun VaccineStatusItem(
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun PatientRowDuePreview() {
   val patientItem =
     PatientItem(
@@ -186,6 +188,7 @@ fun PatientRowDuePreview() {
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun PatientRowPartialPreview() {
   val patientItem =
     PatientItem(
@@ -199,6 +202,7 @@ fun PatientRowPartialPreview() {
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun PatientRowOverduePreview() {
   val patientItem =
     PatientItem(
@@ -211,6 +215,7 @@ fun PatientRowOverduePreview() {
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun PatientRowVaccinatedPreview() {
   val patientItem =
     PatientItem(
