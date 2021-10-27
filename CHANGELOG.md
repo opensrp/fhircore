@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Add tags to patient via questionnaire
 - Engine | AlertDialog on questionnaire activity load, back, submit, progress
 - Engine | Block questionnaire submit if validation errors exist
+- ANC | Fix crashes due to invalid data
 
 ### Fixed
 
