@@ -68,6 +68,7 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
 fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
@@ -300,8 +301,9 @@ fun EncounterList(members: List<Encounter>, encounterItemClickListener: (item: E
   }
 }
 
-@Preview(showBackground = true)
 @Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun PreviewFamilyDetailScreen() {
   AppTheme { FamilyDetailScreen(getDummyDataProvider()) }
 }

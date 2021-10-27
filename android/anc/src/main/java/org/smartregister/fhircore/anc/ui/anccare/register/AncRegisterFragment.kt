@@ -84,7 +84,7 @@ class AncRegisterFragment : ComposeRegisterFragment<Anc, AncPatientItem>() {
     val ancPatientRepository =
       PatientRepository((requireActivity().application as AncApplication).fhirEngine, AncItemMapper)
     return ViewModelProvider(
-      requireActivity(),
+      viewModelStore,
       RegisterDataViewModel(
           application = requireActivity().application,
           registerRepository = ancPatientRepository
@@ -92,5 +92,9 @@ class AncRegisterFragment : ComposeRegisterFragment<Anc, AncPatientItem>() {
         .createFactory()
     )[RegisterDataViewModel::class.java] as
       RegisterDataViewModel<Anc, AncPatientItem>
+  }
+
+  companion object {
+    const val TAG = "AncRegisterFragment"
   }
 }
