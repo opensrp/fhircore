@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2021-xx-xx
 
 ### Added
+-
+
+### Fixed
+-
+
+### Changed
+-
+
+
+## [0.0.2 Quest, 0.0.3 - ANC] - 2021-10-27
+
+### Added
 - ANC | Optimized memory use for measure reporting by using String builder File forgotten in PR 646
 - ANC | Optimized memory use for measure reporting by using String builder and loading only once cql and measure reporting libraries
 - ANC | Added progress bar to cql and measure reporting in ANC patien details page
@@ -26,7 +38,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Add tags to patient via questionnaire
 - Engine | AlertDialog on questionnaire activity load, back, submit, progress
 - Engine | Block questionnaire submit if validation errors exist
-- ANC | Fix crashes due to invalid data
+- Quest | Bottom Navigation updated with new structure
+- Quest | User actions, profile screen implemented
+- ANC | Navigation structure changes implemented
+- ANC | Bottom sheet for switching registers added
+- ANC | User actions, profile screen implemented
+- ANC | Drawer menu removed
 
 ### Fixed
 
@@ -35,6 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Authentication toekn expiry issue
 - Fhir Resource Converter issue after resource update
 - Inteceptor handling for missing account
+- ANC | Fix crashes due to invalid data
+- Engine | Remove the menu icon on the login screen
 
 ### Changed
 
