@@ -56,7 +56,6 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemsIndexed
-import java.text.SimpleDateFormat
 import java.util.Date
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -64,6 +63,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 
 @Composable
 fun EncounterListScreen(dataProvider: EncounterDataProvider) {
@@ -130,7 +130,7 @@ fun EncounterItem(
       Column(modifier = Modifier.fillMaxWidth().padding(start = 12.dp)) {
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
           Text(
-            text = SimpleDateFormat.getDateInstance().format(item.periodStartDate),
+            text = item.periodStartDate.makeItReadable(),
             color = colorResource(id = R.color.status_gray),
             fontSize = 12.sp
           )

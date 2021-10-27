@@ -67,6 +67,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 
 @Composable
 fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
@@ -93,13 +94,13 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
       ) {
         val patient = dataProvider.getDemographics().observeAsState()
         Text(
-          text = patient.value?.name?.first()?.family ?: "",
+          text = patient.value?.name?.firstOrNull()?.family ?: "",
           color = colorResource(id = R.color.white),
           fontSize = 25.sp
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
-          text = patient.value?.name?.first()?.given?.first()?.value ?: "",
+          text = patient.value?.name?.firstOrNull()?.given?.firstOrNull()?.value ?: "",
           color = colorResource(id = R.color.white),
           fontSize = 25.sp
         )
@@ -279,7 +280,7 @@ fun EncounterList(members: List<Encounter>, encounterItemClickListener: (item: E
           }
 
           Text(
-            text = SimpleDateFormat.getDateInstance().format(item.period.start),
+            text = item.period?.start.makeItReadable(),
             color = colorResource(id = R.color.status_gray),
             fontSize = 17.sp,
             textAlign = TextAlign.Start

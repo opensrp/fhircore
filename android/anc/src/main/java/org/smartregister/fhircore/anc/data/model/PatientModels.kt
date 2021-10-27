@@ -64,7 +64,7 @@ data class EncounterItem(
   val id: String = "",
   val status: Encounter.EncounterStatus,
   val display: String = "",
-  val periodStartDate: Date = Date()
+  val periodStartDate: Date?
 )
 
 @Stable data class AllergiesItem(var allergiesIdentifier: String = "", var title: String = "")

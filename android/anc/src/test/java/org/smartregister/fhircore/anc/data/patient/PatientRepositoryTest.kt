@@ -154,6 +154,8 @@ class PatientRepositoryTest : RobolectricTest() {
           Address().apply {
             city = "Nairobi"
             country = "Kenya"
+            addLine("12 B")
+            addLine("Gulshan")
           }
         )
       active = true
@@ -209,7 +211,7 @@ class PatientRepositoryTest : RobolectricTest() {
       Assert.assertEquals("Salina Jetly", name)
       Assert.assertEquals("Female", gender)
       Assert.assertEquals("0", age)
-      Assert.assertEquals("Kenya", demographics)
+      Assert.assertEquals("12 B, Gulshan, Nairobi Kenya", demographics)
       Assert.assertEquals("", atRisk)
     }
   }
