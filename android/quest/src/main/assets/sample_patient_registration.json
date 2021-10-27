@@ -137,6 +137,47 @@
           ]
         },
         {
+          "linkId": "birth_date_selection",
+          "type": "choice",
+          "required": true,
+          "text": "Date of Birth",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            }
+          ],
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "date",
+                "display": "Date"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "age",
+                "display": "Age"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "PR-age",
+          "definition": "http://acme.org/devices/clinical-codes",
+          "text": "Age (years)",
+          "type": "decimal",
+          "enableWhen": [
+            {
+              "question": "birth_date_selection",
+              "operator": "=",
+              "answerCoding": {
+                "code": "age"
+              }
+            }
+          ]
+        },
+        {
           "linkId": "PR-birth-date",
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
           "extension": [
@@ -150,7 +191,16 @@
           ],
           "type": "date",
           "required": true,
-          "text": "Date of Birth"
+          "text": "Date of Birth",
+          "enableWhen": [
+            {
+              "question": "birth_date_selection",
+              "operator": "=",
+              "answerCoding": {
+                "code": "date"
+              }
+            }
+          ]
         },
         {
           "linkId": "is_pregnant",
