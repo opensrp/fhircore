@@ -20,10 +20,10 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.MockKAnnotations
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
-import io.mockk.coEvery
 import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
@@ -36,11 +36,11 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.StringType
-import org.junit.Before
-import org.junit.Rule
 import org.junit.Assert
-import org.junit.Test
+import org.junit.Before
 import org.junit.Ignore
+import org.junit.Rule
+import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.data.PatientRepository
@@ -50,7 +50,7 @@ import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
 
 @ExperimentalCoroutinesApi
 @Config(shadows = [EirApplicationShadow::class])
-internal class AdverseEventViewModelTest : RobolectricTest(){
+internal class AdverseEventViewModelTest : RobolectricTest() {
   private lateinit var fhirEngine: FhirEngine
 
   private lateinit var adverseEventViewModel: AdverseEventViewModel
@@ -75,12 +75,13 @@ internal class AdverseEventViewModelTest : RobolectricTest(){
     every { adverseEvent.date } returns "22-Jan-2022"
     every { adverseEvent.detail } returns "Blood Clots"
     every { immunization.protocolApplied } returns
-            listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(1)))
+      listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(1)))
     every { immunization.vaccineCode.coding } returns listOf(Coding("sys", "code", "disp"))
     coEvery { patientRepository.getPatientImmunizations(any()) } returns listOf(immunization)
     coEvery { patientRepository.getAdverseEvents(any()) } returns listOf(adverseEvent)
 
-    adverseEventViewModel = spyk(AdverseEventViewModel(ApplicationProvider.getApplicationContext(), patientRepository))
+    adverseEventViewModel =
+      spyk(AdverseEventViewModel(ApplicationProvider.getApplicationContext(), patientRepository))
   }
 
   @Test
