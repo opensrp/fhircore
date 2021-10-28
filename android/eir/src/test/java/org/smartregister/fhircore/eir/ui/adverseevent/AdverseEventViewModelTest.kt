@@ -38,7 +38,6 @@ import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
@@ -46,7 +45,6 @@ import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
-import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
 
 @ExperimentalCoroutinesApi
 @Config(shadows = [EirApplicationShadow::class])
@@ -71,14 +69,10 @@ internal class AdverseEventViewModelTest : RobolectricTest() {
     patientRepository = mockk()
 
     val immunization = spyk<Immunization>()
-    val adverseEvent = spyk<AdverseEventItem>()
-    every { adverseEvent.date } returns "22-Jan-2022"
-    every { adverseEvent.detail } returns "Blood Clots"
     every { immunization.protocolApplied } returns
       listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(1)))
     every { immunization.vaccineCode.coding } returns listOf(Coding("sys", "code", "disp"))
     coEvery { patientRepository.getPatientImmunizations(any()) } returns listOf(immunization)
-    coEvery { patientRepository.getAdverseEvents(any()) } returns listOf(adverseEvent)
 
     adverseEventViewModel =
       spyk(AdverseEventViewModel(ApplicationProvider.getApplicationContext(), patientRepository))
@@ -92,18 +86,6 @@ internal class AdverseEventViewModelTest : RobolectricTest() {
       val liveImmunizationList = getLiveDataValue(immunizationList)
       Assert.assertNotNull(liveImmunizationList)
       Assert.assertTrue(liveImmunizationList is List<Immunization>)
-      Assert.assertNotNull(liveImmunizationList?.isNotEmpty())
-    }
-
-  @Test
-  @Ignore("It's a mock library issue")
-  fun testGetAdverseEvents() =
-    coroutinesTestRule.runBlockingTest {
-      val immunizationList = adverseEventViewModel.getAdverseEvents(getImmunizations())
-      Assert.assertNotNull(immunizationList)
-      val liveImmunizationList = getLiveDataValue(immunizationList)
-      Assert.assertNotNull(liveImmunizationList)
-      Assert.assertTrue(liveImmunizationList is List<Pair<String, List<AdverseEventItem>>>)
       Assert.assertNotNull(liveImmunizationList?.isNotEmpty())
     }
 
