@@ -10,26 +10,15 @@ plugins {
     id 'dagger.hilt.android.plugin'
 }
 
+apply from: '../properties.gradle'
 apply from: '../jacoco.gradle'
-
-Properties props = new Properties()
-
-def arr = ["FHIR_BASE_URL", "OAUTH_BASE_URL", "OAUTH_CIENT_ID", "OAUTH_CLIENT_SECRET", "OAUTH_SCOPE"]
-if (rootProject.file("local.properties").exists()) {
-    props.load(rootProject.file("local.properties").newDataInputStream())
-
-    arr.each { prop ->
-        project.ext.set(prop, props.getProperty(prop, (prop == "FHIR_BASE_URL") ? "https://sample.url/fhir/" : "sample"))
-    }
-} else {
-    println("local.properties does not exist. The following values are required " + arr.join(", "))
-    arr.each { prop ->
-        project.ext.set(prop, props.getProperty(prop, (prop.contains("URL")) ? "https://sample.url/fhir/" : "sample_" + prop))
-    }
-}
 
 android {
     compileSdkVersion 30
+
+    lintOptions {
+        abortOnError false
+    }
 
     dataBinding {
         enabled true
@@ -60,6 +49,20 @@ android {
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
     }
 
+    signingConfigs {
+
+        release {
+
+            v1SigningEnabled true
+            v2SigningEnabled true
+
+            keyAlias keystoreProperties['KEYSTORE_ALIAS']
+            keyPassword keystoreProperties['KEY_PASSWORD']
+            storeFile file(keystoreProperties['KEYSTORE_FILE'])
+            storePassword keystoreProperties['KEYSTORE_PASSWORD']
+        }
+    }
+
     buildTypes {
         debug {
             testCoverageEnabled true
@@ -67,8 +70,11 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8

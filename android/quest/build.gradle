@@ -11,22 +11,7 @@ plugins {
 }
 
 apply from: '../jacoco.gradle'
-
-Properties props = new Properties()
-
-def arr = ["FHIR_BASE_URL", "OAUTH_BASE_URL", "OAUTH_CIENT_ID", "OAUTH_CLIENT_SECRET", "OAUTH_SCOPE"]
-if (rootProject.file("local.properties").exists()) {
-    props.load(rootProject.file("local.properties").newDataInputStream())
-
-    arr.each { prop ->
-        project.ext.set(prop, props.getProperty(prop, (prop == "FHIR_BASE_URL") ? "https://sample.url/fhir/" : "sample"))
-    }
-} else {
-    println("local.properties does not exist. The following values are required " + arr.join(", "))
-    arr.each { prop ->
-        project.ext.set(prop, props.getProperty(prop, (prop.contains("URL")) ? "https://sample.url/fhir/" : "sample_" + prop))
-    }
-}
+apply from: '../properties.gradle'
 
 android {
     compileSdkVersion 30
@@ -56,6 +41,21 @@ android {
         targetSdkVersion 30
     }
 
+
+    signingConfigs {
+
+	release {
+
+            v1SigningEnabled true
+            v2SigningEnabled true
+
+            keyAlias keystoreProperties['KEYSTORE_ALIAS']
+            keyPassword keystoreProperties['KEY_PASSWORD']
+            storeFile file(keystoreProperties['KEYSTORE_FILE'])
+            storePassword keystoreProperties['KEYSTORE_PASSWORD']
+        }   
+    }   
+
     buildTypes {
         debug {
             testCoverageEnabled true
@@ -63,6 +63,8 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+
         }
     }
 
@@ -123,6 +125,29 @@ android {
             }
         }
     }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.0.1'
+    }
+
+    compileSdkVersion 30
+
+    lintOptions {
+        abortOnError false
+    }
+
+    signingConfigs {
+        release {
+
+            v1SigningEnabled true
+            v2SigningEnabled true
+
+            keyAlias keystoreProperties['KEYSTORE_ALIAS']
+            keyPassword keystoreProperties['KEY_PASSWORD']
+            storeFile file(keystoreProperties['KEYSTORE_FILE'])
+            storePassword keystoreProperties['KEYSTORE_PASSWORD']
+        }
+    }
 }
 
 dependencies {
@@ -166,3 +191,4 @@ dependencies {
 
     testImplementation 'info.cqframework:cql-to-elm:1.5.0'
 }
+
