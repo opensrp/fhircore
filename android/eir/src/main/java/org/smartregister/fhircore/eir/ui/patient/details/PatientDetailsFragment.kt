@@ -111,7 +111,7 @@ class PatientDetailsFragment private constructor() : Fragment() {
       startActivity(
         Intent(requireContext(), RecordVaccineActivity::class.java)
           .putExtras(
-            QuestionnaireActivity.requiredIntentArgs(
+            QuestionnaireActivity.intentArgs(
               clientIdentifier = patientId,
               form = RECORD_VACCINE_FORM
             )

@@ -106,7 +106,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testRequiredIntentShouldInsertValues() {
-    val result = QuestionnaireActivity.requiredIntentArgs("1234", "my-form")
+    val result = QuestionnaireActivity.intentArgs("1234", "my-form")
     Assert.assertEquals("my-form", result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM))
     Assert.assertEquals(
       "1234",
