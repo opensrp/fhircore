@@ -16,15 +16,17 @@
 
 package org.smartregister.fhircore.eir.ui.adverseevent
 
-import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.coEvery
 import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
@@ -36,16 +38,22 @@ import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Before
 import org.junit.Rule
+import org.junit.Assert
+import org.junit.Test
+import org.junit.Ignore
+import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.data.PatientRepository
-import org.smartregister.fhircore.eir.data.model.PatientItem
-import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
+import org.smartregister.fhircore.eir.robolectric.RobolectricTest
+import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
+import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
 
 @ExperimentalCoroutinesApi
-internal class AdverseEventViewModelTest {
+@Config(shadows = [EirApplicationShadow::class])
+internal class AdverseEventViewModelTest : RobolectricTest(){
   private lateinit var fhirEngine: FhirEngine
 
-  private lateinit var ancDetailsViewModel: AdverseEventViewModel
+  private lateinit var adverseEventViewModel: AdverseEventViewModel
 
   private lateinit var patientRepository: PatientRepository
 
@@ -62,13 +70,41 @@ internal class AdverseEventViewModelTest {
     fhirEngine = mockk(relaxed = true)
     patientRepository = mockk()
 
-    val ancPatientDetailItem = spyk<PatientItemMapper>()
+    val immunization = spyk<Immunization>()
+    val adverseEvent = spyk<AdverseEventItem>()
+    every { adverseEvent.date } returns "22-Jan-2022"
+    every { adverseEvent.detail } returns "Blood Clots"
+    every { immunization.protocolApplied } returns
+            listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(1)))
+    every { immunization.vaccineCode.coding } returns listOf(Coding("sys", "code", "disp"))
+    coEvery { patientRepository.getPatientImmunizations(any()) } returns listOf(immunization)
+    coEvery { patientRepository.getAdverseEvents(any()) } returns listOf(adverseEvent)
 
-    every { ancPatientDetailItem.mapToDomainModel(Pair(getPatient(), getImmunizations())) } returns
-      PatientItem("samplePatientId", "Mandela Nelson", "M", "0")
-
-    ancDetailsViewModel = spyk(AdverseEventViewModel(Application(), patientRepository))
+    adverseEventViewModel = spyk(AdverseEventViewModel(ApplicationProvider.getApplicationContext(), patientRepository))
   }
+
+  @Test
+  fun testGetPatientImmunizations() =
+    coroutinesTestRule.runBlockingTest {
+      val immunizationList = adverseEventViewModel.getPatientImmunizations(patientId = patientId)
+      Assert.assertNotNull(immunizationList)
+      val liveImmunizationList = getLiveDataValue(immunizationList)
+      Assert.assertNotNull(liveImmunizationList)
+      Assert.assertTrue(liveImmunizationList is List<Immunization>)
+      Assert.assertNotNull(liveImmunizationList?.isNotEmpty())
+    }
+
+  @Test
+  @Ignore("It's a mock library issue")
+  fun testGetAdverseEvents() =
+    coroutinesTestRule.runBlockingTest {
+      val immunizationList = adverseEventViewModel.getAdverseEvents(getImmunizations())
+      Assert.assertNotNull(immunizationList)
+      val liveImmunizationList = getLiveDataValue(immunizationList)
+      Assert.assertNotNull(liveImmunizationList)
+      Assert.assertTrue(liveImmunizationList is List<Pair<String, List<AdverseEventItem>>>)
+      Assert.assertNotNull(liveImmunizationList?.isNotEmpty())
+    }
 
   fun getPatient(): Patient {
     val patient =
