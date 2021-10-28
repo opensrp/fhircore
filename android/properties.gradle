@@ -17,7 +17,7 @@ if (rootProject.file("local.properties").exists()) {
 
 //KEYSTORE CREDENTIALS
 ext.keystoreProperties = new Properties()
-def keystoreArray = ["KEYSTORE_ALIAS", "KEYSTORE_PASSWORD", "KEY_PASSWORD", "KEYSTORE_LOCATION"]
+def keystoreArray = ["KEYSTORE_ALIAS", "KEYSTORE_PASSWORD", "KEY_PASSWORD", "KEYSTORE_FILE"]
 if (rootProject.file("keystore.properties").exists()) {
     keystoreProperties.load(rootProject.file("keystore.properties").newDataInputStream())
 
