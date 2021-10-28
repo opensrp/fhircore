@@ -33,6 +33,7 @@ import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
+import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 
 @Config(shadows = [AncApplicationShadow::class])
@@ -44,7 +45,7 @@ class AncRegisterFragmentTest : RobolectricTest() {
   fun setUp() {
 
     val registerActivity =
-      Robolectric.buildActivity(AncRegisterActivity::class.java).create().resume().get()
+      Robolectric.buildActivity(FamilyRegisterActivity::class.java).create().resume().get()
     registerFragment = AncRegisterFragment()
     registerActivity.supportFragmentManager.commitNow { add(registerFragment, "") }
   }

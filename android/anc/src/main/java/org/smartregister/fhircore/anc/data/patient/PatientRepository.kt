@@ -59,6 +59,7 @@ import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.due
+import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -136,29 +137,19 @@ class PatientRepository(
         val patient = fhirEngine.load(Patient::class.java, patientId)
         var ancPatientItemHead = AncPatientItem()
         if (patient.link.isNotEmpty()) {
-          var address = ""
           val patientHead =
             fhirEngine.load(
               Patient::class.java,
-              patient.link[0].other.reference.replace("Patient/", "")
+              patient.linkFirstRep.other.reference.replace("Patient/", "")
             )
-          if (patientHead.address != null && patientHead.address.isNotEmpty()) {
-            address =
-              when {
-                patient.address[0].hasCountry() -> patientHead.address[0].country
-                patient.address[0].hasCity() -> patientHead.address[0].city
-                patient.address[0].hasState() -> patientHead.address[0].state
-                patient.address[0].hasDistrict() -> patientHead.address[0].district
-                else -> ""
-              }
-          }
+
           ancPatientItemHead =
             AncPatientItem(
               patientIdentifier = patient.logicalId,
               name = patientHead.extractName(),
               gender = patientHead.extractGender(AncApplication.getContext()) ?: "",
               age = patientHead.extractAge(),
-              demographics = address
+              demographics = patientHead.extractAddress()
             )
         }
 
@@ -197,9 +188,10 @@ class PatientRepository(
       when (searchFilterString) {
         "edd" -> ancOverviewConfig.eddFilter!!
         "risk" -> ancOverviewConfig.riskFilter!!
-        "fetueses" -> ancOverviewConfig.fetusesFilter!!
+        "fetuses" -> ancOverviewConfig.fetusesFilter!!
         "ga" -> ancOverviewConfig.gaFilter!!
-        else -> ancOverviewConfig.eddFilter!!
+        else ->
+          throw UnsupportedOperationException("Given filter $searchFilterString not supported")
       }
     var finalObservation = Observation()
     val observations =

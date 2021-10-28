@@ -25,14 +25,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
+
+const val DOT_TAG = "dotTag"
 
 @Composable
 fun Dot(modifier: Modifier = Modifier, showDot: Boolean = true) {
   if (showDot) {
     Spacer(modifier = modifier.width(8.dp))
-    Box(modifier = modifier.clip(CircleShape).size(2.6.dp).background(color = SubtitleTextColor))
+    Box(
+      modifier =
+        modifier
+          .testTag(DOT_TAG)
+          .clip(CircleShape)
+          .size(2.6.dp)
+          .background(color = SubtitleTextColor)
+    )
     Spacer(modifier = modifier.width(8.dp))
   }
 }

@@ -12,7 +12,7 @@
             android:id="@+id/top_toolbar_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginVertical="8dp"
+            android:layout_marginVertical="12dp"
             android:visibility="gone">
 
             <TextView
@@ -22,10 +22,9 @@
                 android:layout_alignParentStart="true"
                 android:drawablePadding="8dp"
                 android:fontFamily="sans-serif-medium"
-                android:text="Register"
+                android:text="@string/clients"
                 android:textColor="@color/white"
                 android:textSize="20sp"
-                app:drawableEndCompat="@drawable/ic_dropdown_arrow"
                 tools:textColor="@color/white" />
 
             <ImageButton
@@ -44,7 +43,7 @@
             android:id="@+id/middle_toolbar_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginVertical="8dp"
+            android:layout_marginVertical="12dp"
             android:layout_marginStart="5dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">

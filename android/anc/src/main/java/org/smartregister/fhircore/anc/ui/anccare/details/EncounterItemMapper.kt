@@ -21,8 +21,6 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
-import org.smartregister.fhircore.engine.util.DateUtils.getDate
-import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 
 object EncounterItemMapper : DomainMapper<Encounter, EncounterItem> {
 
@@ -30,13 +28,11 @@ object EncounterItemMapper : DomainMapper<Encounter, EncounterItem> {
     var type = CodeableConcept()
     var typeCoding = Coding()
     var typeString = ""
-    var typeDate = ""
     if (dto.type != null && dto.type.isNotEmpty()) type = dto.type[0] as CodeableConcept
     if (type.hasCoding()) typeCoding = type.coding[0] as Coding
     if (typeCoding.hasDisplayElement()) typeString = typeCoding.display
     else if (type.hasText()) typeString = type.text
     if (type.hasText()) typeString = type.text
-    if (dto.period.start != null) typeDate = dto.period.start.makeItReadable()
-    return EncounterItem(dto.id, dto.status, typeString, typeDate.getDate("yyyy-MM-dd"))
+    return EncounterItem(dto.id, dto.status, typeString, dto.period?.start)
   }
 }

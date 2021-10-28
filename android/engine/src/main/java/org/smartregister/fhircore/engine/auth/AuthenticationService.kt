@@ -20,7 +20,6 @@ import android.accounts.Account
 import android.accounts.AccountManager
 import android.accounts.AccountManagerCallback
 import android.accounts.NetworkErrorException
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -217,18 +216,16 @@ abstract class AuthenticationService(open val context: Context) {
 
   fun cleanup() {
     secureSharedPreference.deleteCredentials()
-    context.startActivity(getLogoutUserIntent())
-    if (context is Activity) (context as Activity).finish()
-  }
-
-  private fun getLogoutUserIntent(): Intent {
-    var intent = Intent(Intent.ACTION_MAIN)
-    intent.addCategory(Intent.CATEGORY_LAUNCHER)
-    intent = intent.setClassName(context.packageName, getLoginActivityClass().name)
-    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-
-    return intent
+    context.startActivity(
+      Intent(Intent.ACTION_MAIN).apply {
+        setClassName(context.packageName, getLoginActivityClass().name)
+        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+        addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        addCategory(Intent.CATEGORY_LAUNCHER)
+      }
+    )
   }
 
   abstract fun skipLogin(): Boolean
