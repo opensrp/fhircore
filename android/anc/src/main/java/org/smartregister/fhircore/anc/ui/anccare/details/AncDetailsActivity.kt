@@ -111,7 +111,7 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
         startActivity(
           Intent(this, BmiQuestionnaireActivity::class.java)
             .putExtras(
-              QuestionnaireActivity.requiredIntentArgs(
+              QuestionnaireActivity.intentArgs(
                 clientIdentifier = patientId,
                 form = FormConfig.FAMILY_PATIENT_BMI_FORM
               )

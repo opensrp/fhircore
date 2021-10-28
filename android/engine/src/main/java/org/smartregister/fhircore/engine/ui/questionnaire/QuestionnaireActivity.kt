@@ -277,10 +277,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
 
-    fun requiredIntentArgs(
-      clientIdentifier: String?,
-      form: String,
-      immunizationId: String? = null
+    fun intentArgs(clientIdentifier: String? = null,
+                   form: String,
+                   immunizationId: String? = null
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
