@@ -625,7 +625,7 @@ abstract class BaseRegisterActivity :
     startActivity(
       Intent(this, QuestionnaireActivity::class.java)
         .putExtras(
-          QuestionnaireActivity.requiredIntentArgs(
+          QuestionnaireActivity.intentArgs(
             clientIdentifier = clientIdentifier,
             form = registerViewModel.registerViewConfiguration.value?.registrationForm!!
           )
