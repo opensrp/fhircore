@@ -8,6 +8,7 @@
 
 ## Build instructions
 
+### local.properties
 If you would like to log into remote servers and authenticate against remote FHIR APIs, you will need Keycloak credentials. For this, add the following properties to `~/local.properties`:
 
 ```
@@ -17,6 +18,28 @@ OAUTH_CLIENT_SECRET=xxxxxx
 OAUTH_SCOPE=openid
 FHIR_BASE_URL=https://fhir.labs.smartregister.org/fhir/
 ```
+### keystore.properties
+In order for the `assembleRelease` Gradle task to work e.g. to generate a signed release version of you APK, you need to generate a keystore.
+
+To generate your own release keystore you can use the `keytool` utility (installed as part of the java runtime) to run the command:
+
+`keytool -genkey -v -keystore <my_release_key.keystore> -alias <my_alias_name> -keyalg RSA -keysize 4096 -validity 10000`
+
+You can place the Keystore file anywhere on you filesytem for reference in the `KEYSTORE_FILE` property as an absolute file path e.g. `/Users/username/<my_release_key.keystore>`
+
+You then need to create the file `/fhircore/android/keystore.properties` and add the following properties:
+
+```
+KEYSTORE_PASSWORD=xxxxx
+KEYSTORE_ALIAS=xxxxx
+KEY_PASSWORD=xxxxx
+KEYSTORE_FILE=/my/keystore/filepath
+```
+**Note:** The values used in generating the keystore will be the values assigned to the properties in the `keystore.properties` file
+
+- For more on the `keytool` utility see: [Java Key and Certificate Management Tool](https://docs.oracle.com/javase/6/docs/technotes/tools/windows/keytool.html)
+- For more on signing your application see: [Signing your Android app](https://developer.android.com/studio/publish/app-signing)
+
 ## Application architecture
 
 FHIR Core is based on MVVM Android application architecture. It follows the recommended [Repository Pattern](https://developer.android.com/jetpack/guide) in the architecture. The diagram below shows the different layers of the application structure and how they interact with each other. At the core is Android FHIR SDK which provides Data Access API, Search API, Sync API, Smart Guidelines API and Data Capture API. Refer to [FHIR Core Docs](https://github.com/opensrp/fhircore/tree/main/docs) for more information.
@@ -91,3 +114,4 @@ FHIR Core view configurations are provided through two contracts `ConfigurableCo
 - [FHIR Core Docs](https://github.com/opensrp/fhircore/tree/main/docs) - Read FHIR Core Documentation 
 - [Android App Architecture Guide](https://developer.android.com/jetpack/guide) - Learn more about Android App Architecture
 - [Jetpack Compose](https://developer.android.com/jetpack/compose) - Learn more about Jetpack Compose
+
