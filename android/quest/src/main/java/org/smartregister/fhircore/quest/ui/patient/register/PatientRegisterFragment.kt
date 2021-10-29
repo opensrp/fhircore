@@ -68,7 +68,8 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
         if (value is String && value.isEmpty()) return true
         else
           data.name.contains(value.toString(), ignoreCase = true) ||
-            data.identifier.contentEquals(value.toString())
+            data.identifier.contentEquals(value.toString()) ||
+            data.id == value.toString()
       }
       else -> false
     }
