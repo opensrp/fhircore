@@ -24,7 +24,8 @@ class QuestQuestionnaireResponseViewModel(
     }
 
     override suspend fun loadQuestionnaire(id: String): Questionnaire? {
-        return super.loadQuestionnaire(id)?.apply {
+        val questionnaireId = id.split("/")[1]
+        return super.loadQuestionnaire(questionnaireId)?.apply {
             changeQuestionsToReadOnly(this.item)
         }
     }
