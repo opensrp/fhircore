@@ -28,6 +28,7 @@
         <activity android:name=".ui.patient.details.QuestPatientDetailActivity" />
         <activity android:name=".ui.patient.details.QuestPatientTestResultActivity" />
         <activity android:name="org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity"/>
+        <activity android:name=".ui.overview.QuestQuestionnaireResponseViewActivity"/>
         <service android:name=".QuestAuthAndroidService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />

@@ -2,11 +2,13 @@ package org.smartregister.fhircore.quest.ui.overview
 
 import android.app.Application
 import android.view.View
+import androidx.lifecycle.ViewModelProvider
 import ca.uhn.fhir.context.FhirContext
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
+import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.showToast
 
 /**
@@ -24,6 +26,8 @@ class QuestQuestionnaireResponseViewActivity : QuestionnaireActivity() {
 
     override fun createViewModel(application: Application): QuestionnaireViewModel {
         val questionnaireResponse = intent.getStringExtra("questionnaire-response")
-        return QuestQuestionnaireResponseViewModel(application, questionnaireResponse = FhirContext.forR4().newJsonParser().parseResource(QuestionnaireResponse::class.java, questionnaireResponse))
+        return ViewModelProvider(
+            this@QuestQuestionnaireResponseViewActivity,
+            QuestQuestionnaireResponseViewModel(application, questionnaireResponse = FhirContext.forR4().newJsonParser().parseResource(QuestionnaireResponse::class.java, questionnaireResponse)).createFactory())[QuestQuestionnaireResponseViewModel::class.java]
     }
 }
