@@ -19,11 +19,15 @@ package org.smartregister.fhircore.eir.ui.adverseevent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.sync.Sync
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import io.mockk.verify
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -41,7 +45,13 @@ class AdverseEventAdapterTest : RobolectricTest() {
 
   @Before
   fun setUp() {
+    mockkObject(Sync)
     adapter = AdverseEventAdapter()
+  }
+
+  @After
+  fun cleanup() {
+    unmockkObject(Sync)
   }
 
   @Test

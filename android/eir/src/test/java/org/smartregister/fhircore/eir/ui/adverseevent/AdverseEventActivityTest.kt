@@ -21,9 +21,12 @@ import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.Sync
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.Date
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -35,6 +38,7 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.StringType
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -65,6 +69,8 @@ internal class AdverseEventActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
 
+    mockkObject(Sync)
+
     adverseEventAdapter = mockk()
 
     fhirEngine = mockk(relaxed = true)
@@ -82,6 +88,11 @@ internal class AdverseEventActivityTest : ActivityRobolectricTest() {
       PatientItem("samplePatientId", "Mandela Nelson", "M", "0")
 
     ReflectionHelpers.setField(adverseEventActivity, "adverseEventAdapter", adverseEventAdapter)
+  }
+
+  @After
+  fun cleanup() {
+    unmockkObject(Sync)
   }
 
   @Test
