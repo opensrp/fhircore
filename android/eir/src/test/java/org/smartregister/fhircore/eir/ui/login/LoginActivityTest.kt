@@ -19,10 +19,7 @@ package org.smartregister.fhircore.eir.ui.login
 import android.app.Activity
 import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.sync.Sync
-import io.mockk.mockkObject
-import io.mockk.unmockkObject
-import org.junit.After
+import io.mockk.clearAllMocks
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -41,13 +38,8 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @Before
   fun setUp() {
-    mockkObject(Sync)
+    clearAllMocks()
     loginActivity = Robolectric.buildActivity(LoginActivity::class.java).create().resume().get()
-  }
-
-  @After
-  fun cleanup() {
-    unmockkObject(Sync)
   }
 
   @Test
