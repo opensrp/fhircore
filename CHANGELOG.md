@@ -55,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Engine: Fixes Structure map based resource extraction not working | Remove the menu icon on the login screen
 - ANC | Fix crashes due to invalid data
 - Engine | Remove the menu icon on the login screen
+- Engine: Fixes Structure map based resource extraction not working
 
 ### Changed
 
