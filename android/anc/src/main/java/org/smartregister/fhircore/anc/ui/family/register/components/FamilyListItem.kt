@@ -50,9 +50,10 @@ import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.family.register.FamilyListenerIntent
 import org.smartregister.fhircore.anc.ui.family.register.OpenFamilyProfile
 import org.smartregister.fhircore.engine.ui.components.Dot
-import org.smartregister.fhircore.engine.ui.theme.DueColor
+import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
 fun FamilyRow(
@@ -88,7 +89,12 @@ fun FamilyRow(
           fontSize = 14.sp,
           modifier = modifier.wrapContentWidth()
         )
-        Dot(modifier, familyItem.address.isNotEmpty())
+        Dot(
+          modifier = modifier,
+          showDot =
+            familyItem.address.isNotEmpty() &&
+              (familyItem.isPregnant || familyItem.members.any { it.pregnant })
+        )
         if (familyItem.isPregnant) {
           Image(
             painter = painterResource(R.drawable.ic_pregnant),
@@ -119,7 +125,7 @@ fun FamilyRow(
         ServicesCard(
           modifier = modifier,
           text = familyItem.servicesDue.toString(),
-          color = DueColor
+          color = BlueTextColor
         )
       }
     }
@@ -137,6 +143,7 @@ fun ServicesCard(modifier: Modifier, text: String, color: Color) {
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun FamilyRowPreview() {
   val fmi = FamilyMemberItem("fmname", "fm1", "21", "F", true)
 

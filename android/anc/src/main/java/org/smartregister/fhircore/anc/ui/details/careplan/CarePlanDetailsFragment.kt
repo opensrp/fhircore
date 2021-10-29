@@ -73,7 +73,7 @@ class CarePlanDetailsFragment : Fragment() {
 
     ancDetailsViewModel =
       ViewModelProvider(
-        this,
+        viewModelStore,
         CarePlanDetailsViewModel(ancPatientRepository, patientId = patientId).createFactory()
       )[CarePlanDetailsViewModel::class.java]
 

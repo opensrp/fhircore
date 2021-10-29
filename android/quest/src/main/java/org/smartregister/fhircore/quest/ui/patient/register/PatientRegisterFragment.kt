@@ -83,7 +83,7 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
         registerViewModel.registerViewConfiguration
       )
     return ViewModelProvider(
-      requireActivity(),
+      viewModelStore,
       RegisterDataViewModel(
           application = requireActivity().application,
           registerRepository = patientRepository
@@ -91,5 +91,9 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
         .createFactory()
     )[RegisterDataViewModel::class.java] as
       RegisterDataViewModel<Patient, PatientItem>
+  }
+
+  companion object {
+    const val TAG = "PatientRegisterFragment"
   }
 }

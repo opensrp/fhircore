@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
@@ -40,6 +41,7 @@ abstract class ComposeRegisterFragment<I : Any, O : Any> : BaseRegisterFragment<
     savedInstanceState: Bundle?
   ) =
     ComposeView(requireContext()).apply {
+      setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
         AppTheme {
           val registerData = registerDataViewModel.registerData.collectAsState(emptyFlow())
