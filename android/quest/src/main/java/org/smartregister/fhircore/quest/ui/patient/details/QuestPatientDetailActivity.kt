@@ -22,7 +22,6 @@ import androidx.activity.compose.setContent
 import ca.uhn.fhir.context.FhirContext
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverter
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
@@ -69,10 +68,7 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
     startActivity(
       Intent(this, QuestionnaireActivity::class.java).apply {
         putExtras(
-          QuestionnaireActivity.intentArgs(
-            clientIdentifier = patientId,
-            form = item.identifier
-          )
+          QuestionnaireActivity.intentArgs(clientIdentifier = patientId, form = item.identifier)
         )
       }
     )
@@ -82,14 +78,14 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
     startActivity(
       Intent(this, QuestQuestionnaireResponseViewActivity::class.java)
         .putExtras(
-          QuestionnaireActivity.intentArgs(
-            clientIdentifier = patientId,
-            form = item.questionnaire
-          ).apply {
-            putString("questionnaire-response", FhirContext.forR4().newJsonParser().encodeResourceToString(item))
-          }
+          QuestionnaireActivity.intentArgs(clientIdentifier = patientId, form = item.questionnaire)
+            .apply {
+              putString(
+                "questionnaire-response",
+                FhirContext.forR4().newJsonParser().encodeResourceToString(item)
+              )
+            }
         )
     )
-
   }
 }
