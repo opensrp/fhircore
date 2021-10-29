@@ -61,7 +61,8 @@ open class QuestionnaireViewModel(
 
   var structureMapProvider: (suspend (String) -> StructureMap?)? = null
 
-  open suspend fun loadQuestionnaire(id: String): Questionnaire? = defaultRepository.loadResource(id)
+  open suspend fun loadQuestionnaire(id: String): Questionnaire? =
+    defaultRepository.loadResource(id)
 
   suspend fun getQuestionnaireConfig(form: String): QuestionnaireConfig {
     val loadConfig =
