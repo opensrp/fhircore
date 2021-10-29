@@ -20,8 +20,8 @@ import android.app.Activity
 import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Sync
-import io.mockk.unmockkObject
 import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
