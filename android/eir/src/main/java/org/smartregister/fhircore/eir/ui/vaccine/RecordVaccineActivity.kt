@@ -17,61 +17,79 @@
 package org.smartregister.fhircore.eir.ui.vaccine
 
 import android.app.AlertDialog
-import android.os.Bundle
+import android.app.Application
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.google.android.fhir.datacapture.mapping.ResourceMapper
-import java.util.Date
-import java.util.UUID
+import ca.uhn.fhir.context.FhirContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Immunization
-import org.hl7.fhir.r4.model.PositiveIntType
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
 import org.smartregister.fhircore.engine.util.DateUtils
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import timber.log.Timber
 
 class RecordVaccineActivity : QuestionnaireActivity() {
 
-  lateinit var recordVaccineViewModel: RecordVaccineViewModel
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    recordVaccineViewModel =
-      ViewModelProvider(
-          this@RecordVaccineActivity,
-          RecordVaccineViewModel(
-              application,
-              PatientRepository(
-                (application as ConfigurableApplication).fhirEngine,
-                PatientItemMapper
-              )
+  override fun createViewModel(
+    application: Application,
+  ): QuestionnaireViewModel {
+    return ViewModelProvider(
+        this@RecordVaccineActivity,
+        RecordVaccineViewModel(
+            application,
+            PatientRepository(
+              (application as ConfigurableApplication).fhirEngine,
+              PatientItemMapper
             )
-            .createFactory()
-        )
-        .get(RecordVaccineViewModel::class.java)
+          )
+          .createFactory()
+      )
+      .get(RecordVaccineViewModel::class.java)
   }
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
       clientIdentifier?.let { identifier: String ->
-        recordVaccineViewModel.getVaccineSummary(identifier).observe(this@RecordVaccineActivity) {
-          vaccineSummary: PatientVaccineSummary? ->
+        (questionnaireViewModel as RecordVaccineViewModel).getVaccineSummary(identifier).observe(
+            this@RecordVaccineActivity
+          ) { vaccineSummary: PatientVaccineSummary? ->
           if (vaccineSummary != null) {
             lifecycleScope.launch {
               questionnaire?.let { questionnaire ->
-                getImmunization(questionnaire, questionnaireResponse, vaccineSummary).run {
-                  showVaccineRecordDialog(this, vaccineSummary)
-                }
+                questionnaireViewModel.performExtraction(
+                    questionnaire,
+                    questionnaireResponse,
+                    this@RecordVaccineActivity
+                  )
+                  .run {
+                    val immunizationEntry = entry.firstOrNull { it.resource is Immunization }
+
+                    if (immunizationEntry == null) {
+                      val fhirJsonParser = FhirContext.forR4().newJsonParser()
+                      Timber.e(
+                        "Immunization extraction failed for ${
+                        fhirJsonParser.encodeResourceToString(
+                          questionnaireResponse
+                        )
+                        } producing ${
+                        fhirJsonParser.encodeResourceToString(
+                          this
+                        )
+                        }"
+                      )
+                      lifecycleScope.launch(Dispatchers.Main) { handleExtractionError() }
+                    } else {
+                      showVaccineRecordDialog(this, vaccineSummary)
+                    }
+                  }
               }
             }
           }
@@ -80,45 +98,18 @@ class RecordVaccineActivity : QuestionnaireActivity() {
     }
   }
 
-  private suspend fun getImmunization(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
-    vaccineSummary: PatientVaccineSummary
-  ): Immunization {
-    val immunization =
-      ResourceMapper.extract(questionnaire, questionnaireResponse).entry!![0].resource as
-        Immunization
-    immunization.apply {
-      id = UUID.randomUUID().toString()
-      recorded = Date()
-      status = Immunization.ImmunizationStatus.COMPLETED
-      vaccineCode =
-        CodeableConcept().apply {
-          this.text = questionnaireResponse.item[0].answer[0].valueCoding.code
-          this.coding = listOf(questionnaireResponse.item[0].answer[0].valueCoding)
-        }
-      occurrence = DateTimeType.today()
-      patient = Reference().apply { this.reference = "Patient/$clientIdentifier" }
-      protocolApplied =
-        listOf(
-          Immunization.ImmunizationProtocolAppliedComponent().apply {
-            val currentDoseNumber = vaccineSummary.doseNumber
-            this.doseNumber = PositiveIntType(currentDoseNumber + 1)
-          }
-        )
-    }
-    return immunization
-  }
-
   private fun showVaccineRecordDialog(
-    immunization: Immunization,
+    bundle: org.hl7.fhir.r4.model.Bundle,
     vaccineSummary: PatientVaccineSummary
   ) {
+    val immunization = bundle.entry.first { it.resource is Immunization }.resource as Immunization
+
     val doseNumber = immunization.protocolApplied.first().doseNumberPositiveIntType.value
     val message: String
     val titleText: String
     val vaccineDate = immunization.occurrenceDateTimeType.toHumanDisplay()
-    val nextVaccineDate = DateUtils.addDays(vaccineDate, 28)
+    val nextVaccineDate =
+      DateUtils.addDays(vaccineDate, 28, dateTimeFormat = "MMM d, yyyy h:mm:ss a")
     val currentDose = immunization.vaccineCode.coding.first().code
     val initialDose = vaccineSummary.initialDose
     val isSameAsFirstDose =
@@ -137,8 +128,8 @@ class RecordVaccineActivity : QuestionnaireActivity() {
       titleText =
         this.getString(R.string.ordinal_vaccine_dose_recorded, immunization.vaccineCode.text)
     } else {
-      message = "Second vaccine dose should be same as first"
-      titleText = "Initially received $initialDose"
+      message = getString(R.string.second_vaccine_dose_should_be_same_first)
+      titleText = getString(R.string.initially_received_x).format(initialDose)
     }
 
     val dialogBuilder =
@@ -148,7 +139,7 @@ class RecordVaccineActivity : QuestionnaireActivity() {
         setNegativeButton(R.string.done) { dialogInterface, _ ->
           dialogInterface.dismiss()
           if (isSameAsFirstDose) {
-            questionnaireViewModel.saveResource(immunization)
+            questionnaireViewModel.saveBundleResources(bundle)
             finish()
           }
         }
@@ -158,5 +149,14 @@ class RecordVaccineActivity : QuestionnaireActivity() {
       setCancelable(false)
       show()
     }
+  }
+
+  private fun handleExtractionError() {
+    AlertDialog.Builder(this)
+      .setTitle(getString(R.string.error_reading_immunization_details))
+      .setMessage(getString(R.string.kindly_retry_contact_devs_problem_persists))
+      .setPositiveButton(android.R.string.ok) { dialogInterface, _ -> dialogInterface.dismiss() }
+      .setCancelable(true)
+      .show()
   }
 }

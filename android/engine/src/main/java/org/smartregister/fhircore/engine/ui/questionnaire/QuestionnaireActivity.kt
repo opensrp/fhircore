@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.app.AlertDialog
+import android.app.Application
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -29,15 +30,18 @@ import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
-import kotlinx.coroutines.withContext
+import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
+import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showErrorAlert
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.FormConfigUtil
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -58,11 +62,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   lateinit var questionnaireViewModel: QuestionnaireViewModel
 
-  protected var questionnaire: Questionnaire? = null
+  protected lateinit var questionnaire: Questionnaire
 
   protected var clientIdentifier: String? = null
-
-  protected lateinit var form: String
 
   private val parser = FhirContext.forR4().newJsonParser()
 
@@ -75,35 +77,39 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       finish()
     }
 
+    val loadProgress = showProgressAlert(this, R.string.loading)
+
     clientIdentifier = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
-    form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
 
     lifecycleScope.launchWhenCreated {
-      val loadConfig =
-        withContext(dispatcherProvider.io()) {
-          FormConfigUtil.loadConfig<List<QuestionnaireConfig>>(
-            FORM_CONFIGURATIONS,
-            this@QuestionnaireActivity
+      questionnaireViewModel = createViewModel(application)
+
+      val form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
+      // form is either name of form in asset/form-config or questionnaire-id
+      // load from assets and get questionnaire or if not found build it from questionnaire
+      questionnaireConfig =
+        kotlin.runCatching { questionnaireViewModel.getQuestionnaireConfig(form) }.getOrElse {
+          // load questionnaire from db and build config
+          questionnaire = questionnaireViewModel.loadQuestionnaire(form)!!
+
+          QuestionnaireConfig(
+            form = questionnaire.name ?: "",
+            title = questionnaire.title ?: "",
+            identifier = questionnaire.logicalId
           )
         }
 
-      questionnaireConfig = loadConfig.associateBy { it.form }.getValue(form)
+      // if questionnaire is still not initialized load using config loaded from assets
+      if (!::questionnaire.isInitialized)
+        questionnaire = questionnaireViewModel.loadQuestionnaire(questionnaireConfig.identifier)!!
 
       supportActionBar?.apply {
         setDisplayHomeAsUpEnabled(true)
         title = questionnaireConfig.title
       }
 
-      questionnaireViewModel =
-        ViewModelProvider(
-          this@QuestionnaireActivity,
-          QuestionnaireViewModel(application, questionnaireConfig).createFactory()
-        )[QuestionnaireViewModel::class.java]
-
-      questionnaire = questionnaireViewModel.loadQuestionnaire()
-
       // Only add the fragment once, when the activity is first created.
-      if (savedInstanceState == null && questionnaire != null) {
+      if (savedInstanceState == null) {
         val fragment =
           BaseQuestionnaireFragment().apply {
             val parsedQuestionnaire = parser.encodeResourceToString(questionnaire)
@@ -121,78 +127,113 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                     Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
                   )
                 }
-                else -> bundleOf()
+                else -> bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
               }
           }
         supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
       }
+      loadProgress.dismiss()
     }
 
     findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
   }
 
+  open fun createViewModel(application: Application) =
+    ViewModelProvider(
+      this@QuestionnaireActivity,
+      QuestionnaireViewModel(application).createFactory()
+    )[QuestionnaireViewModel::class.java]
+
   override fun onClick(view: View) {
     if (view.id == R.id.btn_save_client_info) {
-      val questionnaireFragment =
-        supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as
-          QuestionnaireFragment
-      handleQuestionnaireResponse(questionnaireFragment.getQuestionnaireResponse())
+      showConfirmAlert(
+        context = this,
+        message = R.string.questionnaire_alert_submit_message,
+        title = R.string.questionnaire_alert_submit_title,
+        confirmButtonListener = { handleQuestionnaireSubmit() },
+        confirmButtonText = R.string.questionnaire_alert_submit_button_title
+      )
     } else {
       showToast(getString(R.string.error_saving_form))
     }
   }
 
-  open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
-    if (questionnaire != null) {
-      val alertDialog = showDialog()
-
-      questionnaireViewModel.extractionProgress.observe(
-        this,
-        { result ->
-
-          // TODO: Unregister this observer
-
-          if (result) {
-            alertDialog.dismiss()
-            finish()
-          } else {
-            Timber.e("An error occurred during extraction")
-          }
-        }
-      )
-
-      questionnaireViewModel.extractAndSaveResources(
-        context = this@QuestionnaireActivity,
-        questionnaire = questionnaire!!,
-        questionnaireResponse = questionnaireResponse,
-        resourceId = null
-      )
-    }
+  fun getQuestionnaireResponse(): QuestionnaireResponse {
+    val questionnaireFragment =
+      supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
+    return questionnaireFragment.getQuestionnaireResponse()
   }
 
-  fun showDialog(): AlertDialog {
-    val dialogBuilder =
-      AlertDialog.Builder(this).apply {
-        setView(R.layout.dialog_saving)
-        setCancelable(false)
-      }
+  private lateinit var saveProcessingAlertDialog: AlertDialog
 
-    return dialogBuilder.create().apply { show() }
+  fun dismissSaveProcessing() {
+    saveProcessingAlertDialog.dismiss()
+  }
+
+  open fun handleQuestionnaireSubmit() {
+    saveProcessingAlertDialog = showProgressAlert(this, R.string.saving_registration)
+
+    val questionnaireResponse = getQuestionnaireResponse()
+
+    if (!validQuestionnaireResponse(questionnaireResponse)) {
+      saveProcessingAlertDialog.dismiss()
+
+      showErrorAlert(
+        this,
+        R.string.questionnaire_alert_invalid_message,
+        R.string.questionnaire_alert_invalid_title
+      )
+      return
+    }
+
+    handleQuestionnaireResponse(questionnaireResponse)
+
+    questionnaireViewModel.extractionProgress.observe(
+      this,
+      { result ->
+        if (result) {
+          finish()
+        } else {
+          Timber.e("An error occurred during extraction")
+        }
+
+        saveProcessingAlertDialog.dismiss()
+      }
+    )
+  }
+
+  fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
+    return QuestionnaireResponseValidator.validate(
+        questionnaire.item,
+        questionnaireResponse.item,
+        this
+      )
+      .values
+      .flatten()
+      .all { it.isValid }
+  }
+
+  open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
+    questionnaireViewModel.extractAndSaveResources(
+      context = this@QuestionnaireActivity,
+      questionnaire = questionnaire!!,
+      questionnaireResponse = questionnaireResponse,
+      resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
+    )
   }
 
   companion object {
     const val QUESTIONNAIRE_TITLE_KEY = "questionnaire-title-key"
     const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"
-    const val QUESTIONNAIRE_PATH_KEY = "questionnaire-path-key"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire_form"
-    private const val FORM_CONFIGURATIONS = "form_configurations.json"
+    const val FORM_CONFIGURATIONS = "form_configurations.json"
 
     fun requiredIntentArgs(clientIdentifier: String?, form: String) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
-        Pair(QUESTIONNAIRE_ARG_FORM, form)
+        Pair(QUESTIONNAIRE_ARG_FORM, form),
       )
   }
 
@@ -207,6 +248,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   override fun onBackPressed() {
-    finish()
+    showConfirmAlert(
+      this,
+      R.string.questionnaire_alert_back_pressed_message,
+      R.string.questionnaire_alert_back_pressed_title,
+      { finish() },
+      R.string.questionnaire_alert_back_pressed_button_title
+    )
   }
 }

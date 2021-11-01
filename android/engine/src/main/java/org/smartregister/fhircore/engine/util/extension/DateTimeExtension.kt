@@ -16,29 +16,37 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
-import org.hl7.fhir.r4.model.DateTimeType
+import java.util.Date
+import org.hl7.fhir.r4.model.DateType
+
+val SDF_DD_MMM_YYYY = SimpleDateFormat("dd-MMM-yyyy")
 
 fun OffsetDateTime.asString(): String {
   return this.format(DateTimeFormatter.RFC_1123_DATE_TIME)
 }
 
-fun DateTimeType.plusWeeksAsString(weeks: Int): String {
+fun Date.asDdMmmYyyy(): String {
+  return SDF_DD_MMM_YYYY.format(this)
+}
+
+fun DateType.plusWeeksAsString(weeks: Int): String {
   val clone = this.copy()
   clone.add(Calendar.DATE, weeks * 7)
   return clone.format()
 }
 
-fun DateTimeType.plusMonthsAsString(months: Int): String {
+fun DateType.plusMonthsAsString(months: Int): String {
   val clone = this.copy()
   clone.add(Calendar.MONTH, months)
   return clone.format()
 }
 
-fun DateTimeType.format(): String =
+fun DateType.format(): String =
   DateTimeFormatter.ISO_LOCAL_DATE.format(
     this.dateTimeValue().value.toInstant().atOffset(ZoneOffset.UTC)
   )

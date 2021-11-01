@@ -20,8 +20,8 @@ import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
-import org.smartregister.fhircore.anc.data.anc.model.AncVisitStatus
+import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
@@ -39,10 +39,12 @@ object AncItemMapper : DomainMapper<Anc, AncPatientItem> {
     val name = patient.extractName()
     val gender = patient.extractGender(AncApplication.getContext())?.first() ?: ""
     val age = patient.extractAge()
-    var visitStatus = AncVisitStatus.PLANNED
+    var visitStatus = VisitStatus.PLANNED
 
-    if (dto.carePlans.any { it.overdue() }) visitStatus = AncVisitStatus.OVERDUE
-    else if (dto.carePlans.any { it.due() }) visitStatus = AncVisitStatus.DUE
+    if (dto.carePlans.flatMap { it.activity }.any { it.detail.overdue() })
+      visitStatus = VisitStatus.OVERDUE
+    else if (dto.carePlans.flatMap { it.activity }.any { it.detail.due() })
+      visitStatus = VisitStatus.DUE
 
     return AncPatientItem(
       patientIdentifier = patient.logicalId,

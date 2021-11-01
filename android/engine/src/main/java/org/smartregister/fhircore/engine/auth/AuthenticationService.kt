@@ -20,7 +20,6 @@ import android.accounts.Account
 import android.accounts.AccountManager
 import android.accounts.AccountManagerCallback
 import android.accounts.NetworkErrorException
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -37,12 +36,15 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.toSha1
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import timber.log.Timber
 
 abstract class AuthenticationService(open val context: Context) {
+  val secureSharedPreference by lazy { SecureSharedPreference(context) }
+  val accountManager by lazy { AccountManager.get(context) }
 
   fun getUserInfo(): Call<ResponseBody> =
     OAuthService.create(context, getApplicationConfigurations()).userInfo()
@@ -80,13 +82,13 @@ abstract class AuthenticationService(open val context: Context) {
     return payload
   }
 
-  fun isSessionActive(token: String?): Boolean {
+  fun isTokenActive(token: String?): Boolean {
     if (token.isNullOrEmpty()) return false
     return try {
       val tokenOnly = token.substring(0, token.lastIndexOf('.') + 1)
       Jwts.parser().parseClaimsJwt(tokenOnly).body.expiration.after(Date())
     } catch (expiredJwtException: ExpiredJwtException) {
-      Timber.w("Refresh/Access token expired", expiredJwtException)
+      Timber.w("Token is expired", expiredJwtException)
       false
     } catch (unsupportedJwtException: UnsupportedJwtException) {
       Timber.w("JWT format not recognized", unsupportedJwtException)
@@ -97,46 +99,101 @@ abstract class AuthenticationService(open val context: Context) {
     }
   }
 
+  fun getLocalSessionToken(): String? {
+    Timber.v("Checking local storage for access token")
+    val token = secureSharedPreference.retrieveSessionToken()
+    return if (isTokenActive(token)) token else null
+  }
+
+  fun getRefreshToken(): String? {
+    Timber.v("Checking local storage for refresh token")
+    val token = secureSharedPreference.retrieveCredentials()?.refreshToken
+    return if (isTokenActive(token)) token else null
+  }
+
+  fun hasActiveSession(): Boolean {
+    Timber.v("Checking for an active session")
+    return getLocalSessionToken()?.isNotBlank() == true
+  }
+
+  fun validLocalCredentials(username: String, password: CharArray): Boolean {
+    Timber.v("Validating credentials with local storage")
+    return secureSharedPreference.retrieveCredentials()?.let {
+      it.username.contentEquals(username) &&
+        it.password.contentEquals(password.concatToString().toSha1())
+    }
+      ?: false
+  }
+
+  fun updateSession(successResponse: OAuthResponse) {
+    Timber.v("Updating tokens on local storage")
+    val credentials =
+      secureSharedPreference.retrieveCredentials()!!.apply {
+        this.sessionToken = successResponse.accessToken!!
+        this.refreshToken = successResponse.refreshToken!!
+      }
+    secureSharedPreference.saveCredentials(credentials)
+  }
+
   fun addAuthenticatedAccount(
-    accountManager: AccountManager,
     successResponse: Response<OAuthResponse>,
-    username: String
+    username: String,
+    password: CharArray
   ) {
-    Timber.i("Adding authenticated account %s", username)
+    Timber.i("Adding authenticated account %s of type %s", username, getAccountType())
 
     val accessToken = successResponse.body()!!.accessToken!!
     val refreshToken = successResponse.body()!!.refreshToken!!
 
     val account = Account(username, getAccountType())
 
-    accountManager.addAccountExplicitly(account, refreshToken, null)
-    accountManager.setAuthToken(account, AUTH_TOKEN_TYPE, accessToken)
-    accountManager.setPassword(account, refreshToken)
+    accountManager.addAccountExplicitly(account, null, null)
+    secureSharedPreference.saveCredentials(
+      AuthCredentials(username, password.concatToString().toSha1(), accessToken, refreshToken)
+    )
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       accountManager.notifyAccountAuthenticated(account)
     }
   }
 
-  fun loadAccount(
-    accountManager: AccountManager,
-    username: String?,
+  fun getBlockingActiveAuthToken(): String? {
+    getLocalSessionToken()?.let {
+      return it
+    }
+    Timber.v("Trying to get blocking auth token from account manager")
+    return getActiveAccount()?.let {
+      accountManager.blockingGetAuthToken(it, AUTH_TOKEN_TYPE, false)
+    }
+  }
+
+  fun getActiveAccount(): Account? {
+    Timber.v("Checking for an active account stored")
+    return secureSharedPreference.retrieveSessionUsername()?.let { username ->
+      accountManager.getAccountsByType(getAccountType()).find { it.name.equals(username) }
+    }
+  }
+
+  fun loadActiveAccount(
     callback: AccountManagerCallback<Bundle>,
     errorHandler: Handler = Handler(Looper.getMainLooper(), DefaultErrorHandler)
   ) {
-    val accounts = accountManager.getAccountsByType(getAccountType())
-
-    if (accounts.isEmpty()) return
-
-    val account = accounts.find { it.name.equals(username) } ?: return
-    Timber.i("Got account %s : ", account.name)
-    accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, Bundle(), true, callback, errorHandler)
+    getActiveAccount()?.let { loadAccount(it, callback, errorHandler) }
   }
 
-  fun logout(accountManager: AccountManager) {
-    val account = accountManager.getAccountsByType(getAccountType()).firstOrNull()
+  fun loadAccount(
+    account: Account,
+    callback: AccountManagerCallback<Bundle>,
+    errorHandler: Handler = Handler(Looper.getMainLooper(), DefaultErrorHandler)
+  ) {
+    Timber.i("Trying to load from getAuthToken for account %s", account.name)
+    accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, Bundle(), false, callback, errorHandler)
+  }
 
-    val refreshToken = getRefreshToken(accountManager)
+  fun logout() {
+    val account = getActiveAccount()
+
+    val refreshToken = getRefreshToken()
     if (refreshToken != null) {
       OAuthService.create(context, getApplicationConfigurations())
         .logout(clientId(), clientSecret(), refreshToken)
@@ -158,24 +215,17 @@ abstract class AuthenticationService(open val context: Context) {
   }
 
   fun cleanup() {
-    SecureSharedPreference(context).deleteCredentials()
-    context.startActivity(getLogoutUserIntent())
-    if (context is Activity) (context as Activity).finish()
-  }
-
-  private fun getLogoutUserIntent(): Intent {
-    var intent = Intent(Intent.ACTION_MAIN)
-    intent.addCategory(Intent.CATEGORY_LAUNCHER)
-    intent = intent.setClassName(context.packageName, getLoginActivityClass().name)
-    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-
-    return intent
-  }
-
-  private fun getRefreshToken(accountManager: AccountManager): String? {
-    val account = accountManager.getAccountsByType(getAccountType()).firstOrNull()
-    return accountManager.getPassword(account)
+    secureSharedPreference.deleteCredentials()
+    context.startActivity(
+      Intent(Intent.ACTION_MAIN).apply {
+        setClassName(context.packageName, getLoginActivityClass().name)
+        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+        addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        addCategory(Intent.CATEGORY_LAUNCHER)
+      }
+    )
   }
 
   abstract fun skipLogin(): Boolean

@@ -16,9 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.questionnaire
 
-import android.content.Context
-import android.content.Intent
-import androidx.lifecycle.SavedStateHandle
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
@@ -29,13 +27,11 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
-import io.mockk.unmockkObject
-import io.mockk.verify
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
@@ -46,29 +42,34 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
-import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.eir.EirApplication
+import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
+import org.smartregister.fhircore.eir.shadow.ShadowNpmPackageProvider
 import org.smartregister.fhircore.eir.shadow.TestUtils
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_PATH_KEY
-import org.smartregister.fhircore.shadow.ShadowNpmPackageProvider
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 
+/** Created by Ephraim Kigamba - nek.eam@gmail.com on 03-07-2021. */
 @Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
-@Ignore("Failing ")
 class QuestionnaireViewModelTest : RobolectricTest() {
 
   private lateinit var fhirEngine: FhirEngine
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
   private lateinit var questionnaireResponse: QuestionnaireResponse
   private lateinit var questionnaireViewModel: QuestionnaireViewModel
-  private lateinit var context: Context
-  val resourceId = "my-res-id"
+  private lateinit var context: EirApplication
+  private lateinit var defaultRepo: DefaultRepository
+  private val resourceId = "my-res-id"
+
+  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule var coroutineRule = CoroutineTestRule()
 
   @Before
   fun setUp() {
@@ -89,24 +90,23 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     fhirEngine = mockk()
     coEvery { fhirEngine.load(Patient::class.java, any()) } returns TestUtils.TEST_PATIENT_1
+    coEvery { fhirEngine.save(any()) } answers {}
+    coEvery { fhirEngine.update(any()) } answers {}
 
-    mockkObject(EirApplication)
-    every { EirApplication.getContext().fhirEngine } returns fhirEngine
+    ReflectionHelpers.setField(context, "fhirEngine\$delegate", lazy { fhirEngine })
 
-    val savedState = SavedStateHandle()
-    savedState[QUESTIONNAIRE_PATH_KEY] = "sample_patient_registration.json"
-    questionnaireViewModel = spyk(QuestionnaireViewModel(EirApplication.getContext(), spyk()))
-  }
+    defaultRepo = spyk(DefaultRepository(fhirEngine))
+    coEvery { defaultRepo.save(any()) } returns Unit
+    coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
 
-  @After
-  fun cleanup() {
-    unmockkObject(EirApplication)
+    questionnaireViewModel = spyk(QuestionnaireViewModel(EirApplication.getContext()))
+    ReflectionHelpers.setField(questionnaireViewModel, "defaultRepository", defaultRepo)
   }
 
   @Test
   fun `saveBundleResources() should call saveResources()`() {
     val bundle = Bundle()
-    val size = 23
+    val size = 1
 
     for (i in 1..size) {
       val bundleEntry = Bundle.BundleEntryComponent()
@@ -124,12 +124,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
     bundle.total = size
 
-    every { questionnaireViewModel.saveResource(any()) } just runs
-
     // call the method under test
-    questionnaireViewModel.saveBundleResources(bundle, resourceId)
+    questionnaireViewModel.saveBundleResources(bundle)
 
-    verify(exactly = size) { questionnaireViewModel.saveResource(any()) }
+    coVerify(exactly = size) { defaultRepo.addOrUpdate(any()) }
   }
 
   @Test
@@ -152,14 +150,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     bundle.addEntry(bundleEntry)
     bundle.total = size
 
-    every { questionnaireViewModel.saveResource(any()) } just runs
-
     // call the method under test
-    questionnaireViewModel.saveBundleResources(bundle, resourceId)
+    questionnaireViewModel.saveBundleResources(bundle)
 
-    verify(exactly = 1) { questionnaireViewModel.saveResource(capture(resource)) }
-
-    Assert.assertEquals(resourceId, resource.captured.id)
+    coVerify(exactly = 1) { defaultRepo.addOrUpdate(capture(resource)) }
   }
 
   @Test
@@ -195,27 +189,29 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         }
       )
     )
+    questionnaire.addSubjectType("Patient")
     val questionnaireResponse = QuestionnaireResponse()
-    val intent = Intent()
-    val resourceId = "0993ldsfkaljlsnldm"
-    intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, resourceId)
+    val questionnaireResponseSlot = slot<QuestionnaireResponse>()
 
-    val resourceIdSlot = slot<String>()
+    every { questionnaireViewModel.saveBundleResources(any()) } just runs
 
-    every { questionnaireViewModel.saveBundleResources(any(), any()) } just runs
+    ReflectionHelpers.setField(context, "workerContextProvider", mockk<SimpleWorkerContext>())
 
     questionnaireViewModel.extractAndSaveResources(
-      "resourceId",
+      "0993ldsfkaljlsnldm",
       ApplicationProvider.getApplicationContext(),
       questionnaire,
       questionnaireResponse
     )
 
-    coVerify(exactly = 1) {
-      questionnaireViewModel.saveBundleResources(any(), capture(resourceIdSlot))
-    }
+    coVerify(exactly = 1) { defaultRepo.save(capture(questionnaireResponseSlot)) }
 
-    Assert.assertEquals(resourceId, resourceIdSlot.captured)
+    coVerify(exactly = 1) { questionnaireViewModel.saveBundleResources(any()) }
+
+    Assert.assertEquals(
+      "0993ldsfkaljlsnldm",
+      questionnaireResponseSlot.captured.subject.reference.replace("Patient/", "")
+    )
   }
 
   @Test

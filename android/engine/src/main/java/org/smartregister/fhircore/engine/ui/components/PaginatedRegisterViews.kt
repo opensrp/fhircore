@@ -31,6 +31,7 @@ import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -41,18 +42,30 @@ import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+
+const val SEARCH_HEADER_TEXT_TAG = "searchHeaderTestTag"
+const val SEARCH_FOOTER_TAG = "searchFooterTag"
+const val SEARCH_FOOTER_PREVIOUS_BUTTON_TAG = "searchFooterPreviousButtonTag"
+const val SEARCH_FOOTER_NEXT_BUTTON_TAG = "searchFooterNextButtonTag"
+const val SEARCH_FOOTER_PAGINATION_TAG = "searchFooterPaginationTag"
 
 @Composable
 fun SearchHeader(resultCount: Int, modifier: Modifier = Modifier) {
   Text(
     text = stringResource(id = R.string.search_result, resultCount),
     color = GreyTextColor,
-    modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth()
+    modifier =
+      modifier
+        .testTag(SEARCH_HEADER_TEXT_TAG)
+        .padding(horizontal = 16.dp, vertical = 8.dp)
+        .fillMaxWidth()
   )
 }
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun SearchHeaderPreview() {
   SearchHeader(resultCount = 2)
 }
@@ -67,13 +80,14 @@ fun SearchFooter(
   modifier: Modifier = Modifier
 ) {
   if (resultCount > 0)
-    Row(modifier = modifier.fillMaxWidth()) {
+    Row(modifier = modifier.fillMaxWidth().testTag(SEARCH_FOOTER_TAG)) {
       Box(
         modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.Start),
       ) {
         if (currentPage > 1) {
           TextButton(
             onClick = previousButtonClickListener,
+            modifier = modifier.testTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG)
           ) {
             Icon(
               painter = painterResource(id = R.drawable.ic_chevron_left),
@@ -91,7 +105,11 @@ fun SearchFooter(
         fontSize = 14.sp,
         color = GreyTextColor,
         text = stringResource(id = R.string.str_page_info, currentPage, pageNumbers),
-        modifier = modifier.padding(4.dp).align(Alignment.CenterVertically)
+        modifier =
+          modifier
+            .testTag(SEARCH_FOOTER_PAGINATION_TAG)
+            .padding(4.dp)
+            .align(Alignment.CenterVertically)
       )
       Box(
         modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.End),
@@ -99,6 +117,7 @@ fun SearchFooter(
         if (currentPage < pageNumbers) {
           TextButton(
             onClick = nextButtonClickListener,
+            modifier = modifier.testTag(SEARCH_FOOTER_NEXT_BUTTON_TAG)
           ) {
             Text(
               fontSize = 14.sp,
@@ -117,24 +136,28 @@ fun SearchFooter(
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoPreviousButton() {
   SearchFooter(10, 1, 20, {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoNextButton() {
   SearchFooter(10, 20, 20, {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithBothPreviousAndNextButtons() {
   SearchFooter(10, 6, 20, {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithZeroResults() {
   SearchFooter(0, 6, 20, {}, {})
 }
@@ -186,7 +209,7 @@ fun PaginatedRegister(
 }
 
 @Composable
-fun NoResults(modifier: Modifier) {
+fun NoResults(modifier: Modifier = Modifier) {
   Column(
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally
@@ -208,12 +231,14 @@ fun NoResults(modifier: Modifier) {
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun NoResultsPreview() {
   NoResults(modifier = Modifier)
 }
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun PaginatedRegisterPreviewWithResults() {
   PaginatedRegister(
     loadState = LoadState.Loading,
@@ -229,6 +254,7 @@ fun PaginatedRegisterPreviewWithResults() {
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun PaginatedRegisterPreviewWithoutResults() {
   PaginatedRegister(
     loadState = LoadState.Loading,

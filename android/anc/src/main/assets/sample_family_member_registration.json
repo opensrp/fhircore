@@ -26,72 +26,84 @@
   ],
   "item": [
     {
-      "linkId": "PR",
+      "linkId": "bio",
       "type": "group",
-      "text": "Family member info",
       "item": [
         {
           "linkId": "PR-name",
           "type": "group",
+          "text": "Demographic Information",
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
-              "valueExpression": {
-                "language": "application/x-fhir-query",
-                "expression": "HumanName",
-                "name": "humanName"
-              }
-            }
-          ],
           "item": [
             {
-              "linkId": "PR-name-text",
-              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.given",
-              "type": "string",
-              "required": true,
-              "text": "First Name"
-            },
-            {
               "linkId": "PR-name-family",
-              "definition": "http://hl7.org/fhir/StructureDefinition/datatypes#HumanName.family",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.family",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  "valueExpression": {
+                    "language": "text/fhirpath",
+                    "expression": "Patient.name.family"
+                  }
+                }
+              ],
               "type": "string",
               "required": true,
               "text": "Surname"
+            },
+            {
+              "linkId": "PR-name-text",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.given",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  "valueExpression": {
+                    "language": "text/fhirpath",
+                    "expression": "Patient.name.given"
+                  }
+                }
+              ],
+              "type": "string",
+              "required": true,
+              "text": "First Name"
             }
           ]
         },
         {
-          "linkId": "patient-0-birth-date",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
-          "type": "date",
-          "required": true,
-          "text": "Date of Birth"
+          "linkId": "PR-identifier-info",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier",
+          "type": "group",
+          "item": [
+            {
+              "linkId": "PR-identifier-nid",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  "valueExpression": {
+                    "language": "text/fhirpath",
+                    "expression": "Patient.identifier.value"
+                  }
+                }
+              ],
+              "type": "string",
+              "required": true,
+              "text": "National ID Number"
+            }
+          ]
         },
         {
-          "linkId": "patient-0-gender",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
+          "linkId": "PR-gender",
           "type": "choice",
           "required": true,
+          "text": "Sex",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
           "extension": [
             {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
               "valueExpression": {
-                "language": "application/x-fhir-query",
-                "expression": "Enumerations$AdministrativeGender",
-                "name": "administrativeGender"
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/questionnaire-item-control",
-                    "code": "radio-button",
-                    "display": "Radio Button"
-                  }
-                ]
+                "language": "text/fhirpath",
+                "expression": "Patient.gender"
               }
             },
             {
@@ -103,220 +115,84 @@
             {
               "valueCoding": {
                 "code": "female",
-                "display": "Female",
-                "designation": [
-                  {
-                    "language": "sw",
-                    "value": "Mwanamke"
-                  }]
+                "display": "Female"
               }
             },
             {
               "valueCoding": {
                 "code": "male",
-                "display": "Male",
-                "designation": [
-                  {
-                    "language": "sw",
-                    "value": "Mwanaume"
-                  }]
+                "display": "Male"
               }
             }
           ]
         },
         {
+          "linkId": "PR-birth-date",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.birthDate"
+              }
+            }
+          ],
+          "type": "date",
+          "required": true,
+          "text": "Date of Birth"
+        },
+        {
+          "linkId": "PR-age",
+          "type": "integer",
+          "required": true,
+          "text": "Age"
+        },
+        {
           "linkId": "is_pregnant",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.meta.tag",
           "type": "boolean",
           "text": "Is Pregnant?",
           "code": [
             {
               "system": "https://www.snomed.org",
-              "code": "77386006",
-              "display": "Pregnant"
+              "code": "146799005",
+              "display": "Possible pregnancy"
             }
           ],
-          "extension" : [
+          "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/flag-detail",
-              "valueString": "Pregnant"
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+              "valueBoolean": true
             }
           ],
           "enableWhen": [
             {
-              "question": "patient-0-gender",
+              "question": "PR-gender",
               "operator": "=",
-              "answerCoding" : {
-                "code" : "female"
+              "answerCoding": {
+                "code": "female"
               }
-            }
-          ]
-        },
-        {
-          "linkId": "PR-telecom",
-          "type": "group",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
-              "valueExpression": {
-                "language": "application/x-fhir-query",
-                "expression": "ContactPoint",
-                "name": "contactPoint"
-              }
-            }
-          ],
-          "item": [
-            {
-              "linkId": "PR-telecom-system",
-              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom.system",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemContext",
-                  "valueExpression": {
-                    "language": "application/x-fhir-query",
-                    "expression": "ContactPoint$ContactPointSystem",
-                    "name": "contactPointSystem"
-                  }
-                }
-              ],
-              "type": "string",
-              "text": "system",
-              "initial": [
-                {
-                  "valueString": "phone"
-                }
-              ],
-              "enableWhen": [
-                {
-                  "question": "patient-0-gender",
-                  "operator": "=",
-                  "answerString": "ok"
-                }
-              ]
-            },
-            {
-              "linkId": "PR-telecom-value",
-              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.telecom.value",
-              "type": "string",
-              "required": true,
-              "text": "Phone Number"
             }
           ]
         },
         {
           "linkId": "PR-active",
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.active",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.active"
+              }
+            }
+          ],
           "text": "Is Active?",
           "type": "boolean",
-          "initial": [{
-            "valueBoolean": true
-          }]
-        }
-      ]
-    },
-    {
-      "linkId": "Pregnancy details",
-      "type": "group",
-      "enableWhen": [
-        {
-          "question": "is_pregnant",
-          "operator": "=",
-          "answerBoolean" : true
-        }
-      ],
-      "item": [
-        {
-          "linkId": "lmp",
-          "type": "dateTime",
-          "required": true,
-          "text": "Last Menstrual Period Date (LMP)",
-          "extension": [
+          "hidden": true,
+          "initial": [
             {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
               "valueBoolean": true
-            }
-          ],
-          "code": [
-            {
-              "system": "https://www.snomed.org",
-              "code": "21840007",
-              "display": "Date of last menstrual period"
-            }
-          ]
-        },
-        {
-          "linkId": "edd",
-          "type": "dateTime",
-          "required": true,
-          "text": "Estimated date of delivery (EDD)",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
-              "valueBoolean": true
-            }
-          ],
-          "code": [
-            {
-              "system": "https://www.snomed.org",
-              "code": "161714006",
-              "display": "Estimated date of delivery"
-            }
-          ]
-        },
-        {
-          "linkId": "gestational_age",
-          "type": "integer",
-          "required": true,
-          "text": "Gestational age (GA)",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
-              "valueBoolean": true
-            }
-          ],
-          "code": [
-            {
-              "system": "https://www.snomed.org",
-              "code": "57036006",
-              "display": "Fetal gestational age"
-            }
-          ]
-        },
-        {
-          "linkId": "number_of_fetuses",
-          "type": "integer",
-          "required": true,
-          "text": "Number of fetuses",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
-              "valueBoolean": true
-            }
-          ],
-          "code": [
-            {
-              "system": "https://www.snomed.org",
-              "code": "246435002",
-              "display": "Number of fetuses"
-            }
-          ]
-        },
-        {
-          "linkId": "risks",
-          "type": "integer",
-          "text": "Risks",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
-              "valueBoolean": true
-            }
-          ],
-          "code": [
-            {
-              "system": "https://www.snomed.org",
-              "code": "199312002",
-              "display": "Pregnancy risk"
             }
           ]
         }

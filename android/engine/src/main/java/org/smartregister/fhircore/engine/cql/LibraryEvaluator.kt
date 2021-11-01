@@ -31,6 +31,8 @@ import org.cqframework.cql.elm.execution.Library
 import org.cqframework.cql.elm.execution.VersionedIdentifier
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
+import org.json.JSONArray
+import org.json.JSONObject
 import org.opencds.cqf.cql.engine.data.CompositeDataProvider
 import org.opencds.cqf.cql.engine.data.DataProvider
 import org.opencds.cqf.cql.engine.fhir.converter.FhirTypeConverterFactory
@@ -87,6 +89,7 @@ class LibraryEvaluator {
     val library = parser.parseResource(libraryStream)
     val fhirHelpersLibrary = parser.parseResource(fhirHelpersStream)
     val resources: List<IBaseResource> = Lists.newArrayList(library, fhirHelpersLibrary)
+
     bundleFactory.addRootPropertiesToBundle("bundled-directory", bundleLinks, resources.size, null)
     bundleFactory.addResourcesToBundle(
       resources,
@@ -177,5 +180,28 @@ class LibraryEvaluator {
         null
       )
     return fhirContext.newJsonParser().encodeResourceToString(result)
+  }
+
+  /**
+   * This method removes multiple patients in a bundle entry and is left with the first occurrence
+   * and returns a bundle with patient entry
+   * @param patientData
+   */
+  fun processCQLPatientBundle(patientData: String): String {
+    var auxPatientDataObj = JSONObject(patientData)
+    var oldJSONArrayEntry = auxPatientDataObj.getJSONArray("entry")
+    var newJSONArrayEntry = JSONArray()
+    for (i in 0 until oldJSONArrayEntry.length() - 1) {
+      var resourceType =
+        oldJSONArrayEntry.getJSONObject(i).getJSONObject("resource").getString("resourceType")
+      if (i != 0 && !resourceType.equals("Patient")) {
+        newJSONArrayEntry.put(oldJSONArrayEntry.getJSONObject(i))
+      }
+    }
+
+    auxPatientDataObj.remove("entry")
+    auxPatientDataObj.put("entry", newJSONArrayEntry)
+
+    return auxPatientDataObj.toString()
   }
 }

@@ -27,6 +27,7 @@ import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -66,16 +67,15 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
 
   private val patientId = "samplePatientId"
 
-  @get:Rule var coroutinesTestRule = CoroutineTestRule()
-
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   @Before
   fun setUp() {
+    clearAllMocks()
     patientDetailsViewModel =
       spyk(
         PatientDetailsViewModel(
-          dispatcher = coroutinesTestRule.testDispatcherProvider,
+          dispatcher = CoroutineTestRule().testDispatcherProvider,
           fhirEngine = mockk(relaxed = true),
           patientId = patientId
         )

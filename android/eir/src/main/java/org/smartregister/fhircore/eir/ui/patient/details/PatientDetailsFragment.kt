@@ -74,7 +74,7 @@ class PatientDetailsFragment private constructor() : Fragment() {
 
     patientDetailsViewModel =
       ViewModelProvider(
-        this,
+        viewModelStore,
         PatientDetailsViewModel(fhirEngine = fhirEngine, patientId = patientId).createFactory()
       )[PatientDetailsViewModel::class.java]
 

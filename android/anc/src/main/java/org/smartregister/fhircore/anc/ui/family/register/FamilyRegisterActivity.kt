@@ -16,81 +16,109 @@
 
 package org.smartregister.fhircore.anc.ui.family.register
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
-import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterActivity
+import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
-import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.anc.util.getFamilyQuestionnaireIntent
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
-import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
+import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
+import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
+import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 
 class FamilyRegisterActivity : BaseRegisterActivity() {
+
   private lateinit var familyRepository: FamilyRepository
-  private lateinit var ancPatientRepository: AncPatientRepository
+
+  private lateinit var patientRepository: PatientRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     configureViews(
-      registerViewConfigurationOf(showScanQRCode = false).apply {
-        appTitle = getString(R.string.family_register_title)
-      }
+      registerViewConfigurationOf(
+        showScanQRCode = false,
+        appTitle = getString(R.string.family_register_title),
+        newClientButtonText = getString(R.string.add_family),
+        showSideMenu = false,
+        showBottomMenu = true
+      )
     )
 
     familyRepository =
       FamilyRepository((application as AncApplication).fhirEngine, FamilyItemMapper)
 
-    ancPatientRepository =
-      AncPatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
+    patientRepository = PatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
   }
 
-  override fun sideMenuOptions(): List<SideMenuOption> =
+  override fun registerClient() {
+    startActivity(getFamilyQuestionnaireIntent(form = FamilyFormConstants.FAMILY_REGISTER_FORM))
+  }
+
+  override fun supportedFragments(): Map<String, Fragment> =
+    mapOf(
+      Pair(FamilyRegisterFragment.TAG, FamilyRegisterFragment()),
+      Pair(AncRegisterFragment.TAG, AncRegisterFragment()),
+      Pair(UserProfileFragment.TAG, UserProfileFragment())
+    )
+
+  override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> =
     listOf(
-      SideMenuOption(
-        itemId = R.id.menu_item_family,
-        titleResource = R.string.family_register_title,
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_calender)!!,
-        opensMainRegister = true,
-        countMethod = { runBlocking { familyRepository.countAll() } }
+      NavigationMenuOption(
+        id = R.id.menu_item_register,
+        title = getString(R.string.register),
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_home)!!
       ),
-      SideMenuOption(
-        itemId = R.id.menu_item_anc,
-        titleResource = R.string.anc_register_title,
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
-        opensMainRegister = false,
-        countMethod = { runBlocking { ancPatientRepository.countAll() } }
+      NavigationMenuOption(
+        id = R.id.menu_item_tasks,
+        title = getString(R.string.tasks),
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_tasks)!!
+      ),
+      NavigationMenuOption(
+        id = R.id.menu_item_reports,
+        title = getString(R.string.reports),
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_reports)!!
+      ),
+      NavigationMenuOption(
+        id = R.id.menu_item_profile,
+        title = getString(R.string.profile),
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_user)!!
       )
     )
 
-  override fun onSideMenuOptionSelected(item: MenuItem): Boolean {
+  override fun onNavigationOptionItemSelected(item: MenuItem): Boolean {
     when (item.itemId) {
-      R.id.menu_item_family -> startActivity(Intent(this, FamilyRegisterActivity::class.java))
-      R.id.menu_item_anc -> startActivity(Intent(this, AncRegisterActivity::class.java))
+      R.id.menu_item_profile ->
+        switchFragment(
+          tag = UserProfileFragment.TAG,
+          isRegisterFragment = false,
+          toolbarTitle = getString(R.string.profile)
+        )
+      R.id.menu_item_register -> switchFragment(mainFragmentTag())
     }
     return true
   }
 
-  override fun registerClient(clientIdentifier: String?) {
-    startActivity(
-      Intent(this, FamilyQuestionnaireActivity::class.java)
-        .putExtras(
-          QuestionnaireActivity.requiredIntentArgs(
-            clientIdentifier = clientIdentifier,
-            form = FamilyFormConstants.FAMILY_REGISTER_FORM
-          )
-        )
+  override fun registersList() =
+    listOf(
+      RegisterItem(
+        uniqueTag = FamilyRegisterFragment.TAG,
+        title = getString(R.string.families),
+        isSelected = true
+      ),
+      RegisterItem(
+        uniqueTag = AncRegisterFragment.TAG,
+        title = getString(R.string.anc_clients),
+        isSelected = false
+      )
     )
-  }
 
-  override fun supportedFragments(): List<Fragment> = listOf(FamilyRegisterFragment())
+  override fun mainFragmentTag() = FamilyRegisterFragment.TAG
 }

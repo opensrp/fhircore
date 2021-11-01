@@ -1,3 +1,4 @@
+
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
@@ -11,6 +12,7 @@ android {
 
     testOptions {
         unitTests {
+            includeAndroidResources = true
             returnDefaultValues = true
             all {
                 jacoco {
@@ -59,6 +61,9 @@ android {
     //CQL
     configurations {
         all*.exclude group: 'org.eclipse.persistence'
+        all*.exclude group: 'javax.activation', module: 'activation'
+        all*.exclude group: 'javax', module: 'javaee-api'
+        all*.exclude group: 'xml-apis'
     }
 
     packagingOptions {
@@ -102,16 +107,16 @@ dependencies {
     implementation 'androidx.paging:paging-runtime-ktx:3.0.1'
 
     //CQL
-    implementation "javax.xml.stream:stax-api:1.0-2"
-    implementation ("stax:stax:1.2.0") {
-        transitive = true
-        exclude group: 'stax', module: 'stax-api'
-    }
-    implementation "org.opencds.cqf.cql:engine:1.5.2"
-    def cqlEvaluatorVersion = '1.2.1-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator:' + cqlEvaluatorVersion
+    implementation group: 'xerces', name: 'xercesImpl', version: '2.11.0'
+    implementation(group: "com.github.java-json-tools", name: "msg-simple", version: "1.2");
+    implementation 'org.codehaus.woodstox:woodstox-core-asl:4.4.1'
+    implementation "ca.uhn.hapi.fhir:hapi-fhir-android:5.4.0"
+    implementation 'org.opencds.cqf.cql:engine:1.5.2-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:engine.fhir:1.5.2-SNAPSHOT'
+    implementation 'org.opencds.cqf.cql:evaluator:1.2.1-SNAPSHOT'
     implementation 'org.opencds.cqf.cql:evaluator.builder:1.2.1-SNAPSHOT'
     implementation 'org.opencds.cqf.cql:evaluator.dagger:1.2.1-SNAPSHOT'
+
 
     //Configure Jetpack Compose
     def composeVersion = "1.0.1"
@@ -124,14 +129,13 @@ dependencies {
     api("androidx.compose.runtime:runtime-livedata:$composeVersion")
     api("androidx.paging:paging-compose:1.0.0-alpha12")
     api("androidx.activity:activity-compose:1.3.1")
-    api('androidx.navigation:navigation-compose:2.4.0-alpha06')
     api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2'
+    api ("androidx.work:work-runtime-ktx:2.3.4")
 
     def coroutineVersion = '1.5.1'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
-
-    api('com.google.android.fhir:datacapture:0.1.0.5-alpha04') {
+    api('org.smartregister:data-capture:0.1.0-alpha05-preview-3-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -139,7 +143,7 @@ dependencies {
         exclude group: 'com.sun.activation', module: 'javax.activation'
     }
 
-    api('org.smartregister:engine:0.1.0-alpha04-preview-SNAPSHOT') {
+    api('org.smartregister:engine:0.1.0-alpha04-preview-2-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -189,5 +193,13 @@ dependencies {
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2'
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutineVersion"
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    implementation deps.work.runtime
+    testImplementation  group: 'org.json', name: 'json', version: '20210307'
+
+    debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
+    testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 
 }

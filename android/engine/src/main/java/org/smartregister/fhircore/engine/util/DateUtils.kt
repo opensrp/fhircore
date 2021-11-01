@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util
 
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -27,11 +28,18 @@ import org.joda.time.format.DateTimeFormatter
 
 object DateUtils {
 
-  private var simpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault())
+  private var simpleDateFormat = SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault())
 
-  fun addDays(initialDate: String, daysToAdd: Int = 0, returnDateFormat: String = "M-d-Y"): String {
+  fun addDays(
+    initialDate: String,
+    daysToAdd: Int = 0,
+    returnDateFormat: String = "M-d-Y",
+    dateTimeFormat: String? = null
+  ): String {
     val fmt: DateTimeFormatter = DateTimeFormat.forPattern(returnDateFormat)
-    val date: DateTime = DateTime.parse(initialDate)
+    val date: DateTime =
+      if (dateTimeFormat == null) DateTime.parse(initialDate)
+      else DateTime.parse(initialDate, DateTimeFormat.forPattern(dateTimeFormat))
     return date.plusDays(daysToAdd).toString(fmt)
   }
 
@@ -41,5 +49,19 @@ object DateUtils {
     return copy.after(DateTimeType.now())
   }
 
-  fun Date.makeItReadable(): String = simpleDateFormat.format(this)
+  fun simpleDateFormat(pattern: String = "hh:mm aa, MMM d") =
+    SimpleDateFormat(pattern, Locale.getDefault())
+  fun Date?.makeItReadable(): String = if (this != null) simpleDateFormat.format(this) else "N/A"
+
+  fun String.getDate(formatNeeded: String): Date {
+    val format = SimpleDateFormat(formatNeeded)
+    var date = Date()
+    try {
+      date = format.parse(this)
+      println(date)
+    } catch (e: ParseException) {
+      e.printStackTrace()
+    }
+    return date
+  }
 }

@@ -19,7 +19,11 @@ package org.smartregister.fhircore.anc.util
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 
-data class RegisterConfiguration(val id: String, val primaryFilter: SearchFilter?)
+data class RegisterConfiguration(
+  val id: String,
+  val primaryFilter: SearchFilter?,
+  val secondaryFilter: SearchFilter?
+)
 
 /** Only TokenClientParam, and StringClientParam supported as Register Primary Filter. */
 data class SearchFilter(

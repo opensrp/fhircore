@@ -24,24 +24,19 @@ import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.Shadows
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
-import org.robolectric.annotation.Implementation
-import org.robolectric.annotation.Implements
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.anc.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
+import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
-import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
-@Config(
-  shadows =
-    [AncApplicationShadow::class, AncRegisterFragmentTest.SecureSharedPreferenceShadow::class]
-)
+@Config(shadows = [AncApplicationShadow::class])
 class AncRegisterFragmentTest : RobolectricTest() {
 
   private lateinit var registerFragment: AncRegisterFragment
@@ -50,7 +45,7 @@ class AncRegisterFragmentTest : RobolectricTest() {
   fun setUp() {
 
     val registerActivity =
-      Robolectric.buildActivity(AncRegisterActivity::class.java).create().resume().get()
+      Robolectric.buildActivity(FamilyRegisterActivity::class.java).create().resume().get()
     registerFragment = AncRegisterFragment()
     registerActivity.supportFragmentManager.commitNow { add(registerFragment, "") }
   }
@@ -83,20 +78,22 @@ class AncRegisterFragmentTest : RobolectricTest() {
     )
   }
 
+  @Test
+  fun testPerformOverdueFilterShouldReturnTrue() {
+    val result =
+      registerFragment.performFilter(
+        RegisterFilterType.OVERDUE_FILTER,
+        AncPatientItem(patientIdentifier = "12345", visitStatus = VisitStatus.OVERDUE),
+        "12345"
+      )
+    Assert.assertTrue(result)
+  }
+
   companion object {
     @JvmStatic
     @BeforeClass
     fun beforeClass() {
       FakeKeyStore.setup
-    }
-  }
-
-  @Implements(SecureSharedPreference::class)
-  class SecureSharedPreferenceShadow : Shadows() {
-
-    @Implementation
-    fun retrieveSessionUsername(): String {
-      return "demo"
     }
   }
 }

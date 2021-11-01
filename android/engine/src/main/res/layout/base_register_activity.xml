@@ -40,77 +40,40 @@
 
                 </androidx.appcompat.widget.Toolbar>
 
-                <androidx.viewpager2.widget.ViewPager2
-                    android:id="@+id/list_pager"
+                <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/register_content"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_above="@id/pagination_section"
+                    android:layout_above="@id/btn_register_new_client"
                     android:layout_below="@id/base_register_toolbar"
-                    android:layout_marginBottom="15dp">
+                    android:layout_marginBottom="5dp">
 
-                </androidx.viewpager2.widget.ViewPager2>
-
-                <LinearLayout
-                    android:visibility="gone"
-                    android:id="@+id/pagination_section"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_above="@+id/btn_register_new_client"
-                    android:orientation="horizontal"
-                    android:padding="8dp">
-
-                    <Button
-                        android:id="@+id/previous_page_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/transparent_blue_background"
-                        android:clickable="true"
-                        android:drawableLeft="@drawable/ic_chevron_left"
-                        android:focusable="true"
-                        android:text="@string/str_previous"
-                        android:textColor="?attr/colorPrimary" />
-
-                    <TextView
-                        android:id="@+id/page_info_textview"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="@string/str_page_info"
-                        android:textAlignment="center"
-                        android:textColor="@color/grey_text_color" />
-
-                    <Button
-                        android:id="@+id/next_page_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/transparent_blue_background"
-                        android:clickable="true"
-                        android:drawableRight="@drawable/ic_chevron_right"
-                        android:focusable="true"
-                        android:text="@string/str_next"
-                        android:textColor="?attr/colorPrimary" />
-                </LinearLayout>
+                </androidx.fragment.app.FragmentContainerView>
 
                 <Button
                     android:id="@+id/btn_register_new_client"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
+                    android:layout_alignWithParentIfMissing="true"
+                    android:layout_above="@id/bottomNavView"
                     android:layout_centerHorizontal="true"
-                    android:layout_marginBottom="15dp"
-                    android:background="@drawable/rounded_white_bg"
-                    android:drawableStart="@drawable/ic_plus"
-                    android:drawablePadding="5dp"
-                    android:fontFamily="sans-serif-medium"
-                    android:padding="10dp"
-                    android:paddingHorizontal="10dp"
-                    android:paddingEnd="15dp"
+                    android:layout_marginBottom="8dp"
+                    android:drawableLeft="@drawable/ic_plus"
+                    android:drawablePadding="8dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="12dp"
                     android:text="@string/register_new_client"
                     android:textAllCaps="true"
                     android:textColor="@color/white"
-                    android:textSize="18sp" />
+                    android:textSize="16sp" />
 
+                <com.google.android.material.bottomnavigation.BottomNavigationView
+                    android:id="@+id/bottomNavView"
+                    android:layout_width="match_parent"
+                    android:layout_height="72dp"
+                    android:layout_alignParentBottom="true"
+                    app:labelVisibilityMode="labeled"
+                    app:menu="@menu/drawer_menu" />
             </RelativeLayout>
 
             <com.google.android.material.navigation.NavigationView
@@ -145,11 +108,11 @@
                         android:background="@drawable/ic_sync">
 
                         <ProgressBar
-                            android:layout_width="40dp"
                             android:id="@+id/progress_sync"
+                            android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:gravity="center_vertical"
                             android:drawablePadding="10dp"
+                            android:gravity="center_vertical"
                             android:indeterminate="true"
                             android:visibility="gone" />
                     </LinearLayout>
@@ -163,7 +126,7 @@
                         android:layout_weight="2"
                         android:gravity="end"
                         android:paddingEnd="15dp"
-                        android:text="@string/last_sync_timestamp"
+                        android:text=""
                         android:textColor="#E0E0E0" />
 
                 </LinearLayout>

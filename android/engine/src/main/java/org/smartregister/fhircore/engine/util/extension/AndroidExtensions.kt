@@ -22,10 +22,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Resources
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.LocaleList
 import android.widget.Toast
+import androidx.annotation.StyleRes
+import androidx.core.content.ContextCompat
 import java.util.Locale
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import timber.log.Timber
 
@@ -55,8 +59,25 @@ fun Context.setAppLocale(languageTag: String): Configuration? {
   return configuration
 }
 
+fun Context.getDrawable(name: String): Drawable {
+  var resourceId = this.resources.getIdentifier(name, "drawable", packageName)
+  if (resourceId == 0) resourceId = R.drawable.ic_default_logo
+  return ContextCompat.getDrawable(this, resourceId)!!
+}
+
+@StyleRes
+fun Context.getTheme(name: String): Int {
+  var resourceId = this.resources.getIdentifier(name, "style", packageName)
+  if (resourceId == 0) resourceId = R.style.AppTheme_NoActionBar
+  return resourceId
+}
+
 fun Application.assertIsConfigurable() {
   if (this !is ConfigurableApplication)
     throw (IllegalStateException("Application MUST implement ConfigurableApplication interface"))
   else return
+}
+
+fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {
+  return values.any { this == it }
 }

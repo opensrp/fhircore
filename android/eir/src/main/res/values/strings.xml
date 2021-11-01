@@ -23,7 +23,6 @@
     <string name="add_client">Add Client</string>
     <string name="menu_sync_resources">Sync Resources</string>
 
-    <string name="app_version">Version %s</string>
     <string name="authenticator_label" translatable="false">Authenticate FHIR Core</string>
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.eir</string>
 
@@ -73,4 +72,8 @@
     <string name="report_adverse_event">Report Adverse Event</string>
     <string name="covax_app" translatable="false">Covax</string>
     <string name="check">Tick</string>
+    <string name="kindly_retry_contact_devs_problem_persists">Kindly retry. Contact the developers if the error persists</string>
+    <string name="error_reading_immunization_details">Error reading immunization details</string>
+    <string name="second_vaccine_dose_should_be_same_first">Second vaccine dose should be same as first</string>
+    <string name="initially_received_x">Initially received %s</string>
 </resources>

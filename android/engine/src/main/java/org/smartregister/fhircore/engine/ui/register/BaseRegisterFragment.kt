@@ -24,9 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
-import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.ListenerIntent
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
 
@@ -49,7 +47,6 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
   abstract fun onItemClicked(listenerIntent: ListenerIntent, data: O)
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    super.onViewCreated(view, savedInstanceState)
     if (requireActivity() !is BaseRegisterActivity) {
       throw (IllegalAccessException(
         "You can only use BaseRegisterFragment in BaseRegisterActivity context"
@@ -92,18 +89,25 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
       )
     }
 
+    registerViewModel.lastSyncTimestamp.observe(
+      viewLifecycleOwner,
+      { registerDataViewModel.setShowLoader(it.isNullOrEmpty()) }
+    )
+
     registerDataViewModel =
       initializeRegisterDataViewModel().apply {
         this.currentPage.observe(viewLifecycleOwner, { registerDataViewModel.loadPageData(it) })
       }
-
-    val lastSyncTimestamp = SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, "")
-    registerDataViewModel.setShowLoader(lastSyncTimestamp.isNullOrEmpty())
   }
 
   override fun onResume() {
     super.onResume()
     registerDataViewModel.reloadCurrentPageData(refreshTotalRecordsCount = true)
+  }
+
+  override fun onDestroy() {
+    viewModelStore.clear()
+    super.onDestroy()
   }
 
   /** Initialize the [RegisterDataViewModel] class */

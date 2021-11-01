@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc
 
+import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkerParameters
 import androidx.work.impl.utils.taskexecutor.WorkManagerTaskExecutor
 import io.mockk.every
@@ -39,7 +40,7 @@ class AncFhirSyncWorkerTest : RobolectricTest() {
     val workerParam = mockk<WorkerParameters>()
     every { workerParam.taskExecutor } returns WorkManagerTaskExecutor(mockk())
 
-    ancFhirSyncWorker = AncFhirSyncWorker(AncApplication.getContext(), workerParam)
+    ancFhirSyncWorker = AncFhirSyncWorker(ApplicationProvider.getApplicationContext(), workerParam)
   }
 
   @Test
@@ -50,7 +51,7 @@ class AncFhirSyncWorkerTest : RobolectricTest() {
   @Test
   fun testGetSyncDataReturnMapOfConfiguredSyncItems() {
     val data = ancFhirSyncWorker.getSyncData()
-    Assert.assertEquals(3, data.size)
+    Assert.assertEquals(6, data.size)
     Assert.assertTrue(data.containsKey(ResourceType.Patient))
   }
 

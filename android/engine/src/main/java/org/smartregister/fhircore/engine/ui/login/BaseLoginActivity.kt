@@ -17,16 +17,13 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import com.google.android.fhir.sync.State
 import java.util.Locale
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
@@ -37,9 +34,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.createFactory
-import org.smartregister.fhircore.engine.util.extension.runSync
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
-import org.smartregister.fhircore.engine.util.extension.showToast
 
 abstract class BaseLoginActivity :
   ComponentActivity(), ConfigurableComposableView<LoginViewConfiguration> {
@@ -65,24 +60,8 @@ abstract class BaseLoginActivity :
 
     loginViewModel.apply {
       loginUser()
-      navigateToHome.observe(
-        this@BaseLoginActivity,
-        {
-          lifecycleScope.launch(dispatcherProvider.main()) {
-            // initiate sync
-            application.runSync(sharedSyncStatus)
-          }
-          navigateToHome()
-        }
-      )
-      lifecycleScope.launch {
-        sharedSyncStatus.collect { state ->
-          if (state is State.Started) {
-            showToast(getString(R.string.syncing_initiated))
-          }
-          (application as ConfigurableApplication).syncBroadcaster.broadcastSync(state = state)
-        }
-      }
+      navigateToHome.observe(this@BaseLoginActivity, { navigateToHome() })
+      launchDialPad.observe(this@BaseLoginActivity, { if (!it.isNullOrEmpty()) launchDialPad(it) })
     }
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
@@ -106,5 +85,9 @@ abstract class BaseLoginActivity :
 
   override fun configurableApplication(): ConfigurableApplication {
     return application as ConfigurableApplication
+  }
+
+  private fun launchDialPad(phone: String) {
+    startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
   }
 }

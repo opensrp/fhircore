@@ -17,36 +17,51 @@
 package org.smartregister.fhircore.anc.ui.family
 
 import android.app.Activity
-import android.view.MenuInflater
+import android.app.Application
+import android.content.Intent
+import android.view.View
+import android.widget.ImageButton
+import android.widget.TextView
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Sync
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.spyk
 import io.mockk.unmockkObject
 import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.flowOf
 import org.junit.After
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows
 import org.robolectric.annotation.Config
+import org.robolectric.fakes.RoboMenuItem
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
+import org.smartregister.fhircore.anc.data.family.FamilyRepository
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
+import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
+import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
+import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 
 @Config(shadows = [AncApplicationShadow::class])
 internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
 
   private lateinit var familyRegisterActivity: FamilyRegisterActivity
-
-  private lateinit var familyRegisterActivitySpy: FamilyRegisterActivity
+  private lateinit var patientRepository: PatientRepository
+  private lateinit var familyRepository: FamilyRepository
 
   @Before
   fun setUp() {
@@ -54,9 +69,14 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
     every { Sync.basicSyncJob(any()).stateFlow() } returns flowOf()
     every { Sync.basicSyncJob(any()).lastSyncTimestamp() } returns OffsetDateTime.now()
 
+    patientRepository = mockk()
+    familyRepository = mockk()
+
     familyRegisterActivity =
       Robolectric.buildActivity(FamilyRegisterActivity::class.java, null).create().get()
-    familyRegisterActivitySpy = spyk(objToCopy = familyRegisterActivity)
+
+    ReflectionHelpers.setField(familyRegisterActivity, "patientRepository", patientRepository)
+    ReflectionHelpers.setField(familyRegisterActivity, "familyRepository", familyRepository)
   }
 
   @After
@@ -70,23 +90,67 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testActivityHasCorrectSideMenuItem() {
-    val sideMenu = familyRegisterActivity.sideMenuOptions()
-    assertEquals(R.id.menu_item_family, sideMenu[0].itemId)
-    assertEquals(R.string.family_register_title, sideMenu[0].titleResource)
+  fun testRegisterClientShouldStartFamilyQuestionnaireActivity() {
+    ReflectionHelpers.callInstanceMethod<FamilyRegisterActivity>(
+      familyRegisterActivity,
+      "registerClient"
+    )
 
-    assertEquals(R.id.menu_item_anc, sideMenu[1].itemId)
-    assertEquals(R.string.anc_register_title, sideMenu[1].titleResource)
+    val expectedIntent = Intent(familyRegisterActivity, FamilyQuestionnaireActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<Application>()).nextStartedActivity
+
+    assertEquals(expectedIntent.component, actualIntent.component)
+    assertEquals(
+      FamilyFormConstants.FAMILY_REGISTER_FORM,
+      actualIntent.getStringExtra(QUESTIONNAIRE_ARG_FORM)
+    )
   }
 
   @Test
-  fun testThatMenuIsCreated() {
-    val menuInflater = mockk<MenuInflater>()
+  fun testSupportedFragmentsShouldReturnAncRegisterFragment() {
+    val fragments = familyRegisterActivity.supportedFragments()
 
-    every { familyRegisterActivitySpy.menuInflater } returns menuInflater
-    every { menuInflater.inflate(any(), any()) } returns Unit
+    assertEquals(3, fragments.size)
+    assertTrue(fragments.containsKey(FamilyRegisterFragment.TAG))
+    assertTrue(fragments.containsKey(AncRegisterFragment.TAG))
+    assertTrue(fragments.containsKey(UserProfileFragment.TAG))
+  }
 
-    Assert.assertTrue(familyRegisterActivitySpy.onCreateOptionsMenu(null))
+  @Test
+  fun testOnClientMenuOptionSelectedShouldLaunchPatientRegisterFragment() {
+    familyRegisterActivity.onNavigationOptionItemSelected(
+      RoboMenuItem().apply { itemId = R.id.menu_item_register }
+    )
+    // switched to patient register fragment
+    assertEquals(
+      "Families",
+      familyRegisterActivity.findViewById<TextView>(R.id.register_filter_textview).text
+    )
+    assertEquals(
+      View.VISIBLE,
+      familyRegisterActivity.findViewById<View>(R.id.filter_register_button).visibility
+    )
+    assertEquals(
+      View.VISIBLE,
+      familyRegisterActivity.findViewById<View>(R.id.edit_text_search).visibility
+    )
+  }
+
+  @Test
+  fun testOnSettingMenuOptionSelectedShouldLaunchUserProfileFragment() {
+    familyRegisterActivity.onNavigationOptionItemSelected(
+      RoboMenuItem().apply { itemId = R.id.menu_item_profile }
+    )
+    // switched to user profile fragment
+    assertEquals(
+      "Profile",
+      familyRegisterActivity.findViewById<TextView>(R.id.register_filter_textview).text
+    )
+    assertEquals(
+      View.GONE,
+      familyRegisterActivity.findViewById<ImageButton>(R.id.filter_register_button).visibility
+    )
   }
 
   override fun getActivity(): Activity {

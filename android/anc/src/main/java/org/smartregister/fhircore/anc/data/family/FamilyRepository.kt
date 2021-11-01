@@ -26,8 +26,8 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.anc.AncPatientRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
 import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
@@ -54,7 +54,9 @@ class FamilyRepository(
   private val registerConfig =
     AncApplication.getContext().loadRegisterConfig(RegisterType.FAMILY_REGISTER_ID)
 
-  private val ancPatientRepository = AncPatientRepository(fhirEngine, AncItemMapper)
+  private val ancPatientRepository = PatientRepository(fhirEngine, AncItemMapper)
+
+  private val resourceMapperExtended = ResourceMapperExtended(fhirEngine)
 
   override suspend fun loadData(
     query: String,
@@ -94,21 +96,36 @@ class FamilyRepository(
     relatedTo: String?
   ): String {
     val patientId = getUniqueId()
-    ResourceMapperExtended(fhirEngine)
-      .saveParsedResource(questionnaireResponse, questionnaire, patientId, relatedTo)
-
-    val pregnantItem = questionnaireResponse.find(IS_PREGNANT_KEY)
-    if (pregnantItem?.answer?.firstOrNull()?.valueBooleanType?.booleanValue() == true) {
-      val lmpItem = questionnaireResponse.find(LMP_KEY)
-      val lmp = lmpItem?.answer?.firstOrNull()?.valueDateTimeType!!
-      ancPatientRepository.enrollIntoAnc(patientId, lmp)
-    }
+    resourceMapperExtended.saveParsedResource(
+      questionnaireResponse,
+      questionnaire,
+      patientId,
+      relatedTo
+    )
 
     return patientId
   }
 
+  suspend fun postProcessFamilyHead(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse
+  ): String {
+    return postProcessFamilyMember(questionnaire, questionnaireResponse, null)
+  }
+
+  suspend fun enrollIntoAnc(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    patientId: String
+  ) {
+    resourceMapperExtended.saveParsedResource(questionnaireResponse, questionnaire, patientId, null)
+
+    val lmpItem = questionnaireResponse.find(LMP_KEY)
+    val lmp = lmpItem?.answer?.firstOrNull()?.valueDateType!!
+    ancPatientRepository.enrollIntoAnc(patientId, lmp)
+  }
+
   companion object {
-    const val IS_PREGNANT_KEY = "is_pregnant"
     const val LMP_KEY = "lmp"
   }
 }

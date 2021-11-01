@@ -17,14 +17,18 @@
 package org.smartregister.fhircore.eir.ui.vaccine
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.PositiveIntType
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
@@ -32,11 +36,11 @@ class RecordVaccineViewModel(
   application: Application,
   val patientRepository: PatientRepository,
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
-) : AndroidViewModel(application) {
+) : QuestionnaireViewModel(application) {
 
   fun getVaccineSummary(logicalId: String): LiveData<PatientVaccineSummary> {
     val mutableLiveData: MutableLiveData<PatientVaccineSummary> = MutableLiveData()
-    viewModelScope.launch(dispatcherProvider.main()) {
+    viewModelScope.launch(dispatcherProvider.io()) {
       val immunizations = patientRepository.getPatientImmunizations(logicalId = logicalId)
       if (!immunizations.isNullOrEmpty()) {
         val immunization = immunizations.first()
@@ -49,5 +53,20 @@ class RecordVaccineViewModel(
       } else mutableLiveData.postValue(PatientVaccineSummary(doseNumber = 0, initialDose = ""))
     }
     return mutableLiveData
+  }
+
+  override suspend fun getPopulationResources(intent: Intent): Array<Resource> {
+    val resourcesList = mutableListOf<Resource>()
+
+    intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let { patientId ->
+      loadPatient(patientId)?.run { resourcesList.add(this) }
+      loadImmunization(patientId)?.run { resourcesList.add(this) }
+    }
+
+    return resourcesList.toTypedArray()
+  }
+
+  suspend fun loadImmunization(patientId: String): Immunization? {
+    return defaultRepository.loadImmunizations(patientId)?.firstOrNull()
   }
 }

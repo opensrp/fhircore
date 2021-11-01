@@ -24,6 +24,7 @@ object SharedPreferencesHelper {
   private lateinit var prefs: SharedPreferences
 
   const val LANG = "shared_pref_lang"
+  const val THEME = "shared_pref_theme"
   private const val PREFS_NAME = "params"
 
   fun init(context: Context): SharedPreferencesHelper {
@@ -31,9 +32,11 @@ object SharedPreferencesHelper {
     return this
   }
 
-  fun read(key: String, value: String) = prefs.getString(key, value)
+  /** @see [SharedPreferences.getString] */
+  fun read(key: String, defaultValue: String?) = prefs.getString(key, defaultValue)
 
-  fun write(key: String, value: String) {
+  /** @see [SharedPreferences.Editor.putString] */
+  fun write(key: String, value: String?) {
     with(prefs.edit()) {
       putString(key, value)
       commit()

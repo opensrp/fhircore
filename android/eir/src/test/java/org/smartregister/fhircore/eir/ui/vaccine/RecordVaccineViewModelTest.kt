@@ -16,27 +16,35 @@
 
 package org.smartregister.fhircore.eir.ui.vaccine
 
+import android.content.Intent
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
+import org.hl7.fhir.r4.model.Resource
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 @ExperimentalCoroutinesApi
 @Config(shadows = [EirApplicationShadow::class])
@@ -74,4 +82,52 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
       Assert.assertEquals(1, patientVaccineSummary?.doseNumber)
       Assert.assertEquals("code", patientVaccineSummary?.initialDose)
     }
+
+  @Test
+  fun `getPopulationResources() should call loadPatient() and loadImmunization()`() {
+    val patientId = "2892347"
+    val patient = Patient()
+    val immunization = Immunization()
+    val intent = Intent()
+    intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
+
+    coEvery { recordVaccineViewModel.loadPatient(patientId) } returns patient
+    coEvery { recordVaccineViewModel.loadImmunization(patientId) } returns immunization
+
+    val resources: Array<Resource>
+    runBlocking { resources = recordVaccineViewModel.getPopulationResources(intent) }
+
+    coVerify { recordVaccineViewModel.loadPatient(patientId) }
+    coVerify { recordVaccineViewModel.loadImmunization(patientId) }
+    Assert.assertEquals(patient, resources[0])
+    Assert.assertEquals(immunization, resources[1])
+  }
+
+  @Test
+  fun `loadImmunization() should call defaultRepository#loadImmunizations`() {
+    val patientId = "2892347"
+
+    val defaultRepository: DefaultRepository = mockk()
+    coEvery { defaultRepository.loadImmunizations(patientId) } returns listOf()
+    ReflectionHelpers.setField(recordVaccineViewModel, "defaultRepository", defaultRepository)
+
+    runBlocking { recordVaccineViewModel.loadImmunization(patientId) }
+
+    coVerify { defaultRepository.loadImmunizations(patientId) }
+  }
+
+  @Test
+  fun `loadImmunization() should return first immunization from defaultRepository#loadImmunizations`() {
+    val patientId = "2892347"
+    val immunizationsList: List<Immunization> = listOf(Immunization(), Immunization())
+
+    val defaultRepository: DefaultRepository = mockk(relaxed = true)
+    coEvery { defaultRepository.loadImmunizations(patientId) } returns immunizationsList
+    ReflectionHelpers.setField(recordVaccineViewModel, "defaultRepository", defaultRepository)
+
+    val actualImmunizations: Immunization
+    runBlocking { actualImmunizations = recordVaccineViewModel.loadImmunization(patientId)!! }
+
+    Assert.assertEquals(immunizationsList[0], actualImmunizations)
+  }
 }

@@ -69,7 +69,11 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
         if (value is String && value.isEmpty()) return true
         else
           data.name.contains(value.toString(), ignoreCase = true) ||
-            data.id.contentEquals(value.toString())
+            data.id.contentEquals(value.toString()) ||
+            data.identifier.contentEquals(value.toString())
+      }
+      RegisterFilterType.OVERDUE_FILTER -> {
+        data.servicesOverdue > 0
       }
       else -> false
     }
@@ -83,7 +87,7 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
         FamilyItemMapper
       )
     return ViewModelProvider(
-      requireActivity(),
+      viewModelStore,
       RegisterDataViewModel(
           application = requireActivity().application,
           registerRepository = familyRepository
@@ -91,5 +95,9 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
         .createFactory()
     )[RegisterDataViewModel::class.java] as
       RegisterDataViewModel<Family, FamilyItem>
+  }
+
+  companion object {
+    const val TAG = "FamilyRegisterFragment"
   }
 }
