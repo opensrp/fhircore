@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.ui.register
 
 import android.Manifest
-import android.accounts.AccountManager
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
@@ -31,10 +30,10 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import androidx.annotation.IdRes
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.IdRes
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
@@ -47,7 +46,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.contrib.views.barcode.mlkit.md.LiveBarcodeScanningFragment
 import com.google.android.fhir.sync.State
@@ -165,6 +163,7 @@ abstract class BaseRegisterActivity :
     fhirEngine = (application as ConfigurableApplication).fhirEngine
 
     navigationBottomSheet = NavigationBottomSheet(this::onSelectRegister)
+    setupBarcodeButtonView()
   }
 
   override fun onResume() {
@@ -227,7 +226,6 @@ abstract class BaseRegisterActivity :
     setupSearchView()
 
     setupDueButtonView()
-    setupBarcodeButtonView()
 
     switchFragment(mainFragmentTag())
   }
@@ -361,7 +359,7 @@ abstract class BaseRegisterActivity :
   private fun setupBarcodeButtonView() {
     val requestPermissionLauncher = getBarcodePermissionLauncher()
     with(registerActivityBinding.toolbarLayout) {
-      layoutScanBarcode.setOnClickListener {
+      btnScanBarcode.setOnClickListener {
         launchBarcodeReader(requestPermissionLauncher)
         barcodeFragmentListener(it)
       }
@@ -676,7 +674,7 @@ abstract class BaseRegisterActivity :
 
   private fun barcodeFragmentListener(view: View) {
     supportFragmentManager.setFragmentResultListener(
-      "result",
+      BARCODE_RESULT_KEY,
       this,
       { key, result ->
         val barcode = result.getString(key)!!.trim()
@@ -722,7 +720,7 @@ abstract class BaseRegisterActivity :
       try {
         fhirEngine.load(Patient::class.java, barcode)
         result.postValue(Result.success(true))
-      } catch (e: ResourceNotFoundException) {
+      } catch (e: Exception) {
         result.postValue(Result.failure(e))
       }
     }
@@ -730,4 +728,8 @@ abstract class BaseRegisterActivity :
   }
 
   open fun onBarcodeResult(barcode: String, view: View) {}
+
+  companion object {
+    const val BARCODE_RESULT_KEY = "result"
+  }
 }
