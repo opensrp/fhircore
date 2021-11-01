@@ -29,6 +29,9 @@ import org.smartregister.fhircore.engine.R
 
 private const val RISK = "risk"
 private val simpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.ENGLISH)
+const val DAYS_IN_YEAR = 365
+const val DAYS_IN_MONTH = 30
+const val DAYS_IN_WEEK = 7
 
 fun Patient.extractName(): String {
   if (!hasName()) return ""
@@ -59,7 +62,23 @@ fun Patient.extractGender(context: Context): String? =
 fun Patient.extractAge(): String {
   if (!hasBirthDate()) return ""
   val ageDiffMilli = Instant.now().toEpochMilli() - this.birthDate.time
-  return (TimeUnit.DAYS.convert(ageDiffMilli, TimeUnit.MILLISECONDS) / 365).toString()
+  val days = TimeUnit.DAYS.convert(ageDiffMilli, TimeUnit.MILLISECONDS)
+  return getAgeStringFromDays(days)
+}
+
+fun getAgeStringFromDays(days: Long): String {
+  var ageString = ""
+  val elapsedYears = days / DAYS_IN_YEAR
+  val diffDaysFromYear = days % DAYS_IN_YEAR
+  val elapsedMonths = diffDaysFromYear / DAYS_IN_MONTH
+  val diffDaysFromMonth = diffDaysFromYear % DAYS_IN_MONTH
+  val elapsedWeeks = diffDaysFromMonth / DAYS_IN_WEEK
+  val elapsedDays = diffDaysFromMonth % DAYS_IN_WEEK
+  if (elapsedYears > 0) ageString = elapsedYears.toString() + "y"
+  if (elapsedMonths > 0) ageString += " " + elapsedMonths.toString() + "m"
+  if (elapsedWeeks > 0) ageString += " " + elapsedWeeks.toString() + "w"
+  if (elapsedDays > 0) ageString += " " + elapsedDays.toString() + "d"
+  return ageString.trim()
 }
 
 fun Patient.atRisk() =
