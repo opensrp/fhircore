@@ -74,6 +74,14 @@ class PatientRegisterFragmentTest : RobolectricTest() {
         "Razi"
       )
     )
+
+    Assert.assertTrue(
+      registerFragment.performFilter(
+        RegisterFilterType.SEARCH_FILTER,
+        PatientItem(id = "1234"),
+        "1234"
+      )
+    )
   }
 
   @Test
