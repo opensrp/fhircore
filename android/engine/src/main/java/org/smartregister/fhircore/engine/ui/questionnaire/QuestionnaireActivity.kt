@@ -29,6 +29,7 @@ import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
+import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.Patient
@@ -117,17 +118,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                 clientIdentifier == null ->
                   bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
                 clientIdentifier != null -> {
-                  //                  TODO it is not working. Takes forever to load form first
-                  // time
-                  //                  val parsedQuestionnaireResponse =
-                  //                    parser.encodeResourceToString(
-                  //
-                  // questionnaireViewModel.generateQuestionnaireResponse(questionnaire!!, intent)
-                  //                    )
+                  val parsedQuestionnaireResponse =
+                    parser.encodeResourceToString(
+                      questionnaireViewModel.generateQuestionnaireResponse(questionnaire!!, intent)
+                    )
                   bundleOf(
                     Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire),
-                    //  Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
-                    )
+                    Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
+                  )
                 }
                 else -> bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
               }
