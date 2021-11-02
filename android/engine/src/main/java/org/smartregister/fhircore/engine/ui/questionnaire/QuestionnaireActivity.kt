@@ -192,12 +192,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       this,
       { result ->
         if (result) {
+          saveProcessingAlertDialog.dismiss()
           finish()
         } else {
+          saveProcessingAlertDialog.dismiss()
           Timber.e("An error occurred during extraction")
         }
-
-        saveProcessingAlertDialog.dismiss()
       }
     )
   }
@@ -244,6 +244,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         true
       }
       else -> super.onOptionsItemSelected(item)
+    }
+  }
+
+  override fun onDestroy() {
+    super.onDestroy()
+    if (saveProcessingAlertDialog != null) {
+      saveProcessingAlertDialog.dismiss()
     }
   }
 
