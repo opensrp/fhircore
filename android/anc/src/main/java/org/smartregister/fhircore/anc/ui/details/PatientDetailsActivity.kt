@@ -162,7 +162,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
         .putExtras(
           QuestionnaireActivity.intentArgs(
             clientIdentifier = patientId,
-            form = FormConfig.ANC_VITAL_SIGNS_METRIC
+            formName = FormConfig.ANC_VITAL_SIGNS_METRIC
           )
         )
     )
@@ -174,7 +174,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
         .putExtras(
           QuestionnaireActivity.intentArgs(
             clientIdentifier = patientId,
-            form = FormConfig.ANC_VITAL_SIGNS_STANDARD
+            formName = FormConfig.ANC_VITAL_SIGNS_STANDARD
           )
         )
     )

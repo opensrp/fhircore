@@ -113,7 +113,7 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
             .putExtras(
               QuestionnaireActivity.intentArgs(
                 clientIdentifier = patientId,
-                form = FormConfig.FAMILY_PATIENT_BMI_FORM
+                formName = FormConfig.FAMILY_PATIENT_BMI_FORM
               )
             )
         )

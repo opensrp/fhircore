@@ -38,7 +38,10 @@ class QuestQuestionnaireResponseViewActivity : QuestionnaireActivity() {
     }
   }
 
-  override fun createViewModel(application: Application): QuestionnaireViewModel {
+  override fun createViewModel(
+    application: Application,
+    readOnly: Boolean
+  ): QuestionnaireViewModel {
     val questionnaireResponse = intent.getStringExtra("questionnaire-response")
     return ViewModelProvider(
       this@QuestQuestionnaireResponseViewActivity,

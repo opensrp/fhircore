@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.patient.details
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import ca.uhn.fhir.context.FhirContext
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
@@ -28,7 +27,6 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
-import org.smartregister.fhircore.quest.ui.overview.QuestQuestionnaireResponseViewActivity
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 
 class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
@@ -68,23 +66,23 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
     startActivity(
       Intent(this, QuestionnaireActivity::class.java).apply {
         putExtras(
-          QuestionnaireActivity.intentArgs(clientIdentifier = patientId, form = item.identifier)
+          QuestionnaireActivity.intentArgs(clientIdentifier = patientId, formName = item.identifier)
         )
       }
     )
   }
 
   private fun onTestResultItemClickListener(item: QuestionnaireResponse) {
+    val questionnaireId = item.questionnaire.split("/")[1]
     startActivity(
-      Intent(this, QuestQuestionnaireResponseViewActivity::class.java)
+      Intent(this, QuestionnaireActivity::class.java)
         .putExtras(
-          QuestionnaireActivity.intentArgs(clientIdentifier = patientId, form = item.questionnaire)
-            .apply {
-              putString(
-                "questionnaire-response",
-                FhirContext.forR4().newJsonParser().encodeResourceToString(item)
-              )
-            }
+          QuestionnaireActivity.intentArgs(
+            clientIdentifier = null,
+            formName = questionnaireId,
+            readOnly = true,
+            questionnaireResponse = item
+          )
         )
     )
   }
