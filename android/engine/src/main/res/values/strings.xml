@@ -78,4 +78,5 @@
     <string name="tick">Tick</string>
     <string name="clients">Clients</string>
     <string name="logout">Log out</string>
+    <string name="done">Done</string>
 </resources>

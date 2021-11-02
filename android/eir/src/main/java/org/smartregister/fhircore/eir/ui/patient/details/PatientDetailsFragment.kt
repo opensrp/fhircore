@@ -113,7 +113,7 @@ class PatientDetailsFragment private constructor() : Fragment() {
           .putExtras(
             QuestionnaireActivity.intentArgs(
               clientIdentifier = patientId,
-              form = RECORD_VACCINE_FORM
+              formName = RECORD_VACCINE_FORM
             )
           )
       )

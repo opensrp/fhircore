@@ -37,7 +37,7 @@ fun Activity.startFamilyMemberRegistration(familyId: String) {
 
 fun Activity.getFamilyQuestionnaireIntent(patientId: String? = null, form: String): Intent {
   return Intent(this, FamilyQuestionnaireActivity::class.java)
-    .putExtras(QuestionnaireActivity.intentArgs(clientIdentifier = patientId, form = form))
+    .putExtras(QuestionnaireActivity.intentArgs(clientIdentifier = patientId, formName = form))
     .putExtra(QUESTIONNAIRE_CALLING_ACTIVITY, getCallerActivity())
 }
 
