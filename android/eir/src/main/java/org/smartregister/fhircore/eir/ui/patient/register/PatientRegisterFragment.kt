@@ -68,7 +68,7 @@ class PatientRegisterFragment :
               .putExtras(
                 QuestionnaireActivity.intentArgs(
                   clientIdentifier = data.patientIdentifier,
-                  form = RECORD_VACCINE_FORM
+                  formName = RECORD_VACCINE_FORM
                 )
               )
           )
