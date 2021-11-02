@@ -29,6 +29,7 @@ import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.flowOf
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -39,7 +40,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
+import org.smartregister.fhircore.anc.activity.BaseRegisterActivityTest
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
@@ -50,7 +51,7 @@ import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 
 @Config(shadows = [AncApplicationShadow::class])
-internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
+internal class FamilyRegisterActivityTest : BaseRegisterActivityTest() {
 
   private lateinit var familyRegisterActivity: FamilyRegisterActivity
   private lateinit var patientRepository: PatientRepository
@@ -126,6 +127,29 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
       View.GONE,
       familyRegisterActivity.findViewById<ImageButton>(R.id.filter_register_button).visibility
     )
+  }
+
+  @Test
+  fun testRegistersListShouldReturnFamilyAndAncRegisterItemList() {
+    val listRegisterItem = familyRegisterActivity.registersList()
+    assertEquals(listRegisterItem.size, 2)
+
+    with(listRegisterItem[0]) {
+      assertEquals(FamilyRegisterFragment.TAG, uniqueTag)
+      assertEquals(familyRegisterActivity.getString(R.string.families), title)
+      assertTrue(isSelected)
+    }
+
+    with(listRegisterItem[1]) {
+      assertEquals(AncRegisterFragment.TAG, uniqueTag)
+      assertEquals(familyRegisterActivity.getString(R.string.anc_clients), title)
+      assertFalse(isSelected)
+    }
+  }
+
+  @Test
+  fun testMainFragmentTagShouldReturnFamilyRegisterFragmentTag() {
+    assertEquals(FamilyRegisterFragment.TAG, familyRegisterActivity.mainFragmentTag())
   }
 
   override fun getActivity(): Activity {

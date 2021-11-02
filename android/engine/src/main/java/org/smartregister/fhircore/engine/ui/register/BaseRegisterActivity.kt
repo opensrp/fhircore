@@ -99,7 +99,7 @@ abstract class BaseRegisterActivity :
   OnSyncListener,
   SyncInitiator {
 
-  private lateinit var registerViewModel: RegisterViewModel
+  lateinit var registerViewModel: RegisterViewModel
 
   private lateinit var registerActivityBinding: BaseRegisterActivityBinding
 
@@ -109,8 +109,8 @@ abstract class BaseRegisterActivity :
 
   private lateinit var sideMenuOptionMap: Map<Int, SideMenuOption>
 
-  protected lateinit var fhirEngine: FhirEngine
-  private val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
+  lateinit var fhirEngine: FhirEngine
+  val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
 
   protected lateinit var navigationBottomSheet: NavigationBottomSheet
 
