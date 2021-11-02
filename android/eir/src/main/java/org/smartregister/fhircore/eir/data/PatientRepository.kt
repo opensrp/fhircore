@@ -60,6 +60,9 @@ class PatientRepository(
       fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$logicalId" } }
     }
 
+  suspend fun fetchDemographics(patientId: String): Patient =
+    withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, patientId) }
+
   override suspend fun countAll(): Long =
     withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
 }

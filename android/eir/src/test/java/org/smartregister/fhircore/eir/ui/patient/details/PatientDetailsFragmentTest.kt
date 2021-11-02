@@ -49,7 +49,6 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.robolectric.FragmentRobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 
@@ -74,11 +73,7 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
     clearAllMocks()
     patientDetailsViewModel =
       spyk(
-        PatientDetailsViewModel(
-          dispatcher = CoroutineTestRule().testDispatcherProvider,
-          fhirEngine = mockk(relaxed = true),
-          patientId = patientId
-        )
+        PatientDetailsViewModel(patientRepository = mockk(relaxed = true), patientId = patientId)
       )
 
     patientDetailsActivity =

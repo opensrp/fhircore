@@ -19,40 +19,36 @@ package org.smartregister.fhircore.eir.ui.patient.details
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.search
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.eir.data.PatientRepository
+import org.smartregister.fhircore.eir.ui.patient.configuration.ImmunizationProfileConfiguration
 
-class PatientDetailsViewModel(
-  var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
-  val fhirEngine: FhirEngine,
-  val patientId: String
-) : ViewModel() {
+class PatientDetailsViewModel(val patientRepository: PatientRepository, val patientId: String) :
+  ViewModel() {
+
+  val immunizationProfileConfiguration = MutableLiveData<ImmunizationProfileConfiguration>()
 
   val patientDemographics = MutableLiveData<Patient>()
 
   val patientImmunizations = MutableLiveData<List<Immunization>>()
 
-  // Todo migrate to PatientRepository to follow repository pattern
   fun fetchDemographics() {
     if (patientId.isNotEmpty())
-      viewModelScope.launch(dispatcher.io()) {
-        val patient = fhirEngine.load(Patient::class.java, patientId)
-        patientDemographics.postValue(patient)
+      viewModelScope.launch() {
+        patientDemographics.postValue(patientRepository.fetchDemographics(patientId))
       }
   }
 
-  // Todo migrate to PatientRepository to follow repository pattern
   fun fetchImmunizations() {
     if (patientId.isNotEmpty())
-      viewModelScope.launch(dispatcher.io()) {
-        val immunizations: List<Immunization> =
-          fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$patientId" } }
-        patientImmunizations.postValue(immunizations)
+      viewModelScope.launch() {
+        patientImmunizations.postValue(patientRepository.getPatientImmunizations(patientId))
       }
+  }
+
+  fun updateViewConfiguration(immunizationProfileConfiguration: ImmunizationProfileConfiguration) {
+    this.immunizationProfileConfiguration.value = immunizationProfileConfiguration
   }
 }
