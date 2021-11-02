@@ -138,7 +138,10 @@ class PatientDetailsFragment private constructor() : Fragment() {
 
     AlertDialog.Builder(requireActivity(), R.style.Theme_AppCompat_Light_Dialog_Alert)
       .apply {
-        setTitle("Choose dose of ${immunizationAdverseEventItem.vaccine} for adverse events")
+        setTitle(
+          requireContext()
+            .getString(R.string.choose_dose_adverse_event, immunizationAdverseEventItem.vaccine)
+        )
         setNegativeButton(R.string.cancel) { dialog: DialogInterface, _ -> dialog.dismiss() }
         setSingleChoiceItems(list.toTypedArray(), -1) { dialog: DialogInterface, position: Int ->
           startActivity(
