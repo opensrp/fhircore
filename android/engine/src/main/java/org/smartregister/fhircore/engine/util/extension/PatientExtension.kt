@@ -79,7 +79,7 @@ fun getAgeStringFromDays(days: Long): String {
   if (elapsedYears > 0) elapseYearsString = elapsedYears.toString() + "y"
   if (elapsedMonths > 0) elapseMonthsString = elapsedMonths.toString() + "m"
   if (elapsedWeeks > 0) elapseWeeksString = elapsedWeeks.toString() + "w"
-  if (elapsedDays > 0) elapseDaysString = elapsedDays.toString() + "d"
+  if (elapsedDays >= 0) elapseDaysString = elapsedDays.toString() + "d"
 
   return if (days >= DAYS_IN_YEAR * 10) {
     elapseYearsString

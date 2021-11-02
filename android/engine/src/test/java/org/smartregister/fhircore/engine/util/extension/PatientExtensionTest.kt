@@ -74,8 +74,8 @@ class PatientExtensionTest {
     val expectedAge11 = "40y"
     Assert.assertEquals(expectedAge11, getAgeStringFromDays(14700))
 
-    val expectedAge12 = ""
-    // if no age is map to patient model, or passing age as 0 days
+    val expectedAge12 = "0d"
+    // if difference b/w current date and DOB is O from extractAge extension
     Assert.assertEquals(expectedAge12, getAgeStringFromDays(0))
   }
 }
