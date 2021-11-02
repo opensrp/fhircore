@@ -36,7 +36,7 @@ class PatientMapperTest : RobolectricTest() {
     val dto = buildPatient("123456", "Doe", "John", 12)
     val patientItem = PatientItemMapper.mapToDomainModel(dto)
     with(patientItem) {
-      assertEquals("12", age)
+      assertEquals("12y", age)
       assertEquals("John Doe", name)
       assertEquals("123456", id)
       assertEquals("123456", identifier)
