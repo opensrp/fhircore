@@ -71,7 +71,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
       )
   }
 
-  private fun navigateToDetails(patientIdentifier: String) {
+  fun navigateToDetails(patientIdentifier: String) {
     startActivity(
       Intent(this, PatientDetailsActivity::class.java).apply {
         putExtras(PatientDetailsActivity.requiredIntentArgs(patientIdentifier))

@@ -620,7 +620,7 @@ abstract class BaseRegisterActivity :
    */
   open fun onNavigationOptionItemSelected(item: MenuItem): Boolean = true
 
-  protected open fun registerClient(clientIdentifier: String? = null) {
+  open fun registerClient(clientIdentifier: String? = null) {
     startActivity(
       Intent(this, QuestionnaireActivity::class.java)
         .putExtras(
