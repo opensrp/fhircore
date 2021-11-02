@@ -44,8 +44,8 @@ class AncItemMapperTest : RobolectricTest() {
       Assert.assertEquals("test_patient_id_1", patientIdentifier)
       Assert.assertEquals("Jane Mc", name)
       Assert.assertEquals("M", gender)
-      Assert.assertEquals("0", age)
-      Assert.assertEquals("Jane Mc, M, 0", demographics)
+      Assert.assertEquals("", age)
+      Assert.assertEquals("Jane Mc, M, ", demographics)
       Assert.assertEquals("", atRisk)
       Assert.assertEquals(VisitStatus.PLANNED, visitStatus)
     }
