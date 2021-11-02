@@ -73,5 +73,9 @@ class PatientExtensionTest {
 
     val expectedAge11 = "40y"
     Assert.assertEquals(expectedAge11, getAgeStringFromDays(14700))
+
+    val expectedAge12 = ""
+    // if no age is map to patient model, or passing age as 0 days
+    Assert.assertEquals(expectedAge12, getAgeStringFromDays(0))
   }
 }
