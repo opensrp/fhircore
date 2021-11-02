@@ -62,23 +62,40 @@ fun Patient.extractGender(context: Context): String? =
 fun Patient.extractAge(): String {
   if (!hasBirthDate()) return ""
   val ageDiffMilli = Instant.now().toEpochMilli() - this.birthDate.time
-  val days = TimeUnit.DAYS.convert(ageDiffMilli, TimeUnit.MILLISECONDS)
-  return getAgeStringFromDays(days)
+  return getAgeStringFromDays(TimeUnit.DAYS.convert(ageDiffMilli, TimeUnit.MILLISECONDS))
 }
 
 fun getAgeStringFromDays(days: Long): String {
-  var ageString = ""
+  var elapseYearsString = ""
+  var elapseMonthsString = ""
+  var elapseWeeksString = ""
+  var elapseDaysString = ""
   val elapsedYears = days / DAYS_IN_YEAR
   val diffDaysFromYear = days % DAYS_IN_YEAR
   val elapsedMonths = diffDaysFromYear / DAYS_IN_MONTH
   val diffDaysFromMonth = diffDaysFromYear % DAYS_IN_MONTH
   val elapsedWeeks = diffDaysFromMonth / DAYS_IN_WEEK
   val elapsedDays = diffDaysFromMonth % DAYS_IN_WEEK
-  if (elapsedYears > 0) ageString = elapsedYears.toString() + "y"
-  if (elapsedMonths > 0) ageString += " " + elapsedMonths.toString() + "m"
-  if (elapsedWeeks > 0) ageString += " " + elapsedWeeks.toString() + "w"
-  if (elapsedDays > 0) ageString += " " + elapsedDays.toString() + "d"
-  return ageString.trim()
+  if (elapsedYears > 0) elapseYearsString = elapsedYears.toString() + "y"
+  if (elapsedMonths > 0) elapseMonthsString = elapsedMonths.toString() + "m"
+  if (elapsedWeeks > 0) elapseWeeksString = elapsedWeeks.toString() + "w"
+  if (elapsedDays > 0) elapseDaysString = elapsedDays.toString() + "d"
+
+  return if (days >= DAYS_IN_YEAR * 10) {
+    elapseYearsString
+  } else if (days >= DAYS_IN_YEAR) {
+    if (elapsedMonths > 0) {
+      elapseYearsString + " " + elapseMonthsString
+    } else elapseYearsString
+  } else if (days >= DAYS_IN_MONTH) {
+    if (elapsedWeeks > 0) {
+      elapseMonthsString + " " + elapseWeeksString
+    } else elapseMonthsString
+  } else if (days >= DAYS_IN_WEEK) {
+    if (elapsedDays > 0) {
+      elapseWeeksString + " " + elapseDaysString
+    } else elapseWeeksString
+  } else elapseDaysString
 }
 
 fun Patient.atRisk() =
