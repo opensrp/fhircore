@@ -308,12 +308,16 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
         Pair(QUESTIONNAIRE_ARG_FORM, formName),
         Pair(QUESTIONNAIRE_READ_ONLY, readOnly),
-        Pair(
-          QUESTIONNAIRE_RESPONSE,
-          FhirContext.forR4().newJsonParser().encodeResourceToString(questionnaireResponse)
-        ),
         Pair(ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY, immunizationId)
       )
+        .apply {
+          if (questionnaireResponse != null) {
+            putString(
+              QUESTIONNAIRE_RESPONSE,
+              FhirContext.forR4().newJsonParser().encodeResourceToString(questionnaireResponse)
+            )
+          }
+        }
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -327,12 +331,16 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   override fun onBackPressed() {
-    showConfirmAlert(
-      this,
-      R.string.questionnaire_alert_back_pressed_message,
-      R.string.questionnaire_alert_back_pressed_title,
-      { finish() },
-      R.string.questionnaire_alert_back_pressed_button_title
-    )
+    if (readOnly) {
+      finish()
+    } else {
+      showConfirmAlert(
+        this,
+        R.string.questionnaire_alert_back_pressed_message,
+        R.string.questionnaire_alert_back_pressed_title,
+        { finish() },
+        R.string.questionnaire_alert_back_pressed_button_title
+      )
+    }
   }
 }
