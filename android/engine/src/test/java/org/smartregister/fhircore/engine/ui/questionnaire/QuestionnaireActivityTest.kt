@@ -25,6 +25,7 @@ import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import io.mockk.coEvery
 import io.mockk.every
@@ -106,12 +107,38 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testRequiredIntentShouldInsertValues() {
-    val result = QuestionnaireActivity.intentArgs("1234", "my-form")
+    val questionnaireResponse = QuestionnaireResponse()
+    val result = QuestionnaireActivity.intentArgs("1234", "my-form", true, questionnaireResponse)
     Assert.assertEquals("my-form", result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM))
     Assert.assertEquals(
       "1234",
       result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
     )
+    Assert.assertTrue(result.getBoolean(QuestionnaireActivity.QUESTIONNAIRE_READ_ONLY))
+    Assert.assertEquals(
+      FhirContext.forR4().newJsonParser().encodeResourceToString(questionnaireResponse),
+      result.getString(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
+    )
+  }
+
+  @Test
+  fun testReadOnlyIntentShouldBeReadToReadOnlyFlag() {
+
+    intent =
+      Intent().apply {
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, "patient-registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_READ_ONLY, true)
+      }
+
+    val questionnaireFragment = spyk<QuestionnaireFragment>()
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+
+    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
+    questionnaireActivity = controller.create().resume().get()
+    questionnaireActivity.questionnaireViewModel = questionnaireViewModel
+
+    Assert.assertTrue(questionnaireActivity.readOnly)
   }
 
   @Test
