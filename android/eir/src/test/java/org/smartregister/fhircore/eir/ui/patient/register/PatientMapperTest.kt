@@ -50,7 +50,7 @@ class PatientMapperTest : RobolectricTest() {
     val dto: Pair<Patient, List<Immunization>> = Pair(patient, immunizations)
     val patientItem = PatientItemMapper.mapToDomainModel(dto = dto)
     with(patientItem) {
-      Assert.assertEquals(this.age, "0")
+      Assert.assertEquals(this.age, "0d")
       Assert.assertEquals(this.name, "Nelson Mandela")
       Assert.assertEquals(this.patientIdentifier, "samplePatientId")
       Assert.assertNotNull(this.vaccineStatus)
