@@ -247,13 +247,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  override fun onDestroy() {
-    super.onDestroy()
-    if (saveProcessingAlertDialog != null) {
-      saveProcessingAlertDialog.dismiss()
-    }
-  }
-
   override fun onBackPressed() {
     showConfirmAlert(
       this,

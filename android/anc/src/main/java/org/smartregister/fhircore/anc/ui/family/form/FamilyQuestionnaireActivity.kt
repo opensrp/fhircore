@@ -26,6 +26,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
+import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.util.startAncEnrollment
@@ -87,6 +88,13 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
       .setCancelable(false)
       .setNegativeButton(R.string.unsaved_changes_neg) { dialogInterface, _ ->
         dialogInterface.dismiss()
+        if(questionnaireConfig.form == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
+          startActivity(
+            Intent(this, FamilyDetailsActivity::class.java).apply {
+              putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!)
+            }
+          )
+        }
         finish()
       }
       .setPositiveButton(R.string.unsaved_changes_pos) { dialogInterface, _ ->
@@ -106,6 +114,13 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
   private fun endActivity() {
     when (intent.getStringExtra(QUESTIONNAIRE_CALLING_ACTIVITY) ?: "") {
       FamilyRegisterActivity::class.java.name -> reloadList()
+    }
+    if(questionnaireConfig.form == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
+      startActivity(
+        Intent(this, FamilyDetailsActivity::class.java).apply {
+          putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!)
+        }
+      )
     }
     finish()
   }
