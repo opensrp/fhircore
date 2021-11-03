@@ -49,6 +49,7 @@ class TransformSupportServices(
     return when (name) {
       "RiskAssessment_Prediction" -> RiskAssessmentPredictionComponent()
       "Immunization_VaccinationProtocol" -> Immunization.ImmunizationProtocolAppliedComponent()
+      "Immunization_Reaction" -> Immunization.ImmunizationReactionComponent()
       else -> ResourceFactory.createResourceOrType(name)
     }
   }

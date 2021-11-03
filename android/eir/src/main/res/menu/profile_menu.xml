@@ -5,4 +5,10 @@
         android:orderInCategory="300"
         android:title="@string/edit"
         />
+
+    <item
+        android:id="@+id/vaccine_adverse_events"
+        android:orderInCategory="301"
+        android:title="Adverse Events"
+        />
 </menu>

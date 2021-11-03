@@ -16,11 +16,13 @@
 
 package org.smartregister.fhircore.eir.ui.patient.details
 
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -40,7 +42,9 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
+import org.smartregister.fhircore.eir.ui.adverseevent.AdverseEventQuestionnaireActivity
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
+import org.smartregister.fhircore.eir.util.ADVERSE_EVENT_FORM
 import org.smartregister.fhircore.eir.util.RECORD_VACCINE_FORM
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.createFactory
@@ -114,6 +118,47 @@ class PatientDetailsFragment private constructor() : Fragment() {
           )
       )
     }
+
+    reportAdverseEventButton.setOnClickListener {
+      val immunizations = patientDetailsViewModel.patientImmunizations.value as List<Immunization>
+      val immunizationItemWithIds =
+        immunizations.toImmunizationAdverseEventItem(requireContext()).first()
+
+      goToAdverseEventQuestionnaireActivity(immunizationItemWithIds, patientId)
+    }
+  }
+
+  private fun goToAdverseEventQuestionnaireActivity(
+    immunizationAdverseEventItem: ImmunizationAdverseEventItem,
+    patientId: String
+  ) {
+
+    val list = arrayListOf<String>()
+    immunizationAdverseEventItem.dosesWithAdverseEvents.forEach { dose -> list.add(dose.first) }
+
+    AlertDialog.Builder(requireActivity(), R.style.Theme_AppCompat_Light_Dialog_Alert)
+      .apply {
+        setTitle(
+          requireContext()
+            .getString(R.string.choose_dose_adverse_event, immunizationAdverseEventItem.vaccine)
+        )
+        setNegativeButton(R.string.cancel) { dialog: DialogInterface, _ -> dialog.dismiss() }
+        setSingleChoiceItems(list.toTypedArray(), -1) { dialog: DialogInterface, position: Int ->
+          startActivity(
+            Intent(requireContext(), AdverseEventQuestionnaireActivity::class.java)
+              .putExtras(
+                QuestionnaireActivity.requiredIntentArgs(
+                  clientIdentifier = patientId,
+                  form = ADVERSE_EVENT_FORM,
+                  immunizationId = immunizationAdverseEventItem.immunizationIds[position]
+                )
+              )
+          )
+          dialog.dismiss()
+        }
+      }
+      .create()
+      .show()
   }
 
   private fun handlePatientDemographics(patient: Patient) {

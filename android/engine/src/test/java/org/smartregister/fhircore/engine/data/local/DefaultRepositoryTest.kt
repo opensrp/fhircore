@@ -34,7 +34,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.extension.loadImmunizations
+import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 
 class DefaultRepositoryTest : RobolectricTest() {
@@ -108,12 +108,12 @@ class DefaultRepositoryTest : RobolectricTest() {
   fun `loadImmunizations() should call FhirEngine#loadImmunizations`() {
     val patientId = "15672-9234"
     val fhirEngine: FhirEngine = mockk()
-    coEvery { fhirEngine.loadImmunizations(patientId) } returns listOf()
+    coEvery { fhirEngine.loadPatientImmunizations(patientId) } returns listOf()
 
     val defaultRepository = DefaultRepository(fhirEngine)
 
-    runBlocking { defaultRepository.loadImmunizations(patientId) }
+    runBlocking { defaultRepository.loadPatientImmunizations(patientId) }
 
-    coVerify { fhirEngine.loadImmunizations(patientId) }
+    coVerify { fhirEngine.loadPatientImmunizations(patientId) }
   }
 }

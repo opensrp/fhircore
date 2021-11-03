@@ -8,5 +8,10 @@
     "form": "record-vaccine",
     "title": "Record Vaccine",
     "identifier": "2358"
+  },
+  {
+    "form": "adverse-event",
+    "title": "Adverse Event",
+    "identifier": "1568"
   }
 ]
