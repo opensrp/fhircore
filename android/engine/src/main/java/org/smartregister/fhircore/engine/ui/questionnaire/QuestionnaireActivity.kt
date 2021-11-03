@@ -32,6 +32,7 @@ import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -134,7 +135,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                       Pair(BUNDLE_KEY_QUESTIONNAIRE, parser.encodeResourceToString(questionnaire)),
                       Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
                     )
-                  } catch (e: Exception) {
+                  } catch (e: ResourceNotFoundException) {
                     setBarcode(questionnaire, clientIdentifier!!, true)
                     bundleOf(
                       Pair(BUNDLE_KEY_QUESTIONNAIRE, parser.encodeResourceToString(questionnaire))

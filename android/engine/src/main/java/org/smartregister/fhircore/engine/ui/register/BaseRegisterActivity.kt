@@ -48,6 +48,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.contrib.views.barcode.mlkit.md.LiveBarcodeScanningFragment
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.sync.State
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigation.NavigationView
@@ -720,7 +721,7 @@ abstract class BaseRegisterActivity :
       try {
         fhirEngine.load(Patient::class.java, barcode)
         result.postValue(Result.success(true))
-      } catch (e: Exception) {
+      } catch (e: ResourceNotFoundException) {
         result.postValue(Result.failure(e))
       }
     }
