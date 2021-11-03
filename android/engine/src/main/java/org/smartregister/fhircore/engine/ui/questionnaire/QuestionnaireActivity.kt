@@ -27,14 +27,17 @@ import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
+import com.google.android.fhir.FhirEngineProvider.fhirEngine
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showErrorAlert
@@ -114,21 +117,33 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       // Only add the fragment once, when the activity is first created.
       if (savedInstanceState == null) {
         val fragment =
-          QuestionnaireFragment().apply {
+          FhirCoreQuestionnaireFragment().apply {
             val parsedQuestionnaire = parser.encodeResourceToString(questionnaire)
             arguments =
               when {
                 clientIdentifier == null ->
                   bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
                 clientIdentifier != null -> {
-                  val parsedQuestionnaireResponse =
-                    parser.encodeResourceToString(
-                      questionnaireViewModel.generateQuestionnaireResponse(questionnaire!!, intent)
+
+                  try {
+                    fhirEngine.load(Patient::class.java, clientIdentifier!!)
+                    val parsedQuestionnaireResponse =
+                      parser.encodeResourceToString(
+                        questionnaireViewModel.generateQuestionnaireResponse(
+                          questionnaire!!,
+                          intent
+                        )
+                      )
+                    bundleOf(
+                      Pair(BUNDLE_KEY_QUESTIONNAIRE, parser.encodeResourceToString(questionnaire)),
+                      Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
                     )
-                  bundleOf(
-                    Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire),
-                    Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
-                  )
+                  } catch (e: ResourceNotFoundException) {
+                    setBarcode(questionnaire, clientIdentifier!!, true)
+                    bundleOf(
+                      Pair(BUNDLE_KEY_QUESTIONNAIRE, parser.encodeResourceToString(questionnaire))
+                    )
+                  }
                 }
                 else -> bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
               }
@@ -139,6 +154,33 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
 
     findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
+  }
+
+  private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
+    questionnaire.find(QUESTIONNAIRE_ARG_BARCODE_KEY)?.apply {
+      initial =
+        mutableListOf(Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(code)))
+      readOnly = readonly
+    }
+  }
+
+  private fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {
+    return item.find(linkId, null)
+  }
+  private fun List<Questionnaire.QuestionnaireItemComponent>.find(
+    linkId: String,
+    default: Questionnaire.QuestionnaireItemComponent?
+  ): Questionnaire.QuestionnaireItemComponent? {
+    var result = default
+    forEach {
+      if (it.linkId == linkId) {
+        return it
+      } else if (it.item.isNotEmpty()) {
+        result = it.item.find(linkId, result)
+      }
+    }
+
+    return result
   }
 
   open fun createViewModel(application: Application) =
@@ -232,6 +274,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY = "adverse_event_immunization_item_id"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire_form"
     const val FORM_CONFIGURATIONS = "form_configurations.json"
+    const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
+    const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
 
     fun requiredIntentArgs(
       clientIdentifier: String?,

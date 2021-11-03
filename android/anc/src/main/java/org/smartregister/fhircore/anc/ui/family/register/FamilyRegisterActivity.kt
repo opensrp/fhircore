@@ -26,8 +26,6 @@ import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
-import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
-import org.smartregister.fhircore.anc.util.getFamilyQuestionnaireIntent
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
@@ -56,10 +54,6 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
       FamilyRepository((application as AncApplication).fhirEngine, FamilyItemMapper)
 
     patientRepository = PatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
-  }
-
-  override fun registerClient() {
-    startActivity(getFamilyQuestionnaireIntent(form = FamilyFormConstants.FAMILY_REGISTER_FORM))
   }
 
   override fun supportedFragments(): Map<String, Fragment> =

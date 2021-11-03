@@ -16,9 +16,12 @@
 
 package org.smartregister.fhircore.eir.ui.adverseevent
 
+import android.content.Intent
+import android.os.Looper
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every
@@ -40,11 +43,17 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @ExperimentalCoroutinesApi
 @Config(shadows = [EirApplicationShadow::class])
@@ -54,6 +63,8 @@ internal class AdverseEventViewModelTest : RobolectricTest() {
   private lateinit var adverseEventViewModel: AdverseEventViewModel
 
   private lateinit var patientRepository: PatientRepository
+
+  private lateinit var defaultRepo: DefaultRepository
 
   private val patientId = "samplePatientId"
 
@@ -73,9 +84,19 @@ internal class AdverseEventViewModelTest : RobolectricTest() {
       listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(1)))
     every { immunization.vaccineCode.coding } returns listOf(Coding("sys", "code", "disp"))
     coEvery { patientRepository.getPatientImmunizations(any()) } returns listOf(immunization)
-
+    val dispatcher = mockk<DispatcherProvider>()
+    every { dispatcher.io() } returns DefaultDispatcherProvider.main()
     adverseEventViewModel =
-      spyk(AdverseEventViewModel(ApplicationProvider.getApplicationContext(), patientRepository))
+      spyk(
+        AdverseEventViewModel(
+          ApplicationProvider.getApplicationContext(),
+          patientRepository,
+          dispatcher
+        )
+      )
+
+    defaultRepo = spyk(DefaultRepository(fhirEngine))
+    ReflectionHelpers.setField(adverseEventViewModel, "defaultRepository", defaultRepo)
   }
 
   @Test
@@ -88,6 +109,33 @@ internal class AdverseEventViewModelTest : RobolectricTest() {
       Assert.assertTrue(liveImmunizationList is List<Immunization>)
       Assert.assertNotNull(liveImmunizationList?.isNotEmpty())
     }
+
+  @Test
+  fun testGetPopulationResourcesShouldReturnArrayOfImmunization() {
+    val defaultRepo = mockk<DefaultRepository>()
+
+    every { adverseEventViewModel.defaultRepository } returns defaultRepo
+    coEvery { defaultRepo.loadImmunization("1") } returns Immunization().apply { id = "1" }
+
+    val intent = Intent()
+    intent.putExtra(ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY, "1")
+
+    runBlockingTest {
+      val list = adverseEventViewModel.getPopulationResources(intent)
+      Assert.assertEquals(1, list.size)
+      Assert.assertEquals("1", (list[0] as Immunization).logicalId)
+    }
+  }
+
+  @Test
+  fun testLoadImmunizationShouldReturnLiveDataContainWithImmunization() {
+
+    coEvery { fhirEngine.load(Immunization::class.java, "1") } returns
+      Immunization().apply { id = "1" }
+    val immunizationLiveData = adverseEventViewModel.loadImmunization("1")
+    shadowOf(Looper.getMainLooper()).idle()
+    Assert.assertEquals("1", immunizationLiveData.value?.logicalId)
+  }
 
   fun getPatient(): Patient {
     val patient =
