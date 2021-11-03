@@ -74,7 +74,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
     // verify patient name with gender and age
     composeRule.onNodeWithTag(PATIENT_NAME).assertExists()
     composeRule.onNodeWithTag(PATIENT_NAME).assertIsDisplayed()
-    composeRule.onNodeWithTag(PATIENT_NAME).assertTextEquals("John Doe, M, 21")
+    composeRule.onNodeWithTag(PATIENT_NAME).assertTextEquals("John Doe, M, 21y")
 
     // verify form item(s) count and item title
     composeRule.onAllNodesWithTag(FORM_ITEM).assertCountEquals(1)
