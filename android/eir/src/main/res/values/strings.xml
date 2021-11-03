@@ -76,4 +76,8 @@
     <string name="error_reading_immunization_details">Error reading immunization details</string>
     <string name="second_vaccine_dose_should_be_same_first">Second vaccine dose should be same as first</string>
     <string name="initially_received_x">Initially received %s</string>
+    <string name="adverse_events">Adverse events</string>
+    <string name="cancel">Cancel</string>
+    <string name="no_adverse_events">No Adverse Events reported</string>
+    <string name="choose_dose_adverse_event">Choose dose of %1$s for adverse events</string>
 </resources>

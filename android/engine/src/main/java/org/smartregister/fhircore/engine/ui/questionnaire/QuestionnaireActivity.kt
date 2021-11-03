@@ -69,6 +69,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   protected var clientIdentifier: String? = null
 
+  protected var immunizationId: String? = null
+
   private val parser = FhirContext.forR4().newJsonParser()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,6 +85,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     val loadProgress = showProgressAlert(this, R.string.loading)
 
     clientIdentifier = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
+    immunizationId = intent.getStringExtra(ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY)
 
     lifecycleScope.launchWhenCreated {
       questionnaireViewModel = createViewModel(application)
@@ -272,15 +275,21 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnaire-population-resources"
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
+    const val ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY = "adverse_event_immunization_item_id"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire_form"
     const val FORM_CONFIGURATIONS = "form_configurations.json"
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
 
-    fun requiredIntentArgs(clientIdentifier: String?, form: String) =
+    fun requiredIntentArgs(
+      clientIdentifier: String?,
+      form: String,
+      immunizationId: String? = null
+    ) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
         Pair(QUESTIONNAIRE_ARG_FORM, form),
+        Pair(ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY, immunizationId)
       )
   }
 
