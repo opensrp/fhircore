@@ -33,6 +33,7 @@ import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.view.loadRegisterViewConfiguration
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
+import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
@@ -147,6 +148,21 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
     Assert.assertEquals(2, fragments.size)
     Assert.assertTrue(fragments.containsKey(PatientRegisterFragment.TAG))
     Assert.assertTrue(fragments.containsKey(UserProfileFragment.TAG))
+  }
+
+  @Test
+  fun testRegistersListShouldReturnOnlyOneItemList() {
+    val list =
+      ReflectionHelpers.callInstanceMethod<List<RegisterItem>>(
+        patientRegisterActivity,
+        "registersList"
+      )
+    Assert.assertEquals(1, list.size)
+    with(list[0]) {
+      Assert.assertEquals(PatientRegisterFragment.TAG, uniqueTag)
+      Assert.assertEquals(patientRegisterActivity.getString(R.string.clients), title)
+      Assert.assertTrue(isSelected)
+    }
   }
 
   override fun getActivity(): Activity {
