@@ -137,8 +137,8 @@ class FamilyDetailScreenKtTest : RobolectricTest() {
     composeRule.onNodeWithText("Encounter 1").assertIsDisplayed()
 
     // encounter date is displayed
-    composeRule.onNodeWithText("May 22, 2020").assertExists()
-    composeRule.onNodeWithText("May 22, 2020").assertIsDisplayed()
+    composeRule.onNodeWithText("22-May-2020").assertExists()
+    composeRule.onNodeWithText("22-May-2020").assertIsDisplayed()
   }
 
   private fun dummyEncounter(text: String, periodStartDate: String): Encounter {
