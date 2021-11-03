@@ -98,7 +98,7 @@ class PatientRepositoryTest : RobolectricTest() {
 
     Assert.assertEquals("1234", data[0].id)
     Assert.assertEquals("John Doe", data[0].name)
-    Assert.assertEquals("1", data[0].age)
+    Assert.assertEquals("1y", data[0].age)
     Assert.assertEquals("F", data[0].gender)
     Assert.assertEquals("Female", data[0].genderFull())
 

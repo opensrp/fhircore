@@ -73,7 +73,7 @@ open class QuestionnaireViewModel(
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
     structureMapUrl?.substringAfterLast("/")?.run {
-      structureMap = defaultRepository.loadResource(this)
+      structureMap = loadResource(this) as StructureMap?
     }
     return structureMap
   }
@@ -163,6 +163,10 @@ open class QuestionnaireViewModel(
 
   suspend fun loadPatient(patientId: String): Patient? {
     return defaultRepository.loadResource(patientId)
+  }
+
+  suspend fun loadResource(resourceId: String): Resource? {
+    return defaultRepository.loadResource(resourceId)
   }
 
   suspend fun loadRelatedPerson(patientId: String): List<RelatedPerson>? {

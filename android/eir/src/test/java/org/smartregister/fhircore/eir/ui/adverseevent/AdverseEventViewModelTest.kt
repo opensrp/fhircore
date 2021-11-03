@@ -14,10 +14,19 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.eir.ui.patient.register
+package org.smartregister.fhircore.eir.ui.adverseevent
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.FhirEngine
+import io.mockk.MockKAnnotations
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
 import java.util.Date
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
@@ -29,33 +38,56 @@ import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 
+@ExperimentalCoroutinesApi
 @Config(shadows = [EirApplicationShadow::class])
-class PatientMapperTest : RobolectricTest() {
-  private lateinit var immunizations: List<Immunization>
-  private lateinit var patient: Patient
+internal class AdverseEventViewModelTest : RobolectricTest() {
+  private lateinit var fhirEngine: FhirEngine
+
+  private lateinit var adverseEventViewModel: AdverseEventViewModel
+
+  private lateinit var patientRepository: PatientRepository
+
+  private val patientId = "samplePatientId"
+
+  @get:Rule var coroutinesTestRule = CoroutineTestRule()
+
+  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   @Before
   fun setUp() {
-    immunizations = getImmunizations()
-    patient = getPatient()
+    MockKAnnotations.init(this, relaxUnitFun = true)
+
+    fhirEngine = mockk(relaxed = true)
+    patientRepository = mockk()
+
+    val immunization = spyk<Immunization>()
+    every { immunization.protocolApplied } returns
+      listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(1)))
+    every { immunization.vaccineCode.coding } returns listOf(Coding("sys", "code", "disp"))
+    coEvery { patientRepository.getPatientImmunizations(any()) } returns listOf(immunization)
+
+    adverseEventViewModel =
+      spyk(AdverseEventViewModel(ApplicationProvider.getApplicationContext(), patientRepository))
   }
 
   @Test
-  fun testMapToDomainModel() {
-    val dto: Pair<Patient, List<Immunization>> = Pair(patient, immunizations)
-    val patientItem = PatientItemMapper.mapToDomainModel(dto = dto)
-    with(patientItem) {
-      Assert.assertEquals(this.age, "0d")
-      Assert.assertEquals(this.name, "Nelson Mandela")
-      Assert.assertEquals(this.patientIdentifier, "samplePatientId")
-      Assert.assertNotNull(this.vaccineStatus)
+  fun testGetPatientImmunizations() =
+    coroutinesTestRule.runBlockingTest {
+      val immunizationList = adverseEventViewModel.getPatientImmunizations(patientId = patientId)
+      Assert.assertNotNull(immunizationList)
+      val liveImmunizationList = getLiveDataValue(immunizationList)
+      Assert.assertNotNull(liveImmunizationList)
+      Assert.assertTrue(liveImmunizationList is List<Immunization>)
+      Assert.assertNotNull(liveImmunizationList?.isNotEmpty())
     }
-  }
 
   fun getPatient(): Patient {
     val patient =
