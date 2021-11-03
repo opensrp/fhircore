@@ -48,8 +48,9 @@ class DateUtilsTest {
     val formattedDate = date.toHumanDisplay()
     Assert.assertEquals("Oct 1, 2021 1:30:00 PM", formattedDate)
   }
+
   @Test
   fun testDateToStringFunction() {
-    Assert.assertEquals("2020-03-10".getDate("yyyy-MM-dd").makeItReadable(), "03-10-2020")
+    Assert.assertEquals("2020-03-10".getDate("yyyy-MM-dd").makeItReadable(), "10-Mar-2020")
   }
 }

@@ -159,7 +159,7 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
 
     val patientAgeTextView =
       patientDetailsFragment.view?.findViewById<TextView>(R.id.patientAgeTextView)
-    Assert.assertEquals("Age 0", patientAgeTextView?.text.toString())
+    Assert.assertEquals("Age 0d", patientAgeTextView?.text.toString())
   }
 
   @Test

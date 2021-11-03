@@ -102,7 +102,7 @@ class FamilyDetailRepositoryTest : RobolectricTest() {
 
     Assert.assertEquals("John Doe", items?.get(0)?.name)
     Assert.assertEquals("1", items?.get(0)?.id)
-    Assert.assertEquals("0", items?.get(0)?.age)
+    Assert.assertEquals("0d", items?.get(0)?.age)
     Assert.assertEquals("F", items?.get(0)?.gender)
     Assert.assertFalse(items?.get(0)?.pregnant!!)
   }

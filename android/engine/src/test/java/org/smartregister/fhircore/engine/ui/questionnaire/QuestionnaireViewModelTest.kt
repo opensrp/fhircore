@@ -38,6 +38,8 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Expression
+import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -140,17 +142,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("TO DO Fix failing test")
-  fun testExtractAndSaveResourcesWithExtrcationExtensionAndNullResourceShouldAssignTags() {
-    mockkObject(ResourceMapper)
-    mockkStatic(SimpleWorkerContextProvider::class)
-
-    coEvery { fhirEngine.load(StructureMap::class.java, any()) } returns StructureMap()
-    coEvery { ResourceMapper.extract(any(), any(), any(), any()) } returns
-      Bundle().apply { addEntry().apply { this.resource = Patient().apply { id = "123456" } } }
-    // coEvery { SimpleWorkerContextProvider.loadSimpleWorkerContext(mockk()) } returns
-    // SimpleWorkerContext()
-
+  fun testExtractAndSaveResourcesWithExtractionExtensionAndNullResourceShouldAssignTags() {
     val questionnaire =
       Questionnaire().apply {
         addUseContext().apply {
@@ -158,16 +150,16 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           value = CodeableConcept().apply { addCoding().apply { code = "1234567" } }
         }
         addExtension(
-          "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
-          CanonicalType("1234")
+          Extension(
+            "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+            Expression().apply {
+              language = "application/x-fhir-query"
+              expression = "Patient"
+              name = "Patient"
+            }
+          )
         )
       }
-
-    ReflectionHelpers.setField(
-      SimpleWorkerContextProvider,
-      "simpleWorkerContext",
-      mockk<SimpleWorkerContext>()
-    )
 
     questionnaireViewModel.extractAndSaveResources(
       null,
@@ -178,7 +170,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     val patientSlot = slot<Patient>()
 
-    coVerify { ResourceMapper.extract(any(), any(), any(), any(), any()) }
     coVerify { defaultRepo.addOrUpdate(capture(patientSlot)) }
 
     Assert.assertEquals("1234567", patientSlot.captured.meta.tagFirstRep.code)

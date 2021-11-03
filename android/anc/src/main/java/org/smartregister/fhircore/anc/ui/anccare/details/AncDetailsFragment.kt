@@ -128,7 +128,7 @@ class AncDetailsFragment : Fragment() {
 
     ancDetailsViewModel =
       ViewModelProvider(
-        this,
+        viewModelStore,
         AncDetailsViewModel(patientRepository, patientId = patientId).createFactory()
       )[AncDetailsViewModel::class.java]
 

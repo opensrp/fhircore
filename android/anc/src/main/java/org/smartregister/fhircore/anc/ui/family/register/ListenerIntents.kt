@@ -18,6 +18,7 @@ package org.smartregister.fhircore.anc.ui.family.register
 
 import org.smartregister.fhircore.engine.util.ListenerIntent
 
+/** [ListenerIntent] used on individual rows click listeners for family register. */
 sealed class FamilyListenerIntent : ListenerIntent
 
 object OpenFamilyProfile : FamilyListenerIntent()

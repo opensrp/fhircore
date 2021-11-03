@@ -28,9 +28,9 @@ const val OVERDUE_DAYS_IN_MONTH: Int = 14
 data class ImmunizationItem(val vaccine: String, val doses: List<Pair<String, Int>>)
 
 data class ImmunizationAdverseEventItem(
-  val immunizationIds: List<String>,
-  val vaccine: String,
-  val dosesWithAdverseEvents: List<Pair<String, List<AdverseEventItem>>>
+  var immunizationIds: List<String>,
+  var vaccine: String,
+  var dosesWithAdverseEvents: List<Pair<String, List<AdverseEventItem>>>
 )
 
 data class AdverseEventItem(val date: String, val detail: String)
