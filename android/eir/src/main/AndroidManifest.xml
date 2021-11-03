@@ -15,6 +15,15 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".ui.adverseevent.AdverseEventActivity"
+            android:label=""
+            android:parentActivityName=".ui.patient.details.PatientDetailsActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.patient.details.PatientDetailsActivity"/>
+        </activity>
+        <activity
             android:name=".ui.patient.details.PatientDetailsActivity"
             android:label=""
             android:parentActivityName=".ui.patient.register.PatientRegisterActivity"
@@ -33,14 +42,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ui.vaccine.RecordVaccineActivity"
-            android:windowSoftInputMode="adjustResize" />
-        <activity android:name="org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity" />
+        <activity android:name=".ui.vaccine.RecordVaccineActivity" />
         <activity
             android:name=".ui.patient.register.PatientRegisterActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
+
+        <activity android:name="org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity" />
+        <activity android:name=".ui.adverseevent.AdverseEventQuestionnaireActivity" />
 
         <service android:name=".EirAuthAndroidService">
             <intent-filter>
@@ -52,4 +61,5 @@
                 android:resource="@xml/authenticator" />
         </service>
     </application>
+
 </manifest>

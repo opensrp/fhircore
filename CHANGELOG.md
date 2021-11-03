@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2021-xx-xx
 
 ### Added
+- EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
 - Quest | Add the ability to search for patients by id
 
 ### Fixed
@@ -53,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Authentication toekn expiry issue
 - Fhir Resource Converter issue after resource update
 - Inteceptor handling for missing account
+- Engine: Fixes Structure map based resource extraction not working | Remove the menu icon on the login screen
 - ANC | Fix crashes due to invalid data
 - Engine | Remove the menu icon on the login screen
 - Engine: Fixes Structure map based resource extraction not working

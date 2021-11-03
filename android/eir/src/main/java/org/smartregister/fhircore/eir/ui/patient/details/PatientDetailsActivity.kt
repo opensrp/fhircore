@@ -23,6 +23,7 @@ import android.view.MenuItem
 import androidx.core.os.bundleOf
 import kotlinx.android.synthetic.main.activity_patient_details.patientDetailsToolbar
 import org.smartregister.fhircore.eir.R
+import org.smartregister.fhircore.eir.ui.adverseevent.AdverseEventActivity
 import org.smartregister.fhircore.eir.util.PATIENT_REGISTRATION
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -67,6 +68,12 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
               form = PATIENT_REGISTRATION
             )
           )
+      )
+      return true
+    } else if (item.itemId == R.id.vaccine_adverse_events) {
+      startActivity(
+        Intent(this, AdverseEventActivity::class.java)
+          .putExtras(AdverseEventActivity.requiredIntentArgs(clientIdentifier = patientId))
       )
       return true
     }

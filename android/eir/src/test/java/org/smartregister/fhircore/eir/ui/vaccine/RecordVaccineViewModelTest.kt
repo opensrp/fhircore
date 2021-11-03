@@ -84,7 +84,7 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
     }
 
   @Test
-  fun `getPopulationResources() should call loadPatient() and loadImmunization()`() {
+  fun `getPopulationResources() should call loadPatient() and loadPatientImmunization()`() {
     val patientId = "2892347"
     val patient = Patient()
     val immunization = Immunization()
@@ -92,41 +92,43 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
     intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
 
     coEvery { recordVaccineViewModel.loadPatient(patientId) } returns patient
-    coEvery { recordVaccineViewModel.loadImmunization(patientId) } returns immunization
+    coEvery { recordVaccineViewModel.loadPatientImmunization(patientId) } returns immunization
 
     val resources: Array<Resource>
     runBlocking { resources = recordVaccineViewModel.getPopulationResources(intent) }
 
     coVerify { recordVaccineViewModel.loadPatient(patientId) }
-    coVerify { recordVaccineViewModel.loadImmunization(patientId) }
+    coVerify { recordVaccineViewModel.loadPatientImmunization(patientId) }
     Assert.assertEquals(patient, resources[0])
     Assert.assertEquals(immunization, resources[1])
   }
 
   @Test
-  fun `loadImmunization() should call defaultRepository#loadImmunizations`() {
+  fun `loadPatientImmunization() should call defaultRepository#loadPatientImmunizations`() {
     val patientId = "2892347"
 
     val defaultRepository: DefaultRepository = mockk()
-    coEvery { defaultRepository.loadImmunizations(patientId) } returns listOf()
+    coEvery { defaultRepository.loadPatientImmunizations(patientId) } returns listOf()
     ReflectionHelpers.setField(recordVaccineViewModel, "defaultRepository", defaultRepository)
 
-    runBlocking { recordVaccineViewModel.loadImmunization(patientId) }
+    runBlocking { recordVaccineViewModel.loadPatientImmunization(patientId) }
 
-    coVerify { defaultRepository.loadImmunizations(patientId) }
+    coVerify { defaultRepository.loadPatientImmunizations(patientId) }
   }
 
   @Test
-  fun `loadImmunization() should return first immunization from defaultRepository#loadImmunizations`() {
+  fun `loadPatientImmunization() should return first immunization from defaultRepository#loadPatientImmunizations`() {
     val patientId = "2892347"
     val immunizationsList: List<Immunization> = listOf(Immunization(), Immunization())
 
     val defaultRepository: DefaultRepository = mockk(relaxed = true)
-    coEvery { defaultRepository.loadImmunizations(patientId) } returns immunizationsList
+    coEvery { defaultRepository.loadPatientImmunizations(patientId) } returns immunizationsList
     ReflectionHelpers.setField(recordVaccineViewModel, "defaultRepository", defaultRepository)
 
     val actualImmunizations: Immunization
-    runBlocking { actualImmunizations = recordVaccineViewModel.loadImmunization(patientId)!! }
+    runBlocking {
+      actualImmunizations = recordVaccineViewModel.loadPatientImmunization(patientId)!!
+    }
 
     Assert.assertEquals(immunizationsList[0], actualImmunizations)
   }

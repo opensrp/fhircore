@@ -18,3 +18,4 @@ package org.smartregister.fhircore.eir.util
 
 const val RECORD_VACCINE_FORM = "record-vaccine"
 const val PATIENT_REGISTRATION = "patient-registration"
+const val ADVERSE_EVENT_FORM = "adverse-event"
