@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.patient.details
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
@@ -26,8 +27,10 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.QuestApplication
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
+import timber.log.Timber
 
 class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
 
@@ -73,17 +76,27 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
   }
 
   private fun onTestResultItemClickListener(item: QuestionnaireResponse) {
-    val questionnaireId = item.questionnaire.split("/")[1]
-    startActivity(
-      Intent(this, QuestionnaireActivity::class.java)
-        .putExtras(
-          QuestionnaireActivity.intentArgs(
-            clientIdentifier = null,
-            formName = questionnaireId,
-            readOnly = true,
-            questionnaireResponse = item
+    if (item.questionnaire != null) {
+      val questionnaireId = item.questionnaire.split("/")[1]
+      startActivity(
+        Intent(this, QuestionnaireActivity::class.java)
+          .putExtras(
+            QuestionnaireActivity.intentArgs(
+              clientIdentifier = null,
+              formName = questionnaireId,
+              readOnly = true,
+              questionnaireResponse = item
+            )
           )
+      )
+    } else {
+      Toast.makeText(this, getString(R.string.cannot_find_parent_questionnaire), Toast.LENGTH_LONG)
+        .show()
+      Timber.e(
+        Exception(
+          "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
         )
-    )
+      )
+    }
   }
 }
