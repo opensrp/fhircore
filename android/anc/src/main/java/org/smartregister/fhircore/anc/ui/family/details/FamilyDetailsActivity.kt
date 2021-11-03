@@ -66,6 +66,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
   private fun onAddNewMemberButtonClicked() {
     this.startFamilyMemberRegistration(familyId)
+    finish()
   }
 
   private fun onSeeAllEncounterClicked() {}

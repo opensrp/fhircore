@@ -236,13 +236,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     questionnaireViewModel.extractionProgress.observe(
       this,
       { result ->
+        saveProcessingAlertDialog.dismiss()
         if (result) {
           finish()
         } else {
           Timber.e("An error occurred during extraction")
         }
-
-        saveProcessingAlertDialog.dismiss()
       }
     )
   }
