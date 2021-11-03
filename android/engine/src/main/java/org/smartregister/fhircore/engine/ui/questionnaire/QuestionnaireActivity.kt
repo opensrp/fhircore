@@ -172,14 +172,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     default: Questionnaire.QuestionnaireItemComponent?
   ): Questionnaire.QuestionnaireItemComponent? {
     var result = default
-    run loop@{
-      forEach {
-        if (it.linkId == linkId) {
-          result = it
-          return@loop
-        } else if (it.item.isNotEmpty()) {
-          result = it.item.find(linkId, result)
-        }
+    forEach {
+      if (it.linkId == linkId) {
+        return it
+      } else if (it.item.isNotEmpty()) {
+        result = it.item.find(linkId, result)
       }
     }
 
