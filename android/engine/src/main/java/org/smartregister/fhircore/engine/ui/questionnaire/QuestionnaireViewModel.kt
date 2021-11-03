@@ -62,7 +62,7 @@ open class QuestionnaireViewModel(
 
   var structureMapProvider: (suspend (String) -> StructureMap?)? = null
 
-  open suspend fun loadQuestionnaire(id: String): Questionnaire? =
+  suspend fun loadQuestionnaire(id: String): Questionnaire? =
     defaultRepository.loadResource<Questionnaire>(id)?.apply {
       if (readOnly) {
         changeQuestionsToReadOnly(this.item)
@@ -213,7 +213,7 @@ open class QuestionnaireViewModel(
     return resourcesList.toTypedArray()
   }
 
-  open suspend fun generateQuestionnaireResponse(
+  suspend fun generateQuestionnaireResponse(
     questionnaire: Questionnaire,
     intent: Intent
   ): QuestionnaireResponse {
