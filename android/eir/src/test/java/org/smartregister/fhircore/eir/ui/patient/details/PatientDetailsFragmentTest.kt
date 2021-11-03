@@ -159,7 +159,7 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
 
     val patientAgeTextView =
       patientDetailsFragment.view?.findViewById<TextView>(R.id.patientAgeTextView)
-    Assert.assertEquals("Age 0", patientAgeTextView?.text.toString())
+    Assert.assertEquals("Age 0d", patientAgeTextView?.text.toString())
   }
 
   @Test
@@ -263,7 +263,13 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
           CodeableConcept(Coding("system", "vaccine_code", "code display")).setText("Astrazeneca")
         protocolApplied =
           listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(1)))
-        occurrence = DateTimeType("2021-07-30")
+        occurrence =
+          mockk<DateTimeType>().apply {
+            every { toHumanDisplay() } returns "Sep 16, 2021 6:13:22 PM"
+            every { copy() } returns this
+            every { add(any(), any()) } returns Unit
+            every { after(any()) } returns true
+          }
       }
 
     val immunization2 =
@@ -272,7 +278,13 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
           CodeableConcept(Coding("system", "vaccine_code", "code display")).setText("Astrazeneca")
         protocolApplied =
           listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(2)))
-        occurrence = DateTimeType("2021-07-30")
+        occurrence =
+          mockk<DateTimeType>().apply {
+            every { toHumanDisplay() } returns "Sep 16, 2021 6:13:22 PM"
+            every { copy() } returns this
+            every { add(any(), any()) } returns Unit
+            every { after(any()) } returns true
+          }
       }
 
     val immunization3 =
@@ -281,7 +293,13 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
           CodeableConcept(Coding("system", "vaccine_code", "code display")).setText("Pfizer")
         protocolApplied =
           listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(2)))
-        occurrence = DateTimeType("2021-07-30")
+        occurrence =
+          mockk<DateTimeType>().apply {
+            every { toHumanDisplay() } returns "Sep 16, 2021 6:13:22 PM"
+            every { copy() } returns this
+            every { add(any(), any()) } returns Unit
+            every { after(any()) } returns true
+          }
       }
     return listOf(immunization1, immunization2, immunization3)
   }

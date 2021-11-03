@@ -180,6 +180,44 @@ class StructureMapTestUtilities : RobolectricTest() {
   }
 
   @Test
+  fun `populate adverse event Questionnaire and extract Resources`() {
+    val adverseEventQuestionnaire =
+      "structure-map-questionnaires/adverse-event/questionnaire.json".readFile()
+    val adverseEventStructureMap =
+      "structure-map-questionnaires/adverse-event/structure-map.txt".readFile()
+    val immunizationJson = "structure-map-questionnaires/adverse-event/immunization.json".readFile()
+
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val questionnaire = iParser.parseResource(Questionnaire::class.java, adverseEventQuestionnaire)
+    val immunization = iParser.parseResource(Immunization::class.java, immunizationJson)
+
+    var questionnaireResponse: QuestionnaireResponse
+    runBlocking { questionnaireResponse = ResourceMapper.populate(questionnaire, immunization) }
+
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val outputs: MutableList<Base> = ArrayList()
+    val transformSupportServices = TransformSupportServices(outputs, contextR4)
+
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map = scu.parse(adverseEventStructureMap, "AdverseEvent")
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+
+    val targetResource = Bundle()
+
+    scu.transform(contextR4, questionnaireResponse, map, targetResource)
+    System.out.println(iParser.encodeResourceToString(targetResource))
+  }
+
+  @Test
   fun `convert StructureMap to JSON`() {
     val patientRegistrationStructureMap =
       "structure-map-questionnaires/patient-registration/structure-map.txt".readFile()
@@ -231,6 +269,42 @@ class StructureMapTestUtilities : RobolectricTest() {
         QuestionnaireResponse::class.java,
         patientRegistrationQuestionnaireResponse
       )
+
+    scu.transform(contextR4, baseElement, map, targetResource)
+
+    System.out.println(iParser.encodeResourceToString(targetResource))
+  }
+
+  @Test
+  fun `perform extraction from adverse event Questionnaire`() {
+    val adverseEventQuestionnaireResponse =
+      "structure-map-questionnaires/adverse-event/questionnaire-response.json".readFile()
+    val adverseEventStructureMap =
+      "structure-map-questionnaires/adverse-event/structure-map.txt".readFile()
+
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val outputs: MutableList<Base> = ArrayList()
+    val transformSupportServices = TransformSupportServices(outputs, contextR4)
+
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map = scu.parse(adverseEventStructureMap, "AdverseEvent")
+
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+
+    val targetResource = Bundle()
+
+    val baseElement =
+      iParser.parseResource(QuestionnaireResponse::class.java, adverseEventQuestionnaireResponse)
 
     scu.transform(contextR4, baseElement, map, targetResource)
 

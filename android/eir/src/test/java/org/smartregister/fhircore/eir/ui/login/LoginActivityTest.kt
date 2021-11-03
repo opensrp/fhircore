@@ -19,6 +19,7 @@ package org.smartregister.fhircore.eir.ui.login
 import android.app.Activity
 import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
+import io.mockk.clearAllMocks
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -37,6 +38,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   @Before
   fun setUp() {
+    clearAllMocks()
     loginActivity = Robolectric.buildActivity(LoginActivity::class.java).create().resume().get()
   }
 
