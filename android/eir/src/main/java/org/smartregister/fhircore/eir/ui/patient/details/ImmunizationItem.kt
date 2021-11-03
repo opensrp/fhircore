@@ -27,6 +27,14 @@ const val OVERDUE_DAYS_IN_MONTH: Int = 14
 
 data class ImmunizationItem(val vaccine: String, val doses: List<Pair<String, Int>>)
 
+data class ImmunizationAdverseEventItem(
+  var immunizationIds: List<String>,
+  var vaccine: String,
+  var dosesWithAdverseEvents: List<Pair<String, List<AdverseEventItem>>>
+)
+
+data class AdverseEventItem(val date: String, val detail: String)
+
 fun List<Immunization>.toImmunizationItems(context: Context): MutableList<ImmunizationItem> {
   if (this.isEmpty()) return mutableListOf()
   val immunizationItems = mutableListOf<ImmunizationItem>()
@@ -58,13 +66,72 @@ fun Immunization.getDoseLabel(context: Context, fullyImmunized: Boolean): Pair<S
     val isDue =
       DateUtils.hasPastDays(this.occurrenceDateTimeType, DAYS_IN_MONTH + OVERDUE_DAYS_IN_MONTH)
 
-    val dueDate = DateUtils.addDays(this.occurrenceDateTimeType.toHumanDisplay(), DAYS_IN_MONTH)
+    val dueDate =
+      DateUtils.addDays(
+        this.occurrenceDateTimeType.toHumanDisplay(),
+        DAYS_IN_MONTH,
+        dateTimeFormat = "MMM d, yyyy h:mm:ss a"
+      )
     val nextDoseNumber = doseNumber + 1
     val doseLabel =
       if (isDue) context.getString(R.string.immunization_due, nextDoseNumber.ordinalOf(), dueDate)
       else context.getString(R.string.immunization_overdue, nextDoseNumber.ordinalOf(), dueDate)
 
     return Pair(doseLabel, if (fullyImmunized) R.color.black else R.color.not_immune)
+  }
+}
+
+fun List<Immunization>.toImmunizationAdverseEventItem(
+  context: Context,
+  immunizationAdverseEvents: List<Pair<String, List<AdverseEventItem>>>? = null
+): MutableList<ImmunizationAdverseEventItem> {
+  if (this.isEmpty()) return mutableListOf()
+  val immunizationAdverseEventItems = mutableListOf<ImmunizationAdverseEventItem>()
+  val immunizationsMap = this.groupBy { it.vaccineCode.text }
+
+  immunizationsMap.forEach { vaccine ->
+    val doses: List<Pair<String, List<AdverseEventItem>>> =
+      vaccine.value.sortedBy { it.protocolApplied.first().doseNumberPositiveIntType.value }.map {
+        immunization ->
+        immunization.getDoseLabelWithAdverseEvent(
+          context,
+          this.isNotEmpty(),
+          immunizationAdverseEvents?.filter { it.first == immunization.idElement.idPart }
+        )
+      }
+
+    val immunizationIds: List<String> =
+      vaccine.value.sortedBy { it.protocolApplied.first().doseNumberPositiveIntType.value }.map {
+        it.idElement.idPart
+      }
+
+    immunizationAdverseEventItems.add(
+      ImmunizationAdverseEventItem(immunizationIds, vaccine.key, doses)
+    )
+  }
+  return immunizationAdverseEventItems
+}
+
+fun Immunization.getDoseLabelWithAdverseEvent(
+  context: Context,
+  receivedDoses: Boolean = true,
+  immunizationAdverseEvents: List<Pair<String, List<AdverseEventItem>>>? = null
+): Pair<String, List<AdverseEventItem>> {
+  val doseNumber = (this.protocolApplied[0].doseNumber as PositiveIntType).value
+  return if (receivedDoses) {
+    Pair(
+      context.getString(
+        R.string.immunization_given,
+        doseNumber.ordinalOf(),
+        this.occurrenceDateTimeType.toHumanDisplay()
+      ),
+      when (immunizationAdverseEvents) {
+        null -> listOf()
+        else -> immunizationAdverseEvents.first().second
+      }
+    )
+  } else {
+    Pair("", listOf())
   }
 }
 

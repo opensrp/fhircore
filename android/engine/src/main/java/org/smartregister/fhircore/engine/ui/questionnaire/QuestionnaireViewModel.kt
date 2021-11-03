@@ -25,12 +25,14 @@ import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.targetStructureMap
+import com.google.android.fhir.logicalId
 import java.util.Date
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -73,7 +75,7 @@ open class QuestionnaireViewModel(
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
     structureMapUrl?.substringAfterLast("/")?.run {
-      structureMap = defaultRepository.loadResource(this)
+      structureMap = loadResource(this) as StructureMap?
     }
     return structureMap
   }
@@ -165,6 +167,10 @@ open class QuestionnaireViewModel(
     return defaultRepository.loadResource(patientId)
   }
 
+  suspend fun loadResource(resourceId: String): Resource? {
+    return defaultRepository.loadResource(resourceId)
+  }
+
   suspend fun loadRelatedPerson(patientId: String): List<RelatedPerson>? {
     return defaultRepository.loadRelatedPersons(patientId)
   }
@@ -182,7 +188,19 @@ open class QuestionnaireViewModel(
     }
 
     intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let { patientId ->
-      loadPatient(patientId)?.apply { resourcesList.add(this) }
+      loadPatient(patientId)?.apply {
+        if (identifier.isEmpty()) {
+          identifier =
+            mutableListOf(
+              Identifier().apply {
+                value = logicalId
+                use = Identifier.IdentifierUse.OFFICIAL
+                system = QuestionnaireActivity.WHO_IDENTIFIER_SYSTEM
+              }
+            )
+        }
+        resourcesList.add(this)
+      }
       loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
     }
 

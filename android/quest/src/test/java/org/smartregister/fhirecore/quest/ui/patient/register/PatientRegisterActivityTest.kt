@@ -18,7 +18,6 @@ package org.smartregister.fhirecore.quest.ui.patient.register
 
 import android.app.Activity
 import android.app.Application
-import android.content.Intent
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
@@ -29,7 +28,6 @@ import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.util.ReflectionHelpers
@@ -105,24 +103,6 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
     Assert.assertEquals(
       View.GONE,
       patientRegisterActivity.findViewById<ImageButton>(R.id.filter_register_button).visibility
-    )
-  }
-
-  @Test
-  fun testRegisterClientShouldStartFamilyQuestionnaireActivity() {
-    ReflectionHelpers.callInstanceMethod<PatientRegisterActivity>(
-      patientRegisterActivity,
-      "registerClient"
-    )
-
-    val expectedIntent = Intent(patientRegisterActivity, QuestionnaireActivity::class.java)
-    val actualIntent =
-      Shadows.shadowOf(ApplicationProvider.getApplicationContext<Application>()).nextStartedActivity
-
-    Assert.assertEquals(expectedIntent.component, actualIntent.component)
-    Assert.assertEquals(
-      "3435",
-      actualIntent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM)
     )
   }
 
