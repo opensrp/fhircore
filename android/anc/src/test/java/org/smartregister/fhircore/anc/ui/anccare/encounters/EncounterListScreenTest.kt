@@ -57,8 +57,8 @@ class EncounterListScreenTest : RobolectricTest() {
     composeRule.setContent { EncounterItem(encounterItem, false) }
 
     // verify encounter date is displayed
-    composeRule.onNodeWithText("May 22, 2020").assertExists()
-    composeRule.onNodeWithText("May 22, 2020").assertIsDisplayed()
+    composeRule.onNodeWithText("22-May-2020").assertExists()
+    composeRule.onNodeWithText("22-May-2020").assertIsDisplayed()
 
     // verify status is displayed
     composeRule.onNodeWithText(Encounter.EncounterStatus.FINISHED.name).assertExists()
