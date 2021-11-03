@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Engine | Block questionnaire submit if validation errors exist
 - Quest | Bottom Navigation updated with new structure
 - Quest | User actions, profile screen implemented
+- Engine | print patient age as #y #m or #m #d
 - ANC | Navigation structure changes implemented
 - ANC | Bottom sheet for switching registers added
 - ANC | User actions, profile screen implemented
