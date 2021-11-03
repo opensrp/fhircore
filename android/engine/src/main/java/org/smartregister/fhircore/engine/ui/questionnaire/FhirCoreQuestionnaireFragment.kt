@@ -19,7 +19,7 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.contrib.QuestionnaireItemBarCodeReaderViewHolderFactory
 
-class BaseQuestionnaireFragment : QuestionnaireFragment() {
+class FhirCoreQuestionnaireFragment : QuestionnaireFragment() {
 
   override fun getCustomQuestionnaireItemViewHolderFactoryMatchers():
     List<QuestionnaireItemViewHolderFactoryMatcher> {

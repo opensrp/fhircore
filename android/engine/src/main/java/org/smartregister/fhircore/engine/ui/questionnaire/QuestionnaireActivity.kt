@@ -117,7 +117,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       // Only add the fragment once, when the activity is first created.
       if (savedInstanceState == null) {
         val fragment =
-          BaseQuestionnaireFragment().apply {
+          FhirCoreQuestionnaireFragment().apply {
             val parsedQuestionnaire = parser.encodeResourceToString(questionnaire)
             arguments =
               when {
