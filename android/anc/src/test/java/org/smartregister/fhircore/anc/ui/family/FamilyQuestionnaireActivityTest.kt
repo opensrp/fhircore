@@ -174,7 +174,8 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
       familyQuestionnaireActivity,
       "handlePregnancy",
       ReflectionHelpers.ClassParameter(String::class.java, "1111"),
-      ReflectionHelpers.ClassParameter(QuestionnaireResponse::class.java, questionnaireResponse)
+      ReflectionHelpers.ClassParameter(QuestionnaireResponse::class.java, questionnaireResponse),
+      ReflectionHelpers.ClassParameter(String::class.java, FamilyFormConstants.ANC_ENROLLMENT_FORM)
     )
 
     val expectedIntent =
