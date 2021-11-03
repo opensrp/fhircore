@@ -147,9 +147,9 @@ class PatientDetailsFragment private constructor() : Fragment() {
           startActivity(
             Intent(requireContext(), AdverseEventQuestionnaireActivity::class.java)
               .putExtras(
-                QuestionnaireActivity.requiredIntentArgs(
+                QuestionnaireActivity.intentArgs(
                   clientIdentifier = patientId,
-                  form = ADVERSE_EVENT_FORM,
+                  formName = ADVERSE_EVENT_FORM,
                   immunizationId = immunizationAdverseEventItem.immunizationIds[position]
                 )
               )

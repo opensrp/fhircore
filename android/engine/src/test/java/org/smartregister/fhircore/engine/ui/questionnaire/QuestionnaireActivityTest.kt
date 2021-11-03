@@ -27,7 +27,6 @@ import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.spyk
@@ -46,6 +45,8 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.impl.FhirApplication
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_FRAGMENT_TAG
@@ -73,8 +74,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     context = ApplicationProvider.getApplicationContext()
     questionnaireViewModel = spyk(QuestionnaireViewModel(context))
 
-    coEvery { questionnaireViewModel.loadQuestionnaire("1234567") } returns
-      Questionnaire().apply { id = "1234567" }
+    ((context as ConfigurableApplication).fhirEngine as FhirApplication.FhirEngineImpl)
+      .mockedResourcesStore.add(Questionnaire().apply { id = "1234567" })
 
     intent =
       Intent().apply {
