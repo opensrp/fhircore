@@ -59,7 +59,18 @@ open class QuestionnaireViewModel(
 
   var structureMapProvider: (suspend (String) -> StructureMap?)? = null
 
-  suspend fun loadQuestionnaire(id: String): Questionnaire? = defaultRepository.loadResource(id)
+  suspend fun loadQuestionnaire(id: String): Questionnaire?
+  //// TODO ??????????????????????????????????
+//  "display": "Acute ear infection" initial does not work with code/systme only, requres display match
+//  initial and initialSelected not implemented correctly
+//  + Rule: If one or more answerOption is present, initial[x] must be missing (http://hl7.org/fhir/questionnaire.html)
+  {
+      if (id != "3748") return defaultRepository.loadResource(id)
+      val qJson =
+        getApplication<Application>().assets.open("sample_msf_survey.json").bufferedReader().use { it.readText() }
+      return FhirContext.forR4().newJsonParser().parseResource(qJson) as Questionnaire
+    }
+   // defaultRepository.loadResource(id)
 
   suspend fun getQuestionnaireConfig(form: String): QuestionnaireConfig {
     val loadConfig =
@@ -73,7 +84,13 @@ open class QuestionnaireViewModel(
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
     structureMapUrl?.substringAfterLast("/")?.run {
-      structureMap = defaultRepository.loadResource(this)
+      structureMap = kotlin.run {
+        val qJson =
+          getApplication<Application>().assets.open("sample_msf_survey_structuremap.json").bufferedReader().use { it.readText() }
+        FhirContext.forR4().newJsonParser().parseResource(qJson) as StructureMap
+      }
+
+        //defaultRepository.loadResource(this)
     }
     return structureMap
   }
