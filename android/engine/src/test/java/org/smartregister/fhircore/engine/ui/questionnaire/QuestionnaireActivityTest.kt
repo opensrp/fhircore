@@ -124,6 +124,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testReadOnlyIntentShouldBeReadToReadOnlyFlag() {
+    Assert.assertFalse(questionnaireActivity.readOnly)
 
     intent =
       Intent().apply {
@@ -137,9 +138,33 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
     questionnaireActivity = controller.create().resume().get()
-    questionnaireActivity.questionnaireViewModel = questionnaireViewModel
 
     Assert.assertTrue(questionnaireActivity.readOnly)
+  }
+
+  @Test
+  fun testReadOnlyIntentShouldChangeSaveButtonToDone() {
+    intent =
+      Intent().apply {
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, "patient-registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_READ_ONLY, true)
+      }
+
+    val questionnaireFragment = spyk<QuestionnaireFragment>()
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+
+    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
+    questionnaireActivity = controller.create().resume().get()
+    questionnaireActivity.supportFragmentManager.executePendingTransactions()
+    questionnaireActivity.supportFragmentManager.commitNow {
+      add(questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
+    }
+
+    Assert.assertEquals(
+      "Done",
+      questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).text
+    )
   }
 
   @Test
