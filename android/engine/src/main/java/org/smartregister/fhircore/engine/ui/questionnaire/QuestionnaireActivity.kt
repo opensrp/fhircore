@@ -203,14 +203,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
-    return kotlin.runCatching {
-      QuestionnaireResponseValidator.validate(questionnaire.item, questionnaireResponse.item, this)
-        .values
-        .flatten()
-        .all { it.isValid }
-    }.onFailure {
-      Timber.e("Exception while validating response. Check if SDK issue with validation is fixed i.e. answer[0] at L56, $it")
-    }.getOrDefault(true)
+    return QuestionnaireResponseValidator.validate(
+        questionnaire.item,
+        questionnaireResponse.item,
+        this
+      )
+      .values
+      .flatten()
+      .all { it.isValid }
   }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
