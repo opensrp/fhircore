@@ -26,6 +26,7 @@ import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
+import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.R
 
 class PatientRegisterActivity : BaseRegisterActivity() {
@@ -34,7 +35,8 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    registerViewConfiguration = loadRegisterViewConfiguration("quest-app-patient-register")
+    registerViewConfiguration =
+      loadRegisterViewConfiguration(QuestApplication.CONFIG_PATIENT_REGISTER)
     configureViews(registerViewConfiguration)
   }
 
