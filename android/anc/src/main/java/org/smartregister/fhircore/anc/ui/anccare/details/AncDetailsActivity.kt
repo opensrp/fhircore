@@ -68,6 +68,8 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
 
   override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
     val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
+    val ancEnrollment = menu!!.findItem(R.id.anc_enrollment)
+    ancEnrollment.isVisible = false
     val bmiWidget = menu.findItem(R.id.bmi_widget)
     bmiWidget.isVisible = true
 

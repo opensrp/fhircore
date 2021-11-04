@@ -33,6 +33,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.isPregnant
 
 class AncDetailsViewModel(
   val patientRepository: PatientRepository,
@@ -41,6 +42,7 @@ class AncDetailsViewModel(
 ) : ViewModel() {
 
   lateinit var patientDemographics: MutableLiveData<AncPatientDetailItem>
+  lateinit var isPregnant: MutableLiveData<Boolean>
 
   fun fetchDemographics(): LiveData<AncPatientDetailItem> {
     patientDemographics = MutableLiveData<AncPatientDetailItem>()
@@ -49,6 +51,15 @@ class AncDetailsViewModel(
       patientDemographics.postValue(ancPatientDetailItem)
     }
     return patientDemographics
+  }
+
+  fun isPregnant(): LiveData<Boolean> {
+    isPregnant = MutableLiveData<Boolean>()
+    viewModelScope.launch(dispatcher.io()) {
+      val ancPatientDetailItem = patientRepository.fetchPatient(patientId = patientId)
+      isPregnant.postValue(ancPatientDetailItem.isPregnant())
+    }
+    return isPregnant
   }
 
   fun fetchCarePlan(): LiveData<List<CarePlanItem>> {

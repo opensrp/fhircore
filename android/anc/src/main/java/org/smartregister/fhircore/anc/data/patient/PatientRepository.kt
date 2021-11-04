@@ -185,6 +185,9 @@ class PatientRepository(
       fhirEngine.search { filter(CarePlan.SUBJECT) { value = "Patient/$patientId" } }
     }
 
+  suspend fun fetchPatient(patientId: String): Patient =
+    withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, patientId) }
+
   suspend fun fetchObservations(patientId: String, searchFilterString: String): Observation {
     val searchFilter: SearchFilter =
       when (searchFilterString) {

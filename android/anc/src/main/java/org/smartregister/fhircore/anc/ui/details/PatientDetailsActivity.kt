@@ -45,6 +45,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
   private lateinit var adapter: ViewPagerAdapter
   private lateinit var patientId: String
+  private var isPregnant: Boolean = false
 
   private lateinit var fhirEngine: FhirEngine
 
@@ -80,6 +81,8 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       .fetchDemographics()
       .observe(this@PatientDetailsActivity, this::handlePatientDemographics)
 
+    ancDetailsViewModel.isPregnant().observe(this@PatientDetailsActivity, this::handleMenuItem)
+
     adapter =
       ViewPagerAdapter(
         supportFragmentManager,
@@ -98,6 +101,10 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
     activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
   }
 
+  private fun handleMenuItem(isPregnant: Boolean) {
+    this.isPregnant = isPregnant
+  }
+
   override fun onCreateOptionsMenu(menu: Menu?): Boolean {
     menuInflater.inflate(R.menu.profile_menu_madx, menu)
     return true
@@ -105,7 +112,8 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
   override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
     val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
-
+    val ancEnrollment = menu!!.findItem(R.id.mark_as_anc_client)
+    ancEnrollment.isVisible = !isPregnant
     val title = removeThisPerson.title.toString()
     val s = SpannableString(title)
     with(s) {
