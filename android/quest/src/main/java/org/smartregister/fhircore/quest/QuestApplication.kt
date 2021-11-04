@@ -31,6 +31,8 @@ import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.app.loadApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.view.SearchFilter
+import org.smartregister.fhircore.engine.configuration.view.loadRegisterViewConfiguration
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -60,12 +62,16 @@ class QuestApplication : Application(), ConfigurableApplication {
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() {
+      val primaryFilter =
+        loadRegisterViewConfiguration(CONFIG_PATIENT_REGISTER).primaryFilter
+          ?: SearchFilter("_tag", "msf", "http://fhir.ona.io")
       return mapOf(
         ResourceType.Binary to mapOf("_id" to CONFIG_RESOURCE_IDS),
-        ResourceType.CarePlan to mapOf(),
-        ResourceType.Patient to mapOf(),
+        ResourceType.Patient to
+          mapOf(primaryFilter.key to "${primaryFilter.system}|${primaryFilter.code}"),
         ResourceType.Questionnaire to buildQuestionnaireFilterMap(),
-        ResourceType.QuestionnaireResponse to mapOf(),
+        ResourceType.QuestionnaireResponse to
+          mapOf(primaryFilter.key to "${primaryFilter.system}|${primaryFilter.code}"),
         ResourceType.Binary to mapOf()
       )
     }
@@ -131,7 +137,7 @@ class QuestApplication : Application(), ConfigurableApplication {
   companion object {
     private lateinit var questApplication: QuestApplication
     const val CONFIG_APP = "quest-app"
-    private const val CONFIG_PATIENT_REGISTER = "quest-app-patient-register"
+    const val CONFIG_PATIENT_REGISTER = "quest-app-patient-register-msf"
 
     private const val CONFIG_RESOURCE_IDS = "$CONFIG_APP,$CONFIG_PATIENT_REGISTER"
 
