@@ -25,7 +25,11 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.ViewModelProvider
+import com.google.android.fhir.FhirEngine
+import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.databinding.ActivityAncDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
@@ -34,10 +38,19 @@ import org.smartregister.fhircore.anc.ui.details.form.FormConfig
 import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class AncDetailsActivity : BaseMultiLanguageActivity() {
 
+  private var isPregnant: Boolean = true
+
   private lateinit var patientId: String
+
+  private lateinit var fhirEngine: FhirEngine
+
+  private lateinit var ancDetailsViewModel: AncDetailsViewModel
+
+  private lateinit var patientRepository: PatientRepository
 
   private lateinit var activityAncDetailsBinding: ActivityAncDetailsBinding
 
@@ -58,6 +71,18 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
       )
       .commitNow()
 
+    fhirEngine = AncApplication.getContext().fhirEngine
+
+    patientRepository = getAncPatientRepository()
+
+    ancDetailsViewModel =
+      ViewModelProvider(
+        viewModelStore,
+        AncDetailsViewModel(patientRepository, patientId = patientId).createFactory()
+      )[AncDetailsViewModel::class.java]
+
+    ancDetailsViewModel.isPregnant().observe(this@AncDetailsActivity, this::handleMenuItem)
+
     activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
   }
 
@@ -66,10 +91,14 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
     return true
   }
 
+  private fun handleMenuItem(isPregnant: Boolean) {
+    this.isPregnant = isPregnant
+  }
+
   override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
     val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
     val ancEnrollment = menu!!.findItem(R.id.anc_enrollment)
-    ancEnrollment.isVisible = false
+    ancEnrollment.isVisible = !isPregnant
     val bmiWidget = menu.findItem(R.id.bmi_widget)
     bmiWidget.isVisible = true
 
@@ -123,5 +152,9 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
       }
       else -> return super.onOptionsItemSelected(item)
     }
+  }
+
+  fun getAncPatientRepository(): PatientRepository {
+    return PatientRepository((application as AncApplication).fhirEngine, AncPatientItemMapper)
   }
 }
