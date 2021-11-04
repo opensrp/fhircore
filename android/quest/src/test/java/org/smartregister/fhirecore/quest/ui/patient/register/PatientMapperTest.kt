@@ -33,7 +33,7 @@ class PatientMapperTest : RobolectricTest() {
 
   @Test
   fun testMapToDomainModel() {
-    val dto = buildPatient("123456", "Doe", "John", 12)
+    val dto = buildPatient("123456", "123456", "Doe", "John", 12)
     val patientItem = PatientItemMapper.mapToDomainModel(dto)
     with(patientItem) {
       assertEquals("12y", age)
@@ -44,10 +44,29 @@ class PatientMapperTest : RobolectricTest() {
     }
   }
 
-  private fun buildPatient(id: String, family: String, given: String, age: Int): Patient {
+  @Test
+  fun testMapToDomainModelWithoutIdentifier() {
+    val dto = buildPatient("123456", null, "Doe", "John", 12)
+    val patientItem = PatientItemMapper.mapToDomainModel(dto)
+    with(patientItem) {
+      assertEquals("12y", age)
+      assertEquals("John Doe", name)
+      assertEquals("123456", id)
+      assertEquals("", identifier)
+      assertEquals("Dist 1 City 1", address)
+    }
+  }
+
+  private fun buildPatient(
+    id: String,
+    identifier: String?,
+    family: String,
+    given: String,
+    age: Int
+  ): Patient {
     return Patient().apply {
       this.id = id
-      this.identifierFirstRep.value = id
+      this.identifierFirstRep.value = identifier
       this.addName().apply {
         this.family = family
         this.given.add(StringType(given))
