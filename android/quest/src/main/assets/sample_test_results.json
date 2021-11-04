@@ -220,8 +220,17 @@
             "system": "https://www.snomed.org",
             "code": "410680006"
           }
+        },
+        {
+          "question": "result_type",
+          "operator": "=",
+          "answerCoding": {
+            "system": "https://www.snomed.org",
+            "code": "385432009"
+          }
         }
-      ]
+      ],
+      "enableBehavior": "any"
     }
   ]
 }
