@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.questionnaire
 
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import com.google.android.fhir.datacapture.contrib.QuestionnaireItemBarCodeReaderViewHolderFactory
 
 class FhirCoreQuestionnaireFragment : QuestionnaireFragment() {
@@ -29,7 +30,13 @@ class FhirCoreQuestionnaireFragment : QuestionnaireFragment() {
         questionnaireItem.getExtensionByUrl(
             "https://fhir.labs.smartregister.org/barcode-type-widget-extension"
           )
-          .let { if (it == null) false else it.value.toString() == "barcode" }
+          .let { if (it == null) false else it.value.asStringValue() == "barcode" }
+      },
+      QuestionnaireItemViewHolderFactoryMatcher(CustomPhotoCaptureFactory(this)) { questionnaireItem
+        ->
+        questionnaireItem.getExtensionByUrl(CustomPhotoCaptureFactory.URL).let {
+          if (it == null) false else it.value.asStringValue() == CustomPhotoCaptureFactory.NAME
+        }
       }
     )
   }
