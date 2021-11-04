@@ -75,7 +75,7 @@ open class QuestionnaireViewModel(
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
     structureMapUrl?.substringAfterLast("/")?.run {
-      structureMap = loadResource(this) as StructureMap?
+      structureMap = defaultRepository.loadResource(this)
     }
     return structureMap
   }
