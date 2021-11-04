@@ -31,6 +31,8 @@ import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.app.loadApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.view.SearchFilter
+import org.smartregister.fhircore.engine.configuration.view.loadRegisterViewConfiguration
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -60,9 +62,13 @@ class QuestApplication : Application(), ConfigurableApplication {
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() {
+      val patientFilter =
+        loadRegisterViewConfiguration(CONFIG_PATIENT_REGISTER).primaryFilter
+          ?: SearchFilter("_tag", "msf", "http://fhir.ona.io")
       return mapOf(
         ResourceType.Binary to mapOf("_id" to CONFIG_RESOURCE_IDS),
-        ResourceType.Patient to mapOf(),
+        ResourceType.Patient to
+          mapOf(patientFilter.key to "${patientFilter.system}|${patientFilter.code}"),
         ResourceType.Questionnaire to buildQuestionnaireFilterMap(),
         ResourceType.QuestionnaireResponse to mapOf(),
         ResourceType.Binary to mapOf()
