@@ -16,7 +16,7 @@
   "title": "MSF Questionnaire",
   "status": "active",
   "subjectType": [ "Patient" ],
-  "publisher": "ONA",
+  "publisher": "MSF",
   "useContext": [ {
     "code": {
       "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
@@ -32,7 +32,7 @@
   } ],
   "extension": [{
     "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
-    "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/sample_msf_survey_structuremap.json"
+    "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/4425"
   }
   ],
   "item": [ {

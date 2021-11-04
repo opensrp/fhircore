@@ -31,6 +31,7 @@ import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
+import com.google.android.fhir.datacapture.validation.ValidationResult
 import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -44,8 +45,10 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
+import java.util.stream.Stream
 
 /**
  * Launches Questionnaire with given id. If questionnaire has subjectType = Patient his activity can
@@ -170,6 +173,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     saveProcessingAlertDialog.dismiss()
   }
 
+  override fun onStop() {
+    super.onStop()
+    if (saveProcessingAlertDialog != null) {
+      saveProcessingAlertDialog.dismiss()
+    }
+  }
+
   open fun handleQuestionnaireSubmit() {
     saveProcessingAlertDialog = showProgressAlert(this, R.string.saving_registration)
 
@@ -202,15 +212,46 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     )
   }
 
+  fun deepFlat(
+    qItems: List<Questionnaire.QuestionnaireItemComponent>,
+    questionnaireResponse: QuestionnaireResponse,
+    targetQ: MutableList<Questionnaire.QuestionnaireItemComponent>,
+    targetQR: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>,
+  ) {
+    qItems.forEach {qit->
+      // process each inner item list
+      deepFlat(qit.item, questionnaireResponse, targetQ, targetQR)
+
+      // remove nested structure to prevent validation recursion; it is already processed above
+      qit.item.clear()
+
+      // add questionnaire and response pair for each linkid on same index
+      questionnaireResponse.find(qit.linkId)?.let {qrit->
+        targetQ.add(qit)
+        targetQR.add(qrit)
+      }
+    }
+  }
+
   fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
-    return QuestionnaireResponseValidator.validate(
-        questionnaire.item,
-        questionnaireResponse.item,
-        this
-      )
-      .values
-      .flatten()
-      .all { it.isValid }
+    // clone questionnaire and response for processing and changing structure
+    val q = parser.parseResource(parser.encodeResourceToString(questionnaire)) as Questionnaire
+    val qr = parser.parseResource(parser.encodeResourceToString(questionnaireResponse)) as QuestionnaireResponse
+
+    // flatten and pair all responses temporarily to fix index mapping issue for questionnaire and questionnaire response
+    val qItems = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
+    val qrItems = mutableListOf<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
+
+    deepFlat(q.item, qr, qItems, qrItems)
+
+    return kotlin.runCatching {
+      QuestionnaireResponseValidator.validate(qItems, qrItems, this)
+        .values
+        .flatten()
+        .all { it.isValid }
+    }.onFailure {
+      Timber.e("Exception while validating response. Check if SDK issue with validation is fixed i.e. answer[0] at L56, $it")
+    }.getOrDefault(true)
   }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
