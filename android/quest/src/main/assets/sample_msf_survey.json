@@ -16,7 +16,7 @@
   "title": "MSF Questionnaire",
   "status": "active",
   "subjectType": [ "Patient" ],
-  "publisher": "MSF",
+  "publisher": "ONA",
   "useContext": [ {
     "code": {
       "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",

@@ -20,11 +20,15 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.json.JSONObject
+import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.loadBinaryResourceConfiguration
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 
@@ -51,16 +55,27 @@ class QuestPatientDetailViewModel(
     return mOnMenuItemClickListener
   }
 
+  // TODO without run blocking it was taking a while to load and sometimes just does not load at all
   override fun getAllForms(): LiveData<List<QuestionnaireConfig>> {
+    return runBlocking {
+      val config =
+        application.loadBinaryResourceConfiguration<ProfileConfig>(
+          QuestApplication.getProfileConfigId()
+        )
+          ?: application
+            .assets
+            .open(PROFILE_CONFIG)
+            .bufferedReader()
+            .use { it.readText() }
+            .decodeJson()
 
-    val codingJson =
-      JSONObject(application.assets.open(PROFILE_CONFIG).bufferedReader().use { it.readText() })
-
-    return repository.fetchTestForms(codingJson.getString(CODE), codingJson.getString(SYSTEM))
+      repository.fetchTestForms(config.profileQuestionnaireFilter)
+    }
   }
 
+  // TODO without run blocking it was taking a while to load and sometimes just does not load at all
   override fun getAllResults(): LiveData<List<QuestionnaireResponse>> {
-    return repository.fetchTestResults(patientId)
+    return runBlocking { repository.fetchTestResults(patientId) }
   }
 
   override fun onFormItemClickListener(): (item: QuestionnaireConfig) -> Unit {
@@ -90,9 +105,6 @@ class QuestPatientDetailViewModel(
   }
 
   companion object {
-
-    private const val CODE = "code"
-    private const val SYSTEM = "system"
     const val PROFILE_CONFIG = "profile_config.json"
 
     fun get(
@@ -107,4 +119,7 @@ class QuestPatientDetailViewModel(
       )[QuestPatientDetailViewModel::class.java]
     }
   }
+
+  @Serializable
+  data class ProfileConfig(val profileQuestionnaireFilter: SearchFilter)
 }

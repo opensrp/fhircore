@@ -35,6 +35,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
@@ -99,9 +100,9 @@ class PatientRepository(
     return data
   }
 
-  fun fetchTestResults(patientId: String): LiveData<List<QuestionnaireResponse>> {
+  suspend fun fetchTestResults(patientId: String): LiveData<List<QuestionnaireResponse>> {
     val data = MutableLiveData<List<QuestionnaireResponse>>()
-    CoroutineScope(dispatcherProvider.io()).launch {
+    CoroutineScope(dispatcherProvider.io()).run {
       val result =
         fhirEngine.search<QuestionnaireResponse> {
           filter(QuestionnaireResponse.SUBJECT) { value = "Patient/$patientId" }
@@ -112,17 +113,17 @@ class PatientRepository(
     return data
   }
 
-  fun fetchTestForms(code: String, system: String): LiveData<List<QuestionnaireConfig>> {
+  suspend fun fetchTestForms(filter: SearchFilter): LiveData<List<QuestionnaireConfig>> {
     val data = MutableLiveData<List<QuestionnaireConfig>>()
-    CoroutineScope(dispatcherProvider.io()).launch {
+    CoroutineScope(dispatcherProvider.io()).run {
       val result =
         fhirEngine.search<Questionnaire> {
           filter(
             Questionnaire.CONTEXT,
             CodeableConcept().apply {
               addCoding().apply {
-                this.code = code
-                this.system = system
+                this.code = filter.code
+                this.system = filter.system
               }
             }
           )

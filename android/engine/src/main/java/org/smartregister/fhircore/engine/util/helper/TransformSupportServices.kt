@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.helper
 
+import android.app.Application
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
@@ -25,6 +26,7 @@ import org.hl7.fhir.r4.model.ResourceFactory
 import org.hl7.fhir.r4.model.RiskAssessment.RiskAssessmentPredictionComponent
 import org.hl7.fhir.r4.terminologies.ConceptMapEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities.ITransformerServices
+import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import timber.log.Timber
 
 /**
@@ -38,10 +40,14 @@ import timber.log.Timber
  */
 class TransformSupportServices(
   private val outputs: MutableList<Base>,
-  private val context: SimpleWorkerContext
+  private val application: ConfigurableApplication
 ) : ITransformerServices {
   override fun log(message: String) {
     Timber.i(message)
+  }
+
+  fun getContext(): SimpleWorkerContext {
+    return application.workerContextProvider
   }
 
   @Throws(FHIRException::class)
@@ -60,7 +66,7 @@ class TransformSupportServices(
 
   @Throws(FHIRException::class)
   override fun translate(appInfo: Any, source: Coding, conceptMapUrl: String): Coding {
-    val cme = ConceptMapEngine(context)
+    val cme = ConceptMapEngine(getContext())
     return cme.translate(source, conceptMapUrl)
   }
 

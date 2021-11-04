@@ -121,6 +121,8 @@ open class QuestionnaireViewModel(
       questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
         it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
       }
+      loadPatient(resourceId)?.meta?.tag?.forEach { questionnaireResponse.meta.addTag(it) }
+
       questionnaireResponse.subject = Reference().apply { reference = "$subjectType/$resourceId" }
       defaultRepository.save(questionnaireResponse)
     }
@@ -131,8 +133,7 @@ open class QuestionnaireViewModel(
     questionnaireResponse: QuestionnaireResponse,
     context: Context
   ): Bundle {
-    val contextR4 = (getApplication<Application>() as ConfigurableApplication).workerContextProvider
-    val transformSupportServices = TransformSupportServices(mutableListOf(), contextR4)
+    val transformSupportServices = TransformSupportServices(mutableListOf(), getApplication<Application>() as ConfigurableApplication)
 
     return ResourceMapper.extract(
       questionnaire = questionnaire,

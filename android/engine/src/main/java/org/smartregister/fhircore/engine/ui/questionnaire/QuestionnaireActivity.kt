@@ -89,9 +89,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
       val form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
       // form is either name of form in asset/form-config or questionnaire-id
-      // load from assets and get questionnaire or if not found build it from questionnaire
-      questionnaireConfig =
-        kotlin.runCatching { questionnaireViewModel.getQuestionnaireConfig(form) }.getOrElse {
+      // load from db or assets
+      questionnaireConfig = kotlin.runCatching { questionnaireViewModel.getQuestionnaireConfig(form) }.getOrElse {
           // load questionnaire from db and build config
           questionnaire = questionnaireViewModel.loadQuestionnaire(form)!!
 

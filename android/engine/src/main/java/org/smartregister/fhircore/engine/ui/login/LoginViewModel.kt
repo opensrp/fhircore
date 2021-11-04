@@ -62,6 +62,7 @@ class LoginViewModel(
       override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
         response.body()?.run {
           storeUserPreferences(this)
+          _navigateToHome.value = true
           _showProgressBar.postValue(false)
         }
       }
@@ -101,8 +102,6 @@ class LoginViewModel(
         with(authenticationService) {
           addAuthenticatedAccount(response, username.value!!, password.value?.toCharArray()!!)
           getUserInfo().enqueue(userInfoResponseCallback)
-          _navigateToHome.value = true
-          _showProgressBar.postValue(false)
         }
       }
 
