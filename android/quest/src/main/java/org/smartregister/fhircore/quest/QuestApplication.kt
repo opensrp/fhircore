@@ -137,7 +137,7 @@ class QuestApplication : Application(), ConfigurableApplication {
   companion object {
     private lateinit var questApplication: QuestApplication
     const val CONFIG_APP = "quest-app"
-    private const val CONFIG_PATIENT_REGISTER = "quest-app-patient-register"
+    const val CONFIG_PATIENT_REGISTER = "quest-app-patient-register-msf"
 
     private const val CONFIG_RESOURCE_IDS = "$CONFIG_APP,$CONFIG_PATIENT_REGISTER"
 
