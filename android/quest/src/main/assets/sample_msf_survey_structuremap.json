@@ -57,31 +57,11 @@
       ],
       "rule": [
         {
-          "name": "bundle_type_rule",
+          "name": "condition_init_rule",
           "source": [
             {
-              "context": "resp"
-            }
-          ],
-          "target": [
-            {
-              "context": "bund",
-              "contextType": "variable",
-              "element": "type",
-              "transform": "copy",
-              "parameter": [
-                {
-                  "valueString": "collection"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "bundle_entry_rule",
-          "source": [
-            {
-              "context": "resp"
+              "context": "resp",
+              "condition": "$this.descendants().repeat(answer).select(value).where(code = '232222008' or code = '409711008' or code = '232226006').empty().not()"
             }
           ],
           "target": [
@@ -133,7 +113,264 @@
       ],
       "rule": [
         {
-          "name":  "condition_defaults_rule",
+          "name": "condition_onset_datetime_rule",
+          "source": [
+            {
+              "context": "resp"
+            }
+          ],
+          "target": [
+            {
+              "context": "condition",
+              "contextType": "variable",
+              "element": "onset",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "resp"
+                },
+                {
+                  "valueString": "now()"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "condition_subject_rule",
+          "documentation": "Set the subject same as questionnaire response",
+          "source": [
+            {
+              "context": "resp"
+            }
+          ],
+          "target": [
+            {
+              "context": "condition",
+              "contextType": "variable",
+              "element": "subject",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "resp"
+                },
+                {
+                  "valueString": "$this.subject"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "condition_acute_ear_infection_code_rule",
+          "documentation": "Add condition.code if answer with acute ear infection code exists",
+          "source": [
+            {
+              "context": "resp",
+              "condition": "$this.descendants().repeat(answer).select(value).where(code = '232222008').empty().not()"
+            }
+          ],
+          "target": [
+            {
+              "context": "condition",
+              "contextType": "variable",
+              "variable": "condition.code",
+              "element": "code",
+              "transform": "cc",
+              "parameter": [
+                {
+                  "valueString": "https://www.snomed.org"
+                },
+                {
+                  "valueString": "232222008"
+                },
+                {
+                  "valueString": "Acute viral otitis externa"
+                }
+              ]
+            },
+            {
+              "context": "condition.code",
+              "contextType": "variable",
+              "element": "coding",
+              "transform": "c",
+              "parameter": [
+                {
+                  "valueString": "https://bioportal.bioontology.org/ontologies/RCD"
+                },
+                {
+                  "valueString": "X00i6"
+                }
+              ]
+            },
+            {
+              "context": "condition.code",
+              "contextType": "variable",
+              "element": "coding",
+              "transform": "c",
+              "parameter": [
+                {
+                  "valueString": "https://icd.codes/icd10cm"
+                },
+                {
+                  "valueString": "H603"
+                }
+              ]
+            },
+            {
+              "context": "condition.code",
+              "contextType": "variable",
+              "element": "text",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "Acute ear infection"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "condition_viral_ear_infection_code_rule",
+          "documentation": "Add condition.code if answer with viral ear infection code exists",
+          "source": [
+            {
+              "context": "resp",
+              "condition": "$this.descendants().repeat(answer).select(value).where(code = '409711008').empty().not()"
+            }
+          ],
+          "target": [
+            {
+              "context": "condition",
+              "contextType": "variable",
+              "variable": "condition.code",
+              "element": "code",
+              "transform": "cc",
+              "parameter": [
+                {
+                  "valueString": "https://www.snomed.org"
+                },
+                {
+                  "valueString": "409711008"
+                },
+                {
+                  "valueString": "Viral labyrinthitis (disorder)"
+                }
+              ]
+            },
+            {
+              "context": "condition.code",
+              "contextType": "variable",
+              "element": "coding",
+              "transform": "c",
+              "parameter": [
+                {
+                  "valueString": "https://bioportal.bioontology.org/ontologies/RCD"
+                },
+                {
+                  "valueString": "F5635"
+                }
+              ]
+            },
+            {
+              "context": "condition.code",
+              "contextType": "variable",
+              "element": "coding",
+              "transform": "c",
+              "parameter": [
+                {
+                  "valueString": "https://icd.codes/icd10cm"
+                },
+                {
+                  "valueString": "H830"
+                }
+              ]
+            },
+            {
+              "context": "condition.code",
+              "contextType": "variable",
+              "element": "text",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "Viral ear infection"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "condition_chronic_ear_infection_code_rule",
+          "documentation": "Add condition.code if answer with chronic ear infection code exists",
+          "source": [
+            {
+              "context": "resp",
+              "condition": "$this.descendants().repeat(answer).select(value).where(code = '232226006').empty().not()"
+            }
+          ],
+          "target": [
+            {
+              "context": "condition",
+              "contextType": "variable",
+              "variable": "condition.code",
+              "element": "code",
+              "transform": "cc",
+              "parameter": [
+                {
+                  "valueString": "https://www.snomed.org"
+                },
+                {
+                  "valueString": "232226006"
+                },
+                {
+                  "valueString": "Chronic viral otitis externa"
+                }
+              ]
+            },
+            {
+              "context": "condition.code",
+              "contextType": "variable",
+              "element": "coding",
+              "transform": "c",
+              "parameter": [
+                {
+                  "valueString": "https://bioportal.bioontology.org/ontologies/RCD"
+                },
+                {
+                  "valueString": "X00iA"
+                }
+              ]
+            },
+            {
+              "context": "condition.code",
+              "contextType": "variable",
+              "element": "coding",
+              "transform": "c",
+              "parameter": [
+                {
+                  "valueString": "https://icd.codes/icd10cm"
+                },
+                {
+                  "valueString": "H621A"
+                }
+              ]
+            },
+            {
+              "context": "condition.code",
+              "contextType": "variable",
+              "element": "text",
+              "transform": "copy",
+              "parameter": [
+                {
+                  "valueString": "Chronic ear infection"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "condition_defaults_rule",
+          "documentation": "Set the default values for other important variables",
           "source": [
             {
               "context": "resp"
@@ -185,36 +422,6 @@
                 },
                 {
                   "valueString": "problem-list-item"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name":  "condition_code_rule",
-          "source": [
-            {
-              "context": "resp"
-            }
-          ],
-          "target": [
-            {
-              "context": "condition",
-              "contextType": "variable",
-              "variable": "condition.code",
-              "element": "code"
-            },
-            {
-              "context": "condition.code",
-              "contextType": "variable",
-              "element": "coding",
-              "transform": "evaluate",
-              "parameter": [
-                {
-                  "valueId": "resp"
-                },
-                {
-                  "valueString": "$this.item.where(linkId = 'deb7597c-502b-4d2e-861e-36fe665a4025').answer.value"
                 }
               ]
             }

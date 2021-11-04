@@ -987,8 +987,22 @@
                     "required": false
                   }, {
                     "linkId": "660b8e16-422e-4c4f-8d02-2b23b3f3fe52",
-                    "text": "Viral ear infection",
-                    "type": "display",
+                    "type": "choice",
+                    "answerOption": [ {
+                      "initialSelected": true,
+                      "valueCoding": {
+                        "system": "https://www.snomed.org",
+                        "code": "409711008",
+                        "display": "Viral ear infection"
+                      }
+                    }],
+                    "initial": [ {
+                      "valueCoding": {
+                        "system": "https://www.snomed.org",
+                        "code": "409711008",
+                        "display": "Viral ear infection"
+                      }
+                    }],
                     "enableWhen": [ {
                       "question": "8b06c86a-9d44-403a-861a-7afbebfad307",
                       "operator": "=",
@@ -1231,8 +1245,22 @@
                 "required": false
               }, {
                 "linkId": "16e04c0f-f651-4f3a-88bc-0c37a75a733e",
-                "text": "Chronic ear infection",
-                "type": "display",
+                "type": "choice",
+                "answerOption": [ {
+                  "initialSelected": true,
+                  "valueCoding": {
+                    "system": "https://www.snomed.org",
+                    "code": "232226006",
+                    "display": "Chronic ear infection"
+                  }
+                }],
+                "initial": [ {
+                  "valueCoding": {
+                    "system": "https://www.snomed.org",
+                    "code": "232226006",
+                    "display": "Chronic ear infection"
+                  }
+                }],
                 "enableWhen": [ {
                   "question": "8b06c86a-9d44-403a-861a-7afbebfad307",
                   "operator": "=",
