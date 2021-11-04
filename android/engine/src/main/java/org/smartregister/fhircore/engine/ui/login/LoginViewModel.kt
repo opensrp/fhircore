@@ -50,6 +50,10 @@ class LoginViewModel(
   private val dispatcher: DispatcherProvider = DefaultDispatcherProvider
 ) : AndroidViewModel(application), AccountManagerCallback<Bundle> {
 
+  private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
+  val launchDialPad
+    get() = _launchDialPad
+
   val sharedPreferences =
     SharedPreferencesHelper.init(getApplication<Application>().applicationContext)
 
@@ -190,5 +194,10 @@ class LoginViewModel(
         .fetchToken(username.value!!, password.value!!.toCharArray())
         .enqueue(oauthResponseCallback)
     }
+  }
+
+  fun forgotPassword() {
+    // TODO load supervisor contact e.g.
+    _launchDialPad.value = "tel:0123456789"
   }
 }

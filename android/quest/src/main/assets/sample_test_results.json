@@ -68,6 +68,50 @@
       ]
     },
     {
+      "linkId": "haemoglobin_level",
+      "type": "choice",
+      "text": "Hemoglobin Levels",
+      "code": [
+        {
+          "system": "https://www.snomed.org",
+          "code": "104142005",
+          "display": "Plasma haemoglobin level"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "https://www.snomed.org",
+            "code": "75540009",
+            "display": "High"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "https://www.snomed.org",
+            "code": "62482003",
+            "display": "Low"
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "result_type",
+          "operator": "=",
+          "answerCoding": {
+            "system": "https://www.snomed.org",
+            "code": "385432009"
+          }
+        }
+      ]
+    },
+    {
       "linkId": "g6pd",
       "type": "decimal",
       "text": "G6PD",
@@ -83,6 +127,14 @@
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
           "valueBoolean": true
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueDecimal": 1.0
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueDecimal": 6.7
         }
       ],
       "enableWhen": [
@@ -93,11 +145,20 @@
             "system": "https://www.snomed.org",
             "code": "410680006"
           }
+        },
+        {
+          "question": "result_type",
+          "operator": "=",
+          "answerCoding": {
+            "system": "https://www.snomed.org",
+            "code": "385432009"
+          }
         }
-      ]
+      ],
+      "enableBehavior": "any"
     },
     {
-      "linkId": "g6pd",
+      "linkId": "haemoglobin",
       "type": "decimal",
       "text": "Hemoglobin (Hb)",
       "required": true,
@@ -112,6 +173,14 @@
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
           "valueBoolean": true
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueDecimal": 4.0
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueDecimal": 19.0
         }
       ],
       "enableWhen": [
@@ -122,8 +191,17 @@
             "system": "https://www.snomed.org",
             "code": "410680006"
           }
+        },
+        {
+          "question": "result_type",
+          "operator": "=",
+          "answerCoding": {
+            "system": "https://www.snomed.org",
+            "code": "385432009"
+          }
         }
-      ]
+      ],
+      "enableBehavior": "any"
     },
     {
       "linkId": "g6pd",

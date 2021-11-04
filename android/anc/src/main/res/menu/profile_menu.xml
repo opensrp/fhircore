@@ -4,10 +4,17 @@
         android:id="@+id/edit_info"
         android:orderInCategory="300"
         android:title="@string/edit_info" />
+
     <item
         android:id="@+id/view_family"
         android:orderInCategory="300"
         android:title="@string/view_family" />
+
+    <item
+        android:id="@+id/pregnancy_outcome"
+        android:orderInCategory="300"
+        android:title="@string/pregnancy_outcome" />
+
     <item
         android:id="@+id/anc_enrollment"
         android:orderInCategory="300"
@@ -16,6 +23,10 @@
         android:id="@+id/view_past_encounters"
         android:orderInCategory="300"
         android:title="@string/view_past_encounters" />
+    <item
+        android:id="@+id/bmi_widget"
+        android:orderInCategory="300"
+        android:title="@string/bmi_widget" />
     <item
         android:id="@+id/remove_this_person"
         android:orderInCategory="300"

@@ -17,9 +17,10 @@
 package org.smartregister.fhircore.anc.ui.family.register.components
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -28,15 +29,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,9 +49,11 @@ import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.family.register.FamilyListenerIntent
 import org.smartregister.fhircore.anc.ui.family.register.OpenFamilyProfile
-import org.smartregister.fhircore.engine.ui.theme.DueColor
-import org.smartregister.fhircore.engine.ui.theme.OverdueColor
+import org.smartregister.fhircore.engine.ui.components.Dot
+import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
+import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
 fun FamilyRow(
@@ -64,58 +70,62 @@ fun FamilyRow(
       modifier =
         modifier
           .clickable { clickListener(OpenFamilyProfile, familyItem) }
-          .padding(10.dp)
-          .weight(0.65f)
+          .padding(16.dp)
+          .weight(0.70f)
     ) {
       Text(
         text = familyItem.extractDemographics(),
-        fontSize = 16.sp,
+        fontSize = 18.sp,
         modifier = modifier.wrapContentWidth()
       )
       Spacer(modifier = modifier.height(8.dp))
-      Row {
+      Row(
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
         Text(
           color = SubtitleTextColor,
           text = familyItem.address,
-          fontSize = 12.sp,
+          fontSize = 14.sp,
           modifier = modifier.wrapContentWidth()
         )
-      }
-      Spacer(modifier = modifier.height(8.dp))
-      Row {
+        Dot(
+          modifier = modifier,
+          showDot =
+            familyItem.address.isNotEmpty() &&
+              (familyItem.isPregnant || familyItem.members.any { it.pregnant })
+        )
         if (familyItem.isPregnant) {
           Image(
             painter = painterResource(R.drawable.ic_pregnant),
-            contentDescription = "Contact anc picture",
-            modifier = Modifier.size(20.dp).border(1.dp, Color.LightGray, CircleShape)
+            contentDescription = stringResource(id = R.string.pregnant_woman)
           )
         }
-
         familyItem.members.filter { it.pregnant }.forEach { _ ->
           Image(
             painter = painterResource(R.drawable.ic_pregnant),
-            contentDescription = "Contact anc picture",
-            modifier = Modifier.size(20.dp)
+            contentDescription = stringResource(id = R.string.pregnant_woman)
           )
         }
       }
     }
-
-    if (familyItem.servicesOverdue > 0) {
-      Column(modifier = modifier.weight(0.15f)) {
-        servicesCard(
+    Row(
+      modifier = modifier.wrapContentWidth(Alignment.End).weight(0.30f).padding(horizontal = 16.dp),
+      horizontalArrangement = Arrangement.SpaceAround,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      if (familyItem.servicesOverdue > 0) {
+        ServicesCard(
           modifier = modifier,
           text = familyItem.servicesOverdue.toString(),
-          color = OverdueColor
+          color = OverdueDarkRedColor
         )
       }
-    }
-    if (familyItem.servicesDue > 0) {
-      Column(modifier = modifier.weight(0.15f)) {
-        servicesCard(
+      if (familyItem.servicesDue > 0) {
+        ServicesCard(
           modifier = modifier,
           text = familyItem.servicesDue.toString(),
-          color = DueColor
+          color = BlueTextColor
         )
       }
     }
@@ -123,18 +133,17 @@ fun FamilyRow(
 }
 
 @Composable
-fun servicesCard(modifier: Modifier, text: String, color: Color) {
-  Card(
-    backgroundColor = color,
-    shape = CircleShape,
-    modifier = modifier.size(50.dp).padding(5.dp)
-  ) {
-    Text(color = Color.White, text = text, fontSize = 25.sp, modifier = modifier.wrapContentWidth())
-  }
+fun ServicesCard(modifier: Modifier, text: String, color: Color) {
+  Spacer(modifier = modifier.width(6.dp))
+  Box(
+    contentAlignment = Alignment.Center,
+    modifier = modifier.clip(CircleShape).background(color = color).size(32.dp).padding(4.dp)
+  ) { Text(color = Color.White, text = text, fontSize = 12.8.sp, fontWeight = FontWeight.Bold) }
 }
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun FamilyRowPreview() {
   val fmi = FamilyMemberItem("fmname", "fm1", "21", "F", true)
 

@@ -37,7 +37,7 @@ android {
         minSdk 21
         targetSdk 30
         versionCode 1
-        versionName "0.0.1"
+        versionName "0.0.2"
         multiDexEnabled true
 
         buildConfigField("boolean", 'SKIP_AUTH_CHECK', "false")
@@ -48,6 +48,8 @@ android {
         buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        minSdkVersion 21
+        targetSdkVersion 30
     }
 
     buildTypes {
@@ -115,6 +117,7 @@ android {
         kotlinCompilerExtensionVersion '1.0.1'
     }
 
+    compileSdkVersion 30
 }
 
 dependencies {
@@ -140,4 +143,7 @@ dependencies {
 
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
+    def composeVersion = "1.0.1"
+    debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
+    testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 }

@@ -32,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 const val ERROR_MESSAGE_TAG = "errorMessageTag"
 const val TRY_BUTTON_TAG = "tryButtonTag"
@@ -60,8 +61,9 @@ fun ErrorMessage(message: String, modifier: Modifier = Modifier, onClickRetry: (
   }
 }
 
-@Preview(showBackground = true)
 @Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun ErrorMessagePreview() {
   ErrorMessage(
     message =

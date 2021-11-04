@@ -29,6 +29,9 @@ import org.smartregister.fhircore.engine.R
 
 private const val RISK = "risk"
 private val simpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.ENGLISH)
+const val DAYS_IN_YEAR = 365
+const val DAYS_IN_MONTH = 30
+const val DAYS_IN_WEEK = 7
 
 fun Patient.extractName(): String {
   if (!hasName()) return ""
@@ -59,7 +62,40 @@ fun Patient.extractGender(context: Context): String? =
 fun Patient.extractAge(): String {
   if (!hasBirthDate()) return ""
   val ageDiffMilli = Instant.now().toEpochMilli() - this.birthDate.time
-  return (TimeUnit.DAYS.convert(ageDiffMilli, TimeUnit.MILLISECONDS) / 365).toString()
+  return getAgeStringFromDays(TimeUnit.DAYS.convert(ageDiffMilli, TimeUnit.MILLISECONDS))
+}
+
+fun getAgeStringFromDays(days: Long): String {
+  var elapseYearsString = ""
+  var elapseMonthsString = ""
+  var elapseWeeksString = ""
+  var elapseDaysString = ""
+  val elapsedYears = days / DAYS_IN_YEAR
+  val diffDaysFromYear = days % DAYS_IN_YEAR
+  val elapsedMonths = diffDaysFromYear / DAYS_IN_MONTH
+  val diffDaysFromMonth = diffDaysFromYear % DAYS_IN_MONTH
+  val elapsedWeeks = diffDaysFromMonth / DAYS_IN_WEEK
+  val elapsedDays = diffDaysFromMonth % DAYS_IN_WEEK
+  if (elapsedYears > 0) elapseYearsString = elapsedYears.toString() + "y"
+  if (elapsedMonths > 0) elapseMonthsString = elapsedMonths.toString() + "m"
+  if (elapsedWeeks > 0) elapseWeeksString = elapsedWeeks.toString() + "w"
+  if (elapsedDays >= 0) elapseDaysString = elapsedDays.toString() + "d"
+
+  return if (days >= DAYS_IN_YEAR * 10) {
+    elapseYearsString
+  } else if (days >= DAYS_IN_YEAR) {
+    if (elapsedMonths > 0) {
+      elapseYearsString + " " + elapseMonthsString
+    } else elapseYearsString
+  } else if (days >= DAYS_IN_MONTH) {
+    if (elapsedWeeks > 0) {
+      elapseMonthsString + " " + elapseWeeksString
+    } else elapseMonthsString
+  } else if (days >= DAYS_IN_WEEK) {
+    if (elapsedDays > 0) {
+      elapseWeeksString + " " + elapseDaysString
+    } else elapseWeeksString
+  } else elapseDaysString
 }
 
 fun Patient.atRisk() =
@@ -77,7 +113,20 @@ private fun Date?.makeItReadable() = if (this != null) simpleDateFormat.format(t
 
 fun Patient.extractAddress(): String {
   if (!hasAddress()) return ""
-  return with(addressFirstRep) { "${district ?: ""} ${city ?: ""}" }
+  return with(addressFirstRep) {
+    val addressLine =
+      if (this.hasLine()) this.line.joinToString(separator = ", ", postfix = ", ") else ""
+
+    addressLine
+      .join(this.district, " ")
+      .join(this.city, " ")
+      .join(this.state, " ")
+      .join(this.country, " ")
+      .trim()
+  }
 }
+
+fun String?.join(other: String?, separator: String) =
+  this.orEmpty().plus(other?.plus(separator).orEmpty())
 
 fun Patient.isPregnant() = this.extension.any { it.value.toString().contains("pregnant", true) }

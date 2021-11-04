@@ -105,7 +105,7 @@ class PatientRegisterFragment :
         PatientItemMapper
       )
     return ViewModelProvider(
-      requireActivity(),
+      viewModelStore,
       RegisterDataViewModel(
           application = requireActivity().application,
           registerRepository = patientRepository
@@ -113,5 +113,9 @@ class PatientRegisterFragment :
         .createFactory()
     )[RegisterDataViewModel::class.java] as
       RegisterDataViewModel<Pair<Patient, List<Immunization>>, PatientItem>
+  }
+
+  companion object {
+    const val TAG = "PatientRegisterFragment"
   }
 }

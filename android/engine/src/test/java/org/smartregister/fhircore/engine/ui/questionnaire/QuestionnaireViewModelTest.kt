@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.app.Application
+import android.content.Intent
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
@@ -35,9 +36,14 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Expression
+import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.RelatedPerson
+import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Assert
 import org.junit.Before
@@ -130,19 +136,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
 
     coVerify { defaultRepo.save(any()) }
-    coVerify { ResourceMapper.extract(any(), any(), any(), any()) }
+    coVerify { ResourceMapper.extract(any(), any(), any(), any(), any()) }
 
     unmockkObject(ResourceMapper)
   }
 
   @Test
-  fun testExtractAndSaveResourcesWithExtrcationExtensionAndNullResourceShouldAssignTags() {
-    mockkObject(ResourceMapper)
-
-    coEvery { fhirEngine.load(StructureMap::class.java, any()) } returns StructureMap()
-    coEvery { ResourceMapper.extract(any(), any(), any(), any()) } returns
-      Bundle().apply { addEntry().apply { this.resource = Patient().apply { id = "123456" } } }
-
+  fun testExtractAndSaveResourcesWithExtractionExtensionAndNullResourceShouldAssignTags() {
     val questionnaire =
       Questionnaire().apply {
         addUseContext().apply {
@@ -150,8 +150,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           value = CodeableConcept().apply { addCoding().apply { code = "1234567" } }
         }
         addExtension(
-          "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
-          CanonicalType("1234")
+          Extension(
+            "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+            Expression().apply {
+              language = "application/x-fhir-query"
+              expression = "Patient"
+              name = "Patient"
+            }
+          )
         )
       }
 
@@ -164,12 +170,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     val patientSlot = slot<Patient>()
 
-    coVerify { ResourceMapper.extract(any(), any(), any(), any()) }
     coVerify { defaultRepo.addOrUpdate(capture(patientSlot)) }
 
     Assert.assertEquals("1234567", patientSlot.captured.meta.tagFirstRep.code)
-
-    unmockkObject(ResourceMapper)
   }
 
   @Test
@@ -197,5 +200,86 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireResponseSlot.captured.subject.reference.replace("Patient/", "")
     )
     Assert.assertEquals("1234567", questionnaireResponseSlot.captured.meta.tagFirstRep.code)
+  }
+
+  @Test
+  fun testLoadPatientShouldReturnPatientResource() {
+    val patient =
+      Patient().apply {
+        name =
+          listOf(
+            HumanName().apply {
+              given = listOf(StringType("John"))
+              family = "Doe"
+            }
+          )
+      }
+    coEvery { fhirEngine.load(Patient::class.java, "1") } returns patient
+
+    runBlocking {
+      val loadedPatient = questionnaireViewModel.loadPatient("1")
+
+      Assert.assertEquals(
+        patient.name.first().given.first().value,
+        loadedPatient?.name?.first()?.given?.first()?.value
+      )
+      Assert.assertEquals(patient.name.first().family, loadedPatient?.name?.first()?.family)
+    }
+  }
+
+  @Test
+  fun testLoadRelatedPersonShouldReturnOnlyOneItemList() {
+    val relatedPerson =
+      RelatedPerson().apply {
+        name =
+          listOf(
+            HumanName().apply {
+              given = listOf(StringType("John"))
+              family = "Doe"
+            }
+          )
+      }
+
+    coEvery { defaultRepo.loadRelatedPersons("1") } returns listOf(relatedPerson)
+
+    runBlocking {
+      val list = questionnaireViewModel.loadRelatedPerson("1")
+      Assert.assertEquals(1, list?.size)
+      val result = list?.get(0)
+      Assert.assertEquals(
+        relatedPerson.name.first().given.first().value,
+        result?.name?.first()?.given?.first()?.value
+      )
+      Assert.assertEquals(relatedPerson.name.first().family, result?.name?.first()?.family)
+    }
+  }
+
+  @Test
+  fun testSaveResourceShouldVerifyResourceSaveMethodCall() {
+    coEvery { defaultRepo.save(any()) } returns Unit
+    questionnaireViewModel.saveResource(mockk())
+    coVerify(exactly = 1) { defaultRepo.save(any()) }
+  }
+
+  @Test
+  fun testGetPopulationResourcesShouldReturnListOfResources() {
+
+    coEvery { fhirEngine.load(Patient::class.java, "2") } returns Patient().apply { id = "2" }
+    coEvery { defaultRepo.loadRelatedPersons("2") } returns
+      listOf(RelatedPerson().apply { id = "3" })
+
+    val intent = Intent()
+    intent.putStringArrayListExtra(
+      QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
+      arrayListOf(
+        "{\"resourceType\":\"Patient\",\"id\":\"1\",\"text\":{\"status\":\"generated\",\"div\":\"\"}}"
+      )
+    )
+    intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "2")
+
+    runBlocking {
+      val resourceList = questionnaireViewModel.getPopulationResources(intent)
+      Assert.assertEquals(3, resourceList.size)
+    }
   }
 }

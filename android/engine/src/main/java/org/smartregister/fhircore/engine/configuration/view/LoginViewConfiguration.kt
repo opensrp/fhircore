@@ -23,7 +23,8 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 class LoginViewConfiguration(
   var applicationName: String = "App Name",
   var applicationVersion: String = "0.0.1",
-  var darkMode: Boolean = true
+  var darkMode: Boolean = true,
+  var showLogo: Boolean = false
 ) : Configuration
 /**
  * A function providing a DSL for configuring [LoginViewConfiguration]. The configurations provided
@@ -32,15 +33,18 @@ class LoginViewConfiguration(
  * @param applicationVersion Set the application version
  * @param darkMode Change login theme; alter the background color to white when false dark blue
  * otherwise
+ * @param showLogo Show login logo for the app otherwise
  */
 @Stable
 fun loginViewConfigurationOf(
-  applicationName: String = "App Name",
+  applicationName: String = "FHIR App",
   applicationVersion: String = "0.0.1",
-  darkMode: Boolean = false
+  darkMode: Boolean = false,
+  showLogo: Boolean = false
 ) =
   LoginViewConfiguration(
     applicationName = applicationName,
     applicationVersion = applicationVersion,
-    darkMode = darkMode
+    darkMode = darkMode,
+    showLogo = showLogo
   )

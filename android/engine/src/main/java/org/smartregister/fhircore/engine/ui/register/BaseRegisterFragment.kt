@@ -47,7 +47,6 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
   abstract fun onItemClicked(listenerIntent: ListenerIntent, data: O)
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    super.onViewCreated(view, savedInstanceState)
     if (requireActivity() !is BaseRegisterActivity) {
       throw (IllegalAccessException(
         "You can only use BaseRegisterFragment in BaseRegisterActivity context"
@@ -104,6 +103,11 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
   override fun onResume() {
     super.onResume()
     registerDataViewModel.reloadCurrentPageData(refreshTotalRecordsCount = true)
+  }
+
+  override fun onDestroy() {
+    viewModelStore.clear()
+    super.onDestroy()
   }
 
   /** Initialize the [RegisterDataViewModel] class */

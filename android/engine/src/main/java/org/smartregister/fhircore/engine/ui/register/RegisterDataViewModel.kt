@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.register
 
 import android.app.Application
+import androidx.compose.runtime.Stable
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -57,6 +58,7 @@ class RegisterDataViewModel<I : Any, O : Any>(
   val currentPage
     get() = _currentPage
 
+  @Stable
   private val allRegisterData: MutableStateFlow<Flow<PagingData<O>>> =
     MutableStateFlow(getPagingData(currentPage = 0, loadAll = true))
 

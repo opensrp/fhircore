@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc.ui.family
 import android.app.Activity
 import android.app.Application
 import android.content.Intent
+import androidx.appcompat.app.AlertDialog
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.Sync
@@ -40,7 +41,6 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
@@ -49,6 +49,7 @@ import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
@@ -173,7 +174,8 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
       familyQuestionnaireActivity,
       "handlePregnancy",
       ReflectionHelpers.ClassParameter(String::class.java, "1111"),
-      ReflectionHelpers.ClassParameter(QuestionnaireResponse::class.java, questionnaireResponse)
+      ReflectionHelpers.ClassParameter(QuestionnaireResponse::class.java, questionnaireResponse),
+      ReflectionHelpers.ClassParameter(String::class.java, FamilyFormConstants.ANC_ENROLLMENT_FORM)
     )
 
     val expectedIntent =
@@ -214,13 +216,20 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnBackPressedShouldCallConfirmationDialogue() {
-    assertNull(ShadowAlertDialog.getLatestDialog())
-
     familyQuestionnaireActivity.onBackPressed()
 
     val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
 
-    assertNotNull(dialog)
+    assertNotNull(alertDialog)
+    assertEquals(
+      getString(R.string.unsaved_changes_neg),
+      alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).text
+    )
+    assertEquals(
+      getString(R.string.unsaved_changes_pos),
+      alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
+    )
   }
 
   override fun getActivity(): Activity {
