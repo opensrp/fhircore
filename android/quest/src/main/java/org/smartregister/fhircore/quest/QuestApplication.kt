@@ -62,15 +62,16 @@ class QuestApplication : Application(), ConfigurableApplication {
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() {
-      val patientFilter =
+      val primaryFilter =
         loadRegisterViewConfiguration(CONFIG_PATIENT_REGISTER).primaryFilter
           ?: SearchFilter("_tag", "msf", "http://fhir.ona.io")
       return mapOf(
         ResourceType.Binary to mapOf("_id" to CONFIG_RESOURCE_IDS),
         ResourceType.Patient to
-          mapOf(patientFilter.key to "${patientFilter.system}|${patientFilter.code}"),
+          mapOf(primaryFilter.key to "${primaryFilter.system}|${primaryFilter.code}"),
         ResourceType.Questionnaire to buildQuestionnaireFilterMap(),
-        ResourceType.QuestionnaireResponse to mapOf(),
+        ResourceType.QuestionnaireResponse to
+          mapOf(primaryFilter.key to "${primaryFilter.system}|${primaryFilter.code}"),
         ResourceType.Binary to mapOf()
       )
     }
