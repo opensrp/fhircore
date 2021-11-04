@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest
 
 import android.app.Application
+import androidx.compose.ui.text.toLowerCase
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.datacapture.DataCaptureConfig
@@ -38,6 +39,7 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
+import org.smartregister.fhircore.engine.util.extension.join
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
@@ -62,11 +64,9 @@ class QuestApplication : Application(), ConfigurableApplication {
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() {
-      val primaryFilter =
-        loadRegisterViewConfiguration(CONFIG_PATIENT_REGISTER).primaryFilter
-          ?: SearchFilter("_tag", "msf", "http://fhir.ona.io")
+      val primaryFilter = getPatientRegisterConfig().primaryFilter!!
       return mapOf(
-        ResourceType.Binary to mapOf("_id" to CONFIG_RESOURCE_IDS),
+        ResourceType.Binary to mapOf("_id" to getBinaryConfigIds()),
         ResourceType.Patient to
           mapOf(primaryFilter.key to "${primaryFilter.system}|${primaryFilter.code}"),
         ResourceType.Questionnaire to buildQuestionnaireFilterMap(),
@@ -78,8 +78,7 @@ class QuestApplication : Application(), ConfigurableApplication {
 
   private fun buildQuestionnaireFilterMap(): MutableMap<String, String> {
     val questionnaireFilterMap: MutableMap<String, String> = HashMap()
-    val publisher =
-      SharedPreferencesHelper.read(USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY, null)
+    val publisher = getPublisher()
     if (publisher != null) questionnaireFilterMap[Questionnaire.SP_PUBLISHER] = publisher
     return questionnaireFilterMap
   }
@@ -137,10 +136,15 @@ class QuestApplication : Application(), ConfigurableApplication {
   companion object {
     private lateinit var questApplication: QuestApplication
     const val CONFIG_APP = "quest-app"
-    const val CONFIG_PATIENT_REGISTER = "quest-app-patient-register-msf"
+    private const val CONFIG_PATIENT_REGISTER = "quest-app-patient-register"
 
-    private const val CONFIG_RESOURCE_IDS = "$CONFIG_APP,$CONFIG_PATIENT_REGISTER"
+    private fun getBinaryConfigIds() = "$CONFIG_APP,${getPatientRegisterConfigId()}"
+
+    fun getPatientRegisterConfig() = getContext().loadRegisterViewConfiguration(getPatientRegisterConfigId())
+
+    fun getPatientRegisterConfigId() = CONFIG_PATIENT_REGISTER.join(getPublisher()?.let {"-$it"},"")
 
     fun getContext() = questApplication
+    fun getPublisher() = SharedPreferencesHelper.read(USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY, null)
   }
 }

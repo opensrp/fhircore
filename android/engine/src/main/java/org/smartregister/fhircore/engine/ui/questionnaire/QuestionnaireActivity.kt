@@ -175,7 +175,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   override fun onStop() {
     super.onStop()
-    if (saveProcessingAlertDialog != null) {
+    if (::saveProcessingAlertDialog.isInitialized && saveProcessingAlertDialog != null) {
       saveProcessingAlertDialog.dismiss()
     }
   }
