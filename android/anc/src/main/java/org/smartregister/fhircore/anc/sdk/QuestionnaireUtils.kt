@@ -35,7 +35,7 @@ import org.smartregister.fhircore.engine.util.extension.find
 object QuestionnaireUtils {
   private const val flaggableKey = "flag-detail"
 
-  private const val ITEM_CONTEXT_EXTENSION_URL: String =
+  const val ITEM_CONTEXT_EXTENSION_URL: String =
     "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract"
   private val Questionnaire.QuestionnaireItemComponent.isExtractableObservation: Boolean?
     get() {
