@@ -23,7 +23,9 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import io.mockk.verify
 import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
@@ -32,6 +34,7 @@ import okhttp3.MediaType
 import okhttp3.ResponseBody
 import okio.BufferedSource
 import org.hl7.fhir.r4.model.Binary
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -46,14 +49,22 @@ import retrofit2.Response
 @Config(shadows = [QuestApplicationShadow::class])
 class ReferenceAttachmentResolverTest : RobolectricTest() {
 
-  lateinit var referenceAttachmentResolverTest: ReferenceAttachmentResolver
+  private lateinit var referenceAttachmentResolverTest: ReferenceAttachmentResolver
+  private lateinit var fhirService: FhirResourceService
 
   @Before
   fun setUp() {
     referenceAttachmentResolverTest =
-      spyk(
-        ReferenceAttachmentResolver(ApplicationProvider.getApplicationContext<QuestApplication>())
-      )
+      ReferenceAttachmentResolver(ApplicationProvider.getApplicationContext<QuestApplication>())
+
+    fhirService = mockk()
+    mockkObject(FhirResourceService.Companion)
+    every { FhirResourceService.create(any(), any()) } returns fhirService
+  }
+
+  @After
+  fun tearDown() {
+    unmockkObject(FhirResourceService.Companion)
   }
 
   @Test
@@ -85,11 +96,10 @@ class ReferenceAttachmentResolverTest : RobolectricTest() {
   @Test
   fun testResolveImageUrlShouldCallFetchImage() {
     val imageUrl = "https://image-server.com/8929839"
-    val fhirService = mockk<FhirResourceService>()
+
     val okHttpCall = mockk<Call<ResponseBody?>>()
     val mockResponse = Response.success<ResponseBody?>(null)
 
-    every { referenceAttachmentResolverTest.getFhirService() } returns fhirService
     every { okHttpCall.execute() } returns mockResponse
     every { fhirService.fetchImage(any()) } returns okHttpCall
 
@@ -101,12 +111,10 @@ class ReferenceAttachmentResolverTest : RobolectricTest() {
   @Test
   fun testResolveImageUrlShouldReturnNullWhenBodyIsNull() {
     val imageUrl = "https://image-server.com/8929839"
-    val fhirService = mockk<FhirResourceService>()
     val okHttpCall = mockk<Call<ResponseBody?>>()
 
     val mockResponse = Response.success<ResponseBody?>(null)
 
-    every { referenceAttachmentResolverTest.getFhirService() } returns fhirService
     every { okHttpCall.execute() } returns mockResponse
     every { fhirService.fetchImage(imageUrl) } returns okHttpCall
 
@@ -119,12 +127,10 @@ class ReferenceAttachmentResolverTest : RobolectricTest() {
   @Test
   fun testResolveImageUrlShouldReturnDecodeAndReturnWhenServiceReturnsBody() {
     val imageUrl = "https://image-server.com/8929839"
-    val fhirService = mockk<FhirResourceService>()
     val okHttpCall = mockk<Call<ResponseBody?>>()
     val mockResponseBody: ResponseBody = spyk(FakeResponseBody())
     val mockResponse = Response.success<ResponseBody?>(mockResponseBody)
 
-    every { referenceAttachmentResolverTest.getFhirService() } returns fhirService
     every { mockResponseBody.byteStream() } returns
       (ByteArrayInputStream(
         "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7".toByteArray(
