@@ -47,4 +47,6 @@
         <string name="error_loading_form">Hitilafu kounyesha fomu</string>
         <string name="error_saving_form">Hitilafu imetokea, haiwezi kuhifadhi fomu</string>
         <string name="saving_registration">Tunahifadhi usajili. Tafadhali subiri</string>
+        <string name="replace_photo">Replace photo</string>
+        <string name="take_photo">Take photo</string>
 </resources>

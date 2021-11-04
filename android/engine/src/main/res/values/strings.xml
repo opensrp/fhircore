@@ -50,4 +50,6 @@
     <string name="error_loading_form">Error loading form</string>
     <string name="error_saving_form">Error encountered cannot save form</string>
     <string name="saving_registration">Saving data. Please wait</string>
+    <string name="replace_photo">Replace photo</string>
+    <string name="take_photo">Take photo</string>
 </resources>
