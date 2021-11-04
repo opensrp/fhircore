@@ -62,7 +62,6 @@ class QuestApplication : Application(), ConfigurableApplication {
     get() {
       return mapOf(
         ResourceType.Binary to mapOf("_id" to CONFIG_RESOURCE_IDS),
-        ResourceType.CarePlan to mapOf(),
         ResourceType.Patient to mapOf(),
         ResourceType.Questionnaire to buildQuestionnaireFilterMap(),
         ResourceType.QuestionnaireResponse to mapOf(),
