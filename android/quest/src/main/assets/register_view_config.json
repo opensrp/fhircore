@@ -17,7 +17,7 @@
     "primaryFilter": {
       "key": "_tag",
       "system": "http://fhir.ona.io",
-      "code": "Test Patient"
+      "code": "000003"
     }
   }
 ]

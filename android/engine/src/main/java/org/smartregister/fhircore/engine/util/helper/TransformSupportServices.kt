@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.util.helper
 
-import android.app.Application
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
@@ -55,6 +54,7 @@ class TransformSupportServices(
     return when (name) {
       "RiskAssessment_Prediction" -> RiskAssessmentPredictionComponent()
       "Immunization_VaccinationProtocol" -> Immunization.ImmunizationProtocolAppliedComponent()
+      "Immunization_Reaction" -> Immunization.ImmunizationReactionComponent()
       else -> ResourceFactory.createResourceOrType(name)
     }
   }

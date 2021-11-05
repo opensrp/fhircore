@@ -90,4 +90,4 @@ Create your Profile View Configuration as below
 }
 ```
 
-Now open app, login, and view the customized app
+Now open clean installed app, login, and view the customized app (Make sure you were not using same app from some other organization, if so, uninstall and reinstall app, make sure no unsynced data is present before uninstall)

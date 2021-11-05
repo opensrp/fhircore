@@ -26,6 +26,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
+import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.util.startAncEnrollment
@@ -65,7 +66,11 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
         FamilyFormConstants.FAMILY_REGISTER_FORM -> {
           val patientId =
             familyRepository.postProcessFamilyHead(questionnaire!!, questionnaireResponse)
-          handlePregnancy(patientId, questionnaireResponse)
+          handlePregnancy(
+            patientId,
+            questionnaireResponse,
+            FamilyFormConstants.FAMILY_REGISTER_FORM
+          )
         }
         FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM -> {
           val relatedTo = intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)
@@ -75,7 +80,11 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
               questionnaireResponse,
               relatedTo
             )
-          handlePregnancy(patientId, questionnaireResponse)
+          handlePregnancy(
+            patientId,
+            questionnaireResponse,
+            FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
+          )
         }
       }
     }
@@ -87,6 +96,16 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
       .setCancelable(false)
       .setNegativeButton(R.string.unsaved_changes_neg) { dialogInterface, _ ->
         dialogInterface.dismiss()
+        if (questionnaireConfig.form == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
+          startActivity(
+            Intent(this, FamilyDetailsActivity::class.java).apply {
+              putExtra(
+                QUESTIONNAIRE_ARG_PATIENT_KEY,
+                intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!
+              )
+            }
+          )
+        }
         finish()
       }
       .setPositiveButton(R.string.unsaved_changes_pos) { dialogInterface, _ ->
@@ -95,12 +114,28 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
       .show()
   }
 
-  private fun handlePregnancy(patientId: String, questionnaireResponse: QuestionnaireResponse) {
+  private fun handlePregnancy(
+    patientId: String,
+    questionnaireResponse: QuestionnaireResponse,
+    ancEnrollmentForm: String
+  ) {
     val pregnantItem = questionnaireResponse.find(IS_PREGNANT_KEY)
     val pregnancy = pregnantItem?.answer?.firstOrNull()?.valueBooleanType?.booleanValue()
     if (pregnancy == true) {
       this.startAncEnrollment(patientId)
-    } else endActivity()
+    } else {
+      if (ancEnrollmentForm == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
+        startActivity(
+          Intent(this, FamilyDetailsActivity::class.java).apply {
+            putExtra(
+              QUESTIONNAIRE_ARG_PATIENT_KEY,
+              intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!
+            )
+          }
+        )
+        endActivity()
+      } else endActivity()
+    }
   }
 
   private fun endActivity() {

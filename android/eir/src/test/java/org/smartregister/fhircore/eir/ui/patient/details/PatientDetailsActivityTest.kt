@@ -77,6 +77,15 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     Assert.assertTrue(patientDetailsActivitySpy.onOptionsItemSelected(menuItem))
   }
 
+  @Test
+  @DisplayName("Should start AdverseEventActivity when menu edit is selected")
+  fun testThatMenuItemListenerWorksForAdverseEventActivity() {
+    val menuItem = mockk<MenuItem>(relaxed = true)
+    every { menuItem.itemId } returns R.id.vaccine_adverse_events
+    every { patientDetailsActivitySpy.startActivity(any()) } just runs
+    Assert.assertTrue(patientDetailsActivitySpy.onOptionsItemSelected(menuItem))
+  }
+
   override fun getActivity(): Activity {
     return patientDetailsActivity
   }

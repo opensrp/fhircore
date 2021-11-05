@@ -28,7 +28,7 @@ import org.smartregister.fhircore.engine.util.extension.loadBinaryResourceConfig
 @Serializable
 @Stable
 data class RegisterViewConfiguration(
-  var id: String? = null,
+  var id: String,
   var appTitle: String,
   var filterText: String,
   var searchBarHint: String,
@@ -66,7 +66,7 @@ data class SearchFilter(val key: String, val code: String, val system: String)
  */
 @Stable
 fun Context.registerViewConfigurationOf(
-  id: String? = null,
+  id: String = this.getString(R.string.default_app_title),
   appTitle: String = this.getString(R.string.default_app_title),
   filterText: String = this.getString(R.string.show_overdue),
   searchBarHint: String = this.getString(R.string.search_hint),

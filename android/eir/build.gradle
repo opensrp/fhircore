@@ -195,6 +195,10 @@ dependencies {
 
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
+
+    def composeVersion = "1.0.1"
+    debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
+    testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 }
 
 dokkaHtml.configure {

@@ -19,8 +19,6 @@ package org.smartregister.fhircore.quest.ui.patient.details
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity

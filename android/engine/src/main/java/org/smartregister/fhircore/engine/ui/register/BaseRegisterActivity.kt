@@ -16,10 +16,12 @@
 
 package org.smartregister.fhircore.engine.ui.register
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -28,6 +30,9 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.IdRes
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
@@ -37,9 +42,13 @@ import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.contrib.views.barcode.mlkit.md.LiveBarcodeScanningFragment
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.sync.State
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigation.NavigationView
@@ -48,6 +57,7 @@ import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableView
@@ -90,7 +100,7 @@ abstract class BaseRegisterActivity :
   OnSyncListener,
   SyncInitiator {
 
-  private lateinit var registerViewModel: RegisterViewModel
+  lateinit var registerViewModel: RegisterViewModel
 
   private lateinit var registerActivityBinding: BaseRegisterActivityBinding
 
@@ -100,7 +110,8 @@ abstract class BaseRegisterActivity :
 
   private lateinit var sideMenuOptionMap: Map<Int, SideMenuOption>
 
-  protected lateinit var fhirEngine: FhirEngine
+  lateinit var fhirEngine: FhirEngine
+  val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
 
   protected lateinit var navigationBottomSheet: NavigationBottomSheet
 
@@ -153,6 +164,7 @@ abstract class BaseRegisterActivity :
     fhirEngine = (application as ConfigurableApplication).fhirEngine
 
     navigationBottomSheet = NavigationBottomSheet(this::onSelectRegister)
+    setupBarcodeButtonView()
   }
 
   override fun onResume() {
@@ -174,8 +186,8 @@ abstract class BaseRegisterActivity :
       is State.Glitch -> {
         progressSync.hide()
         val lastSyncTimestamp =
-          SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, getString(R.string.syncing_retry))
-        tvLastSyncTimestamp.text = lastSyncTimestamp?.formatSyncDate() ?: ""
+          SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null)
+        tvLastSyncTimestamp.text = lastSyncTimestamp?.formatSyncDate() ?: getString(R.string.syncing_retry)
         containerProgressSync.apply {
           background = this.getDrawable(R.drawable.ic_sync)
           setOnClickListener { syncButtonClick() }
@@ -342,6 +354,16 @@ abstract class BaseRegisterActivity :
           R.string.logout_user,
           configurableApplication().secureSharedPreference.retrieveSessionUsername()
         )
+    }
+  }
+
+  private fun setupBarcodeButtonView() {
+    val requestPermissionLauncher = getBarcodePermissionLauncher()
+    with(registerActivityBinding.toolbarLayout) {
+      btnScanBarcode.setOnClickListener {
+        launchBarcodeReader(requestPermissionLauncher)
+        barcodeFragmentListener(it)
+      }
     }
   }
 
@@ -599,12 +621,12 @@ abstract class BaseRegisterActivity :
    */
   open fun onNavigationOptionItemSelected(item: MenuItem): Boolean = true
 
-  protected open fun registerClient() {
+  open fun registerClient(clientIdentifier: String? = null) {
     startActivity(
       Intent(this, QuestionnaireActivity::class.java)
         .putExtras(
           QuestionnaireActivity.requiredIntentArgs(
-            clientIdentifier = null,
+            clientIdentifier = clientIdentifier,
             form = registerViewModel.registerViewConfiguration.value?.registrationForm!!
           )
         )
@@ -649,5 +671,66 @@ abstract class BaseRegisterActivity :
         }
       }
     }
+  }
+
+  private fun barcodeFragmentListener(view: View) {
+    supportFragmentManager.setFragmentResultListener(
+      BARCODE_RESULT_KEY,
+      this,
+      { key, result ->
+        val barcode = result.getString(key)!!.trim()
+        Timber.i("Received barcode $barcode initiated by view id ${view.id}")
+
+        onBarcodeResult(barcode, view)
+
+        liveBarcodeScanningFragment.onDestroy()
+      }
+    )
+  }
+
+  private fun launchBarcodeReader(requestPermissionLauncher: ActivityResultLauncher<String>) {
+    if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
+        PackageManager.PERMISSION_GRANTED
+    ) {
+      liveBarcodeScanningFragment.show(this.supportFragmentManager, "TAG")
+    } else {
+      requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+    }
+  }
+
+  private fun getBarcodePermissionLauncher(): ActivityResultLauncher<String> {
+    return registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+      isGranted: Boolean ->
+      if (isGranted) {
+        liveBarcodeScanningFragment.show(supportFragmentManager, "TAG")
+      } else {
+        Toast.makeText(
+            this,
+            "Camera permissions are needed to launch barcode reader!",
+            Toast.LENGTH_LONG
+          )
+          .show()
+      }
+    }
+  }
+
+  fun isPatientExists(barcode: String): LiveData<Result<Boolean>> {
+    val result = MutableLiveData<Result<Boolean>>()
+
+    lifecycleScope.launch(registerViewModel.dispatcher.io()) {
+      try {
+        fhirEngine.load(Patient::class.java, barcode)
+        result.postValue(Result.success(true))
+      } catch (e: ResourceNotFoundException) {
+        result.postValue(Result.failure(e))
+      }
+    }
+    return result
+  }
+
+  open fun onBarcodeResult(barcode: String, view: View) {}
+
+  companion object {
+    const val BARCODE_RESULT_KEY = "result"
   }
 }

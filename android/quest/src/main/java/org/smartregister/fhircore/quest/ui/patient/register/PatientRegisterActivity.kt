@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
@@ -37,8 +39,18 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    registerViewConfiguration = getPatientRegisterConfig()?:registerViewConfigurationOf()
+    registerViewConfiguration = getPatientRegisterConfig()
     configureViews(registerViewConfiguration)
+
+    with(registerViewModel.lastSyncTimestamp) {
+      if(this.value?.isBlank() == true)
+       this.observe(this@PatientRegisterActivity,
+        {
+          it?.let {
+            startActivity(Intent(this@PatientRegisterActivity, PatientRegisterActivity::class.java))
+          }
+        })
+    }
   }
 
   override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> {
