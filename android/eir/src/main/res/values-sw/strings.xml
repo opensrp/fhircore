@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_version">Toleo %s</string>
+    <string name="app_version">Toleo %1$d(%2$s)</string>
     <string name="title_patient_list">Wateja Wasajiliwa</string>
     <string name="title_patient_detail">Sampuli ya Mgonjwa</string>
     <string name="menu_about">Kuhusu Injini ya FHIR</string>
@@ -46,4 +46,8 @@
     <string name="report_adverse_event">Report Adverse Event</string>
     <string name="covax_app" translatable="false">Covax</string>
     <string name="check">Tick</string>
+    <string name="adverse_events">Adverse events</string>
+    <string name="cancel">Cancel</string>
+    <string name="no_adverse_events">No Adverse Events reported</string>
+    <string name="choose_dose_adverse_event">Choose dose of %1$s for adverse events</string>
 </resources>

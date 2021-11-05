@@ -1,0 +1,34 @@
+map "http://hl7.org/fhir/StructureMap/AdverseEvent" = 'AdverseEvent'
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+uses "http://hl7.org/fhir/StructureDefinition/Observation" as source
+uses "http://hl7.org/fhir/StructureDefinition/Immunization" as target
+
+group AdverseEvent(source src : QuestionnaireResponse, target bundle: Bundle) {
+  src -> bundle.id = uuid() "rule_c";
+  src -> bundle.type = 'collection' "rule_b";
+  src -> bundle.entry as entry, entry.resource = create('Immunization') as immunization then
+      ExtractImmunization(src, bundle, immunization) "rule_i";
+}
+
+group ExtractImmunization(source src: QuestionnaireResponse, target bundle: Bundle, target immunization: Immunization) {
+
+    src -> immunization.id = create('id') as immunizationId then {
+        src -> immunizationId.value = evaluate(src, $this.item.where(linkId = 'immunization-id').answer.value) "rule_j";
+    } "rule_k";
+
+    src.item as item where(linkId = 'adverse-event-reaction') -> immunization.reaction = create('Immunization_Reaction') as immunizationReaction then {
+        item -> immunizationReaction.date = evaluate(item, $this.item.where(linkId = 'adverse-event-date').answer.value) "rule_a";
+
+
+    item.item as reaction_detail_item where (linkId = 'adverse-event-codes') -> bundle.entry as entry, entry.resource = create('Observation') as observation then {
+      reaction_detail_item -> observation.id = uuid() "rule_obs_1";
+      reaction_detail_item.answer as reactionAns -> observation.code = create('CodeableConcept') as codeableConcept then {
+        reactionAns.value as reactionAnsValue -> codeableConcept.coding = reactionAnsValue "rule_obs_2_2";
+      } "rule_ob_2";
+
+     src -> immunizationReaction.detail = reference(observation) "rule_obs_3";
+    };
+  };
+}

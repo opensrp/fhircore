@@ -17,7 +17,6 @@
 package org.smartregister.fhirecore.quest
 
 import androidx.test.core.app.ApplicationProvider
-import io.mockk.spyk
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
@@ -30,22 +29,20 @@ import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
 @Config(shadows = [QuestApplicationShadow::class])
 class QuestApplicationTest : RobolectricTest() {
 
+  private val app by lazy { ApplicationProvider.getApplicationContext<QuestApplication>() }
+
   @Test
   fun testConstructFhirEngineShouldReturnNonNull() {
-    Assert.assertNotNull(QuestApplication.getContext().fhirEngine)
+    Assert.assertNotNull(app.fhirEngine)
   }
   @Test
   fun testThatApplicationIsInstanceOfConfigurableApplication() {
-    Assert.assertTrue(
-      ApplicationProvider.getApplicationContext<QuestApplication>() is ConfigurableApplication
-    )
+    Assert.assertTrue(app is ConfigurableApplication)
   }
 
   @Test
   fun testResourceSyncParam() {
-    val application = spyk(ApplicationProvider.getApplicationContext<QuestApplication>())
-
-    val syncParam = application.resourceSyncParams
+    val syncParam = app.resourceSyncParams
     Assert.assertEquals(5, syncParam.size)
     Assert.assertTrue(syncParam.containsKey(ResourceType.Patient))
     Assert.assertTrue(syncParam.containsKey(ResourceType.Binary))

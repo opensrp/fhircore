@@ -22,5 +22,11 @@
     "form": "record-vaccine",
     "title": "Record Vaccine",
     "identifier": "800"
+  },
+  {
+    "appId": "jnj",
+    "form": "adverse-event",
+    "title": "Adverse Event",
+    "identifier": "1568"
   }
 ]

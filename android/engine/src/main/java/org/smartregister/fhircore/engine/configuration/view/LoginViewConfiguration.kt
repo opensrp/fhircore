@@ -27,6 +27,7 @@ class LoginViewConfiguration(
   override val classification: String,
   var applicationName: String = "App Name",
   var applicationVersion: String = "0.0.1",
+  var applicationVersionCode: Int = 1,
   var darkMode: Boolean = true,
   var showLogo: Boolean = false,
 ) : Configuration
@@ -36,6 +37,7 @@ class LoginViewConfiguration(
  * @param appId Set unique identifier for this configuration
  * @param applicationName Set the application name
  * @param applicationVersion Set the application version
+ * @param applicationVersionCode Set the application version code
  * @param darkMode Change login theme; alter the background color to white when false dark blue
  * otherwise
  * @param showLogo Show login logo for the app otherwise
@@ -46,6 +48,7 @@ fun loginViewConfigurationOf(
   classification: String = "login",
   applicationName: String = "FHIR App",
   applicationVersion: String = "0.0.1",
+  applicationVersionCode: Int = 1,
   darkMode: Boolean = false,
   showLogo: Boolean = false
 ) =
@@ -54,6 +57,7 @@ fun loginViewConfigurationOf(
     classification = classification,
     applicationName = applicationName,
     applicationVersion = applicationVersion,
+    applicationVersionCode = applicationVersionCode,
     darkMode = darkMode,
     showLogo = showLogo
   )

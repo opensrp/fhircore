@@ -91,13 +91,15 @@ class PatientRepository(
   ): List<AncPatientItem> {
     return withContext(dispatcherProvider.io()) {
       val pregnancies =
-        fhirEngine.search<Condition> {
-          filterBy(registerConfig.primaryFilter!!)
-          registerConfig.secondaryFilter?.let { filterBy(it) }
+        fhirEngine
+          .search<Condition> {
+            filterBy(registerConfig.primaryFilter!!)
+            registerConfig.secondaryFilter?.let { filterBy(it) }
 
-          count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
-          from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
-        }
+            count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
+            from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
+          }
+          .distinctBy { it.subject.extractId() }
 
       val patients =
         pregnancies.map { fhirEngine.load(Patient::class.java, it.subject.extractId()) }.sortedBy {

@@ -41,7 +41,7 @@ class RecordVaccineViewModel(
   fun getVaccineSummary(logicalId: String): LiveData<PatientVaccineSummary> {
     val mutableLiveData: MutableLiveData<PatientVaccineSummary> = MutableLiveData()
     viewModelScope.launch(dispatcherProvider.io()) {
-      val immunizations = patientRepository.getPatientImmunizations(logicalId = logicalId)
+      val immunizations = patientRepository.getPatientImmunizations(patientId = logicalId)
       if (!immunizations.isNullOrEmpty()) {
         val immunization = immunizations.first()
         mutableLiveData.postValue(
@@ -60,13 +60,13 @@ class RecordVaccineViewModel(
 
     intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let { patientId ->
       loadPatient(patientId)?.run { resourcesList.add(this) }
-      loadImmunization(patientId)?.run { resourcesList.add(this) }
+      loadPatientImmunization(patientId)?.run { resourcesList.add(this) }
     }
 
     return resourcesList.toTypedArray()
   }
 
-  suspend fun loadImmunization(patientId: String): Immunization? {
-    return defaultRepository.loadImmunizations(patientId)?.firstOrNull()
+  suspend fun loadPatientImmunization(patientId: String): Immunization? {
+    return defaultRepository.loadPatientImmunizations(patientId)?.firstOrNull()
   }
 }

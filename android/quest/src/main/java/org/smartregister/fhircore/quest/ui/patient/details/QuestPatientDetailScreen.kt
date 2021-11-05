@@ -52,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -82,22 +83,38 @@ import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.quest.R
 
+const val TOOLBAR_TITLE = "toolbarTitle"
+const val TOOLBAR_BACK_ARROW = "toolbarBackArrow"
+const val TOOLBAR_MENU_BUTTON = "toolbarMenuButtonTag"
+const val TOOLBAR_MENU = "toolbarMenuTag"
+const val PATIENT_NAME = "patientNameTag"
+const val FORM_ITEM = "formItemTag"
+const val RESULT_ITEM = "resultItemTag"
+
 @Composable
 fun Toolbar(dataProvider: QuestPatientDetailDataProvider) {
   var showMenu by remember { mutableStateOf(false) }
 
   TopAppBar(
-    title = { Text(text = stringResource(id = R.string.back_to_clients)) },
+    title = {
+      Text(text = stringResource(id = R.string.back_to_clients), Modifier.testTag(TOOLBAR_TITLE))
+    },
     navigationIcon = {
-      IconButton(onClick = { dataProvider.onBackPressListener().invoke() }) {
-        Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")
-      }
+      IconButton(
+        onClick = { dataProvider.onBackPressListener().invoke() },
+        Modifier.testTag(TOOLBAR_BACK_ARROW)
+      ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
     },
     actions = {
-      IconButton(onClick = { showMenu = !showMenu }) {
-        Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)
-      }
-      DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+      IconButton(
+        onClick = { showMenu = !showMenu },
+        modifier = Modifier.testTag(TOOLBAR_MENU_BUTTON)
+      ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null) }
+      DropdownMenu(
+        expanded = showMenu,
+        onDismissRequest = { showMenu = false },
+        Modifier.testTag(TOOLBAR_MENU)
+      ) {
         DropdownMenuItem(
           onClick = {
             showMenu = false
@@ -114,7 +131,7 @@ fun FormItem(form: QuestionnaireConfig, clickHandler: (form: QuestionnaireConfig
   Card(
     backgroundColor = colorResource(id = R.color.cornflower_blue),
     elevation = 0.dp,
-    modifier = Modifier.fillMaxWidth().clickable { clickHandler(form) }
+    modifier = Modifier.fillMaxWidth().clickable { clickHandler(form) }.testTag(FORM_ITEM)
   ) {
     Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(6.dp)) {
       Text(
@@ -148,7 +165,8 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
             "${patient?.extractName() ?: ""}, ${patient?.extractGender(LocalContext.current)?.first() ?: ""}, ${patient?.extractAge() ?: ""}",
           color = colorResource(id = R.color.white),
           fontSize = 18.sp,
-          fontWeight = FontWeight.Bold
+          fontWeight = FontWeight.Bold,
+          modifier = Modifier.testTag(PATIENT_NAME)
         )
       }
 
@@ -202,9 +220,10 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier =
-                  Modifier.fillMaxWidth().padding(12.dp).clickable {
-                    dataProvider.onTestResultItemClickListener().invoke(item)
-                  }
+                  Modifier.fillMaxWidth()
+                    .padding(12.dp)
+                    .clickable { dataProvider.onTestResultItemClickListener().invoke(item) }
+                    .testTag(RESULT_ITEM)
               ) {
                 Text(
                   text = (item.meta?.tagFirstRep?.display
@@ -252,7 +271,7 @@ fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
             listOf(
               HumanName().apply {
                 id = "5583145"
-                family = "Does"
+                family = "Doe"
                 given = listOf(StringType("John"))
                 gender = Enumerations.AdministrativeGender.MALE
                 birthDate = SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01")
