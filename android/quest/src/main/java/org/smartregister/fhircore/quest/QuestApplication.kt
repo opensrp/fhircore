@@ -64,14 +64,15 @@ class QuestApplication : Application(), ConfigurableApplication {
     get() {
       val metadata = getMetadataSyncParams()
 
-      val primaryFilter = getPatientRegisterConfig().primaryFilter ?: return metadata
+      val primaryFilter = getPatientRegisterConfig()?.primaryFilter ?: return metadata
 
-      val clinicalData = mutableMapOf(
-        ResourceType.Patient to
-                mapOf(primaryFilter.key to "${primaryFilter.system}|${primaryFilter.code}"),
-        ResourceType.QuestionnaireResponse to
-                mapOf(primaryFilter.key to "${primaryFilter.system}|${primaryFilter.code}"),
-      )
+      val clinicalData =
+        mutableMapOf(
+          ResourceType.Patient to
+            mapOf(primaryFilter.key to "${primaryFilter.system}|${primaryFilter.code}"),
+          ResourceType.QuestionnaireResponse to
+            mapOf(primaryFilter.key to "${primaryFilter.system}|${primaryFilter.code}"),
+        )
       clinicalData.plusAssign(metadata)
 
       return clinicalData
@@ -152,7 +153,9 @@ class QuestApplication : Application(), ConfigurableApplication {
       "$CONFIG_APP,${getPatientRegisterConfigId()},${getProfileConfigId()}"
 
     fun getPatientRegisterConfig() =
-      getContext().loadRegisterViewConfiguration(getPatientRegisterConfigId())
+      kotlin
+        .runCatching { getContext().loadRegisterViewConfiguration(getPatientRegisterConfigId()) }
+        .getOrNull()
 
     fun getPatientRegisterConfigId() =
       CONFIG_PATIENT_REGISTER.join(getPublisher()?.lowercase()?.let { "-$it" }, "")

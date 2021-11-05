@@ -100,9 +100,9 @@ class PatientRepository(
     return data
   }
 
-  suspend fun fetchTestResults(patientId: String): LiveData<List<QuestionnaireResponse>> {
+  fun fetchTestResults(patientId: String): LiveData<List<QuestionnaireResponse>> {
     val data = MutableLiveData<List<QuestionnaireResponse>>()
-    CoroutineScope(dispatcherProvider.io()).run {
+    CoroutineScope(dispatcherProvider.io()).launch {
       val result =
         fhirEngine.search<QuestionnaireResponse> {
           filter(QuestionnaireResponse.SUBJECT) { value = "Patient/$patientId" }
@@ -113,9 +113,9 @@ class PatientRepository(
     return data
   }
 
-  suspend fun fetchTestForms(filter: SearchFilter): LiveData<List<QuestionnaireConfig>> {
+  fun fetchTestForms(filter: SearchFilter): LiveData<List<QuestionnaireConfig>> {
     val data = MutableLiveData<List<QuestionnaireConfig>>()
-    CoroutineScope(dispatcherProvider.io()).run {
+    CoroutineScope(dispatcherProvider.io()).launch {
       val result =
         fhirEngine.search<Questionnaire> {
           filter(

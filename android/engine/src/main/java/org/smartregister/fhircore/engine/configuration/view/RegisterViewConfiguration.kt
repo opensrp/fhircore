@@ -111,5 +111,5 @@ fun Context.loadRegisterViewConfiguration(id: String): RegisterViewConfiguration
       .bufferedReader()
       .use { it.readText() }
       .decodeJson<List<RegisterViewConfiguration>>()
-      .let { it.firstOrNull { it.id == id } ?: it.first() }
+      .first { it.id == id }
 }

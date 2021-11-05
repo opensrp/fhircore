@@ -30,6 +30,7 @@ import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.loadBinaryResourceConfiguration
 import org.smartregister.fhircore.quest.QuestApplication
+import org.smartregister.fhircore.quest.QuestApplication.Companion.getProfileConfigId
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 
 class QuestPatientDetailViewModel(
@@ -55,27 +56,16 @@ class QuestPatientDetailViewModel(
     return mOnMenuItemClickListener
   }
 
-  // TODO without run blocking it was taking a while to load and sometimes just does not load at all
   override fun getAllForms(): LiveData<List<QuestionnaireConfig>> {
     return runBlocking {
-      val config =
-        application.loadBinaryResourceConfiguration<ProfileConfig>(
-          QuestApplication.getProfileConfigId()
-        )
-          ?: application
-            .assets
-            .open(PROFILE_CONFIG)
-            .bufferedReader()
-            .use { it.readText() }
-            .decodeJson()
+      val config = loadProfileConfig()
 
       repository.fetchTestForms(config.profileQuestionnaireFilter)
     }
   }
 
-  // TODO without run blocking it was taking a while to load and sometimes just does not load at all
   override fun getAllResults(): LiveData<List<QuestionnaireResponse>> {
-    return runBlocking { repository.fetchTestResults(patientId) }
+    return repository.fetchTestResults(patientId)
   }
 
   override fun onFormItemClickListener(): (item: QuestionnaireConfig) -> Unit {
@@ -102,6 +92,11 @@ class QuestPatientDetailViewModel(
     onTestResultItemClickListener: (item: QuestionnaireResponse) -> Unit
   ) {
     this.mOnTestResultItemClickListener = onTestResultItemClickListener
+  }
+
+  private suspend fun loadProfileConfig(): ProfileConfig {
+    return application.loadBinaryResourceConfiguration<ProfileConfig>(getProfileConfigId())
+      ?: application.assets.open(PROFILE_CONFIG).bufferedReader().use { it.readText() }.decodeJson()
   }
 
   companion object {

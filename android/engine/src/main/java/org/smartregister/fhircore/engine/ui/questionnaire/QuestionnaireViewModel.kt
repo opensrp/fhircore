@@ -129,7 +129,8 @@ open class QuestionnaireViewModel(
       questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
         it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
       }
-      // TODO revise this lodic when syncing strategy has final decision
+      // TODO revise this logic when syncing strategy has final decision
+      // https://github.com/opensrp/fhircore/issues/726
       loadPatient(resourceId)?.meta?.tag?.forEach { questionnaireResponse.meta.addTag(it) }
       questionnaireResponse.subject = Reference().apply { reference = "$subjectType/$resourceId" }
       questionnaireResponse.questionnaire =

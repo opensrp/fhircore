@@ -31,7 +31,6 @@ import com.google.android.fhir.FhirEngineProvider.fhirEngine
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
-import com.google.android.fhir.datacapture.createQuestionnaireResponseItem
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
@@ -50,7 +49,6 @@ import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.showToast
-import org.smartregister.fhircore.engine.util.extension.updateFrom
 import timber.log.Timber
 
 /**
@@ -132,23 +130,30 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         val fragment =
           FhirCoreQuestionnaireFragment().apply {
             val parsedQuestionnaire = parser.encodeResourceToString(questionnaire)
-
-            val fullResponse = intent.getStringExtra(QUESTIONNAIRE_RESPONSE)?.let {
-              val filledVersion = parser.parseResource(it) as QuestionnaireResponse
-              val emptyVersion = QuestionnaireResponse().apply {
-                item = this@QuestionnaireActivity.questionnaire.item.map { it.createQuestionnaireResponseItem() }
-              }
-              emptyVersion.updateFrom(filledVersion)
-            }
-
             arguments =
               when {
                 clientIdentifier == null -> {
-                  bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire)).apply {
-                    if (readOnly && fullResponse != null) {
-                      putString(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(fullResponse))
+                  // TODO remove this when SDK bug for validation is fixed
+                  // https://github.com/google/android-fhir/issues/912
+
+                  // TODO - FIXME - updateFrom does not consider nested structure
+                  // https://github.com/opensrp/fhircore/issues/730
+                  var questionnaireResponse =
+                    intent.getStringExtra(QUESTIONNAIRE_RESPONSE)?.let {
+                      parser.parseResource(it) as QuestionnaireResponse
                     }
-                  }
+
+                  bundleOf(
+                    Pair(BUNDLE_KEY_QUESTIONNAIRE, parser.encodeResourceToString(questionnaire))
+                  )
+                    .apply {
+                      if (readOnly && questionnaireResponse != null) {
+                        putString(
+                          BUNDLE_KEY_QUESTIONNAIRE_RESPONSE,
+                          parser.encodeResourceToString(questionnaireResponse)
+                        )
+                      }
+                    }
                 }
                 clientIdentifier != null -> {
 
