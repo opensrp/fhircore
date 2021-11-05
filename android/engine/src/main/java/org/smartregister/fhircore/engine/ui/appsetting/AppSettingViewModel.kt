@@ -23,7 +23,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplicati
 
 class AppSettingViewModel(application: Application) : AndroidViewModel(application) {
 
-  val configsLoaded = MutableLiveData(false)
+  val configsLoaded: MutableLiveData<Boolean?> = MutableLiveData(null)
 
   private val _appId = MutableLiveData("")
   val appId
@@ -44,8 +44,8 @@ class AppSettingViewModel(application: Application) : AndroidViewModel(applicati
   fun loadConfigurations() {
     if (!this.appId.value.isNullOrEmpty()) {
       (getApplication<Application>() as ConfigurableApplication).configurationRegistry
-        .loadAppConfigurations(this.appId.value!!, getApplication()) {
-          configsLoaded.postValue(true)
+        .loadAppConfigurations(this.appId.value!!, getApplication()) { successful ->
+          configsLoaded.postValue(successful)
         }
     }
   }

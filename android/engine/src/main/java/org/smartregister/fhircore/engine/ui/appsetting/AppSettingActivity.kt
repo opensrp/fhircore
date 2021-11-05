@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import org.smartregister.fhircore.engine.util.extension.showToast
 
 class AppSettingActivity : AppCompatActivity() {
 
@@ -59,7 +60,14 @@ class AppSettingActivity : AppCompatActivity() {
     appSettingViewModel =
       ViewModelProvider(this, AppSettingViewModel(application).createFactory())[
         AppSettingViewModel::class.java]
-    appSettingViewModel.configsLoaded.observe(this, { isLoaded -> if (isLoaded) finish() })
+    appSettingViewModel.configsLoaded.observe(
+      this,
+      { isLoaded ->
+        if (isLoaded != null && isLoaded) finish()
+        else if (isLoaded != null && !isLoaded)
+          showToast(getString(R.string.application_not_supported, appSettingViewModel.appId.value))
+      }
+    )
     setContent { AppTheme { AppScreenLayout(appSettingViewModel) } }
   }
 }

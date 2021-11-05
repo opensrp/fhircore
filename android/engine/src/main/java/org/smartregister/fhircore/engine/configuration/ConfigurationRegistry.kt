@@ -103,7 +103,7 @@ object ConfigurationRegistry {
   fun loadAppConfigurations(
     appId: String,
     application: Application,
-    configsLoadedCallback: () -> Unit
+    configsLoadedCallback: (Boolean) -> Unit
   ) {
     // TODO Download configurations that do not require login at this point. Default to assets
     application.assertIsConfigurable()
@@ -133,8 +133,10 @@ object ConfigurationRegistry {
           )
         configureApplication(appConfig)
         authenticationService.launchLoginScreen()
-        configsLoadedCallback()
+        configsLoadedCallback(true)
       }
+    } else {
+      configsLoadedCallback(false)
     }
   }
 
