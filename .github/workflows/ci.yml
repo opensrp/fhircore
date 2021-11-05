@@ -13,6 +13,8 @@ env:
  FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
  FHIRCORE_ACCESS_TOKEN: ${{ secrets.FHIRCORE_ACCESS_TOKEN }}
  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+ KEYSTORE_CREDENTIALS: ${{ secrets.KEYSTORE_CREDENTIALS }}
+ KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
 
 jobs:
   setup:
@@ -20,14 +22,10 @@ jobs:
     
     steps:
       - name: Generate keystore properties file
-        env:
-         KEYSTORE_CREDENTIALS: ${{ secrets.KEYSTORE_CREDENTIALS }}
-         run: echo $KEYSTORE_CREDENTIALS > keystore.properties
+        run: echo $KEYSTORE_CREDENTIALS > keystore.properties
          
       - name: Generate keystore file
-        env:
-         KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
-         run: echo $KEYSTORE_FILE > keystore.jks
+        run: echo $KEYSTORE_FILE > keystore.jks
 
   engine-tests:
     runs-on: ubuntu-latest
