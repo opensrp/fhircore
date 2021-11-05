@@ -62,26 +62,28 @@ class QuestApplication : Application(), ConfigurableApplication {
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() {
-      val metadata =
-        mutableMapOf(
-          ResourceType.Binary to mapOf("_id" to getBinaryConfigIds()),
-          ResourceType.Questionnaire to buildPublisherFilterMap(),
-          ResourceType.StructureMap to buildPublisherFilterMap()
-        )
+      val metadata = getMetadataSyncParams()
 
       val primaryFilter = getPatientRegisterConfig().primaryFilter ?: return metadata
 
-      metadata.plusAssign(
-        mapOf(
-          ResourceType.Patient to
-            mapOf(primaryFilter.key to "${primaryFilter.system}|${primaryFilter.code}"),
-          ResourceType.QuestionnaireResponse to
-            mapOf(primaryFilter.key to "${primaryFilter.system}|${primaryFilter.code}"),
-        )
+      val clinicalData = mutableMapOf(
+        ResourceType.Patient to
+                mapOf(primaryFilter.key to "${primaryFilter.system}|${primaryFilter.code}"),
+        ResourceType.QuestionnaireResponse to
+                mapOf(primaryFilter.key to "${primaryFilter.system}|${primaryFilter.code}"),
       )
+      clinicalData.plusAssign(metadata)
 
-      return metadata
+      return clinicalData
     }
+
+  fun getMetadataSyncParams(): Map<ResourceType, Map<String, String>> {
+    return mutableMapOf(
+      ResourceType.Binary to mapOf("_id" to getBinaryConfigIds()),
+      ResourceType.Questionnaire to buildPublisherFilterMap(),
+      ResourceType.StructureMap to buildPublisherFilterMap()
+    )
+  }
 
   private fun buildPublisherFilterMap(): MutableMap<String, String> {
     val questionnaireFilterMap: MutableMap<String, String> = HashMap()

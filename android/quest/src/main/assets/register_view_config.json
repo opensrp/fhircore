@@ -13,11 +13,6 @@
     "showNewClientButton": true,
     "showSideMenu": false,
     "showBottomMenu": true,
-    "registrationForm": "3435",
-    "primaryFilter": {
-      "key": "_tag",
-      "system": "http://fhir.ona.io",
-      "code": "000003"
-    }
+    "registrationForm": "3435"
   }
 ]

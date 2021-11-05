@@ -42,5 +42,7 @@ fun JSONObject.updateFrom(updated: JSONObject) {
       updated.keys().forEach { add(it) }
     }
 
-  keys.forEach { key -> updated.opt(key)?.run { put(key, this) } }
+  keys.forEach { key -> updated.opt(key)?.run { 
+    put(key, this) }
+  }
 }

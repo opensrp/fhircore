@@ -17,12 +17,15 @@
 package org.smartregister.fhircore.quest.ui.patient.register
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.Sync
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
@@ -32,25 +35,19 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.quest.QuestApplication.Companion.getPatientRegisterConfig
 import org.smartregister.fhircore.quest.R
+import timber.log.Timber
 
 class PatientRegisterActivity : BaseRegisterActivity() {
   private lateinit var registerViewConfiguration: RegisterViewConfiguration
 
+  @RequiresApi(Build.VERSION_CODES.O)
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     registerViewConfiguration = getPatientRegisterConfig()
     configureViews(registerViewConfiguration)
 
-    if (registerViewModel.lastSyncTimestamp.value?.isBlank() == true)
-      lifecycleScope.launch {
-        registerViewModel.sharedSyncStatus.collect {
-          if (it is State.Finished || it is State.Failed) {
-            startActivity(Intent(this@PatientRegisterActivity, PatientRegisterActivity::class.java))
-            finish()
-          }
-        }
-      }
+    handleFirstSync()
   }
 
   override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> {
@@ -97,4 +94,25 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         isSelected = true
       )
     )
+
+  @RequiresApi(Build.VERSION_CODES.O)
+  fun handleFirstSync(){
+    if (Sync.basicSyncJob(this).lastSyncTimestamp() == null)
+      lifecycleScope.launch {
+        var firstDone = false
+        registerViewModel.sharedSyncStatus.collect {
+          if (it is State.Finished || it is State.Failed) {
+            if (!firstDone) {
+              firstDone = true
+              this@PatientRegisterActivity.runSync()
+            }
+            else {
+              Timber.i("Restarting activity to reload config")
+              startActivity(Intent(this@PatientRegisterActivity, PatientRegisterActivity::class.java))
+              finish()
+            }
+          }
+        }
+      }
+  }
 }

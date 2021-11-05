@@ -31,6 +31,7 @@ import com.google.android.fhir.FhirEngineProvider.fhirEngine
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
+import com.google.android.fhir.datacapture.createQuestionnaireResponseItem
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
@@ -49,6 +50,7 @@ import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.extension.updateFrom
 import timber.log.Timber
 
 /**
@@ -130,13 +132,21 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         val fragment =
           FhirCoreQuestionnaireFragment().apply {
             val parsedQuestionnaire = parser.encodeResourceToString(questionnaire)
+
+            val fullResponse = intent.getStringExtra(QUESTIONNAIRE_RESPONSE)?.let {
+              val filledVersion = parser.parseResource(it) as QuestionnaireResponse
+              val emptyVersion = QuestionnaireResponse().apply {
+                item = this@QuestionnaireActivity.questionnaire.item.map { it.createQuestionnaireResponseItem() }
+              }
+              emptyVersion.updateFrom(filledVersion)
+            }
+
             arguments =
               when {
                 clientIdentifier == null -> {
                   bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire)).apply {
-                    val questionnaireResponse = intent.getStringExtra(QUESTIONNAIRE_RESPONSE)
-                    if (readOnly && questionnaireResponse != null) {
-                      putString(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, questionnaireResponse)
+                    if (readOnly && fullResponse != null) {
+                      putString(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(fullResponse))
                     }
                   }
                 }

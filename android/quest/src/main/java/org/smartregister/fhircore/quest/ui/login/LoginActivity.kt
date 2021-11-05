@@ -27,6 +27,8 @@ import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActiv
 class LoginActivity : BaseLoginActivity() {
 
   override fun navigateToHome() {
+    // launch sync so that metadata is synced first
+
     val intent = Intent(this, PatientRegisterActivity::class.java)
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     startActivity(intent)
