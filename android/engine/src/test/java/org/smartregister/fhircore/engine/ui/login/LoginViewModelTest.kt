@@ -141,9 +141,25 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testApplicationConfiguration() {
     val coolAppName = "Cool App"
-    loginViewModel.updateViewConfigurations(loginViewConfigurationOf(applicationName = coolAppName))
+    val versionCode = 4
+    val versionName = "0.1.0-preview"
+    loginViewModel.updateViewConfigurations(
+      loginViewConfigurationOf(
+        applicationName = coolAppName,
+        applicationVersion = versionName,
+        applicationVersionCode = versionCode
+      )
+    )
     Assert.assertNotNull(loginViewModel.loginViewConfiguration.value)
     Assert.assertEquals(coolAppName, loginViewModel.loginViewConfiguration.value?.applicationName)
+    Assert.assertEquals(
+      versionCode,
+      loginViewModel.loginViewConfiguration.value?.applicationVersionCode
+    )
+    Assert.assertEquals(
+      versionName,
+      loginViewModel.loginViewConfiguration.value?.applicationVersion
+    )
   }
 
   @Test

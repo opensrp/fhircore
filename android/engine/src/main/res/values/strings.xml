@@ -12,7 +12,7 @@
     <string name="default_app_title" translatable="false">Fhir App</string>
     <string name="app_logo">Application logo</string>
     <string name="powered_by">Powered By</string>
-    <string name="app_version">App version %1$s</string>
+    <string name="app_version">App version %1$d(%2$s)</string>
     <string name="login_text">LOGIN</string>
     <string name="username_input_hint">Enter username</string>
     <string name="password_input_hint">Enter password</string>
