@@ -16,68 +16,64 @@
 
 package org.smartregister.fhircore.engine.ui.userprofile
 
-import com.google.android.fhir.sync.State
+import android.os.Looper
+import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import junit.framework.Assert.assertTrue
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.util.ReflectionHelpers.setField
 import org.smartregister.fhircore.engine.auth.AuthenticationService
-import org.smartregister.fhircore.engine.impl.FhirApplication
-import org.smartregister.fhircore.engine.sync.OnSyncListener
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.sync.SyncInitiator
 
-class UserProfileViewModelTest {
+class UserProfileViewModelTest : RobolectricTest() {
 
-  private val userProfileViewModel = mockk<UserProfileViewModel>(relaxed = true)
-
-  private val syncListenerSpy =
-    spyk<OnSyncListener>(
-      object : OnSyncListener {
-        override fun onSync(state: State) {
-          // onSync that does nothing
-        }
-      }
-    )
-
-  private val syncInitiatorSpy =
-    spyk<SyncInitiator>(
-      object : SyncInitiator {
-        override fun runSync() {
-          // SyncInitiator that does nothing
-        }
-      }
-    )
-
-  private val configurableApplication = mockk<FhirApplication>()
-  private val authenticationService = mockk<AuthenticationService>()
-  private val syncBroadcaster = spyk<SyncBroadcaster>()
+  private lateinit var userProfileViewModel: UserProfileViewModel
+  private lateinit var appConfig: ConfigurableApplication
 
   @Before
   fun setUp() {
-    syncBroadcaster.apply {
-      syncInitiator = null
-      syncListeners.clear()
-      registerSyncListener(syncListenerSpy)
-      registerSyncInitiator(syncInitiatorSpy)
-    }
-    every { configurableApplication.syncBroadcaster } returns syncBroadcaster
-    every { configurableApplication.authenticationService } returns authenticationService
-    every { userProfileViewModel.retrieveUsername() } returns "demo"
+    appConfig = mockk()
+    userProfileViewModel = spyk(UserProfileViewModel(ApplicationProvider.getApplicationContext()))
+    setField(userProfileViewModel, "configurableApplication", appConfig)
   }
 
   @Test
   fun testRunSync() {
+    val mockSyncInitiator = mockk<SyncInitiator> { every { runSync() } returns Unit }
+
+    every { appConfig.syncBroadcaster } returns
+      mockk { every { syncInitiator } returns mockSyncInitiator }
+
     userProfileViewModel.runSync()
-    verify { syncInitiatorSpy.runSync() }
+    verify { mockSyncInitiator.runSync() }
   }
 
   @Test
   fun testRetrieveUsernameShouldReturnDemo() {
+
+    every { appConfig.secureSharedPreference } returns
+      mockk { every { retrieveSessionUsername() } returns "demo" }
     val username = userProfileViewModel.retrieveUsername()
     Assert.assertEquals("demo", username)
+  }
+
+  @Test
+  fun testLogoutUserShouldCallAuthLogoutService() {
+
+    val authService = mockk<AuthenticationService> { every { logout() } returns Unit }
+    every { appConfig.authenticationService } returns authService
+
+    userProfileViewModel.logoutUser()
+    verify(exactly = 1) { authService.logout() }
+    shadowOf(Looper.getMainLooper()).idle()
+    assertTrue(userProfileViewModel.onLogout.value!!)
   }
 }
