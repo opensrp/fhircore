@@ -23,6 +23,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.logicalId
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -67,6 +68,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Before
   fun setUp() {
+    clearAllMocks()
+
     context = ApplicationProvider.getApplicationContext()
 
     fhirEngine = mockk()
@@ -112,6 +115,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testExtractAndSaveResourcesWithTargetStructureMapShouldCallExtractionService() {
     mockkObject(ResourceMapper)
 
+    coEvery { fhirEngine.load(Patient::class.java, any()) } returns Patient()
     coEvery { fhirEngine.load(StructureMap::class.java, any()) } returns StructureMap()
     coEvery { ResourceMapper.extract(any(), any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { this.resource = Patient().apply { id = "123456" } } }
@@ -136,7 +140,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
 
     coVerify { defaultRepo.save(any()) }
-    coVerify { ResourceMapper.extract(any(), any(), any(), any(), any()) }
+    coVerify(timeout = 2000) { ResourceMapper.extract(any(), any(), any(), any(), any()) }
 
     unmockkObject(ResourceMapper)
   }
@@ -177,6 +181,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testExtractAndSaveResourcesWithResourceIdShouldSaveQuestionnaireResponse() {
+    coEvery { fhirEngine.load(Patient::class.java, any()) } returns Patient()
+
     val questionnaireResponseSlot = slot<QuestionnaireResponse>()
     val questionnaire =
       Questionnaire().apply {

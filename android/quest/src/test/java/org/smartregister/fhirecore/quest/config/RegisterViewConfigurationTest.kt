@@ -42,7 +42,7 @@ class RegisterViewConfigurationTest : RobolectricTest() {
       ApplicationProvider.getApplicationContext<Application>()
         .loadRegisterViewConfiguration("quest-app-patient-register")
 
-    assertEquals("quest-app-patient-register", result.id)
+    assertEquals("default-app-patient-register", result.id)
     assertEquals("Clients", result.appTitle)
     assertEquals("Show overdue", result.filterText)
     assertEquals("Search for ID or client name", result.searchBarHint)

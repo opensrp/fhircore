@@ -120,6 +120,5 @@ class QuestPatientDetailViewModel(
     }
   }
 
-  @Serializable
-  data class ProfileConfig(val profileQuestionnaireFilter: SearchFilter)
+  @Serializable data class ProfileConfig(val profileQuestionnaireFilter: SearchFilter)
 }

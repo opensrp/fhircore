@@ -16,20 +16,16 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
-import org.smartregister.fhircore.engine.configuration.view.loadRegisterViewConfiguration
-import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
-import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.QuestApplication.Companion.getPatientRegisterConfig
 import org.smartregister.fhircore.quest.R
 
@@ -43,13 +39,17 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     configureViews(registerViewConfiguration)
 
     with(registerViewModel.lastSyncTimestamp) {
-      if(this.value?.isBlank() == true)
-       this.observe(this@PatientRegisterActivity,
-        {
-          it?.let {
-            startActivity(Intent(this@PatientRegisterActivity, PatientRegisterActivity::class.java))
+      if (this.value?.isBlank() == true)
+        this.observe(
+          this@PatientRegisterActivity,
+          {
+            it?.let {
+              startActivity(
+                Intent(this@PatientRegisterActivity, PatientRegisterActivity::class.java)
+              )
+            }
           }
-        })
+        )
     }
   }
 

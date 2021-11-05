@@ -146,7 +146,8 @@ class QuestApplication : Application(), ConfigurableApplication {
     private const val CONFIG_PATIENT_REGISTER = "quest-app-patient-register"
     private const val CONFIG_PROFILE = "quest-app-profile"
 
-    private fun getBinaryConfigIds() = "$CONFIG_APP,${getPatientRegisterConfigId()},${getProfileConfigId()}"
+    private fun getBinaryConfigIds() =
+      "$CONFIG_APP,${getPatientRegisterConfigId()},${getProfileConfigId()}"
 
     fun getPatientRegisterConfig() =
       getContext().loadRegisterViewConfiguration(getPatientRegisterConfigId())
@@ -154,8 +155,7 @@ class QuestApplication : Application(), ConfigurableApplication {
     fun getPatientRegisterConfigId() =
       CONFIG_PATIENT_REGISTER.join(getPublisher()?.lowercase()?.let { "-$it" }, "")
 
-    fun getProfileConfigId() =
-      CONFIG_PROFILE.join(getPublisher()?.lowercase()?.let { "-$it" }, "")
+    fun getProfileConfigId() = CONFIG_PROFILE.join(getPublisher()?.lowercase()?.let { "-$it" }, "")
 
     fun getContext() = questApplication
 

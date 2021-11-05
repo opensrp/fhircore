@@ -268,10 +268,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     deepFlat(q.item, qr, qItems, qrItems)
 
     return QuestionnaireResponseValidator.validate(
-      questionnaire.item,
-      questionnaireResponse.item,
-      this
-    )
+        questionnaire.item,
+        questionnaireResponse.item,
+        this
+      )
       .values
       .flatten()
       .all { it.isValid }

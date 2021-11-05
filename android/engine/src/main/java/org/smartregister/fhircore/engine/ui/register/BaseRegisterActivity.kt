@@ -185,9 +185,9 @@ abstract class BaseRegisterActivity :
       is State.Finished, is State.Failed -> setLastSyncTimestamp(state)
       is State.Glitch -> {
         progressSync.hide()
-        val lastSyncTimestamp =
-          SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null)
-        tvLastSyncTimestamp.text = lastSyncTimestamp?.formatSyncDate() ?: getString(R.string.syncing_retry)
+        val lastSyncTimestamp = SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, null)
+        tvLastSyncTimestamp.text =
+          lastSyncTimestamp?.formatSyncDate() ?: getString(R.string.syncing_retry)
         containerProgressSync.apply {
           background = this.getDrawable(R.drawable.ic_sync)
           setOnClickListener { syncButtonClick() }
