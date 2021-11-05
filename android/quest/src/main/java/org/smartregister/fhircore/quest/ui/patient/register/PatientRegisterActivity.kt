@@ -21,6 +21,10 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.google.android.fhir.sync.State
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
@@ -38,19 +42,15 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     registerViewConfiguration = getPatientRegisterConfig()
     configureViews(registerViewConfiguration)
 
-    with(registerViewModel.lastSyncTimestamp) {
-      if (this.value?.isBlank() == true)
-        this.observe(
-          this@PatientRegisterActivity,
-          {
-            it?.let {
-              startActivity(
-                Intent(this@PatientRegisterActivity, PatientRegisterActivity::class.java)
-              )
-            }
+    if (registerViewModel.lastSyncTimestamp.value?.isBlank() == true)
+      lifecycleScope.launch {
+        registerViewModel.sharedSyncStatus.collect {
+          if (it is State.Finished || it is State.Failed) {
+            startActivity(Intent(this@PatientRegisterActivity, PatientRegisterActivity::class.java))
+            finish()
           }
-        )
-    }
+        }
+      }
   }
 
   override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> {

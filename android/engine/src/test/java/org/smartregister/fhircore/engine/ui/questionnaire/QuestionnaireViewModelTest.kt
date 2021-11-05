@@ -93,6 +93,48 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testLoadQuestionnaireShouldSetQuestionnaireQuestionsToReadOnly() {
+    val questionnaire =
+      Questionnaire().apply {
+        id = "12345"
+        item =
+          listOf(
+            Questionnaire.QuestionnaireItemComponent().apply {
+              type = Questionnaire.QuestionnaireItemType.GROUP
+              linkId = "q1-grp"
+              item =
+                listOf(
+                  Questionnaire.QuestionnaireItemComponent().apply {
+                    type = Questionnaire.QuestionnaireItemType.TEXT
+                    linkId = "q1-name"
+                  }
+                )
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              type = Questionnaire.QuestionnaireItemType.CHOICE
+              linkId = "q2-gender"
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              type = Questionnaire.QuestionnaireItemType.DATE
+              linkId = "q3-date"
+            }
+          )
+      }
+    coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns questionnaire
+    questionnaireViewModel = spyk(QuestionnaireViewModel(context, true))
+    ReflectionHelpers.setField(questionnaireViewModel, "defaultRepository", defaultRepo)
+
+    val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345") }
+
+    Assert.assertTrue(result!!.item[0].item[0].readOnly)
+    Assert.assertEquals("q1-name", result!!.item[0].item[0].linkId)
+    Assert.assertTrue(result.item[1].readOnly)
+    Assert.assertEquals("q2-gender", result.item[1].linkId)
+    Assert.assertTrue(result.item[2].readOnly)
+    Assert.assertEquals("q3-date", result.item[2].linkId)
+  }
+
+  @Test
   fun testGetQuestionnaireConfigShouldLoadRightConfig() {
     mockkObject(FormConfigUtil)
     every { FormConfigUtil.loadConfig(any(), any()) } returns

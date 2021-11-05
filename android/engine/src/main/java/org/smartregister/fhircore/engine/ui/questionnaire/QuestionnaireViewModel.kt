@@ -50,6 +50,7 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 open class QuestionnaireViewModel(
   application: Application,
+  private val readOnly: Boolean = false,
 ) : AndroidViewModel(application) {
 
   val extractionProgress = MutableLiveData<Boolean>()
@@ -61,7 +62,12 @@ open class QuestionnaireViewModel(
 
   var structureMapProvider: (suspend (String) -> StructureMap?)? = null
 
-  suspend fun loadQuestionnaire(id: String): Questionnaire? = defaultRepository.loadResource(id)
+  suspend fun loadQuestionnaire(id: String): Questionnaire? =
+    defaultRepository.loadResource<Questionnaire>(id)?.apply {
+      if (readOnly) {
+        changeQuestionsToReadOnly(this.item)
+      }
+    }
 
   suspend fun getQuestionnaireConfig(form: String): QuestionnaireConfig {
     val loadConfig =
@@ -126,6 +132,9 @@ open class QuestionnaireViewModel(
       // TODO revise this lodic when syncing strategy has final decision
       loadPatient(resourceId)?.meta?.tag?.forEach { questionnaireResponse.meta.addTag(it) }
       questionnaireResponse.subject = Reference().apply { reference = "$subjectType/$resourceId" }
+      questionnaireResponse.questionnaire =
+        "${questionnaire.resourceType}/${questionnaire.logicalId}"
+
       defaultRepository.save(questionnaireResponse)
     }
   }
@@ -213,5 +222,15 @@ open class QuestionnaireViewModel(
     intent: Intent
   ): QuestionnaireResponse {
     return ResourceMapper.populate(questionnaire, *getPopulationResources(intent))
+  }
+
+  private fun changeQuestionsToReadOnly(items: List<Questionnaire.QuestionnaireItemComponent>) {
+    items.forEach { item ->
+      if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
+        item.readOnly = true
+      } else {
+        changeQuestionsToReadOnly(item.item)
+      }
+    }
   }
 }
