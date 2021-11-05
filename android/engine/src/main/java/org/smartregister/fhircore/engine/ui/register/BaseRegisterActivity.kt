@@ -111,6 +111,7 @@ abstract class BaseRegisterActivity :
   private lateinit var sideMenuOptionMap: Map<Int, SideMenuOption>
 
   lateinit var fhirEngine: FhirEngine
+
   val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
 
   protected lateinit var navigationBottomSheet: NavigationBottomSheet
