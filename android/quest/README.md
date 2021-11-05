@@ -1,10 +1,11 @@
-An organization can use a separate register view with following steps
+Create new register view for an organization as follows
+==============================
 
-Create a User on Keycloak ensuring following
+### Create a User on Keycloak ensuring following
 - Attribute questionnaire_publisher (only hyphen or underscore separated)
 - The keycloak client and secret which were used when client app was compiled, and user is associated with, has proper mapping to expose the attribute to userinfo (https://stackoverflow.com/a/47681555)
 
-Create a Questionnaire that registers your patients ensuring following
+### Create a Questionnaire that registers your patients ensuring following
 - Publisher must be set to your pusblisher id
 - title and name Must be defined to ensure right name and title is shown
 - useContext MUST be defined and should have the coding that uniquely identifies your patients
@@ -29,7 +30,7 @@ Create a Questionnaire that registers your patients ensuring following
 - An example can be found here https://github.com/opensrp/fhircore/blob/main/android/quest/src/main/assets/sample_patient_registration.json. Do not forget to replace publisher and useContext coding
 
 
-Create your Register View Configuration as a Binary Resource on server as below
+### Create your Register View Configuration as a Binary Resource on server as below
 - id MUST be of format 'quest-app-patient-register-[your-publisher-id]' example (quest-app-patient-register-ona-systems) where ona-systems is your publisher id set above
 - Set the registrationForm id with questionnaire id you got for registration questionnaire created above
 - This MUST be a PUT request with id set correctly into request path and the property in body below
@@ -52,7 +53,7 @@ Create your Register View Configuration as a Binary Resource on server as below
   }
 ```
 
-Create as many questionnaires as you want to show in profile ensuring that
+### Create as many questionnaires as you want to show in profile ensuring that
 - Publisher must be set to your pusblisher id
 - title and name Must be defined to ensure right name and title is shown
 - useContext MUST be defined and should have the coding that is represents your questionnaire business
@@ -74,8 +75,9 @@ Create as many questionnaires as you want to show in profile ensuring that
       }
     }
   }
+```
   
-Create your Profile View Configuration as below
+### Create your Profile View Configuration as below
 - id MUST be of format 'quest-app-profile-[your-publisher-id]' example (quest-app-profile-ona-systems) where ona-systems is your publisher id set above
 - Set the code and system that matches with Questionnaires you want to show in profile
 - This MUST be a PUT request with id set correctly into request path and the property in body below
