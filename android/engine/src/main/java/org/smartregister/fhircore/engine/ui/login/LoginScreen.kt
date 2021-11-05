@@ -288,7 +288,12 @@ fun LoginPage(
         Text(
           color = contentColor,
           fontSize = 16.sp,
-          text = stringResource(id = R.string.app_version, viewConfiguration.applicationVersion),
+          text =
+            stringResource(
+              id = R.string.app_version,
+              viewConfiguration.applicationVersionCode,
+              viewConfiguration.applicationVersion
+            ),
           modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER)
         )
       }
