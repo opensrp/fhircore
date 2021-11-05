@@ -39,13 +39,13 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.data.PatientRepository
-import org.smartregister.fhircore.eir.ui.patient.configuration.ImmunizationProfileConfiguration
-import org.smartregister.fhircore.eir.ui.patient.configuration.immunizationProfileConfigurationsOf
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
+import org.smartregister.fhircore.eir.util.EirConfigClassification
 import org.smartregister.fhircore.eir.util.RECORD_VACCINE_FORM
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableView
+import org.smartregister.fhircore.engine.configuration.view.ImmunizationProfileViewConfiguration
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.extractAge
@@ -53,9 +53,10 @@ import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.engine.util.extension.show
+import org.smartregister.fhircore.engine.util.extension.toggleVisibility
 
 class PatientDetailsFragment private constructor() :
-  Fragment(), ConfigurableView<ImmunizationProfileConfiguration> {
+  Fragment(), ConfigurableView<ImmunizationProfileViewConfiguration> {
 
   private lateinit var patientId: String
 
@@ -99,7 +100,14 @@ class PatientDetailsFragment private constructor() :
       viewLifecycleOwner,
       this::handleImmunizations
     )
-    configureViews(immunizationProfileConfigurationsOf())
+    val viewConfiguration =
+      configurableApplication()
+        .configurationRegistry
+        .retrieveConfiguration<ImmunizationProfileViewConfiguration>(
+          context = requireContext(),
+          configClassification = EirConfigClassification.IMMUNIZATION_PROFILE
+        )
+    configureViews(viewConfiguration)
   }
 
   override fun onResume() {
@@ -138,6 +146,7 @@ class PatientDetailsFragment private constructor() :
   }
 
   private fun handleImmunizations(immunizations: List<Immunization>) {
+    val configuration = patientDetailsViewModel.immunizationProfileConfiguration.value
     when {
       immunizations.isEmpty() -> {
         toggleImmunizationStatus(fullyImmunized = false)
@@ -152,7 +161,9 @@ class PatientDetailsFragment private constructor() :
         populateImmunizationList(immunizations)
         recordVaccineButton.show()
         showQRCodeButton.hide()
-        reportAdverseEventButton.show()
+        val showAdverseReportButton =
+          immunizations.size == 1 && configuration != null && configuration.showReportAdverseEvent
+        reportAdverseEventButton.toggleVisibility(showAdverseReportButton)
         noVaccinesTextView.hide()
       }
       else -> {
@@ -160,8 +171,10 @@ class PatientDetailsFragment private constructor() :
         populateImmunizationList(immunizations)
         noVaccinesTextView.hide()
         recordVaccineButton.hide()
-        showQRCodeButton.show()
-        reportAdverseEventButton.show()
+        showQRCodeButton.toggleVisibility(configuration != null && configuration.showScanBarcode)
+        reportAdverseEventButton.toggleVisibility(
+          configuration != null && configuration.showReportAdverseEvent
+        )
       }
     }
   }
@@ -189,11 +202,11 @@ class PatientDetailsFragment private constructor() :
     return requireActivity().application as ConfigurableApplication
   }
 
-  override fun configureViews(viewConfiguration: ImmunizationProfileConfiguration) {
-    patientDetailsViewModel.updateViewConfiguration(viewConfiguration)
+  override fun configureViews(viewViewConfiguration: ImmunizationProfileViewConfiguration) {
+    patientDetailsViewModel.updateViewConfiguration(viewViewConfiguration)
   }
 
-  override fun setupConfigurableViews(viewConfiguration: ImmunizationProfileConfiguration) {
+  override fun setupConfigurableViews(viewViewConfiguration: ImmunizationProfileViewConfiguration) {
     // Overridden. The configurable views are updated dynamically this is not required
   }
 

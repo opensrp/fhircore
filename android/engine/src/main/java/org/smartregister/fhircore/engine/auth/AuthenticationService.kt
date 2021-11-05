@@ -201,21 +201,23 @@ abstract class AuthenticationService(open val context: Context) {
           object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
               accountManager.clearPassword(account)
-              cleanup()
+              secureSharedPreference.deleteCredentials()
+              launchLoginScreen()
             }
 
             override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-              cleanup()
+              secureSharedPreference.deleteCredentials()
+              launchLoginScreen()
             }
           }
         )
     } else {
-      cleanup()
+      secureSharedPreference.deleteCredentials()
+      launchLoginScreen()
     }
   }
 
-  fun cleanup() {
-    secureSharedPreference.deleteCredentials()
+  fun launchLoginScreen() {
     context.startActivity(
       Intent(Intent.ACTION_MAIN).apply {
         setClassName(context.packageName, getLoginActivityClass().name)

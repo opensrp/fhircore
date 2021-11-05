@@ -17,14 +17,11 @@
 package org.smartregister.fhirecore.quest
 
 import androidx.test.core.app.ApplicationProvider
-import io.mockk.slot
 import io.mockk.spyk
-import io.mockk.verify
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
@@ -42,18 +39,6 @@ class QuestApplicationTest : RobolectricTest() {
     Assert.assertTrue(
       ApplicationProvider.getApplicationContext<QuestApplication>() is ConfigurableApplication
     )
-  }
-
-  @Test
-  fun testApplyConfigurationShouldLoadConfiguration() {
-    val application = spyk(ApplicationProvider.getApplicationContext<QuestApplication>())
-
-    val config = slot<ApplicationConfiguration>()
-    application.applyApplicationConfiguration()
-
-    verify { application.configureApplication(capture(config)) }
-
-    Assert.assertEquals(QuestApplication.CONFIG_APP, config.captured.id)
   }
 
   @Test

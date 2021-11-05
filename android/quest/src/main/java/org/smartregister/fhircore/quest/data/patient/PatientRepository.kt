@@ -128,7 +128,17 @@ class PatientRepository(
           )
         }
 
-      data.postValue(result.map { QuestionnaireConfig(it.name, it.title, it.logicalId) })
+      // TODO Remove hardcoded appId
+      data.postValue(
+        result.map {
+          QuestionnaireConfig(
+            appId = "quest",
+            form = it.name,
+            title = it.title,
+            identifier = it.logicalId
+          )
+        }
+      )
     }
     return data
   }

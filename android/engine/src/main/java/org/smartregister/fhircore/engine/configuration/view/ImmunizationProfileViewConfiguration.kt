@@ -14,24 +14,35 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.eir.ui.patient.configuration
+package org.smartregister.fhircore.engine.configuration.view
 
+import androidx.compose.runtime.Stable
+import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.Configuration
 
-data class ImmunizationProfileConfiguration(
+@Stable
+@Serializable
+data class ImmunizationProfileViewConfiguration(
+  override val appId: String,
+  override val classification: String,
   val showScanBarcode: Boolean = false,
   val showReportAdverseEvent: Boolean = true
 ) : Configuration
 
 /**
+ * @param appId Unique identifier for this configuration
  * @param showScanBarcode Show or hide scan QR button
  * @param showReportAdverseEvent Show or hide adverse event button
  */
-fun immunizationProfileConfigurationsOf(
+fun immunizationProfileViewConfigurationsOf(
+  appId: String = "",
+  classification: String = "immunization-profile",
   showScanBarcode: Boolean = false,
   showReportAdverseEvent: Boolean = false
 ) =
-  ImmunizationProfileConfiguration(
+  ImmunizationProfileViewConfiguration(
+    appId = appId,
+    classification = classification,
     showScanBarcode = showScanBarcode,
     showReportAdverseEvent = showReportAdverseEvent
   )

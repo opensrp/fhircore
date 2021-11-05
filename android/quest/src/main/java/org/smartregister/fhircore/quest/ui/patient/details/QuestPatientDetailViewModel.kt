@@ -93,7 +93,7 @@ class QuestPatientDetailViewModel(
 
     private const val CODE = "code"
     private const val SYSTEM = "system"
-    const val PROFILE_CONFIG = "profile_config.json"
+    const val PROFILE_CONFIG = "configurations/form/profile_config.json"
 
     fun get(
       owner: ViewModelStoreOwner,

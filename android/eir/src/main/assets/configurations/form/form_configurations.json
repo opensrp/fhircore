@@ -1,0 +1,26 @@
+[
+  {
+    "appId": "covax",
+    "form": "patient-registration",
+    "title": "Add Patient",
+    "identifier": "207"
+  },
+  {
+    "appId": "covax",
+    "form": "record-vaccine",
+    "title": "Record Vaccine",
+    "identifier": "800"
+  },
+  {
+    "appId": "jnj",
+    "form": "patient-registration",
+    "title": "Add Patient",
+    "identifier": "754"
+  },
+  {
+    "appId": "jnj",
+    "form": "record-vaccine",
+    "title": "Record Vaccine",
+    "identifier": "800"
+  }
+]

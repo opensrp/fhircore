@@ -17,16 +17,10 @@
 package org.smartregister.fhircore.engine.configuration
 
 /**
- * Every class or object providing UI customizations e.g. appTitle, showFilter, showSideMenu,
- * showSearchBar etc. is required MUST adhere to this contract to provide consistencies.
- * Conventionally, the implementers should be named after this interface e.g.
- * RegisterViewConfiguration, ProfileViewConfiguration etc.
- *
- * @property appId Unique identifier for the application to which this configurations is applied
- * @property classification Used to categorize multiple configurations of the same type. E.g. two
- * RegisterViewConfigurations used in an application with two registers.
+ * This class is used to classify configurations of same type. As an example in the app, two
+ * registers can use same register configurations to render their views, in order to differentiate
+ * the configurations for these registers we uniquely classify them.
  */
-interface Configuration {
-  val appId: String
+interface ConfigClassification {
   val classification: String
 }

@@ -36,6 +36,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showErrorAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
@@ -93,6 +94,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           questionnaire = questionnaireViewModel.loadQuestionnaire(form)!!
 
           QuestionnaireConfig(
+            appId = (application as ConfigurableApplication).configurationRegistry.appId,
             form = questionnaire.name ?: "",
             title = questionnaire.title ?: "",
             identifier = questionnaire.logicalId
@@ -228,7 +230,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire_form"
-    const val FORM_CONFIGURATIONS = "form_configurations.json"
+    const val FORM_CONFIGURATIONS = "configurations/form/form_configurations.json"
 
     fun requiredIntentArgs(clientIdentifier: String?, form: String) =
       bundleOf(

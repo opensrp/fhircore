@@ -23,12 +23,12 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.data.PatientRepository
-import org.smartregister.fhircore.eir.ui.patient.configuration.ImmunizationProfileConfiguration
+import org.smartregister.fhircore.engine.configuration.view.ImmunizationProfileViewConfiguration
 
 class PatientDetailsViewModel(val patientRepository: PatientRepository, val patientId: String) :
   ViewModel() {
 
-  val immunizationProfileConfiguration = MutableLiveData<ImmunizationProfileConfiguration>()
+  val immunizationProfileConfiguration = MutableLiveData<ImmunizationProfileViewConfiguration>()
 
   val patientDemographics = MutableLiveData<Patient>()
 
@@ -48,7 +48,9 @@ class PatientDetailsViewModel(val patientRepository: PatientRepository, val pati
       }
   }
 
-  fun updateViewConfiguration(immunizationProfileConfiguration: ImmunizationProfileConfiguration) {
-    this.immunizationProfileConfiguration.value = immunizationProfileConfiguration
+  fun updateViewConfiguration(
+    immunizationProfileViewConfiguration: ImmunizationProfileViewConfiguration
+  ) {
+    this.immunizationProfileConfiguration.value = immunizationProfileViewConfiguration
   }
 }

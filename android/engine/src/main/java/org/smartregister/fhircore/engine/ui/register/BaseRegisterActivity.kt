@@ -226,6 +226,7 @@ abstract class BaseRegisterActivity :
   }
 
   private fun String.formatSyncDate(): String {
+    if (this.equals(ignoreCase = true, other = getString(R.string.syncing_retry))) return this
     if (this.isEmpty()) return ""
     val date =
       try {
