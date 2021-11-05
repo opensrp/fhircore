@@ -25,8 +25,8 @@ import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.spyk
@@ -45,6 +45,8 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.impl.FhirApplication
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_FRAGMENT_TAG
@@ -72,8 +74,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     context = ApplicationProvider.getApplicationContext()
     questionnaireViewModel = spyk(QuestionnaireViewModel(context))
 
-    coEvery { questionnaireViewModel.loadQuestionnaire("1234567") } returns
-      Questionnaire().apply { id = "1234567" }
+    ((context as ConfigurableApplication).fhirEngine as FhirApplication.FhirEngineImpl)
+      .mockedResourcesStore.add(Questionnaire().apply { id = "1234567" })
 
     intent =
       Intent().apply {
@@ -106,11 +108,62 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testRequiredIntentShouldInsertValues() {
-    val result = QuestionnaireActivity.requiredIntentArgs("1234", "my-form")
+    val questionnaireResponse = QuestionnaireResponse()
+    val result = QuestionnaireActivity.intentArgs("1234", "my-form", true, questionnaireResponse)
     Assert.assertEquals("my-form", result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM))
     Assert.assertEquals(
       "1234",
       result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
+    )
+    Assert.assertTrue(result.getBoolean(QuestionnaireActivity.QUESTIONNAIRE_READ_ONLY))
+    Assert.assertEquals(
+      FhirContext.forR4().newJsonParser().encodeResourceToString(questionnaireResponse),
+      result.getString(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
+    )
+  }
+
+  @Test
+  fun testReadOnlyIntentShouldBeReadToReadOnlyFlag() {
+    Assert.assertFalse(questionnaireActivity.readOnly)
+
+    intent =
+      Intent().apply {
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, "patient-registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_READ_ONLY, true)
+      }
+
+    val questionnaireFragment = spyk<QuestionnaireFragment>()
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+
+    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
+    questionnaireActivity = controller.create().resume().get()
+
+    Assert.assertTrue(questionnaireActivity.readOnly)
+  }
+
+  @Test
+  fun testReadOnlyIntentShouldChangeSaveButtonToDone() {
+    intent =
+      Intent().apply {
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, "patient-registration")
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_READ_ONLY, true)
+      }
+
+    val questionnaireFragment = spyk<QuestionnaireFragment>()
+    every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
+
+    val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
+    questionnaireActivity = controller.create().resume().get()
+    questionnaireActivity.supportFragmentManager.executePendingTransactions()
+    questionnaireActivity.supportFragmentManager.commitNow {
+      add(questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
+    }
+
+    Assert.assertEquals(
+      "Done",
+      questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).text
     )
   }
 

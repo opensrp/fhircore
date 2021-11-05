@@ -72,6 +72,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   protected var immunizationId: String? = null
 
+  var readOnly: Boolean = false
+
   private val parser = FhirContext.forR4().newJsonParser()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,15 +91,16 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     immunizationId = intent.getStringExtra(ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY)
 
     lifecycleScope.launchWhenCreated {
-      questionnaireViewModel = createViewModel(application)
+      readOnly = intent.getBooleanExtra(QUESTIONNAIRE_READ_ONLY, false)
+      questionnaireViewModel = createViewModel(application, readOnly)
 
-      val form = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
+      val formName = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
       // form is either name of form in asset/form-config or questionnaire-id
       // load from assets and get questionnaire or if not found build it from questionnaire
       questionnaireConfig =
-        kotlin.runCatching { questionnaireViewModel.getQuestionnaireConfig(form) }.getOrElse {
+        kotlin.runCatching { questionnaireViewModel.getQuestionnaireConfig(formName) }.getOrElse {
           // load questionnaire from db and build config
-          questionnaire = questionnaireViewModel.loadQuestionnaire(form)!!
+          questionnaire = questionnaireViewModel.loadQuestionnaire(formName)!!
 
           QuestionnaireConfig(
             form = questionnaire.name ?: "",
@@ -115,6 +118,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         title = questionnaireConfig.title
       }
 
+      findViewById<Button>(R.id.btn_save_client_info).apply {
+        setOnClickListener(this@QuestionnaireActivity)
+        if (readOnly) {
+          text = context.getString(R.string.done)
+        }
+      }
+
       // Only add the fragment once, when the activity is first created.
       if (savedInstanceState == null) {
         val fragment =
@@ -122,8 +132,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             val parsedQuestionnaire = parser.encodeResourceToString(questionnaire)
             arguments =
               when {
-                clientIdentifier == null ->
-                  bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
+                clientIdentifier == null -> {
+                  bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire)).apply {
+                    val questionnaireResponse = intent.getStringExtra(QUESTIONNAIRE_RESPONSE)
+                    if (readOnly && questionnaireResponse != null) {
+                      putString(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, questionnaireResponse)
+                    }
+                  }
+                }
                 clientIdentifier != null -> {
 
                   try {
@@ -153,8 +169,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       }
       loadProgress.dismiss()
     }
-
-    findViewById<Button>(R.id.btn_save_client_info).setOnClickListener(this)
   }
 
   private fun setBarcode(questionnaire: Questionnaire, code: String, readonly: Boolean) {
@@ -165,21 +179,25 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  open fun createViewModel(application: Application) =
+  open fun createViewModel(application: Application, readOnly: Boolean = false) =
     ViewModelProvider(
       this@QuestionnaireActivity,
-      QuestionnaireViewModel(application).createFactory()
+      QuestionnaireViewModel(application, readOnly).createFactory()
     )[QuestionnaireViewModel::class.java]
 
   override fun onClick(view: View) {
     if (view.id == R.id.btn_save_client_info) {
-      showConfirmAlert(
-        context = this,
-        message = R.string.questionnaire_alert_submit_message,
-        title = R.string.questionnaire_alert_submit_title,
-        confirmButtonListener = { handleQuestionnaireSubmit() },
-        confirmButtonText = R.string.questionnaire_alert_submit_button_title
-      )
+      if (readOnly) {
+        finish()
+      } else {
+        showConfirmAlert(
+          context = this,
+          message = R.string.questionnaire_alert_submit_message,
+          title = R.string.questionnaire_alert_submit_title,
+          confirmButtonListener = { handleQuestionnaireSubmit() },
+          confirmButtonText = R.string.questionnaire_alert_submit_button_title
+        )
+      }
     } else {
       showToast(getString(R.string.error_saving_form))
     }
@@ -292,21 +310,34 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
     const val ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY = "adverse_event_immunization_item_id"
-    const val QUESTIONNAIRE_ARG_FORM = "questionnaire_form"
+    const val QUESTIONNAIRE_ARG_FORM = "questionnaire-form-name"
+    const val QUESTIONNAIRE_READ_ONLY = "read-only"
+    const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"
     const val FORM_CONFIGURATIONS = "form_configurations.json"
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
 
-    fun requiredIntentArgs(
-      clientIdentifier: String?,
-      form: String,
+    fun intentArgs(
+      clientIdentifier: String? = null,
+      formName: String,
+      readOnly: Boolean = false,
+      questionnaireResponse: QuestionnaireResponse? = null,
       immunizationId: String? = null
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
-        Pair(QUESTIONNAIRE_ARG_FORM, form),
+        Pair(QUESTIONNAIRE_ARG_FORM, formName),
+        Pair(QUESTIONNAIRE_READ_ONLY, readOnly),
         Pair(ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY, immunizationId)
       )
+        .apply {
+          if (questionnaireResponse != null) {
+            putString(
+              QUESTIONNAIRE_RESPONSE,
+              FhirContext.forR4().newJsonParser().encodeResourceToString(questionnaireResponse)
+            )
+          }
+        }
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -320,12 +351,16 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   override fun onBackPressed() {
-    showConfirmAlert(
-      this,
-      R.string.questionnaire_alert_back_pressed_message,
-      R.string.questionnaire_alert_back_pressed_title,
-      { finish() },
-      R.string.questionnaire_alert_back_pressed_button_title
-    )
+    if (readOnly) {
+      finish()
+    } else {
+      showConfirmAlert(
+        this,
+        R.string.questionnaire_alert_back_pressed_message,
+        R.string.questionnaire_alert_back_pressed_title,
+        { finish() },
+        R.string.questionnaire_alert_back_pressed_button_title
+      )
+    }
   }
 }

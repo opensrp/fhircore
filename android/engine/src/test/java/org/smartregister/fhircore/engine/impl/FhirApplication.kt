@@ -48,6 +48,8 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 @Config(shadows = [ShadowNpmPackageProvider::class])
 class FhirApplication : Application(), ConfigurableApplication {
 
+  val fhirEngineImpl = spyk(FhirEngineImpl())
+
   override val syncJob: SyncJob
     get() = spyk(Sync.basicSyncJob(ApplicationProvider.getApplicationContext()))
 
@@ -57,7 +59,7 @@ class FhirApplication : Application(), ConfigurableApplication {
     get() = spyk(FhirAuthenticationService())
 
   override val fhirEngine: FhirEngine
-    get() = spyk(FhirEngineImpl())
+    get() = fhirEngineImpl
 
   override val secureSharedPreference: SecureSharedPreference by lazy {
     val secureSharedPreferenceSpy =
