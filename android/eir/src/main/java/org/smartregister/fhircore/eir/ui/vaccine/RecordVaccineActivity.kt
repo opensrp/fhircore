@@ -40,6 +40,7 @@ class RecordVaccineActivity : QuestionnaireActivity() {
 
   override fun createViewModel(
     application: Application,
+    readOnly: Boolean
   ): QuestionnaireViewModel {
     return ViewModelProvider(
         this@RecordVaccineActivity,
