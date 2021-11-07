@@ -66,5 +66,7 @@ class QuestAuthenticationServiceTest : RobolectricTest() {
     )
 
     Assert.assertEquals("org.smartregister.fhircore.quest", authenticationService.getAccountType())
+
+    Assert.assertFalse(authenticationService.skipLogin())
   }
 }
