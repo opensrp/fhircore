@@ -20,6 +20,7 @@ import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -226,4 +227,20 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertNotNull(loginViewModel.showProgressBar.value)
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
   }
+
+  @Test
+  fun testAttemptRemoteLoginTrimsWhiteSpaceForCredentialsEntered() =
+    coroutineTestRule.runBlockingTest {
+      val username = "test "
+      val password = "Test123"
+
+      every { loginViewModel.username.value } returns username
+      every { loginViewModel.password.value } returns password
+
+      every { authenticationService.fetchToken(any(), any()) } returns mockk(relaxed = true)
+
+      loginViewModel.attemptRemoteLogin()
+
+      verify { authenticationService.fetchToken("test", "Test123".toCharArray()) }
+    }
 }

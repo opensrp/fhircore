@@ -99,7 +99,11 @@ class LoginViewModel(
           return
         }
         with(authenticationService) {
-          addAuthenticatedAccount(response, username.value!!, password.value?.toCharArray()!!)
+          addAuthenticatedAccount(
+            response,
+            username.value!!.trim(),
+            password.value?.trim()?.toCharArray()!!
+          )
           getUserInfo().enqueue(userInfoResponseCallback)
           _navigateToHome.value = true
           _showProgressBar.postValue(false)
@@ -119,8 +123,8 @@ class LoginViewModel(
 
   private fun attemptLocalLogin(): Boolean {
     return authenticationService.validLocalCredentials(
-      username.value!!,
-      password.value!!.toCharArray()
+      username.value!!.trim(),
+      password.value!!.trim().toCharArray()
     )
   }
 
@@ -187,11 +191,11 @@ class LoginViewModel(
   }
 
   fun attemptRemoteLogin() {
-    if (username.value != null && password.value != null) {
+    if (!username.value.isNullOrBlank() && !password.value.isNullOrBlank()) {
       _loginError.postValue("")
       _showProgressBar.postValue(true)
       authenticationService
-        .fetchToken(username.value!!, password.value!!.toCharArray())
+        .fetchToken(username.value!!.trim(), password.value!!.trim().toCharArray())
         .enqueue(oauthResponseCallback)
     }
   }
