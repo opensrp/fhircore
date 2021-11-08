@@ -84,7 +84,7 @@ fun ReportsHomeScreen(dataProvider: ReportDataProvider) {
       val lazyEncounterItems = dataProvider.getReportsTypeList().collectAsLazyPagingItems()
 
       LazyColumn(modifier = Modifier.background(Color.White).fillMaxSize()) {
-        itemsIndexed(lazyEncounterItems) { index, item -> ReportRow(item!!, { _, _ -> }) }
+        itemsIndexed(lazyEncounterItems) { _, item -> ReportRow(item!!, { _, _ -> }) }
 
         lazyEncounterItems.apply {
           when {
