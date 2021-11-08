@@ -94,14 +94,16 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
             .padding(12.dp)
       ) {
         val patient = dataProvider.getDemographics().observeAsState()
+        val familyName = patient.value?.name?.firstOrNull()?.family ?: ""
+        val firstName = patient.value?.name?.firstOrNull()?.given?.firstOrNull()?.value ?: ""
         Text(
-          text = patient.value?.name?.firstOrNull()?.family ?: "",
+          text = "$familyName $firstName",
           color = colorResource(id = R.color.white),
           fontSize = 25.sp
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
-          text = patient.value?.name?.firstOrNull()?.given?.firstOrNull()?.value ?: "",
+          text = patient.value?.address?.firstOrNull()?.city.toString() ?: "",
           color = colorResource(id = R.color.white),
           fontSize = 25.sp
         )
