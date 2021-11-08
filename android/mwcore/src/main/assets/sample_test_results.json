@@ -1,0 +1,207 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "3440",
+  "language": "en",
+  "status": "active",
+  "publisher": "ONA",
+  "subjectType": [
+    "Patient"
+  ],
+  "useContext": {
+    "code": [
+      {
+        "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
+        "code": "focus"
+      }
+    ],
+    "valueCodeableConcept": {
+      "coding": {
+        "system": "http://fhir.ona.io",
+        "code": "000002",
+        "display": "G6PD Test Results"
+      }
+    }
+  },
+  "name": "G6PD Test Result",
+  "title": "G6PD Test Result",
+  "item": [
+    {
+      "linkId": "result_type",
+      "type": "choice",
+      "text": "G6PD Result Type",
+      "required": true,
+      "code": [
+        {
+          "system": "http://fhir.ona.io",
+          "code": "000001",
+          "display": "G6PD Result Type"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "https://www.snomed.org",
+            "code": "410680006",
+            "display": "Number"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "https://www.snomed.org",
+            "code": "405358009",
+            "display": "Error"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "https://www.snomed.org",
+            "code": "385432009",
+            "display": "N/A"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "haemoglobin_level",
+      "type": "choice",
+      "text": "Hemoglobin Levels",
+      "code": [
+        {
+          "system": "https://www.snomed.org",
+          "code": "104142005",
+          "display": "Plasma haemoglobin level"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "https://www.snomed.org",
+            "code": "75540009",
+            "display": "High"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "https://www.snomed.org",
+            "code": "62482003",
+            "display": "Low"
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "result_type",
+          "operator": "=",
+          "answerCoding": {
+            "system": "https://www.snomed.org",
+            "code": "385432009"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "g6pd",
+      "type": "decimal",
+      "text": "G6PD",
+      "required": true,
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "32546-4",
+          "display": "Glucose-6-Phosphate dehydrogenase in Red Blood Cells"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueDecimal": 1.0
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueDecimal": 6.7
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "result_type",
+          "operator": "=",
+          "answerCoding": {
+            "system": "https://www.snomed.org",
+            "code": "410680006"
+          }
+        },
+        {
+          "question": "result_type",
+          "operator": "=",
+          "answerCoding": {
+            "system": "https://www.snomed.org",
+            "code": "385432009"
+          }
+        }
+      ],
+      "enableBehavior": "any"
+    },
+    {
+      "linkId": "haemoglobin",
+      "type": "decimal",
+      "text": "Hemoglobin (Hb)",
+      "required": true,
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "718-7",
+          "display": "Hemoglobin in Blood"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueDecimal": 4.0
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueDecimal": 19.0
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "result_type",
+          "operator": "=",
+          "answerCoding": {
+            "system": "https://www.snomed.org",
+            "code": "410680006"
+          }
+        },
+        {
+          "question": "result_type",
+          "operator": "=",
+          "answerCoding": {
+            "system": "https://www.snomed.org",
+            "code": "385432009"
+          }
+        }
+      ],
+      "enableBehavior": "any"
+    }
+  ]
+}
