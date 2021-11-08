@@ -241,7 +241,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       QuestionnaireResponse()
     )
 
-    coVerify { defaultRepo.save(capture(questionnaireResponseSlot)) }
+    coVerify(timeout = 2000) { defaultRepo.save(capture(questionnaireResponseSlot)) }
 
     Assert.assertEquals(
       "12345",

@@ -138,22 +138,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
                   // TODO - FIXME - updateFrom does not consider nested structure
                   // https://github.com/opensrp/fhircore/issues/730
-                  var questionnaireResponse =
-                    intent.getStringExtra(QUESTIONNAIRE_RESPONSE)?.let {
-                      parser.parseResource(it) as QuestionnaireResponse
-                    }
 
-                  bundleOf(
-                    Pair(BUNDLE_KEY_QUESTIONNAIRE, parser.encodeResourceToString(questionnaire))
-                  )
-                    .apply {
-                      if (readOnly && questionnaireResponse != null) {
-                        putString(
-                          BUNDLE_KEY_QUESTIONNAIRE_RESPONSE,
-                          parser.encodeResourceToString(questionnaireResponse)
-                        )
-                      }
+                  bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire)).apply {
+                    val questionnaireResponse = intent.getStringExtra(QUESTIONNAIRE_RESPONSE)
+                    if (readOnly && questionnaireResponse != null) {
+                      putString(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, questionnaireResponse)
                     }
+                  }
                 }
                 clientIdentifier != null -> {
 

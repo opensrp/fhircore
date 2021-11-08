@@ -48,7 +48,9 @@ class PatientRegisterActivity : BaseRegisterActivity() {
       getPatientRegisterConfig()
         ?: registerViewConfigurationOf(
           showScanQRCode = false,
-          appTitle = getString(R.string.clients)
+          appTitle = getString(R.string.clients),
+          showFilter = false,
+          showSideMenu = false
         )
     configureViews(registerViewConfiguration)
 
