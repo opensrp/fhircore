@@ -25,6 +25,7 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.Encounter
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -54,8 +55,8 @@ class ReportRepositoryTest : RobolectricTest() {
   fun testLoadReturnsPageWhenOnSuccessfulLoadOfItemKeyedData() = runBlockingTest {
     val report = getReport()
     coEvery {
-      hint(ReportItem::class)
-      fhirEngine.search<ReportItem>(any())
+      hint(Encounter::class)
+      fhirEngine.search<Encounter>(any())
     } returns listOf(report)
 
     Assert.assertEquals(
@@ -72,8 +73,8 @@ class ReportRepositoryTest : RobolectricTest() {
     report.reportType = "null"
 
     coEvery {
-      hint(ReportItem::class)
-      fhirEngine.search<ReportItem>(any())
+      hint(Encounter::class)
+      fhirEngine.search<Encounter>(any())
     } returns listOf(report)
 
     val result = repository.load(PagingSource.LoadParams.Refresh(null, 1, false))
