@@ -1,42 +1,150 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-kapt'
+    id 'de.mannodermaus.android-junit5'
+    id 'kotlin-android-extensions'
+    id 'org.jetbrains.dokka'
+    id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'jacoco'
+}
+
+Properties props = new Properties()
+
+def arr = ["FHIR_BASE_URL", "OAUTH_BASE_URL", "OAUTH_CIENT_ID", "OAUTH_CLIENT_SECRET", "OAUTH_SCOPE"]
+if (rootProject.file("local.properties").exists()) {
+    props.load(rootProject.file("local.properties").newDataInputStream())
+
+    arr.each { prop ->
+        project.ext.set(prop, props.getProperty(prop, (prop == "FHIR_BASE_URL") ? "https://sample.url/fhir/" : "sample"))
+    }
+} else {
+    println("local.properties does not exist. The following values are required " + arr.join(", "))
+    arr.each { prop ->
+        project.ext.set(prop, props.getProperty(prop, (prop.contains("URL")) ? "https://sample.url/fhir/" : "sample_" + prop))
+    }
 }
 
 android {
     compileSdk 30
 
+    dataBinding {
+        enabled true
+    }
+
     defaultConfig {
-        applicationId "org.smartregister.fhircore.mwcore"
+        applicationId "org.smartregister.fhircore.quest"
         minSdk 21
         targetSdk 30
         versionCode 1
-        versionName "1.0"
+        versionName "0.0.2"
+        multiDexEnabled true
+
+        buildConfigField("boolean", 'SKIP_AUTH_CHECK', "false")
+        buildConfigField("String", 'FHIR_BASE_URL', "\"${FHIR_BASE_URL}\"")
+        buildConfigField("String", 'OAUTH_BASE_URL', "\"${OAUTH_BASE_URL}\"")
+        buildConfigField("String", 'OAUTH_CIENT_ID', "\"${OAUTH_CIENT_ID}\"")
+        buildConfigField("String", 'OAUTH_CLIENT_SECRET', "\"${OAUTH_CLIENT_SECRET}\"")
+        buildConfigField("String", 'OAUTH_SCOPE', "\"${OAUTH_SCOPE}\"")
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        minSdkVersion 21
+        targetSdkVersion 30
     }
 
     buildTypes {
+        debug {
+            testCoverageEnabled true
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    packagingOptions {
+        exclude 'META-INF/ASL-2.0.txt'
+        exclude 'META-INF/LGPL-3.0.txt'
+        exclude 'license.html'
+        exclude 'readme.html'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/license.html'
+        exclude 'META-INF/LICENSE.md'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE.md'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/ASL-2.0.txt'
+        exclude 'META-INF/LGPL-3.0.txt'
+        exclude 'META-INF/sun-jaxb.episode'
+        exclude("META-INF/*.kotlin_module")
+        exclude("META-INF/AL2.0")
+        exclude("META-INF/LGPL2.1")
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
+    buildFeatures {
+        compose true
+        viewBinding true
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+            returnDefaultValues = true
+            all {
+                jacoco {
+                    includeNoLocationClasses = true
+                    excludes = ['jdk.internal.*']
+                }
+            }
+        }
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.0.1'
+    }
+
+    compileSdkVersion 30
 }
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation(project(":engine"))
+    implementation 'androidx.core:core-ktx:1.6.0'
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'com.google.android.material:material:1.4.0'
-    testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    implementation 'androidx.work:work-runtime-ktx:2.6.0'
+    implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
+
+    testImplementation deps.junit5_api
+    testRuntimeOnly deps.junit5_engine
+    testRuntimeOnly deps.junit5_engine_vintage
+    testImplementation deps.robolectric
+    testImplementation deps.atsl.ext_junit
+    testImplementation deps.atsl.ext_junit_ktx
+    testImplementation deps.coroutines.test
+    testImplementation deps.androidx.core_test
+    debugImplementation deps.fragment_testing
+    releaseImplementation deps.fragment_testing
+    testImplementation deps.mockk
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1'
+
+    androidTestImplementation deps.atsl.ext_junit
+    androidTestImplementation deps.atsl.espresso
+    def composeVersion = "1.0.1"
+    debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
+    testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
 }
