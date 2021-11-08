@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest
+package org.smartregister.fhircore.mwcore
 
 import android.app.Service
 import android.content.Intent

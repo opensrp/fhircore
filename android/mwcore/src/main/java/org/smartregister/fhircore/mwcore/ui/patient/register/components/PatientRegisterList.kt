@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.register.components
+package org.smartregister.fhircore.mwcore.ui.patient.register.components
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider

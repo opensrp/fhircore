@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.login
+package org.smartregister.fhircore.mwcore.ui.login
 
 import android.content.Intent
 import android.os.Bundle

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.data.patient
+package org.smartregister.fhircore.mwcore.patient
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

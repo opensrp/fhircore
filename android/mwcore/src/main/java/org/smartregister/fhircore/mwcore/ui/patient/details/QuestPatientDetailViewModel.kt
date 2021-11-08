@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.details
+package org.smartregister.fhircore.mwcore.ui.patient.details
 
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData

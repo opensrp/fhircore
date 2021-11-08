@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.register
+package org.smartregister.fhircore.mwcore.ui.patient.register
 
 import android.os.Bundle
 import android.view.MenuItem

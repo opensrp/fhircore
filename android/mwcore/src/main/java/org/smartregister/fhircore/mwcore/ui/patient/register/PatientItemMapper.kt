@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.ui.patient.register
+package org.smartregister.fhircore.mwcore.ui.patient.register
 
 import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.Patient
