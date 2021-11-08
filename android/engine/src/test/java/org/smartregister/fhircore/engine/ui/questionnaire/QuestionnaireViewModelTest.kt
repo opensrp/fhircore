@@ -22,6 +22,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import com.google.android.fhir.datacapture.utilities.SimpleWorkerContextProvider
 import com.google.android.fhir.logicalId
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
@@ -46,6 +47,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -70,6 +72,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun setUp() {
     clearAllMocks()
 
+    mockkObject(SimpleWorkerContextProvider)
+    coEvery { SimpleWorkerContextProvider.loadSimpleWorkerContext(any()) } returns mockk()
+
     context = ApplicationProvider.getApplicationContext()
 
     fhirEngine = mockk()
@@ -82,6 +87,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel = spyk(QuestionnaireViewModel(context))
     ReflectionHelpers.setField(questionnaireViewModel, "defaultRepository", defaultRepo)
+  }
+
+  @After
+  fun cleanup() {
+    unmockkObject(SimpleWorkerContextProvider)
   }
 
   @Test
