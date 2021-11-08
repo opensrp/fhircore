@@ -23,14 +23,14 @@ import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
-import org.smartregister.fhircore.quest.QuestApplication
-import org.smartregister.fhircore.quest.data.patient.model.PatientItem
+import org.smartregister.fhircore.mwcore.MwCoreApplication
+import org.smartregister.fhircore.mwcore.data.patient.model.PatientItem
 
 object PatientItemMapper : DomainMapper<Patient, PatientItem> {
 
   override fun mapToDomainModel(dto: Patient): PatientItem {
     val name = dto.extractName()
-    val gender = dto.extractGender(QuestApplication.getContext())?.first() ?: ""
+    val gender = dto.extractGender(MwCoreApplication.getContext())?.first() ?: ""
     val age = dto.extractAge()
     return PatientItem(
       id = dto.logicalId,

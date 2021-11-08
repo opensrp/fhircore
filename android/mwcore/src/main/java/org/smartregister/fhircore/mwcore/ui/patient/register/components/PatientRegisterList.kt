@@ -27,8 +27,8 @@ import androidx.paging.compose.items
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
-import org.smartregister.fhircore.quest.data.patient.model.PatientItem
-import org.smartregister.fhircore.quest.ui.patient.register.PatientRowClickListenerIntent
+import org.smartregister.fhircore.mwcore.data.patient.model.PatientItem
+import org.smartregister.fhircore.mwcore.ui.patient.register.PatientRowClickListenerIntent
 
 @Composable
 fun PatientRegisterList(

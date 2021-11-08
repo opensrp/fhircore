@@ -25,11 +25,11 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.createFactory
-import org.smartregister.fhircore.quest.QuestApplication
-import org.smartregister.fhircore.quest.data.patient.PatientRepository
+import org.smartregister.fhircore.mwcore.MwCoreApplication
+import org.smartregister.fhircore.mwcore.data.patient.PatientRepository
 
 class QuestPatientDetailViewModel(
-  val application: QuestApplication,
+  val application: MwCoreApplication,
   private val repository: PatientRepository,
   private val patientId: String
 ) : AndroidViewModel(application), QuestPatientDetailDataProvider {
@@ -97,7 +97,7 @@ class QuestPatientDetailViewModel(
 
     fun get(
       owner: ViewModelStoreOwner,
-      application: QuestApplication,
+      application: MwCoreApplication,
       repository: PatientRepository,
       patientId: String
     ): QuestPatientDetailViewModel {

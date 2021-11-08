@@ -26,7 +26,7 @@ import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
-import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.mwcore.R
 
 class PatientRegisterActivity : BaseRegisterActivity() {
   private lateinit var registerViewConfiguration: RegisterViewConfiguration

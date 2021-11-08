@@ -20,9 +20,9 @@ import android.content.Intent
 import android.os.Bundle
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
-import org.smartregister.fhircore.quest.BuildConfig
-import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
+import org.smartregister.fhircore.mwcore.BuildConfig
+import org.smartregister.fhircore.mwcore.R
+import org.smartregister.fhircore.mwcore.ui.patient.register.PatientRegisterActivity
 
 class LoginActivity : BaseLoginActivity() {
 

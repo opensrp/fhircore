@@ -41,7 +41,7 @@ import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.quest.data.patient.model.PatientItem
+import org.smartregister.fhircore.mwcore.data.patient.model.PatientItem
 
 class PatientRepository(
   override val fhirEngine: FhirEngine,

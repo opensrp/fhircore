@@ -49,7 +49,7 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
-import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.mwcore.R
 
 @Composable
 fun QuestPatientTestResultScreen(dataProvider: QuestPatientDetailDataProvider) {

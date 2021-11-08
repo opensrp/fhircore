@@ -35,10 +35,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-import org.smartregister.fhircore.quest.data.patient.model.PatientItem
-import org.smartregister.fhircore.quest.data.patient.model.genderFull
-import org.smartregister.fhircore.quest.ui.patient.register.OpenPatientProfile
-import org.smartregister.fhircore.quest.ui.patient.register.PatientRowClickListenerIntent
+import org.smartregister.fhircore.mwcore.data.patient.model.PatientItem
+import org.smartregister.fhircore.mwcore.data.patient.model.genderFull
+import org.smartregister.fhircore.mwcore.ui.patient.register.OpenPatientProfile
+import org.smartregister.fhircore.mwcore.ui.patient.register.PatientRowClickListenerIntent
 
 @Composable
 fun PatientRow(

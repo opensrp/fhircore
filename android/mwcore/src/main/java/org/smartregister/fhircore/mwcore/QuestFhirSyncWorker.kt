@@ -24,9 +24,9 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 class QuestFhirSyncWorker(context: Context, workerParams: WorkerParameters) :
   FhirSyncWorker(context, workerParams) {
 
-  override fun getSyncData() = QuestApplication.getContext().resourceSyncParams
+  override fun getSyncData() = MwCoreApplication.getContext().resourceSyncParams
 
-  override fun getDataSource() = FhirResourceDataSource.getInstance(QuestApplication.getContext())
+  override fun getDataSource() = FhirResourceDataSource.getInstance(MwCoreApplication.getContext())
 
-  override fun getFhirEngine() = QuestApplication.getContext().fhirEngine
+  override fun getFhirEngine() = MwCoreApplication.getContext().fhirEngine
 }

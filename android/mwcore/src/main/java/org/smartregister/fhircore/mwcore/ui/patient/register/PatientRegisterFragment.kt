@@ -27,12 +27,11 @@ import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
-import org.smartregister.fhircore.engine.util.extension.createFactory
-import org.smartregister.fhircore.quest.QuestApplication
-import org.smartregister.fhircore.quest.data.patient.PatientRepository
-import org.smartregister.fhircore.quest.data.patient.model.PatientItem
-import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
-import org.smartregister.fhircore.quest.ui.patient.register.components.PatientRegisterList
+import org.smartregister.fhircore.mwcore.MwCoreApplication
+import org.smartregister.fhircore.mwcore.data.patient.PatientRepository
+import org.smartregister.fhircore.mwcore.data.patient.model.PatientItem
+import org.smartregister.fhircore.mwcore.ui.patient.details.QuestPatientDetailActivity
+import org.smartregister.fhircore.mwcore.ui.patient.register.components.PatientRegisterList
 
 class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() {
 
@@ -79,7 +78,7 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
   override fun initializeRegisterDataViewModel(): RegisterDataViewModel<Patient, PatientItem> {
     val patientRepository =
       PatientRepository(
-        (requireActivity().application as QuestApplication).fhirEngine,
+        (requireActivity().application as MwCoreApplication).fhirEngine,
         PatientItemMapper,
         registerViewModel.registerViewConfiguration
       )

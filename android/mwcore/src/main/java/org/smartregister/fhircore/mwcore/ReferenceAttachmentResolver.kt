@@ -29,7 +29,7 @@ class ReferenceAttachmentResolver(val context: Context) : AttachmentResolver {
 
   override suspend fun resolveBinaryResource(uri: String): Binary? {
     return uri.substringAfter("Binary/").substringBefore("/").run {
-      QuestApplication.getContext().fhirEngine.load(Binary::class.java, this)
+      MwCoreApplication.getContext().fhirEngine.load(Binary::class.java, this)
     }
   }
 
@@ -37,7 +37,7 @@ class ReferenceAttachmentResolver(val context: Context) : AttachmentResolver {
   fun getFhirService(): FhirResourceService {
     return FhirResourceService.create(
       FhirContext.forR4().newJsonParser(),
-      QuestApplication.getContext()
+      MwCoreApplication.getContext()
     )
   }
 
