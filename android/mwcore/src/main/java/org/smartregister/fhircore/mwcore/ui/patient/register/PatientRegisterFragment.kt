@@ -27,6 +27,7 @@ import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
+import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.mwcore.MwCoreApplication
 import org.smartregister.fhircore.mwcore.data.patient.PatientRepository
 import org.smartregister.fhircore.mwcore.data.patient.model.PatientItem
@@ -87,8 +88,7 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
       RegisterDataViewModel(
           application = requireActivity().application,
           registerRepository = patientRepository
-        )
-        .createFactory()
+        ).createFactory()
     )[RegisterDataViewModel::class.java] as
       RegisterDataViewModel<Patient, PatientItem>
   }
