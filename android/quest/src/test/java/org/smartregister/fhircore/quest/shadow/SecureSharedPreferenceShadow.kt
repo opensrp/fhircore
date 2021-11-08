@@ -14,28 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhirecore.quest.robolectric
+package org.smartregister.fhircore.quest.shadow
 
-import android.app.Activity
-import android.view.View
-import androidx.annotation.IdRes
-import androidx.annotation.StringRes
-import org.junit.After
+import org.robolectric.Shadows
+import org.robolectric.annotation.Implementation
+import org.robolectric.annotation.Implements
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
-abstract class ActivityRobolectricTest : RobolectricTest() {
+@Implements(SecureSharedPreference::class)
+class SecureSharedPreferenceShadow : Shadows() {
 
-  @After
-  fun testDown() {
-    getActivity().finish()
-  }
-
-  abstract fun getActivity(): Activity
-
-  fun getString(@StringRes id: Int): String {
-    return getActivity().getString(id)
-  }
-
-  fun <T : View> findViewById(@IdRes id: Int): T {
-    return getActivity().findViewById(id)
+  @Implementation
+  fun retrieveSessionUsername(): String {
+    return "demo"
   }
 }

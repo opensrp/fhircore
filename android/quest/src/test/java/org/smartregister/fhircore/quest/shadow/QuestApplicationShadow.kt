@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhirecore.quest.shadow
+package org.smartregister.fhircore.quest.shadow
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SyncDownloadContext

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhirecore.quest
+package org.smartregister.fhircore.quest
 
 import androidx.work.WorkerParameters
 import androidx.work.impl.utils.SerialExecutor
@@ -24,9 +24,8 @@ import java.util.concurrent.Executors
 import junit.framework.Assert.assertNotNull
 import org.junit.Test
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.quest.QuestFhirSyncWorker
-import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
-import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 
 @Config(shadows = [QuestApplicationShadow::class])
 class QuestFhirSyncWorkerTest : RobolectricTest() {

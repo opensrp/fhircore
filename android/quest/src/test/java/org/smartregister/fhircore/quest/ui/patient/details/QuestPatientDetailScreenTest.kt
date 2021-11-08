@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhirecore.quest.ui.patient.details
+package org.smartregister.fhircore.quest.ui.patient.details
 
 import android.app.Application
 import androidx.compose.ui.test.assert
@@ -36,17 +36,8 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.patient.details.FORM_ITEM
-import org.smartregister.fhircore.quest.ui.patient.details.PATIENT_NAME
-import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailScreen
-import org.smartregister.fhircore.quest.ui.patient.details.RESULT_ITEM
-import org.smartregister.fhircore.quest.ui.patient.details.TOOLBAR_BACK_ARROW
-import org.smartregister.fhircore.quest.ui.patient.details.TOOLBAR_MENU
-import org.smartregister.fhircore.quest.ui.patient.details.TOOLBAR_MENU_BUTTON
-import org.smartregister.fhircore.quest.ui.patient.details.TOOLBAR_TITLE
-import org.smartregister.fhircore.quest.ui.patient.details.dummyQuestPatientDetailDataProvider
-import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
-import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 
 @Config(shadows = [QuestApplicationShadow::class])
 class QuestPatientDetailScreenTest : RobolectricTest() {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhirecore.quest.data
+package org.smartregister.fhircore.quest.data
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
@@ -45,9 +45,9 @@ import org.smartregister.fhircore.engine.configuration.view.registerViewConfigur
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.genderFull
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
-import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
-import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
 
 @Config(shadows = [QuestApplicationShadow::class])
 class PatientRepositoryTest : RobolectricTest() {

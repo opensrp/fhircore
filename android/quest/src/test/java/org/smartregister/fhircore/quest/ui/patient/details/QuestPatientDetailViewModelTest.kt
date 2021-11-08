@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhirecore.quest.ui.patient.details
+package org.smartregister.fhircore.quest.ui.patient.details
 
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
@@ -33,10 +33,8 @@ import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
-import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
-import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailViewModel
-import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
-import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 
 @Config(shadows = [QuestApplicationShadow::class])
 class QuestPatientDetailViewModelTest : RobolectricTest() {

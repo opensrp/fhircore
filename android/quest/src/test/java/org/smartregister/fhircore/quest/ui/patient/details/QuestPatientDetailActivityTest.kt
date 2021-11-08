@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhirecore.quest.ui.patient.details
+package org.smartregister.fhircore.quest.ui.patient.details
 
 import android.app.Activity
 import android.content.Intent
@@ -32,10 +32,8 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.quest.QuestApplication
-import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
-import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientTestResultActivity
-import org.smartregister.fhirecore.quest.robolectric.ActivityRobolectricTest
-import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
+import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 
 @Config(shadows = [QuestApplicationShadow::class])
 class QuestPatientDetailActivityTest : ActivityRobolectricTest() {

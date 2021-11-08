@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhirecore.quest.ui.patient.register
+package org.smartregister.fhircore.quest.ui.patient.register
 
 import android.app.Activity
 import android.app.Application
@@ -36,11 +36,9 @@ import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
-import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterFragment
-import org.smartregister.fhirecore.quest.robolectric.ActivityRobolectricTest
-import org.smartregister.fhirecore.quest.shadow.FakeKeyStore
-import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
+import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.quest.shadow.FakeKeyStore
+import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 
 @Config(shadows = [QuestApplicationShadow::class])
 class PatientRegisterActivityTest : ActivityRobolectricTest() {

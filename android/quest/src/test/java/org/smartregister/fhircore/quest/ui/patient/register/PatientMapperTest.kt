@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhirecore.quest.ui.patient.register
+package org.smartregister.fhircore.quest.ui.patient.register
 
 import java.util.Calendar
 import java.util.Date
@@ -24,9 +24,8 @@ import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
-import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
-import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 
 @Config(shadows = [QuestApplicationShadow::class])
 class PatientMapperTest : RobolectricTest() {

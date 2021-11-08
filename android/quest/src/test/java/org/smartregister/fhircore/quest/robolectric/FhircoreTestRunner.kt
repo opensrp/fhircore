@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhirecore.quest.robolectric
+package org.smartregister.fhircore.quest.robolectric
 
 import org.junit.runners.model.FrameworkMethod
 import org.robolectric.RobolectricTestRunner

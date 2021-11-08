@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhirecore.quest
+package org.smartregister.fhircore.quest
 
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert
@@ -23,10 +23,9 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
-import org.smartregister.fhircore.quest.QuestAuthenticationService
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
-import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
-import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
 
 @Config(shadows = [QuestApplicationShadow::class])
 class QuestAuthenticationServiceTest : RobolectricTest() {

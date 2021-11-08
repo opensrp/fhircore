@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhirecore.quest.shadow
+package org.smartregister.fhircore.quest.shadow
 
 import java.io.InputStream
 import java.io.OutputStream
