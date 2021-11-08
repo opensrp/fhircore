@@ -60,14 +60,7 @@ class ReportRepositoryTest : RobolectricTest() {
 
     Assert.assertEquals(
       PagingSource.LoadResult.Page(
-        listOf(
-          ReportItem(
-            report.id,
-            report.title,
-            report.description,
-            report.reportType
-          )
-        ),
+        listOf(ReportItem(report.id, report.title, report.description, report.reportType)),
         null,
         1
       ),
