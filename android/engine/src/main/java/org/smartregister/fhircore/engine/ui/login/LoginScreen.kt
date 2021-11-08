@@ -175,6 +175,8 @@ fun LoginPage(
           colors = TextFieldDefaults.textFieldColors(textColor = contentColor),
           value = username,
           onValueChange = onUsernameChanged,
+          maxLines = 1,
+          singleLine = true,
           placeholder = {
             Text(
               color = Color.LightGray,
@@ -208,6 +210,8 @@ fun LoginPage(
           value = password,
           colors = TextFieldDefaults.textFieldColors(textColor = contentColor),
           onValueChange = onPasswordChanged,
+          maxLines = 1,
+          singleLine = true,
           placeholder = {
             Text(
               color = Color.LightGray,
