@@ -33,7 +33,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "org.smartregister.fhircore.quest"
+        applicationId "org.smartregister.fhircore.mwcore"
         minSdk 21
         targetSdk 30
         versionCode 1
