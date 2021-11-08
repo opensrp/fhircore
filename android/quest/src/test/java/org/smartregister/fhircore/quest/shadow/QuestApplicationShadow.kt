@@ -120,6 +120,8 @@ class QuestApplicationShadow : ShadowApplication() {
     Timber.i("Scheduled polling for Shadow")
   }
 
+  @Implementation fun scheduleeriodicSync() {}
+
   @Implementation fun initializeWorkerContextProvider() {}
 
   private fun <T> getListOfFilters(search: Search, filterName: String): MutableList<T> {

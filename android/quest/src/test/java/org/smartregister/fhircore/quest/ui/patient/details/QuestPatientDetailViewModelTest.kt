@@ -98,7 +98,9 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
   fun testGetAllFormsShouldReturnListOfQuestionnaireConfig() {
 
     every { repository.fetchTestForms(any(), any()) } returns
-      MutableLiveData(listOf(QuestionnaireConfig("g6pd-test-result", "G6PD Test Result", "3440")))
+      MutableLiveData(
+        listOf(QuestionnaireConfig("quest", "g6pd-test-result", "G6PD Test Result", "3440"))
+      )
 
     val forms = viewModel.getAllForms().value
 
@@ -130,12 +132,13 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
   fun testVerifyFormItemClickListener() {
 
     viewModel.setOnFormItemClickListener {
+      Assert.assertEquals("quest", it.appId)
       Assert.assertEquals("test", it.form)
       Assert.assertEquals("Test", it.title)
       Assert.assertEquals("0", it.identifier)
     }
 
-    viewModel.onFormItemClickListener().invoke(QuestionnaireConfig("test", "Test", "0"))
+    viewModel.onFormItemClickListener().invoke(QuestionnaireConfig("quest", "test", "Test", "0"))
   }
 
   @Test

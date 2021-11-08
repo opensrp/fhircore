@@ -17,12 +17,10 @@
 package org.smartregister.fhircore.quest.ui.patient.register
 
 import android.app.Activity
-import android.app.Application
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.view.size
-import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
@@ -31,7 +29,6 @@ import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.configuration.view.loadRegisterViewConfiguration
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
@@ -105,9 +102,6 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testSetupConfigurableViewsShouldUpdateViews() {
-    val config =
-      ApplicationProvider.getApplicationContext<Application>()
-        .loadRegisterViewConfiguration("quest-app-patient-register")
 
     val activityBinding =
       ReflectionHelpers.getField<BaseRegisterActivityBinding>(
@@ -119,8 +113,6 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
       this.toolbarLayout.tvClientsListTitle.text
       this.bottomNavView.menu.clear()
     }
-
-    patientRegisterActivity.setupConfigurableViews(config)
 
     with(activityBinding) {
       Assert.assertEquals("Add new client", this.btnRegisterNewClient.text)
