@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.family.register
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
@@ -96,8 +97,15 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
           toolbarTitle = getString(R.string.profile)
         )
       R.id.menu_item_register -> switchFragment(mainFragmentTag())
+      R.id.menu_item_reports -> navigateToReports()
     }
     return true
+  }
+
+  fun navigateToReports() {
+    val intent = Intent(this, ReportsHomeActivity::class.java)
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    startActivity(intent)
   }
 
   override fun registersList() =
