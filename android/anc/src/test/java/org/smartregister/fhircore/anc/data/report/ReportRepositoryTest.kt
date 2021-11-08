@@ -63,7 +63,6 @@ class ReportRepositoryTest : RobolectricTest() {
         listOf(
           ReportItem(
             report.id,
-            report.identifier,
             report.title,
             report.description,
             report.reportType
@@ -96,7 +95,6 @@ class ReportRepositoryTest : RobolectricTest() {
   private fun getReport(): ReportItem {
     return ReportItem().apply {
       id = "1"
-      identifier = "1"
       title = "4+ ANC Contacts"
       description = "Women with at least four ANC contacts"
       reportType = "4"
