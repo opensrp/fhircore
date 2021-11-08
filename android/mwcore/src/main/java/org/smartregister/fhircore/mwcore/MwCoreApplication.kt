@@ -39,7 +39,7 @@ import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
-class QuestApplication : Application(), ConfigurableApplication {
+class MwCoreApplication : Application(), ConfigurableApplication {
 
   private val defaultDispatcherProvider = DefaultDispatcherProvider
 
@@ -120,7 +120,7 @@ class QuestApplication : Application(), ConfigurableApplication {
 
   fun initializeWorkerContextProvider() {
     CoroutineScope(defaultDispatcherProvider.io()).launch {
-      workerContextProvider = this@QuestApplication.initializeWorkerContext()!!
+      workerContextProvider = this@MwCoreApplication.initializeWorkerContext()!!
     }
 
     schedulePeriodicSync()
@@ -129,7 +129,7 @@ class QuestApplication : Application(), ConfigurableApplication {
   }
 
   companion object {
-    private lateinit var questApplication: QuestApplication
+    private lateinit var questApplication: MwCoreApplication
     const val CONFIG_APP = "quest-app"
     private const val CONFIG_PATIENT_REGISTER = "quest-app-patient-register"
 

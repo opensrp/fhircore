@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.mwcore.patient.model
+package org.smartregister.fhircore.mwcore.data.patient.model
 
 import androidx.compose.runtime.Stable
 
