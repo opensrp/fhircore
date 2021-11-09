@@ -84,4 +84,5 @@
     <string name="families">Families</string>
     <string name="anc_clients">ANC Clients</string>
     <string name="add">ADD</string>
+    <string name="anc_visit_due">ANC visit due</string>
 </resources>

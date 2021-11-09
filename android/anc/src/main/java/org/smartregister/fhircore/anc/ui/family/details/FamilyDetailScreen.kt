@@ -186,25 +186,46 @@ fun MembersList(
     ) {
       val totalMemberCount = members.count()
       members.forEachIndexed { index, item ->
-        Row(
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.SpaceBetween,
-          modifier =
-            Modifier.fillMaxWidth().padding(12.dp).clickable { memberItemClickListener(item) }
+        Column(
+          modifier = Modifier.fillMaxWidth().clickable { memberItemClickListener(item) },
         ) {
-          Text(
-            text = item.name,
-            color = colorResource(id = R.color.black),
-            fontSize = 17.sp,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.padding(end = 12.dp)
-          )
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth().padding(12.dp)
+          ) {
+            Text(
+              text = item.name,
+              color = colorResource(id = R.color.black),
+              fontSize = 17.sp,
+              textAlign = TextAlign.Start,
+              modifier = Modifier.padding(end = 12.dp)
+            )
 
-          Image(
-            painter = painterResource(id = R.drawable.ic_forward_arrow),
-            contentDescription = "",
-            colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray))
-          )
+            Image(
+              painter = painterResource(id = R.drawable.ic_forward_arrow),
+              contentDescription = "",
+              colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray))
+            )
+          }
+          Row(
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            if (item.pregnant) {
+              Image(
+                painter = painterResource(R.drawable.ic_pregnant),
+                contentDescription = stringResource(id = R.string.pregnant_woman),
+                modifier = Modifier.padding(start = 12.dp)
+              )
+              Text(
+                text = stringResource(id = R.string.anc_visit_due),
+                color = colorResource(id = R.color.colorPrimaryLight),
+                fontSize = 14.sp,
+                textAlign = TextAlign.Start
+              )
+            }
+          }
         }
 
         if (index < totalMemberCount) {
@@ -332,7 +353,7 @@ fun getDummyDataProvider(): FamilyDetailDataProvider {
         listOf(
           dummyFamilyMemberItem("Kevin"),
           dummyFamilyMemberItem("Julie"),
-          dummyFamilyMemberItem("Salina")
+          dummyFamilyMemberItem("Salina", true)
         )
       )
     }
@@ -350,8 +371,8 @@ fun getDummyDataProvider(): FamilyDetailDataProvider {
   }
 }
 
-private fun dummyFamilyMemberItem(name: String): FamilyMemberItem {
-  return FamilyMemberItem(name, "1", "18", "Male", false)
+private fun dummyFamilyMemberItem(name: String, isPregnant: Boolean = false): FamilyMemberItem {
+  return FamilyMemberItem(name, "1", "18", "Male", isPregnant)
 }
 
 private fun dummyEncounter(text: String, periodStartDate: String): Encounter {
