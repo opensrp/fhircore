@@ -32,6 +32,8 @@ import org.junit.Test
 import org.junit.jupiter.api.DisplayName
 import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
+import org.robolectric.fakes.RoboMenuItem
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
@@ -99,6 +101,13 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     every { menuInflater.inflate(any(), any()) } returns Unit
 
     Assert.assertTrue(patientDetailsActivitySpy.onCreateOptionsMenu(null))
+  }
+
+  @Test
+  fun testMakeAncPatientVisibilityActivity() {
+    val menuItem = RoboMenuItem(R.id.mark_as_anc_client)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+    Assert.assertTrue(menuItem.isVisible)
   }
 
   override fun getActivity(): Activity {

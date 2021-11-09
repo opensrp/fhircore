@@ -102,6 +102,13 @@ internal class AncDetailsActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testMakeAncPatientVisibilityActivity() {
+    val menuItem = RoboMenuItem(R.id.anc_enrollment)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+    Assert.assertTrue(menuItem.isVisible)
+  }
+
+  @Test
   fun testOnClickedAncEnrollmentItemShouldStartQuestionnaireActivity() {
 
     val menuItem = RoboMenuItem(R.id.anc_enrollment)
