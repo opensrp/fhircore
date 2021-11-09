@@ -111,9 +111,9 @@ class PatientDetailsFragment : Fragment() {
       startActivity(
         Intent(requireContext(), RecordVaccineActivity::class.java)
           .putExtras(
-            QuestionnaireActivity.requiredIntentArgs(
+            QuestionnaireActivity.intentArgs(
               clientIdentifier = patientId,
-              form = RECORD_VACCINE_FORM
+              formName = RECORD_VACCINE_FORM
             )
           )
       )
@@ -147,9 +147,9 @@ class PatientDetailsFragment : Fragment() {
           startActivity(
             Intent(requireContext(), AdverseEventQuestionnaireActivity::class.java)
               .putExtras(
-                QuestionnaireActivity.requiredIntentArgs(
+                QuestionnaireActivity.intentArgs(
                   clientIdentifier = patientId,
-                  form = ADVERSE_EVENT_FORM,
+                  formName = ADVERSE_EVENT_FORM,
                   immunizationId = immunizationAdverseEventItem.immunizationIds[position]
                 )
               )
