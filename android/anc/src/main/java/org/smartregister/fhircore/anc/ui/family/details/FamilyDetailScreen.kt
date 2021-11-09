@@ -125,6 +125,12 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
         // spacer for padding
         Spacer(Modifier.height(12.dp))
 
+        // Monthly Visit heading
+        MonthlyVisitHeading()
+
+        // spacer for padding
+        Spacer(Modifier.height(12.dp))
+
         // members heading
         MemberHeading(dataProvider.getAddMemberItemClickListener())
 
@@ -346,6 +352,20 @@ fun HouseHoldTaskHeading() {
       textAlign = TextAlign.Start,
       fontSize = 16.sp,
     )
+  }
+}
+
+@Composable
+fun MonthlyVisitHeading() {
+  Card(elevation = 0.dp, modifier = Modifier.fillMaxWidth()) {
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(6.dp)) {
+      Text(
+        text = "+" + stringResource(id = R.string.monthly_visit).uppercase(),
+        color = colorResource(id = R.color.colorPrimaryLight),
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+      )
+    }
   }
 }
 
