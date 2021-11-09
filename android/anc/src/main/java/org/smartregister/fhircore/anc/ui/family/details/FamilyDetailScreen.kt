@@ -120,15 +120,11 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
         Spacer(Modifier.height(12.dp))
 
         // members heading
-        MemberHeading()
+        MemberHeading(dataProvider.getAddMemberItemClickListener())
 
         // members list
         dataProvider.getFamilyMembers().observeAsState().value?.run {
-          MembersList(
-            this,
-            dataProvider.getMemberItemClickListener(),
-            dataProvider.getAddMemberItemClickListener()
-          )
+          MembersList(this, dataProvider.getMemberItemClickListener())
         }
 
         // encounter heading and see all button
@@ -147,7 +143,7 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
 }
 
 @Composable
-fun MemberHeading() {
+fun MemberHeading(addMemberItemClickListener: () -> Unit) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -163,7 +159,7 @@ fun MemberHeading() {
     )
 
     // Add button
-    TextButton(contentPadding = PaddingValues(0.dp), onClick = {}) {
+    TextButton(contentPadding = PaddingValues(0.dp), onClick = { addMemberItemClickListener() }) {
       Text(
         text = stringResource(id = R.string.add).uppercase() + "+",
         color = colorResource(id = R.color.colorPrimaryLight),
@@ -178,8 +174,7 @@ fun MemberHeading() {
 @Composable
 fun MembersList(
   members: List<FamilyMemberItem>,
-  memberItemClickListener: (item: FamilyMemberItem) -> Unit,
-  addMemberItemClickListener: () -> Unit
+  memberItemClickListener: (item: FamilyMemberItem) -> Unit
 ) {
 
   Card(
@@ -220,17 +215,6 @@ fun MembersList(
                 .background(color = colorResource(id = R.color.white_smoke))
           )
         }
-      }
-
-      TextButton(onClick = { addMemberItemClickListener() }, modifier = Modifier.fillMaxWidth()) {
-        Text(
-          text = stringResource(id = R.string.add_member).uppercase(),
-          color = colorResource(id = R.color.colorPrimaryLight),
-          fontSize = 16.sp,
-          fontWeight = FontWeight.Bold,
-          textAlign = TextAlign.Center,
-          modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
-        )
       }
     }
   }
