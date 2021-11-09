@@ -32,6 +32,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Expression
+import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -65,7 +67,7 @@ open class QuestionnaireViewModel(
   suspend fun loadQuestionnaire(id: String): Questionnaire? =
     defaultRepository.loadResource<Questionnaire>(id)?.apply {
       if (readOnly) {
-        changeQuestionsToReadOnly(this.item)
+        changeQuestionsToReadOnly(this.item, "QuestionnaireResponse.item")
       }
     }
 
@@ -220,13 +222,29 @@ open class QuestionnaireViewModel(
     return ResourceMapper.populate(questionnaire, *getPopulationResources(intent))
   }
 
-  private fun changeQuestionsToReadOnly(items: List<Questionnaire.QuestionnaireItemComponent>) {
+  private fun changeQuestionsToReadOnly(
+    items: List<Questionnaire.QuestionnaireItemComponent>,
+    path: String
+  ) {
     items.forEach { item ->
       if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
         item.readOnly = true
-      } else {
-        changeQuestionsToReadOnly(item.item)
+        item.extension =
+          listOf(
+            Extension().apply {
+              url =
+                "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression"
+              setValue(
+                Expression().apply {
+                  language = "text/fhirpath"
+                  expression = "$path.where(linkId = '${item.linkId}').answer.value"
+                }
+              )
+            }
+          )
       }
+
+      changeQuestionsToReadOnly(item.item, "$path.where(linkId = '${item.linkId}').item")
     }
   }
 }
