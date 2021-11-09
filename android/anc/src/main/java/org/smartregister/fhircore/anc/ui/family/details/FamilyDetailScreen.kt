@@ -119,6 +119,12 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
         // spacer for padding
         Spacer(Modifier.height(12.dp))
 
+        // Household tasks heading
+        HouseHoldTaskHeading()
+
+        // spacer for padding
+        Spacer(Modifier.height(12.dp))
+
         // members heading
         MemberHeading(dataProvider.getAddMemberItemClickListener())
 
@@ -322,6 +328,24 @@ fun EncounterList(members: List<Encounter>, encounterItemClickListener: (item: E
         }
       }
     }
+  }
+}
+
+@Composable
+fun HouseHoldTaskHeading() {
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween,
+    modifier = Modifier.fillMaxWidth().padding(top = 18.dp)
+  ) {
+    // HouseHold Task header
+    Text(
+      text = stringResource(id = R.string.household_tasks).uppercase(),
+      color = colorResource(id = R.color.status_gray),
+      fontWeight = FontWeight.Bold,
+      textAlign = TextAlign.Start,
+      fontSize = 16.sp,
+    )
   }
 }
 

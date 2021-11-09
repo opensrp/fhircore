@@ -85,4 +85,6 @@
     <string name="anc_clients">ANC Clients</string>
     <string name="add">ADD</string>
     <string name="anc_visit_due">ANC visit due</string>
+    <string name="household_tasks">Household Tasks</string>
+    <string name="monthly_visit">Monthly Visit</string>
 </resources>
