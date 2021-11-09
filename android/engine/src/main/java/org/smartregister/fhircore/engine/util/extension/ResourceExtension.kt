@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.json.JSONException
 import org.json.JSONObject
