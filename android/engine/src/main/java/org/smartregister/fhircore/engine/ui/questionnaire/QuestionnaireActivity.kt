@@ -31,16 +31,16 @@ import com.google.android.fhir.FhirEngineProvider.fhirEngine
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
-import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
-import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showErrorAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.extension.updateFrom
 import timber.log.Timber
 
 /**
@@ -140,26 +141,23 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                   }
                 }
                 clientIdentifier != null -> {
-
                   try {
                     fhirEngine.load(Patient::class.java, clientIdentifier!!)
-                    val parsedQuestionnaireResponse =
-                      parser.encodeResourceToString(
-                        questionnaireViewModel.generateQuestionnaireResponse(
-                          questionnaire!!,
-                          intent
-                        )
-                      )
-                    bundleOf(
-                      Pair(BUNDLE_KEY_QUESTIONNAIRE, parser.encodeResourceToString(questionnaire)),
-                      Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
-                    )
                   } catch (e: ResourceNotFoundException) {
                     setBarcode(questionnaire, clientIdentifier!!, true)
-                    bundleOf(
-                      Pair(BUNDLE_KEY_QUESTIONNAIRE, parser.encodeResourceToString(questionnaire))
-                    )
                   }
+
+                  val parsedQuestionnaireResponse =
+                    parser.encodeResourceToString(
+                      questionnaireViewModel.generateQuestionnaireResponse(
+                        questionnaire!!,
+                        intent
+                      )
+                    )
+                  bundleOf(
+                    Pair(BUNDLE_KEY_QUESTIONNAIRE, parser.encodeResourceToString(questionnaire)),
+                    Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
+                  )
                 }
                 else -> bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
               }
@@ -237,17 +235,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     saveProcessingAlertDialog = showProgressAlert(this, R.string.saving_registration)
 
     val questionnaireResponse = getQuestionnaireResponse()
-
-    if (!validQuestionnaireResponse(questionnaireResponse)) {
-      saveProcessingAlertDialog.dismiss()
-
-      showErrorAlert(
-        this,
-        R.string.questionnaire_alert_invalid_message,
-        R.string.questionnaire_alert_invalid_title
-      )
-      return
-    }
+    questionnaireResponse.questionnaire = questionnaire.idBase
 
     handleQuestionnaireResponse(questionnaireResponse)
 
@@ -265,14 +253,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
-    return QuestionnaireResponseValidator.validate(
-        questionnaire.item,
-        questionnaireResponse.item,
-        this
-      )
-      .values
-      .flatten()
-      .all { it.isValid }
+    return true
   }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
@@ -302,7 +283,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       formName: String,
       readOnly: Boolean = false,
       questionnaireResponse: QuestionnaireResponse? = null,
-      immunizationId: String? = null
+      immunizationId: String? = null,
+      populationResources: ArrayList<Resource> = ArrayList()
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
@@ -311,11 +293,21 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         Pair(ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY, immunizationId)
       )
         .apply {
+          val jsonParser = FhirContext.forR4().newJsonParser()
           if (questionnaireResponse != null) {
             putString(
               QUESTIONNAIRE_RESPONSE,
-              FhirContext.forR4().newJsonParser().encodeResourceToString(questionnaireResponse)
+              jsonParser.encodeResourceToString(questionnaireResponse)
             )
+          }
+
+          val resourcesList = ArrayList<String>()
+          populationResources.forEach { resource ->
+            resourcesList.add(jsonParser.encodeResourceToString(resource))
+          }
+
+          if (resourcesList.isNotEmpty()) {
+            putStringArrayList(QUESTIONNAIRE_POPULATION_RESOURCES, resourcesList)
           }
         }
   }

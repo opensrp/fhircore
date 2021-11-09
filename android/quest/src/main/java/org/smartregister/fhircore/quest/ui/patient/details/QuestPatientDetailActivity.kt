@@ -21,6 +21,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -75,17 +76,18 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
     )
   }
 
-  private fun onTestResultItemClickListener(item: QuestionnaireResponse) {
-    if (item.questionnaire != null) {
-      val questionnaireId = item.questionnaire.split("/")[1]
+  private fun onTestResultItemClickListener(questionnaireResponse: QuestionnaireResponse) {
+    if (questionnaireResponse.questionnaire != null) {
+      val questionnaireId = questionnaireResponse.questionnaire.split("/")[1]
+      val populationResources = ArrayList<Resource>().apply { add(questionnaireResponse) }
       startActivity(
         Intent(this, QuestionnaireActivity::class.java)
           .putExtras(
             QuestionnaireActivity.intentArgs(
-              clientIdentifier = null,
+              clientIdentifier = "",
               formName = questionnaireId,
               readOnly = true,
-              questionnaireResponse = item
+              populationResources = populationResources
             )
           )
       )
