@@ -148,14 +148,31 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
 
 @Composable
 fun MemberHeading() {
-  Text(
-    text = stringResource(id = R.string.members).uppercase(),
-    color = colorResource(id = R.color.status_gray),
-    fontWeight = FontWeight.Bold,
-    textAlign = TextAlign.Start,
-    fontSize = 16.sp,
-    modifier = Modifier.fillMaxWidth().padding(top = 6.dp)
-  )
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween,
+    modifier = Modifier.fillMaxWidth().padding(top = 18.dp)
+  ) {
+    // Members header
+    Text(
+      text = stringResource(id = R.string.members).uppercase(),
+      color = colorResource(id = R.color.status_gray),
+      fontWeight = FontWeight.Bold,
+      textAlign = TextAlign.Start,
+      fontSize = 16.sp,
+    )
+
+    // Add button
+    TextButton(contentPadding = PaddingValues(0.dp), onClick = {}) {
+      Text(
+        text = stringResource(id = R.string.add).uppercase() + "+",
+        color = colorResource(id = R.color.colorPrimaryLight),
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Start
+      )
+    }
+  }
 }
 
 @Composable
