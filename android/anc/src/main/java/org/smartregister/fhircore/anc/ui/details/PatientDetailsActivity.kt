@@ -30,7 +30,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.material.tabs.TabLayoutMediator
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.databinding.ActivityNonAncDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
@@ -81,8 +81,6 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       .fetchDemographics()
       .observe(this@PatientDetailsActivity, this::handlePatientDemographics)
 
-    ancDetailsViewModel.isPregnant().observe(this@PatientDetailsActivity, this::handleMenuItem)
-
     adapter =
       ViewPagerAdapter(
         supportFragmentManager,
@@ -99,10 +97,6 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       .attach()
 
     activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
-  }
-
-  private fun handleMenuItem(isPregnant: Boolean) {
-    this.isPregnant = isPregnant
   }
 
   override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -136,7 +130,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
     return super.onOptionsItemSelected(item)
   }
 
-  private fun handlePatientDemographics(patient: AncPatientDetailItem) {
+  private fun handlePatientDemographics(patient: PatientDetailItem) {
     with(patient) {
       val patientDetails =
         listOf(this.patientDetails.name, this.patientDetails.gender, this.patientDetails.age)
@@ -146,6 +140,8 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
           .joinToString(separator = " ID: ")
       activityAncDetailsBinding.txtViewPatientDetails.text = patientDetails
       activityAncDetailsBinding.txtViewPatientId.text = patientId
+      isPregnant =
+        if (this.patientDetails.gender == "Male") true else this.patientDetails.isPregnant
     }
   }
 

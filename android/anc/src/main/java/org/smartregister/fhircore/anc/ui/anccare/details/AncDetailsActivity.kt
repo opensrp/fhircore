@@ -29,6 +29,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.databinding.ActivityAncDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
@@ -81,7 +82,7 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
         AncDetailsViewModel(patientRepository, patientId = patientId).createFactory()
       )[AncDetailsViewModel::class.java]
 
-    ancDetailsViewModel.isPregnant().observe(this@AncDetailsActivity, this::handleMenuItem)
+    ancDetailsViewModel.fetchDemographics().observe(this@AncDetailsActivity, this::handleMenuItem)
 
     activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
   }
@@ -91,8 +92,8 @@ class AncDetailsActivity : BaseMultiLanguageActivity() {
     return true
   }
 
-  private fun handleMenuItem(isPregnant: Boolean) {
-    this.isPregnant = isPregnant
+  private fun handleMenuItem(patientItem: PatientDetailItem) {
+    this.isPregnant = patientItem.patientDetails.isPregnant
   }
 
   override fun onPrepareOptionsMenu(menu: Menu?): Boolean {

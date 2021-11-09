@@ -47,9 +47,9 @@ import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.model.PatientDetailItem
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.FragmentRobolectricTest
@@ -74,7 +74,7 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   private val patientId = "samplePatientId"
-  var ancPatientDetailItem = spyk<AncPatientDetailItem>()
+  var ancPatientDetailItem = spyk<PatientDetailItem>()
 
   @Before
   fun setUp() {
@@ -91,8 +91,8 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
     every { upcomingServicesAdapter.submitList(any()) } returns Unit
     every { lastSeen.submitList(any()) } returns Unit
     every { ancPatientDetailItem.patientDetails } returns
-      AncPatientItem(patientId, "Mandela Nelson", "M", "26")
-    every { ancPatientDetailItem.patientDetailsHead } returns AncPatientItem()
+      PatientItem(patientId, "Mandela Nelson", "M", "26")
+    every { ancPatientDetailItem.patientDetailsHead } returns PatientItem()
     coEvery { patientRepository.fetchDemographics(patientId) } returns ancPatientDetailItem
 
     patientDetailsViewModel =
@@ -245,15 +245,15 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   fun testThatDemographicViewsAreUpdated() {
 
     val item =
-      AncPatientDetailItem(
-        AncPatientItem(patientIdentifier = "1", name = "demo", gender = "M", age = "20"),
-        AncPatientItem(demographics = "2")
+      PatientDetailItem(
+        PatientItem(patientIdentifier = "1", name = "demo", gender = "M", age = "20"),
+        PatientItem(demographics = "2")
       )
 
     ReflectionHelpers.callInstanceMethod<Any>(
       patientDetailsFragment,
       "handlePatientDemographics",
-      ReflectionHelpers.ClassParameter(AncPatientDetailItem::class.java, item)
+      ReflectionHelpers.ClassParameter(PatientDetailItem::class.java, item)
     )
 
     Assert.assertEquals("demo, M, 20", patientDetailsFragment.binding.txtViewPatientDetails.text)

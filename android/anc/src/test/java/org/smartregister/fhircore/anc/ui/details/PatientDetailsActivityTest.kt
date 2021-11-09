@@ -34,8 +34,8 @@ import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.PatientDetailItem
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
@@ -59,7 +59,7 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   private val patientId = "samplePatientId"
-  var ancPatientDetailItem = spyk<AncPatientDetailItem>()
+  var ancPatientDetailItem = spyk<PatientDetailItem>()
 
   @Before
   fun setUp() {
@@ -69,8 +69,8 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     patientRepository = mockk()
 
     every { ancPatientDetailItem.patientDetails } returns
-      AncPatientItem(patientId, "Mandela Nelson", "M", "26")
-    every { ancPatientDetailItem.patientDetailsHead } returns AncPatientItem()
+      PatientItem(patientId, "Mandela Nelson", "M", "26")
+    every { ancPatientDetailItem.patientDetailsHead } returns PatientItem()
     coEvery { patientRepository.fetchDemographics(patientId) } returns ancPatientDetailItem
 
     patientDetailsViewModel =

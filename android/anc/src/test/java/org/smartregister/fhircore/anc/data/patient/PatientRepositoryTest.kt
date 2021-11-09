@@ -58,13 +58,12 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
-import org.smartregister.fhircore.engine.util.extension.isPregnant
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
 class PatientRepositoryTest : RobolectricTest() {
@@ -198,7 +197,7 @@ class PatientRepositoryTest : RobolectricTest() {
     }
   }
 
-  private fun verifyPatient(patient: AncPatientItem) {
+  private fun verifyPatient(patient: PatientItem) {
     with(patient) {
       Assert.assertEquals(PATIENT_ID_1, patientIdentifier)
       Assert.assertEquals("Jane Mc", name)
@@ -209,7 +208,7 @@ class PatientRepositoryTest : RobolectricTest() {
     }
   }
 
-  private fun verifyHeadPatient(patient: AncPatientItem) {
+  private fun verifyHeadPatient(patient: PatientItem) {
     with(patient) {
       Assert.assertEquals(PATIENT_ID_1, patientIdentifier)
       Assert.assertEquals("Salina Jetly", name)
@@ -294,24 +293,6 @@ class PatientRepositoryTest : RobolectricTest() {
       Assert.assertEquals(1, carePlans.size)
       with(carePlans.first()) { Assert.assertEquals(cpTitle, title) }
     }
-
-    unmockkStatic(FhirContext::class)
-  }
-
-  @Test
-  fun fetchPatientShouldReturnExpectedPatient() {
-    mockkStatic(FhirContext::class)
-
-    val fhirContext = mockk<FhirContext>()
-    val parser = mockk<IParser>()
-
-    val patient = spyk<Patient>().apply { idElement.id = PATIENT_ID_1 }
-    coEvery { fhirEngine.load(Patient::class.java, PATIENT_ID_1) } returns patient
-    every { FhirContext.forR4() } returns fhirContext
-    every { fhirContext.newJsonParser() } returns parser
-    every { parser.parseResource(any<String>()) } returns patient
-    val patientN = runBlocking { repository.fetchPatient(PATIENT_ID_1) }
-    Assert.assertEquals(patient.isPregnant(), patientN.isPregnant())
 
     unmockkStatic(FhirContext::class)
   }
