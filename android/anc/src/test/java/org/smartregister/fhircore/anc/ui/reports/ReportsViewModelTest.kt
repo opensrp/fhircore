@@ -24,7 +24,6 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.ui.family.register.ReportsHomeActivity
 
 class ReportsViewModelTest : RobolectricTest() {
 

@@ -29,7 +29,6 @@ import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
-import org.smartregister.fhircore.anc.ui.family.register.ReportsHomeActivity
 
 @Config(shadows = [AncApplicationShadow::class])
 class ReportsHomeActivityTest : ActivityRobolectricTest() {

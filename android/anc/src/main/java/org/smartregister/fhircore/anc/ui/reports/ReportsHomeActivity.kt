@@ -32,7 +32,11 @@ class ReportsHomeActivity : BaseMultiLanguageActivity() {
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
     val repository = ReportRepository((application as AncApplication).fhirEngine, patientId)
     val viewModel = ReportsViewModel.get(this, application as AncApplication, repository)
-    viewModel.setAppBackClickListener(this::finish)
+    viewModel.setAppBackClickListener(this::handleBackClicked)
     setContent { AppTheme { ReportsHomeScreen(viewModel) } }
+  }
+
+  private fun handleBackClicked() {
+    finish()
   }
 }
