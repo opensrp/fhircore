@@ -20,8 +20,8 @@ import androidx.compose.runtime.Stable
 
 @Stable
 data class ReportItem(
-  var id: String = "",
-  var title: String = "",
-  var description: String = "",
-  var reportType: String = "",
+  val id: String = "",
+  val title: String = "",
+  val description: String = "",
+  val reportType: String = "",
 )

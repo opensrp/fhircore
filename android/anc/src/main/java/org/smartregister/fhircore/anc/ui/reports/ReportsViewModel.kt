@@ -24,6 +24,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
 import org.smartregister.fhircore.anc.AncApplication
+import org.smartregister.fhircore.anc.data.report.ReportDataProvider
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil

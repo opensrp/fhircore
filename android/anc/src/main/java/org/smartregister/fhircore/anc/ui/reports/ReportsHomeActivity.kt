@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.family.register
+package org.smartregister.fhircore.anc.ui.reports
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.report.ReportRepository
-import org.smartregister.fhircore.anc.ui.reports.ReportsHomeScreen
-import org.smartregister.fhircore.anc.ui.reports.ReportsViewModel
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -34,11 +32,7 @@ class ReportsHomeActivity : BaseMultiLanguageActivity() {
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
     val repository = ReportRepository((application as AncApplication).fhirEngine, patientId)
     val viewModel = ReportsViewModel.get(this, application as AncApplication, repository)
-    viewModel.setAppBackClickListener(this::handleBackClicked)
+    viewModel.setAppBackClickListener(this::finish)
     setContent { AppTheme { ReportsHomeScreen(viewModel) } }
-  }
-
-  private fun handleBackClicked() {
-    finish()
   }
 }

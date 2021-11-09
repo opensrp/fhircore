@@ -18,7 +18,7 @@ package org.smartregister.fhircore.anc.ui.reports
 
 import org.smartregister.fhircore.engine.util.ListenerIntent
 
-/** [ListenerIntent] used on individual rows click listeners for family register. */
+/** [ListenerIntent] used on individual rows click listeners for reports type items. */
 sealed class ReportListenerIntent : ListenerIntent
 
 object OpenReportFilter : ReportListenerIntent()

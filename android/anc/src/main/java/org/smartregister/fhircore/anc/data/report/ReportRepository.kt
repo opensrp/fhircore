@@ -50,8 +50,18 @@ class ReportRepository(val fhirEngine: FhirEngine, private val patientId: String
 
       val data =
         listOf(
-          ReportItem(title = "Test Report", description = "Women having test reports encounters"),
-          ReportItem(title = "Test Report 2", description = "Women having test reports ANC")
+          ReportItem(
+            id = "1",
+            title = "Test Report 1",
+            description = "Women having test reports encounters",
+            reportType = "4"
+          ),
+          ReportItem(
+            id = "2",
+            title = "Test Report 2",
+            description = "Women having test reports ANC",
+            reportType = "4"
+          )
         )
 
       LoadResult.Page(data = data, prevKey = null, nextKey = null)

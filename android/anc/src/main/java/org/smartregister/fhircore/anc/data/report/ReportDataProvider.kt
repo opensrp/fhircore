@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.reports
+package org.smartregister.fhircore.anc.data.report
 
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
