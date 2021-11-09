@@ -67,6 +67,9 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
+const val TOOLBAR_TITLE = "toolbarTitle"
+const val TOOLBAR_BACK_ARROW = "toolbarBackArrow"
+
 @Composable
 fun ReportsHomeScreen(dataProvider: ReportDataProvider) {
   Surface(color = colorResource(id = R.color.white)) {
@@ -74,11 +77,14 @@ fun ReportsHomeScreen(dataProvider: ReportDataProvider) {
 
       // top bar
       TopAppBar(
-        title = { Text(text = stringResource(id = R.string.reports)) },
+        title = {
+          Text(text = stringResource(id = R.string.reports), Modifier.testTag(TOOLBAR_TITLE))
+        },
         navigationIcon = {
-          IconButton(onClick = { dataProvider.getAppBackClickListener().invoke() }) {
-            Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")
-          }
+          IconButton(
+            onClick = { dataProvider.getAppBackClickListener().invoke() },
+            Modifier.testTag(TOOLBAR_BACK_ARROW)
+          ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
         }
       )
 
@@ -117,10 +123,10 @@ fun LoadingItem() {
 @Composable
 @ExcludeFromJacocoGeneratedReport
 fun ReportsHomeScreenPreview() {
-  AppTheme { ReportsHomeScreen(dummyData()) }
+  AppTheme { ReportsHomeScreen(dummyReportData()) }
 }
 
-fun dummyData() =
+fun dummyReportData() =
   object : ReportDataProvider {
     override fun getReportsTypeList(): Flow<PagingData<ReportItem>> {
       return Pager(PagingConfig(pageSize = 20)) {
