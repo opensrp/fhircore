@@ -136,4 +136,16 @@ class SearchExtensionTest {
     assertEquals("Patient/123344", referenceFilters[0].value)
     assertEquals("link", referenceFilters[0].parameter?.paramName)
   }
+
+  @Test
+  fun testFilterByPatientNameShouldAddStringFilter() {
+    val search = Search(ResourceType.Patient)
+    search.filterByPatientName("John")
+
+    val stringFilters = ReflectionHelpers.getField<List<StringFilter>>(search, "stringFilters")
+
+    assertEquals(1, stringFilters.size)
+    assertEquals("John", stringFilters[0].value)
+    assertEquals(StringFilterModifier.CONTAINS, stringFilters[0].modifier)
+  }
 }

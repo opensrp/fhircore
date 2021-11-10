@@ -20,12 +20,15 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
+import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.sync.SyncInitiator
 
 class UserProfileScreenKtTest : RobolectricTest() {
 
@@ -49,7 +52,15 @@ class UserProfileScreenKtTest : RobolectricTest() {
 
   @Test
   fun testSyncRowClickShouldInitiateSync() {
+    val mockSyncInitiator = mockk<SyncInitiator> { every { runSync() } returns Unit }
+
+    every { userProfileViewModel.configurableApplication } returns
+      mockk {
+        every { syncBroadcaster } returns
+          mockk { every { syncInitiator } returns mockSyncInitiator }
+      }
+
     composeRule.onNodeWithText("Sync").performClick()
-    verify { userProfileViewModel.runSync() }
+    verify { mockSyncInitiator.runSync() }
   }
 }
