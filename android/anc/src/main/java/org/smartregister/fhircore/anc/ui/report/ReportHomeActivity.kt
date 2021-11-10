@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.reports
+package org.smartregister.fhircore.anc.ui.report
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
