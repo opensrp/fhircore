@@ -22,13 +22,11 @@ import androidx.paging.PagingState
 import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.mockk
-import io.mockk.mockkObject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Encounter
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
@@ -53,10 +51,10 @@ class ReportRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore(
-    "This test should be update as per FHIR resource update (Encounter -> Patient/any)" +
-      "Davison will be working on reports items so we can take care for this with #675"
-  )
+  //  @Ignore(
+  //    "This test should be update as per FHIR resource update (Encounter -> Patient/any)" +
+  //      "Davison will be working on reports items so we can take care for this with #675"
+  //  )
   fun testLoadReturnsPageWhenOnSuccessfulLoadOfItemKeyedData() = runBlockingTest {
     val encounter1 = getTestEncounter1()
     val encounter2 = getTestEncounter2()
@@ -74,24 +72,9 @@ class ReportRepositoryTest : RobolectricTest() {
           ReportItem(report2.id, report2.title, report2.description, report2.reportType)
         ),
         null,
-        1
+        null
       ),
       repository.load(PagingSource.LoadParams.Refresh(1, 1, false))
-    )
-
-    mockkObject(PagingSource.LoadResult.Error::class)
-
-    coEvery {
-      hint(Encounter::class)
-      fhirEngine.search<Encounter>(any())
-    } returns listOf(encounter1)
-
-    val result = repository.load(PagingSource.LoadParams.Refresh(null, 1, false))
-
-    Assert.assertTrue(result is PagingSource.LoadResult.Error)
-    Assert.assertEquals(
-      NullPointerException::class.simpleName,
-      (result as PagingSource.LoadResult.Error).throwable.javaClass.simpleName
     )
   }
 
