@@ -131,7 +131,7 @@ class MwCoreApplication : Application(), ConfigurableApplication {
   companion object {
     private lateinit var questApplication: MwCoreApplication
     const val CONFIG_APP = "quest-app"
-    private const val CONFIG_PATIENT_REGISTER = "quest-app-patient-register"
+    private const val CONFIG_PATIENT_REGISTER = "mwcore-app-patient-register"
 
     private const val CONFIG_RESOURCE_IDS = "$CONFIG_APP,$CONFIG_PATIENT_REGISTER"
 
