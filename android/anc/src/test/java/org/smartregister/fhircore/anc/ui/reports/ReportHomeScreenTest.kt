@@ -29,10 +29,10 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
-import org.smartregister.fhircore.anc.R
 
 @Config(shadows = [AncApplicationShadow::class])
 class ReportHomeScreenTest : RobolectricTest() {
@@ -47,14 +47,14 @@ class ReportHomeScreenTest : RobolectricTest() {
     repository = mockk()
     viewModel =
       spyk(objToCopy = ReportViewModel(ApplicationProvider.getApplicationContext(), repository))
-     composeRule.setContent { ReportHomeScreen(viewModel = viewModel) }
+    composeRule.setContent { ReportHomeScreen(viewModel = viewModel) }
   }
 
   @Test
   @Ignore("composeRule.setContent is failing")
   fun testReportHomeScreenComponents() {
-     // toolbar should have valid title and icon
-     composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals(app.getString(R.string.reports))
-     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
+    // toolbar should have valid title and icon
+    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals(app.getString(R.string.reports))
+    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
   }
 }
