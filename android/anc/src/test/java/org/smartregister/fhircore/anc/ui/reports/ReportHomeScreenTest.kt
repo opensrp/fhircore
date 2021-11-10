@@ -17,17 +17,22 @@
 package org.smartregister.fhircore.anc.ui.reports
 
 import android.app.Application
+import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.mockk
 import io.mockk.spyk
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
+import org.smartregister.fhircore.anc.R
 
 @Config(shadows = [AncApplicationShadow::class])
 class ReportHomeScreenTest : RobolectricTest() {
@@ -40,17 +45,16 @@ class ReportHomeScreenTest : RobolectricTest() {
   @Before
   fun setUp() {
     repository = mockk()
-    // val dataItems = spyk<Encounter>()
-    // coEvery { viewModel.getReportsTypeList() } returns emptyList<>()
     viewModel =
       spyk(objToCopy = ReportViewModel(ApplicationProvider.getApplicationContext(), repository))
-    // composeRule.setContent { ReportHomeScreen(viewModel = viewModel) }
+     composeRule.setContent { ReportHomeScreen(viewModel = viewModel) }
   }
 
   @Test
+  @Ignore("composeRule.setContent is failing")
   fun testReportHomeScreenComponents() {
-    // toolbar should have valid title and icon
-    // composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals(app.getString(R.string.reports))
-    // composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
+     // toolbar should have valid title and icon
+     composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals(app.getString(R.string.reports))
+     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
   }
 }
