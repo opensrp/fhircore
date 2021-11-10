@@ -1,6 +1,6 @@
 [
   {
-    "id": "mw-core-app",
+    "id": "quest-app",
     "theme": "QuestDefault",
     "languages": ["en", "sw"]
   }
