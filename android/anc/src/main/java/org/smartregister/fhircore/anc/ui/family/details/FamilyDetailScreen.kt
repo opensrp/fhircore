@@ -139,8 +139,8 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
           MembersList(this, dataProvider.getMemberItemClickListener())
         }
 
-        // encounter heading and see all button
-        EncounterHeader(dataProvider.getSeeAllEncounterClickListener())
+        // Upcoming services heading and see all button
+        UpcomingServicesHeader(dataProvider.getSeeAllEncounterClickListener())
 
         // encounter list
         dataProvider.getEncounters().observeAsState().value?.run {
@@ -254,7 +254,7 @@ fun MembersList(
 }
 
 @Composable
-fun EncounterHeader(seeAllEncounterClickListener: () -> Unit) {
+fun UpcomingServicesHeader(seeAllEncounterClickListener: () -> Unit) {
 
   Row(
     verticalAlignment = Alignment.CenterVertically,
@@ -264,7 +264,7 @@ fun EncounterHeader(seeAllEncounterClickListener: () -> Unit) {
 
     // encounter heading
     Text(
-      text = stringResource(id = R.string.encounters).uppercase(),
+      text = stringResource(id = R.string.upcoming_services).uppercase(),
       color = colorResource(id = R.color.status_gray),
       fontWeight = FontWeight.Bold,
       textAlign = TextAlign.Start,
