@@ -31,7 +31,7 @@ import com.google.android.fhir.FhirEngineProvider.fhirEngine
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
-import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.Patient
@@ -40,6 +40,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
@@ -48,7 +49,6 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.showToast
-import org.smartregister.fhircore.engine.util.extension.updateFrom
 import timber.log.Timber
 
 /**
@@ -129,11 +129,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       if (savedInstanceState == null) {
         val fragment =
           FhirCoreQuestionnaireFragment().apply {
-            val parsedQuestionnaire = parser.encodeResourceToString(questionnaire)
+            val questionnaireString = parser.encodeResourceToString(questionnaire)
             arguments =
               when {
                 clientIdentifier == null -> {
-                  bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire)).apply {
+                  bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, questionnaireString)).apply {
                     val questionnaireResponse = intent.getStringExtra(QUESTIONNAIRE_RESPONSE)
                     if (readOnly && questionnaireResponse != null) {
                       putString(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, questionnaireResponse)
@@ -149,17 +149,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
                   val parsedQuestionnaireResponse =
                     parser.encodeResourceToString(
-                      questionnaireViewModel.generateQuestionnaireResponse(
-                        questionnaire!!,
-                        intent
-                      )
+                      questionnaireViewModel.generateQuestionnaireResponse(questionnaire!!, intent)
                     )
                   bundleOf(
                     Pair(BUNDLE_KEY_QUESTIONNAIRE, parser.encodeResourceToString(questionnaire)),
                     Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, parsedQuestionnaireResponse)
                   )
                 }
-                else -> bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, parsedQuestionnaire))
+                else -> bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, questionnaireString))
               }
           }
         supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
@@ -235,7 +232,16 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     saveProcessingAlertDialog = showProgressAlert(this, R.string.saving_registration)
 
     val questionnaireResponse = getQuestionnaireResponse()
-    questionnaireResponse.questionnaire = questionnaire.idBase
+    if (!validQuestionnaireResponse(questionnaireResponse)) {
+      saveProcessingAlertDialog.dismiss()
+
+      AlertDialogue.showErrorAlert(
+        this,
+        R.string.questionnaire_alert_invalid_message,
+        R.string.questionnaire_alert_invalid_title
+      )
+      return
+    }
 
     handleQuestionnaireResponse(questionnaireResponse)
 
@@ -253,7 +259,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
-    return true
+    return QuestionnaireResponseValidator.validate(
+        questionnaire.item,
+        questionnaireResponse.item,
+        this
+      )
+      .values
+      .flatten()
+      .all { it.isValid }
   }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
