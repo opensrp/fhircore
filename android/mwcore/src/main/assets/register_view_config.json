@@ -13,7 +13,28 @@
     "showNewClientButton": true,
     "showSideMenu": false,
     "showBottomMenu": true,
-    "registrationForm": "3435",
+    "registrationForm": "1",
+    "primaryFilter": {
+      "key": "_tag",
+      "system": "http://fhir.ona.io",
+      "code": "000003"
+    }
+  },
+  {
+    "id": "mwcore-app-patient-register",
+    "appTitle": "Clients",
+    "filterText": "Show overdue",
+    "searchBarHint": "Search for ID or client name",
+    "newClientButtonText": "Add new client",
+    "newClientButtonStyle": "rounded_corner",
+    "showSearchBar": false,
+    "showFilter": false,
+    "switchLanguages": true,
+    "showScanQRCode": false,
+    "showNewClientButton": false,
+    "showSideMenu": false,
+    "showBottomMenu": false,
+    "registrationForm": "1",
     "primaryFilter": {
       "key": "_tag",
       "system": "http://fhir.ona.io",
