@@ -28,6 +28,7 @@ import org.smartregister.fhircore.engine.configuration.app.applicationConfigurat
 import org.smartregister.fhircore.engine.configuration.app.loadApplicationConfiguration
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.loadBinaryResourceConfiguration
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
 import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
@@ -71,5 +72,49 @@ class ApplicationConfigurationTest : RobolectricTest() {
     assertEquals("QuestDefault", result.theme)
     assertEquals("en", result.languages[0])
     assertEquals(30, result.syncInterval)
+  }
+
+  @Test
+  fun testShouldVerifyAllDefinedAppPropertiesConfig() {
+
+    val appConfig =
+      ApplicationConfiguration(
+        "quest-app",
+        "QuestDefault",
+        BuildConfig.OAUTH_BASE_URL,
+        BuildConfig.FHIR_BASE_URL,
+        BuildConfig.OAUTH_CIENT_ID,
+        BuildConfig.OAUTH_CLIENT_SECRET,
+        BuildConfig.OAUTH_SCOPE,
+        listOf("en", "sw"),
+        40
+      )
+
+    assertEquals("quest-app", appConfig.id)
+    assertEquals("QuestDefault", appConfig.theme)
+    assertEquals(BuildConfig.OAUTH_BASE_URL, appConfig.oauthServerBaseUrl)
+    assertEquals(BuildConfig.FHIR_BASE_URL, appConfig.fhirServerBaseUrl)
+    assertEquals(BuildConfig.OAUTH_CIENT_ID, appConfig.clientId)
+    assertEquals(BuildConfig.OAUTH_CLIENT_SECRET, appConfig.clientSecret)
+    assertEquals(BuildConfig.OAUTH_SCOPE, appConfig.scope)
+    assertEquals("en", appConfig.languages[0])
+    assertEquals("sw", appConfig.languages[1])
+    assertEquals(40, appConfig.syncInterval)
+  }
+
+  @Test
+  fun testShouldVerifyAllDefaultAppPropertiesConfig() {
+
+    val appConfig = ApplicationConfiguration()
+
+    assertEquals("", appConfig.id)
+    assertEquals("", appConfig.theme)
+    assertEquals("", appConfig.oauthServerBaseUrl)
+    assertEquals("", appConfig.fhirServerBaseUrl)
+    assertEquals("", appConfig.clientId)
+    assertEquals("", appConfig.clientSecret)
+    assertEquals("openid", appConfig.scope)
+    assertEquals("en", appConfig.languages[0])
+    assertEquals(30, appConfig.syncInterval)
   }
 }

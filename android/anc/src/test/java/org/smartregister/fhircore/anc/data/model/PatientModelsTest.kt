@@ -21,6 +21,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 class PatientModelsTest : RobolectricTest() {
@@ -31,6 +32,7 @@ class PatientModelsTest : RobolectricTest() {
   private lateinit var upcomingServiceItem: UpcomingServiceItem
   private lateinit var patientDetailItem: PatientDetailItem
   private lateinit var patientBmiItem: PatientBmiItem
+  private lateinit var reportItem: ReportItem
 
   @Before
   fun setUp() {
@@ -42,6 +44,7 @@ class PatientModelsTest : RobolectricTest() {
     upcomingServiceItem = UpcomingServiceItem("111", "1bc", "2020-02-12")
     patientDetailItem = PatientDetailItem(patientItem, patientItemHead)
     patientBmiItem = PatientBmiItem("1111", "testBMI1", "5'7", "50lbs", "22.22")
+    reportItem = ReportItem("1111", "test report ANC", "women having test report ANC", "4")
   }
 
   @Test
@@ -94,5 +97,13 @@ class PatientModelsTest : RobolectricTest() {
     Assert.assertEquals("5'7", patientBmiItem.height)
     Assert.assertEquals("50lbs", patientBmiItem.weight)
     Assert.assertEquals("22.22", patientBmiItem.bmi)
+  }
+
+  @Test
+  fun testReportItem() {
+    Assert.assertEquals("1111", reportItem.id)
+    Assert.assertEquals("test report ANC", reportItem.title)
+    Assert.assertEquals("women having test report ANC", reportItem.description)
+    Assert.assertEquals("4", reportItem.reportType)
   }
 }

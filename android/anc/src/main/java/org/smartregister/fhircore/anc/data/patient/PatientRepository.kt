@@ -83,7 +83,7 @@ class PatientRepository(
   private val ancOverviewConfig =
     AncApplication.getContext().loadRegisterConfigAnc(AncOverviewType.ANC_OVERVIEW_ID)
 
-  private val resourceMapperExtended = ResourceMapperExtended(fhirEngine)
+  val resourceMapperExtended = ResourceMapperExtended(fhirEngine)
 
   override suspend fun loadData(
     query: String,
