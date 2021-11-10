@@ -20,14 +20,11 @@ import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 
-@Config(shadows = [QuestApplicationShadow::class])
 class QuestAuthenticationServiceTest : RobolectricTest() {
 
   private lateinit var authenticationService: QuestAuthenticationService

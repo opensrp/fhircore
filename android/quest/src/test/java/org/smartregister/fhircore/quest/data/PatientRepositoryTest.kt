@@ -38,7 +38,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.quest.QuestApplication
@@ -46,16 +45,16 @@ import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.genderFull
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 
-@Config(shadows = [QuestApplicationShadow::class])
 class PatientRepositoryTest : RobolectricTest() {
 
   private lateinit var repository: PatientRepository
+
   private lateinit var fhirEngine: FhirEngine
 
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
+
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
   @Before

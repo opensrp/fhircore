@@ -26,7 +26,6 @@ import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
@@ -35,9 +34,7 @@ import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.quest.shadow.FakeKeyStore
-import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 
-@Config(shadows = [QuestApplicationShadow::class])
 class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   private lateinit var patientRegisterActivity: PatientRegisterActivity
@@ -108,11 +105,6 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
         patientRegisterActivity,
         "registerActivityBinding"
       )
-    with(activityBinding) {
-      this.btnRegisterNewClient.text = ""
-      this.toolbarLayout.tvClientsListTitle.text
-      this.bottomNavView.menu.clear()
-    }
 
     with(activityBinding) {
       Assert.assertEquals("Add new client", this.btnRegisterNewClient.text)

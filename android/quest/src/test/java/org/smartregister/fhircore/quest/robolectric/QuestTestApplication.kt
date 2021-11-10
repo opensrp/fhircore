@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.impl
+package org.smartregister.fhircore.quest.robolectric
 
-import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
@@ -34,19 +33,15 @@ import java.time.OffsetDateTime
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
-import org.smartregister.fhircore.engine.shadow.ShadowNpmPackageProvider
-import org.smartregister.fhircore.engine.shadow.activity.ShadowLoginActivity
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.quest.QuestApplication
+import org.smartregister.fhircore.quest.ui.login.LoginActivity
 
-@Config(shadows = [ShadowNpmPackageProvider::class])
-class FhirApplication : Application(), ConfigurableApplication {
+class QuestTestApplication : QuestApplication() {
 
   override val syncJob: SyncJob
     get() = spyk(Sync.basicSyncJob(ApplicationProvider.getApplicationContext()))
@@ -71,23 +66,16 @@ class FhirApplication : Application(), ConfigurableApplication {
     secureSharedPreferenceSpy
   }
 
-  override val resourceSyncParams: Map<ResourceType, Map<String, String>>
-    get() = mapOf()
-
-  override val workerContextProvider: SimpleWorkerContext
-    get() = mockk(relaxed = true) { SimpleWorkerContext() }
-
-  override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
-    this.applicationConfiguration = applicationConfiguration
-  }
+  override var workerContextProvider: SimpleWorkerContext =
+    mockk(relaxed = true) { SimpleWorkerContext() }
 
   override fun schedulePeriodicSync() {
     // Do nothing
   }
 
   override fun onCreate() {
-
-    configurationRegistry.loadAppConfigurations("appId", this) {
+    super.onCreate()
+    configurationRegistry.loadAppConfigurations("quest", this) {
       // Do nothing
     }
   }
@@ -141,7 +129,7 @@ class FhirApplication : Application(), ConfigurableApplication {
     AuthenticationService(ApplicationProvider.getApplicationContext()) {
     override fun skipLogin(): Boolean = false
 
-    override fun getLoginActivityClass(): Class<*> = ShadowLoginActivity::class.java
+    override fun getLoginActivityClass(): Class<*> = LoginActivity::class.java
 
     override fun getAccountType(): String = "test.account.type"
 

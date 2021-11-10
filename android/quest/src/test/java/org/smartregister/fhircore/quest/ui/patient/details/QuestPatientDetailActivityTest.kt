@@ -27,15 +27,12 @@ import org.junit.Before
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
-import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
-import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 
-@Config(shadows = [QuestApplicationShadow::class])
 class QuestPatientDetailActivityTest : ActivityRobolectricTest() {
 
   private lateinit var activity: QuestPatientDetailActivity

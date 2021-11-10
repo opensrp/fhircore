@@ -23,12 +23,9 @@ import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
-import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 
-@Config(shadows = [QuestApplicationShadow::class])
 class QuestPatientTestResultActivityTest : ActivityRobolectricTest() {
 
   private lateinit var activity: QuestPatientTestResultActivity

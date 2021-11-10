@@ -38,7 +38,7 @@ import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
-class QuestApplication : Application(), ConfigurableApplication {
+open class QuestApplication : Application(), ConfigurableApplication {
 
   private val defaultDispatcherProvider = DefaultDispatcherProvider
 
@@ -52,7 +52,7 @@ class QuestApplication : Application(), ConfigurableApplication {
   override val authenticationService: AuthenticationService
     get() = QuestAuthenticationService(applicationContext)
 
-  override val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
+  override val fhirEngine: FhirEngine by lazy { FhirEngineProvider.getInstance(this) }
 
   override val secureSharedPreference: SecureSharedPreference
     get() = SecureSharedPreference(applicationContext)
@@ -74,10 +74,6 @@ class QuestApplication : Application(), ConfigurableApplication {
       SharedPreferencesHelper.read(USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY, null)
     if (publisher != null) questionnaireFilterMap[Questionnaire.SP_PUBLISHER] = publisher
     return questionnaireFilterMap
-  }
-
-  private fun constructFhirEngine(): FhirEngine {
-    return FhirEngineProvider.getInstance(this)
   }
 
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {

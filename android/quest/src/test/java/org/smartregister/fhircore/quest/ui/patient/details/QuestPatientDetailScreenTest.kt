@@ -33,13 +33,10 @@ import androidx.test.core.app.ApplicationProvider
 import java.util.Date
 import org.junit.Rule
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 
-@Config(shadows = [QuestApplicationShadow::class])
 class QuestPatientDetailScreenTest : RobolectricTest() {
 
   @get:Rule val composeRule = createComposeRule()

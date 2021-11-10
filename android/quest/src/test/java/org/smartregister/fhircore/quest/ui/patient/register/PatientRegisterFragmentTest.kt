@@ -25,16 +25,13 @@ import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.shadow.FakeKeyStore
-import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
 
-@Config(shadows = [QuestApplicationShadow::class])
 class PatientRegisterFragmentTest : RobolectricTest() {
 
   private lateinit var registerFragment: PatientRegisterFragment

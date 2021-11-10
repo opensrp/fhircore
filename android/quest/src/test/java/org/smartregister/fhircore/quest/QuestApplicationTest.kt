@@ -20,12 +20,9 @@ import androidx.test.core.app.ApplicationProvider
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 
-@Config(shadows = [QuestApplicationShadow::class])
 class QuestApplicationTest : RobolectricTest() {
 
   private val app by lazy { ApplicationProvider.getApplicationContext<QuestApplication>() }

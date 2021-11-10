@@ -20,11 +20,8 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 
-@Config(shadows = [QuestApplicationShadow::class])
 class QuestAuthAndroidServiceTest : RobolectricTest() {
 
   private lateinit var accountService: QuestAuthAndroidService

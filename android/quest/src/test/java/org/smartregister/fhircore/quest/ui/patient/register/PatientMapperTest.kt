@@ -23,11 +23,8 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 
-@Config(shadows = [QuestApplicationShadow::class])
 class PatientMapperTest : RobolectricTest() {
 
   @Test

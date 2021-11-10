@@ -23,11 +23,8 @@ import io.mockk.mockk
 import java.util.concurrent.Executors
 import junit.framework.Assert.assertNotNull
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.shadow.QuestApplicationShadow
 
-@Config(shadows = [QuestApplicationShadow::class])
 class QuestFhirSyncWorkerTest : RobolectricTest() {
 
   private val questSyncWorker by lazy {

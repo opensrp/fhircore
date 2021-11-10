@@ -41,11 +41,11 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.data.PatientRepository
-import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
-import org.smartregister.fhircore.eir.util.EirConfigClassification
 import org.smartregister.fhircore.eir.ui.adverseevent.AdverseEventQuestionnaireActivity
+import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
 import org.smartregister.fhircore.eir.util.ADVERSE_EVENT_FORM
+import org.smartregister.fhircore.eir.util.EirConfigClassification
 import org.smartregister.fhircore.eir.util.RECORD_VACCINE_FORM
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableView
