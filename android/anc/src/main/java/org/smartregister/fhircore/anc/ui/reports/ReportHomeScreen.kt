@@ -51,19 +51,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.paging.PagingSource
-import androidx.paging.PagingState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemsIndexed
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.report.ReportDataProvider
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
-import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
@@ -71,7 +62,7 @@ const val TOOLBAR_TITLE = "toolbarTitle"
 const val TOOLBAR_BACK_ARROW = "toolbarBackArrow"
 
 @Composable
-fun ReportsHomeScreen(dataProvider: ReportDataProvider) {
+fun ReportHomeScreen(viewModel: ReportViewModel) {
   Surface(color = colorResource(id = R.color.white)) {
     Column {
 
@@ -81,19 +72,18 @@ fun ReportsHomeScreen(dataProvider: ReportDataProvider) {
           Text(text = stringResource(id = R.string.reports), Modifier.testTag(TOOLBAR_TITLE))
         },
         navigationIcon = {
-          IconButton(
-            onClick = { dataProvider.getAppBackClickListener().invoke() },
-            Modifier.testTag(TOOLBAR_BACK_ARROW)
-          ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
+          IconButton(onClick = viewModel::onBackPress, Modifier.testTag(TOOLBAR_BACK_ARROW)) {
+            Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")
+          }
         }
       )
 
-      val lazyEncounterItems = dataProvider.getReportsTypeList().collectAsLazyPagingItems()
+      val lazyReportItems = viewModel.getReportsTypeList().collectAsLazyPagingItems()
 
       LazyColumn(modifier = Modifier.background(Color.White).fillMaxSize()) {
-        itemsIndexed(lazyEncounterItems) { _, item -> ReportRow(item!!, { _, _ -> }) }
+        itemsIndexed(lazyReportItems) { _, item -> ReportRow(item!!, { _, _ -> }) }
 
-        lazyEncounterItems.apply {
+        lazyReportItems.apply {
           when {
             loadState.refresh is LoadState.Loading -> {
               item { LoadingItem() }
@@ -118,47 +108,6 @@ fun LoadingItem() {
         .wrapContentWidth(Alignment.CenterHorizontally)
   )
 }
-
-@Preview
-@Composable
-@ExcludeFromJacocoGeneratedReport
-fun ReportsHomeScreenPreview() {
-  AppTheme { ReportsHomeScreen(dummyReportData()) }
-}
-
-fun dummyReportData() =
-  object : ReportDataProvider {
-    override fun getReportsTypeList(): Flow<PagingData<ReportItem>> {
-      return Pager(PagingConfig(pageSize = 20)) {
-          object : PagingSource<Int, ReportItem>() {
-            override fun getRefreshKey(state: PagingState<Int, ReportItem>): Int? {
-              return state.anchorPosition
-            }
-
-            override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ReportItem> {
-              delay(3000)
-              var nextPage: Int? = params.key ?: 0
-
-              val data = mutableListOf<ReportItem>()
-              (0..20).forEach { data.add(ReportItem("$it", "title $it", "Report $it", "")) }
-
-              val dataMap =
-                mapOf(Pair(0, data), Pair(1, data), Pair(2, data), Pair(3, data), Pair(4, data))
-
-              val result = dataMap[nextPage] ?: listOf()
-
-              nextPage = if (nextPage!! >= 4) null else nextPage.plus(1)
-              return LoadResult.Page(result, null, nextPage)
-            }
-          }
-        }
-        .flow
-    }
-
-    override fun getAppBackClickListener(): () -> Unit {
-      return {}
-    }
-  }
 
 @Composable
 fun ReportRow(

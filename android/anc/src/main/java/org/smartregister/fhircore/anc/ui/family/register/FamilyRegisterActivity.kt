@@ -27,7 +27,7 @@ import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
-import org.smartregister.fhircore.anc.ui.reports.ReportsHomeActivity
+import org.smartregister.fhircore.anc.ui.reports.ReportHomeActivity
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
@@ -104,7 +104,7 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
   }
 
   fun navigateToReports() {
-    val intent = Intent(this, ReportsHomeActivity::class.java)
+    val intent = Intent(this, ReportHomeActivity::class.java)
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     startActivity(intent)
   }

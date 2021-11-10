@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.ui.reports
 
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.paging.Pager
@@ -24,27 +25,22 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.report.ReportDataProvider
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
-class ReportsViewModel(application: AncApplication, private val repository: ReportRepository) :
-  AndroidViewModel(application), ReportDataProvider {
+class ReportViewModel(application: AncApplication, private val repository: ReportRepository) :
+  AndroidViewModel(application) {
 
-  private var mBackClickListener: () -> Unit = {}
+  val backPress: MutableLiveData<Boolean> = MutableLiveData(false)
 
-  override fun getReportsTypeList(): Flow<PagingData<ReportItem>> {
+  fun getReportsTypeList(): Flow<PagingData<ReportItem>> {
     return Pager(PagingConfig(pageSize = PaginationUtil.DEFAULT_PAGE_SIZE)) { repository }.flow
   }
 
-  override fun getAppBackClickListener(): () -> Unit {
-    return mBackClickListener
-  }
-
-  fun setAppBackClickListener(listener: () -> Unit) {
-    this.mBackClickListener = listener
+  fun onBackPress() {
+    backPress.value = true
   }
 
   companion object {
@@ -52,9 +48,9 @@ class ReportsViewModel(application: AncApplication, private val repository: Repo
       owner: ViewModelStoreOwner,
       application: AncApplication,
       repository: ReportRepository
-    ): ReportsViewModel {
-      return ViewModelProvider(owner, ReportsViewModel(application, repository).createFactory())[
-        ReportsViewModel::class.java]
+    ): ReportViewModel {
+      return ViewModelProvider(owner, ReportViewModel(application, repository).createFactory())[
+        ReportViewModel::class.java]
     }
   }
 }

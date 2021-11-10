@@ -26,7 +26,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.family.register.FamilyRegisterActivity" />
-        <activity android:name=".ui.reports.ReportsHomeActivity" />
+        <activity android:name=".ui.reports.ReportHomeActivity" />
         <activity
             android:name=".ui.family.form.FamilyQuestionnaireActivity"
             android:noHistory="true"

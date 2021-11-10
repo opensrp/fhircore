@@ -17,46 +17,30 @@
 package org.smartregister.fhircore.anc.ui.reports
 
 import android.app.Activity
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.spyk
-import io.mockk.verify
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.annotation.Config
-import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 
 @Config(shadows = [AncApplicationShadow::class])
-class ReportsHomeActivityTest : ActivityRobolectricTest() {
+class ReportHomeActivityTest : ActivityRobolectricTest() {
 
-  private lateinit var activity: ReportsHomeActivity
+  private lateinit var activity: ReportHomeActivity
+  private lateinit var activitySpy: ReportHomeActivity
 
   @Before
   fun setUp() {
-
-    mockkObject(ReportsViewModel.Companion)
-
-    val viewModel = mockk<ReportsViewModel>()
-
-    every { ReportsViewModel.get(any(), any(), any()) } returns viewModel
-    with(viewModel) { every { setAppBackClickListener(any()) } returns Unit }
-
-    activity = Robolectric.buildActivity(ReportsHomeActivity::class.java).create().get()
+    activity = Robolectric.buildActivity(ReportHomeActivity::class.java).create().get()
+    activitySpy = spyk(objToCopy = activity)
   }
 
   @Test
-  fun testHandleBackClickedShouldCallFinishMethod() {
-    val spyActivity = spyk(activity)
-
-    every { spyActivity.finish() } returns Unit
-
-    ReflectionHelpers.callInstanceMethod<Any>(spyActivity, "handleBackClicked")
-
-    verify(exactly = 1) { spyActivity.finish() }
+  fun testActivityNotNull() {
+    Assert.assertNotNull(activity)
   }
 
   override fun getActivity(): Activity {

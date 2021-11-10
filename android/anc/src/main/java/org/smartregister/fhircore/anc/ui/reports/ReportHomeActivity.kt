@@ -24,19 +24,22 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
-class ReportsHomeActivity : BaseMultiLanguageActivity() {
+class ReportHomeActivity : BaseMultiLanguageActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     val patientId =
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
     val repository = ReportRepository((application as AncApplication).fhirEngine, patientId)
-    val viewModel = ReportsViewModel.get(this, application as AncApplication, repository)
-    viewModel.setAppBackClickListener(this::handleBackClicked)
-    setContent { AppTheme { ReportsHomeScreen(viewModel) } }
-  }
-
-  private fun handleBackClicked() {
-    finish()
+    val viewModel = ReportViewModel.get(this, application as AncApplication, repository)
+    viewModel.backPress.observe(
+      this,
+      {
+        if (it) {
+          finish()
+        }
+      }
+    )
+    setContent { AppTheme { ReportHomeScreen(viewModel) } }
   }
 }

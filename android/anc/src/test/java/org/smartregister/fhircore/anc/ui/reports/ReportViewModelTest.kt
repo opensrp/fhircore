@@ -25,17 +25,17 @@ import org.robolectric.Robolectric
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
-class ReportsViewModelTest : RobolectricTest() {
+class ReportViewModelTest : RobolectricTest() {
 
   private lateinit var repository: ReportRepository
-  private lateinit var viewModel: ReportsViewModel
+  private lateinit var viewModel: ReportViewModel
 
   @Before
   fun setUp() {
     repository = mockk()
     viewModel =
-      ReportsViewModel.get(
-        Robolectric.buildActivity(ReportsHomeActivity::class.java).get(),
+      ReportViewModel.get(
+        Robolectric.buildActivity(ReportHomeActivity::class.java).get(),
         ApplicationProvider.getApplicationContext(),
         repository
       )
@@ -43,11 +43,7 @@ class ReportsViewModelTest : RobolectricTest() {
 
   @Test
   fun testShouldVerifyBackClickListener() {
-    var count = 0
-
-    viewModel.setAppBackClickListener { ++count }
-    viewModel.getAppBackClickListener().invoke()
-
-    Assert.assertEquals(1, count)
+    viewModel.onBackPress()
+    Assert.assertEquals(true, viewModel.backPress.value)
   }
 }
