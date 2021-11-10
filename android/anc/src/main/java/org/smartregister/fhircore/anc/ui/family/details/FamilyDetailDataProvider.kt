@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc.ui.family.details
 import androidx.lifecycle.LiveData
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 
 interface FamilyDetailDataProvider {
@@ -32,4 +33,6 @@ interface FamilyDetailDataProvider {
   fun getAddMemberItemClickListener(): () -> Unit = {}
   fun getSeeAllEncounterClickListener(): () -> Unit = {}
   fun getEncounterItemClickListener(): (item: Encounter) -> Unit = {}
+  fun getSeeAllUpcomingServiceClickListener(): () -> Unit = {}
+  fun getUpcomingServiceItemClickListener(): (item: Task) -> Unit = {}
 }

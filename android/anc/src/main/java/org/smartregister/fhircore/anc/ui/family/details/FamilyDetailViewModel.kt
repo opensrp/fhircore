@@ -22,6 +22,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
@@ -45,6 +46,8 @@ class FamilyDetailViewModel(
   private var mMemberItemClickListener: (item: FamilyMemberItem) -> Unit = {}
   private var mSeeAllEncounterClickListener: () -> Unit = {}
   private var mEncounterItemClickListener: (item: Encounter) -> Unit = {}
+  private var mSeeAllUpcomingServiceClickListener: () -> Unit = {}
+  private var mUpcomingServiceItemClickListener: (item: Task) -> Unit = {}
 
   override fun getDemographics(): LiveData<Patient> {
     return mDemographics
@@ -78,6 +81,14 @@ class FamilyDetailViewModel(
     return mEncounterItemClickListener
   }
 
+  override fun getSeeAllUpcomingServiceClickListener(): () -> Unit {
+    return mSeeAllUpcomingServiceClickListener
+  }
+
+  override fun getUpcomingServiceItemClickListener(): (item: Task) -> Unit {
+    return mUpcomingServiceItemClickListener
+  }
+
   fun setAppBackClickListener(listener: () -> Unit) {
     mAppBackClickListener = listener
   }
@@ -96,6 +107,14 @@ class FamilyDetailViewModel(
 
   fun setEncounterItemClickListener(listener: (item: Encounter) -> Unit) {
     mEncounterItemClickListener = listener
+  }
+
+  fun setSeeAllUpcomingServiceClickListener(listener: () -> Unit) {
+    mSeeAllUpcomingServiceClickListener = listener
+  }
+
+  fun setUpcomingServiceItemClickListener(listener: (item: Task) -> Unit) {
+    mUpcomingServiceItemClickListener = listener
   }
 
   companion object {

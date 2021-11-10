@@ -139,8 +139,11 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
           MembersList(this, dataProvider.getMemberItemClickListener())
         }
 
-        // Upcoming services heading and see all button
-        UpcomingServicesHeader(dataProvider.getSeeAllEncounterClickListener())
+        // upcoming services heading and see all button
+        UpcomingServiceHeader(dataProvider.getSeeAllUpcomingServiceClickListener())
+
+        // encounter heading and see all button
+        EncounterHeader(dataProvider.getSeeAllEncounterClickListener())
 
         // encounter list
         dataProvider.getEncounters().observeAsState().value?.run {
@@ -254,7 +257,7 @@ fun MembersList(
 }
 
 @Composable
-fun UpcomingServicesHeader(seeAllEncounterClickListener: () -> Unit) {
+fun EncounterHeader(seeAllEncounterClickListener: () -> Unit) {
 
   Row(
     verticalAlignment = Alignment.CenterVertically,
@@ -264,7 +267,7 @@ fun UpcomingServicesHeader(seeAllEncounterClickListener: () -> Unit) {
 
     // encounter heading
     Text(
-      text = stringResource(id = R.string.upcoming_services).uppercase(),
+      text = stringResource(id = R.string.encounters).uppercase(),
       color = colorResource(id = R.color.status_gray),
       fontWeight = FontWeight.Bold,
       textAlign = TextAlign.Start,
@@ -365,6 +368,42 @@ fun MonthlyVisitHeading() {
         fontSize = 16.sp,
         fontWeight = FontWeight.Bold,
       )
+    }
+  }
+}
+
+@Composable
+fun UpcomingServiceHeader(seeAllUpcomingServiceClickListener: () -> Unit) {
+
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween,
+    modifier = Modifier.fillMaxWidth().padding(top = 18.dp)
+  ) {
+
+    // upcoming service heading
+    Text(
+      text = stringResource(id = R.string.upcoming_services).uppercase(),
+      color = colorResource(id = R.color.status_gray),
+      fontWeight = FontWeight.Bold,
+      textAlign = TextAlign.Start,
+      fontSize = 16.sp
+    )
+
+    // button see all upcoming services
+    TextButton(
+      contentPadding = PaddingValues(0.dp),
+      onClick = { seeAllUpcomingServiceClickListener() }
+    ) {
+      Text(
+        text = stringResource(id = R.string.see_all).uppercase(),
+        color = colorResource(id = R.color.colorPrimaryLight),
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Start
+      )
+
+      Icon(painterResource(id = R.drawable.ic_forward_arrow), "", Modifier.padding(start = 4.dp))
     }
   }
 }
