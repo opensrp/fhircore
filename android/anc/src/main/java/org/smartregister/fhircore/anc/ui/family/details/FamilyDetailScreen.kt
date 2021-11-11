@@ -227,6 +227,20 @@ fun MembersList(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
           ) {
+            if (item.houseHoldHead) {
+              Text(
+                text = stringResource(id = R.string.head_of_household),
+                color = colorResource(id = R.color.status_gray),
+                fontSize = 14.sp,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.padding(start = 12.dp)
+              )
+            }
+          }
+          Row(
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
             if (item.pregnant) {
               Image(
                 painter = painterResource(R.drawable.ic_pregnant),
@@ -434,7 +448,7 @@ fun getDummyDataProvider(): FamilyDetailDataProvider {
     override fun getFamilyMembers(): LiveData<List<FamilyMemberItem>> {
       return MutableLiveData(
         listOf(
-          dummyFamilyMemberItem("Kevin"),
+          dummyFamilyMemberItem("Kevin", false, true),
           dummyFamilyMemberItem("Julie"),
           dummyFamilyMemberItem("Salina", true)
         )
@@ -454,8 +468,12 @@ fun getDummyDataProvider(): FamilyDetailDataProvider {
   }
 }
 
-private fun dummyFamilyMemberItem(name: String, isPregnant: Boolean = false): FamilyMemberItem {
-  return FamilyMemberItem(name, "1", "18", "Male", isPregnant)
+private fun dummyFamilyMemberItem(
+  name: String,
+  isPregnant: Boolean = false,
+  isHouseHoldHead: Boolean = false
+): FamilyMemberItem {
+  return FamilyMemberItem(name, "1", "18", "Male", isPregnant, isHouseHoldHead)
 }
 
 private fun dummyEncounter(text: String, periodStartDate: String): Encounter {

@@ -87,4 +87,5 @@
     <string name="anc_visit_due">ANC visit due</string>
     <string name="household_tasks">Household Tasks</string>
     <string name="monthly_visit">Monthly Visit</string>
+    <string name="head_of_household">Head of household</string>
 </resources>

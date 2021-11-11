@@ -49,10 +49,13 @@ class FamilyDetailRepository(
       val members =
         fhirEngine
           .search<Patient> { filter(Patient.LINK) { this.value = "Patient/$familyId" } }
-          .map { FamilyItemMapper.toFamilyMemberItem(it) }
+          .map { FamilyItemMapper.toFamilyMemberItem(it, familyId) }
 
       val householdHead =
-        FamilyItemMapper.toFamilyMemberItem(fhirEngine.load(Patient::class.java, familyId))
+        FamilyItemMapper.toFamilyMemberItem(
+          fhirEngine.load(Patient::class.java, familyId),
+          familyId
+        )
       val familyMembers = ArrayList<FamilyMemberItem>()
       familyMembers.add(householdHead)
       familyMembers.addAll(members)
