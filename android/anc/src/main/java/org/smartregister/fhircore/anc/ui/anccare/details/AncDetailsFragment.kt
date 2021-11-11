@@ -33,9 +33,9 @@ import org.json.JSONObject
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.AncOverviewItem
-import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
+import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
@@ -261,7 +261,7 @@ class AncDetailsFragment : Fragment() {
     fun newInstance(bundle: Bundle = Bundle()) = AncDetailsFragment().apply { arguments = bundle }
   }
 
-  private fun handlePatientDemographics(patient: AncPatientDetailItem) {
+  private fun handlePatientDemographics(patient: PatientDetailItem) {
     with(patient) {
       val patientDetails =
         this.patientDetails.name +
