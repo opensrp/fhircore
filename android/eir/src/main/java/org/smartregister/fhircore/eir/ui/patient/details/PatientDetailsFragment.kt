@@ -54,7 +54,7 @@ import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.engine.util.extension.show
 
-class PatientDetailsFragment private constructor() : Fragment() {
+class PatientDetailsFragment : Fragment() {
 
   private lateinit var fhirEngine: FhirEngine
 

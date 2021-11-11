@@ -22,6 +22,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import com.google.android.fhir.datacapture.utilities.SimpleWorkerContextProvider
 import com.google.android.fhir.logicalId
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -300,6 +301,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify { defaultRepo.addOrUpdate(capture(patientSlot)) }
 
     Assert.assertEquals("1234567", patientSlot.captured.meta.tagFirstRep.code)
+
+    unmockkObject(ResourceMapper)
+    unmockkObject(SimpleWorkerContextProvider)
   }
 
   @Test

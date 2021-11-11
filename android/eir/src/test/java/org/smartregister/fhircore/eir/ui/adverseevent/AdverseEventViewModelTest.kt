@@ -22,6 +22,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import io.mockk.MockKAnnotations
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -72,8 +73,8 @@ internal class AdverseEventViewModelTest : RobolectricTest() {
 
   @Before
   fun setUp() {
+    clearAllMocks()
     MockKAnnotations.init(this, relaxUnitFun = true)
-
     fhirEngine = mockk(relaxed = true)
     patientRepository = mockk()
 
