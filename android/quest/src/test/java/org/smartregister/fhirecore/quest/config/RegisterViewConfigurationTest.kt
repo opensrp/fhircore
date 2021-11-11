@@ -40,9 +40,9 @@ class RegisterViewConfigurationTest : RobolectricTest() {
   fun testLoadRegisterViewConfigShouldReturnValidConfig() {
     val result =
       ApplicationProvider.getApplicationContext<Application>()
-        .loadRegisterViewConfiguration("quest-app-patient-register")
+        .loadRegisterViewConfiguration("default-app-patient-register")
 
-    assertEquals("quest-app-patient-register", result.id)
+    assertEquals("default-app-patient-register", result.id)
     assertEquals("Clients", result.appTitle)
     assertEquals("Show overdue", result.filterText)
     assertEquals("Search for ID or client name", result.searchBarHint)
@@ -56,9 +56,6 @@ class RegisterViewConfigurationTest : RobolectricTest() {
     assertEquals(false, result.showSideMenu)
     assertEquals(true, result.showBottomMenu)
     assertEquals("3435", result.registrationForm)
-    assertEquals("000003", result.primaryFilter!!.code)
-    assertEquals("http://fhir.ona.io", result.primaryFilter!!.system)
-    assertEquals("_tag", result.primaryFilter!!.key)
   }
 
   @Test
