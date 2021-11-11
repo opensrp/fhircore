@@ -31,11 +31,13 @@ import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.app.loadApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.view.loadRegisterViewConfiguration
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
+import org.smartregister.fhircore.engine.util.extension.join
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
@@ -60,20 +62,33 @@ class QuestApplication : Application(), ConfigurableApplication {
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() {
-      return mapOf(
-        ResourceType.Binary to mapOf("_id" to CONFIG_RESOURCE_IDS),
-        ResourceType.CarePlan to mapOf(),
-        ResourceType.Patient to mapOf(),
-        ResourceType.Questionnaire to buildQuestionnaireFilterMap(),
-        ResourceType.QuestionnaireResponse to mapOf(),
-        ResourceType.Binary to mapOf()
-      )
+      val metadata = getMetadataSyncParams()
+
+      val primaryFilter = getPatientRegisterConfig()?.primaryFilter ?: return metadata
+
+      val clinicalData =
+        mutableMapOf(
+          ResourceType.Patient to
+            mapOf(primaryFilter.key to "${primaryFilter.system}|${primaryFilter.code}"),
+          ResourceType.QuestionnaireResponse to
+            mapOf(primaryFilter.key to "${primaryFilter.system}|${primaryFilter.code}"),
+        )
+      clinicalData.plusAssign(metadata)
+
+      return clinicalData
     }
 
-  private fun buildQuestionnaireFilterMap(): MutableMap<String, String> {
+  fun getMetadataSyncParams(): Map<ResourceType, Map<String, String>> {
+    return mutableMapOf(
+      ResourceType.Binary to mapOf("_id" to getBinaryConfigIds()),
+      ResourceType.Questionnaire to buildPublisherFilterMap(),
+      ResourceType.StructureMap to buildPublisherFilterMap()
+    )
+  }
+
+  private fun buildPublisherFilterMap(): MutableMap<String, String> {
     val questionnaireFilterMap: MutableMap<String, String> = HashMap()
-    val publisher =
-      SharedPreferencesHelper.read(USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY, null)
+    val publisher = getPublisher()
     if (publisher != null) questionnaireFilterMap[Questionnaire.SP_PUBLISHER] = publisher
     return questionnaireFilterMap
   }
@@ -132,9 +147,24 @@ class QuestApplication : Application(), ConfigurableApplication {
     private lateinit var questApplication: QuestApplication
     const val CONFIG_APP = "quest-app"
     private const val CONFIG_PATIENT_REGISTER = "quest-app-patient-register"
+    private const val CONFIG_PROFILE = "quest-app-profile"
 
-    private const val CONFIG_RESOURCE_IDS = "$CONFIG_APP,$CONFIG_PATIENT_REGISTER"
+    private fun getBinaryConfigIds() =
+      "$CONFIG_APP,${getPatientRegisterConfigId()},${getProfileConfigId()}"
+
+    fun getPatientRegisterConfig() =
+      kotlin
+        .runCatching { getContext().loadRegisterViewConfiguration(getPatientRegisterConfigId()) }
+        .getOrNull()
+
+    fun getPatientRegisterConfigId() =
+      CONFIG_PATIENT_REGISTER.join(getPublisher()?.lowercase()?.let { "-$it" }, "")
+
+    fun getProfileConfigId() = CONFIG_PROFILE.join(getPublisher()?.lowercase()?.let { "-$it" }, "")
 
     fun getContext() = questApplication
+
+    fun getPublisher() =
+      SharedPreferencesHelper.read(USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY, null)
   }
 }

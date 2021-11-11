@@ -60,6 +60,8 @@ private fun List<QuestionnaireResponse.QuestionnaireResponseItemComponent>.find(
         return@loop
       } else if (it.item.isNotEmpty()) {
         result = it.item.find(linkId, result)
+      } else if (it.hasAnswer()) {
+        it.answer.forEach { result = it.item.find(linkId, result) }
       }
     }
   }
