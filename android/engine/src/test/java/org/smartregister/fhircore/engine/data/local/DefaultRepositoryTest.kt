@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.db.ResourceNotFoundException
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
@@ -89,6 +90,13 @@ class DefaultRepositoryTest : RobolectricTest() {
       Assert.assertEquals(patient.address[0].city, address[0].city)
       Assert.assertEquals(patient.address[0].country, address[0].country)
     }
+
+    // verify exception scenario
+    coEvery { fhirEngine.load(Patient::class.java, any()) } throws
+      mockk<ResourceNotFoundException>()
+    coEvery { fhirEngine.save(any()) } returns Unit
+    runBlocking { defaultRepository.addOrUpdate(Patient()) }
+    coVerify(exactly = 1) { fhirEngine.save(any()) }
   }
 
   @Test
