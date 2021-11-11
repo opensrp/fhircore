@@ -314,6 +314,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify { defaultRepo.addOrUpdate(capture(patientSlot)) }
 
     Assert.assertEquals("1234567", patientSlot.captured.meta.tagFirstRep.code)
+
+    unmockkObject(ResourceMapper)
+    unmockkObject(SimpleWorkerContextProvider)
   }
 
   @Test
