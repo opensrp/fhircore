@@ -35,7 +35,7 @@ import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
-class EirApplication : Application(), ConfigurableApplication {
+open class EirApplication : Application(), ConfigurableApplication {
 
   private val defaultDispatcherProvider = DefaultDispatcherProvider
 

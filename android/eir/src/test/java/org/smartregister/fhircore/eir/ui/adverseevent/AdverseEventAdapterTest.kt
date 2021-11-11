@@ -31,14 +31,11 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
-import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
 import org.smartregister.fhircore.eir.ui.patient.details.ImmunizationAdverseEventItem
 
-@Config(shadows = [EirApplicationShadow::class])
 class AdverseEventAdapterTest : RobolectricTest() {
 
   private lateinit var adapter: AdverseEventAdapter

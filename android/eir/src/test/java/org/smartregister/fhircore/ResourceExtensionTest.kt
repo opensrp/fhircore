@@ -25,13 +25,9 @@ import org.hl7.fhir.r4.model.StringType
 import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
-import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
-import org.smartregister.fhircore.eir.shadow.ShadowNpmPackageProvider
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 
-@Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
 class ResourceExtensionTest : RobolectricTest() {
 
   @Test

@@ -30,7 +30,6 @@ import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.State
-import com.google.android.fhir.sync.Sync
 import com.google.gson.Gson
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -75,11 +74,6 @@ inline fun <reified W : FhirSyncWorker> Application.runPeriodicSync() {
   CoroutineScope(Dispatchers.Main).launch {
     syncJob.stateFlow().collect { this@runPeriodicSync.syncBroadcaster.broadcastSync(it) }
   }
-}
-
-fun Application.lastSyncDateTime(): String {
-  val lastSyncDate = Sync.basicSyncJob(this).lastSyncTimestamp()
-  return lastSyncDate?.asString() ?: ""
 }
 
 fun <T> Application.loadResourceTemplate(

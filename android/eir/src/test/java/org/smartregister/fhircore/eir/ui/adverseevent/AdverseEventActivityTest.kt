@@ -44,18 +44,15 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.DisplayName
 import org.robolectric.Robolectric
-import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientItem
-import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
 import org.smartregister.fhircore.eir.ui.patient.details.ImmunizationAdverseEventItem
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
 
-@Config(shadows = [EirApplicationShadow::class])
 internal class AdverseEventActivityTest : ActivityRobolectricTest() {
 
   private lateinit var fhirEngine: FhirEngine
