@@ -37,20 +37,16 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
     setContentView(R.layout.activity_patient_details)
     setSupportActionBar(patientDetailsToolbar)
 
-    if (savedInstanceState == null) {
-
-      patientId =
-        intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-      supportFragmentManager
-        .beginTransaction()
-        .replace(
-          R.id.container,
-          PatientDetailsFragment.newInstance(
-            bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
-          )
+    patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+    supportFragmentManager
+      .beginTransaction()
+      .replace(
+        R.id.container,
+        PatientDetailsFragment.newInstance(
+          bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
         )
-        .commitNow()
-    }
+      )
+      .commitNow()
   }
 
   override fun onCreateOptionsMenu(menu: Menu?): Boolean {
