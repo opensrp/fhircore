@@ -17,8 +17,10 @@
 package org.smartregister.fhircore.anc.ui.details
 
 import android.app.Activity
+import android.content.Intent
 import android.view.MenuInflater
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.every
@@ -31,8 +33,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.jupiter.api.DisplayName
 import org.robolectric.Robolectric
+import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
+import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
@@ -41,6 +45,9 @@ import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
+import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
+import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 
 @ExperimentalCoroutinesApi
 @Config(shadows = [AncApplicationShadow::class])
@@ -104,10 +111,56 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  @DisplayName("Should start Encounter List Activity")
+  fun testOnClickedPastViewEncounterItemShouldStartEncounterListActivity() {
+
+    val menuItem = RoboMenuItem(R.id.view_past_encounters)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+
+    val expectedIntent = Intent(patientDetailsActivity, EncounterListActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<AncApplication>())
+        .nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
+  }
+
+  @Test
   fun testMakeAncPatientVisibilityActivity() {
-    val menuItem = RoboMenuItem(R.id.mark_as_anc_client)
+    val menuItem = RoboMenuItem(R.id.anc_enrollment)
     patientDetailsActivity.onOptionsItemSelected(menuItem)
     Assert.assertTrue(menuItem.isVisible)
+  }
+
+  @Test
+  fun testOnClickedAncEnrollmentItemShouldStartQuestionnaireActivity() {
+
+    val menuItem = RoboMenuItem(R.id.anc_enrollment)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+
+    val expectedIntent = Intent(patientDetailsActivity, FamilyQuestionnaireActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<AncApplication>())
+        .nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
+  }
+
+  @Test
+  fun testOnClickedAncEnrollmentItemShouldStartBMIQuestionnaire() {
+
+    val menuItem = RoboMenuItem(R.id.bmi_widget)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+
+    val expectedIntent = Intent(patientDetailsActivity, BmiQuestionnaireActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<AncApplication>())
+        .nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
   }
 
   override fun getActivity(): Activity {

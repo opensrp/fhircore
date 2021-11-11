@@ -32,7 +32,7 @@ import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
-import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
+import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 
@@ -56,7 +56,7 @@ class AncRegisterFragmentTest : RobolectricTest() {
     val patientItem = PatientItem(patientIdentifier = "test_patient")
     registerFragment.onItemClicked(OpenPatientProfile, patientItem)
 
-    val expectedIntent = Intent(registerFragment.context, AncDetailsActivity::class.java)
+    val expectedIntent = Intent(registerFragment.context, PatientDetailsActivity::class.java)
     val actualIntent =
       shadowOf(ApplicationProvider.getApplicationContext<AncApplication>()).nextStartedActivity
 

@@ -34,9 +34,12 @@ import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.databinding.ActivityNonAncDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
+import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.details.adapter.ViewPagerAdapter
+import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig
+import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.createFactory
@@ -46,6 +49,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
   private lateinit var adapter: ViewPagerAdapter
   private lateinit var patientId: String
   private var isPregnant: Boolean = false
+  private var isMale: Boolean = false
 
   private lateinit var fhirEngine: FhirEngine
 
@@ -81,33 +85,18 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       .fetchDemographics()
       .observe(this@PatientDetailsActivity, this::handlePatientDemographics)
 
-    adapter =
-      ViewPagerAdapter(
-        supportFragmentManager,
-        lifecycle,
-        bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
-      )
-    activityAncDetailsBinding.pager.adapter = adapter
-
-    TabLayoutMediator(activityAncDetailsBinding.tablayout, activityAncDetailsBinding.pager) {
-        tab,
-        position ->
-        tab.text = details[position]
-      }
-      .attach()
-
     activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
   }
 
   override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-    menuInflater.inflate(R.menu.profile_menu_madx, menu)
+    menuInflater.inflate(R.menu.profile_menu, menu)
     return true
   }
 
   override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
     val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
-    val ancEnrollment = menu!!.findItem(R.id.mark_as_anc_client)
-    ancEnrollment.isVisible = !isPregnant
+    val ancEnrollment = menu!!.findItem(R.id.anc_enrollment)
+    if (isMale) ancEnrollment.isVisible = false else ancEnrollment.isVisible = !isPregnant
     val title = removeThisPerson.title.toString()
     val s = SpannableString(title)
     with(s) {
@@ -123,11 +112,45 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    if (item.itemId == R.id.add_vitals) {
-      showAlert()
-      return true
+    return when (item.itemId) {
+      R.id.add_vitals -> {
+        showAlert()
+        true
+      }
+      R.id.view_past_encounters -> {
+        startActivity(
+          Intent(this, EncounterListActivity::class.java).apply {
+            putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
+          }
+        )
+        true
+      }
+      R.id.anc_enrollment -> {
+        this.startAncEnrollment(patientId)
+        true
+      }
+      R.id.remove_this_person -> {
+        startActivity(
+          Intent(this, PatientDetailsActivity::class.java).apply {
+            putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
+          }
+        )
+        true
+      }
+      R.id.bmi_widget -> {
+        startActivity(
+          Intent(this, BmiQuestionnaireActivity::class.java)
+            .putExtras(
+              QuestionnaireActivity.intentArgs(
+                clientIdentifier = patientId,
+                formName = FormConfig.FAMILY_PATIENT_BMI_FORM
+              )
+            )
+        )
+        true
+      }
+      else -> return super.onOptionsItemSelected(item)
     }
-    return super.onOptionsItemSelected(item)
   }
 
   private fun handlePatientDemographics(patient: PatientDetailItem) {
@@ -140,8 +163,42 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
           .joinToString(separator = " ID: ")
       activityAncDetailsBinding.txtViewPatientDetails.text = patientDetails
       activityAncDetailsBinding.txtViewPatientId.text = patientId
-      isPregnant =
-        if (this.patientDetails.gender == "Male") true else this.patientDetails.isPregnant
+      isMale = this.patientDetails.gender == "Male"
+      isPregnant = this.patientDetails.isPregnant
+
+      if (isMale) {
+        adapter =
+          ViewPagerAdapter(
+            supportFragmentManager,
+            lifecycle,
+            false,
+            bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
+          )
+        activityAncDetailsBinding.pager.adapter = adapter
+
+        TabLayoutMediator(activityAncDetailsBinding.tablayout, activityAncDetailsBinding.pager) {
+            tab,
+            position ->
+            tab.text = details[position]
+          }
+          .attach()
+      } else {
+        adapter =
+          ViewPagerAdapter(
+            supportFragmentManager,
+            lifecycle,
+            isPregnant = isPregnant,
+            bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
+          )
+        activityAncDetailsBinding.pager.adapter = adapter
+
+        TabLayoutMediator(activityAncDetailsBinding.tablayout, activityAncDetailsBinding.pager) {
+            tab,
+            position ->
+            tab.text = details[position]
+          }
+          .attach()
+      }
     }
   }
 
