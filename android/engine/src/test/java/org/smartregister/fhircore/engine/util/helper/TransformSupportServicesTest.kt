@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.helper
 
-import org.hl7.fhir.r4.context.SimpleWorkerContext
+import io.mockk.mockk
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.RiskAssessment
 import org.junit.Assert
@@ -31,7 +31,7 @@ class TransformSupportServicesTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    transformSupportServices = TransformSupportServices(mutableListOf(), SimpleWorkerContext())
+    transformSupportServices = TransformSupportServices(mutableListOf(), mockk())
   }
 
   @Test

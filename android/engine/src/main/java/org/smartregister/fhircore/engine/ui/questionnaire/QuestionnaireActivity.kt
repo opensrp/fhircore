@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
@@ -133,6 +134,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             arguments =
               when {
                 clientIdentifier == null -> {
+                  // TODO remove this when SDK bug for validation is fixed
+                  // https://github.com/google/android-fhir/issues/912
+
+                  // TODO - FIXME - updateFrom does not consider nested structure
+                  // https://github.com/opensrp/fhircore/issues/730
                   bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, questionnaireString)).apply {
                     val questionnaireResponse = intent.getStringExtra(QUESTIONNAIRE_RESPONSE)
                     if (readOnly && questionnaireResponse != null) {
@@ -171,25 +177,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         mutableListOf(Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(code)))
       readOnly = readonly
     }
-  }
-
-  private fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {
-    return item.find(linkId, null)
-  }
-  private fun List<Questionnaire.QuestionnaireItemComponent>.find(
-    linkId: String,
-    default: Questionnaire.QuestionnaireItemComponent?
-  ): Questionnaire.QuestionnaireItemComponent? {
-    var result = default
-    forEach {
-      if (it.linkId == linkId) {
-        return it
-      } else if (it.item.isNotEmpty()) {
-        result = it.item.find(linkId, result)
-      }
-    }
-
-    return result
   }
 
   open fun createViewModel(application: Application, readOnly: Boolean = false) =
@@ -258,15 +245,48 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     )
   }
 
+  // TODO remove this when SDK bug for validation is fixed
+  // https://github.com/google/android-fhir/issues/912
+  fun deepFlat(
+    qItems: List<Questionnaire.QuestionnaireItemComponent>,
+    questionnaireResponse: QuestionnaireResponse,
+    targetQ: MutableList<Questionnaire.QuestionnaireItemComponent>,
+    targetQR: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>,
+  ) {
+    qItems.forEach { qit ->
+      // process each inner item list
+      deepFlat(qit.item, questionnaireResponse, targetQ, targetQR)
+
+      // remove nested structure to prevent validation recursion; it is already processed above
+      qit.item.clear()
+
+      // add questionnaire and response pair for each linkid on same index
+      questionnaireResponse.find(qit.linkId)?.let { qrit ->
+        targetQ.add(qit)
+        targetQR.add(qrit)
+      }
+    }
+  }
+
+  // TODO change this when SDK bug for validation is fixed
+  // https://github.com/google/android-fhir/issues/912
   fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
-    return QuestionnaireResponseValidator.validate(
-        questionnaire.item,
-        questionnaireResponse.item,
-        this
-      )
-      .values
-      .flatten()
-      .all { it.isValid }
+    // clone questionnaire and response for processing and changing structure
+    val q = parser.parseResource(parser.encodeResourceToString(questionnaire)) as Questionnaire
+    val qr =
+      parser.parseResource(parser.encodeResourceToString(questionnaireResponse)) as
+        QuestionnaireResponse
+
+    // flatten and pair all responses temporarily to fix index mapping issue for questionnaire and
+    // questionnaire response
+    val qItems = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
+    val qrItems = mutableListOf<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
+
+    deepFlat(q.item, qr, qItems, qrItems)
+
+    return QuestionnaireResponseValidator.validate(qItems, qrItems, this).values.flatten().all {
+      it.isValid
+    }
   }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
