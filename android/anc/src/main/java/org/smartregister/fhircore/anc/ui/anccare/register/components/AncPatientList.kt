@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.items
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
@@ -32,14 +32,14 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 
 @Composable
 fun AncPatientList(
-  pagingItems: LazyPagingItems<AncPatientItem>,
+  pagingItems: LazyPagingItems<PatientItem>,
   modifier: Modifier = Modifier,
-  clickListener: (AncRowClickListenerIntent, AncPatientItem) -> Unit
+  clickListener: (AncRowClickListenerIntent, PatientItem) -> Unit
 ) {
 
   LazyColumn {
     items(pagingItems, key = { it.patientIdentifier }) {
-      AncRow(ancPatientItem = it!!, clickListener = clickListener, modifier = modifier)
+      AncRow(patientItem = it!!, clickListener = clickListener, modifier = modifier)
       Divider(color = DividerColor, thickness = 1.dp)
     }
 

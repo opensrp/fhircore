@@ -27,7 +27,7 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
@@ -53,7 +53,7 @@ class AncRegisterFragmentTest : RobolectricTest() {
   @Test
   fun testNavigateToDetailsShouldGotoToAncDetailsActivity() {
 
-    val patientItem = AncPatientItem(patientIdentifier = "test_patient")
+    val patientItem = PatientItem(patientIdentifier = "test_patient")
     registerFragment.onItemClicked(OpenPatientProfile, patientItem)
 
     val expectedIntent = Intent(registerFragment.context, AncDetailsActivity::class.java)
@@ -67,12 +67,12 @@ class AncRegisterFragmentTest : RobolectricTest() {
   fun testPerformFilterShouldReturnTrue() {
 
     Assert.assertTrue(
-      registerFragment.performFilter(RegisterFilterType.SEARCH_FILTER, AncPatientItem(), "")
+      registerFragment.performFilter(RegisterFilterType.SEARCH_FILTER, PatientItem(), "")
     )
     Assert.assertTrue(
       registerFragment.performFilter(
         RegisterFilterType.SEARCH_FILTER,
-        AncPatientItem(patientIdentifier = "12345"),
+        PatientItem(patientIdentifier = "12345"),
         "12345"
       )
     )
@@ -83,7 +83,7 @@ class AncRegisterFragmentTest : RobolectricTest() {
     val result =
       registerFragment.performFilter(
         RegisterFilterType.OVERDUE_FILTER,
-        AncPatientItem(patientIdentifier = "12345", visitStatus = VisitStatus.OVERDUE),
+        PatientItem(patientIdentifier = "12345", visitStatus = VisitStatus.OVERDUE),
         "12345"
       )
     Assert.assertTrue(result)
