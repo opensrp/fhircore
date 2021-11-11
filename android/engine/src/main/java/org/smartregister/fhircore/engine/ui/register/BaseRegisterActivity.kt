@@ -173,6 +173,14 @@ abstract class BaseRegisterActivity :
     sideMenuOptions().forEach { updateCount(it) }
   }
 
+  override fun onDestroy() {
+    configurableApplication().syncBroadcaster.run {
+      unRegisterSyncListener(this@BaseRegisterActivity)
+      unRegisterSyncInitiator()
+    }
+    super.onDestroy()
+  }
+
   private fun BaseRegisterActivityBinding.updateSyncStatus(state: State) {
     when (state) {
       is State.Started, is State.InProgress -> {
