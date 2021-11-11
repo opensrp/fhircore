@@ -32,8 +32,10 @@ import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.junit.After
 import org.junit.Assert
@@ -109,9 +111,20 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testRequiredIntentShouldInsertValues() {
+  fun testIntentArgsShouldInsertValues() {
     val questionnaireResponse = QuestionnaireResponse()
-    val result = QuestionnaireActivity.intentArgs("1234", "my-form", true, questionnaireResponse)
+    val patient = Patient().apply { id = "my-patient-id" }
+    val populationResources = ArrayList<Resource>()
+    populationResources.add(patient)
+    val result =
+      QuestionnaireActivity.intentArgs(
+        "1234",
+        "my-form",
+        true,
+        questionnaireResponse,
+        populationResources = populationResources,
+        immunizationId = "2323"
+      )
     Assert.assertEquals("my-form", result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM))
     Assert.assertEquals(
       "1234",
@@ -121,6 +134,14 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     Assert.assertEquals(
       FhirContext.forR4().newJsonParser().encodeResourceToString(questionnaireResponse),
       result.getString(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
+    )
+    Assert.assertEquals(
+      "2323",
+      result.getString(QuestionnaireActivity.ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY)
+    )
+    Assert.assertEquals(
+      FhirContext.forR4().newJsonParser().encodeResourceToString(patient),
+      result.getStringArrayList(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.get(0)
     )
   }
 
