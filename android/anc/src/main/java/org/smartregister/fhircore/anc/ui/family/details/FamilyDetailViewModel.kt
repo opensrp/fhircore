@@ -20,6 +20,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Task
@@ -41,6 +42,10 @@ class FamilyDetailViewModel(
 
   private val mEncounters: LiveData<List<Encounter>> by lazy { repository.fetchEncounters() }
 
+  private val mFamilyCarePlans: LiveData<List<CarePlan>> by lazy {
+    repository.fetchFamilyCarePlans()
+  }
+
   private var mAppBackClickListener: () -> Unit = {}
   private var mAddMemberItemClickListener: () -> Unit = {}
   private var mMemberItemClickListener: (item: FamilyMemberItem) -> Unit = {}
@@ -59,6 +64,10 @@ class FamilyDetailViewModel(
 
   override fun getEncounters(): LiveData<List<Encounter>> {
     return mEncounters
+  }
+
+  override fun getFamilyCarePlans(): LiveData<List<CarePlan>> {
+    return mFamilyCarePlans
   }
 
   override fun getAppBackClickListener(): () -> Unit {

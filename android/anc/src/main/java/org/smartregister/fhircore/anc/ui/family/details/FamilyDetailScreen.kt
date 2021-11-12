@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import java.text.SimpleDateFormat
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.HumanName
@@ -115,18 +116,19 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
             .padding(start = 12.dp, end = 12.dp)
             .verticalScroll(rememberScrollState()),
       ) {
+        if (hasFamilyCarePlans(dataProvider)) {
+          // spacer for padding
+          Spacer(Modifier.height(12.dp))
 
-        // spacer for padding
-        Spacer(Modifier.height(12.dp))
+          // Household tasks heading
+          HouseHoldTaskHeading()
 
-        // Household tasks heading
-        HouseHoldTaskHeading()
+          // spacer for padding
+          Spacer(Modifier.height(12.dp))
 
-        // spacer for padding
-        Spacer(Modifier.height(12.dp))
-
-        // Monthly Visit heading
-        MonthlyVisitHeading()
+          // Monthly Visit heading
+          MonthlyVisitHeading()
+        }
 
         // spacer for padding
         Spacer(Modifier.height(12.dp))
@@ -139,19 +141,20 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
           MembersList(this, dataProvider.getMemberItemClickListener())
         }
 
-        // upcoming services heading and see all button
-        UpcomingServiceHeader(dataProvider.getSeeAllUpcomingServiceClickListener())
+        if (hasFamilyCarePlans(dataProvider)) { // upcoming services heading and see all button
+          UpcomingServiceHeader(dataProvider.getSeeAllUpcomingServiceClickListener())
 
-        // encounter heading and see all button
-        EncounterHeader(dataProvider.getSeeAllEncounterClickListener())
+          // encounter heading and see all button
+          EncounterHeader(dataProvider.getSeeAllEncounterClickListener())
 
-        // encounter list
-        dataProvider.getEncounters().observeAsState().value?.run {
-          EncounterList(this, dataProvider.getEncounterItemClickListener())
+          // encounter list
+          dataProvider.getEncounters().observeAsState().value?.run {
+            EncounterList(this, dataProvider.getEncounterItemClickListener())
+          }
+
+          // spacer for padding
+          Spacer(Modifier.height(12.dp))
         }
-
-        // spacer for padding
-        Spacer(Modifier.height(12.dp))
       }
     }
   }
@@ -465,6 +468,10 @@ fun getDummyDataProvider(): FamilyDetailDataProvider {
         )
       )
     }
+
+    override fun getFamilyCarePlans(): LiveData<List<CarePlan>> {
+      TODO("Not yet implemented")
+    }
   }
 }
 
@@ -481,4 +488,9 @@ private fun dummyEncounter(text: String, periodStartDate: String): Encounter {
     class_ = Coding("", "", text)
     period = Period().apply { start = SimpleDateFormat("yyyy-MM-dd").parse(periodStartDate) }
   }
+}
+
+@Composable
+private fun hasFamilyCarePlans(dataProvider: FamilyDetailDataProvider): Boolean {
+  return !dataProvider.getFamilyCarePlans().observeAsState().value.isNullOrEmpty()
 }

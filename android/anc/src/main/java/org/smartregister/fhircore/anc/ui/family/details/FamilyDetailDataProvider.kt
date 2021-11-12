@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.ui.family.details
 
 import androidx.lifecycle.LiveData
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Task
@@ -27,6 +28,7 @@ interface FamilyDetailDataProvider {
   fun getDemographics(): LiveData<Patient>
   fun getFamilyMembers(): LiveData<List<FamilyMemberItem>>
   fun getEncounters(): LiveData<List<Encounter>>
+  fun getFamilyCarePlans(): LiveData<List<CarePlan>>
 
   fun getAppBackClickListener(): () -> Unit = {}
   fun getMemberItemClickListener(): (item: FamilyMemberItem) -> Unit = {}
