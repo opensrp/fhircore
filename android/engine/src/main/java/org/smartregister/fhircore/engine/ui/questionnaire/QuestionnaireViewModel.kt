@@ -32,6 +32,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Expression
+import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -65,7 +67,7 @@ open class QuestionnaireViewModel(
   suspend fun loadQuestionnaire(id: String): Questionnaire? =
     defaultRepository.loadResource<Questionnaire>(id)?.apply {
       if (readOnly) {
-        changeQuestionsToReadOnly(this.item)
+        changeQuestionsToReadOnly(this.item, "QuestionnaireResponse.item")
       }
     }
 
@@ -81,7 +83,7 @@ open class QuestionnaireViewModel(
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
     structureMapUrl?.substringAfterLast("/")?.run {
-      structureMap = loadResource(this) as StructureMap?
+      structureMap = defaultRepository.loadResource(this)
     }
     return structureMap
   }
@@ -129,7 +131,13 @@ open class QuestionnaireViewModel(
       questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
         it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
       }
+      // TODO revise this logic when syncing strategy has final decision
+      // https://github.com/opensrp/fhircore/issues/726
+      loadPatient(resourceId)?.meta?.tag?.forEach { questionnaireResponse.meta.addTag(it) }
       questionnaireResponse.subject = Reference().apply { reference = "$subjectType/$resourceId" }
+      questionnaireResponse.questionnaire =
+        "${questionnaire.resourceType}/${questionnaire.logicalId}"
+
       defaultRepository.save(questionnaireResponse)
     }
   }
@@ -139,8 +147,11 @@ open class QuestionnaireViewModel(
     questionnaireResponse: QuestionnaireResponse,
     context: Context
   ): Bundle {
-    val contextR4 = (getApplication<Application>() as ConfigurableApplication).workerContextProvider
-    val transformSupportServices = TransformSupportServices(mutableListOf(), contextR4)
+    val transformSupportServices =
+      TransformSupportServices(
+        mutableListOf(),
+        getApplication<Application>() as ConfigurableApplication
+      )
 
     return ResourceMapper.extract(
       questionnaire = questionnaire,
@@ -171,10 +182,6 @@ open class QuestionnaireViewModel(
 
   suspend fun loadPatient(patientId: String): Patient? {
     return defaultRepository.loadResource(patientId)
-  }
-
-  suspend fun loadResource(resourceId: String): Resource? {
-    return defaultRepository.loadResource(resourceId)
   }
 
   suspend fun loadRelatedPerson(patientId: String): List<RelatedPerson>? {
@@ -220,12 +227,29 @@ open class QuestionnaireViewModel(
     return ResourceMapper.populate(questionnaire, *getPopulationResources(intent))
   }
 
-  private fun changeQuestionsToReadOnly(items: List<Questionnaire.QuestionnaireItemComponent>) {
+  private fun changeQuestionsToReadOnly(
+    items: List<Questionnaire.QuestionnaireItemComponent>,
+    path: String
+  ) {
     items.forEach { item ->
       if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
         item.readOnly = true
+        item.extension =
+          listOf(
+            Extension().apply {
+              url =
+                "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression"
+              setValue(
+                Expression().apply {
+                  language = "text/fhirpath"
+                  expression = "$path.where(linkId = '${item.linkId}').answer.value"
+                }
+              )
+            }
+          )
+        changeQuestionsToReadOnly(item.item, "$path.where(linkId = '${item.linkId}').answer.item")
       } else {
-        changeQuestionsToReadOnly(item.item)
+        changeQuestionsToReadOnly(item.item, "$path.where(linkId = '${item.linkId}').item")
       }
     }
   }

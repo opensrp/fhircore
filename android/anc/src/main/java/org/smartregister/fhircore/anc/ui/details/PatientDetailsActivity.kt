@@ -30,7 +30,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.material.tabs.TabLayoutMediator
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
+import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.databinding.ActivityNonAncDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
@@ -45,6 +45,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
   private lateinit var adapter: ViewPagerAdapter
   private lateinit var patientId: String
+  private var isPregnant: Boolean = false
 
   private lateinit var fhirEngine: FhirEngine
 
@@ -105,7 +106,8 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
   override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
     val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
-
+    val ancEnrollment = menu!!.findItem(R.id.mark_as_anc_client)
+    ancEnrollment.isVisible = !isPregnant
     val title = removeThisPerson.title.toString()
     val s = SpannableString(title)
     with(s) {
@@ -128,7 +130,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
     return super.onOptionsItemSelected(item)
   }
 
-  private fun handlePatientDemographics(patient: AncPatientDetailItem) {
+  private fun handlePatientDemographics(patient: PatientDetailItem) {
     with(patient) {
       val patientDetails =
         listOf(this.patientDetails.name, this.patientDetails.gender, this.patientDetails.age)
@@ -138,6 +140,8 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
           .joinToString(separator = " ID: ")
       activityAncDetailsBinding.txtViewPatientDetails.text = patientDetails
       activityAncDetailsBinding.txtViewPatientId.text = patientId
+      isPregnant =
+        if (this.patientDetails.gender == "Male") true else this.patientDetails.isPregnant
     }
   }
 
