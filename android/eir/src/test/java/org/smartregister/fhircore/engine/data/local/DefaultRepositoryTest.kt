@@ -36,9 +36,8 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
-import org.smartregister.fhircore.eir.shadow.ShadowNpmPackageProvider
 
-@Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
+@Config(shadows = [EirApplicationShadow::class])
 class DefaultRepositoryTest : RobolectricTest() {
 
   @Test

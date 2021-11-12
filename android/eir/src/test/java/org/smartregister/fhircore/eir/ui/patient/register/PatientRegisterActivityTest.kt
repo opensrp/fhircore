@@ -43,11 +43,10 @@ import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.FakeKeyStore
-import org.smartregister.fhircore.eir.shadow.ShadowNpmPackageProvider
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 
-@Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
+@Config(shadows = [EirApplicationShadow::class])
 class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   private lateinit var patientRegisterActivity: PatientRegisterActivity
