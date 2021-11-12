@@ -91,7 +91,7 @@ class FamilyDetailsActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnFamilyMemberItemClickedShouldStartAncDetailsActivity() {
-    val familyMemberItem = FamilyMemberItem("fmname", "fm1", "21", "F", true)
+    val familyMemberItem = FamilyMemberItem("fmname", "fm1", "21", "F", true, false)
 
     ReflectionHelpers.callInstanceMethod<Any>(
       activity,

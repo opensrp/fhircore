@@ -70,8 +70,8 @@ class FamilyDetailViewModelTest : RobolectricTest() {
 
     val itemList =
       listOf(
-        FamilyMemberItem("salina", "1", "20", "F", true),
-        FamilyMemberItem("kevin", "2", "25", "F", false)
+        FamilyMemberItem("salina", "1", "20", "F", true, false),
+        FamilyMemberItem("kevin", "2", "25", "F", false, false)
       )
 
     every { repository.fetchFamilyMembers() } returns MutableLiveData(itemList)
