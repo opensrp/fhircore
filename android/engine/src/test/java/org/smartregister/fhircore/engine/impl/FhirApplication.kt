@@ -35,17 +35,14 @@ import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
-import org.smartregister.fhircore.engine.shadow.ShadowNpmPackageProvider
 import org.smartregister.fhircore.engine.shadow.activity.ShadowLoginActivity
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
-@Config(shadows = [ShadowNpmPackageProvider::class])
 class FhirApplication : Application(), ConfigurableApplication {
 
   val fhirEngineImpl = spyk(FhirEngineImpl())
