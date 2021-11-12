@@ -62,6 +62,7 @@ class LoginViewModel(
       override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
         response.body()?.run {
           storeUserPreferences(this)
+          _navigateToHome.value = true
           _showProgressBar.postValue(false)
         }
       }
@@ -105,8 +106,6 @@ class LoginViewModel(
             password.value?.trim()?.toCharArray()!!
           )
           getUserInfo().enqueue(userInfoResponseCallback)
-          _navigateToHome.value = true
-          _showProgressBar.postValue(false)
         }
       }
 

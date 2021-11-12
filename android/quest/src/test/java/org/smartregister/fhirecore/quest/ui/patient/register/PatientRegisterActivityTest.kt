@@ -109,7 +109,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   fun testSetupConfigurableViewsShouldUpdateViews() {
     val config =
       ApplicationProvider.getApplicationContext<Application>()
-        .loadRegisterViewConfiguration("quest-app-patient-register")
+        .loadRegisterViewConfiguration("default-app-patient-register")
 
     val activityBinding =
       ReflectionHelpers.getField<BaseRegisterActivityBinding>(
@@ -125,7 +125,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
     patientRegisterActivity.setupConfigurableViews(config)
 
     with(activityBinding) {
-      Assert.assertEquals("Add new client", this.btnRegisterNewClient.text)
+      Assert.assertEquals("Register new client", this.btnRegisterNewClient.text)
       Assert.assertEquals("Clients", this.toolbarLayout.tvClientsListTitle.text)
       Assert.assertEquals(2, this.bottomNavView.menu.size)
     }

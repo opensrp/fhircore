@@ -61,11 +61,9 @@ class QuestApplicationTest : RobolectricTest() {
   @Test
   fun testResourceSyncParam() {
     val syncParam = app.resourceSyncParams
-    Assert.assertEquals(5, syncParam.size)
-    Assert.assertTrue(syncParam.containsKey(ResourceType.Patient))
+    Assert.assertTrue(syncParam.size >= 3)
     Assert.assertTrue(syncParam.containsKey(ResourceType.Binary))
-    Assert.assertTrue(syncParam.containsKey(ResourceType.CarePlan))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.StructureMap))
     Assert.assertTrue(syncParam.containsKey(ResourceType.Questionnaire))
-    Assert.assertTrue(syncParam.containsKey(ResourceType.QuestionnaireResponse))
   }
 }

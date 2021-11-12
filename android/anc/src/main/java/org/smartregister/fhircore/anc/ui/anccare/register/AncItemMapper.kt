@@ -20,7 +20,7 @@ import com.google.android.fhir.logicalId
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.extension.due
@@ -32,9 +32,9 @@ import org.smartregister.fhircore.engine.util.extension.overdue
 
 data class Anc(val patient: Patient, val head: Patient?, val carePlans: List<CarePlan>)
 
-object AncItemMapper : DomainMapper<Anc, AncPatientItem> {
+object AncItemMapper : DomainMapper<Anc, PatientItem> {
 
-  override fun mapToDomainModel(dto: Anc): AncPatientItem {
+  override fun mapToDomainModel(dto: Anc): PatientItem {
     val patient = dto.patient
     val name = patient.extractName()
     val gender = patient.extractGender(AncApplication.getContext())?.first() ?: ""
@@ -46,7 +46,7 @@ object AncItemMapper : DomainMapper<Anc, AncPatientItem> {
     else if (dto.carePlans.flatMap { it.activity }.any { it.detail.due() })
       visitStatus = VisitStatus.DUE
 
-    return AncPatientItem(
+    return PatientItem(
       patientIdentifier = patient.logicalId,
       name = name,
       gender = gender.toString(),
