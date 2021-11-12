@@ -81,7 +81,7 @@ class ReportRepositoryTest : RobolectricTest() {
   private fun getTestReport1(): ReportItem {
     return ReportItem(
       id = "1",
-      title = "Test Report 1",
+      title = "First ANC",
       description = "Women having test reports encounters",
       reportType = "4"
     )
@@ -90,7 +90,7 @@ class ReportRepositoryTest : RobolectricTest() {
   private fun getTestReport2(): ReportItem {
     return ReportItem(
       id = "2",
-      title = "Test Report 2",
+      title = "Received Supplements",
       description = "Women having test reports ANC",
       reportType = "4"
     )
