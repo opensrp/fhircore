@@ -52,13 +52,13 @@ class ReportRepository(val fhirEngine: FhirEngine, private val patientId: String
         listOf(
           ReportItem(
             id = "1",
-            title = "Test Report 1",
+            title = "First ANC",
             description = "Women having test reports encounters",
             reportType = "4"
           ),
           ReportItem(
             id = "2",
-            title = "Test Report 2",
+            title = "Received Supplements",
             description = "Women having test reports ANC",
             reportType = "4"
           )
