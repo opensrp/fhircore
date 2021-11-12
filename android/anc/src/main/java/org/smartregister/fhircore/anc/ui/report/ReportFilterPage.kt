@@ -67,6 +67,7 @@ fun ReportFilterPage(
   onDateRangePress: () -> Unit,
   patientSelectionText: String,
   onPatientSelectionTypeChanged: (String) -> Unit,
+  generateReportEnabled: Boolean,
   onGenerateReportPress: () -> Unit
 ) {
   Surface(color = colorResource(id = R.color.white)) {
@@ -74,7 +75,7 @@ fun ReportFilterPage(
       TopBarBox(topBarTitle, onBackPress)
       DateSelectionBox(startDate, endDate, onDateRangePress)
       PatientSelectionBox(patientSelectionText, onPatientSelectionTypeChanged)
-      BottomButtonBox(onGenerateReportPress)
+      BottomButtonBox(generateReportEnabled, onGenerateReportPress)
     }
   }
 }
@@ -84,6 +85,7 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
 
   val reportMeasureItem by remember { mutableStateOf(viewModel.getSelectedReport()) }
   val patientSelectionType by remember { mutableStateOf(viewModel.getPatientSelectionType()) }
+  val generateReportEnabled by remember { mutableStateOf(viewModel.isReadyToGenerateReport.value) }
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
 
@@ -95,6 +97,7 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
     onDateRangePress = viewModel::onDateRangePress,
     patientSelectionText = patientSelectionType ?: "All",
     onPatientSelectionTypeChanged = viewModel::onPatientSelectionTypeChanged,
+    generateReportEnabled = generateReportEnabled ?: true,
     onGenerateReportPress = viewModel::onGenerateReportPress
   )
 }
@@ -111,6 +114,7 @@ fun ReportFilterPreview() {
     onDateRangePress = {},
     patientSelectionText = "ALL",
     onPatientSelectionTypeChanged = {},
+    generateReportEnabled = false,
     onGenerateReportPress = {}
   )
 }
@@ -138,7 +142,7 @@ fun DateRangeItem(text: String, clickListener: () -> Unit, modifier: Modifier = 
 }
 
 @Composable
-fun BottomButtonBox(onGenerateReportClicked: () -> Unit) {
+fun BottomButtonBox(generateReportEnabled: Boolean, onGenerateReportClicked: () -> Unit) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
@@ -146,7 +150,7 @@ fun BottomButtonBox(onGenerateReportClicked: () -> Unit) {
   ) {
     Column(modifier = Modifier.align(Alignment.Bottom)) {
       Button(
-        enabled = true,
+        enabled = generateReportEnabled,
         onClick = onGenerateReportClicked,
         modifier = Modifier.fillMaxWidth().testTag(GENERATE_REPORT_BUTTON_TAG)
       ) {

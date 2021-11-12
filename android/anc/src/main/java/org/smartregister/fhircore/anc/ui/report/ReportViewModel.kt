@@ -58,7 +58,9 @@ class ReportViewModel(application: AncApplication, private val repository: Repor
   val patientSelectionType: LiveData<String>
     get() = _patientSelectionType
 
-  val isReadyToGenerateReport = MutableLiveData(false)
+  private val _isReadyToGenerateReport = MutableLiveData(true)
+  val isReadyToGenerateReport: LiveData<Boolean>
+    get() = _isReadyToGenerateReport
 
   var reportState: ReportState = ReportState()
 
@@ -106,7 +108,7 @@ class ReportViewModel(application: AncApplication, private val repository: Repor
   fun onDateSelected(selection: Pair<Long, Long>?) {
     showDatePicker.value = false
     if (selection == null) {
-      isReadyToGenerateReport.value = false
+      _isReadyToGenerateReport.value = false
       return
     }
     val startDate = Date().apply { time = selection.first }
@@ -118,7 +120,7 @@ class ReportViewModel(application: AncApplication, private val repository: Repor
 
     _startDate.value = formattedStartDate
     _endDate.value = formattedEndDate
-    isReadyToGenerateReport.value = true
+    _isReadyToGenerateReport.value = true
     reportState.currentScreen = ReportScreen.FILTER
   }
 
