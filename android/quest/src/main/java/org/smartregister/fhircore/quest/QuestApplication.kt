@@ -62,11 +62,12 @@ class QuestApplication : Application(), ConfigurableApplication {
     get() {
       return mapOf(
         ResourceType.Binary to mapOf("_id" to CONFIG_RESOURCE_IDS),
-        ResourceType.CarePlan to mapOf(),
         ResourceType.Patient to mapOf(),
+        ResourceType.Observation to mapOf(),
+        ResourceType.Condition to mapOf(),
         ResourceType.Questionnaire to buildQuestionnaireFilterMap(),
         ResourceType.QuestionnaireResponse to mapOf(),
-        ResourceType.Binary to mapOf()
+        ResourceType.Library to mapOf()
       )
     }
 
@@ -113,7 +114,7 @@ class QuestApplication : Application(), ConfigurableApplication {
 
     applyApplicationConfiguration()
 
-    initializeWorkerContextProvider()
+      // TODO?????????????????????? initializeWorkerContextProvider()
 
     schedulePeriodicSync()
   }

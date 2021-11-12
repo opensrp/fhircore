@@ -102,17 +102,10 @@ class MeasureEvaluator {
     val config = MeasureEvalConfig.defaultConfig()
     measureProcessor =
       R4MeasureProcessor(
-        null,
-        null,
-        null,
-        null,
-        null,
         terminologyProvider,
         libraryContentProvider,
         dataProvider,
-        fhirDal,
-        config
-      )
+        fhirDal)
   }
 
   /**

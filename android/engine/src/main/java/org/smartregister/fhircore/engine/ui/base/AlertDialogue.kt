@@ -29,14 +29,15 @@ import org.smartregister.fhircore.engine.util.extension.show
 enum class AlertIntent {
   PROGRESS,
   CONFIRM,
-  ERROR
+  ERROR,
+  INFO
 }
 
 object AlertDialogue {
   fun showAlert(
     context: Activity,
     alertIntent: AlertIntent,
-    @StringRes message: Int,
+    message: String,
     @StringRes title: Int? = null,
     confirmButtonListener: ((d: DialogInterface) -> Unit)? = null,
     @StringRes confirmButtonText: Int = R.string.questionnaire_alert_confirm_button_title,
@@ -66,7 +67,7 @@ object AlertDialogue {
       } else this.hide()
     }
 
-    dialog.findViewById<TextView>(R.id.tv_alert_message)?.apply { this.setText(message) }
+    dialog.findViewById<TextView>(R.id.tv_alert_message)?.apply { this.text = message }
 
     return dialog
   }
@@ -79,6 +80,21 @@ object AlertDialogue {
     return showAlert(
       context = context,
       alertIntent = AlertIntent.ERROR,
+      message = context.getString(message),
+      title = title,
+      confirmButtonListener = { d -> d.dismiss() },
+      confirmButtonText = R.string.questionnaire_alert_ack_button_title
+    )
+  }
+
+  fun showInfoAlert(
+    context: Activity,
+    message: String,
+    @StringRes title: Int? = null
+  ): AlertDialog {
+    return showAlert(
+      context = context,
+      alertIntent = AlertIntent.INFO,
       message = message,
       title = title,
       confirmButtonListener = { d -> d.dismiss() },
@@ -87,11 +103,7 @@ object AlertDialogue {
   }
 
   fun showProgressAlert(context: Activity, @StringRes message: Int): AlertDialog {
-    return showAlert(context, AlertIntent.PROGRESS, message)
-  }
-
-  fun hideProgressAlert(alert: AlertDialog) {
-    if (alert.isShowing) alert.dismiss()
+    return showAlert(context, AlertIntent.PROGRESS, context.getString(message))
   }
 
   fun showConfirmAlert(
@@ -104,7 +116,7 @@ object AlertDialogue {
     return showAlert(
       context = context,
       alertIntent = AlertIntent.CONFIRM,
-      message = message,
+      message = context.getString(message),
       title = title,
       confirmButtonListener = confirmButtonListener,
       confirmButtonText = confirmButtonText,

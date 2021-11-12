@@ -90,6 +90,9 @@ const val TOOLBAR_MENU = "toolbarMenuTag"
 const val PATIENT_NAME = "patientNameTag"
 const val FORM_ITEM = "formItemTag"
 const val RESULT_ITEM = "resultItemTag"
+enum class PatientDetailMenuItem {
+  TEST_RESULTS, CQL_RESULT
+}
 
 @Composable
 fun Toolbar(dataProvider: QuestPatientDetailDataProvider) {
@@ -118,9 +121,15 @@ fun Toolbar(dataProvider: QuestPatientDetailDataProvider) {
         DropdownMenuItem(
           onClick = {
             showMenu = false
-            dataProvider.onMenuItemClickListener().invoke("")
+            dataProvider.onMenuItemClickListener().invoke(PatientDetailMenuItem.TEST_RESULTS.name)
           }
         ) { Text(text = stringResource(id = R.string.test_results)) }
+        DropdownMenuItem(
+          onClick = {
+            showMenu = false
+            dataProvider.onMenuItemClickListener().invoke(PatientDetailMenuItem.CQL_RESULT.name)
+          }
+        ) { Text(text = stringResource(id = R.string.tick)) }
       }
     }
   )

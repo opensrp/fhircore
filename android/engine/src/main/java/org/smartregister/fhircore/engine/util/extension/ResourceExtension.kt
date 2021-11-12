@@ -18,6 +18,8 @@ package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
+import com.google.android.fhir.logicalId
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.json.JSONException
 import org.json.JSONObject
@@ -44,3 +46,7 @@ fun JSONObject.updateFrom(updated: JSONObject) {
 
   keys.forEach { key -> updated.opt(key)?.run { put(key, this) } }
 }
+
+fun Resource.asReference() = Reference().apply { reference = "$resourceType/$logicalId"}
+
+fun Resource.asReferenceString() = "$resourceType/$logicalId"

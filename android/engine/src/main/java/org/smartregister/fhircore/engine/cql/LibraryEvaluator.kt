@@ -21,6 +21,7 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.context.api.BundleInclusionRule
 import ca.uhn.fhir.model.valueset.BundleTypeEnum
 import ca.uhn.fhir.rest.api.BundleLinks
+import com.google.android.fhir.logicalId
 import com.google.common.collect.Lists
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -31,6 +32,10 @@ import org.cqframework.cql.elm.execution.Library
 import org.cqframework.cql.elm.execution.VersionedIdentifier
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.json.JSONArray
 import org.json.JSONObject
 import org.opencds.cqf.cql.engine.data.CompositeDataProvider
@@ -41,7 +46,6 @@ import org.opencds.cqf.cql.evaluator.CqlEvaluator
 import org.opencds.cqf.cql.evaluator.cql2elm.content.LibraryContentProvider
 import org.opencds.cqf.cql.evaluator.cql2elm.content.fhir.BundleFhirLibraryContentProvider
 import org.opencds.cqf.cql.evaluator.cql2elm.util.LibraryVersionSelector
-import org.opencds.cqf.cql.evaluator.engine.execution.TranslatingLibraryLoader
 import org.opencds.cqf.cql.evaluator.engine.retrieve.BundleRetrieveProvider
 import org.opencds.cqf.cql.evaluator.engine.terminology.BundleTerminologyProvider
 import org.opencds.cqf.cql.evaluator.fhir.adapter.r4.AdapterFactory
@@ -53,6 +57,7 @@ import org.opencds.cqf.cql.evaluator.library.LibraryEvaluator
  * https://github.com/DBCG/CqlEvaluatorSampleApp See also https://www.hl7.org/fhir/
  */
 class LibraryEvaluator {
+  private lateinit var library: org.hl7.fhir.r4.model.Library
   private var fhirContext = FhirContext.forCached(FhirVersionEnum.R4)!!
   private var adapterFactory = AdapterFactory()
   private var fhirTypeConverter = FhirTypeConverterFactory().create(fhirContext.version.version)
@@ -79,14 +84,14 @@ class LibraryEvaluator {
     libraryData: String,
     helperData: String,
     valueSetData: String,
-    testData: String
+    testData: String,
   ) {
     parser.setPrettyPrint(true)
     // Load Library Content and create a LibraryContentProvider, which is the interface used by the
     // LibraryLoader for getting library CQL/ELM/etc.
     val libraryStream: InputStream = ByteArrayInputStream(libraryData.toByteArray())
     val fhirHelpersStream: InputStream = ByteArrayInputStream(helperData.toByteArray())
-    val library = parser.parseResource(libraryStream)
+    library = parser.parseResource(libraryStream) as org.hl7.fhir.r4.model.Library
     val fhirHelpersLibrary = parser.parseResource(fhirHelpersStream)
     val resources: List<IBaseResource> = Lists.newArrayList(library, fhirHelpersLibrary)
 
@@ -121,8 +126,13 @@ class LibraryEvaluator {
     bundleRetrieveProvider!!.isExpandValueSets = true
     cqlEvaluator =
       CqlEvaluator(
-        object :
-          TranslatingLibraryLoader(
+        FhirLibraryLoader(
+          ModelManager(),
+          listOf(contentProvider!!),
+          CqlTranslatorOptions.defaultOptions()
+        )
+
+        /*TranslatingLibraryLoader(
             ModelManager(),
             listOf(contentProvider),
             CqlTranslatorOptions.defaultOptions()
@@ -137,7 +147,7 @@ class LibraryEvaluator {
           override fun translatorOptionsMatch(library: Library): Boolean {
             return true
           }
-        },
+        }*/ ,
         object : HashMap<String?, DataProvider?>() {
           init {
             put(
@@ -169,17 +179,102 @@ class LibraryEvaluator {
     testData: String,
     evaluatorId: String?,
     context: String,
-    contextLabel: String
+    contextLabel: String,
   ): String {
     loadConfigs(libraryData, helperData, valueSetData, testData)
     val result =
       libEvaluator!!.evaluate(
-        VersionedIdentifier().withId(evaluatorId),
+        VersionedIdentifier().withId(evaluatorId).withVersion(library.version),
         Pair.of(context, contextLabel),
         null,
         null
       )
     return fhirContext.newJsonParser().encodeResourceToString(result)
+  }
+
+  fun runCql(
+    library: org.hl7.fhir.r4.model.Library,
+    helper: org.hl7.fhir.r4.model.Library,
+    valueSet: Bundle,
+    data: Bundle
+  ): List<String> {
+    loadConfigs(library, helper, valueSet, data)
+    val result =
+      libEvaluator!!.evaluate(
+        VersionedIdentifier().withId(library.name).withVersion(library.version),
+        Pair.of("Patient", data.entry.first { it.resource.resourceType == ResourceType.Patient }.resource.logicalId),
+        null,
+        null
+      ) as Parameters
+
+    parser.setPrettyPrint(false)
+    //?.let { parser.encodeResourceToString(it) }
+    return result.parameter.map { "${it.name} -> ${it.value?:it.resource}" }
+  }
+
+  private fun loadConfigs(
+    library: org.hl7.fhir.r4.model.Library,
+    helper: org.hl7.fhir.r4.model.Library,
+    valueSet: Bundle,
+    data: Bundle,
+  ) {
+    parser.setPrettyPrint(true)
+    // Load Library Content and create a LibraryContentProvider, which is the interface used by the
+    // LibraryLoader for getting library CQL/ELM/etc.
+    val resources: List<IBaseResource> = Lists.newArrayList(library, helper)
+
+    bundleFactory.addRootPropertiesToBundle("bundled-directory", bundleLinks, resources.size, null)
+    bundleFactory.addResourcesToBundle(
+      resources,
+      BundleTypeEnum.COLLECTION,
+      "",
+      BundleInclusionRule.BASED_ON_INCLUDES,
+      null
+    )
+
+    val libraryProvider =
+      BundleFhirLibraryContentProvider(
+        fhirContext,
+        bundleFactory.resourceBundle as IBaseBundle,
+        adapterFactory,
+        libraryVersionSelector
+      )
+
+    // Load terminology content, and create a TerminologyProvider which is the interface used by the
+    // evaluator for resolving terminology
+    val terminologyProvider = BundleTerminologyProvider(fhirContext, valueSet)
+
+    // Load data content, and create a RetrieveProvider which is the interface used for
+    // implementations of CQL retrieves.
+    val retrieveProvider =
+      BundleRetrieveProvider(fhirContext, data).apply {
+        this.terminologyProvider = terminologyProvider
+        this.isExpandValueSets = true
+      }
+
+    cqlEvaluator =
+      CqlEvaluator(
+        FhirLibraryLoader(ModelManager(), listOf(libraryProvider)),
+        mapOf(
+          "http://hl7.org/fhir" to CompositeDataProvider(R4FhirModelResolver(), retrieveProvider)
+        ),
+        terminologyProvider
+      )
+
+    libEvaluator = LibraryEvaluator(cqlFhirParametersConverter, cqlEvaluator)
+  }
+
+  fun createBundle(resources: List<Resource>): Bundle {
+    val bundleFactory = fhirContext.newBundleFactory()
+    bundleFactory.addRootPropertiesToBundle("bundled-directory", bundleLinks, resources.size, null)
+    bundleFactory.addResourcesToBundle(
+      resources,
+      BundleTypeEnum.COLLECTION,
+      "",
+      BundleInclusionRule.BASED_ON_INCLUDES,
+      null
+    )
+    return bundleFactory.resourceBundle as Bundle
   }
 
   /**

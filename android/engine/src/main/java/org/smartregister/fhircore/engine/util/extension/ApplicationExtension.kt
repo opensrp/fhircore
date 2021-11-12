@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import android.app.Application
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.utilities.SimpleWorkerContextProvider
 import com.google.android.fhir.db.ResourceNotFoundException
@@ -43,6 +44,7 @@ import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
@@ -129,6 +131,13 @@ suspend fun FhirEngine.searchActivePatients(
 
 suspend fun FhirEngine.countActivePatients(): Long =
   this.count<Patient> { filter(Patient.ACTIVE, true) }
+
+suspend inline fun <reified T : Resource> FhirEngine.filterBy(filter: ReferenceClientParam, subject: Resource) =
+  search<T> {
+    filter(filter) {
+      this.value = subject.asReferenceString()
+    }
+  }
 
 suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
   return try {

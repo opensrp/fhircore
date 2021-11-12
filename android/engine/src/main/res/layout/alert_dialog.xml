@@ -6,7 +6,9 @@
     android:orientation="vertical"
     android:paddingTop="50dp"
     android:paddingBottom="50dp"
-    android:gravity="center">
+    android:gravity="center"
+    android:scrollbars="vertical"
+    android:scrollbarAlwaysDrawVerticalTrack="true">
 
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/pr_circular"

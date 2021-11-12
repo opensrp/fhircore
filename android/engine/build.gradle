@@ -108,15 +108,12 @@ dependencies {
 
     //CQL
     implementation group: 'xerces', name: 'xercesImpl', version: '2.11.0'
-    implementation(group: "com.github.java-json-tools", name: "msg-simple", version: "1.2");
     implementation 'org.codehaus.woodstox:woodstox-core-asl:4.4.1'
-    implementation "ca.uhn.hapi.fhir:hapi-fhir-android:5.4.0"
-    implementation 'org.opencds.cqf.cql:engine:1.5.2-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:engine.fhir:1.5.2-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator:1.2.1-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.builder:1.2.1-SNAPSHOT'
-    implementation 'org.opencds.cqf.cql:evaluator.dagger:1.2.1-SNAPSHOT'
-
+    implementation 'org.opencds.cqf.cql:engine:1.5.2'
+    implementation 'org.opencds.cqf.cql:engine.fhir:1.5.2'
+    implementation 'org.opencds.cqf.cql:evaluator:1.3.0'
+    implementation 'org.opencds.cqf.cql:evaluator.builder:1.3.0'
+    implementation 'org.opencds.cqf.cql:evaluator.dagger:1.3.0'
 
     //Configure Jetpack Compose
     def composeVersion = "1.0.1"
