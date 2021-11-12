@@ -33,12 +33,11 @@ import org.smartregister.fhircore.eir.data.model.VaccineStatus
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.shadow.FakeKeyStore
-import org.smartregister.fhircore.eir.shadow.ShadowNpmPackageProvider
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 
-@Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
+@Config(shadows = [EirApplicationShadow::class])
 class PatientRegisterFragmentTest : RobolectricTest() {
 
   private lateinit var registerFragment: PatientRegisterFragment

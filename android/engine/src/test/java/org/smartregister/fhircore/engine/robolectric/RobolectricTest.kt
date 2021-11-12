@@ -26,14 +26,9 @@ import org.junit.AfterClass
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.impl.FhirApplication
-import org.smartregister.fhircore.engine.shadow.ShadowNpmPackageProvider
 
 @RunWith(FhircoreTestRunner::class)
-@Config(
-  sdk = [Build.VERSION_CODES.O_MR1],
-  application = FhirApplication::class,
-  shadows = [ShadowNpmPackageProvider::class]
-)
+@Config(sdk = [Build.VERSION_CODES.O_MR1], application = FhirApplication::class)
 abstract class RobolectricTest {
   /** Get the liveData value by observing but wait for 3 seconds if not ready then stop observing */
   @Throws(InterruptedException::class)
