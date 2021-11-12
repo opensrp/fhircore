@@ -14,6 +14,12 @@ local.properties
 # IntelliJ
 *.iml
 .idea
+daemon/
 
 # Gradle Properties
 gradle.properties
+
+#Caches
+caches/
+native/
+wrapper
