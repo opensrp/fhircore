@@ -16,17 +16,15 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -53,7 +51,7 @@ fun ReportResultPreview() {
 fun ReportResultScreen(viewModel: ReportViewModel) {
   ReportResultPage(
     topBarTitle = stringResource(id = R.string.reports),
-    onBackPress = viewModel::onBackPress,
+    onBackPress = viewModel::onBackPressFromResult,
     reportMeasureItem = viewModel.getSelectedReport()!!
   )
 }
@@ -61,14 +59,10 @@ fun ReportResultScreen(viewModel: ReportViewModel) {
 @Composable
 fun ReportResultPage(topBarTitle: String, onBackPress: () -> Unit, reportMeasureItem: ReportItem) {
   Surface(color = colorResource(id = R.color.white)) {
-    Column {
+    Column(modifier = Modifier.fillMaxSize()) {
       TopBarBox(topBarTitle = topBarTitle, onBackPress = onBackPress)
 
-      Text(
-        text = stringResource(id = R.string.date_range),
-        fontSize = 18.sp,
-        modifier = Modifier.wrapContentWidth()
-      )
+      Text(text = reportMeasureItem.title, fontSize = 18.sp, modifier = Modifier.wrapContentWidth())
       Spacer(modifier = Modifier.height(8.dp))
       Text(
         color = SubtitleTextColor,
@@ -77,23 +71,6 @@ fun ReportResultPage(topBarTitle: String, onBackPress: () -> Unit, reportMeasure
         modifier = Modifier.wrapContentWidth()
       )
       Spacer(modifier = Modifier.height(8.dp))
-      Row(
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        Text(
-          color = SubtitleTextColor,
-          text = stringResource(id = R.string.start_date),
-          fontSize = 14.sp,
-          modifier = Modifier.wrapContentWidth()
-        )
-        Text(
-          color = SubtitleTextColor,
-          text = stringResource(id = R.string.end_date),
-          fontSize = 14.sp,
-          modifier = Modifier.wrapContentWidth()
-        )
-      }
     }
   }
 }

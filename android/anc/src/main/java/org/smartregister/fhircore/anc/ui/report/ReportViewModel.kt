@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -47,7 +46,7 @@ class ReportViewModel(application: AncApplication, private val repository: Repor
   val selectedMeasureReportItem: MutableLiveData<ReportItem> = MutableLiveData(null)
   val simpleDateFormatPattern = "d MMM, yyyy"
 
-  private val _startDate = MutableLiveData<String>("start date")
+  private val _startDate = MutableLiveData("start date")
   val startDate: LiveData<String>
     get() = _startDate
 
@@ -55,11 +54,11 @@ class ReportViewModel(application: AncApplication, private val repository: Repor
   val endDate: LiveData<String>
     get() = _endDate
 
-  private val _patientSelectionType = MutableLiveData<String>("All")
+  private val _patientSelectionType = MutableLiveData("All")
   val patientSelectionType: LiveData<String>
     get() = _patientSelectionType
 
-  val isReadyToGenerateReport: MutableLiveData<Boolean> = MutableLiveData(false)
+  val isReadyToGenerateReport = MutableLiveData(false)
 
   var reportState: ReportState = ReportState()
 
@@ -76,12 +75,20 @@ class ReportViewModel(application: AncApplication, private val repository: Repor
     return selectedMeasureReportItem.value
   }
 
-  fun getPatientSelectionType(): String {
-    return patientSelectionType.value ?: PatientSelectionType.ALL
+  fun getPatientSelectionType(): String? {
+    return patientSelectionType.value
   }
 
   fun onBackPress() {
     backPress.value = true
+  }
+
+  fun onBackPressFromFilter() {
+    reportState.currentScreen = ReportScreen.HOME
+  }
+
+  fun onBackPressFromResult() {
+    reportState.currentScreen = ReportScreen.FILTER
   }
 
   fun onDateRangePress() {
@@ -89,19 +96,17 @@ class ReportViewModel(application: AncApplication, private val repository: Repor
   }
 
   fun onPatientSelectionTypeChanged(newType: String) {
-    Log.e("aw", "onPatientSelectionTypeChanged-$newType")
+    _patientSelectionType.value = newType
   }
 
   fun onGenerateReportPress() {
-    Log.e("aw", "onGenerateReportPress-")
     reportState.currentScreen = ReportScreen.RESULT
   }
 
   fun onDateSelected(selection: Pair<Long, Long>?) {
     showDatePicker.value = false
-    Log.e("aw", "onDatePicked-> start=" + selection?.first + " end=" + selection?.second)
     if (selection == null) {
-      isReadyToGenerateReport.postValue(false)
+      isReadyToGenerateReport.value = false
       return
     }
     val startDate = Date().apply { time = selection.first }

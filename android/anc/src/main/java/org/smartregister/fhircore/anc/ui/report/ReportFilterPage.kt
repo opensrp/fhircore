@@ -89,11 +89,11 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
 
   ReportFilterPage(
     topBarTitle = reportMeasureItem?.title ?: "",
-    onBackPress = viewModel::onBackPress,
+    onBackPress = viewModel::onBackPressFromFilter,
     startDate = startDate,
     endDate = endDate,
     onDateRangePress = viewModel::onDateRangePress,
-    patientSelectionText = patientSelectionType,
+    patientSelectionText = patientSelectionType ?: "All",
     onPatientSelectionTypeChanged = viewModel::onPatientSelectionTypeChanged,
     onGenerateReportPress = viewModel::onGenerateReportPress
   )
