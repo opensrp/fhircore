@@ -21,9 +21,11 @@ import android.content.res.AssetManager
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileWriter
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.lang.Exception
 import java.util.ArrayList
 import java.util.Properties
 
@@ -50,7 +52,7 @@ class FileUtil {
    */
   @Throws(IOException::class)
   fun readJsonFile(fileName: String): String {
-    var fileNameFinal = ASSET_BASE_PATH_RESOURCES + fileName
+    val fileNameFinal = ASSET_BASE_PATH_RESOURCES + fileName
     val br = BufferedReader(InputStreamReader(FileInputStream(fileNameFinal)))
     val sb = StringBuilder()
     var line = br.readLine()
@@ -86,5 +88,46 @@ class FileUtil {
   companion object {
     val ASSET_BASE_PATH_RESOURCES =
       (System.getProperty("user.dir") + File.separator + "src" + File.separator)
+  }
+
+  fun writeFileOnInternalStorage(
+    context: Context,
+    fileName: String?,
+    body: String?,
+    dirName: String
+  ) {
+
+    val dir = File(context.getFilesDir(), dirName)
+    if (!dir.exists()) {
+      dir.mkdir()
+    }
+    try {
+      val file = File(dir, fileName)
+      val writer = FileWriter(file)
+      writer.append(body)
+      writer.flush()
+      writer.close()
+    } catch (e: Exception) {
+      e.printStackTrace()
+    }
+  }
+
+  fun readFileFromInternalStorage(context: Context, fileName: String?, dirName: String): String {
+    val dir = File(context.getFilesDir(), dirName)
+    val sb = java.lang.StringBuilder()
+    try {
+      val file = File(dir, fileName)
+      val fis = FileInputStream(file)
+      val isr = InputStreamReader(fis)
+      val bufferedReader = BufferedReader(isr)
+      var line: String?
+      while (bufferedReader.readLine().also { line = it } != null) {
+        sb.append(line)
+      }
+      fis.close()
+    } catch (e: Exception) {
+      e.printStackTrace()
+    }
+    return sb.toString()
   }
 }

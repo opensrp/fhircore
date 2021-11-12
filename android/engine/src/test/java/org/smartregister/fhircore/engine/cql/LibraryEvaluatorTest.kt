@@ -16,7 +16,14 @@
 
 package org.smartregister.fhircore.engine.cql
 
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
+import com.google.common.collect.Lists
+import java.io.ByteArrayInputStream
 import java.io.IOException
+import java.io.InputStream
+import org.hl7.fhir.instance.model.api.IBaseBundle
+import org.hl7.fhir.instance.model.api.IBaseResource
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -51,12 +58,26 @@ class LibraryEvaluatorTest {
 
   @Test
   fun runCqlTest() {
+    val fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
+    val parser = fhirContext.newJsonParser()!!
+    val libraryStream: InputStream = ByteArrayInputStream(libraryData.toByteArray())
+    val fhirHelpersStream: InputStream = ByteArrayInputStream(helperData.toByteArray())
+    val library = parser.parseResource(libraryStream)
+    val fhirHelpersLibrary = parser.parseResource(fhirHelpersStream)
+    val patientResources: List<IBaseResource> = Lists.newArrayList(library, fhirHelpersLibrary)
+
+    val valueSetStream: InputStream = ByteArrayInputStream(valueSetData.toByteArray())
+    val valueSetBundle = parser.parseResource(valueSetStream) as IBaseBundle
+
+    val dataStream: InputStream = ByteArrayInputStream(testData.toByteArray())
+    val dataBundle = parser.parseResource(dataStream) as IBaseBundle
+
     val auxResult =
       evaluator!!.runCql(
-        libraryData,
-        helperData,
-        valueSetData,
-        testData,
+        patientResources,
+        valueSetBundle,
+        dataBundle,
+        fhirContext,
         evaluatorId,
         context,
         contextLabel
@@ -66,7 +87,7 @@ class LibraryEvaluatorTest {
 
   @Test
   fun processCQLPatientBundleTest() {
-    var results = evaluator!!.processCQLPatientBundle(testData)
+    val results = evaluator!!.processCQLPatientBundle(testData)
     Assert.assertNotNull(results)
   }
 }

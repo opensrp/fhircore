@@ -20,16 +20,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ca.uhn.fhir.parser.IParser
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 import org.smartregister.fhircore.anc.data.model.AncOverviewItem
 import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -111,103 +108,5 @@ class AncDetailsViewModel(
       patientEncounters.postValue(listEncountersItem)
     }
     return patientEncounters
-  }
-
-  fun fetchCQLLibraryData(
-    parser: IParser,
-    fhirResourceDataSource: FhirResourceDataSource,
-    libraryURL: String
-  ): LiveData<String> {
-    var libraryData = MutableLiveData<String>()
-    viewModelScope.launch(dispatcher.io()) {
-      val auxCQLLibraryData =
-        parser.encodeResourceToString(fhirResourceDataSource.loadData(libraryURL).entry[0].resource)
-      libraryData.postValue(auxCQLLibraryData)
-    }
-    return libraryData
-  }
-
-  fun fetchCQLFhirHelperData(
-    parser: IParser,
-    fhirResourceDataSource: FhirResourceDataSource,
-    helperURL: String
-  ): LiveData<String> {
-    var helperData = MutableLiveData<String>()
-    viewModelScope.launch(dispatcher.io()) {
-      val auxCQLHelperData =
-        parser.encodeResourceToString(fhirResourceDataSource.loadData(helperURL).entry[0].resource)
-      helperData.postValue(auxCQLHelperData)
-    }
-    return helperData
-  }
-
-  fun fetchCQLValueSetData(
-    parser: IParser,
-    fhirResourceDataSource: FhirResourceDataSource,
-    valueSetURL: String
-  ): LiveData<String> {
-    var valueSetData = MutableLiveData<String>()
-    viewModelScope.launch(dispatcher.io()) {
-      val auxCQLValueSetData =
-        parser.encodeResourceToString(fhirResourceDataSource.loadData(valueSetURL))
-      valueSetData.postValue(auxCQLValueSetData)
-    }
-    return valueSetData
-  }
-
-  fun fetchCQLPatientData(
-    parser: IParser,
-    fhirResourceDataSource: FhirResourceDataSource,
-    patientURL: String
-  ): LiveData<String> {
-    var patientData = MutableLiveData<String>()
-    viewModelScope.launch(dispatcher.io()) {
-      val auxCQLPatientData =
-        parser.encodeResourceToString(fhirResourceDataSource.loadData(patientURL))
-      patientData.postValue(auxCQLPatientData)
-    }
-    return patientData
-  }
-
-  fun fetchCQLMeasureEvaluateLibraryAndValueSets(
-    parser: IParser,
-    fhirResourceDataSource: FhirResourceDataSource,
-    libAndValueSetURL: String,
-    measureURL: String,
-    cqlMeasureReportLibInitialString: String
-  ): LiveData<String> {
-    var valueSetData = MutableLiveData<String>()
-    val equalsIndexUrl: Int = libAndValueSetURL.indexOf("=")
-
-    var libStrAfterEquals = libAndValueSetURL.substring(libAndValueSetURL.lastIndexOf("=") + 1)
-    var libList = libStrAfterEquals.split(",").map { it.trim() }
-
-    var libURLStrBeforeEquals = libAndValueSetURL.substring(0, equalsIndexUrl) + "="
-    var initialStr = StringBuilder(cqlMeasureReportLibInitialString)
-
-    viewModelScope.launch(dispatcher.io()) {
-      val measureObject =
-        parser.encodeResourceToString(fhirResourceDataSource.loadData(measureURL).entry[0].resource)
-      var jsonObjectResource = JSONObject()
-      var jsonObjectResourceType = JSONObject(measureObject)
-      jsonObjectResource.put("resource", jsonObjectResourceType)
-      initialStr.append(jsonObjectResource)
-
-      for (lib in libList) {
-        val auxCQLValueSetData =
-          parser.encodeResourceToString(
-            fhirResourceDataSource.loadData(libURLStrBeforeEquals + lib).entry[0].resource
-          )
-        var jsonObjectResource = JSONObject()
-        var jsonObjectResourceType = JSONObject(auxCQLValueSetData)
-        jsonObjectResource.put("resource", jsonObjectResourceType)
-        initialStr.append(",")
-        initialStr.append(jsonObjectResource)
-      }
-      initialStr.deleteCharAt(initialStr.length - 1)
-      initialStr.append("}]}")
-      valueSetData.postValue(initialStr.toString())
-    }
-    return valueSetData
   }
 }

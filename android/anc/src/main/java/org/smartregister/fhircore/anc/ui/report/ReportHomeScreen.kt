@@ -31,13 +31,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +40,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -63,35 +56,19 @@ const val TOOLBAR_BACK_ARROW = "toolbarBackArrow"
 
 @Composable
 fun ReportHomeScreen(viewModel: ReportViewModel) {
-  Surface(color = colorResource(id = R.color.white)) {
-    Column {
 
-      // top bar
-      TopAppBar(
-        title = {
-          Text(text = stringResource(id = R.string.reports), Modifier.testTag(TOOLBAR_TITLE))
-        },
-        navigationIcon = {
-          IconButton(onClick = viewModel::onBackPress, Modifier.testTag(TOOLBAR_BACK_ARROW)) {
-            Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")
-          }
+  val lazyReportItems = viewModel.getReportsTypeList().collectAsLazyPagingItems()
+
+  LazyColumn(modifier = Modifier.background(Color.White).fillMaxSize()) {
+    itemsIndexed(lazyReportItems) { _, item -> ReportRow(item!!, { _, _ -> }) }
+
+    lazyReportItems.apply {
+      when {
+        loadState.refresh is LoadState.Loading -> {
+          item { LoadingItem() }
         }
-      )
-
-      val lazyReportItems = viewModel.getReportsTypeList().collectAsLazyPagingItems()
-
-      LazyColumn(modifier = Modifier.background(Color.White).fillMaxSize()) {
-        itemsIndexed(lazyReportItems) { _, item -> ReportRow(item!!, { _, _ -> }) }
-
-        lazyReportItems.apply {
-          when {
-            loadState.refresh is LoadState.Loading -> {
-              item { LoadingItem() }
-            }
-            loadState.append is LoadState.Loading -> {
-              item { LoadingItem() }
-            }
-          }
+        loadState.append is LoadState.Loading -> {
+          item { LoadingItem() }
         }
       }
     }
@@ -157,4 +134,13 @@ fun ReportRowPreview() {
   val reportItem =
     ReportItem("fid", "4+ ANC Contacts ", "Pregnant women with at least four ANC Contacts", "4")
   ReportRow(reportItem = reportItem, { _, _ -> })
+}
+
+@Composable
+fun CircularProgressBarDemo() {
+  Column(
+    modifier = Modifier.fillMaxSize(),
+    verticalArrangement = Arrangement.Center,
+    horizontalAlignment = Alignment.CenterHorizontally
+  ) { CircularProgressIndicator() }
 }

@@ -17,23 +17,19 @@
 package org.smartregister.fhircore.anc.ui.anccare.details
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every
-import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.spyk
 import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
-import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.Resource
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -42,7 +38,6 @@ import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
 import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
@@ -105,64 +100,6 @@ internal class AncDetailsViewModelTest {
     }
   }
 
-  @MockK lateinit var parser: IParser
-  @MockK lateinit var fhirResourceDataSource: FhirResourceDataSource
-  @MockK lateinit var resource: Resource
-  @MockK lateinit var entryList: List<Bundle.BundleEntryComponent>
-  @MockK lateinit var bundle: Bundle
-
-  @Test
-  fun fetchCQLLibraryDataTest() {
-    val auxCQLLibraryData = "Library JSON"
-    coroutinesTestRule.runBlockingTest {
-      coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
-      coEvery { bundle.entry } returns entryList
-      coEvery { entryList[0].resource } returns resource
-      coEvery { parser.encodeResourceToString(resource) } returns auxCQLLibraryData
-    }
-    val libraryDataLiveData: String =
-      ancDetailsViewModel.fetchCQLLibraryData(parser, fhirResourceDataSource, "").value!!
-    Assert.assertEquals(auxCQLLibraryData, libraryDataLiveData)
-  }
-
-  @Test
-  fun fetchCQLFhirHelperDataTest() {
-    val auxCQLHelperData = "Helper JSON"
-    coroutinesTestRule.runBlockingTest {
-      coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
-      coEvery { bundle.entry } returns entryList
-      coEvery { entryList[0].resource } returns resource
-      coEvery { parser.encodeResourceToString(resource) } returns auxCQLHelperData
-    }
-    val libraryDataLiveData: String =
-      ancDetailsViewModel.fetchCQLFhirHelperData(parser, fhirResourceDataSource, "").value!!
-    Assert.assertEquals(auxCQLHelperData, libraryDataLiveData)
-  }
-
-  @Test
-  fun fetchCQLValueSetDataTest() {
-    val auxCQLValueSetData = "ValueSet JSON"
-    coroutinesTestRule.runBlockingTest {
-      coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
-      coEvery { parser.encodeResourceToString(bundle) } returns auxCQLValueSetData
-    }
-    val libraryDataLiveData: String =
-      ancDetailsViewModel.fetchCQLValueSetData(parser, fhirResourceDataSource, "").value!!
-    Assert.assertEquals(auxCQLValueSetData, libraryDataLiveData)
-  }
-
-  @Test
-  fun fetchCQLPatientDataTest() {
-    val auxCQLValueSetData = "Patient Data JSON"
-    coroutinesTestRule.runBlockingTest {
-      coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
-      coEvery { parser.encodeResourceToString(bundle) } returns auxCQLValueSetData
-    }
-    val libraryDataLiveData: String =
-      ancDetailsViewModel.fetchCQLPatientData(parser, fhirResourceDataSource, "1").value!!
-    Assert.assertEquals(auxCQLValueSetData, libraryDataLiveData)
-  }
-
   @Test
   fun testFetchCarePlanShouldReturnExpectedCarePlan() {
 
@@ -174,8 +111,8 @@ internal class AncDetailsViewModelTest {
     val carePlanList = ancDetailsViewModel.fetchCarePlan().value
 
     if (carePlanList != null && carePlanList.isNotEmpty()) {
-      Assert.assertEquals(1, carePlanList!!.size)
-      with(carePlanList!!.first()) { Assert.assertEquals(cpTitle, title) }
+      Assert.assertEquals(1, carePlanList.size)
+      with(carePlanList.first()) { Assert.assertEquals(cpTitle, title) }
     }
   }
 
@@ -194,26 +131,5 @@ internal class AncDetailsViewModelTest {
         this.status = CarePlan.CarePlanActivityStatus.SCHEDULED
       }
     }
-  }
-
-  @Test
-  fun fetchCQLMeasureEvaluateLibraryAndValueSetsTest() {
-    val auxCQLLibraryAndValueSetData = "{\"parameters\":\"parameters\"}"
-    coroutinesTestRule.runBlockingTest {
-      coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
-      coEvery { bundle.entry } returns entryList
-      coEvery { entryList[0].resource } returns resource
-      coEvery { parser.encodeResourceToString(resource) } returns auxCQLLibraryAndValueSetData
-    }
-    val libraryDataLiveData: String =
-      ancDetailsViewModel.fetchCQLMeasureEvaluateLibraryAndValueSets(
-          parser,
-          fhirResourceDataSource,
-          "https://hapi.fhir.org/baseR4/Library?_id=ANCDataElements,WHOCommon,ANCConcepts,ANCContactDataElements,FHIRHelpers,ANCStratifiers,ANCIND01,ANCCommon,ANCBaseDataElements,FHIRCommon,ANCBaseConcepts",
-          "https://hapi.fhir.org/baseR4/Measure?_id=ANCIND01",
-          ""
-        )
-        .value!!
-    Assert.assertNotNull(libraryDataLiveData)
   }
 }
