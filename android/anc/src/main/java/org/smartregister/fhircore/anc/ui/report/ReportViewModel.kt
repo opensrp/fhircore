@@ -47,7 +47,7 @@ class ReportViewModel(application: AncApplication, private val repository: Repor
   val selectedMeasureReportItem: MutableLiveData<ReportItem> = MutableLiveData(null)
   val simpleDateFormatPattern = "d MMM, yyyy"
 
-  private val _startDate = MutableLiveData("start date")
+  private val _startDate = MutableLiveData<String>("start date")
   val startDate: LiveData<String>
     get() = _startDate
 
@@ -55,7 +55,7 @@ class ReportViewModel(application: AncApplication, private val repository: Repor
   val endDate: LiveData<String>
     get() = _endDate
 
-  val _patientSelectionType = MutableLiveData("ALL")
+  private val _patientSelectionType = MutableLiveData<String>("All")
   val patientSelectionType: LiveData<String>
     get() = _patientSelectionType
 
@@ -77,7 +77,7 @@ class ReportViewModel(application: AncApplication, private val repository: Repor
   }
 
   fun getPatientSelectionType(): String {
-    return patientSelectionType.value ?: PatientType.ALL
+    return patientSelectionType.value ?: PatientSelectionType.ALL
   }
 
   fun onBackPress() {
@@ -139,7 +139,7 @@ class ReportViewModel(application: AncApplication, private val repository: Repor
     RESULT
   }
 
-  object PatientType {
+  object PatientSelectionType {
     const val ALL = "All"
     const val INDIVIDUAL = "Individual"
   }

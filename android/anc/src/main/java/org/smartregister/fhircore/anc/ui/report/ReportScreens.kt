@@ -67,7 +67,7 @@ fun LoadingItem() {
 @ExcludeFromJacocoGeneratedReport
 fun PatientSelectionPreview() {
   PatientSelectionBox(
-    patientSelectionText = ReportViewModel.PatientType.ALL,
+    patientSelectionText = ReportViewModel.PatientSelectionType.ALL,
     onPatientSelectionChange = {}
   )
 }

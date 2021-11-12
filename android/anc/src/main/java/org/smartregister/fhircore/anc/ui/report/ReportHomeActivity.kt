@@ -52,7 +52,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       this,
       {
         if (it) {
-          showDateRangePicker(viewModel)
+          showDateRangePicker(viewModel::onDateSelected)
         }
       }
     )
@@ -74,14 +74,12 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     }
   }
 
-  private fun showDateRangePicker(viewModel: ReportViewModel) {
+  private fun showDateRangePicker(onDateSelected: (Pair<Long, Long>?) -> Unit) {
     val builder = MaterialDatePicker.Builder.dateRangePicker()
     val now = Calendar.getInstance()
     builder.setSelection(Pair(now.timeInMillis, now.timeInMillis))
     val dateRangePicker = builder.build()
     dateRangePicker.show(supportFragmentManager, dateRangePicker.toString())
-    dateRangePicker.addOnPositiveButtonClickListener {
-      viewModel.onDateSelected(dateRangePicker.selection)
-    }
+    dateRangePicker.addOnPositiveButtonClickListener { onDateSelected(dateRangePicker.selection) }
   }
 }

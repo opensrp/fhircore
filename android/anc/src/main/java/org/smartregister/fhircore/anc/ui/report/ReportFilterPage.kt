@@ -52,7 +52,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.ui.report.ReportViewModel.PatientType
+import org.smartregister.fhircore.anc.ui.report.ReportViewModel.PatientSelectionType
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
@@ -204,26 +204,26 @@ fun PatientSelectionBox(
     Spacer(modifier = Modifier.size(8.dp))
     Row {
       RadioButton(
-        selected = patientSelection.value == PatientType.ALL,
+        selected = patientSelection.value == PatientSelectionType.ALL,
         onClick = {
-          patientSelection.value = PatientType.ALL
+          patientSelection.value = PatientSelectionType.ALL
           onPatientSelectionChange(patientSelection.value)
         }
       )
       Spacer(modifier = Modifier.size(16.dp))
-      Text(PatientType.ALL, fontSize = 16.sp)
+      Text(PatientSelectionType.ALL, fontSize = 16.sp)
     }
     Spacer(modifier = Modifier.size(8.dp))
     Row {
       RadioButton(
-        selected = patientSelection.value == PatientType.INDIVIDUAL,
+        selected = patientSelection.value == PatientSelectionType.INDIVIDUAL,
         onClick = {
-          patientSelection.value = PatientType.INDIVIDUAL
+          patientSelection.value = PatientSelectionType.INDIVIDUAL
           onPatientSelectionChange(patientSelection.value)
         }
       )
       Spacer(modifier = Modifier.size(16.dp))
-      Text(PatientType.INDIVIDUAL, fontSize = 16.sp)
+      Text(PatientSelectionType.INDIVIDUAL, fontSize = 16.sp)
     }
   }
 }
