@@ -191,6 +191,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireResponseSlot = slot<QuestionnaireResponse>()
 
     every { questionnaireViewModel.saveBundleResources(any()) } just runs
+    coEvery { questionnaireViewModel.performExtraction(any(), any(), any()) } returns
+      Bundle().apply { addEntry().resource = Patient() }
 
     ReflectionHelpers.setField(context, "workerContextProvider", mockk<SimpleWorkerContext>())
 
@@ -201,9 +203,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireResponse
     )
 
-    coVerify(exactly = 1) { defaultRepo.save(capture(questionnaireResponseSlot)) }
+    coVerify(exactly = 1, timeout = 2000) { defaultRepo.save(capture(questionnaireResponseSlot)) }
 
-    coVerify(exactly = 1) { questionnaireViewModel.saveBundleResources(any()) }
+    coVerify(exactly = 1, timeout = 2000) { questionnaireViewModel.saveBundleResources(any()) }
 
     Assert.assertEquals(
       "0993ldsfkaljlsnldm",

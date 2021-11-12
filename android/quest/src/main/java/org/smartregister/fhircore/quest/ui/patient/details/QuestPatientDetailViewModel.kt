@@ -20,12 +20,17 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.json.JSONObject
+import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.loadBinaryResourceConfiguration
 import org.smartregister.fhircore.quest.QuestApplication
+import org.smartregister.fhircore.quest.QuestApplication.Companion.getProfileConfigId
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 
 class QuestPatientDetailViewModel(
@@ -52,11 +57,11 @@ class QuestPatientDetailViewModel(
   }
 
   override fun getAllForms(): LiveData<List<QuestionnaireConfig>> {
+    return runBlocking {
+      val config = loadProfileConfig()
 
-    val codingJson =
-      JSONObject(application.assets.open(PROFILE_CONFIG).bufferedReader().use { it.readText() })
-
-    return repository.fetchTestForms(codingJson.getString(CODE), codingJson.getString(SYSTEM))
+      repository.fetchTestForms(config.profileQuestionnaireFilter)
+    }
   }
 
   override fun getAllResults(): LiveData<List<QuestionnaireResponse>> {
@@ -89,10 +94,12 @@ class QuestPatientDetailViewModel(
     this.mOnTestResultItemClickListener = onTestResultItemClickListener
   }
 
-  companion object {
+  private suspend fun loadProfileConfig(): ProfileConfig {
+    return application.loadBinaryResourceConfiguration<ProfileConfig>(getProfileConfigId())
+      ?: application.assets.open(PROFILE_CONFIG).bufferedReader().use { it.readText() }.decodeJson()
+  }
 
-    private const val CODE = "code"
-    private const val SYSTEM = "system"
+  companion object {
     const val PROFILE_CONFIG = "configurations/form/profile_config.json"
 
     fun get(
@@ -107,4 +114,6 @@ class QuestPatientDetailViewModel(
       )[QuestPatientDetailViewModel::class.java]
     }
   }
+
+  @Serializable data class ProfileConfig(val profileQuestionnaireFilter: SearchFilter)
 }

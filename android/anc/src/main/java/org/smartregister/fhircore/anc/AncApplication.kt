@@ -92,12 +92,6 @@ class AncApplication : Application(), ConfigurableApplication {
       Timber.plant(Timber.DebugTree())
     }
 
-    initializeWorkerContextProvider()
-
-    schedulePeriodicSync()
-  }
-
-  fun initializeWorkerContextProvider() {
     CoroutineScope(defaultDispatcherProvider.io()).launch {
       workerContextProvider = this@AncApplication.initializeWorkerContext()!!
     }

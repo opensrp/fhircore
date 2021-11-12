@@ -35,6 +35,7 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
+import org.smartregister.fhircore.engine.util.extension.join
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
@@ -62,16 +63,15 @@ open class QuestApplication : Application(), ConfigurableApplication {
       return mapOf(
         ResourceType.CarePlan to mapOf(),
         ResourceType.Patient to mapOf(),
-        ResourceType.Questionnaire to buildQuestionnaireFilterMap(),
+        ResourceType.Questionnaire to mapOf(),
         ResourceType.QuestionnaireResponse to mapOf(),
         ResourceType.Binary to mapOf()
       )
     }
 
-  private fun buildQuestionnaireFilterMap(): MutableMap<String, String> {
+  private fun buildPublisherFilterMap(): MutableMap<String, String> {
     val questionnaireFilterMap: MutableMap<String, String> = HashMap()
-    val publisher =
-      SharedPreferencesHelper.read(USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY, null)
+    val publisher = getPublisher()
     if (publisher != null) questionnaireFilterMap[Questionnaire.SP_PUBLISHER] = publisher
     return questionnaireFilterMap
   }
@@ -100,10 +100,6 @@ open class QuestApplication : Application(), ConfigurableApplication {
       Timber.plant(Timber.DebugTree())
     }
 
-    initializeWorkerContextProvider()
-  }
-
-  fun initializeWorkerContextProvider() {
     CoroutineScope(defaultDispatcherProvider.io()).launch {
       workerContextProvider = this@QuestApplication.initializeWorkerContext()!!
     }
@@ -112,7 +108,13 @@ open class QuestApplication : Application(), ConfigurableApplication {
 
   companion object {
     private lateinit var questApplication: QuestApplication
+    private const val CONFIG_PROFILE = "quest-app-profile"
+
+    fun getProfileConfigId() = CONFIG_PROFILE.join(getPublisher()?.lowercase()?.let { "-$it" }, "")
 
     fun getContext() = questApplication
+
+    fun getPublisher() =
+      SharedPreferencesHelper.read(USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY, null)
   }
 }

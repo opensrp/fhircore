@@ -25,6 +25,7 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import java.util.Calendar
 import java.util.Date
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateType
@@ -113,7 +114,7 @@ class PatientRepositoryTest : RobolectricTest() {
         }
       )
 
-    val results = repository.fetchTestResults("1").value
+    val results = runBlocking { repository.fetchTestResults("1") }.value
     Assert.assertEquals("Blood Count", results?.first()?.meta?.tagFirstRep?.display)
   }
 
@@ -127,7 +128,7 @@ class PatientRepositoryTest : RobolectricTest() {
         }
       )
 
-    val results = repository.fetchTestForms("code", "system").value
+    val results = runBlocking { repository.fetchTestForms(SearchFilter("", "abc", "cde")) }.value
 
     with(results!!.first()) {
       Assert.assertEquals("g6pd-test", form)

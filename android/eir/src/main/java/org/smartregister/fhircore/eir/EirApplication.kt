@@ -67,10 +67,6 @@ open class EirApplication : Application(), ConfigurableApplication {
       Timber.plant(Timber.DebugTree())
     }
 
-    initializeWorkerContextProvider()
-  }
-
-  fun initializeWorkerContextProvider() {
     CoroutineScope(defaultDispatcherProvider.io()).launch {
       workerContextProvider = this@EirApplication.initializeWorkerContext()!!
     }

@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.patient.details
 
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import org.hl7.fhir.r4.model.Coding
@@ -94,7 +95,7 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
   @Test
   fun testGetAllFormsShouldReturnListOfQuestionnaireConfig() {
 
-    every { repository.fetchTestForms(any(), any()) } returns
+    coEvery { repository.fetchTestForms(any()) } returns
       MutableLiveData(
         listOf(QuestionnaireConfig("quest", "g6pd-test-result", "G6PD Test Result", "3440"))
       )
@@ -111,7 +112,7 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
   @Test
   fun testGetAllResultsShouldReturnListOfTestReports() {
 
-    every { repository.fetchTestResults(patientId) } returns
+    coEvery { repository.fetchTestResults(patientId) } returns
       MutableLiveData(
         listOf(
           QuestionnaireResponse().apply {

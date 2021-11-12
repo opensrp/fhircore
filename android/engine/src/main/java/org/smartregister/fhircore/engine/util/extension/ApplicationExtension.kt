@@ -53,6 +53,8 @@ suspend fun Application.runOneTimeSync(sharedSyncStatus: MutableSharedFlow<State
   if (this !is ConfigurableApplication)
     throw (IllegalStateException("Application should extend ConfigurableApplication interface"))
 
+  // TODO run initial sync for binary and library resources
+
   syncJob.run(
     fhirEngine = fhirEngine,
     dataSource = FhirResourceDataSource.getInstance(this),

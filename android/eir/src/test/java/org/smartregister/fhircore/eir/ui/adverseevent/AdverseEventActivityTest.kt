@@ -59,7 +59,7 @@ internal class AdverseEventActivityTest : ActivityRobolectricTest() {
 
   private lateinit var adverseEventActivity: AdverseEventActivity
 
-  private lateinit var adverseEventAdapter: AdverseEventAdapter
+  private lateinit var adverseEventAdapter: MainAdverseEventAdapter
 
   private lateinit var patientRepository: PatientRepository
 

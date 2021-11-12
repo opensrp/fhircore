@@ -31,15 +31,16 @@ import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
+import org.smartregister.fhircore.eir.ui.patient.details.ImmunizationAdverseEventItem
 
-class AdverseEventAdapterTest : RobolectricTest() {
+class MainAdverseEventAdapterTest : RobolectricTest() {
 
-  private lateinit var adapter: AdverseEventAdapter
+  private lateinit var adapter: MainAdverseEventAdapter
 
   @Before
   fun setUp() {
     mockkObject(Sync)
-    adapter = AdverseEventAdapter("Moderna", "1")
+    adapter = MainAdverseEventAdapter()
   }
 
   @After
@@ -53,36 +54,55 @@ class AdverseEventAdapterTest : RobolectricTest() {
     val viewGroup = mockk<ViewGroup>()
     every { viewGroup.context } returns ApplicationProvider.getApplicationContext()
 
-    val list = listOf(mockk<AdverseEventItem>())
+    val list = listOf(mockk<ImmunizationAdverseEventItem>())
     adapter.submitList(list)
 
     val viewHolder = spyk(adapter.createViewHolder(viewGroup, 0))
     Assert.assertNotNull(viewHolder)
 
-    every { viewHolder.bindTo(any()) } answers {}
+    every { viewHolder.bindTo(any(), 0) } answers {}
     adapter.bindViewHolder(viewHolder, 0)
-    verify(exactly = 1) { viewHolder.bindTo(any()) }
+    verify(exactly = 1) { viewHolder.bindTo(any(), 0) }
   }
 
   @Test
   fun testAdapterDiffUtilEquatesDifferentObjectsWithSameId() {
 
-    val diffCallback = AdverseEventAdapter.AdverseEventItemDiffCallback
-    val item = AdverseEventItem("22-Jan-2020", "Blood")
+    val diffCallback = MainAdverseEventAdapter.AdverseEventItemDiffCallback
+    val item =
+      ImmunizationAdverseEventItem(
+        arrayListOf("1"),
+        "Moderna",
+        arrayListOf(Pair("1", arrayListOf(AdverseEventItem("22-Jan-2020", "Blood"))))
+      )
 
     // change title only
-    val itemDifferentVaccine = AdverseEventItem("22-Jan-2021", "Blood")
-
+    val itemDifferentVaccine =
+      ImmunizationAdverseEventItem(
+        arrayListOf("1"),
+        "Pfizer",
+        arrayListOf(Pair("1", arrayListOf(AdverseEventItem("22-Jan-2020", "Blood"))))
+      )
     Assert.assertFalse(diffCallback.areItemsTheSame(item, itemDifferentVaccine))
     Assert.assertFalse(diffCallback.areContentsTheSame(item, itemDifferentVaccine))
 
     // same title with different content
-    val itemWithMatchingVaccine = AdverseEventItem("22-Jan-2020", "Blood X")
+    val itemWithMatchingVaccine =
+      ImmunizationAdverseEventItem(
+        arrayListOf("2"),
+        "Moderna",
+        arrayListOf(Pair("1", arrayListOf(AdverseEventItem("22-Jan-2020", "Blood"))))
+      )
     Assert.assertTrue(diffCallback.areItemsTheSame(item, itemWithMatchingVaccine))
     Assert.assertFalse(diffCallback.areContentsTheSame(item, itemWithMatchingVaccine))
 
     // identical items
-    val identical = AdverseEventItem("22-Jan-2020", "Blood")
+    val identical =
+      ImmunizationAdverseEventItem(
+        arrayListOf("1"),
+        "Moderna",
+        arrayListOf(Pair("1", arrayListOf(AdverseEventItem("22-Jan-2020", "Blood"))))
+      )
     Assert.assertTrue(diffCallback.areItemsTheSame(item, identical))
     Assert.assertTrue(diffCallback.areContentsTheSame(item, identical))
   }

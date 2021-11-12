@@ -42,7 +42,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
@@ -56,8 +56,8 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 
 @Composable
 fun AncRow(
-  ancPatientItem: AncPatientItem,
-  clickListener: (AncRowClickListenerIntent, AncPatientItem) -> Unit,
+  patientItem: PatientItem,
+  clickListener: (AncRowClickListenerIntent, PatientItem) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   Row(
@@ -65,7 +65,7 @@ fun AncRow(
     verticalAlignment = Alignment.CenterVertically,
     modifier =
       modifier.fillMaxWidth().height(IntrinsicSize.Min).clickable {
-        clickListener(OpenPatientProfile, ancPatientItem)
+        clickListener(OpenPatientProfile, patientItem)
       }
   ) {
     Column(
@@ -73,7 +73,7 @@ fun AncRow(
         modifier.wrapContentWidth(Alignment.Start).padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
       Text(
-        text = ancPatientItem.demographics,
+        text = patientItem.demographics,
         fontSize = 18.sp,
         modifier = modifier.wrapContentWidth()
       )
@@ -81,7 +81,7 @@ fun AncRow(
       Row {
         Text(
           color = SubtitleTextColor,
-          text = ancPatientItem.address.capitalize(Locale.current),
+          text = patientItem.address.capitalize(Locale.current),
           fontSize = 14.sp,
           modifier = modifier.wrapContentWidth()
         )
@@ -89,7 +89,7 @@ fun AncRow(
     }
     AncVisitButton(
       modifier = modifier.wrapContentWidth(Alignment.End).padding(horizontal = 16.dp),
-      ancPatientItem = ancPatientItem,
+      patientItem = patientItem,
       clickListener = clickListener
     )
   }
@@ -97,20 +97,20 @@ fun AncRow(
 
 @Composable
 fun AncVisitButton(
-  ancPatientItem: AncPatientItem,
-  clickListener: (AncRowClickListenerIntent, AncPatientItem) -> Unit,
+  patientItem: PatientItem,
+  clickListener: (AncRowClickListenerIntent, PatientItem) -> Unit,
   modifier: Modifier = Modifier
 ) {
 
   val textColor =
-    when (ancPatientItem.visitStatus) {
+    when (patientItem.visitStatus) {
       VisitStatus.DUE -> BlueTextColor
       VisitStatus.OVERDUE -> OverdueDarkRedColor
       VisitStatus.PLANNED -> Color.Transparent
     }
 
   val bgColor =
-    when (ancPatientItem.visitStatus) {
+    when (patientItem.visitStatus) {
       VisitStatus.DUE -> DueLightColor
       VisitStatus.OVERDUE -> OverdueLightColor
       VisitStatus.PLANNED -> Color.Transparent
@@ -127,7 +127,7 @@ fun AncVisitButton(
         .wrapContentWidth()
         .background(color = bgColor)
         .padding(4.8.dp)
-        .clickable { clickListener(RecordAncVisit, ancPatientItem) },
+        .clickable { clickListener(RecordAncVisit, patientItem) },
   )
 }
 
@@ -136,8 +136,8 @@ fun AncVisitButton(
 @ExcludeFromJacocoGeneratedReport
 fun PreviewAncItemDue() {
   AncRow(
-    ancPatientItem =
-      AncPatientItem(
+    patientItem =
+      PatientItem(
         patientIdentifier = "1213231",
         gender = "F",
         age = "27y",
@@ -156,8 +156,8 @@ fun PreviewAncItemDue() {
 @ExcludeFromJacocoGeneratedReport
 fun PreviewAncItemOverDue() {
   AncRow(
-    ancPatientItem =
-      AncPatientItem(
+    patientItem =
+      PatientItem(
         patientIdentifier = "1213231",
         gender = "F",
         age = "27y",
