@@ -135,7 +135,7 @@ dependencies {
     def coroutineVersion = '1.5.1'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
-    api('org.smartregister:data-capture:0.1.0-alpha05-preview-7-SNAPSHOT') {
+    api('org.smartregister:data-capture:0.1.0-alpha05-preview-8-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'

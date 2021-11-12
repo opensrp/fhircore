@@ -52,12 +52,11 @@ import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
-import org.smartregister.fhircore.eir.shadow.ShadowNpmPackageProvider
 import org.smartregister.fhircore.eir.shadow.TestUtils
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 03-07-2021. */
-@Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
+@Config(shadows = [EirApplicationShadow::class])
 class QuestionnaireViewModelTest : RobolectricTest() {
 
   private lateinit var fhirEngine: FhirEngine
@@ -241,7 +240,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coEvery { questionnaireViewModel.fetchStructureMap(any()) } returns StructureMap()
 
-    runBlocking { structureMapProvider.invoke(resourceUrl) }
+    runBlocking { structureMapProvider.invoke(resourceUrl, SimpleWorkerContext()) }
 
     coVerify { questionnaireViewModel.fetchStructureMap(resourceUrl) }
   }
