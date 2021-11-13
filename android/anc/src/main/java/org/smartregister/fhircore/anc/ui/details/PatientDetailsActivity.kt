@@ -133,14 +133,6 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
         this.startAncEnrollment(patientId)
         true
       }
-      R.id.remove_this_person -> {
-        startActivity(
-          Intent(this, PatientDetailsActivity::class.java).apply {
-            putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
-          }
-        )
-        true
-      }
       R.id.bmi_widget -> {
         startActivity(
           Intent(this, BmiQuestionnaireActivity::class.java)
