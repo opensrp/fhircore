@@ -16,13 +16,13 @@
 
 package org.smartregister.fhircore.anc.ui.details
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.Menu
 import android.view.MenuItem
-import androidx.appcompat.app.AlertDialog
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
@@ -40,6 +40,7 @@ import org.smartregister.fhircore.anc.ui.details.adapter.ViewPagerAdapter
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig
 import org.smartregister.fhircore.anc.util.startAncEnrollment
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.createFactory
@@ -50,7 +51,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
   private lateinit var patientId: String
   private var isPregnant: Boolean = false
   private var isMale: Boolean = false
-
+  private lateinit var loadProgress: AlertDialog
   private lateinit var fhirEngine: FhirEngine
 
   lateinit var ancDetailsViewModel: AncDetailsViewModel
@@ -66,6 +67,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
     activityAncDetailsBinding =
       DataBindingUtil.setContentView(this, R.layout.activity_non_anc_details)
     setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
+    loadProgress = showProgressAlert(this@PatientDetailsActivity, R.string.loading)
 
     fhirEngine = AncApplication.getContext().fhirEngine
 
@@ -80,6 +82,8 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       )[AncDetailsViewModel::class.java]
 
     activityAncDetailsBinding.txtViewPatientId.text = patientId
+
+    loadProgress.show()
 
     ancDetailsViewModel
       .fetchDemographics()
@@ -175,7 +179,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
             bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
           )
         activityAncDetailsBinding.pager.adapter = adapter
-
+        loadProgress.hide()
         TabLayoutMediator(activityAncDetailsBinding.tablayout, activityAncDetailsBinding.pager) {
             tab,
             position ->
@@ -191,7 +195,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
             bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
           )
         activityAncDetailsBinding.pager.adapter = adapter
-
+        loadProgress.hide()
         TabLayoutMediator(activityAncDetailsBinding.tablayout, activityAncDetailsBinding.pager) {
             tab,
             position ->
