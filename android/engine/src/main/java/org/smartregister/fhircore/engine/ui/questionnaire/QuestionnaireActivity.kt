@@ -157,7 +157,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
                   val parsedQuestionnaireResponse =
                     parser.encodeResourceToString(
-                      questionnaireViewModel.generateQuestionnaireResponse(questionnaire!!, intent)
+                      questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
                     )
                   bundleOf(
                     Pair(BUNDLE_KEY_QUESTIONNAIRE, parser.encodeResourceToString(questionnaire)),
@@ -294,7 +294,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     questionnaireViewModel.extractAndSaveResources(
       context = this@QuestionnaireActivity,
-      questionnaire = questionnaire!!,
+      questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
       resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
     )

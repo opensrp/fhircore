@@ -63,7 +63,7 @@ class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
           ) { oldImmunization ->
           if (oldImmunization != null) {
             lifecycleScope.launch {
-              questionnaire?.let { questionnaire ->
+              questionnaire.let { questionnaire ->
                 val alertDialog =
                   AlertDialogue.showProgressAlert(
                     this@AdverseEventQuestionnaireActivity,

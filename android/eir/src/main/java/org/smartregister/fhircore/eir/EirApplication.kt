@@ -21,25 +21,16 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJob
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
 open class EirApplication : Application(), ConfigurableApplication {
-
-  private val defaultDispatcherProvider = DefaultDispatcherProvider
-
-  override lateinit var workerContextProvider: SimpleWorkerContext
 
   override lateinit var applicationConfiguration: ApplicationConfiguration
 
@@ -65,10 +56,6 @@ open class EirApplication : Application(), ConfigurableApplication {
 
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
-    }
-
-    CoroutineScope(defaultDispatcherProvider.io()).launch {
-      workerContextProvider = this@EirApplication.initializeWorkerContext()!!
     }
   }
 

@@ -63,6 +63,7 @@ interface ConfigurableApplication {
     get() = SyncBroadcaster
 
   val workerContextProvider: SimpleWorkerContext
+    get() = SimpleWorkerContext()
 
   val configurationRegistry: ConfigurationRegistry
     get() = ConfigurationRegistry

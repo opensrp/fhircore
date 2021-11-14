@@ -31,6 +31,7 @@ import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
@@ -62,7 +63,7 @@ open class QuestionnaireViewModel(
       (application as ConfigurableApplication).fhirEngine,
     )
 
-  var structureMapProvider: (suspend (String) -> StructureMap?)? = null
+  var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
   suspend fun loadQuestionnaire(id: String): Questionnaire? =
     defaultRepository.loadResource<Questionnaire>(id)?.apply {
@@ -158,7 +159,6 @@ open class QuestionnaireViewModel(
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
       structureMapProvider = retrieveStructureMapProvider(),
-      context = context,
       transformSupportServices = transformSupportServices
     )
   }
@@ -173,9 +173,12 @@ open class QuestionnaireViewModel(
     }
   }
 
-  fun retrieveStructureMapProvider(): (suspend (String) -> StructureMap?) {
+  fun retrieveStructureMapProvider(): (suspend (String, IWorkerContext) -> StructureMap?) {
     if (structureMapProvider == null) {
-      structureMapProvider = { structureMapUrl: String -> fetchStructureMap(structureMapUrl) }
+      structureMapProvider =
+        { structureMapUrl: String, workerContext: IWorkerContext ->
+          fetchStructureMap(structureMapUrl)
+        }
     }
 
     return structureMapProvider!!

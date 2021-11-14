@@ -239,7 +239,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coEvery { questionnaireViewModel.fetchStructureMap(any()) } returns StructureMap()
 
-    runBlocking { structureMapProvider.invoke(resourceUrl) }
+    runBlocking { structureMapProvider.invoke(resourceUrl, SimpleWorkerContext()) }
 
     coVerify { questionnaireViewModel.fetchStructureMap(resourceUrl) }
   }
