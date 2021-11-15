@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc.ui.details
 import android.app.Activity
 import android.content.Intent
 import android.view.MenuInflater
+import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
@@ -36,6 +37,7 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
@@ -78,7 +80,7 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     patientRepository = mockk()
 
     every { ancPatientDetailItem.patientDetails } returns
-      PatientItem(patientId, "Mandela Nelson", "M", "26")
+      PatientItem(patientId, "Mandela Nelson", "Female", "26")
     every { ancPatientDetailItem.patientDetailsHead } returns PatientItem()
     coEvery { patientRepository.fetchDemographics(patientId) } returns ancPatientDetailItem
 
@@ -170,6 +172,41 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     patientDetailsActivity.onOptionsItemSelected(menuItem)
 
     Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
+  }
+
+  @Test
+  fun testHandlePatientDemographics() {
+
+    val patientDetailItem =
+      PatientDetailItem(
+        PatientItem(patientId, "Mandela Nelson", "Male", "26"),
+        PatientItem(patientId, "Mandela Nelson", "Male", "26")
+      )
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientDetailsActivity,
+      "handlePatientDemographics",
+      ReflectionHelpers.ClassParameter(PatientDetailItem::class.java, patientDetailItem)
+    )
+
+    val patientDetails =
+      patientDetailItem.patientDetails.name +
+        ", " +
+        patientDetailItem.patientDetails.gender +
+        ", " +
+        patientDetailItem.patientDetails.age
+    val patientId =
+      patientDetailItem.patientDetailsHead.demographics +
+        " ID: " +
+        patientDetailItem.patientDetails.patientIdentifier
+
+    val txtViewPatientDetails =
+      patientDetailsActivity.findViewById<TextView>(R.id.txtView_patientDetails)
+
+    val txtViewPatientId = patientDetailsActivity.findViewById<TextView>(R.id.txtView_patientId)
+
+    Assert.assertEquals(patientDetails, txtViewPatientDetails.text.toString())
+    Assert.assertEquals(patientId, txtViewPatientId.text.toString())
   }
 
   override fun getActivity(): Activity {
