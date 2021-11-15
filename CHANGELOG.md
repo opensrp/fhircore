@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2021-xx-xx
 
 ### Added
+- ANC | Migrated loading of measure report libraries to the report module from anc details page. Also did some optimizations.
 - EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
 - Quest | Add the ability to search for patients by id
 - Quest | Add ability to view previous QuestionnaireResponse
