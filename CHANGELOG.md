@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Add ability to view previous QuestionnaireResponse
 - Quest | Added workflow configurations
 - EIR | Added workflow configurations
+- ANC | Report Measures List Items, Filter Selection
 
 ### Fixed
 -
@@ -49,7 +50,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Bottom sheet for switching registers added
 - ANC | User actions, profile screen implemented
 - ANC | Drawer menu removed
-- ANC | Reports List UI Items
 
 ### Fixed
 
