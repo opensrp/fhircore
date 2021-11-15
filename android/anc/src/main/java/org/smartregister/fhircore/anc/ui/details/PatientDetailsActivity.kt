@@ -103,6 +103,8 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
   override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
     val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
     val ancEnrollment = menu!!.findItem(R.id.anc_enrollment)
+    val pregnancyOutcome = menu!!.findItem(R.id.pregnancy_outcome)
+    if (isMale) pregnancyOutcome.isVisible = false else ancEnrollment.isVisible = isPregnant
     if (isMale) ancEnrollment.isVisible = false else ancEnrollment.isVisible = !isPregnant
     val title = removeThisPerson.title.toString()
     val s = SpannableString(title)
