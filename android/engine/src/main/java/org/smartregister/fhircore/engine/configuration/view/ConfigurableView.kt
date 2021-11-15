@@ -46,7 +46,7 @@ interface ConfigurableView<T : Configuration> {
    * in this method. The default functionality provided by the implementers of this subclass can can
    * be overridden by the subclasses
    */
-  fun setupConfigurableViews(viewConfiguration: RegisterViewConfiguration)
+  fun setupConfigurableViews(viewConfiguration: T)
 
   /**
    * Return application instance for the Activity as [ConfigurableApplication]. App will crash with

@@ -111,6 +111,7 @@ abstract class BaseRegisterActivity :
   private lateinit var sideMenuOptionMap: Map<Int, SideMenuOption>
 
   lateinit var fhirEngine: FhirEngine
+
   val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
 
   protected lateinit var navigationBottomSheet: NavigationBottomSheet
@@ -170,6 +171,14 @@ abstract class BaseRegisterActivity :
   override fun onResume() {
     super.onResume()
     sideMenuOptions().forEach { updateCount(it) }
+  }
+
+  override fun onDestroy() {
+    configurableApplication().syncBroadcaster.run {
+      unRegisterSyncListener(this@BaseRegisterActivity)
+      unRegisterSyncInitiator()
+    }
+    super.onDestroy()
   }
 
   private fun BaseRegisterActivityBinding.updateSyncStatus(state: State) {
@@ -238,6 +247,7 @@ abstract class BaseRegisterActivity :
   }
 
   private fun String.formatSyncDate(): String {
+    if (this.equals(ignoreCase = true, other = getString(R.string.syncing_retry))) return this
     if (this.isEmpty()) return ""
     val date =
       try {

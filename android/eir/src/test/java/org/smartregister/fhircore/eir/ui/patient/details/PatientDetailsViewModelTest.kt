@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.eir.ui.patient.details
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.search
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
@@ -31,10 +29,11 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.eir.data.PatientRepository
 
 @ExperimentalCoroutinesApi
 internal class PatientDetailsViewModelTest {
-  private lateinit var fhirEngine: FhirEngine
+  private lateinit var patientRepository: PatientRepository
 
   private lateinit var patientDetailsViewModel: PatientDetailsViewModel
 
@@ -46,22 +45,16 @@ internal class PatientDetailsViewModelTest {
 
   @Before
   fun setUp() {
-    fhirEngine = mockk(relaxed = true)
+    patientRepository = mockk(relaxed = true)
     patientDetailsViewModel =
-      spyk(
-        PatientDetailsViewModel(
-          dispatcher = coroutinesTestRule.testDispatcherProvider,
-          fhirEngine = fhirEngine,
-          patientId = patientId
-        )
-      )
+      spyk(PatientDetailsViewModel(patientRepository = patientRepository, patientId = patientId))
   }
 
   @Test
   fun fetchDemographics() {
     coroutinesTestRule.runBlockingTest {
       val patient = spyk<Patient>().apply { idElement.id = patientId }
-      coEvery { fhirEngine.load(Patient::class.java, patientId) } returns patient
+      coEvery { patientRepository.fetchDemographics(patientId) } returns patient
       patientDetailsViewModel.fetchDemographics()
       Assert.assertNotNull(patientDetailsViewModel.patientDemographics.value)
       Assert.assertNotNull(patientDetailsViewModel.patientDemographics.value!!.idElement)
@@ -77,9 +70,7 @@ internal class PatientDetailsViewModelTest {
     coroutinesTestRule.runBlockingTest {
       val immunizations = listOf(mockk<Immunization>())
 
-      coEvery<List<Immunization>> {
-        fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$patientId" } }
-      } returns immunizations
+      coEvery { patientRepository.getPatientImmunizations(patientId) } returns immunizations
 
       patientDetailsViewModel.fetchImmunizations()
       Assert.assertNotNull(patientDetailsViewModel.patientImmunizations.value)

@@ -1,0 +1,18 @@
+[
+  {
+    "appId": "covax",
+    "classification": "login",
+    "applicationName": "Covax",
+    "applicationVersion": "0.0.9",
+    "darkMode": false,
+    "showLogo": false
+  },
+  {
+    "appId": "jnj",
+    "classification": "login",
+    "applicationName": "Covax",
+    "applicationVersion": "0.0.9",
+    "darkMode": false,
+    "showLogo": false
+  }
+]

@@ -78,7 +78,14 @@
     <string name="tick">Tick</string>
     <string name="clients">Clients</string>
     <string name="logout">Log out</string>
+    <string name="application_id">Application ID</string>
+    <string name="enter_app_id">Enter Application ID</string>
+    <string name="app_id_sample" translatable="false">E.g. covax, jnj, quest, g6pd</string>
+    <string name="load_configurations">LOAD CONFIGURATIONS</string>
+    <string name="fhir_core_app">FHIR Core App</string>
+    <string name="remember_app">Remember application</string>
     <string name="done">Done</string>
+    <string name="application_not_supported">Application %1$s is not supported</string>
     <string name="date_range">Date range</string>
     <string name="patient">Patient</string>
     <string name="all">All</string>
