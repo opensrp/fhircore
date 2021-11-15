@@ -17,12 +17,12 @@
 package org.smartregister.fhircore.eir.ui.adverseevent
 
 import android.content.Intent
-import android.os.Looper
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import io.mockk.MockKAnnotations
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -43,7 +43,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
@@ -74,8 +73,8 @@ internal class AdverseEventViewModelTest : RobolectricTest() {
 
   @Before
   fun setUp() {
+    clearAllMocks()
     MockKAnnotations.init(this, relaxUnitFun = true)
-
     fhirEngine = mockk(relaxed = true)
     patientRepository = mockk()
 
@@ -132,9 +131,9 @@ internal class AdverseEventViewModelTest : RobolectricTest() {
 
     coEvery { fhirEngine.load(Immunization::class.java, "1") } returns
       Immunization().apply { id = "1" }
-    val immunizationLiveData = adverseEventViewModel.loadImmunization("1")
-    shadowOf(Looper.getMainLooper()).idle()
-    Assert.assertEquals("1", immunizationLiveData.value?.logicalId)
+    val immunizationLiveData: Immunization? =
+      getLiveDataValue(adverseEventViewModel.loadImmunization("1"))
+    Assert.assertEquals("1", immunizationLiveData?.logicalId)
   }
 
   fun getPatient(): Patient {

@@ -66,9 +66,9 @@ class PatientRegisterFragment :
           startActivity(
             Intent(requireContext(), RecordVaccineActivity::class.java)
               .putExtras(
-                QuestionnaireActivity.requiredIntentArgs(
+                QuestionnaireActivity.intentArgs(
                   clientIdentifier = data.patientIdentifier,
-                  form = RECORD_VACCINE_FORM
+                  formName = RECORD_VACCINE_FORM
                 )
               )
           )

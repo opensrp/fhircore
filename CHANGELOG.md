@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
 - Quest | Add the ability to search for patients by id
+- Quest | Add ability to view previous QuestionnaireResponse
 - Quest | Add photo capture questionnaire widget
 
 ### Fixed
@@ -47,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Bottom sheet for switching registers added
 - ANC | User actions, profile screen implemented
 - ANC | Drawer menu removed
+- ANC | Reports List UI Items
 
 ### Fixed
 

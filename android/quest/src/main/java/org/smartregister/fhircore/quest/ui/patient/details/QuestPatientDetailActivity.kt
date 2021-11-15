@@ -18,16 +18,20 @@ package org.smartregister.fhircore.quest.ui.patient.details
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.QuestApplication
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
+import timber.log.Timber
 
 class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
 
@@ -66,14 +70,35 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
     startActivity(
       Intent(this, QuestionnaireActivity::class.java).apply {
         putExtras(
-          QuestionnaireActivity.requiredIntentArgs(
-            clientIdentifier = patientId,
-            form = item.identifier
-          )
+          QuestionnaireActivity.intentArgs(clientIdentifier = patientId, formName = item.identifier)
         )
       }
     )
   }
 
-  private fun onTestResultItemClickListener(item: QuestionnaireResponse) {}
+  private fun onTestResultItemClickListener(questionnaireResponse: QuestionnaireResponse) {
+    if (questionnaireResponse.questionnaire != null) {
+      val questionnaireId = questionnaireResponse.questionnaire.split("/")[1]
+      val populationResources = ArrayList<Resource>().apply { add(questionnaireResponse) }
+      startActivity(
+        Intent(this, QuestionnaireActivity::class.java)
+          .putExtras(
+            QuestionnaireActivity.intentArgs(
+              clientIdentifier = "",
+              formName = questionnaireId,
+              readOnly = true,
+              populationResources = populationResources
+            )
+          )
+      )
+    } else {
+      Toast.makeText(this, getString(R.string.cannot_find_parent_questionnaire), Toast.LENGTH_LONG)
+        .show()
+      Timber.e(
+        Exception(
+          "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
+        )
+      )
+    }
+  }
 }

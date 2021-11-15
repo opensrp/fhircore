@@ -31,7 +31,10 @@ import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Expression
+import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -50,6 +53,7 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 open class QuestionnaireViewModel(
   application: Application,
+  private val readOnly: Boolean = false,
 ) : AndroidViewModel(application) {
 
   val extractionProgress = MutableLiveData<Boolean>()
@@ -59,9 +63,14 @@ open class QuestionnaireViewModel(
       (application as ConfigurableApplication).fhirEngine,
     )
 
-  var structureMapProvider: (suspend (String) -> StructureMap?)? = null
+  var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
-  suspend fun loadQuestionnaire(id: String): Questionnaire? = defaultRepository.loadResource(id)
+  suspend fun loadQuestionnaire(id: String): Questionnaire? =
+    defaultRepository.loadResource<Questionnaire>(id)?.apply {
+      if (readOnly) {
+        changeQuestionsToReadOnly(this.item, "QuestionnaireResponse.item")
+      }
+    }
 
   suspend fun getQuestionnaireConfig(form: String): QuestionnaireConfig {
     val loadConfig =
@@ -75,7 +84,7 @@ open class QuestionnaireViewModel(
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
     structureMapUrl?.substringAfterLast("/")?.run {
-      structureMap = loadResource(this) as StructureMap?
+      structureMap = defaultRepository.loadResource(this)
     }
     return structureMap
   }
@@ -123,7 +132,13 @@ open class QuestionnaireViewModel(
       questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
         it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
       }
+      // TODO revise this logic when syncing strategy has final decision
+      // https://github.com/opensrp/fhircore/issues/726
+      loadPatient(resourceId)?.meta?.tag?.forEach { questionnaireResponse.meta.addTag(it) }
       questionnaireResponse.subject = Reference().apply { reference = "$subjectType/$resourceId" }
+      questionnaireResponse.questionnaire =
+        "${questionnaire.resourceType}/${questionnaire.logicalId}"
+
       defaultRepository.save(questionnaireResponse)
     }
   }
@@ -133,14 +148,16 @@ open class QuestionnaireViewModel(
     questionnaireResponse: QuestionnaireResponse,
     context: Context
   ): Bundle {
-    val contextR4 = (getApplication<Application>() as ConfigurableApplication).workerContextProvider
-    val transformSupportServices = TransformSupportServices(mutableListOf(), contextR4)
+    val transformSupportServices =
+      TransformSupportServices(
+        mutableListOf(),
+        getApplication<Application>() as ConfigurableApplication
+      )
 
     return ResourceMapper.extract(
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
       structureMapProvider = retrieveStructureMapProvider(),
-      context = context,
       transformSupportServices = transformSupportServices
     )
   }
@@ -155,9 +172,12 @@ open class QuestionnaireViewModel(
     }
   }
 
-  fun retrieveStructureMapProvider(): (suspend (String) -> StructureMap?) {
+  fun retrieveStructureMapProvider(): (suspend (String, IWorkerContext) -> StructureMap?) {
     if (structureMapProvider == null) {
-      structureMapProvider = { structureMapUrl: String -> fetchStructureMap(structureMapUrl) }
+      structureMapProvider =
+        { structureMapUrl: String, workerContext: IWorkerContext ->
+          fetchStructureMap(structureMapUrl)
+        }
     }
 
     return structureMapProvider!!
@@ -165,10 +185,6 @@ open class QuestionnaireViewModel(
 
   suspend fun loadPatient(patientId: String): Patient? {
     return defaultRepository.loadResource(patientId)
-  }
-
-  suspend fun loadResource(resourceId: String): Resource? {
-    return defaultRepository.loadResource(resourceId)
   }
 
   suspend fun loadRelatedPerson(patientId: String): List<RelatedPerson>? {
@@ -212,5 +228,32 @@ open class QuestionnaireViewModel(
     intent: Intent
   ): QuestionnaireResponse {
     return ResourceMapper.populate(questionnaire, *getPopulationResources(intent))
+  }
+
+  private fun changeQuestionsToReadOnly(
+    items: List<Questionnaire.QuestionnaireItemComponent>,
+    path: String
+  ) {
+    items.forEach { item ->
+      if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
+        item.readOnly = true
+        item.extension =
+          listOf(
+            Extension().apply {
+              url =
+                "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression"
+              setValue(
+                Expression().apply {
+                  language = "text/fhirpath"
+                  expression = "$path.where(linkId = '${item.linkId}').answer.value"
+                }
+              )
+            }
+          )
+        changeQuestionsToReadOnly(item.item, "$path.where(linkId = '${item.linkId}').answer.item")
+      } else {
+        changeQuestionsToReadOnly(item.item, "$path.where(linkId = '${item.linkId}').item")
+      }
+    }
   }
 }

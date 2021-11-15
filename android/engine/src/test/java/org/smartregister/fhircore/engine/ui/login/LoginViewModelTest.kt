@@ -20,6 +20,7 @@ import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -141,9 +142,25 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testApplicationConfiguration() {
     val coolAppName = "Cool App"
-    loginViewModel.updateViewConfigurations(loginViewConfigurationOf(applicationName = coolAppName))
+    val versionCode = 4
+    val versionName = "0.1.0-preview"
+    loginViewModel.updateViewConfigurations(
+      loginViewConfigurationOf(
+        applicationName = coolAppName,
+        applicationVersion = versionName,
+        applicationVersionCode = versionCode
+      )
+    )
     Assert.assertNotNull(loginViewModel.loginViewConfiguration.value)
     Assert.assertEquals(coolAppName, loginViewModel.loginViewConfiguration.value?.applicationName)
+    Assert.assertEquals(
+      versionCode,
+      loginViewModel.loginViewConfiguration.value?.applicationVersionCode
+    )
+    Assert.assertEquals(
+      versionName,
+      loginViewModel.loginViewConfiguration.value?.applicationVersion
+    )
   }
 
   @Test
@@ -210,4 +227,20 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertNotNull(loginViewModel.showProgressBar.value)
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
   }
+
+  @Test
+  fun testAttemptRemoteLoginTrimsWhiteSpaceForCredentialsEntered() =
+    coroutineTestRule.runBlockingTest {
+      val username = "test "
+      val password = "Test123"
+
+      every { loginViewModel.username.value } returns username
+      every { loginViewModel.password.value } returns password
+
+      every { authenticationService.fetchToken(any(), any()) } returns mockk(relaxed = true)
+
+      loginViewModel.attemptRemoteLogin()
+
+      verify { authenticationService.fetchToken("test", "Test123".toCharArray()) }
+    }
 }

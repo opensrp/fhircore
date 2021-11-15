@@ -39,8 +39,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.PatientDetailItem
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
@@ -67,11 +67,11 @@ internal class AncDetailsViewModelTest {
     fhirEngine = mockk(relaxed = true)
     patientRepository = mockk()
 
-    val ancPatientDetailItem = spyk<AncPatientDetailItem>()
+    val ancPatientDetailItem = spyk<PatientDetailItem>()
 
     every { ancPatientDetailItem.patientDetails } returns
-      AncPatientItem(patientId, "Mandela Nelson", "M", "26")
-    every { ancPatientDetailItem.patientDetailsHead } returns AncPatientItem()
+      PatientItem(patientId, "Mandela Nelson", "M", "26")
+    every { ancPatientDetailItem.patientDetailsHead } returns PatientItem()
     coEvery { patientRepository.fetchDemographics(patientId) } returns ancPatientDetailItem
 
     ancDetailsViewModel =
@@ -85,20 +85,19 @@ internal class AncDetailsViewModelTest {
     coroutinesTestRule.runBlockingTest {
       val patient = spyk<Patient>().apply { idElement.id = patientId }
       coEvery { fhirEngine.load(Patient::class.java, patientId) } returns patient
-      val ancPatientDetailItem: AncPatientDetailItem =
-        ancDetailsViewModel.fetchDemographics().value!!
-      Assert.assertNotNull(ancPatientDetailItem)
-      Assert.assertEquals(ancPatientDetailItem.patientDetails.patientIdentifier, patientId)
+      val patientDetailItem: PatientDetailItem = ancDetailsViewModel.fetchDemographics().value!!
+      Assert.assertNotNull(patientDetailItem)
+      Assert.assertEquals(patientDetailItem.patientDetails.patientIdentifier, patientId)
       val patientDetails =
-        ancPatientDetailItem.patientDetails.name +
+        patientDetailItem.patientDetails.name +
           ", " +
-          ancPatientDetailItem.patientDetails.gender +
+          patientDetailItem.patientDetails.gender +
           ", " +
-          ancPatientDetailItem.patientDetails.age
+          patientDetailItem.patientDetails.age
       val patientId =
-        ancPatientDetailItem.patientDetailsHead.demographics +
+        patientDetailItem.patientDetailsHead.demographics +
           " ID: " +
-          ancPatientDetailItem.patientDetails.patientIdentifier
+          patientDetailItem.patientDetails.patientIdentifier
 
       Assert.assertEquals(patientDetails, "Mandela Nelson, M, 26")
       Assert.assertEquals(patientId, " ID: samplePatientId")

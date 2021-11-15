@@ -23,6 +23,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.logicalId
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -67,6 +68,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Before
   fun setUp() {
+    clearAllMocks()
+
     context = ApplicationProvider.getApplicationContext()
 
     fhirEngine = mockk()
@@ -87,6 +90,133 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       Questionnaire().apply { id = "12345" }
     val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345") }
     Assert.assertEquals("12345", result!!.logicalId)
+  }
+
+  @Test
+  fun testLoadQuestionnaireShouldSetQuestionnaireQuestionsToReadOnly() {
+    val questionnaire =
+      Questionnaire().apply {
+        id = "12345"
+        item =
+          listOf(
+            Questionnaire.QuestionnaireItemComponent().apply {
+              type = Questionnaire.QuestionnaireItemType.GROUP
+              linkId = "q1-grp"
+              item =
+                listOf(
+                  Questionnaire.QuestionnaireItemComponent().apply {
+                    type = Questionnaire.QuestionnaireItemType.TEXT
+                    linkId = "q1-name"
+                  }
+                )
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              type = Questionnaire.QuestionnaireItemType.CHOICE
+              linkId = "q2-gender"
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              type = Questionnaire.QuestionnaireItemType.DATE
+              linkId = "q3-date"
+            }
+          )
+      }
+    coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns questionnaire
+    questionnaireViewModel = spyk(QuestionnaireViewModel(context, true))
+    ReflectionHelpers.setField(questionnaireViewModel, "defaultRepository", defaultRepo)
+
+    val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345") }
+
+    Assert.assertTrue(result!!.item[0].item[0].readOnly)
+    Assert.assertEquals("q1-name", result!!.item[0].item[0].linkId)
+    Assert.assertTrue(result.item[1].readOnly)
+    Assert.assertEquals("q2-gender", result.item[1].linkId)
+    Assert.assertTrue(result.item[2].readOnly)
+    Assert.assertEquals("q3-date", result.item[2].linkId)
+  }
+
+  @Test
+  fun testLoadQuestionnaireShouldMakeQuestionsReadOnlyAndAddInitialExpressionExtension() {
+    val questionnaire =
+      Questionnaire().apply {
+        id = "12345"
+        item =
+          listOf(
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-first-name"
+              type = Questionnaire.QuestionnaireItemType.TEXT
+              item =
+                listOf(
+                  Questionnaire.QuestionnaireItemComponent().apply {
+                    linkId = "patient-last-name"
+                    type = Questionnaire.QuestionnaireItemType.TEXT
+                  }
+                )
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-age"
+              type = Questionnaire.QuestionnaireItemType.INTEGER
+            },
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "patient-contact"
+              type = Questionnaire.QuestionnaireItemType.GROUP
+              item =
+                listOf(
+                  Questionnaire.QuestionnaireItemComponent().apply {
+                    linkId = "patient-dob"
+                    type = Questionnaire.QuestionnaireItemType.DATE
+                  },
+                  Questionnaire.QuestionnaireItemComponent().apply {
+                    linkId = "patient-related-person"
+                    type = Questionnaire.QuestionnaireItemType.GROUP
+                    item =
+                      listOf(
+                        Questionnaire.QuestionnaireItemComponent().apply {
+                          linkId = "rp-name"
+                          type = Questionnaire.QuestionnaireItemType.TEXT
+                        }
+                      )
+                  }
+                )
+            }
+          )
+      }
+
+    ReflectionHelpers.setField(questionnaireViewModel, "readOnly", true)
+
+    coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns questionnaire
+
+    val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345") }
+
+    Assert.assertEquals("12345", result!!.logicalId)
+    Assert.assertTrue(result!!.item[0].readOnly)
+    Assert.assertEquals("patient-first-name", result!!.item[0].linkId)
+    Assert.assertEquals(
+      "QuestionnaireResponse.item.where(linkId = 'patient-first-name').answer.value",
+      (result!!.item[0].extension[0].value as Expression).expression
+    )
+    Assert.assertEquals("patient-last-name", result!!.item[0].item[0].linkId)
+    Assert.assertEquals(
+      "QuestionnaireResponse.item.where(linkId = 'patient-first-name').answer.item.where(linkId = 'patient-last-name').answer.value",
+      (result!!.item[0].item[0].extension[0].value as Expression).expression
+    )
+    Assert.assertTrue(result!!.item[1].readOnly)
+    Assert.assertEquals(
+      "QuestionnaireResponse.item.where(linkId = 'patient-age').answer.value",
+      (result!!.item[1].extension[0].value as Expression).expression
+    )
+    Assert.assertFalse(result!!.item[2].readOnly)
+    Assert.assertEquals(0, result!!.item[2].extension.size)
+    Assert.assertTrue(result!!.item[2].item[0].readOnly)
+    Assert.assertEquals(
+      "QuestionnaireResponse.item.where(linkId = 'patient-contact').item.where(linkId = 'patient-dob').answer.value",
+      (result!!.item[2].item[0].extension[0].value as Expression).expression
+    )
+    Assert.assertFalse(result!!.item[2].item[1].readOnly)
+    Assert.assertTrue(result!!.item[2].item[1].item[0].readOnly)
+    Assert.assertEquals(
+      "QuestionnaireResponse.item.where(linkId = 'patient-contact').item.where(linkId = 'patient-related-person').item.where(linkId = 'rp-name').answer.value",
+      (result!!.item[2].item[1].item[0].extension[0].value as Expression).expression
+    )
   }
 
   @Test
@@ -112,6 +242,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testExtractAndSaveResourcesWithTargetStructureMapShouldCallExtractionService() {
     mockkObject(ResourceMapper)
 
+    coEvery { fhirEngine.load(Patient::class.java, any()) } returns Patient()
     coEvery { fhirEngine.load(StructureMap::class.java, any()) } returns StructureMap()
     coEvery { ResourceMapper.extract(any(), any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { this.resource = Patient().apply { id = "123456" } } }
@@ -136,7 +267,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
 
     coVerify { defaultRepo.save(any()) }
-    coVerify { ResourceMapper.extract(any(), any(), any(), any(), any()) }
+    coVerify(timeout = 2000) { ResourceMapper.extract(any(), any(), any(), any()) }
 
     unmockkObject(ResourceMapper)
   }
@@ -173,10 +304,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify { defaultRepo.addOrUpdate(capture(patientSlot)) }
 
     Assert.assertEquals("1234567", patientSlot.captured.meta.tagFirstRep.code)
+
+    unmockkObject(ResourceMapper)
   }
 
   @Test
   fun testExtractAndSaveResourcesWithResourceIdShouldSaveQuestionnaireResponse() {
+    coEvery { fhirEngine.load(Patient::class.java, any()) } returns Patient()
+
     val questionnaireResponseSlot = slot<QuestionnaireResponse>()
     val questionnaire =
       Questionnaire().apply {
@@ -193,7 +328,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       QuestionnaireResponse()
     )
 
-    coVerify { defaultRepo.save(capture(questionnaireResponseSlot)) }
+    coVerify(timeout = 2000) { defaultRepo.save(capture(questionnaireResponseSlot)) }
 
     Assert.assertEquals(
       "12345",

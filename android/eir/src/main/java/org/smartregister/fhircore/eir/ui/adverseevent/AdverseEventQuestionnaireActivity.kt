@@ -39,6 +39,7 @@ class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
 
   override fun createViewModel(
     application: Application,
+    readOnly: Boolean
   ): QuestionnaireViewModel {
     return ViewModelProvider(
         this@AdverseEventQuestionnaireActivity,

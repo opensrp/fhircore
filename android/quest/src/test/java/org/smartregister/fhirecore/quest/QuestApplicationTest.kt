@@ -17,15 +17,13 @@
 package org.smartregister.fhirecore.quest
 
 import androidx.test.core.app.ApplicationProvider
-import io.mockk.slot
-import io.mockk.spyk
-import io.mockk.verify
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
 import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
@@ -33,39 +31,39 @@ import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
 @Config(shadows = [QuestApplicationShadow::class])
 class QuestApplicationTest : RobolectricTest() {
 
+  private val app by lazy { ApplicationProvider.getApplicationContext<QuestApplication>() }
+
   @Test
   fun testConstructFhirEngineShouldReturnNonNull() {
-    Assert.assertNotNull(QuestApplication.getContext().fhirEngine)
+    Assert.assertNotNull(app.fhirEngine)
   }
   @Test
   fun testThatApplicationIsInstanceOfConfigurableApplication() {
-    Assert.assertTrue(
-      ApplicationProvider.getApplicationContext<QuestApplication>() is ConfigurableApplication
-    )
+    Assert.assertTrue(app is ConfigurableApplication)
   }
 
   @Test
   fun testApplyConfigurationShouldLoadConfiguration() {
-    val application = spyk(ApplicationProvider.getApplicationContext<QuestApplication>())
 
-    val config = slot<ApplicationConfiguration>()
-    application.applyApplicationConfiguration()
+    app.applyApplicationConfiguration()
+    val config = app.applicationConfiguration
 
-    verify { application.configureApplication(capture(config)) }
-
-    Assert.assertEquals(QuestApplication.CONFIG_APP, config.captured.id)
+    Assert.assertEquals(BuildConfig.FHIR_BASE_URL, config.fhirServerBaseUrl)
+    Assert.assertEquals(BuildConfig.OAUTH_BASE_URL, config.oauthServerBaseUrl)
+    Assert.assertEquals(BuildConfig.OAUTH_CIENT_ID, config.clientId)
+    Assert.assertEquals(BuildConfig.OAUTH_CLIENT_SECRET, config.clientSecret)
+    Assert.assertEquals(
+      config.theme,
+      SharedPreferencesHelper.read(SharedPreferencesHelper.THEME, null)
+    )
   }
 
   @Test
   fun testResourceSyncParam() {
-    val application = spyk(ApplicationProvider.getApplicationContext<QuestApplication>())
-
-    val syncParam = application.resourceSyncParams
-    Assert.assertEquals(5, syncParam.size)
-    Assert.assertTrue(syncParam.containsKey(ResourceType.Patient))
+    val syncParam = app.resourceSyncParams
+    Assert.assertTrue(syncParam.size >= 3)
     Assert.assertTrue(syncParam.containsKey(ResourceType.Binary))
-    Assert.assertTrue(syncParam.containsKey(ResourceType.CarePlan))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.StructureMap))
     Assert.assertTrue(syncParam.containsKey(ResourceType.Questionnaire))
-    Assert.assertTrue(syncParam.containsKey(ResourceType.QuestionnaireResponse))
   }
 }

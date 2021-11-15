@@ -42,7 +42,7 @@ class AdverseEventActivity : BaseMultiLanguageActivity() {
 
   private lateinit var patientId: String
   private lateinit var adverseEventViewModel: AdverseEventViewModel
-  private val adverseEventAdapter = AdverseEventAdapter()
+  private val adverseEventAdapter = MainAdverseEventAdapter()
   private lateinit var activityAdverseEventBinding: ActivityAdverseEventBinding
 
   override fun onCreate(savedInstanceState: Bundle?) {

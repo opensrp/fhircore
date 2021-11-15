@@ -18,25 +18,28 @@ package org.smartregister.fhircore.anc.ui.anccare.details
 
 import com.google.android.fhir.logicalId
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.ui.anccare.register.Anc
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.isPregnant
 
-object AncPatientItemMapper : DomainMapper<Anc, AncPatientItem> {
+object AncPatientItemMapper : DomainMapper<Anc, PatientItem> {
 
-  override fun mapToDomainModel(dto: Anc): AncPatientItem {
+  override fun mapToDomainModel(dto: Anc): PatientItem {
     val patient = dto.patient
     val name = patient.extractName()
+    val isPregnant = patient.isPregnant()
     val gender = patient.extractGender(AncApplication.getContext())?.first() ?: ""
     val age = patient.extractAge()
-    return AncPatientItem(
+    return PatientItem(
       patientIdentifier = patient.logicalId,
       name = name,
       gender = gender.toString(),
       age = age,
+      isPregnant = isPregnant,
       demographics = "$name, $gender, $age",
     )
   }
