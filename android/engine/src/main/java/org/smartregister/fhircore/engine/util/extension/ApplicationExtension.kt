@@ -29,7 +29,6 @@ import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
 import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.State
-import com.google.android.fhir.sync.Sync
 import com.google.gson.Gson
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
@@ -37,7 +36,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
@@ -51,6 +49,8 @@ import timber.log.Timber
 suspend fun Application.runOneTimeSync(sharedSyncStatus: MutableSharedFlow<State>) {
   if (this !is ConfigurableApplication)
     throw (IllegalStateException("Application should extend ConfigurableApplication interface"))
+
+  // TODO run initial sync for binary and library resources
 
   syncJob.run(
     fhirEngine = fhirEngine,
@@ -73,11 +73,6 @@ inline fun <reified W : FhirSyncWorker> Application.runPeriodicSync() {
   CoroutineScope(Dispatchers.Main).launch {
     syncJob.stateFlow().collect { this@runPeriodicSync.syncBroadcaster.broadcastSync(it) }
   }
-}
-
-fun Application.lastSyncDateTime(): String {
-  val lastSyncDate = Sync.basicSyncJob(this).lastSyncTimestamp()
-  return lastSyncDate?.asString() ?: ""
 }
 
 fun <T> Application.loadResourceTemplate(
@@ -155,5 +150,3 @@ suspend fun FhirEngine.loadPatientImmunizations(patientId: String): List<Immuniz
     null
   }
 }
-
-suspend fun Application.initializeWorkerContext(): SimpleWorkerContext = SimpleWorkerContext()

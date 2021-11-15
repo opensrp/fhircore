@@ -20,9 +20,13 @@ package org.smartregister.fhircore.engine.configuration
  * Every class or object providing UI customizations e.g. appTitle, showFilter, showSideMenu,
  * showSearchBar etc. is required MUST adhere to this contract to provide consistencies.
  * Conventionally, the implementers should be named after this interface e.g.
- * RegisterViewConfiguration, ProfileViewConfiguration etc. [viewClass] method just returns the
- * Class implementing this interface.
+ * RegisterViewConfiguration, ProfileViewConfiguration etc.
+ *
+ * @property appId Unique identifier for the application to which this configurations is applied
+ * @property classification Used to categorize multiple configurations of the same type. E.g. two
+ * RegisterViewConfigurations used in an application with two registers.
  */
 interface Configuration {
-  fun viewClass() = this::class
+  val appId: String
+  val classification: String
 }
