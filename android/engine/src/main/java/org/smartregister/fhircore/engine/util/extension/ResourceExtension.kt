@@ -18,6 +18,9 @@ package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
+import org.hl7.fhir.r4.model.Expression
+import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Resource
 import org.json.JSONException
 import org.json.JSONObject
@@ -43,4 +46,37 @@ fun JSONObject.updateFrom(updated: JSONObject) {
     }
 
   keys.forEach { key -> updated.opt(key)?.run { put(key, this) } }
+}
+
+fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrEditing(
+  path: String,
+  readOnly: Boolean = false,
+) {
+  forEach { item ->
+    if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
+      item.readOnly = readOnly
+      item.extension =
+        listOf(
+          Extension().apply {
+            url =
+              "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression"
+            setValue(
+              Expression().apply {
+                language = "text/fhirpath"
+                expression = "$path.where(linkId = '${item.linkId}').answer.value"
+              }
+            )
+          }
+        )
+      item.item.prepareQuestionsForReadingOrEditing(
+        "$path.where(linkId = '${item.linkId}').answer.item",
+        readOnly
+      )
+    } else {
+      item.item.prepareQuestionsForReadingOrEditing(
+        "$path.where(linkId = '${item.linkId}').item",
+        readOnly
+      )
+    }
+  }
 }
