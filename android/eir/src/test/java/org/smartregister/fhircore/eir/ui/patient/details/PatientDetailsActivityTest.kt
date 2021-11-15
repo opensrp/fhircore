@@ -30,12 +30,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.jupiter.api.DisplayName
 import org.robolectric.Robolectric
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
-import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 
-@Config(shadows = [EirApplicationShadow::class])
 internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
 
   private lateinit var patientDetailsActivity: PatientDetailsActivity

@@ -18,17 +18,15 @@ package org.smartregister.fhircore.engine.configuration.view
 
 import android.content.Context
 import androidx.compose.runtime.Stable
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.Configuration
-import org.smartregister.fhircore.engine.util.extension.decodeJson
-import org.smartregister.fhircore.engine.util.extension.loadBinaryResourceConfiguration
 
 @Serializable
 @Stable
 data class RegisterViewConfiguration(
-  var id: String,
+  override var appId: String,
+  override val classification: String,
   var appTitle: String,
   var filterText: String,
   var searchBarHint: String,
@@ -66,7 +64,7 @@ data class SearchFilter(val key: String, val code: String, val system: String)
  */
 @Stable
 fun Context.registerViewConfigurationOf(
-  id: String = this.getString(R.string.default_app_title),
+  id: String = "",
   appTitle: String = this.getString(R.string.default_app_title),
   filterText: String = this.getString(R.string.show_overdue),
   searchBarHint: String = this.getString(R.string.search_hint),
@@ -77,14 +75,14 @@ fun Context.registerViewConfigurationOf(
   switchLanguages: Boolean = true,
   showScanQRCode: Boolean = true,
   showNewClientButton: Boolean = true,
-  languages: List<String> = listOf("en"),
   registrationForm: String = "patient-registration",
   showSideMenu: Boolean = true,
   showBottomMenu: Boolean = false,
   primaryFilter: SearchFilter? = null
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
-    id = id,
+    appId = id,
+    classification = "",
     appTitle = appTitle,
     filterText = filterText,
     searchBarHint = searchBarHint,
@@ -100,16 +98,4 @@ fun Context.registerViewConfigurationOf(
     showBottomMenu = showBottomMenu,
     primaryFilter = primaryFilter
   )
-}
-
-private const val REGISTER_VIEW_CONFIG_FILE = "register_view_config.json"
-
-fun Context.loadRegisterViewConfiguration(id: String): RegisterViewConfiguration {
-  return runBlocking { loadBinaryResourceConfiguration(id) }
-    ?: assets
-      .open(REGISTER_VIEW_CONFIG_FILE)
-      .bufferedReader()
-      .use { it.readText() }
-      .decodeJson<List<RegisterViewConfiguration>>()
-      .first { it.id == id }
 }

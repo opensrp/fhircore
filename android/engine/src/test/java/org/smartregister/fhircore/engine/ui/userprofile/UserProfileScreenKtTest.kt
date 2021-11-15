@@ -25,9 +25,11 @@ import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.shadow.FakeKeyStore
 import org.smartregister.fhircore.engine.sync.SyncInitiator
 
 class UserProfileScreenKtTest : RobolectricTest() {
@@ -62,5 +64,13 @@ class UserProfileScreenKtTest : RobolectricTest() {
 
     composeRule.onNodeWithText("Sync").performClick()
     verify { mockSyncInitiator.runSync() }
+  }
+
+  companion object {
+    @JvmStatic
+    @BeforeClass
+    fun setupMocks() {
+      FakeKeyStore.setup
+    }
   }
 }
