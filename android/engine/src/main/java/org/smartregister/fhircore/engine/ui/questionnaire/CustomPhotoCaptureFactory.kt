@@ -38,12 +38,13 @@ import id.zelory.compressor.constraint.size
 import id.zelory.compressor.extension
 import id.zelory.compressor.saveBitmap
 import java.io.File
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.encodeToBase64
 import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.engine.util.extension.show
@@ -51,44 +52,51 @@ import org.smartregister.fhircore.engine.util.extension.show
 class CustomPhotoCaptureFactory(fragment: Fragment) :
   QuestionnaireItemViewHolderFactory(R.layout.custom_photo_capture_layout) {
 
-  private lateinit var tvPrefix: TextView
-  private lateinit var tvHeader: TextView
-  private lateinit var ivThumbnail: ImageView
-  private lateinit var btnTakePhoto: MaterialButton
-  private lateinit var launchCamera: ActivityResultLauncher<Intent>
-  var questionnaireResponse = QuestionnaireResponseItemAnswerComponent()
+  lateinit var tvPrefix: TextView
+  lateinit var tvHeader: TextView
+  lateinit var ivThumbnail: ImageView
+  lateinit var btnTakePhoto: MaterialButton
+  var launchCamera: ActivityResultLauncher<Intent>
+  var questionnaireResponse: QuestionnaireResponseItemAnswerComponent
 
   init {
-    registerCameraIntent(fragment)
+    launchCamera = registerCameraResultLauncher(fragment)
+    questionnaireResponse = QuestionnaireResponseItemAnswerComponent()
   }
 
-  private fun registerCameraIntent(fragment: Fragment) {
-    with(fragment) {
-      launchCamera =
-        registerForActivityResult(StartActivityForResult()) { result ->
-          if (result.resultCode == Activity.RESULT_OK) {
-            val imageBitmap = result.data?.extras?.get(EXTRA_IMAGE) as Bitmap
-            ivThumbnail.apply {
-              Glide.with(fragment).load(imageBitmap).into(this)
-              show()
-            }
-            btnTakePhoto.text = getString(R.string.replace_photo)
-            lifecycleScope.launch(Dispatchers.Main) {
-              val imageFile =
-                async(Dispatchers.IO) {
-                  val tempFile =
-                    File.createTempFile(PREFIX_BITMAP, ".${Bitmap.CompressFormat.JPEG.extension()}")
-                  tempFile.deleteOnExit()
-                  saveBitmap(imageBitmap, tempFile)
-                  return@async tempFile
-                }
-              val imageFileCompressed =
-                compress(requireContext(), imageFile.await()) { size(MAX_COMPRESSION_SIZE) }
-              val imageBase64 = imageFileCompressed.encodeToBase64()
-              questionnaireResponse.value = StringType(imageBase64)
-            }
-          }
+  internal fun registerCameraResultLauncher(fragment: Fragment): ActivityResultLauncher<Intent> {
+    return fragment.registerForActivityResult(StartActivityForResult()) { result ->
+      if (result.resultCode == Activity.RESULT_OK) {
+        val imageBitmap = result.data?.extras?.get(EXTRA_IMAGE) as Bitmap
+        loadThumbnail(fragment, imageBitmap)
+        populateCameraResponse(fragment, imageBitmap)
+      }
+    }
+  }
+
+  internal fun loadThumbnail(fragment: Fragment, imageBitmap: Bitmap) {
+    ivThumbnail.apply {
+      Glide.with(fragment).load(imageBitmap).into(this)
+      show()
+    }
+    btnTakePhoto.text = fragment.getString(R.string.replace_photo)
+  }
+
+  internal fun populateCameraResponse(
+    fragment: Fragment,
+    imageBitmap: Bitmap,
+    dispatcher: DispatcherProvider = DefaultDispatcherProvider
+  ) {
+    fragment.lifecycleScope.launch(dispatcher.io()) {
+      val imageFile =
+        withContext(dispatcher.io()) {
+          File.createTempFile(PREFIX_BITMAP, ".${Bitmap.CompressFormat.JPEG.extension()}")
+            .apply { deleteOnExit() }
+            .also { saveBitmap(imageBitmap, it) }
         }
+      val imageFileCompressed =
+        compress(fragment.requireContext(), imageFile) { size(MAX_COMPRESSION_SIZE) }
+      questionnaireResponse.value = StringType(imageFileCompressed.encodeToBase64())
     }
   }
 
@@ -106,8 +114,10 @@ class CustomPhotoCaptureFactory(fragment: Fragment) :
 
       override fun bind(questionnaireItemViewItem: QuestionnaireItemViewItem) {
         if (!questionnaireItemViewItem.questionnaireItem.prefix.isNullOrEmpty()) {
-          tvPrefix.show()
-          tvPrefix.text = questionnaireItemViewItem.questionnaireItem.prefix
+          tvPrefix.apply {
+            text = questionnaireItemViewItem.questionnaireItem.prefix
+            show()
+          }
         } else {
           tvPrefix.hide(true)
         }
@@ -127,8 +137,6 @@ class CustomPhotoCaptureFactory(fragment: Fragment) :
     }
 
   companion object {
-    const val URL = "http://doc-of-photo-capture"
-    const val NAME = "photo-capture"
     private const val EXTRA_IMAGE = "data"
     private const val MAX_COMPRESSION_SIZE: Long = 64_000 // 64 KB
     private const val PREFIX_BITMAP = "BITMAP_"
