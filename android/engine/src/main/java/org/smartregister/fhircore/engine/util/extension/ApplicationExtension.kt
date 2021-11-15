@@ -20,7 +20,6 @@ import android.app.Application
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.datacapture.utilities.SimpleWorkerContextProvider
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
@@ -32,7 +31,6 @@ import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.Sync
 import com.google.gson.Gson
-import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -158,11 +156,4 @@ suspend fun FhirEngine.loadPatientImmunizations(patientId: String): List<Immuniz
   }
 }
 
-suspend fun Application.initializeWorkerContext(): SimpleWorkerContext? {
-  return try {
-    SimpleWorkerContextProvider.loadSimpleWorkerContext(this@initializeWorkerContext)
-  } catch (ioException: IOException) {
-    Timber.e(ioException)
-    null
-  }
-}
+suspend fun Application.initializeWorkerContext(): SimpleWorkerContext = SimpleWorkerContext()

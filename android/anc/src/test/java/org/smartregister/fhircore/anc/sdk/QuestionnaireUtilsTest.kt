@@ -20,8 +20,6 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
-import com.google.android.fhir.datacapture.utilities.SimpleWorkerContextProvider
-import io.mockk.unmockkObject
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Flag
@@ -64,8 +62,6 @@ class QuestionnaireUtilsTest : RobolectricTest() {
     Assert.assertEquals("246211005", grObs.code.coding[0].code)
     Assert.assertEquals("Patient/test_patient_1_id", grObs.subject.reference)
     Assert.assertEquals(5, grObs.valueIntegerType.value)
-
-    unmockkObject(SimpleWorkerContextProvider)
   }
 
   @Test
