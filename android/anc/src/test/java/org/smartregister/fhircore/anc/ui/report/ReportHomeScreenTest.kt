@@ -25,7 +25,6 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
@@ -56,6 +55,5 @@ class ReportHomeScreenTest : RobolectricTest() {
   @Ignore("composeRule.setContent is failing")
   fun testReportHomeScreenComponents() {
     // toolbar should have valid title and icon
-
   }
 }
