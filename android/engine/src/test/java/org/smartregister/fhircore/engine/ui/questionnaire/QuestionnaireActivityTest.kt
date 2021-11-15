@@ -71,7 +71,9 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     mockkObject(FormConfigUtil)
     every { FormConfigUtil.loadConfig(any(), any()) } returns
-      listOf(QuestionnaireConfig("patient-registration", "Patient registration", "1234567"))
+      listOf(
+        QuestionnaireConfig("appId", "patient-registration", "Patient registration", "1234567")
+      )
 
     context = ApplicationProvider.getApplicationContext()
     questionnaireViewModel = spyk(QuestionnaireViewModel(context))

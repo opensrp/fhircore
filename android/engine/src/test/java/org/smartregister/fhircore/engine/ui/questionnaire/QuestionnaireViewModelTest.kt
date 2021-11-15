@@ -224,8 +224,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     mockkObject(FormConfigUtil)
     every { FormConfigUtil.loadConfig(any(), any()) } returns
       listOf(
-        QuestionnaireConfig("my-form", "My Form", "0001"),
-        QuestionnaireConfig("patient-registration", "Add Patient", "1903")
+        QuestionnaireConfig("appId", "my-form", "My Form", "0001"),
+        QuestionnaireConfig("appId", "patient-registration", "Add Patient", "1903")
       )
 
     val result = runBlocking {

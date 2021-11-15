@@ -47,14 +47,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.robolectric.FragmentRobolectricTest
-import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 
 @ExperimentalCoroutinesApi
-@Config(shadows = [EirApplicationShadow::class])
 internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
 
   private lateinit var patientDetailsViewModel: PatientDetailsViewModel
@@ -74,11 +70,7 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
     clearAllMocks()
     patientDetailsViewModel =
       spyk(
-        PatientDetailsViewModel(
-          dispatcher = CoroutineTestRule().testDispatcherProvider,
-          fhirEngine = mockk(relaxed = true),
-          patientId = patientId
-        )
+        PatientDetailsViewModel(patientRepository = mockk(relaxed = true), patientId = patientId)
       )
 
     patientDetailsActivity =
@@ -185,7 +177,7 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
 
     val reportAdverseEventButton =
       patientDetailsFragment.view?.findViewById<Button>(R.id.reportAdverseEventButton)
-    Assert.assertEquals(View.VISIBLE, reportAdverseEventButton?.visibility)
+    Assert.assertEquals(View.GONE, reportAdverseEventButton?.visibility)
 
     val showQRCodeButton = patientDetailsFragment.view?.findViewById<Button>(R.id.showQRCodeButton)
     Assert.assertEquals(View.VISIBLE, showQRCodeButton?.visibility)
@@ -247,7 +239,7 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
 
     val reportAdverseEventButton =
       patientDetailsFragment.view?.findViewById<Button>(R.id.reportAdverseEventButton)
-    Assert.assertEquals(View.VISIBLE, reportAdverseEventButton?.visibility)
+    Assert.assertEquals(View.GONE, reportAdverseEventButton?.visibility)
 
     val showQRCodeButton = patientDetailsFragment.view?.findViewById<Button>(R.id.showQRCodeButton)
     Assert.assertEquals(View.GONE, showQRCodeButton?.visibility)

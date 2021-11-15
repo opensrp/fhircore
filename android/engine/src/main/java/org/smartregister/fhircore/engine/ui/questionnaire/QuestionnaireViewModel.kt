@@ -78,7 +78,8 @@ open class QuestionnaireViewModel(
         FormConfigUtil.loadConfig(QuestionnaireActivity.FORM_CONFIGURATIONS, getApplication())
       }
 
-    return loadConfig.associateBy { it.form }.getValue(form)
+    val appId = (getApplication() as ConfigurableApplication).configurationRegistry.appId
+    return loadConfig.associateBy { it.appId + it.form }.getValue(appId + form)
   }
 
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {

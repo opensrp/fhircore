@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.util
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
@@ -27,40 +26,39 @@ import org.smartregister.fhircore.engine.util.extension.encodeJson
 
 class SecureSharedPreference(val context: Context) {
 
-  fun getSecurePreferences(): SharedPreferences {
-    return EncryptedSharedPreferences.create(
+  val secureSharedPreferences =
+    EncryptedSharedPreferences.create(
       context,
       SECURE_STORAGE_FILE_NAME,
       getMasterKey(),
       EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
       EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
-  }
 
   private fun getMasterKey() =
     MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
 
   fun saveCredentials(authCredentials: AuthCredentials) {
-    getSecurePreferences().edit {
+    secureSharedPreferences.edit {
       putString(KEY_LATEST_CREDENTIALS_PREFERENCE, authCredentials.encodeJson())
       putString(KEY_LATEST_SESSION_TOKEN_PREFERENCE, authCredentials.sessionToken)
     }
   }
 
   fun deleteCredentials() {
-    getSecurePreferences().edit {
+    secureSharedPreferences.edit {
       remove(KEY_LATEST_CREDENTIALS_PREFERENCE)
       remove(KEY_LATEST_SESSION_TOKEN_PREFERENCE)
     }
   }
 
   fun retrieveSessionToken() =
-    getSecurePreferences().getString(KEY_LATEST_SESSION_TOKEN_PREFERENCE, null)
+    secureSharedPreferences.getString(KEY_LATEST_SESSION_TOKEN_PREFERENCE, null)
 
   fun retrieveSessionUsername() = retrieveCredentials()?.username
 
   fun retrieveCredentials(): AuthCredentials? {
-    return getSecurePreferences()
+    return secureSharedPreferences
       .getString(KEY_LATEST_CREDENTIALS_PREFERENCE, null)
       ?.decodeJson<AuthCredentials>()
   }

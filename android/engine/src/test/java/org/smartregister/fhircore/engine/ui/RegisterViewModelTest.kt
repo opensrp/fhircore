@@ -64,12 +64,12 @@ class RegisterViewModelTest : RobolectricTest() {
   fun testUpdateViewConfigurationsShouldUpdateGlobalVariable() {
     viewModel.updateViewConfigurations(
       mockk {
-        every { id } returns "1"
+        every { appId } returns "appId"
         every { appTitle } returns "Covax"
       }
     )
 
-    assertEquals("1", viewModel.registerViewConfiguration.value?.id)
+    assertEquals("appId", viewModel.registerViewConfiguration.value?.appId)
     assertEquals("Covax", viewModel.registerViewConfiguration.value?.appTitle)
   }
 
@@ -77,7 +77,7 @@ class RegisterViewModelTest : RobolectricTest() {
   fun testLoadLanguagesShouldLoadEnglishLocaleOnly() {
     viewModel.loadLanguages()
 
-    Assert.assertEquals(1, viewModel.languages.size)
+    Assert.assertEquals(2, viewModel.languages.size)
     Assert.assertEquals("English", viewModel.languages[0].displayName)
   }
 
