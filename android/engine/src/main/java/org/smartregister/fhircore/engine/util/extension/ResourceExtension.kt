@@ -18,12 +18,16 @@ package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
+import com.google.android.fhir.logicalId
+import java.util.Date
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.json.JSONException
 import org.json.JSONObject
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 
 fun Resource.toJson(parser: IParser = FhirContext.forR4().newJsonParser()): String =
   parser.encodeResourceToString(this)
@@ -48,6 +52,11 @@ fun JSONObject.updateFrom(updated: JSONObject) {
   keys.forEach { key -> updated.opt(key)?.run { put(key, this) } }
 }
 
+/**
+ * Set all questions that are not of type [Questionnaire.QuestionnaireItemType.GROUP] to readOnly if
+ * [readOnly] is true. This also generates the correct FHIRPath population expression for each
+ * question when mapped to the corresponding [QuestionnaireResponse]
+ */
 fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrEditing(
   path: String,
   readOnly: Boolean = false,
@@ -78,5 +87,23 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrE
         readOnly
       )
     }
+  }
+}
+
+/** Delete resources in [QuestionnaireResponse.contained] from the database */
+suspend fun QuestionnaireResponse.deleteRelatedResources(defaultRepository: DefaultRepository) {
+  contained.forEach { defaultRepository.delete(it) }
+}
+
+fun QuestionnaireResponse.retainMetadata(questionnaireResponse: QuestionnaireResponse) {
+  author = questionnaireResponse!!.author
+  authored = questionnaireResponse!!.authored
+  id = questionnaireResponse!!.logicalId
+
+  val versionId = Integer.parseInt(questionnaireResponse!!.meta.versionId ?: "1") + 1
+
+  questionnaireResponse.meta.apply {
+    lastUpdated = Date()
+    setVersionId(versionId.toString())
   }
 }

@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -47,8 +46,10 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplicati
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FormConfigUtil
+import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
+import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 open class QuestionnaireViewModel(application: Application) : AndroidViewModel(application) {
@@ -125,29 +126,18 @@ open class QuestionnaireViewModel(application: Application) : AndroidViewModel(a
         saveBundleResources(bundle)
 
         if (editMode && editQuestionnaireResponse != null) {
-          retainQuestionnaireResponseMeta(questionnaireResponse)
+          questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
         }
         saveQuestionnaireResponse(resourceId, questionnaire, questionnaireResponse)
 
         // Delete the previous resources
         if (editMode && editQuestionnaireResponse != null) {
-          editQuestionnaireResponse!!.deleteRelatedResources()
+          editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
         }
-      } else viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
-    }
-  }
-
-  @VisibleForTesting
-  protected fun retainQuestionnaireResponseMeta(questionnaireResponse: QuestionnaireResponse) {
-    questionnaireResponse.author = editQuestionnaireResponse!!.author
-    questionnaireResponse.authored = editQuestionnaireResponse!!.authored
-    questionnaireResponse.id = editQuestionnaireResponse!!.logicalId
-
-    val versionId = Integer.parseInt(editQuestionnaireResponse!!.meta.versionId ?: "1") + 1
-
-    questionnaireResponse.meta.apply {
-      lastUpdated = Date()
-      setVersionId(versionId.toString())
+      } else {
+        saveQuestionnaireResponse(resourceId, questionnaire, questionnaireResponse)
+        viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
+      }
     }
   }
 
@@ -264,9 +254,5 @@ open class QuestionnaireViewModel(application: Application) : AndroidViewModel(a
     intent: Intent
   ): QuestionnaireResponse {
     return ResourceMapper.populate(questionnaire, *getPopulationResources(intent))
-  }
-
-  suspend fun QuestionnaireResponse.deleteRelatedResources() {
-    contained.forEach { defaultRepository.delete(it) }
   }
 }
