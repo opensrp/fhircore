@@ -22,30 +22,19 @@ import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJob
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
-import org.smartregister.fhircore.engine.configuration.app.loadApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.view.loadRegisterViewConfiguration
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
 import org.smartregister.fhircore.engine.util.extension.join
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
-class QuestApplication : Application(), ConfigurableApplication {
-
-  private val defaultDispatcherProvider = DefaultDispatcherProvider
-
-  override lateinit var workerContextProvider: SimpleWorkerContext
+open class QuestApplication : Application(), ConfigurableApplication {
 
   override val syncJob: SyncJob
     get() = Sync.basicSyncJob(getContext())
@@ -55,36 +44,21 @@ class QuestApplication : Application(), ConfigurableApplication {
   override val authenticationService: AuthenticationService
     get() = QuestAuthenticationService(applicationContext)
 
-  override val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
+  override val fhirEngine: FhirEngine by lazy { FhirEngineProvider.getInstance(this) }
 
   override val secureSharedPreference: SecureSharedPreference
     get() = SecureSharedPreference(applicationContext)
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() {
-      val metadata = getMetadataSyncParams()
-
-      val primaryFilter = getPatientRegisterConfig()?.primaryFilter ?: return metadata
-
-      val clinicalData =
-        mutableMapOf(
-          ResourceType.Patient to
-            mapOf(primaryFilter.key to "${primaryFilter.system}|${primaryFilter.code}"),
-          ResourceType.QuestionnaireResponse to
-            mapOf(primaryFilter.key to "${primaryFilter.system}|${primaryFilter.code}"),
-        )
-      clinicalData.plusAssign(metadata)
-
-      return clinicalData
+      return mapOf(
+        ResourceType.CarePlan to mapOf(),
+        ResourceType.Patient to mapOf(),
+        ResourceType.Questionnaire to mapOf(),
+        ResourceType.QuestionnaireResponse to mapOf(),
+        ResourceType.Binary to mapOf()
+      )
     }
-
-  fun getMetadataSyncParams(): Map<ResourceType, Map<String, String>> {
-    return mutableMapOf(
-      ResourceType.Binary to mapOf("_id" to getBinaryConfigIds()),
-      ResourceType.Questionnaire to buildPublisherFilterMap(),
-      ResourceType.StructureMap to buildPublisherFilterMap()
-    )
-  }
 
   private fun buildPublisherFilterMap(): MutableMap<String, String> {
     val questionnaireFilterMap: MutableMap<String, String> = HashMap()
@@ -93,24 +67,15 @@ class QuestApplication : Application(), ConfigurableApplication {
     return questionnaireFilterMap
   }
 
-  private fun constructFhirEngine(): FhirEngine {
-    return FhirEngineProvider.getInstance(this)
-  }
-
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
     this.applicationConfiguration = applicationConfiguration
+    this.applicationConfiguration.apply {
+      fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL
+      oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL
+      clientId = BuildConfig.OAUTH_CIENT_ID
+      clientSecret = BuildConfig.OAUTH_CLIENT_SECRET
+    }
     SharedPreferencesHelper.write(SharedPreferencesHelper.THEME, applicationConfiguration.theme)
-  }
-
-  fun applyApplicationConfiguration() {
-    configureApplication(
-      loadApplicationConfiguration(CONFIG_APP).apply {
-        fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL
-        oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL
-        clientId = BuildConfig.OAUTH_CIENT_ID
-        clientSecret = BuildConfig.OAUTH_CLIENT_SECRET
-      }
-    )
   }
 
   override fun schedulePeriodicSync() {
@@ -125,40 +90,12 @@ class QuestApplication : Application(), ConfigurableApplication {
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
-
-    applyApplicationConfiguration()
-
-    initializeWorkerContextProvider()
-
-    schedulePeriodicSync()
-  }
-
-  fun initializeWorkerContextProvider() {
-    CoroutineScope(defaultDispatcherProvider.io()).launch {
-      workerContextProvider = this@QuestApplication.initializeWorkerContext()!!
-    }
-
-    schedulePeriodicSync()
-
     DataCaptureConfig.attachmentResolver = ReferenceAttachmentResolver(this)
   }
 
   companion object {
     private lateinit var questApplication: QuestApplication
-    const val CONFIG_APP = "quest-app"
-    private const val CONFIG_PATIENT_REGISTER = "quest-app-patient-register"
     private const val CONFIG_PROFILE = "quest-app-profile"
-
-    private fun getBinaryConfigIds() =
-      "$CONFIG_APP,${getPatientRegisterConfigId()},${getProfileConfigId()}"
-
-    fun getPatientRegisterConfig() =
-      kotlin
-        .runCatching { getContext().loadRegisterViewConfiguration(getPatientRegisterConfigId()) }
-        .getOrNull()
-
-    fun getPatientRegisterConfigId() =
-      CONFIG_PATIENT_REGISTER.join(getPublisher()?.lowercase()?.let { "-$it" }, "")
 
     fun getProfileConfigId() = CONFIG_PROFILE.join(getPublisher()?.lowercase()?.let { "-$it" }, "")
 

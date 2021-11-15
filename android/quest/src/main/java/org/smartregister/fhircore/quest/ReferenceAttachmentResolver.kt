@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.annotation.VisibleForTesting
@@ -25,20 +24,17 @@ import com.google.android.fhir.datacapture.AttachmentResolver
 import org.hl7.fhir.r4.model.Binary
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 
-class ReferenceAttachmentResolver(val context: Context) : AttachmentResolver {
+class ReferenceAttachmentResolver(val application: QuestApplication) : AttachmentResolver {
 
   override suspend fun resolveBinaryResource(uri: String): Binary? {
     return uri.substringAfter("Binary/").substringBefore("/").run {
-      QuestApplication.getContext().fhirEngine.load(Binary::class.java, this)
+      application.fhirEngine.load(Binary::class.java, this)
     }
   }
 
   @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
   fun getFhirService(): FhirResourceService {
-    return FhirResourceService.create(
-      FhirContext.forR4().newJsonParser(),
-      QuestApplication.getContext()
-    )
+    return FhirResourceService.create(FhirContext.forR4().newJsonParser(), application)
   }
 
   override suspend fun resolveImageUrl(uri: String): Bitmap? {

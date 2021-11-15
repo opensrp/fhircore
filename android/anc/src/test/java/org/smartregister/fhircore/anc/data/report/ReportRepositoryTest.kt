@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc.data.report
 import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -27,6 +28,7 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Encounter
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
@@ -40,7 +42,7 @@ class ReportRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     fhirEngine = mockk()
-    repository = ReportRepository(fhirEngine, "")
+    repository = ReportRepository(fhirEngine, "", ApplicationProvider.getApplicationContext())
   }
 
   @Test
@@ -51,10 +53,7 @@ class ReportRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  //  @Ignore(
-  //    "This test should be update as per FHIR resource update (Encounter -> Patient/any)" +
-  //      "Davison will be working on reports items so we can take care for this with #675"
-  //  )
+  @Ignore("This test should be update as per FHIR resource update (Encounter -> Patient/any)")
   fun testLoadReturnsPageWhenOnSuccessfulLoadOfItemKeyedData() = runBlockingTest {
     val encounter1 = getTestEncounter1()
     val encounter2 = getTestEncounter2()
@@ -81,18 +80,20 @@ class ReportRepositoryTest : RobolectricTest() {
   private fun getTestReport1(): ReportItem {
     return ReportItem(
       id = "1",
-      title = "Test Report 1",
-      description = "Women having test reports encounters",
-      reportType = "4"
+      title = "First ANC",
+      description =
+        "Percentage of pregnant women with first ANC contact in the first trimester (before 12 weeks of gestation)\"",
+      reportType = "ANC_IND_ONE"
     )
   }
 
   private fun getTestReport2(): ReportItem {
     return ReportItem(
       id = "2",
-      title = "Test Report 2",
-      description = "Women having test reports ANC",
-      reportType = "4"
+      title = "Received Supplements",
+      description =
+        "Percentage of pregnant women who received iron and folic acid (IFA) supplements for 90+ days",
+      reportType = "ANC_IND_TWO"
     )
   }
 

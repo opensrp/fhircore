@@ -21,6 +21,7 @@ import com.google.android.fhir.sync.SyncJob
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
@@ -40,6 +41,9 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
  * the server
  * @property syncBroadcaster Set a singleton of [SyncBroadcaster] that reacts to FHIR sync
  * application level states
+ * @property configurationRegistry Sets a singleton instance of [ConfigurationRegistry] that is used
+ * to store all the configurations used in the app. The configurations map is populated once when
+ * the application is created.
  */
 interface ConfigurableApplication {
 
@@ -59,6 +63,10 @@ interface ConfigurableApplication {
     get() = SyncBroadcaster
 
   val workerContextProvider: SimpleWorkerContext
+    get() = SimpleWorkerContext()
+
+  val configurationRegistry: ConfigurationRegistry
+    get() = ConfigurationRegistry
 
   /** Provide [applicationConfiguration] for the Application */
   fun configureApplication(applicationConfiguration: ApplicationConfiguration)

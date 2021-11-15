@@ -33,7 +33,7 @@
                 android:value=".ui.patient.register.PatientRegisterActivity" />
         </activity>
         <activity
-            android:name=".ui.login.LoginActivity"
+            android:name="org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity"
             android:exported="true"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -47,6 +47,10 @@
             android:name=".ui.patient.register.PatientRegisterActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name=".ui.login.LoginActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity android:name="org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity" />
         <activity android:name=".ui.adverseevent.AdverseEventQuestionnaireActivity" />

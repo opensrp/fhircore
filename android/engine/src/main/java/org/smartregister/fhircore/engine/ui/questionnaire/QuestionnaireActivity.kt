@@ -40,6 +40,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
@@ -104,6 +105,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           questionnaire = questionnaireViewModel.loadQuestionnaire(formName)!!
 
           QuestionnaireConfig(
+            appId = (application as ConfigurableApplication).configurationRegistry.appId,
             form = questionnaire.name ?: "",
             title = questionnaire.title ?: "",
             identifier = questionnaire.logicalId
@@ -155,7 +157,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
                   val parsedQuestionnaireResponse =
                     parser.encodeResourceToString(
-                      questionnaireViewModel.generateQuestionnaireResponse(questionnaire!!, intent)
+                      questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
                     )
                   bundleOf(
                     Pair(BUNDLE_KEY_QUESTIONNAIRE, parser.encodeResourceToString(questionnaire)),
@@ -292,7 +294,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     questionnaireViewModel.extractAndSaveResources(
       context = this@QuestionnaireActivity,
-      questionnaire = questionnaire!!,
+      questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
       resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)
     )
@@ -304,10 +306,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_FRAGMENT_TAG = "questionnaire-fragment-tag"
     const val QUESTIONNAIRE_ARG_PATIENT_KEY = "questionnaire_patient_item_id"
     const val ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY = "adverse_event_immunization_item_id"
+    const val FORM_CONFIGURATIONS = "configurations/form/form_configurations.json"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire-form-name"
     const val QUESTIONNAIRE_READ_ONLY = "read-only"
     const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"
-    const val FORM_CONFIGURATIONS = "form_configurations.json"
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
 
