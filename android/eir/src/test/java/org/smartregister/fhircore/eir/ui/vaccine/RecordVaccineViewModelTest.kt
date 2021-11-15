@@ -36,18 +36,15 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
-import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 @ExperimentalCoroutinesApi
-@Config(shadows = [EirApplicationShadow::class])
 internal class RecordVaccineViewModelTest : RobolectricTest() {
 
   private lateinit var recordVaccineViewModel: RecordVaccineViewModel

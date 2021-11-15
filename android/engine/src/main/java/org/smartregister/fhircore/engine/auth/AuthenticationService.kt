@@ -35,6 +35,7 @@ import okhttp3.ResponseBody
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.toSha1
 import retrofit2.Call
@@ -201,24 +202,30 @@ abstract class AuthenticationService(open val context: Context) {
           object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
               accountManager.clearPassword(account)
-              cleanup()
+              secureSharedPreference.deleteCredentials()
+              launchScreen(AppSettingActivity::class.java)
             }
 
             override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-              cleanup()
+              secureSharedPreference.deleteCredentials()
+              launchScreen(AppSettingActivity::class.java)
             }
           }
         )
     } else {
-      cleanup()
+      secureSharedPreference.deleteCredentials()
+      launchScreen(AppSettingActivity::class.java)
     }
   }
 
-  fun cleanup() {
-    secureSharedPreference.deleteCredentials()
+  fun launchLoginScreen() {
+    launchScreen(getLoginActivityClass())
+  }
+
+  fun launchScreen(clazz: Class<*>) {
     context.startActivity(
       Intent(Intent.ACTION_MAIN).apply {
-        setClassName(context.packageName, getLoginActivityClass().name)
+        setClassName(context.packageName, clazz.name)
         addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
         addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)

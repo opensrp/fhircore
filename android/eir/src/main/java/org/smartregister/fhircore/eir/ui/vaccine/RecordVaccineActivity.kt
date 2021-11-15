@@ -64,7 +64,7 @@ class RecordVaccineActivity : QuestionnaireActivity() {
           ) { vaccineSummary: PatientVaccineSummary? ->
           if (vaccineSummary != null) {
             lifecycleScope.launch {
-              questionnaire?.let { questionnaire ->
+              questionnaire.let { questionnaire ->
                 questionnaireViewModel.performExtraction(
                     questionnaire,
                     questionnaireResponse,
