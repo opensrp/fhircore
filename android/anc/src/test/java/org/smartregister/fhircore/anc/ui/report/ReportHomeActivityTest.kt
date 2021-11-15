@@ -164,7 +164,8 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testHandleMeasureEvaluate() {
-    reportHomeActivitySpy.patientDetailsData = "Every,Woman Pregnant"
+    reportHomeActivitySpy
+      .patientDetailsData = "Every,Woman Pregnant"
     every {
       reportHomeActivitySpy.measureEvaluator.runMeasureEvaluate(
         any(),
