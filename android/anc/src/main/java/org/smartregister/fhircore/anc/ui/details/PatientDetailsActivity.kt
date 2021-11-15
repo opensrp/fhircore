@@ -81,6 +81,11 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
         AncDetailsViewModel(patientRepository, patientId = patientId).createFactory()
       )[AncDetailsViewModel::class.java]
 
+    activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
+  }
+
+  override fun onResume() {
+    super.onResume()
     activityAncDetailsBinding.txtViewPatientId.text = patientId
 
     loadProgress.show()
@@ -88,8 +93,6 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
     ancDetailsViewModel
       .fetchDemographics()
       .observe(this@PatientDetailsActivity, this::handlePatientDemographics)
-
-    activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
   }
 
   override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -210,7 +213,6 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
         dialogInterface.dismiss()
         openVitalSignsStandard(patientId)
       }
-      .show()
   }
 
   private fun openVitalSignsMetric(patientId: String) {

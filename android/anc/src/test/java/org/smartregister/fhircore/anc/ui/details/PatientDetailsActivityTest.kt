@@ -163,6 +163,15 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
   }
 
+  @Test
+  fun testOnClickedVitalSignsShouldShowADialog() {
+
+    val menuItem = RoboMenuItem(R.id.add_vitals)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+
+    Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
+  }
+
   override fun getActivity(): Activity {
     return patientDetailsActivity
   }
