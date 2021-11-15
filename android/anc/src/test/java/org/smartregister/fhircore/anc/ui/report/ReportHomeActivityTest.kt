@@ -77,6 +77,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
       reportHomeActivitySpy.parser.parseResource(patientDataStream) as IBaseBundle
     reportHomeActivitySpy.libraryData = libraryData
     reportHomeActivitySpy.helperData = helperData
+    reportHomeActivitySpy.libraryMeasure=reportHomeActivitySpy.valueSetBundle
   }
 
   @Test
@@ -163,10 +164,11 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testHandleMeasureEvaluate() {
+    reportHomeActivitySpy.patientDetailsData="Every,Woman Pregnant"
     every {
       reportHomeActivitySpy.measureEvaluator.runMeasureEvaluate(
         any(),
-        any(),
+        reportHomeActivitySpy.libraryMeasure,
         any(),
         any(),
         any(),
