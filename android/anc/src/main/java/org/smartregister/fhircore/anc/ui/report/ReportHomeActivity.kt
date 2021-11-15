@@ -38,7 +38,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     super.onCreate(savedInstanceState)
     val patientId =
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-    val repository = ReportRepository((application as AncApplication).fhirEngine, patientId)
+    val repository = ReportRepository((application as AncApplication).fhirEngine, patientId, this)
     val viewModel = ReportViewModel.get(this, application as AncApplication, repository)
     viewModel.backPress.observe(
       this,

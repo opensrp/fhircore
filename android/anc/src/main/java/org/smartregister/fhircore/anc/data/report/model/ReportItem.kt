@@ -17,8 +17,10 @@
 package org.smartregister.fhircore.anc.data.report.model
 
 import androidx.compose.runtime.Stable
+import kotlinx.serialization.Serializable
 
 @Stable
+@Serializable
 data class ReportItem(
   val id: String = "",
   val title: String = "",

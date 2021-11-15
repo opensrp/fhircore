@@ -44,7 +44,7 @@ class ReportResultPageTest : RobolectricTest() {
   @Before
   fun setUp() {
     fhirEngine = spyk()
-    repository = spyk(ReportRepository(fhirEngine, "testPatientID"))
+    repository = spyk(ReportRepository(fhirEngine, "testPatientID", app.baseContext))
     viewModel =
       spyk(objToCopy = ReportViewModel(ApplicationProvider.getApplicationContext(), repository))
     every { viewModel.getSelectedReport() } returns ReportItem(title = "Reports")
