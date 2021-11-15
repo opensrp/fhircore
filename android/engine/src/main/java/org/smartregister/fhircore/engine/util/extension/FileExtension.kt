@@ -23,22 +23,11 @@ import java.io.File
 import java.io.FileInputStream
 
 fun File.encodeToBase64(): String {
-  val byteArrayOutputStream = ByteArrayOutputStream()
-  val base64FilterStream = Base64OutputStream(byteArrayOutputStream, Base64.DEFAULT)
-  var fileInputStream: FileInputStream? = null
-  try {
-    fileInputStream = FileInputStream(this)
-    fileInputStream.copyTo(base64FilterStream)
-    return byteArrayOutputStream.toString()
-  } finally {
-    fileInputStream?.close()
-    base64FilterStream.run {
-      flush()
-      close()
+  return ByteArrayOutputStream()
+    .use { byteStream ->
+      Base64OutputStream(byteStream, Base64.DEFAULT).use { base64Stream ->
+        FileInputStream(this).copyTo(base64Stream)
+      }
     }
-    byteArrayOutputStream.run {
-      flush()
-      close()
-    }
-  }
+    .toString()
 }
