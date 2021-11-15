@@ -86,12 +86,4 @@
     <string name="remember_app">Remember application</string>
     <string name="done">Done</string>
     <string name="application_not_supported">Application %1$s is not supported</string>
-    <string name="date_range">Date range</string>
-    <string name="patient">Patient</string>
-    <string name="all">All</string>
-    <string name="individual">Individual</string>
-    <string name="start_date">Start date</string>
-    <string name="end_date">End date</string>
-    <string name="generate_report">Generate Report</string>
-    <string name="change">Change</string>
 </resources>

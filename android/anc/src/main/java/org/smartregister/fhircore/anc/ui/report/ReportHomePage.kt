@@ -21,6 +21,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.Divider
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -37,6 +39,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
+import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
@@ -86,6 +89,7 @@ fun ReportHomeListBox(
   LazyColumn(modifier = Modifier.background(Color.White).fillMaxSize()) {
     itemsIndexed(lazyReportItems) { _, item ->
       ReportRow(item!!, Modifier.clickable(onClick = { onReportMeasureItemClick(item) }))
+      Divider(color = DividerColor, thickness = 1.dp)
     }
 
     lazyReportItems.apply {
