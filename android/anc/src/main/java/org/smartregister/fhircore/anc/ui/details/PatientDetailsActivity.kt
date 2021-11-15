@@ -213,6 +213,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
         dialogInterface.dismiss()
         openVitalSignsStandard(patientId)
       }
+      .show()
   }
 
   private fun openVitalSignsMetric(patientId: String) {
