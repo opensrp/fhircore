@@ -56,6 +56,12 @@ class DefaultRepository(
     return withContext(dispatcherProvider.io()) { fhirEngine.save(resource) }
   }
 
+  suspend fun delete(resource: Resource) {
+    return withContext(dispatcherProvider.io()) {
+      fhirEngine.remove(resource::class.java, resource.logicalId)
+    }
+  }
+
   suspend fun <R : Resource> addOrUpdate(resource: R) {
     return withContext(dispatcherProvider.io()) {
       try {
