@@ -179,14 +179,8 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
                 ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
               }
             )
-            if (circularProgressBarVisible.value) {
-              CircularProgressBarDemo()
-            }
-            executor.execute {
-              loadCQLLibraryData()
-              loadMeasureEvaluateLibrary()
-              handler.post { circularProgressBarVisible.value = false }
-            }
+            loadCQLLibraryData()
+            loadMeasureEvaluateLibrary()
             ReportHomeScreen(reportViewModel)
           }
         }
