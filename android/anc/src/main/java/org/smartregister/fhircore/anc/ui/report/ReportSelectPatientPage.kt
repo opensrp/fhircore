@@ -17,31 +17,21 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import androidx.paging.compose.LazyPagingItems
-import org.smartregister.fhircore.anc.data.model.PatientItem
+import androidx.paging.compose.collectAsLazyPagingItems
+import kotlinx.coroutines.flow.emptyFlow
 import org.smartregister.fhircore.anc.ui.anccare.register.components.AncPatientList
-import org.smartregister.fhircore.engine.util.ListenerIntent
-
-// @Composable
-// @Preview(showBackground = true)
-// @ExcludeFromJacocoGeneratedReport
-// fun ReportSelectPatientPreview() {
-//  ReportSelectPatientScreen(
-//    pagingItems = emptyFlow(),
-//    onSelectPatientItemClicked = {}
-//  )
-// }
 
 @Composable
-fun ReportSelectPatientScreen(
-  pagingItems: LazyPagingItems<PatientItem>,
-  onSelectPatientItemClicked: (ListenerIntent, PatientItem) -> Unit
-) {
+fun ReportSelectPatientScreen(viewModel: ReportViewModel) {
+  val registerData = viewModel.allRegisterData.collectAsState(emptyFlow())
+  val pagingItems = registerData.value.collectAsLazyPagingItems()
   AncPatientList(
     pagingItems = pagingItems,
     modifier = Modifier,
-    clickListener = { listenerIntent, data -> onSelectPatientItemClicked(listenerIntent, data) },
-    showAncVisitButton = false
+    clickListener = viewModel::onPatientItemClicked,
+    showAncVisitButton = false,
+    displaySelectContentOnly = true
   )
 }

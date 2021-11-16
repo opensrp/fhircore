@@ -30,6 +30,7 @@ enum class VisitStatus {
 data class PatientItem(
   val patientIdentifier: String = "",
   val name: String = "",
+  val familyName: String = "",
   val gender: String = "",
   val age: String = "",
   val demographics: String = "",

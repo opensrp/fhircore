@@ -36,6 +36,7 @@ fun AncPatientList(
   modifier: Modifier = Modifier,
   clickListener: (AncRowClickListenerIntent, PatientItem) -> Unit,
   showAncVisitButton: Boolean = true,
+  displaySelectContentOnly: Boolean = false,
 ) {
 
   LazyColumn {
@@ -44,6 +45,7 @@ fun AncPatientList(
         patientItem = it!!,
         clickListener = clickListener,
         showAncVisitButton,
+        displaySelectContentOnly,
         modifier = modifier
       )
       Divider(color = DividerColor, thickness = 1.dp)

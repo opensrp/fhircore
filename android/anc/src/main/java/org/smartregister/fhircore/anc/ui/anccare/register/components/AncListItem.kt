@@ -59,8 +59,21 @@ fun AncRow(
   patientItem: PatientItem,
   clickListener: (AncRowClickListenerIntent, PatientItem) -> Unit,
   showAncVisitButton: Boolean = true,
+  displaySelectContentOnly: Boolean = false,
   modifier: Modifier = Modifier,
 ) {
+  val titleText =
+    if (!displaySelectContentOnly) {
+      patientItem.demographics
+    } else {
+      patientItem.name
+    }
+  val subTitleText =
+    if (!displaySelectContentOnly) {
+      patientItem.address.capitalize(Locale.current)
+    } else {
+      patientItem.familyName
+    }
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
@@ -73,16 +86,12 @@ fun AncRow(
       modifier =
         modifier.wrapContentWidth(Alignment.Start).padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
-      Text(
-        text = patientItem.demographics,
-        fontSize = 18.sp,
-        modifier = modifier.wrapContentWidth()
-      )
+      Text(text = titleText, fontSize = 18.sp, modifier = modifier.wrapContentWidth())
       Spacer(modifier = modifier.height(8.dp))
       Row {
         Text(
           color = SubtitleTextColor,
-          text = patientItem.address.capitalize(Locale.current),
+          text = subTitleText,
           fontSize = 14.sp,
           modifier = modifier.wrapContentWidth()
         )
