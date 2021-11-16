@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import android.R.attr.maxLines
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,6 +41,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -82,7 +84,14 @@ fun DateRangePreview() {
 @Composable
 fun TopBarBox(topBarTitle: String, onBackPress: () -> Unit) {
   TopAppBar(
-    title = { Text(text = topBarTitle, Modifier.testTag(TOOLBAR_TITLE)) },
+    title = {
+      Text(
+        text = topBarTitle,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier.testTag(TOOLBAR_TITLE)
+      )
+    },
     navigationIcon = {
       IconButton(onClick = onBackPress, Modifier.testTag(TOOLBAR_BACK_ARROW)) {
         Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")

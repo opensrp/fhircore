@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -32,18 +33,29 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.smartregister.fhircore.anc.AncApplication
+import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
+import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
+import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
+import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
+import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
-class ReportViewModel(application: AncApplication, private val repository: ReportRepository) :
-  AndroidViewModel(application) {
+class ReportViewModel(
+  application: AncApplication,
+  private val repository: ReportRepository,
+  val patientRepository: PatientRepository
+) : AndroidViewModel(application) {
 
   val backPress: MutableLiveData<Boolean> = MutableLiveData(false)
   val showDatePicker: MutableLiveData<Boolean> = MutableLiveData(false)
   val selectedMeasureReportItem: MutableLiveData<ReportItem> = MutableLiveData(null)
+  val selectedPatientItem: MutableLiveData<PatientItem> = MutableLiveData(null)
   val simpleDateFormatPattern = "d MMM, yyyy"
 
   private val _startDate = MutableLiveData("start date")
@@ -68,6 +80,25 @@ class ReportViewModel(application: AncApplication, private val repository: Repor
     return Pager(PagingConfig(pageSize = PaginationUtil.DEFAULT_PAGE_SIZE)) { repository }.flow
   }
 
+  fun getPatientList(): Flow<PagingData<PatientItem>> {
+    //    return Pager(PagingConfig(pageSize = PaginationUtil.DEFAULT_PAGE_SIZE)) { repository
+    // }.flow
+    return getPagingData(0, true)
+  }
+
+  fun onPatientItemClicked(listenerIntent: ListenerIntent, data: PatientItem) {
+    if (listenerIntent is AncRowClickListenerIntent) {
+      when (listenerIntent) {
+        OpenPatientProfile -> updateSelectedPatient(data)
+      }
+    }
+  }
+
+  fun updateSelectedPatient(patient: PatientItem) {
+    selectedPatientItem.value = patient
+    reportState.currentScreen = ReportScreen.RESULT
+  }
+
   fun onReportMeasureItemClicked(item: ReportItem) {
     selectedMeasureReportItem.value = item
     reportState.currentScreen = ReportScreen.FILTER
@@ -75,6 +106,10 @@ class ReportViewModel(application: AncApplication, private val repository: Repor
 
   fun getSelectedReport(): ReportItem? {
     return selectedMeasureReportItem.value
+  }
+
+  fun getSelectedPatient(): PatientItem {
+    return selectedPatientItem.value ?: PatientItem()
   }
 
   fun getPatientSelectionType(): String? {
@@ -124,14 +159,37 @@ class ReportViewModel(application: AncApplication, private val repository: Repor
     reportState.currentScreen = ReportScreen.FILTER
   }
 
+  @Stable
+  val allRegisterData: MutableStateFlow<Flow<PagingData<PatientItem>>> =
+    MutableStateFlow(getPagingData(currentPage = 0, loadAll = true))
+
+  private fun getPagingData(currentPage: Int, loadAll: Boolean) =
+    Pager(
+        config =
+          PagingConfig(
+            pageSize = PaginationUtil.DEFAULT_PAGE_SIZE,
+            initialLoadSize = PaginationUtil.DEFAULT_INITIAL_LOAD_SIZE,
+          ),
+        pagingSourceFactory = {
+          PaginatedDataSource(patientRepository).apply {
+            this.loadAll = loadAll
+            this.currentPage = currentPage
+          }
+        }
+      )
+      .flow
+
   companion object {
     fun get(
       owner: ViewModelStoreOwner,
       application: AncApplication,
-      repository: ReportRepository
+      repository: ReportRepository,
+      ancPatientRepository: PatientRepository
     ): ReportViewModel {
-      return ViewModelProvider(owner, ReportViewModel(application, repository).createFactory())[
-        ReportViewModel::class.java]
+      return ViewModelProvider(
+        owner,
+        ReportViewModel(application, repository, ancPatientRepository).createFactory()
+      )[ReportViewModel::class.java]
     }
   }
 

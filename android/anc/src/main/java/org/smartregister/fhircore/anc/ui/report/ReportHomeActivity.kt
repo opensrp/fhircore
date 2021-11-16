@@ -19,14 +19,19 @@ package org.smartregister.fhircore.anc.ui.report
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.util.Pair
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.android.material.datepicker.MaterialDatePicker
 import java.util.Calendar
+import kotlinx.coroutines.flow.emptyFlow
 import org.smartregister.fhircore.anc.AncApplication
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
+import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.report.ReportViewModel.ReportScreen
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -39,7 +44,10 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     val patientId =
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
     val repository = ReportRepository((application as AncApplication).fhirEngine, patientId, this)
-    val viewModel = ReportViewModel.get(this, application as AncApplication, repository)
+    val ancPatientRepository =
+      PatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
+    val viewModel =
+      ReportViewModel.get(this, application as AncApplication, repository, ancPatientRepository)
     viewModel.backPress.observe(
       this,
       {
@@ -57,6 +65,15 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       }
     )
 
+    viewModel.patientSelectionType.observe(
+      this,
+      {
+        if (it.equals("Individual", true)) {
+          viewModel.reportState.currentScreen = ReportScreen.PICK_PATIENT
+        }
+      }
+    )
+
     setContent {
       val reportState = remember { viewModel.reportState }
       AppTheme { ReportView(viewModel) }
@@ -69,7 +86,11 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     when (viewModel.reportState.currentScreen) {
       ReportScreen.HOME -> ReportHomeScreen(viewModel)
       ReportScreen.FILTER -> ReportFilterScreen(viewModel)
-      ReportScreen.PICK_PATIENT -> ReportFilterScreen(viewModel)
+      ReportScreen.PICK_PATIENT -> {
+        val registerData = viewModel.allRegisterData.collectAsState(emptyFlow())
+        val pagingItems = registerData.value.collectAsLazyPagingItems()
+        ReportSelectPatientScreen(pagingItems, viewModel::onPatientItemClicked)
+      }
       ReportScreen.RESULT -> ReportResultScreen(viewModel)
     }
   }

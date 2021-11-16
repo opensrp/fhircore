@@ -58,6 +58,7 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 fun AncRow(
   patientItem: PatientItem,
   clickListener: (AncRowClickListenerIntent, PatientItem) -> Unit,
+  showAncVisitButton: Boolean = true,
   modifier: Modifier = Modifier,
 ) {
   Row(
@@ -87,11 +88,13 @@ fun AncRow(
         )
       }
     }
-    AncVisitButton(
-      modifier = modifier.wrapContentWidth(Alignment.End).padding(horizontal = 16.dp),
-      patientItem = patientItem,
-      clickListener = clickListener
-    )
+    if (showAncVisitButton) {
+      AncVisitButton(
+        modifier = modifier.wrapContentWidth(Alignment.End).padding(horizontal = 16.dp),
+        patientItem = patientItem,
+        clickListener = clickListener
+      )
+    }
   }
 }
 
