@@ -17,19 +17,21 @@
 package org.smartregister.fhircore.engine.util
 
 import android.content.Context
-import android.content.res.AssetManager
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileWriter
 import java.io.IOException
-import java.io.InputStream
 import java.io.InputStreamReader
-import java.util.ArrayList
+import java.lang.NullPointerException
 import java.util.Properties
+import timber.log.Timber
 
 /** This class has method to help load static files, their contents and properties in android */
-class FileUtil {
+object FileUtil {
+
+  val ASSET_BASE_PATH_RESOURCES =
+    "${System.getProperty("user.dir") ?: throw NullPointerException("user.dir system property is null")}${File.separator}src${File.separator}"
 
   /**
    * This method loads a property value from a .config file in android assets
@@ -39,9 +41,7 @@ class FileUtil {
    */
   fun getProperty(key: String?, context: Context, fileName: String): String? {
     val properties = Properties()
-    val assetManager: AssetManager = context.getAssets()
-    val inputStream: InputStream = assetManager.open(fileName)
-    properties.load(inputStream)
+    properties.load(context.assets.open(fileName))
     return properties.getProperty(key)
   }
 
@@ -52,14 +52,32 @@ class FileUtil {
   @Throws(IOException::class)
   fun readJsonFile(fileName: String): String {
     val fileNameFinal = ASSET_BASE_PATH_RESOURCES + fileName
-    val br = BufferedReader(InputStreamReader(FileInputStream(fileNameFinal)))
-    val sb = StringBuilder()
-    var line = br.readLine()
-    while (line != null) {
-      sb.append(line)
-      line = br.readLine()
+    return BufferedReader(InputStreamReader(FileInputStream(fileNameFinal))).use { it.readText() }
+  }
+
+  fun writeFileOnInternalStorage(
+    context: Context,
+    fileName: String,
+    body: String = "",
+    dirName: String
+  ) {
+    val dir = File(context.filesDir, dirName)
+    if (!dir.exists()) {
+      dir.mkdir()
     }
-    return sb.toString()
+    FileWriter(File(dir, fileName)).use {
+      it.append(body)
+      it.flush()
+    }
+  }
+
+  fun readFileFromInternalStorage(context: Context, fileName: String, dirName: String): String {
+    val dir = File(context.filesDir, dirName)
+    return FileInputStream(File(dir, fileName)).use { fileInputStream ->
+      InputStreamReader(fileInputStream).use { inputStreamReader ->
+        BufferedReader(inputStreamReader).use { it.readText() }
+      }
+    }
   }
 
   /**
@@ -68,59 +86,19 @@ class FileUtil {
    */
   @Throws(IOException::class)
   fun recurseFolders(dir: File): List<String> {
-    val returnFiles: MutableList<String> = ArrayList()
+    val returnedFiles = mutableListOf<String>()
     try {
-      val files: Array<File> = dir.listFiles()
-      for (file in files) {
-        if (file.isDirectory()) {
+      val files: Array<out File> = dir.listFiles() ?: return returnedFiles
+      files.forEach { file ->
+        if (file.isDirectory) {
           recurseFolders(file)
         } else {
-          returnFiles.add(file.getCanonicalPath())
+          returnedFiles.add(file.canonicalPath)
         }
       }
-    } catch (e: IOException) {
-      e.printStackTrace()
+    } catch (ioException: IOException) {
+      Timber.e(ioException)
     }
-    return returnFiles
-  }
-
-  companion object {
-    val ASSET_BASE_PATH_RESOURCES =
-      (System.getProperty("user.dir") + File.separator + "src" + File.separator)
-  }
-
-  fun writeFileOnInternalStorage(
-    context: Context,
-    fileName: String?,
-    body: String?,
-    dirName: String
-  ) {
-
-    val dir = File(context.getFilesDir(), dirName)
-    if (!dir.exists()) {
-      dir.mkdir()
-    }
-    val file = File(dir, fileName)
-    FileWriter(file).use {
-      it.append(body)
-      it.flush()
-      it.close()
-    }
-  }
-
-  fun readFileFromInternalStorage(context: Context, fileName: String?, dirName: String): String {
-    val dir = File(context.getFilesDir(), dirName)
-    val sb = java.lang.StringBuilder()
-    val file = File(dir, fileName)
-    val fis = FileInputStream(file)
-    val isr = InputStreamReader(fis)
-    BufferedReader(isr).use {
-      var line: String?
-      while (it.readLine().also { it1 -> line = it1 } != null) {
-        sb.append(line)
-      }
-      fis.close()
-    }
-    return sb.toString()
+    return returnedFiles
   }
 }

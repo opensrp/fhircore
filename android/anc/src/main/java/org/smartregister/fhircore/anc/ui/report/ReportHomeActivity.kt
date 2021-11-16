@@ -28,8 +28,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
@@ -66,11 +64,10 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   lateinit var fhirContext: FhirContext
   lateinit var libraryEvaluator: LibraryEvaluator
   lateinit var measureEvaluator: MeasureEvaluator
-  lateinit var fileUtil: FileUtil
   lateinit var libraryResources: List<IBaseResource>
-  var libraryData: String? = ""
-  var helperData: String? = ""
-  var valueSetData: String? = ""
+  var libraryData: String = ""
+  var helperData: String = ""
+  var valueSetData: String = ""
   val evaluatorId = "ANCRecommendationA2"
   val contextCQL = "patient"
   val contextLabel = "mom-with-anemia"
@@ -82,15 +79,14 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   var cqlMeasureReportStartDate = ""
   var cqlMeasureReportEndDate = ""
   var cqlMeasureReportReportType = ""
-  var cqlMeasureReportSubject = ""
   var cqlMeasureReportLibInitialString = ""
   var cqlHelperURL = ""
   var valueSetURL = ""
   var patientURL = ""
-  var cqlConfigFileName = "configs/cql_configs.properties"
+  val cqlConfigFileName = "configs/cql_configs.properties"
   lateinit var dir: File
   lateinit var libraryMeasure: IBaseBundle
-  var measureEvaluateLibraryData: String? = ""
+  var measureEvaluateLibraryData: String = ""
   lateinit var valueSetBundle: IBaseBundle
   val dirCQLDirRoot = "cql_libraries"
   val fileNameMainLibraryCql = "main_library_cql"
@@ -129,45 +125,42 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       }
     )
 
-    fileUtil = FileUtil()
     cqlBaseURL =
-      this.let { fileUtil.getProperty("smart_register_base_url", it, cqlConfigFileName) }!!
+      this.let { FileUtil.getProperty("smart_register_base_url", it, cqlConfigFileName) }!!
 
     libraryURL =
-      cqlBaseURL + this.let { fileUtil.getProperty("cql_library_url", it, cqlConfigFileName) }
+      cqlBaseURL + this.let { FileUtil.getProperty("cql_library_url", it, cqlConfigFileName) }
 
     cqlHelperURL =
       cqlBaseURL +
-        this.let { fileUtil.getProperty("cql_helper_library_url", it, cqlConfigFileName) }
+        this.let { FileUtil.getProperty("cql_helper_library_url", it, cqlConfigFileName) }
 
     valueSetURL =
-      cqlBaseURL + this.let { fileUtil.getProperty("cql_value_set_url", it, cqlConfigFileName) }
+      cqlBaseURL + this.let { FileUtil.getProperty("cql_value_set_url", it, cqlConfigFileName) }
 
     patientURL =
-      cqlBaseURL + this.let { fileUtil.getProperty("cql_patient_url", it, cqlConfigFileName) }
+      cqlBaseURL + this.let { FileUtil.getProperty("cql_patient_url", it, cqlConfigFileName) }
 
     measureEvaluateLibraryURL =
       this.let {
-        fileUtil.getProperty("cql_measure_report_library_value_sets_url", it, cqlConfigFileName)
+        FileUtil.getProperty("cql_measure_report_library_value_sets_url", it, cqlConfigFileName)
       }!!
 
     measureTypeURL =
-      this.let { fileUtil.getProperty("cql_measure_report_resource_url", it, cqlConfigFileName) }!!
+      this.let { FileUtil.getProperty("cql_measure_report_resource_url", it, cqlConfigFileName) }!!
 
     cqlMeasureReportURL =
-      this.let { fileUtil.getProperty("cql_measure_report_url", it, cqlConfigFileName) }!!
+      this.let { FileUtil.getProperty("cql_measure_report_url", it, cqlConfigFileName) }!!
 
     cqlMeasureReportLibInitialString =
       this.let {
-        fileUtil.getProperty("cql_measure_report_lib_initial_string", it, cqlConfigFileName)
+        FileUtil.getProperty("cql_measure_report_lib_initial_string", it, cqlConfigFileName)
       }!!
 
     setContent {
       AppTheme {
         Surface(color = colorResource(id = R.color.white)) {
           Column {
-            val circularProgressBarVisible = remember { mutableStateOf(value = true) }
-
             TopAppBar(
               title = {
                 Text(text = stringResource(id = R.string.reports), Modifier.testTag(TOOLBAR_TITLE))
@@ -192,7 +185,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     dir = File(this.filesDir, "$dirCQLDirRoot/$fileNameMainLibraryCql")
     if (dir.exists()) {
       libraryData =
-        this.let { fileUtil.readFileFromInternalStorage(it, fileNameMainLibraryCql, dirCQLDirRoot) }
+        this.let { FileUtil.readFileFromInternalStorage(it, fileNameMainLibraryCql, dirCQLDirRoot) }
           .toString()
       loadCQLHelperData()
     } else {
@@ -207,7 +200,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     if (dir.exists()) {
       helperData =
         this.let {
-            fileUtil.readFileFromInternalStorage(it, fileNameHelperLibraryCql, dirCQLDirRoot)
+            FileUtil.readFileFromInternalStorage(it, fileNameHelperLibraryCql, dirCQLDirRoot)
           }
           .toString()
       loadCQLLibrarySources()
@@ -224,10 +217,10 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     if (dir.exists()) {
       valueSetData =
         this.let {
-            fileUtil.readFileFromInternalStorage(it, fileNameValueSetLibraryCql, dirCQLDirRoot)
+            FileUtil.readFileFromInternalStorage(it, fileNameValueSetLibraryCql, dirCQLDirRoot)
           }
           .toString()
-      postValueSetData(valueSetData!!)
+      postValueSetData(valueSetData)
     } else {
       reportViewModel
         .fetchCQLValueSetData(parser, fhirResourceDataSource, valueSetURL)
@@ -245,11 +238,11 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     if (dir.exists()) {
       measureEvaluateLibraryData =
         this.let {
-            fileUtil.readFileFromInternalStorage(it, fileNameMeasureLibraryCql, dirCQLDirRoot)
+            FileUtil.readFileFromInternalStorage(it, fileNameMeasureLibraryCql, dirCQLDirRoot)
           }
           .toString()
       val libraryStreamMeasure: InputStream =
-        ByteArrayInputStream(measureEvaluateLibraryData!!.toByteArray())
+        ByteArrayInputStream(measureEvaluateLibraryData.toByteArray())
       libraryMeasure = parser.parseResource(libraryStreamMeasure) as IBaseBundle
     } else {
       reportViewModel
@@ -267,14 +260,14 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   fun handleCQLLibraryData(auxLibraryData: String) {
     libraryData = auxLibraryData
     this.let {
-      fileUtil.writeFileOnInternalStorage(it, fileNameMainLibraryCql, libraryData, dirCQLDirRoot)
+      FileUtil.writeFileOnInternalStorage(it, fileNameMainLibraryCql, libraryData, dirCQLDirRoot)
     }
     loadCQLHelperData()
   }
 
   fun loadCQLLibrarySources() {
-    val libraryStream: InputStream = ByteArrayInputStream(libraryData!!.toByteArray())
-    val fhirHelpersStream: InputStream = ByteArrayInputStream(helperData!!.toByteArray())
+    val libraryStream: InputStream = ByteArrayInputStream(libraryData.toByteArray())
+    val fhirHelpersStream: InputStream = ByteArrayInputStream(helperData.toByteArray())
     val library = parser.parseResource(libraryStream)
     val fhirHelpersLibrary = parser.parseResource(fhirHelpersStream)
     libraryResources = Lists.newArrayList(library, fhirHelpersLibrary)
@@ -283,7 +276,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   fun handleCQLHelperData(auxHelperData: String) {
     helperData = auxHelperData
     this.let {
-      fileUtil.writeFileOnInternalStorage(it, fileNameHelperLibraryCql, helperData, dirCQLDirRoot)
+      FileUtil.writeFileOnInternalStorage(it, fileNameHelperLibraryCql, helperData, dirCQLDirRoot)
     }
     loadCQLLibrarySources()
     loadCQLValueSetData()
@@ -292,14 +285,14 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   fun handleCQLValueSetData(auxValueSetData: String) {
     valueSetData = auxValueSetData
     this.let {
-      fileUtil.writeFileOnInternalStorage(
+      FileUtil.writeFileOnInternalStorage(
         it,
         fileNameValueSetLibraryCql,
         valueSetData,
         dirCQLDirRoot
       )
     }
-    postValueSetData(valueSetData!!)
+    postValueSetData(valueSetData)
   }
 
   fun handleCQL(): String {
@@ -330,7 +323,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   fun handleMeasureEvaluateLibrary(auxMeasureEvaluateLibData: String) {
     measureEvaluateLibraryData = auxMeasureEvaluateLibData
     this.let {
-      fileUtil.writeFileOnInternalStorage(
+      FileUtil.writeFileOnInternalStorage(
         it,
         fileNameMeasureLibraryCql,
         measureEvaluateLibraryData,
@@ -338,7 +331,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       )
     }
     val libraryStreamMeasure: InputStream =
-      ByteArrayInputStream(measureEvaluateLibraryData!!.toByteArray())
+      ByteArrayInputStream(measureEvaluateLibraryData.toByteArray())
     libraryMeasure = parser.parseResource(libraryStreamMeasure) as IBaseBundle
   }
 
