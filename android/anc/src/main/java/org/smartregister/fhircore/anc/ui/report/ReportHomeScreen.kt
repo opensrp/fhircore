@@ -65,10 +65,10 @@ fun ReportHomeScreen(viewModel: ReportViewModel) {
     lazyReportItems.apply {
       when {
         loadState.refresh is LoadState.Loading -> {
-          item { LoadingItem() }
+          item(key = "indicator_1") { LoadingItem() }
         }
         loadState.append is LoadState.Loading -> {
-          item { LoadingItem() }
+          item(key = "indicator_2") { LoadingItem() }
         }
       }
     }
