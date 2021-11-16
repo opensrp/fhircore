@@ -37,7 +37,7 @@ data class RegisterViewConfiguration(
   var switchLanguages: Boolean = true,
   var showScanQRCode: Boolean = true,
   var showNewClientButton: Boolean = true,
-  var registrationForm: String = "patient-registration",
+  var registrationForm: String = "family-registration",
   var showSideMenu: Boolean = true,
   var showBottomMenu: Boolean = false,
   var primaryFilter: SearchFilter? = null
