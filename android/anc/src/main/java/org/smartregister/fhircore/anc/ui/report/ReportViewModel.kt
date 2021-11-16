@@ -117,15 +117,15 @@ class ReportViewModel(
     val libList = libStrAfterEquals.split(",").map { it.trim() }
 
     val libURLStrBeforeEquals = libAndValueSetURL.substring(0, equalsIndexUrl) + "="
-    val initialStr = StringBuilder(cqlMeasureReportLibInitialString)
+    val fullResourceString = StringBuilder(cqlMeasureReportLibInitialString)
 
     viewModelScope.launch(dispatcher.io()) {
       val measureObject =
         parser.encodeResourceToString(fhirResourceDataSource.loadData(measureURL).entry[0].resource)
 
-      initialStr.append("{\"resource\":")
-      initialStr.append(measureObject)
-      initialStr.append("}")
+      fullResourceString.append("{\"resource\":")
+      fullResourceString.append(measureObject)
+      fullResourceString.append("}")
 
       var auxCQLValueSetData: String
       for (lib in libList) {
@@ -134,14 +134,14 @@ class ReportViewModel(
             fhirResourceDataSource.loadData(libURLStrBeforeEquals + lib).entry[0].resource
           )
 
-        initialStr.append(",")
-        initialStr.append("{\"resource\":")
-        initialStr.append(auxCQLValueSetData)
-        initialStr.append("}")
+        fullResourceString.append(",")
+        fullResourceString.append("{\"resource\":")
+        fullResourceString.append(auxCQLValueSetData)
+        fullResourceString.append("}")
       }
-      initialStr.deleteCharAt(initialStr.length - 1)
-      initialStr.append("}]}")
-      valueSetData.postValue(initialStr.toString())
+      fullResourceString.deleteCharAt(fullResourceString.length - 1)
+      fullResourceString.append("}]}")
+      valueSetData.postValue(fullResourceString.toString())
     }
     return valueSetData
   }

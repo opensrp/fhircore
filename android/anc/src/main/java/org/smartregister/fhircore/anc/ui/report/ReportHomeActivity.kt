@@ -28,8 +28,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
@@ -166,8 +164,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       AppTheme {
         Surface(color = colorResource(id = R.color.white)) {
           Column {
-            val circularProgressBarVisible = remember { mutableStateOf(value = true) }
-
             TopAppBar(
               title = {
                 Text(text = stringResource(id = R.string.reports), Modifier.testTag(TOOLBAR_TITLE))
@@ -179,14 +175,8 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
                 ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
               }
             )
-            if (circularProgressBarVisible.value) {
-              CircularProgressBarDemo()
-            }
-            executor.execute {
-              loadCQLLibraryData()
-              loadMeasureEvaluateLibrary()
-              handler.post { circularProgressBarVisible.value = false }
-            }
+            loadCQLLibraryData()
+            loadMeasureEvaluateLibrary()
             ReportHomeScreen(reportViewModel)
           }
         }
