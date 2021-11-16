@@ -17,10 +17,6 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import android.app.Application
-import androidx.compose.ui.test.assertHasClickAction
-import androidx.compose.ui.test.assertTextEquals
-import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.mockk
 import io.mockk.spyk
@@ -29,7 +25,7 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
@@ -40,21 +36,24 @@ class ReportHomeScreenTest : RobolectricTest() {
   private val app = ApplicationProvider.getApplicationContext<Application>()
   private lateinit var repository: ReportRepository
   private lateinit var viewModel: ReportViewModel
-  @get:Rule val composeRule = createComposeRule()
+  @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
   @Before
   fun setUp() {
     repository = mockk()
     viewModel =
-      spyk(objToCopy = ReportViewModel(ApplicationProvider.getApplicationContext(), repository))
-    composeRule.setContent { ReportHomeScreen(viewModel = viewModel) }
+      spyk(
+        objToCopy =
+          ReportViewModel(
+            ApplicationProvider.getApplicationContext(),
+            coroutinesTestRule.testDispatcherProvider
+          )
+      )
   }
 
   @Test
   @Ignore("composeRule.setContent is failing")
   fun testReportHomeScreenComponents() {
     // toolbar should have valid title and icon
-    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals(app.getString(R.string.reports))
-    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
   }
 }
