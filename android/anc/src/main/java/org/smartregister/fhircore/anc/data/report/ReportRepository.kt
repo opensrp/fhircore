@@ -16,20 +16,13 @@
 
 package org.smartregister.fhircore.anc.data.report
 
-import android.content.Context
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.google.android.fhir.FhirEngine
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
-import org.smartregister.fhircore.engine.util.extension.decodeJson
 
-class ReportRepository(
-  val fhirEngine: FhirEngine,
-  private val patientId: String,
-  private val mContext: Context
-) : PagingSource<Int, ReportItem>() {
-
-  val SAMPLE_REPORT_MEASURES_FILE = "sample_data_report_measures.json"
+class ReportRepository(val fhirEngine: FhirEngine, private val patientId: String) :
+  PagingSource<Int, ReportItem>() {
 
   override fun getRefreshKey(state: PagingState<Int, ReportItem>): Int? {
     return state.anchorPosition
@@ -46,22 +39,34 @@ class ReportRepository(
       //          from = nextPage * PaginationUtil.DEFAULT_PAGE_SIZE
       //          count = PaginationUtil.DEFAULT_PAGE_SIZE
       //        }
+      //
       //      var data = encounters.map { ReportItem(it.id, it.id, "it.status", "it.status",
       // "it.status") }
 
-      val data = createTestData(mContext)
+      //      if(data.isEmpty()){
+      //        data = listOf(ReportItem(title = "Test Report", description = "Women having test
+      // reports encounters"))
+      //      }
+
+      val data =
+        listOf(
+          ReportItem(
+            id = "1",
+            title = "Test Report 1",
+            description = "Women having test reports encounters",
+            reportType = "4"
+          ),
+          ReportItem(
+            id = "2",
+            title = "Test Report 2",
+            description = "Women having test reports ANC",
+            reportType = "4"
+          )
+        )
 
       LoadResult.Page(data = data, prevKey = null, nextKey = null)
     } catch (e: Exception) {
       LoadResult.Error(e)
     }
-  }
-
-  /** Load report-measures from asset directory */
-  suspend fun createTestData(context: Context): List<ReportItem> {
-    val json =
-      context.assets.open(SAMPLE_REPORT_MEASURES_FILE).bufferedReader().use { it.readText() }
-    val dataList: List<ReportItem> = json.decodeJson()
-    return dataList
   }
 }

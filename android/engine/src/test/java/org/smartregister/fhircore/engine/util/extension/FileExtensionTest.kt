@@ -14,14 +14,27 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.data.report.model
+package org.smartregister.fhircore.engine.util.extension
 
-import androidx.compose.runtime.Stable
+import io.mockk.every
+import io.mockk.mockkStatic
+import io.mockk.verify
+import java.io.File
+import org.junit.Assert.assertEquals
+import org.junit.Test
 
-@Stable
-data class ReportItem(
-  val id: String = "",
-  val title: String = "",
-  val description: String = "",
-  val reportType: String = "",
-)
+class FileExtensionTest {
+
+  @Test
+  fun testFileShouldReturnBase64Encoded() {
+    mockkStatic(File::encodeToBase64)
+
+    val filePath = javaClass.getResource("/sample/file.txt").path
+    every { File(filePath).encodeToBase64() } returns "Zmls"
+
+    val base64 = File(filePath).encodeToBase64()
+    assertEquals("Zmls", base64)
+
+    verify { File(filePath).encodeToBase64() }
+  }
+}

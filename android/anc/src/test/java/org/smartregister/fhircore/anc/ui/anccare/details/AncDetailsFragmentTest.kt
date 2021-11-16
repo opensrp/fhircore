@@ -23,21 +23,15 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
-import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every
-import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.android.synthetic.main.fragment_anc_details.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
-import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -522,5 +516,22 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
     every { patientDetailsFragment.handleParametersQCLMeasure(any()) } returns Unit
     patientDetailsFragment.parametersCQLMeasureToggleFinalView()
     Assert.assertEquals(true, patientDetailsFragment.button_CQLEvaluate.isEnabled)
+
+  fun testThatDemographicViewsAreUpdated() {
+
+    val item =
+      PatientDetailItem(
+        PatientItem(patientIdentifier = "1", name = "demo", gender = "M", age = "20"),
+        PatientItem(demographics = "2")
+      )
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientDetailsFragment,
+      "handlePatientDemographics",
+      ReflectionHelpers.ClassParameter(PatientDetailItem::class.java, item)
+    )
+
+    Assert.assertEquals("demo, M, 20", patientDetailsFragment.binding.txtViewPatientDetails.text)
+    Assert.assertEquals("2 ID: 1", patientDetailsFragment.binding.txtViewPatientId.text)
   }
 }

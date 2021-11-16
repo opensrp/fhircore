@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.data.report.model
+package org.smartregister.fhircore.engine.util.extension
 
-import androidx.compose.runtime.Stable
+import android.util.Base64
+import android.util.Base64OutputStream
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileInputStream
 
-@Stable
-data class ReportItem(
-  val id: String = "",
-  val title: String = "",
-  val description: String = "",
-  val reportType: String = "",
-)
+fun File.encodeToBase64(): String {
+  return ByteArrayOutputStream()
+    .use { byteStream ->
+      Base64OutputStream(byteStream, Base64.DEFAULT).use { base64Stream ->
+        FileInputStream(this).copyTo(base64Stream)
+      }
+    }
+    .toString()
+}
