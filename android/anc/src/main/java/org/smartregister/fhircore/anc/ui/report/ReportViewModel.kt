@@ -17,12 +17,6 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import androidx.lifecycle.LiveData
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.core.util.Pair
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -30,9 +24,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import ca.uhn.fhir.parser.IParser
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.data.report.ReportRepository
@@ -47,43 +38,9 @@ class ReportViewModel(
 ) : ViewModel() {
 
   val backPress: MutableLiveData<Boolean> = MutableLiveData(false)
-  val showDatePicker: MutableLiveData<Boolean> = MutableLiveData(false)
-  val selectedMeasureReportItem: MutableLiveData<ReportItem> = MutableLiveData(null)
-  val simpleDateFormatPattern = "d MMM, yyyy"
-
-  private val _startDate = MutableLiveData("start date")
-  val startDate: LiveData<String>
-    get() = _startDate
-
-  private val _endDate = MutableLiveData("end date")
-  val endDate: LiveData<String>
-    get() = _endDate
-
-  private val _patientSelectionType = MutableLiveData("All")
-  val patientSelectionType: LiveData<String>
-    get() = _patientSelectionType
-
-  private val _isReadyToGenerateReport = MutableLiveData(true)
-  val isReadyToGenerateReport: LiveData<Boolean>
-    get() = _isReadyToGenerateReport
-
-  var reportState: ReportState = ReportState()
 
   fun getReportsTypeList(): Flow<PagingData<ReportItem>> {
     return Pager(PagingConfig(pageSize = PaginationUtil.DEFAULT_PAGE_SIZE)) { repository }.flow
-  }
-
-  fun onReportMeasureItemClicked(item: ReportItem) {
-    selectedMeasureReportItem.value = item
-    reportState.currentScreen = ReportScreen.FILTER
-  }
-
-  fun getSelectedReport(): ReportItem? {
-    return selectedMeasureReportItem.value
-  }
-
-  fun getPatientSelectionType(): String? {
-    return patientSelectionType.value
   }
 
   fun onBackPress() {
@@ -100,53 +57,6 @@ class ReportViewModel(
       val auxCQLLibraryData =
         parser.encodeResourceToString(fhirResourceDataSource.loadData(libraryURL).entry[0].resource)
       libraryData.postValue(auxCQLLibraryData)
-  fun onBackPressFromFilter() {
-    reportState.currentScreen = ReportScreen.HOME
-  }
-
-  fun onBackPressFromResult() {
-    reportState.currentScreen = ReportScreen.FILTER
-  }
-
-  fun onDateRangePress() {
-    showDatePicker.value = true
-  }
-
-  fun onPatientSelectionTypeChanged(newType: String) {
-    _patientSelectionType.value = newType
-  }
-
-  fun onGenerateReportPress() {
-    reportState.currentScreen = ReportScreen.RESULT
-  }
-
-  fun onDateSelected(selection: Pair<Long, Long>?) {
-    showDatePicker.value = false
-    if (selection == null) {
-      _isReadyToGenerateReport.value = false
-      return
-    }
-    val startDate = Date().apply { time = selection.first }
-    val endDate = Date().apply { time = selection.second }
-    val formattedStartDate =
-      SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(startDate)
-    val formattedEndDate =
-      SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(endDate)
-
-    _startDate.value = formattedStartDate
-    _endDate.value = formattedEndDate
-    _isReadyToGenerateReport.value = true
-    reportState.currentScreen = ReportScreen.FILTER
-  }
-
-  companion object {
-    fun get(
-      owner: ViewModelStoreOwner,
-      application: AncApplication,
-      repository: ReportRepository
-    ): ReportViewModel {
-      return ViewModelProvider(owner, ReportViewModel(application, repository).createFactory())[
-        ReportViewModel::class.java]
     }
     return libraryData
   }
@@ -207,15 +117,15 @@ class ReportViewModel(
     val libList = libStrAfterEquals.split(",").map { it.trim() }
 
     val libURLStrBeforeEquals = libAndValueSetURL.substring(0, equalsIndexUrl) + "="
-    val fullResourceString = StringBuilder(cqlMeasureReportLibInitialString)
+    val initialStr = StringBuilder(cqlMeasureReportLibInitialString)
 
     viewModelScope.launch(dispatcher.io()) {
       val measureObject =
         parser.encodeResourceToString(fhirResourceDataSource.loadData(measureURL).entry[0].resource)
 
-      fullResourceString.append("{\"resource\":")
-      fullResourceString.append(measureObject)
-      fullResourceString.append("}")
+      initialStr.append("{\"resource\":")
+      initialStr.append(measureObject)
+      initialStr.append("}")
 
       var auxCQLValueSetData: String
       for (lib in libList) {
@@ -224,31 +134,15 @@ class ReportViewModel(
             fhirResourceDataSource.loadData(libURLStrBeforeEquals + lib).entry[0].resource
           )
 
-        fullResourceString.append(",")
-        fullResourceString.append("{\"resource\":")
-        fullResourceString.append(auxCQLValueSetData)
-        fullResourceString.append("}")
+        initialStr.append(",")
+        initialStr.append("{\"resource\":")
+        initialStr.append(auxCQLValueSetData)
+        initialStr.append("}")
       }
-      fullResourceString.deleteCharAt(fullResourceString.length - 1)
-      fullResourceString.append("}]}")
-      valueSetData.postValue(fullResourceString.toString())
+      initialStr.deleteCharAt(initialStr.length - 1)
+      initialStr.append("}]}")
+      valueSetData.postValue(initialStr.toString())
     }
     return valueSetData
-  }
-
-  class ReportState {
-    var currentScreen by mutableStateOf(ReportScreen.HOME)
-  }
-
-  enum class ReportScreen {
-    HOME,
-    FILTER,
-    PICK_PATIENT,
-    RESULT
-  }
-
-  object PatientSelectionType {
-    const val ALL = "All"
-    const val INDIVIDUAL = "Individual"
   }
 }

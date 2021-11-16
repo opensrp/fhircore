@@ -35,8 +35,6 @@ import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.anc.data.report.model.ReportItem
-import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 @ExperimentalCoroutinesApi
 internal class ReportViewModelTest {
@@ -52,9 +50,6 @@ internal class ReportViewModelTest {
 
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
-  private lateinit var repository: ReportRepository
-  private lateinit var viewModel: ReportViewModel
-  private val testReportItem = ReportItem(title = "TestReportItem")
 
   @Before
   fun setUp() {
@@ -144,58 +139,5 @@ internal class ReportViewModelTest {
         )
         .value!!
     Assert.assertNotNull(libraryDataLiveData)
-  }
-
-  @Test
-  fun testShouldVerifyDatePickerPressListener() {
-    viewModel.onDateRangePress()
-    Assert.assertEquals(true, viewModel.showDatePicker.value)
-  }
-
-  @Test
-  fun testShouldVerifyBackFromFilterClickListener() {
-    viewModel.onBackPressFromFilter()
-    Assert.assertEquals(ReportViewModel.ReportScreen.HOME, viewModel.reportState.currentScreen)
-  }
-
-  @Test
-  fun testShouldVerifyBackFromResultClickListener() {
-    viewModel.onBackPressFromResult()
-    Assert.assertEquals(ReportViewModel.ReportScreen.FILTER, viewModel.reportState.currentScreen)
-  }
-
-  @Test
-  fun testShouldVerifyReportItemClickListener() {
-    val expectedReportItem = testReportItem
-    viewModel.onReportMeasureItemClicked(testReportItem)
-    Assert.assertEquals(expectedReportItem, viewModel.getSelectedReport())
-    Assert.assertEquals(ReportViewModel.ReportScreen.FILTER, viewModel.reportState.currentScreen)
-  }
-
-  @Test
-  fun testShouldVerifyPatientSelectionChanged() {
-    val expectedSelection = ReportViewModel.PatientSelectionType.ALL
-    viewModel.onPatientSelectionTypeChanged("All")
-    Assert.assertEquals(expectedSelection, viewModel.patientSelectionType.value)
-  }
-
-  @Test
-  fun testShouldVerifyGenerateReportClickListener() {
-    viewModel.onGenerateReportPress()
-    Assert.assertEquals(ReportViewModel.ReportScreen.RESULT, viewModel.reportState.currentScreen)
-  }
-
-  @Test
-  fun testShouldVerifyDateRangeSelected() {
-    //  2021-11-11 16:04:43.212 E/aw: onDatePicked-> start=1637798400000 end=1639094400000
-    //  25 Nov, 2021  -  10 Dec, 2021
-    val expectedStartDate = "25 Nov, 2021"
-    val expectedEndDate = "10 Dec, 2021"
-    val dateSelection = androidx.core.util.Pair(1637798400000, 1639094400000)
-    viewModel.onDateSelected(dateSelection)
-    Assert.assertEquals(expectedStartDate, viewModel.startDate.value)
-    Assert.assertEquals(expectedEndDate, viewModel.endDate.value)
-    Assert.assertEquals(true, viewModel.isReadyToGenerateReport.value)
-    Assert.assertEquals(ReportViewModel.ReportScreen.FILTER, viewModel.reportState.currentScreen)
   }
 }

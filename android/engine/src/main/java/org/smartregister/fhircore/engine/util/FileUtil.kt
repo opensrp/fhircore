@@ -25,6 +25,7 @@ import java.io.FileWriter
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.lang.Exception
 import java.util.ArrayList
 import java.util.Properties
 
@@ -100,26 +101,32 @@ class FileUtil {
     if (!dir.exists()) {
       dir.mkdir()
     }
-    val file = File(dir, fileName)
-    FileWriter(file).use {
-      it.append(body)
-      it.flush()
-      it.close()
+    try {
+      val file = File(dir, fileName)
+      val writer = FileWriter(file)
+      writer.append(body)
+      writer.flush()
+      writer.close()
+    } catch (e: Exception) {
+      e.printStackTrace()
     }
   }
 
   fun readFileFromInternalStorage(context: Context, fileName: String?, dirName: String): String {
     val dir = File(context.getFilesDir(), dirName)
     val sb = java.lang.StringBuilder()
-    val file = File(dir, fileName)
-    val fis = FileInputStream(file)
-    val isr = InputStreamReader(fis)
-    BufferedReader(isr).use {
+    try {
+      val file = File(dir, fileName)
+      val fis = FileInputStream(file)
+      val isr = InputStreamReader(fis)
+      val bufferedReader = BufferedReader(isr)
       var line: String?
-      while (it.readLine().also { it1 -> line = it1 } != null) {
+      while (bufferedReader.readLine().also { line = it } != null) {
         sb.append(line)
       }
       fis.close()
+    } catch (e: Exception) {
+      e.printStackTrace()
     }
     return sb.toString()
   }

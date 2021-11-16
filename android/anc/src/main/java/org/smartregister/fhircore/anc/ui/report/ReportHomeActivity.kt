@@ -28,6 +28,8 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
@@ -43,20 +45,12 @@ import java.io.InputStream
 import java.util.concurrent.Executors
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.core.util.Pair
-import com.google.android.material.datepicker.MaterialDatePicker
-import java.util.Calendar
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.cql.MeasureEvaluator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.anc.ui.report.ReportViewModel.ReportScreen
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -127,9 +121,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     val dispatcher: DispatcherProvider = DefaultDispatcherProvider
     reportViewModel = ReportViewModel(repository, dispatcher)
     reportViewModel.backPress.observe(
-    val repository = ReportRepository((application as AncApplication).fhirEngine, patientId, this)
-    val viewModel = ReportViewModel.get(this, application as AncApplication, repository)
-    viewModel.backPress.observe(
       this,
       {
         if (it) {
@@ -175,6 +166,8 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       AppTheme {
         Surface(color = colorResource(id = R.color.white)) {
           Column {
+            val circularProgressBarVisible = remember { mutableStateOf(value = true) }
+
             TopAppBar(
               title = {
                 Text(text = stringResource(id = R.string.reports), Modifier.testTag(TOOLBAR_TITLE))
@@ -186,8 +179,14 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
                 ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
               }
             )
-            loadCQLLibraryData()
-            loadMeasureEvaluateLibrary()
+            if (circularProgressBarVisible.value) {
+              CircularProgressBarDemo()
+            }
+            executor.execute {
+              loadCQLLibraryData()
+              loadMeasureEvaluateLibrary()
+              handler.post { circularProgressBarVisible.value = false }
+            }
             ReportHomeScreen(reportViewModel)
           }
         }
@@ -357,38 +356,5 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
 
   fun handleCQLMeasureLoadPatient(auxPatientData: String) {
     patientDetailsData = auxPatientData
-    viewModel.showDatePicker.observe(
-      this,
-      {
-        if (it) {
-          showDateRangePicker(viewModel::onDateSelected)
-        }
-      }
-    )
-
-    setContent {
-      val reportState = remember { viewModel.reportState }
-      AppTheme { ReportView(viewModel) }
-    }
-  }
-
-  @Composable
-  fun ReportView(viewModel: ReportViewModel) {
-    // Choose which screen to show based on the value in the ReportScreen from ReportState
-    when (viewModel.reportState.currentScreen) {
-      ReportScreen.HOME -> ReportHomeScreen(viewModel)
-      ReportScreen.FILTER -> ReportFilterScreen(viewModel)
-      ReportScreen.PICK_PATIENT -> ReportFilterScreen(viewModel)
-      ReportScreen.RESULT -> ReportResultScreen(viewModel)
-    }
-  }
-
-  private fun showDateRangePicker(onDateSelected: (Pair<Long, Long>?) -> Unit) {
-    val builder = MaterialDatePicker.Builder.dateRangePicker()
-    val now = Calendar.getInstance()
-    builder.setSelection(Pair(now.timeInMillis, now.timeInMillis))
-    val dateRangePicker = builder.build()
-    dateRangePicker.show(supportFragmentManager, dateRangePicker.toString())
-    dateRangePicker.addOnPositiveButtonClickListener { onDateSelected(dateRangePicker.selection) }
   }
 }
