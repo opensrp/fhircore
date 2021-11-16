@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
 - Quest | Add the ability to search for patients by id
 - Quest | Add ability to view previous QuestionnaireResponse
+- Quest | Added workflow configurations
+- EIR | Added workflow configurations
 
 ### Fixed
 -

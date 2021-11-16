@@ -18,10 +18,9 @@ package org.smartregister.fhircore.eir.ui.login
 
 import android.content.Intent
 import android.os.Bundle
-import org.smartregister.fhircore.eir.BuildConfig
-import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.ui.patient.register.PatientRegisterActivity
-import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
+import org.smartregister.fhircore.eir.util.EirConfigClassification
+import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
 
 class LoginActivity : BaseLoginActivity() {
@@ -35,13 +34,13 @@ class LoginActivity : BaseLoginActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    configureViews(
-      loginViewConfigurationOf(
-        applicationName = getString(R.string.covax_app),
-        applicationVersion = BuildConfig.VERSION_NAME,
-        applicationVersionCode = BuildConfig.VERSION_CODE,
-        darkMode = false
-      )
-    )
+    val loginViewConfiguration =
+      configurableApplication()
+        .configurationRegistry
+        .retrieveConfiguration<LoginViewConfiguration>(
+          context = this,
+          configClassification = EirConfigClassification.LOGIN,
+        )
+    configureViews(loginViewConfiguration)
   }
 }

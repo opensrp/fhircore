@@ -65,6 +65,14 @@ object SyncBroadcaster {
     syncListeners.add(WeakReference(onSyncListener))
   }
 
+  fun unRegisterSyncInitiator() {
+    this.syncInitiator = null
+  }
+
+  fun unRegisterSyncListener(onSyncListener: OnSyncListener) {
+    syncListeners.remove(WeakReference(onSyncListener))
+  }
+
   fun broadcastSync(state: State) {
     syncListeners.forEach { it.get()?.onSync(state = state) }
   }
