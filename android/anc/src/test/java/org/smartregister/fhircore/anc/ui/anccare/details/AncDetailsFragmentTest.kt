@@ -47,6 +47,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.model.AncOverviewItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.PatientItem
@@ -162,6 +163,30 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
     Assert.assertEquals(View.VISIBLE, immunizationsListView?.visibility)
 
     verify(exactly = 1) { carePlanAdapter.submitList(any()) }
+  }
+
+  @Test
+  fun testHandleObservation() {
+    val ancOverviewItem = AncOverviewItem("12-03-2022", "23", "1", "none")
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientDetailsFragment,
+      "handleObservation",
+      ReflectionHelpers.ClassParameter(AncOverviewItem::class.java, ancOverviewItem)
+    )
+
+    val txtViewEDDDoseDate =
+      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_EDDDoseDate)
+    val txtViewGAPeriod = patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_GAPeriod)
+    val txtViewFetusesCount =
+      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_FetusesCount)
+    val txtViewRiskValue =
+      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_RiskValue)
+
+    Assert.assertEquals(ancOverviewItem.edd, txtViewEDDDoseDate!!.text.toString())
+    Assert.assertEquals(ancOverviewItem.ga, txtViewGAPeriod!!.text.toString())
+    Assert.assertEquals(ancOverviewItem.noOfFetuses, txtViewFetusesCount!!.text.toString())
+    Assert.assertEquals(ancOverviewItem.risk, txtViewRiskValue!!.text.toString())
   }
 
   @Test
