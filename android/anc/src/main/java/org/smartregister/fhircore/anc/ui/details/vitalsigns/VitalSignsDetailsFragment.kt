@@ -84,7 +84,7 @@ class VitalSignsDetailsFragment : Fragment() {
 
     ancDetailsViewModel.fetchEncounters().observe(viewLifecycleOwner, this::handleEncounters)
 
-    binding.swipeContainer.setOnRefreshListener { // Your code to refresh the list here.
+    binding.swipeContainer.setOnRefreshListener {
       ancDetailsViewModel.fetchEncounters().observe(viewLifecycleOwner, this::handleEncounters)
     }
 
