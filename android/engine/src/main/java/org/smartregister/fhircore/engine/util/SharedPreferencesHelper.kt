@@ -25,7 +25,7 @@ object SharedPreferencesHelper {
 
   const val LANG = "shared_pref_lang"
   const val THEME = "shared_pref_theme"
-  private const val PREFS_NAME = "params"
+  const val PREFS_NAME = "params"
 
   fun init(context: Context): SharedPreferencesHelper {
     prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

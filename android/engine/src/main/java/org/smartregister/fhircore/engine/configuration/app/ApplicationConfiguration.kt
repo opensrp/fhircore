@@ -16,15 +16,13 @@
 
 package org.smartregister.fhircore.engine.configuration.app
 
-import android.content.Context
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.util.extension.decodeJson
-import org.smartregister.fhircore.engine.util.extension.loadBinaryResourceConfiguration
+import org.smartregister.fhircore.engine.configuration.Configuration
 
 @Serializable
 data class ApplicationConfiguration(
-  var id: String = "",
+  override val appId: String = "",
+  override val classification: String,
   var theme: String = "",
   var oauthServerBaseUrl: String = "",
   var fhirServerBaseUrl: String = "",
@@ -33,7 +31,7 @@ data class ApplicationConfiguration(
   var scope: String = "openid",
   var languages: List<String> = listOf("en"),
   var syncInterval: Long = 30
-)
+) : Configuration
 
 /**
  * A function providing a DSL for configuring [ApplicationConfiguration] used in a FHIR application
@@ -50,7 +48,8 @@ data class ApplicationConfiguration(
  * @param syncInterval Sets the periodic sync interval in seconds. Default 30.
  */
 fun applicationConfigurationOf(
-  id: String = "",
+  appId: String = "",
+  classification: String = "",
   theme: String = "",
   oauthServerBaseUrl: String = "",
   fhirServerBaseUrl: String = "",
@@ -61,7 +60,8 @@ fun applicationConfigurationOf(
   syncInterval: Long = 30
 ): ApplicationConfiguration =
   ApplicationConfiguration(
-    id = id,
+    appId = appId,
+    classification = classification,
     theme = theme,
     oauthServerBaseUrl = oauthServerBaseUrl,
     fhirServerBaseUrl = fhirServerBaseUrl,
@@ -71,15 +71,3 @@ fun applicationConfigurationOf(
     languages = languages,
     syncInterval = syncInterval
   )
-
-private const val APPLICATION_CONFIG_FILE = "application_config.json"
-
-fun Context.loadApplicationConfiguration(id: String): ApplicationConfiguration {
-  return runBlocking { loadBinaryResourceConfiguration(id) }
-    ?: assets
-      .open(APPLICATION_CONFIG_FILE)
-      .bufferedReader()
-      .use { it.readText() }
-      .decodeJson<List<ApplicationConfiguration>>()
-      .first { it.id == id }
-}

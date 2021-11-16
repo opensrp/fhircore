@@ -105,7 +105,12 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     runBlocking { fhirEngine.save(Questionnaire().apply { id = "1832" }) }
 
     familyQuestionnaireActivity.questionnaireConfig =
-      QuestionnaireConfig(FamilyFormConstants.FAMILY_REGISTER_FORM, "Add Family", "1832")
+      QuestionnaireConfig(
+        appId = "appId",
+        form = FamilyFormConstants.FAMILY_REGISTER_FORM,
+        title = "Add Family",
+        identifier = "1832"
+      )
 
     familyQuestionnaireActivity.familyRepository = familyRepository
 
@@ -147,9 +152,10 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
 
     familyQuestionnaireActivity.questionnaireConfig =
       QuestionnaireConfig(
-        FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM,
-        "Add Family Member",
-        "1832"
+        appId = "appId",
+        form = FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM,
+        title = "Add Family Member",
+        identifier = "1832"
       )
 
     familyQuestionnaireActivity.familyRepository = familyRepository
@@ -202,7 +208,12 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     runBlocking { fhirEngine.save(Questionnaire().apply { id = "1832" }) }
 
     familyQuestionnaireActivity.questionnaireConfig =
-      QuestionnaireConfig(FamilyFormConstants.ANC_ENROLLMENT_FORM, "Enroll into ANC", "1832")
+      QuestionnaireConfig(
+        appId = "appId",
+        form = FamilyFormConstants.ANC_ENROLLMENT_FORM,
+        title = "Enroll into ANC",
+        identifier = "1832"
+      )
 
     familyQuestionnaireActivity.familyRepository = familyRepository
     familyQuestionnaireActivity.intent.putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, "123456")
