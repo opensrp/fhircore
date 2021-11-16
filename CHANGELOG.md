@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EIR | Added workflow configurations
 - ANC | Report Measures List Items, Filter Selection
 - Quest | Add photo capture questionnaire widget
+- Quest | Add ability to edit questionnaire responses
 
 ### Fixed
 -
