@@ -26,10 +26,13 @@ import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.mockkObject
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import org.hl7.fhir.instance.model.api.IBaseBundle
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -52,20 +55,19 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
   @MockK lateinit var parser: IParser
   @MockK lateinit var fhirResourceDataSource: FhirResourceDataSource
-  var fileUtil = FileUtil()
-  var libraryData = fileUtil.readJsonFile("test/resources/cql/library.json")
-  var valueSetData = fileUtil.readJsonFile("test/resources/cql/valueSet.json")
+  var libraryData = FileUtil.readJsonFile("test/resources/cql/library.json")
+  var valueSetData = FileUtil.readJsonFile("test/resources/cql/valueSet.json")
   val valueSetDataStream: InputStream = ByteArrayInputStream(valueSetData.toByteArray())
-  var patientData = fileUtil.readJsonFile("test/resources/cql/patient.json")
+  var patientData = FileUtil.readJsonFile("test/resources/cql/patient.json")
   val patientDataStream: InputStream = ByteArrayInputStream(patientData.toByteArray())
-  var helperData = fileUtil.readJsonFile("test/resources/cql/helper.json")
+  var helperData = FileUtil.readJsonFile("test/resources/cql/helper.json")
   val parameters = "{\"parameters\":\"parameters\"}"
   @MockK lateinit var reportViewModel: ReportViewModel
 
   @Before
   fun setUp() {
     MockKAnnotations.init(this, relaxUnitFun = true)
-
+    mockkObject(FileUtil)
     reportHomeActivity = Robolectric.buildActivity(ReportHomeActivity::class.java).create().get()
     reportHomeActivitySpy = spyk(objToCopy = reportHomeActivity)
     reportHomeActivitySpy.libraryResources = ArrayList()
@@ -100,9 +102,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   fun testHandleCQLLibraryData() {
     val auxLibraryData = "auxLibraryData"
     every { reportHomeActivitySpy.loadCQLHelperData() } returns Unit
-    every {
-      reportHomeActivitySpy.fileUtil.writeFileOnInternalStorage(any(), any(), any(), any())
-    } returns Unit
+    every { FileUtil.writeFileOnInternalStorage(any(), any(), any(), any()) } returns Unit
     reportHomeActivitySpy.handleCQLLibraryData(auxLibraryData)
     Assert.assertEquals(auxLibraryData, reportHomeActivitySpy.libraryData)
   }
@@ -112,9 +112,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
     val auxHelperData = "auxHelperData"
     every { reportHomeActivitySpy.loadCQLValueSetData() } returns Unit
     every { reportHomeActivitySpy.loadCQLLibrarySources() } returns Unit
-    every {
-      reportHomeActivitySpy.fileUtil.writeFileOnInternalStorage(any(), any(), any(), any())
-    } returns Unit
+    every { FileUtil.writeFileOnInternalStorage(any(), any(), any(), any()) } returns Unit
 
     reportHomeActivitySpy.handleCQLHelperData("auxHelperData")
     Assert.assertEquals(auxHelperData, reportHomeActivitySpy.helperData)
@@ -135,9 +133,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   @Test
   fun testHandleCQLValueSetData() {
     val auxValueSetData = "auxValueSetData"
-    every {
-      reportHomeActivitySpy.fileUtil.writeFileOnInternalStorage(any(), any(), any(), any())
-    } returns Unit
+    every { FileUtil.writeFileOnInternalStorage(any(), any(), any(), any()) } returns Unit
     every { reportHomeActivitySpy.postValueSetData(any()) } returns Unit
     reportHomeActivitySpy.handleCQLValueSetData(auxValueSetData)
     Assert.assertEquals(auxValueSetData, reportHomeActivitySpy.valueSetData)
@@ -186,9 +182,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
 
     every { reportHomeActivitySpy.dir.exists() } returns true
     every { reportHomeActivitySpy.loadCQLHelperData() } returns Unit
-    every {
-      reportHomeActivitySpy.fileUtil.readFileFromInternalStorage(any(), any(), any())
-    } returns ""
+    every { FileUtil.readFileFromInternalStorage(any(), any(), any()) } returns ""
 
     reportHomeActivitySpy.loadCQLLibraryData()
 
@@ -208,9 +202,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   @Test
   fun testLoadMeasureEvaluateLibrary() {
     every { reportHomeActivitySpy.dir.exists() } returns true
-    every {
-      reportHomeActivitySpy.fileUtil.readFileFromInternalStorage(any(), any(), any())
-    } returns valueSetData
+    every { FileUtil.readFileFromInternalStorage(any(), any(), any()) } returns valueSetData
     reportHomeActivitySpy.loadMeasureEvaluateLibrary()
     Assert.assertNotNull(reportHomeActivitySpy.libraryMeasure)
 
@@ -239,9 +231,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
     every { reportHomeActivitySpy.dir.exists() } returns true
     every { reportHomeActivitySpy.loadCQLLibrarySources() } returns Unit
     every { reportHomeActivitySpy.loadCQLValueSetData() } returns Unit
-    every {
-      reportHomeActivitySpy.fileUtil.readFileFromInternalStorage(any(), any(), any())
-    } returns ""
+    every { FileUtil.readFileFromInternalStorage(any(), any(), any()) } returns ""
 
     reportHomeActivitySpy.loadCQLHelperData()
 
@@ -264,9 +254,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
 
     every { reportHomeActivitySpy.dir.exists() } returns true
     every { reportHomeActivitySpy.postValueSetData(any()) } returns Unit
-    every {
-      reportHomeActivitySpy.fileUtil.readFileFromInternalStorage(any(), any(), any())
-    } returns valueSetData
+    every { FileUtil.readFileFromInternalStorage(any(), any(), any()) } returns valueSetData
     reportHomeActivitySpy.loadCQLValueSetData()
 
     every { reportHomeActivitySpy.dir.exists() } returns false
@@ -297,10 +285,13 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   @Test
   fun testHandleMeasureEvaluateLibrary() {
     every { reportHomeActivitySpy.dir.exists() } returns true
-    every {
-      reportHomeActivitySpy.fileUtil.writeFileOnInternalStorage(any(), any(), any(), any())
-    } returns Unit
+    every { FileUtil.writeFileOnInternalStorage(any(), any(), any(), any()) } returns Unit
     reportHomeActivitySpy.handleMeasureEvaluateLibrary(valueSetData)
     Assert.assertNotNull(reportHomeActivitySpy.libraryMeasure)
+  }
+
+  @After
+  fun tearDown() {
+    unmockkObject(FileUtil)
   }
 }
