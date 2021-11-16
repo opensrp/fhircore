@@ -516,7 +516,9 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
     every { patientDetailsFragment.handleParametersQCLMeasure(any()) } returns Unit
     patientDetailsFragment.parametersCQLMeasureToggleFinalView()
     Assert.assertEquals(true, patientDetailsFragment.button_CQLEvaluate.isEnabled)
+  }
 
+  @Test
   fun testThatDemographicViewsAreUpdated() {
 
     val item =
