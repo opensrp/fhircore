@@ -186,6 +186,10 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
 
     every { reportHomeActivitySpy.dir.exists() } returns true
     every { reportHomeActivitySpy.loadCQLHelperData() } returns Unit
+    every {
+      reportHomeActivitySpy.fileUtil.readFileFromInternalStorage(any(), any(), any())
+    } returns ""
+
     reportHomeActivitySpy.loadCQLLibraryData()
 
     every { reportHomeActivitySpy.dir.exists() } returns false
@@ -235,6 +239,9 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
     every { reportHomeActivitySpy.dir.exists() } returns true
     every { reportHomeActivitySpy.loadCQLLibrarySources() } returns Unit
     every { reportHomeActivitySpy.loadCQLValueSetData() } returns Unit
+    every {
+      reportHomeActivitySpy.fileUtil.readFileFromInternalStorage(any(), any(), any())
+    } returns ""
 
     reportHomeActivitySpy.loadCQLHelperData()
 
