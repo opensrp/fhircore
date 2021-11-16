@@ -17,6 +17,10 @@
 package org.smartregister.fhircore.anc.ui.family
 
 import androidx.fragment.app.commitNow
+import com.google.android.fhir.sync.Sync
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.BeforeClass
@@ -45,11 +49,16 @@ class FamilyRegisterFragmentTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-
+    mockkObject(Sync)
     val registerActivity =
       Robolectric.buildActivity(FamilyRegisterActivity::class.java).create().resume().get()
     registerFragment = FamilyRegisterFragment()
     registerActivity.supportFragmentManager.commitNow { add(registerFragment, "") }
+  }
+
+  @After
+  fun cleanup() {
+    unmockkObject(Sync)
   }
 
   @Test
