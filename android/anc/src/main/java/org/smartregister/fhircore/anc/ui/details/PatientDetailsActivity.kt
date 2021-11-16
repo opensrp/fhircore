@@ -164,7 +164,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
           .joinToString(separator = " ID: ")
       activityAncDetailsBinding.txtViewPatientDetails.text = patientDetails
       activityAncDetailsBinding.txtViewPatientId.text = patientId
-      isMale = this.patientDetails.gender == "Male"
+      isMale = this.patientDetails.gender == getString(R.string.male)
       isPregnant = this.patientDetails.isPregnant
 
       if (isMale) {
