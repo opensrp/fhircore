@@ -33,8 +33,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Expression
-import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -48,15 +46,16 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplicati
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FormConfigUtil
+import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
+import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
-open class QuestionnaireViewModel(
-  application: Application,
-  private val readOnly: Boolean = false,
-) : AndroidViewModel(application) {
+open class QuestionnaireViewModel(application: Application) : AndroidViewModel(application) {
 
   val extractionProgress = MutableLiveData<Boolean>()
+  var editQuestionnaireResponse: QuestionnaireResponse? = null
 
   val defaultRepository: DefaultRepository =
     DefaultRepository(
@@ -65,10 +64,14 @@ open class QuestionnaireViewModel(
 
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
-  suspend fun loadQuestionnaire(id: String): Questionnaire? =
+  suspend fun loadQuestionnaire(
+    id: String,
+    readOnly: Boolean = false,
+    editMode: Boolean = false
+  ): Questionnaire? =
     defaultRepository.loadResource<Questionnaire>(id)?.apply {
-      if (readOnly) {
-        changeQuestionsToReadOnly(this.item, "QuestionnaireResponse.item")
+      if (readOnly || editMode) {
+        item.prepareQuestionsForReadingOrEditing("QuestionnaireResponse.item", readOnly)
       }
     }
 
@@ -94,10 +97,10 @@ open class QuestionnaireViewModel(
     resourceId: String?,
     context: Context,
     questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
+    questionnaireResponse: QuestionnaireResponse,
+    editMode: Boolean = false
   ) {
     viewModelScope.launch {
-      saveQuestionnaireResponse(resourceId, questionnaire, questionnaireResponse)
 
       // if no structure-map and no extraction is configured return without further processing
       if (questionnaire.targetStructureMap != null ||
@@ -114,10 +117,27 @@ open class QuestionnaireViewModel(
               it.valueCodeableConcept.coding.forEach { bun.resource.meta.addTag(it) }
             }
           }
+
+          if (bun.resource != null) {
+            questionnaireResponse.contained.add(bun.resource)
+          }
         }
 
         saveBundleResources(bundle)
-      } else viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
+
+        if (editMode && editQuestionnaireResponse != null) {
+          questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
+        }
+        saveQuestionnaireResponse(resourceId, questionnaire, questionnaireResponse)
+
+        // Delete the previous resources
+        if (editMode && editQuestionnaireResponse != null) {
+          editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
+        }
+      } else {
+        saveQuestionnaireResponse(resourceId, questionnaire, questionnaireResponse)
+        viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
+      }
     }
   }
 
@@ -127,12 +147,8 @@ open class QuestionnaireViewModel(
     questionnaireResponse: QuestionnaireResponse
   ) {
     val subjectType = questionnaire.subjectType.firstOrNull()?.code ?: ResourceType.Patient.name
+
     if (resourceId?.isNotBlank() == true) {
-      questionnaireResponse.id = UUID.randomUUID().toString()
-      questionnaireResponse.authored = Date()
-      questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
-        it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
-      }
       // TODO revise this logic when syncing strategy has final decision
       // https://github.com/opensrp/fhircore/issues/726
       loadPatient(resourceId)?.meta?.tag?.forEach { questionnaireResponse.meta.addTag(it) }
@@ -140,7 +156,16 @@ open class QuestionnaireViewModel(
       questionnaireResponse.questionnaire =
         "${questionnaire.resourceType}/${questionnaire.logicalId}"
 
-      defaultRepository.save(questionnaireResponse)
+      if (questionnaireResponse.logicalId.isEmpty()) {
+        questionnaireResponse.id = UUID.randomUUID().toString()
+        questionnaireResponse.authored = Date()
+      }
+
+      questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
+        it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
+      }
+
+      defaultRepository.addOrUpdate(questionnaireResponse)
     }
   }
 
@@ -229,32 +254,5 @@ open class QuestionnaireViewModel(
     intent: Intent
   ): QuestionnaireResponse {
     return ResourceMapper.populate(questionnaire, *getPopulationResources(intent))
-  }
-
-  private fun changeQuestionsToReadOnly(
-    items: List<Questionnaire.QuestionnaireItemComponent>,
-    path: String
-  ) {
-    items.forEach { item ->
-      if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
-        item.readOnly = true
-        item.extension =
-          listOf(
-            Extension().apply {
-              url =
-                "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression"
-              setValue(
-                Expression().apply {
-                  language = "text/fhirpath"
-                  expression = "$path.where(linkId = '${item.linkId}').answer.value"
-                }
-              )
-            }
-          )
-        changeQuestionsToReadOnly(item.item, "$path.where(linkId = '${item.linkId}').answer.item")
-      } else {
-        changeQuestionsToReadOnly(item.item, "$path.where(linkId = '${item.linkId}').item")
-      }
-    }
   }
 }

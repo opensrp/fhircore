@@ -202,6 +202,35 @@
         }
       ],
       "enableBehavior": "any"
+    },
+    {
+      "linkId": "g6pd",
+      "text": "Photo of device",
+      "extension": [
+        {
+          "url": "http://doc-of-photo-capture",
+          "valueString": "photo-capture"
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "result_type",
+          "operator": "=",
+          "answerCoding": {
+            "system": "https://www.snomed.org",
+            "code": "410680006"
+          }
+        },
+        {
+          "question": "result_type",
+          "operator": "=",
+          "answerCoding": {
+            "system": "https://www.snomed.org",
+            "code": "385432009"
+          }
+        }
+      ],
+      "enableBehavior": "any"
     }
   ]
 }

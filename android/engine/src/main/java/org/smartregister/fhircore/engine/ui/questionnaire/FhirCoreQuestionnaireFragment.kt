@@ -17,20 +17,42 @@
 package org.smartregister.fhircore.engine.ui.questionnaire
 
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import com.google.android.fhir.datacapture.contrib.QuestionnaireItemBarCodeReaderViewHolderFactory
+import com.google.android.fhir.datacapture.views.QuestionnaireItemViewHolderFactory
 
 class FhirCoreQuestionnaireFragment : QuestionnaireFragment() {
 
   override fun getCustomQuestionnaireItemViewHolderFactoryMatchers():
     List<QuestionnaireItemViewHolderFactoryMatcher> {
     return listOf(
-      QuestionnaireItemViewHolderFactoryMatcher(QuestionnaireItemBarCodeReaderViewHolderFactory) {
-        questionnaireItem ->
-        questionnaireItem.getExtensionByUrl(
-            "https://fhir.labs.smartregister.org/barcode-type-widget-extension"
-          )
-          .let { if (it == null) false else it.value.toString() == "barcode" }
-      }
+      addQuestionnaireItemViewHolderFactoryMatcher(
+        QuestionnaireItemBarCodeReaderViewHolderFactory,
+        BARCODE_URL,
+        BARCODE_NAME
+      ),
+      addQuestionnaireItemViewHolderFactoryMatcher(
+        CustomPhotoCaptureFactory(this),
+        PHOTO_CAPTURE_NAME,
+        PHOTO_CAPTURE_URL
+      ),
     )
+  }
+
+  private fun addQuestionnaireItemViewHolderFactoryMatcher(
+    factory: QuestionnaireItemViewHolderFactory,
+    url: String,
+    name: String
+  ): QuestionnaireItemViewHolderFactoryMatcher {
+    return QuestionnaireItemViewHolderFactoryMatcher(factory) { questionnaireItem ->
+      questionnaireItem.getExtensionByUrl(url)?.let { it.value.asStringValue() == name } ?: false
+    }
+  }
+
+  companion object {
+    const val BARCODE_URL = "https://fhir.labs.smartregister.org/barcode-type-widget-extension"
+    const val BARCODE_NAME = "barcode"
+    const val PHOTO_CAPTURE_URL = "http://doc-of-photo-capture"
+    const val PHOTO_CAPTURE_NAME = "photo-capture"
   }
 }

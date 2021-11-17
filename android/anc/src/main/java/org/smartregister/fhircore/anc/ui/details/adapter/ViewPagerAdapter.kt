@@ -21,6 +21,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsFragment
 import org.smartregister.fhircore.anc.ui.details.careplan.CarePlanDetailsFragment
 import org.smartregister.fhircore.anc.ui.details.vitalsigns.VitalSignsDetailsFragment
 
@@ -29,6 +30,7 @@ private const val NUM_TABS = 2
 class ViewPagerAdapter(
   fragmentManager: FragmentManager,
   lifecycle: Lifecycle,
+  val isPregnant: Boolean,
   val bundleOf: Bundle
 ) : FragmentStateAdapter(fragmentManager, lifecycle) {
 
@@ -37,10 +39,18 @@ class ViewPagerAdapter(
   }
 
   override fun createFragment(position: Int): Fragment {
-    when (position) {
-      0 -> return CarePlanDetailsFragment.newInstance(bundleOf)
-      1 -> return VitalSignsDetailsFragment.newInstance(bundleOf)
+    if (isPregnant) {
+      when (position) {
+        0 -> return AncDetailsFragment.newInstance(bundleOf)
+        1 -> return VitalSignsDetailsFragment.newInstance(bundleOf)
+      }
+    } else {
+      when (position) {
+        0 -> return CarePlanDetailsFragment.newInstance(bundleOf)
+        1 -> return VitalSignsDetailsFragment.newInstance(bundleOf)
+      }
     }
-    return CarePlanDetailsFragment.newInstance(bundleOf)
+    return if (isPregnant) AncDetailsFragment.newInstance(bundleOf)
+    else CarePlanDetailsFragment.newInstance(bundleOf)
   }
 }

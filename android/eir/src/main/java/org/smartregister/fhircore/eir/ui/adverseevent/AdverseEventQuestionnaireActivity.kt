@@ -37,10 +37,7 @@ import timber.log.Timber
 
 class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
 
-  override fun createViewModel(
-    application: Application,
-    readOnly: Boolean
-  ): QuestionnaireViewModel {
+  override fun createViewModel(application: Application): QuestionnaireViewModel {
     return ViewModelProvider(
         this@AdverseEventQuestionnaireActivity,
         AdverseEventViewModel(
