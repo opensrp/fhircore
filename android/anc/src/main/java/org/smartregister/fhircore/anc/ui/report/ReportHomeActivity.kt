@@ -43,12 +43,20 @@ import java.io.InputStream
 import java.util.concurrent.Executors
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.core.util.Pair
+import com.google.android.material.datepicker.MaterialDatePicker
+import java.util.Calendar
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.cql.MeasureEvaluator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+//import org.smartregister.fhircore.anc.ui.report.ReportViewModel.ReportScreen
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -99,9 +107,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   lateinit var patientId: String
   lateinit var reportViewModel: ReportViewModel
 
-  val executor = Executors.newSingleThreadExecutor()
-  val handler = Handler(Looper.getMainLooper())
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     libraryEvaluator = LibraryEvaluator()
@@ -113,14 +118,24 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
 
     val patientId =
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-    val repository = ReportRepository((application as AncApplication).fhirEngine, patientId)
+    val repository = ReportRepository((application as AncApplication).fhirEngine, patientId,this)
     val dispatcher: DispatcherProvider = DefaultDispatcherProvider
     reportViewModel = ReportViewModel(repository, dispatcher)
+
     reportViewModel.backPress.observe(
       this,
       {
         if (it) {
           finish()
+        }
+      }
+    )
+
+    reportViewModel.showDatePicker.observe(
+      this,
+      {
+        if (it) {
+          showDateRangePicker(reportViewModel::onDateSelected)
         }
       }
     )
@@ -343,5 +358,25 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
 
   fun handleCQLMeasureLoadPatient(auxPatientData: String) {
     patientDetailsData = auxPatientData
+  }
+
+  @Composable
+  fun ReportView(viewModel: ReportViewModel) {
+    // Choose which screen to show based on the value in the ReportScreen from ReportState
+    when (viewModel.reportState.currentScreen) {
+      ReportViewModel.ReportScreen.HOME -> ReportHomeScreen(viewModel)
+      ReportViewModel.ReportScreen.FILTER -> ReportFilterScreen(viewModel)
+      ReportViewModel.ReportScreen.PICK_PATIENT -> ReportFilterScreen(viewModel)
+      ReportViewModel.ReportScreen.RESULT -> ReportResultScreen(viewModel)
+    }
+  }
+
+  private fun showDateRangePicker(onDateSelected: (Pair<Long, Long>?) -> Unit) {
+    val builder = MaterialDatePicker.Builder.dateRangePicker()
+    val now = Calendar.getInstance()
+    builder.setSelection(Pair(now.timeInMillis, now.timeInMillis))
+    val dateRangePicker = builder.build()
+    dateRangePicker.show(supportFragmentManager, dateRangePicker.toString())
+    dateRangePicker.addOnPositiveButtonClickListener { onDateSelected(dateRangePicker.selection) }
   }
 }

@@ -20,6 +20,7 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.mockk
 import io.mockk.spyk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
@@ -30,10 +31,10 @@ import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 
+@ExperimentalCoroutinesApi
 @Config(shadows = [AncApplicationShadow::class])
-class ReportHomeScreenTest : RobolectricTest() {
+class ReportHomeScreenTest {
 
-  private val app = ApplicationProvider.getApplicationContext<Application>()
   private lateinit var repository: ReportRepository
   private lateinit var viewModel: ReportViewModel
   @get:Rule var coroutinesTestRule = CoroutineTestRule()

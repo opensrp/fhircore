@@ -18,7 +18,6 @@ package org.smartregister.fhircore.anc.ui.report
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -31,7 +30,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +47,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemsIndexed
 import org.smartregister.fhircore.anc.R
@@ -60,18 +63,7 @@ fun ReportHomeScreen(viewModel: ReportViewModel) {
   val lazyReportItems = viewModel.getReportsTypeList().collectAsLazyPagingItems()
 
   LazyColumn(modifier = Modifier.background(Color.White).fillMaxSize()) {
-    itemsIndexed(lazyReportItems) { _, item -> ReportRow(item!!, { _, _ -> }) }
-
-    lazyReportItems.apply {
-      when {
-        loadState.refresh is LoadState.Loading -> {
-          item(key = "indicator_1") { LoadingItem() }
-        }
-        loadState.append is LoadState.Loading -> {
-          item(key = "indicator_2") { LoadingItem() }
-        }
-      }
-    }
+    itemsIndexed(lazyReportItems) { _, item -> ReportRow(item!!) }
   }
 }
 
@@ -136,11 +128,3 @@ fun ReportRowPreview() {
   ReportRow(reportItem = reportItem, { _, _ -> })
 }
 
-@Composable
-fun CircularProgressBarDemo() {
-  Column(
-    modifier = Modifier.fillMaxSize(),
-    verticalArrangement = Arrangement.Center,
-    horizontalAlignment = Alignment.CenterHorizontally
-  ) { CircularProgressIndicator() }
-}

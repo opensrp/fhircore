@@ -16,6 +16,10 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.core.util.Pair
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -31,6 +35,8 @@ import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import java.text.SimpleDateFormat
+import java.util.*
 
 class ReportViewModel(
   private val repository: ReportRepository,
@@ -60,6 +66,46 @@ class ReportViewModel(
     }
     return libraryData
   }
+
+  fun onBackPressFromFilter() {
+    reportState.currentScreen = ReportScreen.HOME
+  }
+
+  fun onBackPressFromResult() {
+    reportState.currentScreen = ReportScreen.FILTER
+  }
+
+  fun onDateRangePress() {
+    showDatePicker.value = true
+  }
+
+  fun onPatientSelectionTypeChanged(newType: String) {
+    _patientSelectionType.value = newType
+  }
+
+  fun onGenerateReportPress() {
+    reportState.currentScreen = ReportScreen.RESULT
+  }
+
+  fun onDateSelected(selection: Pair<Long, Long>?) {
+    showDatePicker.value = false
+    if (selection == null) {
+      _isReadyToGenerateReport.value = false
+      return
+    }
+    val startDate = Date().apply { time = selection.first }
+    val endDate = Date().apply { time = selection.second }
+    val formattedStartDate =
+      SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(startDate)
+    val formattedEndDate =
+      SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(endDate)
+
+    _startDate.value = formattedStartDate
+    _endDate.value = formattedEndDate
+    _isReadyToGenerateReport.value = true
+    reportState.currentScreen = ReportScreen.FILTER
+  }
+
 
   fun fetchCQLFhirHelperData(
     parser: IParser,

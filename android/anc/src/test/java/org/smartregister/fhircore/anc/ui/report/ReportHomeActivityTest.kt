@@ -29,6 +29,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.unmockkObject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import org.hl7.fhir.instance.model.api.IBaseBundle
@@ -45,6 +46,7 @@ import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.FileUtil
 
+@ExperimentalCoroutinesApi
 @Config(shadows = [AncApplicationShadow::class])
 class ReportHomeActivityTest : ActivityRobolectricTest() {
 
