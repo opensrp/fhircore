@@ -33,7 +33,6 @@ import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
-import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 @ExperimentalCoroutinesApi
 class ReportFilterPageTest {
@@ -50,7 +49,13 @@ class ReportFilterPageTest {
     fhirEngine = spyk()
     repository = spyk(ReportRepository(fhirEngine, "testPatientID", app.baseContext))
     viewModel =
-      spyk(objToCopy = ReportViewModel(ApplicationProvider.getApplicationContext(), coroutinesTestRule.testDispatcherProvider))
+      spyk(
+        objToCopy =
+          ReportViewModel(
+            ApplicationProvider.getApplicationContext(),
+            coroutinesTestRule.testDispatcherProvider
+          )
+      )
     every { viewModel.getSelectedReport() } returns ReportItem(title = "Test Report Title")
     // Ignore: it's failing after refactoring
     // every { viewModel.getPatientSelectionType() } returns PatientSelectionType.ALL

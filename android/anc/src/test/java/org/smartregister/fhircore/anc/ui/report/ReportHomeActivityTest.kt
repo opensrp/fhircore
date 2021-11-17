@@ -29,9 +29,9 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.unmockkObject
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import java.io.ByteArrayInputStream
 import java.io.InputStream
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.junit.After
 import org.junit.Assert

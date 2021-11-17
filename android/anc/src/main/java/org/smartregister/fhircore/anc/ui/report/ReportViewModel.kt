@@ -28,6 +28,9 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import ca.uhn.fhir.parser.IParser
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.data.report.ReportRepository
@@ -35,8 +38,6 @@ import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import java.text.SimpleDateFormat
-import java.util.*
 
 class ReportViewModel(
   private val repository: ReportRepository,
@@ -139,7 +140,6 @@ class ReportViewModel(
     _isReadyToGenerateReport.value = true
     reportState.currentScreen = ReportScreen.FILTER
   }
-
 
   fun fetchCQLFhirHelperData(
     parser: IParser,

@@ -34,7 +34,6 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
-import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 @ExperimentalCoroutinesApi
 class ReportResultPageTest {
@@ -51,7 +50,13 @@ class ReportResultPageTest {
     fhirEngine = spyk()
     repository = spyk(ReportRepository(fhirEngine, "testPatientID", app.baseContext))
     viewModel =
-      spyk(objToCopy = ReportViewModel(ApplicationProvider.getApplicationContext(), coroutinesTestRule.testDispatcherProvider))
+      spyk(
+        objToCopy =
+          ReportViewModel(
+            ApplicationProvider.getApplicationContext(),
+            coroutinesTestRule.testDispatcherProvider
+          )
+      )
     every { viewModel.getSelectedReport() } returns ReportItem(title = "Reports")
     composeRule.setContent { ReportResultScreen(viewModel = viewModel) }
   }

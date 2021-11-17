@@ -32,7 +32,6 @@ import org.junit.Test
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.report.ReportRepository
-import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 @ExperimentalCoroutinesApi
 class ReportHomePageTest {
@@ -49,7 +48,13 @@ class ReportHomePageTest {
     fhirEngine = spyk()
     repository = spyk(ReportRepository(fhirEngine, "testPatientID", app.baseContext))
     viewModel =
-      spyk(objToCopy = ReportViewModel(ApplicationProvider.getApplicationContext(), coroutinesTestRule.testDispatcherProvider))
+      spyk(
+        objToCopy =
+          ReportViewModel(
+            ApplicationProvider.getApplicationContext(),
+            coroutinesTestRule.testDispatcherProvider
+          )
+      )
     composeRule.setContent { ReportHomeScreen(viewModel = viewModel) }
   }
 

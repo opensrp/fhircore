@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Icon
@@ -28,35 +26,32 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.core.util.Pair
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.common.collect.Lists
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
-import java.util.concurrent.Executors
+import java.util.Calendar
+import kotlin.collections.ArrayList
+import kotlin.collections.List
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.core.util.Pair
-import com.google.android.material.datepicker.MaterialDatePicker
-import java.util.Calendar
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.cql.MeasureEvaluator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-//import org.smartregister.fhircore.anc.ui.report.ReportViewModel.ReportScreen
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -118,7 +113,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
 
     val patientId =
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-    val repository = ReportRepository((application as AncApplication).fhirEngine, patientId,this)
+    val repository = ReportRepository((application as AncApplication).fhirEngine, patientId, this)
     val dispatcher: DispatcherProvider = DefaultDispatcherProvider
     reportViewModel = ReportViewModel(repository, dispatcher)
 

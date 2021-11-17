@@ -149,4 +149,3 @@ fun ReportRowPreview() {
     ReportItem("fid", "4+ ANC Contacts ", "Pregnant women with at least four ANC Contacts", "4")
   ReportRow(reportItem = reportItem)
 }
-

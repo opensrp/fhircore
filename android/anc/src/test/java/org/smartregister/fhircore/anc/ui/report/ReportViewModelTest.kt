@@ -35,9 +35,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.report.ReportRepository
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
-import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 
 @ExperimentalCoroutinesApi
 internal class ReportViewModelTest {
@@ -155,13 +154,19 @@ internal class ReportViewModelTest {
   @Test
   fun testShouldVerifyBackFromFilterClickListener() {
     reportViewModel.onBackPressFromFilter()
-    Assert.assertEquals(ReportViewModel.ReportScreen.HOME, reportViewModel.reportState.currentScreen)
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.HOME,
+      reportViewModel.reportState.currentScreen
+    )
   }
 
   @Test
   fun testShouldVerifyBackFromResultClickListener() {
     reportViewModel.onBackPressFromResult()
-    Assert.assertEquals(ReportViewModel.ReportScreen.FILTER, reportViewModel.reportState.currentScreen)
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.FILTER,
+      reportViewModel.reportState.currentScreen
+    )
   }
 
   @Test
@@ -169,7 +174,10 @@ internal class ReportViewModelTest {
     val expectedReportItem = testReportItem
     reportViewModel.onReportMeasureItemClicked(testReportItem)
     Assert.assertEquals(expectedReportItem, reportViewModel.getSelectedReport())
-    Assert.assertEquals(ReportViewModel.ReportScreen.FILTER, reportViewModel.reportState.currentScreen)
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.FILTER,
+      reportViewModel.reportState.currentScreen
+    )
   }
 
   @Test
@@ -177,16 +185,16 @@ internal class ReportViewModelTest {
   fun testShouldVerifyPatientSelectionChanged() {
     val expectedSelection = ReportViewModel.PatientSelectionType.ALL
     reportViewModel.onPatientSelectionTypeChanged("All")
-    Assert.assertEquals(
-      expectedSelection,
-      reportViewModel.patientSelectionType.value
-    )
+    Assert.assertEquals(expectedSelection, reportViewModel.patientSelectionType.value)
   }
 
   @Test
   fun testShouldVerifyGenerateReportClickListener() {
     reportViewModel.onGenerateReportPress()
-    Assert.assertEquals(ReportViewModel.ReportScreen.RESULT, reportViewModel.reportState.currentScreen)
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.RESULT,
+      reportViewModel.reportState.currentScreen
+    )
   }
 
   @Test
@@ -200,6 +208,9 @@ internal class ReportViewModelTest {
     Assert.assertEquals(expectedStartDate, reportViewModel.startDate.value)
     Assert.assertEquals(expectedEndDate, reportViewModel.endDate.value)
     Assert.assertEquals(true, reportViewModel.isReadyToGenerateReport.value)
-    Assert.assertEquals(ReportViewModel.ReportScreen.FILTER, reportViewModel.reportState.currentScreen)
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.FILTER,
+      reportViewModel.reportState.currentScreen
+    )
   }
 }

@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
-import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.mockk
 import io.mockk.spyk
@@ -28,7 +27,6 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.report.ReportRepository
-import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 
 @ExperimentalCoroutinesApi
