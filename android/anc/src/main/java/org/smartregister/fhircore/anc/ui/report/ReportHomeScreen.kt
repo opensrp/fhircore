@@ -17,18 +17,15 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -39,16 +36,14 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemsIndexed
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
@@ -59,12 +54,12 @@ const val TOOLBAR_BACK_ARROW = "toolbarBackArrow"
 
 @Composable
 fun ReportHomeScreen(viewModel: ReportViewModel) {
-
-  val lazyReportItems = viewModel.getReportsTypeList().collectAsLazyPagingItems()
-
-  LazyColumn(modifier = Modifier.background(Color.White).fillMaxSize()) {
-    itemsIndexed(lazyReportItems) { _, item -> ReportRow(item!!) }
-  }
+  ReportHomePage(
+    topBarTitle = stringResource(id = R.string.reports),
+    onBackPress = viewModel::onBackPress,
+    dataList = viewModel.getReportsTypeList(),
+    onReportMeasureItemClick = viewModel::onReportMeasureItemClicked
+  )
 }
 
 @Composable
