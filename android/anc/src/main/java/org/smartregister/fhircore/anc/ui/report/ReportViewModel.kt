@@ -22,20 +22,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.core.util.Pair
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import ca.uhn.fhir.parser.IParser
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import org.smartregister.fhircore.anc.AncApplication
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
@@ -45,16 +45,17 @@ import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerInt
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
 import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.ListenerIntent
-import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class ReportViewModel(
-  application: AncApplication,
   private val repository: ReportRepository,
-  val patientRepository: PatientRepository
-) : AndroidViewModel(application) {
+  val patientRepository: PatientRepository,
+  var dispatcher: DispatcherProvider
+) : ViewModel() {
 
   lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
 
@@ -132,6 +133,20 @@ class ReportViewModel(
     backPress.value = true
   }
 
+  fun fetchCQLLibraryData(
+    parser: IParser,
+    fhirResourceDataSource: FhirResourceDataSource,
+    libraryURL: String
+  ): LiveData<String> {
+    val libraryData = MutableLiveData<String>()
+    viewModelScope.launch(dispatcher.io()) {
+      val auxCQLLibraryData =
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(libraryURL).entry[0].resource)
+      libraryData.postValue(auxCQLLibraryData)
+    }
+    return libraryData
+  }
+
   fun onBackPressFromFilter() {
     reportState.currentScreen = ReportScreen.HOME
   }
@@ -195,18 +210,102 @@ class ReportViewModel(
       )
       .flow
 
-  companion object {
-    fun get(
-      owner: ViewModelStoreOwner,
-      application: AncApplication,
-      repository: ReportRepository,
-      ancPatientRepository: PatientRepository
-    ): ReportViewModel {
-      return ViewModelProvider(
-        owner,
-        ReportViewModel(application, repository, ancPatientRepository).createFactory()
-      )[ReportViewModel::class.java]
+  //  companion object {
+  //    fun get(
+  //      owner: ViewModelStoreOwner,
+  //      repository: ReportRepository,
+  //      ancPatientRepository: PatientRepository
+  //    ): ReportViewModel {
+  //      return ViewModelProvider(
+  //        owner,
+  //        ReportViewModel(repository, ancPatientRepository).createFactory()
+  //      )[ReportViewModel::class.java]
+  //    }
+  //  }
+
+  fun fetchCQLFhirHelperData(
+    parser: IParser,
+    fhirResourceDataSource: FhirResourceDataSource,
+    helperURL: String
+  ): LiveData<String> {
+    val helperData = MutableLiveData<String>()
+    viewModelScope.launch(dispatcher.io()) {
+      val auxCQLHelperData =
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(helperURL).entry[0].resource)
+      helperData.postValue(auxCQLHelperData)
     }
+    return helperData
+  }
+
+  fun fetchCQLValueSetData(
+    parser: IParser,
+    fhirResourceDataSource: FhirResourceDataSource,
+    valueSetURL: String
+  ): LiveData<String> {
+    val valueSetData = MutableLiveData<String>()
+    viewModelScope.launch(dispatcher.io()) {
+      val auxCQLValueSetData =
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(valueSetURL))
+      valueSetData.postValue(auxCQLValueSetData)
+    }
+    return valueSetData
+  }
+
+  fun fetchCQLPatientData(
+    parser: IParser,
+    fhirResourceDataSource: FhirResourceDataSource,
+    patientURL: String
+  ): LiveData<String> {
+    val patientData = MutableLiveData<String>()
+    viewModelScope.launch(dispatcher.io()) {
+      val auxCQLPatientData =
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(patientURL))
+      patientData.postValue(auxCQLPatientData)
+    }
+    return patientData
+  }
+
+  fun fetchCQLMeasureEvaluateLibraryAndValueSets(
+    parser: IParser,
+    fhirResourceDataSource: FhirResourceDataSource,
+    libAndValueSetURL: String,
+    measureURL: String,
+    cqlMeasureReportLibInitialString: String
+  ): LiveData<String> {
+    val valueSetData = MutableLiveData<String>()
+    val equalsIndexUrl: Int = libAndValueSetURL.indexOf("=")
+
+    val libStrAfterEquals = libAndValueSetURL.substring(libAndValueSetURL.lastIndexOf("=") + 1)
+    val libList = libStrAfterEquals.split(",").map { it.trim() }
+
+    val libURLStrBeforeEquals = libAndValueSetURL.substring(0, equalsIndexUrl) + "="
+    val fullResourceString = StringBuilder(cqlMeasureReportLibInitialString)
+
+    viewModelScope.launch(dispatcher.io()) {
+      val measureObject =
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(measureURL).entry[0].resource)
+
+      fullResourceString.append("{\"resource\":")
+      fullResourceString.append(measureObject)
+      fullResourceString.append("}")
+
+      var auxCQLValueSetData: String
+      for (lib in libList) {
+        auxCQLValueSetData =
+          parser.encodeResourceToString(
+            fhirResourceDataSource.loadData(libURLStrBeforeEquals + lib).entry[0].resource
+          )
+
+        fullResourceString.append(",")
+        fullResourceString.append("{\"resource\":")
+        fullResourceString.append(auxCQLValueSetData)
+        fullResourceString.append("}")
+      }
+      fullResourceString.deleteCharAt(fullResourceString.length - 1)
+      fullResourceString.append("}]}")
+      valueSetData.postValue(fullResourceString.toString())
+    }
+    return valueSetData
   }
 
   class ReportState {
@@ -217,7 +316,8 @@ class ReportViewModel(
     HOME,
     FILTER,
     PICK_PATIENT,
-    RESULT
+    RESULT,
+    PREHOMElOADING
   }
 
   object PatientSelectionType {
