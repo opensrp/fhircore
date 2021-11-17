@@ -79,9 +79,37 @@ fun LoadingItem() {
 }
 
 @Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun PatientSelectionPreview() {
+  PatientSelectionBox(
+    patientSelectionText = ReportViewModel.PatientSelectionType.ALL,
+    onPatientSelectionChange = {}
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun DateRangePreview() {
+  DateSelectionBox(startDate = "Start date", endDate = "End date", onDateRangePress = {})
+}
+
+@Composable
+fun TopBarBox(topBarTitle: String, onBackPress: () -> Unit) {
+  TopAppBar(
+    title = { Text(text = topBarTitle, Modifier.testTag(TOOLBAR_TITLE)) },
+    navigationIcon = {
+      IconButton(onClick = onBackPress, Modifier.testTag(TOOLBAR_BACK_ARROW)) {
+        Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")
+      }
+    }
+  )
+}
+
+@Composable
 fun ReportRow(
   reportItem: ReportItem,
-  clickListener: (ReportListenerIntent, ReportItem) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   Row(
@@ -89,13 +117,7 @@ fun ReportRow(
     verticalAlignment = Alignment.CenterVertically,
     modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min),
   ) {
-    Column(
-      modifier =
-        modifier
-          .clickable { clickListener(OpenReportFilter, reportItem) }
-          .padding(16.dp)
-          .weight(0.70f)
-    ) {
+    Column(modifier = modifier.padding(16.dp).weight(0.70f)) {
       Text(text = reportItem.title, fontSize = 18.sp, modifier = modifier.wrapContentWidth())
       Spacer(modifier = modifier.height(8.dp))
       Row(
@@ -125,6 +147,6 @@ fun ReportRow(
 fun ReportRowPreview() {
   val reportItem =
     ReportItem("fid", "4+ ANC Contacts ", "Pregnant women with at least four ANC Contacts", "4")
-  ReportRow(reportItem = reportItem, { _, _ -> })
+  ReportRow(reportItem = reportItem)
 }
 

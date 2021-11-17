@@ -44,9 +44,43 @@ class ReportViewModel(
 ) : ViewModel() {
 
   val backPress: MutableLiveData<Boolean> = MutableLiveData(false)
+  val showDatePicker: MutableLiveData<Boolean> = MutableLiveData(false)
+  val selectedMeasureReportItem: MutableLiveData<ReportItem> = MutableLiveData(null)
+  val simpleDateFormatPattern = "d MMM, yyyy"
+
+  private val _startDate = MutableLiveData("start date")
+  val startDate: LiveData<String>
+    get() = _startDate
+
+  private val _endDate = MutableLiveData("end date")
+  val endDate: LiveData<String>
+    get() = _endDate
+
+  private val _patientSelectionType = MutableLiveData("All")
+  val patientSelectionType: LiveData<String>
+    get() = _patientSelectionType
+
+  private val _isReadyToGenerateReport = MutableLiveData(true)
+  val isReadyToGenerateReport: LiveData<Boolean>
+    get() = _isReadyToGenerateReport
+
+  var reportState: ReportState = ReportState()
 
   fun getReportsTypeList(): Flow<PagingData<ReportItem>> {
     return Pager(PagingConfig(pageSize = PaginationUtil.DEFAULT_PAGE_SIZE)) { repository }.flow
+  }
+
+  fun onReportMeasureItemClicked(item: ReportItem) {
+    selectedMeasureReportItem.value = item
+    reportState.currentScreen = ReportScreen.FILTER
+  }
+
+  fun getSelectedReport(): ReportItem? {
+    return selectedMeasureReportItem.value
+  }
+
+  fun getPatientSelectionType(): String? {
+    return patientSelectionType.value
   }
 
   fun onBackPress() {
@@ -190,5 +224,21 @@ class ReportViewModel(
       valueSetData.postValue(fullResourceString.toString())
     }
     return valueSetData
+  }
+
+  class ReportState {
+    var currentScreen by mutableStateOf(ReportScreen.HOME)
+  }
+
+  enum class ReportScreen {
+    HOME,
+    FILTER,
+    PICK_PATIENT,
+    RESULT
+  }
+
+  object PatientSelectionType {
+    const val ALL = "All"
+    const val INDIVIDUAL = "Individual"
   }
 }
