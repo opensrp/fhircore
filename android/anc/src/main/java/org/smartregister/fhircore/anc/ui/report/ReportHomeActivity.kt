@@ -120,9 +120,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     val repository = ReportRepository((application as AncApplication).fhirEngine, patientId, this)
     val ancPatientRepository =
       PatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
-    //    val viewModel =
-    //      ReportViewModel.get(this, application as AncApplication, repository,
-    // ancPatientRepository)
     val dispatcher: DispatcherProvider = DefaultDispatcherProvider
     reportViewModel = ReportViewModel(repository, ancPatientRepository, dispatcher)
 
@@ -191,6 +188,11 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       }
     )
 
+    reportViewModel.isReadyToGenerateReport.observe(
+      this,
+      { reportViewModel.reportState.currentScreen = ReportScreen.FILTER }
+    )
+
     reportViewModel.filterValue.observe(
       this,
       {
@@ -219,10 +221,9 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       AppTheme {
         Surface(color = colorResource(id = R.color.white)) {
           Column {
-            reportViewModel.reportState.currentScreen = ReportViewModel.ReportScreen.PREHOMElOADING
+            ReportView()
             loadCQLLibraryData()
             loadMeasureEvaluateLibrary()
-            ReportView(reportViewModel)
           }
         }
       }
@@ -241,6 +242,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         .fetchCQLLibraryData(parser, fhirResourceDataSource, libraryURL)
         .observe(this, this::handleCQLLibraryData)
     }
+    reportViewModel.reportState.currentScreen = ReportScreen.PREHOMElOADING
   }
 
   fun loadCQLHelperData() {
@@ -292,7 +294,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       val libraryStreamMeasure: InputStream =
         ByteArrayInputStream(measureEvaluateLibraryData.toByteArray())
       libraryMeasure = parser.parseResource(libraryStreamMeasure) as IBaseBundle
-      reportViewModel.reportState.currentScreen = ReportViewModel.ReportScreen.HOME
+      reportViewModel.reportState.currentScreen = ReportScreen.HOME
     } else {
       reportViewModel
         .fetchCQLMeasureEvaluateLibraryAndValueSets(
@@ -382,7 +384,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     val libraryStreamMeasure: InputStream =
       ByteArrayInputStream(measureEvaluateLibraryData.toByteArray())
     libraryMeasure = parser.parseResource(libraryStreamMeasure) as IBaseBundle
-    reportViewModel.reportState.currentScreen = ReportViewModel.ReportScreen.HOME
+    reportViewModel.reportState.currentScreen = ReportScreen.HOME
   }
 
   fun loadCQLMeasurePatientData() {
@@ -414,14 +416,14 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   }
 
   @Composable
-  fun ReportView(viewModel: ReportViewModel) {
+  fun ReportView() {
     // Choose which screen to show based on the value in the ReportScreen from ReportState
-    when (viewModel.reportState.currentScreen) {
-      ReportScreen.HOME -> ReportHomeScreen(viewModel)
-      ReportScreen.FILTER -> ReportFilterScreen(viewModel)
-      ReportScreen.PICK_PATIENT -> ReportFilterScreen(viewModel)
-      ReportScreen.RESULT -> ReportResultScreen(viewModel)
-      ReportScreen.PREHOMElOADING -> ReportPreLoadingHomePage()
+    when (reportViewModel.reportState.currentScreen) {
+      ReportScreen.HOME -> ReportHomeScreen(reportViewModel)
+      ReportScreen.FILTER -> ReportFilterScreen(reportViewModel)
+      ReportScreen.PICK_PATIENT -> ReportSelectPatientScreen(reportViewModel)
+      ReportScreen.RESULT -> ReportResultScreen(reportViewModel)
+      ReportScreen.PREHOMElOADING -> ReportPreLoadingHomeScreen(reportViewModel)
     }
   }
 

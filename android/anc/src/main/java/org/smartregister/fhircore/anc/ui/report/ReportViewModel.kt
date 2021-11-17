@@ -121,6 +121,10 @@ class ReportViewModel(
     return selectedMeasureReportItem.value
   }
 
+  fun getGenerateReportButtonState(): Boolean {
+    return isReadyToGenerateReport.value ?: false
+  }
+
   fun getSelectedPatient(): PatientItem {
     return selectedPatientItem.value ?: PatientItem()
   }
@@ -210,19 +214,6 @@ class ReportViewModel(
       )
       .flow
 
-  //  companion object {
-  //    fun get(
-  //      owner: ViewModelStoreOwner,
-  //      repository: ReportRepository,
-  //      ancPatientRepository: PatientRepository
-  //    ): ReportViewModel {
-  //      return ViewModelProvider(
-  //        owner,
-  //        ReportViewModel(repository, ancPatientRepository).createFactory()
-  //      )[ReportViewModel::class.java]
-  //    }
-  //  }
-
   fun fetchCQLFhirHelperData(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
@@ -309,7 +300,7 @@ class ReportViewModel(
   }
 
   class ReportState {
-    var currentScreen by mutableStateOf(ReportScreen.HOME)
+    var currentScreen by mutableStateOf(ReportScreen.PREHOMElOADING)
   }
 
   enum class ReportScreen {
