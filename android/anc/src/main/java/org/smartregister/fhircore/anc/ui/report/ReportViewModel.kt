@@ -234,7 +234,8 @@ class ReportViewModel(
     HOME,
     FILTER,
     PICK_PATIENT,
-    RESULT
+    RESULT,
+    PREHOMElOADING
   }
 
   object PatientSelectionType {

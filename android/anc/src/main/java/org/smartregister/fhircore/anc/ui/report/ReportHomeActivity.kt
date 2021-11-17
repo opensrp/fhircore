@@ -182,9 +182,10 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
                 ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
               }
             )
+            reportViewModel.reportState.currentScreen = ReportViewModel.ReportScreen.PREHOMElOADING
             loadCQLLibraryData()
             loadMeasureEvaluateLibrary()
-            ReportHomeScreen(reportViewModel)
+            ReportView(reportViewModel)
           }
         }
       }
@@ -254,6 +255,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       val libraryStreamMeasure: InputStream =
         ByteArrayInputStream(measureEvaluateLibraryData.toByteArray())
       libraryMeasure = parser.parseResource(libraryStreamMeasure) as IBaseBundle
+      reportViewModel.reportState.currentScreen = ReportViewModel.ReportScreen.HOME
     } else {
       reportViewModel
         .fetchCQLMeasureEvaluateLibraryAndValueSets(
@@ -343,6 +345,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     val libraryStreamMeasure: InputStream =
       ByteArrayInputStream(measureEvaluateLibraryData.toByteArray())
     libraryMeasure = parser.parseResource(libraryStreamMeasure) as IBaseBundle
+    reportViewModel.reportState.currentScreen = ReportViewModel.ReportScreen.HOME
   }
 
   fun loadCQLMeasurePatientData() {
@@ -363,6 +366,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       ReportViewModel.ReportScreen.FILTER -> ReportFilterScreen(viewModel)
       ReportViewModel.ReportScreen.PICK_PATIENT -> ReportFilterScreen(viewModel)
       ReportViewModel.ReportScreen.RESULT -> ReportResultScreen(viewModel)
+      ReportViewModel.ReportScreen.PREHOMElOADING -> ReportPreLoadingHomePage()
     }
   }
 
