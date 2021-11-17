@@ -41,6 +41,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.model.AncOverviewItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.PatientItem
@@ -48,6 +49,7 @@ import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.FragmentRobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
+import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 
 @ExperimentalCoroutinesApi
 @Config(shadows = [AncApplicationShadow::class])
@@ -55,7 +57,7 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
 
   private lateinit var fhirEngine: FhirEngine
   private lateinit var patientDetailsViewModel: AncDetailsViewModel
-  private lateinit var patientDetailsActivity: AncDetailsActivity
+  private lateinit var patientDetailsActivity: PatientDetailsActivity
   private lateinit var patientRepository: PatientRepository
   private lateinit var fragmentScenario: FragmentScenario<AncDetailsFragment>
   private lateinit var patientDetailsFragment: AncDetailsFragment
@@ -94,7 +96,7 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
       )
 
     patientDetailsActivity =
-      Robolectric.buildActivity(AncDetailsActivity::class.java).create().get()
+      Robolectric.buildActivity(PatientDetailsActivity::class.java).create().get()
     fragmentScenario =
       launchFragmentInContainer(
         factory =
@@ -154,6 +156,30 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
     Assert.assertEquals(View.VISIBLE, immunizationsListView?.visibility)
 
     verify(exactly = 1) { carePlanAdapter.submitList(any()) }
+  }
+
+  @Test
+  fun testHandleObservation() {
+    val ancOverviewItem = AncOverviewItem("12-03-2022", "23", "1", "none")
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientDetailsFragment,
+      "handleObservation",
+      ReflectionHelpers.ClassParameter(AncOverviewItem::class.java, ancOverviewItem)
+    )
+
+    val txtViewEDDDoseDate =
+      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_EDDDoseDate)
+    val txtViewGAPeriod = patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_GAPeriod)
+    val txtViewFetusesCount =
+      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_FetusesCount)
+    val txtViewRiskValue =
+      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_RiskValue)
+
+    Assert.assertEquals(ancOverviewItem.edd, txtViewEDDDoseDate!!.text.toString())
+    Assert.assertEquals(ancOverviewItem.ga, txtViewGAPeriod!!.text.toString())
+    Assert.assertEquals(ancOverviewItem.noOfFetuses, txtViewFetusesCount!!.text.toString())
+    Assert.assertEquals(ancOverviewItem.risk, txtViewRiskValue!!.text.toString())
   }
 
   @Test
@@ -232,24 +258,5 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
 
   override fun getFragment(): Fragment {
     return patientDetailsFragment
-  }
-
-  @Test
-  fun testThatDemographicViewsAreUpdated() {
-
-    val item =
-      PatientDetailItem(
-        PatientItem(patientIdentifier = "1", name = "demo", gender = "M", age = "20"),
-        PatientItem(demographics = "2")
-      )
-
-    ReflectionHelpers.callInstanceMethod<Any>(
-      patientDetailsFragment,
-      "handlePatientDemographics",
-      ReflectionHelpers.ClassParameter(PatientDetailItem::class.java, item)
-    )
-
-    Assert.assertEquals("demo, M, 20", patientDetailsFragment.binding.txtViewPatientDetails.text)
-    Assert.assertEquals("2 ID: 1", patientDetailsFragment.binding.txtViewPatientId.text)
   }
 }

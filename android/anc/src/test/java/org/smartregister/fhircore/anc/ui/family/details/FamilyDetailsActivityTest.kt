@@ -35,7 +35,7 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
-import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
+import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 
 @Config(shadows = [AncApplicationShadow::class])
@@ -99,7 +99,7 @@ class FamilyDetailsActivityTest : ActivityRobolectricTest() {
       ReflectionHelpers.ClassParameter.from(FamilyMemberItem::class.java, familyMemberItem)
     )
 
-    val expectedIntent = Intent(activity, AncDetailsActivity::class.java)
+    val expectedIntent = Intent(activity, PatientDetailsActivity::class.java)
     val actualIntent =
       shadowOf(ApplicationProvider.getApplicationContext<Application>()).nextStartedActivity
 

@@ -41,15 +41,14 @@ class LibraryEvaluatorTest {
   var context = "Patient"
   var contextLabel = "mom-with-anemia"
 
-  val fileUtil = FileUtil()
   @Before
   fun setUp() {
     try {
-      libraryData = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/library.json")
-      helperData = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/helper.json")
-      valueSetData = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/valueSet.json")
-      testData = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/patient.json")
-      result = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/result.json")
+      libraryData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/library.json")
+      helperData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/helper.json")
+      valueSetData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/valueSet.json")
+      testData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/patient.json")
+      result = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/result.json")
       evaluator = LibraryEvaluator()
     } catch (e: IOException) {
       Timber.e(e, e.message)

@@ -29,7 +29,6 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.AncOverviewItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
-import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
@@ -76,13 +75,7 @@ class AncDetailsFragment : Fragment() {
         AncDetailsViewModel(patientRepository, patientId = patientId).createFactory()
       )[AncDetailsViewModel::class.java]
 
-    binding.txtViewPatientId.text = patientId
-
     Timber.d(patientId)
-
-    ancDetailsViewModel
-      .fetchDemographics()
-      .observe(viewLifecycleOwner, this::handlePatientDemographics)
 
     ancDetailsViewModel.fetchCarePlan().observe(viewLifecycleOwner, this::handleCarePlan)
 
@@ -154,21 +147,6 @@ class AncDetailsFragment : Fragment() {
 
   companion object {
     fun newInstance(bundle: Bundle = Bundle()) = AncDetailsFragment().apply { arguments = bundle }
-  }
-
-  private fun handlePatientDemographics(patient: PatientDetailItem) {
-    with(patient) {
-      val patientDetails =
-        this.patientDetails.name +
-          ", " +
-          this.patientDetails.gender +
-          ", " +
-          this.patientDetails.age
-      val patientId =
-        this.patientDetailsHead.demographics + " ID: " + this.patientDetails.patientIdentifier
-      binding.txtViewPatientDetails.text = patientDetails
-      binding.txtViewPatientId.text = patientId
-    }
   }
 
   private fun handleCarePlan(immunizations: List<CarePlanItem>) {

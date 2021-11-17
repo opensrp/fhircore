@@ -47,11 +47,10 @@ class MeasureEvaluatorTest {
     val parser = fhirContext.newJsonParser()!!
 
     val filePatientAssetDir = File(patientAssetsDir)
-    val fileUtil = FileUtil()
-    val fileListString = fileUtil.recurseFolders(filePatientAssetDir)
+    val fileListString = FileUtil.recurseFolders(filePatientAssetDir)
     val patientResources: ArrayList<String> = ArrayList()
     for (f in fileListString) {
-      patientResources.add(fileUtil.readJsonFile(f))
+      patientResources.add(FileUtil.readJsonFile(f))
     }
 
     val resources = ArrayList<IBaseResource>()
@@ -62,7 +61,7 @@ class MeasureEvaluatorTest {
     }
 
     val libraryStream: InputStream =
-      ByteArrayInputStream(fileUtil.readJsonFile(libraryFilePath).toByteArray())
+      ByteArrayInputStream(FileUtil.readJsonFile(libraryFilePath).toByteArray())
     val library = parser.parseResource(libraryStream) as IBaseBundle
 
     val measureEvaluator = MeasureEvaluator()
