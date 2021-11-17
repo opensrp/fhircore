@@ -46,6 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
@@ -70,7 +71,8 @@ fun LoadingItem() {
 fun PatientSelectionPreview() {
   PatientSelectionBox(
     patientSelectionText = ReportViewModel.PatientSelectionType.ALL,
-    onPatientSelectionChange = {}
+    onPatientSelectionChange = {},
+    selectedPatient = PatientItem()
   )
 }
 

@@ -20,6 +20,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.core.util.Pair
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -39,10 +40,13 @@ import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
+import org.smartregister.fhircore.anc.ui.anccare.register.Anc
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
 import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
+import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
+import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
@@ -51,6 +55,8 @@ class ReportViewModel(
   private val repository: ReportRepository,
   val patientRepository: PatientRepository
 ) : AndroidViewModel(application) {
+
+  lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
 
   val backPress: MutableLiveData<Boolean> = MutableLiveData(false)
   val showDatePicker: MutableLiveData<Boolean> = MutableLiveData(false)
@@ -69,6 +75,12 @@ class ReportViewModel(
   private val _patientSelectionType = MutableLiveData("All")
   val patientSelectionType: LiveData<String>
     get() = _patientSelectionType
+
+  var searchTextState = mutableStateOf(TextFieldValue(""))
+
+  private val _filterValue = MutableLiveData<kotlin.Pair<RegisterFilterType, Any?>>()
+  val filterValue
+    get() = _filterValue
 
   private val _isReadyToGenerateReport = MutableLiveData(true)
   val isReadyToGenerateReport: LiveData<Boolean>
@@ -96,7 +108,7 @@ class ReportViewModel(
 
   fun updateSelectedPatient(patient: PatientItem) {
     selectedPatientItem.value = patient
-    reportState.currentScreen = ReportScreen.RESULT
+    reportState.currentScreen = ReportScreen.FILTER
   }
 
   fun onReportMeasureItemClicked(item: ReportItem) {
@@ -122,6 +134,10 @@ class ReportViewModel(
 
   fun onBackPressFromFilter() {
     reportState.currentScreen = ReportScreen.HOME
+  }
+
+  fun onBackPressFromPatientSearch() {
+    reportState.currentScreen = ReportScreen.FILTER
   }
 
   fun onBackPressFromResult() {

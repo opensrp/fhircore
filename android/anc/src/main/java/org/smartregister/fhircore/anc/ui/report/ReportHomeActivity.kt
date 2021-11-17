@@ -23,16 +23,26 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.util.Pair
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.datepicker.MaterialDatePicker
 import java.util.Calendar
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.AncApplication
+import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
+import org.smartregister.fhircore.anc.ui.anccare.register.Anc
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.report.ReportViewModel.ReportScreen
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
+import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class ReportHomeActivity : BaseMultiLanguageActivity() {
 
@@ -45,6 +55,13 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       PatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
     val viewModel =
       ReportViewModel.get(this, application as AncApplication, repository, ancPatientRepository)
+
+    viewModel.registerDataViewModel = initializeRegisterDataViewModel(ancPatientRepository)
+    viewModel.registerDataViewModel.currentPage.observe(
+      this,
+      { viewModel.registerDataViewModel.loadPageData(it) }
+    )
+
     viewModel.backPress.observe(
       this,
       {
@@ -71,9 +88,51 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       }
     )
 
+    viewModel.filterValue.observe(
+      this,
+      {
+        lifecycleScope.launch(Dispatchers.Main) {
+          val (registerFilterType, value) = it
+          if (value != null) {
+            viewModel.registerDataViewModel.run {
+              showResultsCount(true)
+              filterRegisterData(
+                registerFilterType = registerFilterType,
+                filterValue = value,
+                registerFilter = this@ReportHomeActivity::performFilter
+              )
+            }
+          } else {
+            viewModel.registerDataViewModel.run {
+              showResultsCount(false)
+              reloadCurrentPageData()
+            }
+          }
+        }
+      }
+    )
+
     setContent {
       val reportState = remember { viewModel.reportState }
       AppTheme { ReportView(viewModel) }
+    }
+  }
+
+  private fun performFilter(
+    registerFilterType: RegisterFilterType,
+    data: PatientItem,
+    value: Any
+  ): Boolean {
+    return when (registerFilterType) {
+      RegisterFilterType.SEARCH_FILTER -> {
+        if (value is String && value.isEmpty()) return true
+        else
+          data.name.contains(value.toString(), ignoreCase = true) ||
+            data.patientIdentifier.contentEquals(value.toString())
+      }
+      RegisterFilterType.OVERDUE_FILTER -> {
+        return data.visitStatus == VisitStatus.OVERDUE
+      }
     }
   }
 
@@ -95,5 +154,17 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     val dateRangePicker = builder.build()
     dateRangePicker.show(supportFragmentManager, dateRangePicker.toString())
     dateRangePicker.addOnPositiveButtonClickListener { onDateSelected(dateRangePicker.selection) }
+  }
+
+  @Suppress("UNCHECKED_CAST")
+  fun initializeRegisterDataViewModel(
+    ancPatientRepository: PatientRepository
+  ): RegisterDataViewModel<Anc, PatientItem> {
+    return ViewModelProvider(
+      viewModelStore,
+      RegisterDataViewModel(application = application, registerRepository = ancPatientRepository)
+        .createFactory()
+    )[RegisterDataViewModel::class.java] as
+      RegisterDataViewModel<Anc, PatientItem>
   }
 }
