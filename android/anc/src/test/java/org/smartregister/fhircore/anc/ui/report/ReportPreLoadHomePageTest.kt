@@ -16,43 +16,49 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import android.app.Application
+import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.core.app.ApplicationProvider
-import io.mockk.mockk
+import com.google.android.fhir.FhirEngine
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.robolectric.annotation.Config
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.report.ReportRepository
-import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
+import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 @ExperimentalCoroutinesApi
-@Config(shadows = [AncApplicationShadow::class])
-class ReportHomeScreenTest {
+class ReportPreLoadHomePageTest : RobolectricTest() {
 
+  private val app = ApplicationProvider.getApplicationContext<Application>()
+  private lateinit var fhirEngine: FhirEngine
   private lateinit var repository: ReportRepository
   private lateinit var viewModel: ReportViewModel
+  @get:Rule val composeRule = createComposeRule()
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
   @Before
   fun setUp() {
-    repository = mockk()
-    viewModel =
+    fhirEngine = spyk()
+    repository =
       spyk(
-        objToCopy =
-          ReportViewModel(
-            ApplicationProvider.getApplicationContext(),
-            coroutinesTestRule.testDispatcherProvider
-          )
+        ReportRepository(fhirEngine, "testPatientID", ApplicationProvider.getApplicationContext())
       )
+    viewModel =
+      spyk(objToCopy = ReportViewModel(repository, coroutinesTestRule.testDispatcherProvider))
+    composeRule.setContent { ReportHomeScreen(viewModel) }
   }
 
   @Test
-  @Ignore("composeRule.setContent is failing")
-  fun testReportHomeScreenComponents() {
+  fun testReportPreLoadingHomeScreenComponents() {
     // toolbar should have valid title and icon
+    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals(app.getString(R.string.reports))
+    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
   }
 }

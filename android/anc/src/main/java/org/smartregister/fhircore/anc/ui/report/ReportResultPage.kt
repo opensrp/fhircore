@@ -55,7 +55,8 @@ fun ReportResultScreen(viewModel: ReportViewModel) {
   ReportResultPage(
     topBarTitle = stringResource(id = R.string.reports),
     onBackPress = viewModel::onBackPressFromResult,
-    reportMeasureItem = viewModel.getSelectedReport()!!,
+    reportMeasureItem = viewModel.selectedMeasureReportItem.value
+        ?: ReportItem(title = "No Measure Selected"),
     isAllPatientSelection = viewModel.patientSelectionType.value == "All",
     selectedPatient = viewModel.getSelectedPatient()
   )
