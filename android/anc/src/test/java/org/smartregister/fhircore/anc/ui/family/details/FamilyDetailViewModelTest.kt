@@ -20,10 +20,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk
+import java.text.SimpleDateFormat
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
@@ -111,9 +114,11 @@ class FamilyDetailViewModelTest : RobolectricTest() {
     viewModel.setMemberItemClickListener { ++count }
     viewModel.setAddMemberItemClickListener { ++count }
     viewModel.setSeeAllEncounterClickListener { ++count }
-    viewModel.setEncounterItemClickListener {
+    viewModel.setEncounterItemClickListener { ++count }
+    viewModel.setSeeAllUpcomingServiceClickListener { ++count }
+    viewModel.setUpcomingServiceItemClickListener {
       ++count
-      Assert.assertEquals(5, count)
+      Assert.assertEquals(7, count)
     }
 
     viewModel.getAppBackClickListener().invoke()
@@ -121,5 +126,27 @@ class FamilyDetailViewModelTest : RobolectricTest() {
     viewModel.getAddMemberItemClickListener().invoke()
     viewModel.getSeeAllEncounterClickListener().invoke()
     viewModel.getEncounterItemClickListener().invoke(mockk())
+    viewModel.getSeeAllUpcomingServiceClickListener().invoke()
+    viewModel.getUpcomingServiceItemClickListener().invoke(mockk())
+  }
+
+  @Test
+  fun testGetFamilyCarePlansShouldReturnTestCarePlan() {
+
+    val cpTitle = "First Care Plan"
+    val cpPeriodStartDate = SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01")
+    val carePlan =
+      CarePlan().apply {
+        title = cpTitle
+        period = Period().apply { start = cpPeriodStartDate }
+      }
+
+    every { repository.fetchFamilyCarePlans() } returns MutableLiveData(listOf(carePlan))
+
+    val items = viewModel.getFamilyCarePlans().value
+
+    Assert.assertEquals(1, items?.size)
+    Assert.assertEquals(cpTitle, carePlan.title)
+    Assert.assertEquals(cpPeriodStartDate, carePlan.period.start)
   }
 }
