@@ -23,7 +23,6 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.FhirEngine
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
