@@ -24,19 +24,20 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
+import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 @ExperimentalCoroutinesApi
-class ReportResultPageTest {
+class ReportResultPageTest : RobolectricTest() {
 
   private val app = ApplicationProvider.getApplicationContext<Application>()
   private lateinit var fhirEngine: FhirEngine
@@ -47,22 +48,18 @@ class ReportResultPageTest {
 
   @Before
   fun setUp() {
-    fhirEngine = spyk()
-    repository = spyk(ReportRepository(fhirEngine, "testPatientID", app.baseContext))
-    viewModel =
+    fhirEngine = mockk()
+    repository =
       spyk(
-        objToCopy =
-          ReportViewModel(
-            ApplicationProvider.getApplicationContext(),
-            coroutinesTestRule.testDispatcherProvider
-          )
+        ReportRepository(fhirEngine, "testPatientID", ApplicationProvider.getApplicationContext())
       )
+    viewModel =
+      spyk(objToCopy = ReportViewModel(repository, coroutinesTestRule.testDispatcherProvider))
     every { viewModel.getSelectedReport() } returns ReportItem(title = "Reports")
     composeRule.setContent { ReportResultScreen(viewModel = viewModel) }
   }
 
   @Test
-  @Ignore("no assert")
   fun testReportHomeScreenComponents() {
     // toolbar should have valid title and icon
     composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals(app.getString(R.string.reports))
