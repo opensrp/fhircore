@@ -12,7 +12,7 @@
     <string name="default_app_title" translatable="false">Fhir App</string>
     <string name="app_logo">Application logo</string>
     <string name="powered_by">Powered By</string>
-    <string name="app_version">App version %1$s</string>
+    <string name="app_version">App version %1$d(%2$s)</string>
     <string name="login_text">LOGIN</string>
     <string name="username_input_hint">Enter username</string>
     <string name="password_input_hint">Enter password</string>
@@ -78,4 +78,15 @@
     <string name="tick">Tick</string>
     <string name="clients">Clients</string>
     <string name="logout">Log out</string>
+    <string name="application_id">Application ID</string>
+    <string name="enter_app_id">Enter Application ID</string>
+    <string name="app_id_sample" translatable="false">E.g. covax, jnj, quest, g6pd</string>
+    <string name="load_configurations">LOAD CONFIGURATIONS</string>
+    <string name="fhir_core_app">FHIR Core App</string>
+    <string name="remember_app">Remember application</string>
+    <string name="done">Done</string>
+    <string name="replace_photo">Replace photo</string>
+    <string name="take_photo">Take photo</string>
+    <string name="edit">Edit</string>
+    <string name="application_not_supported">Application %1$s is not supported</string>
 </resources>

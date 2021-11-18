@@ -25,12 +25,15 @@ import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.targetStructureMap
+import com.google.android.fhir.logicalId
 import java.util.Date
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -43,23 +46,34 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplicati
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FormConfigUtil
+import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
+import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
-open class QuestionnaireViewModel(
-  application: Application,
-) : AndroidViewModel(application) {
+open class QuestionnaireViewModel(application: Application) : AndroidViewModel(application) {
 
   val extractionProgress = MutableLiveData<Boolean>()
+  var editQuestionnaireResponse: QuestionnaireResponse? = null
 
   val defaultRepository: DefaultRepository =
     DefaultRepository(
       (application as ConfigurableApplication).fhirEngine,
     )
 
-  var structureMapProvider: (suspend (String) -> StructureMap?)? = null
+  var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
-  suspend fun loadQuestionnaire(id: String): Questionnaire? = defaultRepository.loadResource(id)
+  suspend fun loadQuestionnaire(
+    id: String,
+    readOnly: Boolean = false,
+    editMode: Boolean = false
+  ): Questionnaire? =
+    defaultRepository.loadResource<Questionnaire>(id)?.apply {
+      if (readOnly || editMode) {
+        item.prepareQuestionsForReadingOrEditing("QuestionnaireResponse.item", readOnly)
+      }
+    }
 
   suspend fun getQuestionnaireConfig(form: String): QuestionnaireConfig {
     val loadConfig =
@@ -67,13 +81,14 @@ open class QuestionnaireViewModel(
         FormConfigUtil.loadConfig(QuestionnaireActivity.FORM_CONFIGURATIONS, getApplication())
       }
 
-    return loadConfig.associateBy { it.form }.getValue(form)
+    val appId = (getApplication() as ConfigurableApplication).configurationRegistry.appId
+    return loadConfig.associateBy { it.appId + it.form }.getValue(appId + form)
   }
 
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
     var structureMap: StructureMap? = null
     structureMapUrl?.substringAfterLast("/")?.run {
-      structureMap = loadResource(this) as StructureMap?
+      structureMap = defaultRepository.loadResource(this)
     }
     return structureMap
   }
@@ -82,10 +97,10 @@ open class QuestionnaireViewModel(
     resourceId: String?,
     context: Context,
     questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
+    questionnaireResponse: QuestionnaireResponse,
+    editMode: Boolean = false
   ) {
     viewModelScope.launch {
-      saveQuestionnaireResponse(resourceId, questionnaire, questionnaireResponse)
 
       // if no structure-map and no extraction is configured return without further processing
       if (questionnaire.targetStructureMap != null ||
@@ -102,10 +117,27 @@ open class QuestionnaireViewModel(
               it.valueCodeableConcept.coding.forEach { bun.resource.meta.addTag(it) }
             }
           }
+
+          if (bun.resource != null) {
+            questionnaireResponse.contained.add(bun.resource)
+          }
         }
 
         saveBundleResources(bundle)
-      } else viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
+
+        if (editMode && editQuestionnaireResponse != null) {
+          questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
+        }
+        saveQuestionnaireResponse(resourceId, questionnaire, questionnaireResponse)
+
+        // Delete the previous resources
+        if (editMode && editQuestionnaireResponse != null) {
+          editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
+        }
+      } else {
+        saveQuestionnaireResponse(resourceId, questionnaire, questionnaireResponse)
+        viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
+      }
     }
   }
 
@@ -115,14 +147,25 @@ open class QuestionnaireViewModel(
     questionnaireResponse: QuestionnaireResponse
   ) {
     val subjectType = questionnaire.subjectType.firstOrNull()?.code ?: ResourceType.Patient.name
+
     if (resourceId?.isNotBlank() == true) {
-      questionnaireResponse.id = UUID.randomUUID().toString()
-      questionnaireResponse.authored = Date()
+      // TODO revise this logic when syncing strategy has final decision
+      // https://github.com/opensrp/fhircore/issues/726
+      loadPatient(resourceId)?.meta?.tag?.forEach { questionnaireResponse.meta.addTag(it) }
+      questionnaireResponse.subject = Reference().apply { reference = "$subjectType/$resourceId" }
+      questionnaireResponse.questionnaire =
+        "${questionnaire.resourceType}/${questionnaire.logicalId}"
+
+      if (questionnaireResponse.logicalId.isEmpty()) {
+        questionnaireResponse.id = UUID.randomUUID().toString()
+        questionnaireResponse.authored = Date()
+      }
+
       questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
         it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
       }
-      questionnaireResponse.subject = Reference().apply { reference = "$subjectType/$resourceId" }
-      defaultRepository.save(questionnaireResponse)
+
+      defaultRepository.addOrUpdate(questionnaireResponse)
     }
   }
 
@@ -131,14 +174,16 @@ open class QuestionnaireViewModel(
     questionnaireResponse: QuestionnaireResponse,
     context: Context
   ): Bundle {
-    val contextR4 = (getApplication<Application>() as ConfigurableApplication).workerContextProvider
-    val transformSupportServices = TransformSupportServices(mutableListOf(), contextR4)
+    val transformSupportServices =
+      TransformSupportServices(
+        mutableListOf(),
+        getApplication<Application>() as ConfigurableApplication
+      )
 
     return ResourceMapper.extract(
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
       structureMapProvider = retrieveStructureMapProvider(),
-      context = context,
       transformSupportServices = transformSupportServices
     )
   }
@@ -153,9 +198,12 @@ open class QuestionnaireViewModel(
     }
   }
 
-  fun retrieveStructureMapProvider(): (suspend (String) -> StructureMap?) {
+  fun retrieveStructureMapProvider(): (suspend (String, IWorkerContext) -> StructureMap?) {
     if (structureMapProvider == null) {
-      structureMapProvider = { structureMapUrl: String -> fetchStructureMap(structureMapUrl) }
+      structureMapProvider =
+        { structureMapUrl: String, workerContext: IWorkerContext ->
+          fetchStructureMap(structureMapUrl)
+        }
     }
 
     return structureMapProvider!!
@@ -163,10 +211,6 @@ open class QuestionnaireViewModel(
 
   suspend fun loadPatient(patientId: String): Patient? {
     return defaultRepository.loadResource(patientId)
-  }
-
-  suspend fun loadResource(resourceId: String): Resource? {
-    return defaultRepository.loadResource(resourceId)
   }
 
   suspend fun loadRelatedPerson(patientId: String): List<RelatedPerson>? {
@@ -186,7 +230,19 @@ open class QuestionnaireViewModel(
     }
 
     intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let { patientId ->
-      loadPatient(patientId)?.apply { resourcesList.add(this) }
+      loadPatient(patientId)?.apply {
+        if (identifier.isEmpty()) {
+          identifier =
+            mutableListOf(
+              Identifier().apply {
+                value = logicalId
+                use = Identifier.IdentifierUse.OFFICIAL
+                system = QuestionnaireActivity.WHO_IDENTIFIER_SYSTEM
+              }
+            )
+        }
+        resourcesList.add(this)
+      }
       loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
     }
 

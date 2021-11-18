@@ -23,8 +23,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.LazyPagingItems
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.eir.EirApplication
-import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientItem
 import org.smartregister.fhircore.eir.data.model.VaccineStatus
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
@@ -66,9 +64,9 @@ class PatientRegisterFragment :
           startActivity(
             Intent(requireContext(), RecordVaccineActivity::class.java)
               .putExtras(
-                QuestionnaireActivity.requiredIntentArgs(
+                QuestionnaireActivity.intentArgs(
                   clientIdentifier = data.patientIdentifier,
-                  form = RECORD_VACCINE_FORM
+                  formName = RECORD_VACCINE_FORM
                 )
               )
           )
@@ -99,16 +97,12 @@ class PatientRegisterFragment :
   @Suppress("UNCHECKED_CAST")
   override fun initializeRegisterDataViewModel():
     RegisterDataViewModel<Pair<Patient, List<Immunization>>, PatientItem> {
-    val patientRepository =
-      PatientRepository(
-        (requireActivity().application as EirApplication).fhirEngine,
-        PatientItemMapper
-      )
+
     return ViewModelProvider(
       viewModelStore,
       RegisterDataViewModel(
           application = requireActivity().application,
-          registerRepository = patientRepository
+          registerRepository = (activity as PatientRegisterActivity).patientRepository
         )
         .createFactory()
     )[RegisterDataViewModel::class.java] as

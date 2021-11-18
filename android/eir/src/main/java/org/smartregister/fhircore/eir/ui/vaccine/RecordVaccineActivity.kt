@@ -38,9 +38,7 @@ import timber.log.Timber
 
 class RecordVaccineActivity : QuestionnaireActivity() {
 
-  override fun createViewModel(
-    application: Application,
-  ): QuestionnaireViewModel {
+  override fun createViewModel(application: Application): QuestionnaireViewModel {
     return ViewModelProvider(
         this@RecordVaccineActivity,
         RecordVaccineViewModel(
@@ -63,7 +61,7 @@ class RecordVaccineActivity : QuestionnaireActivity() {
           ) { vaccineSummary: PatientVaccineSummary? ->
           if (vaccineSummary != null) {
             lifecycleScope.launch {
-              questionnaire?.let { questionnaire ->
+              questionnaire.let { questionnaire ->
                 questionnaireViewModel.performExtraction(
                     questionnaire,
                     questionnaireResponse,

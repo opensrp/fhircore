@@ -20,14 +20,11 @@ import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
-import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
 
-@Config(shadows = [EirApplicationShadow::class])
 class EirAuthenticationServiceTest : RobolectricTest() {
 
   private lateinit var eirAuthenticationService: EirAuthenticationService

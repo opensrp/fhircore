@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine
+package org.smartregister.fhircore
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import io.mockk.mockk
 import java.io.File
 import java.io.FileReader
 import kotlinx.coroutines.runBlocking
@@ -35,9 +36,7 @@ import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
 import org.hl7.fhir.utilities.npm.ToolsVersion
 import org.junit.Ignore
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
-import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 /**
@@ -46,7 +45,6 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
  *
  * This should be removed at a later point once we have a more clear way of doing this
  */
-@Config(shadows = [EirApplicationShadow::class])
 @Ignore
 class StructureMapTestUtilities : RobolectricTest() {
 
@@ -66,7 +64,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     contextR4.isCanRunWithoutTerminology = true
 
     val outputs: MutableList<Base> = ArrayList()
-    val transformSupportServices = TransformSupportServices(outputs, contextR4)
+    val transformSupportServices = TransformSupportServices(outputs, mockk())
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(immunizationStructureMap, "ImmunizationRegistration")
@@ -109,7 +107,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     contextR4.isCanRunWithoutTerminology = true
 
     val outputs: MutableList<Base> = ArrayList()
-    val transformSupportServices = TransformSupportServices(outputs, contextR4)
+    val transformSupportServices = TransformSupportServices(outputs, mockk())
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(immunizationStructureMap, "ImmunizationRegistration")
@@ -165,7 +163,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     contextR4.isCanRunWithoutTerminology = true
 
     val outputs: MutableList<Base> = ArrayList()
-    val transformSupportServices = TransformSupportServices(outputs, contextR4)
+    val transformSupportServices = TransformSupportServices(outputs, mockk())
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(patientRegistrationStructureMap, "PatientRegistration")
@@ -203,7 +201,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     contextR4.isCanRunWithoutTerminology = true
 
     val outputs: MutableList<Base> = ArrayList()
-    val transformSupportServices = TransformSupportServices(outputs, contextR4)
+    val transformSupportServices = TransformSupportServices(outputs, mockk())
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(adverseEventStructureMap, "AdverseEvent")
@@ -252,7 +250,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     contextR4.isCanRunWithoutTerminology = true
 
     val outputs: MutableList<Base> = ArrayList()
-    val transformSupportServices = TransformSupportServices(outputs, contextR4)
+    val transformSupportServices = TransformSupportServices(outputs, mockk())
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(patientRegistrationStructureMap, "PatientRegistration")
@@ -291,7 +289,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     contextR4.isCanRunWithoutTerminology = true
 
     val outputs: MutableList<Base> = ArrayList()
-    val transformSupportServices = TransformSupportServices(outputs, contextR4)
+    val transformSupportServices = TransformSupportServices(outputs, mockk())
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(adverseEventStructureMap, "AdverseEvent")

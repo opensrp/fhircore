@@ -27,7 +27,7 @@ enum class VisitStatus {
 }
 
 @Stable
-data class AncPatientItem(
+data class PatientItem(
   val patientIdentifier: String = "",
   val name: String = "",
   val gender: String = "",
@@ -35,13 +35,14 @@ data class AncPatientItem(
   val demographics: String = "",
   val atRisk: String = "",
   val address: String = "",
+  val isPregnant: Boolean = true,
   val visitStatus: VisitStatus = VisitStatus.PLANNED
 )
 
 @Stable
-data class AncPatientDetailItem(
-  val patientDetails: AncPatientItem = AncPatientItem(),
-  val patientDetailsHead: AncPatientItem = AncPatientItem(),
+data class PatientDetailItem(
+  val patientDetails: PatientItem = PatientItem(),
+  val patientDetailsHead: PatientItem = PatientItem(),
 )
 
 @Stable

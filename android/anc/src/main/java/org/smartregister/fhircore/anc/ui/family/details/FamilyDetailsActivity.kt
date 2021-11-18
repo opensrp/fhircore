@@ -23,7 +23,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
-import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
+import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.util.startFamilyMemberRegistration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
@@ -58,7 +58,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
   private fun onFamilyMemberItemClicked(item: FamilyMemberItem) {
     startActivity(
-      Intent(this, AncDetailsActivity::class.java).apply {
+      Intent(this, PatientDetailsActivity::class.java).apply {
         putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, item.id)
       }
     )
@@ -66,6 +66,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
   private fun onAddNewMemberButtonClicked() {
     this.startFamilyMemberRegistration(familyId)
+    finish()
   }
 
   private fun onSeeAllEncounterClicked() {}

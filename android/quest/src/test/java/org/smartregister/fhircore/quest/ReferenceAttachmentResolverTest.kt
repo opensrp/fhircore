@@ -17,83 +17,86 @@
 package org.smartregister.fhircore.quest
 
 import android.graphics.Bitmap
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import io.mockk.verify
 import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
 import okhttp3.MediaType
 import okhttp3.ResponseBody
 import okio.BufferedSource
 import org.hl7.fhir.r4.model.Binary
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
-import org.robolectric.annotation.Config
-import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhirecore.quest.robolectric.RobolectricTest
-import org.smartregister.fhirecore.quest.shadow.QuestApplicationShadow
+import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import retrofit2.Call
 import retrofit2.Response
 
-@Config(shadows = [QuestApplicationShadow::class])
 class ReferenceAttachmentResolverTest : RobolectricTest() {
+  @get:Rule val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  lateinit var referenceAttachmentResolverTest: ReferenceAttachmentResolver
+  @get:Rule val coroutinesTestRule = CoroutineTestRule()
+
+  private lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
+
+  private lateinit var fhirService: FhirResourceService
 
   @Before
   fun setUp() {
-    referenceAttachmentResolverTest =
-      spyk(
-        ReferenceAttachmentResolver(ApplicationProvider.getApplicationContext<QuestApplication>())
-      )
+    referenceAttachmentResolver =
+      ReferenceAttachmentResolver(ApplicationProvider.getApplicationContext())
+
+    fhirService = mockk()
+    mockkObject(FhirResourceService.Companion)
+    every { FhirResourceService.create(any(), any()) } returns fhirService
+  }
+
+  @After
+  fun tearDown() {
+    unmockkObject(FhirResourceService.Companion)
   }
 
   @Test
   fun testResolveBinaryResourceShouldCallFhirEngineLoadAndReturnBinary() {
-    val fhirEngine = mockk<FhirEngine>()
-    val expectedBinaryResource = Binary()
-
-    ReflectionHelpers.setField(
-      QuestApplication.getContext(),
-      "fhirEngine\$delegate",
-      lazy { fhirEngine }
-    )
-
-    coEvery { fhirEngine.load(Binary::class.java, "sample-binary-image") } returns
-      expectedBinaryResource
-
-    val actualBinaryResource: Binary?
-    runBlocking {
-      actualBinaryResource =
-        referenceAttachmentResolverTest.resolveBinaryResource(
+    coroutinesTestRule.runBlockingTest {
+      val expectedBinaryResource = Binary().apply { id = "binaryId" }
+      coEvery {
+        ApplicationProvider.getApplicationContext<QuestApplication>()
+          .fhirEngine
+          .load(Binary::class.java, "sample-binary-image")
+      } returns expectedBinaryResource
+      val actualBinaryResource =
+        referenceAttachmentResolver.resolveBinaryResource(
           "https://fhir-server.org/Binary/sample-binary-image"
         )
+      Assert.assertEquals(expectedBinaryResource, actualBinaryResource)
     }
-
-    coVerify { fhirEngine.load(Binary::class.java, "sample-binary-image") }
-    Assert.assertEquals(expectedBinaryResource, actualBinaryResource)
   }
 
   @Test
   fun testResolveImageUrlShouldCallFetchImage() {
     val imageUrl = "https://image-server.com/8929839"
-    val fhirService = mockk<FhirResourceService>()
+
     val okHttpCall = mockk<Call<ResponseBody?>>()
     val mockResponse = Response.success<ResponseBody?>(null)
 
-    every { referenceAttachmentResolverTest.getFhirService() } returns fhirService
     every { okHttpCall.execute() } returns mockResponse
     every { fhirService.fetchImage(any()) } returns okHttpCall
 
-    runBlocking { referenceAttachmentResolverTest.resolveImageUrl(imageUrl) }
+    runBlocking { referenceAttachmentResolver.resolveImageUrl(imageUrl) }
 
     verify { fhirService.fetchImage(imageUrl) }
   }
@@ -101,17 +104,15 @@ class ReferenceAttachmentResolverTest : RobolectricTest() {
   @Test
   fun testResolveImageUrlShouldReturnNullWhenBodyIsNull() {
     val imageUrl = "https://image-server.com/8929839"
-    val fhirService = mockk<FhirResourceService>()
     val okHttpCall = mockk<Call<ResponseBody?>>()
 
     val mockResponse = Response.success<ResponseBody?>(null)
 
-    every { referenceAttachmentResolverTest.getFhirService() } returns fhirService
     every { okHttpCall.execute() } returns mockResponse
     every { fhirService.fetchImage(imageUrl) } returns okHttpCall
 
     val bitmap: Bitmap?
-    runBlocking { bitmap = referenceAttachmentResolverTest.resolveImageUrl(imageUrl) }
+    runBlocking { bitmap = referenceAttachmentResolver.resolveImageUrl(imageUrl) }
 
     Assert.assertNull(bitmap)
   }
@@ -119,12 +120,10 @@ class ReferenceAttachmentResolverTest : RobolectricTest() {
   @Test
   fun testResolveImageUrlShouldReturnDecodeAndReturnWhenServiceReturnsBody() {
     val imageUrl = "https://image-server.com/8929839"
-    val fhirService = mockk<FhirResourceService>()
     val okHttpCall = mockk<Call<ResponseBody?>>()
     val mockResponseBody: ResponseBody = spyk(FakeResponseBody())
     val mockResponse = Response.success<ResponseBody?>(mockResponseBody)
 
-    every { referenceAttachmentResolverTest.getFhirService() } returns fhirService
     every { mockResponseBody.byteStream() } returns
       (ByteArrayInputStream(
         "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7".toByteArray(
@@ -135,7 +134,7 @@ class ReferenceAttachmentResolverTest : RobolectricTest() {
     every { fhirService.fetchImage(imageUrl) } returns okHttpCall
 
     val bitmap: Bitmap?
-    runBlocking { bitmap = referenceAttachmentResolverTest.resolveImageUrl(imageUrl) }
+    runBlocking { bitmap = referenceAttachmentResolver.resolveImageUrl(imageUrl) }
 
     Assert.assertNotNull(bitmap)
   }
@@ -144,7 +143,7 @@ class ReferenceAttachmentResolverTest : RobolectricTest() {
   fun testGetContext() {
     Assert.assertEquals(
       ApplicationProvider.getApplicationContext(),
-      referenceAttachmentResolverTest.context
+      referenceAttachmentResolver.application
     )
   }
 

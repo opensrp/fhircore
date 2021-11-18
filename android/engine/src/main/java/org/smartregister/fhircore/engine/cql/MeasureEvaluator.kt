@@ -17,12 +17,9 @@
 package org.smartregister.fhircore.engine.cql
 
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.context.api.BundleInclusionRule
 import ca.uhn.fhir.model.valueset.BundleTypeEnum
 import ca.uhn.fhir.rest.api.BundleLinks
-import java.io.ByteArrayInputStream
-import java.io.InputStream
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.opencds.cqf.cql.engine.data.CompositeDataProvider
@@ -46,33 +43,31 @@ import org.opencds.cqf.cql.evaluator.measure.r4.R4MeasureProcessor
  */
 class MeasureEvaluator {
 
-  var fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
   var measureProcessor: R4MeasureProcessor? = null
-  private var parser = fhirContext.newJsonParser()!!
-  private val bundleFactory = fhirContext.newBundleFactory()!!
   private val bundleLinks = BundleLinks("", null, true, BundleTypeEnum.COLLECTION)
   private val adapterFactory = AdapterFactory()
   private val libraryVersionSelector = LibraryVersionSelector(adapterFactory)
 
   /**
    * This method loads configurations for Measure evaluation
-   * @param libraryData Fhir resource type Library
-   * @param patientDataList List of Fhir patient resources that are related
+   * @param patientResources List of Fhir patient resources that are related
+   * @param library Fhir resource type Library
    */
-  private fun setup(libraryData: String, patientDataList: List<String>) {
-    val libraryStream: InputStream = ByteArrayInputStream(libraryData.toByteArray())
-    val library = parser.parseResource(libraryStream) as IBaseBundle
-    var resources: ArrayList<IBaseResource> = ArrayList()
+  private fun setup(
+    patientResources: ArrayList<IBaseResource> = ArrayList(),
+    library: IBaseBundle,
+    fhirContext: FhirContext
+  ) {
 
-    for (r in patientDataList) {
-      val patientDataStream: InputStream = ByteArrayInputStream(r.toByteArray())
-      val patientData = parser.parseResource(patientDataStream) as IBaseBundle
-      resources.add(patientData)
-    }
-
-    bundleFactory.addRootPropertiesToBundle("bundled-directory", bundleLinks, resources.size, null)
+    val bundleFactory = fhirContext.newBundleFactory()!!
+    bundleFactory.addRootPropertiesToBundle(
+      "bundled-directory",
+      bundleLinks,
+      patientResources.size,
+      null
+    )
     bundleFactory.addResourcesToBundle(
-      resources,
+      patientResources,
       BundleTypeEnum.COLLECTION,
       "",
       BundleInclusionRule.BASED_ON_INCLUDES,
@@ -126,15 +121,16 @@ class MeasureEvaluator {
    * @param subject e.g. "patient-charity-otala-1
    */
   fun runMeasureEvaluate(
-    libraryData: String,
-    patientDataList: List<String>,
+    patientResources: ArrayList<IBaseResource> = ArrayList(),
+    library: IBaseBundle,
+    fhirContext: FhirContext,
     url: String,
     periodStartDate: String,
     periodEndDate: String,
     reportType: String,
-    subject: String
+    subject: String,
   ): String {
-    setup(libraryData, patientDataList)
+    setup(patientResources, library, fhirContext)
     val result =
       measureProcessor?.evaluateMeasure(
         url,

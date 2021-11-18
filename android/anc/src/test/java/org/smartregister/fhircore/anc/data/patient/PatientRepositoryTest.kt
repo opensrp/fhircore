@@ -21,6 +21,7 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.just
@@ -58,7 +59,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
@@ -197,7 +198,7 @@ class PatientRepositoryTest : RobolectricTest() {
     }
   }
 
-  private fun verifyPatient(patient: AncPatientItem) {
+  private fun verifyPatient(patient: PatientItem) {
     with(patient) {
       Assert.assertEquals(PATIENT_ID_1, patientIdentifier)
       Assert.assertEquals("Jane Mc", name)
@@ -208,7 +209,7 @@ class PatientRepositoryTest : RobolectricTest() {
     }
   }
 
-  private fun verifyHeadPatient(patient: AncPatientItem) {
+  private fun verifyHeadPatient(patient: PatientItem) {
     with(patient) {
       Assert.assertEquals(PATIENT_ID_1, patientIdentifier)
       Assert.assertEquals("Salina Jetly", name)
@@ -337,6 +338,30 @@ class PatientRepositoryTest : RobolectricTest() {
   fun testFetchObservationsShouldThrowExceptionOnUnrecognizedFilterType() {
     val result = runBlocking { repository.fetchObservations("1111", "not known") }
     Assert.assertEquals(4, result.valueIntegerType.value)
+  }
+
+  @Test
+  fun testRecordComputedBmiShouldExtractAndSaveResources() {
+    every { repository.resourceMapperExtended } returns
+      mockk { coEvery { saveParsedResource(any(), any(), any(), any()) } returns Unit }
+
+    coEvery { fhirEngine.save(any()) } returns Unit
+
+    runBlocking {
+      val result =
+        repository.recordComputedBmi(
+          mockk(),
+          mockk(),
+          "patient_1",
+          "encounter_1",
+          1.6764,
+          50.0,
+          9.8
+        )
+
+      coVerify(exactly = 4) { fhirEngine.save(any()) }
+      Assert.assertTrue(result)
+    }
   }
 
   private fun buildCarePlan(subject: String): CarePlan {

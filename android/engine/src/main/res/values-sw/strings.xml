@@ -1,5 +1,5 @@
 <resources>
-        <string name="app_version">Toleo %s</string>
+        <string name="app_version">Toleo %1$d(%2$s)</string>
         <string name="language">Lugha</string>
         <string name="empty_client_list_message_title">Hakuna Matokeo</string>
         <string name="empty_client_list_message_details">Pole, hatukupata mteja kwa hilo Jina wala ID</string>
@@ -47,4 +47,6 @@
         <string name="error_loading_form">Hitilafu kounyesha fomu</string>
         <string name="error_saving_form">Hitilafu imetokea, haiwezi kuhifadhi fomu</string>
         <string name="saving_registration">Tunahifadhi usajili. Tafadhali subiri</string>
+        <string name="replace_photo">Replace photo</string>
+        <string name="take_photo">Take photo</string>
 </resources>

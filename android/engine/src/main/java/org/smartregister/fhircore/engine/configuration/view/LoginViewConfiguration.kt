@@ -17,34 +17,47 @@
 package org.smartregister.fhircore.engine.configuration.view
 
 import androidx.compose.runtime.Stable
+import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.Configuration
 
 @Stable
+@Serializable
 class LoginViewConfiguration(
+  override val appId: String,
+  override val classification: String,
   var applicationName: String = "App Name",
   var applicationVersion: String = "0.0.1",
+  var applicationVersionCode: Int = 1,
   var darkMode: Boolean = true,
-  var showLogo: Boolean = false
+  var showLogo: Boolean = false,
 ) : Configuration
 /**
  * A function providing a DSL for configuring [LoginViewConfiguration]. The configurations provided
  * by this method are used on the register calling this method
+ * @param appId Set unique identifier for this configuration
  * @param applicationName Set the application name
  * @param applicationVersion Set the application version
+ * @param applicationVersionCode Set the application version code
  * @param darkMode Change login theme; alter the background color to white when false dark blue
  * otherwise
  * @param showLogo Show login logo for the app otherwise
  */
 @Stable
 fun loginViewConfigurationOf(
+  appId: String = "loginId",
+  classification: String = "login",
   applicationName: String = "FHIR App",
   applicationVersion: String = "0.0.1",
+  applicationVersionCode: Int = 1,
   darkMode: Boolean = false,
   showLogo: Boolean = false
 ) =
   LoginViewConfiguration(
+    appId = appId,
+    classification = classification,
     applicationName = applicationName,
     applicationVersion = applicationVersion,
+    applicationVersionCode = applicationVersionCode,
     darkMode = darkMode,
     showLogo = showLogo
   )

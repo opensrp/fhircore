@@ -27,7 +27,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.fhir.FhirEngine
 import kotlinx.android.synthetic.main.fragment_patient_details.immuneStatusImageView
 import kotlinx.android.synthetic.main.fragment_patient_details.immuneTextView
 import kotlinx.android.synthetic.main.fragment_patient_details.immunizationsListView
@@ -40,12 +39,17 @@ import kotlinx.android.synthetic.main.fragment_patient_details.reportAdverseEven
 import kotlinx.android.synthetic.main.fragment_patient_details.showQRCodeButton
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.R
+import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.ui.adverseevent.AdverseEventQuestionnaireActivity
+import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
 import org.smartregister.fhircore.eir.util.ADVERSE_EVENT_FORM
+import org.smartregister.fhircore.eir.util.EirConfigClassification
 import org.smartregister.fhircore.eir.util.RECORD_VACCINE_FORM
+import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.configuration.view.ConfigurableView
+import org.smartregister.fhircore.engine.configuration.view.ImmunizationProfileViewConfiguration
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.extractAge
@@ -53,10 +57,15 @@ import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.engine.util.extension.show
+import org.smartregister.fhircore.engine.util.extension.toggleVisibility
 
-class PatientDetailsFragment private constructor() : Fragment() {
+class PatientDetailsFragment private constructor() :
+  Fragment(), ConfigurableView<ImmunizationProfileViewConfiguration> {
 
-  private lateinit var fhirEngine: FhirEngine
+  private lateinit var patientId: String
+
+  override val configurableViews: Map<String, View>
+    get() = mutableMapOf()
 
   lateinit var patientDetailsViewModel: PatientDetailsViewModel
 
@@ -70,16 +79,20 @@ class PatientDetailsFragment private constructor() : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    val patientId = arguments?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+    patientId = arguments?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
     setupViews(patientId)
 
-    fhirEngine = EirApplication.getContext().fhirEngine
+    val fhirEngine = configurableApplication().fhirEngine
+
+    val patientRepository =
+      PatientRepository(fhirEngine = fhirEngine, domainMapper = PatientItemMapper)
 
     patientDetailsViewModel =
       ViewModelProvider(
         viewModelStore,
-        PatientDetailsViewModel(fhirEngine = fhirEngine, patientId = patientId).createFactory()
+        PatientDetailsViewModel(patientRepository = patientRepository, patientId = patientId)
+          .createFactory()
       )[PatientDetailsViewModel::class.java]
 
     patientDetailsViewModel.patientDemographics.observe(
@@ -91,6 +104,14 @@ class PatientDetailsFragment private constructor() : Fragment() {
       viewLifecycleOwner,
       this::handleImmunizations
     )
+    val viewConfiguration =
+      configurableApplication()
+        .configurationRegistry
+        .retrieveConfiguration<ImmunizationProfileViewConfiguration>(
+          context = requireContext(),
+          configClassification = EirConfigClassification.IMMUNIZATION_PROFILE
+        )
+    configureViews(viewConfiguration)
   }
 
   override fun onResume() {
@@ -111,9 +132,9 @@ class PatientDetailsFragment private constructor() : Fragment() {
       startActivity(
         Intent(requireContext(), RecordVaccineActivity::class.java)
           .putExtras(
-            QuestionnaireActivity.requiredIntentArgs(
+            QuestionnaireActivity.intentArgs(
               clientIdentifier = patientId,
-              form = RECORD_VACCINE_FORM
+              formName = RECORD_VACCINE_FORM
             )
           )
       )
@@ -147,9 +168,9 @@ class PatientDetailsFragment private constructor() : Fragment() {
           startActivity(
             Intent(requireContext(), AdverseEventQuestionnaireActivity::class.java)
               .putExtras(
-                QuestionnaireActivity.requiredIntentArgs(
+                QuestionnaireActivity.intentArgs(
                   clientIdentifier = patientId,
-                  form = ADVERSE_EVENT_FORM,
+                  formName = ADVERSE_EVENT_FORM,
                   immunizationId = immunizationAdverseEventItem.immunizationIds[position]
                 )
               )
@@ -170,6 +191,7 @@ class PatientDetailsFragment private constructor() : Fragment() {
   }
 
   private fun handleImmunizations(immunizations: List<Immunization>) {
+    val configuration = patientDetailsViewModel.immunizationProfileConfiguration.value
     when {
       immunizations.isEmpty() -> {
         toggleImmunizationStatus(fullyImmunized = false)
@@ -184,7 +206,9 @@ class PatientDetailsFragment private constructor() : Fragment() {
         populateImmunizationList(immunizations)
         recordVaccineButton.show()
         showQRCodeButton.hide()
-        reportAdverseEventButton.show()
+        val showAdverseReportButton =
+          immunizations.size == 1 && configuration != null && configuration.showReportAdverseEvent
+        reportAdverseEventButton.toggleVisibility(showAdverseReportButton)
         noVaccinesTextView.hide()
       }
       else -> {
@@ -192,8 +216,10 @@ class PatientDetailsFragment private constructor() : Fragment() {
         populateImmunizationList(immunizations)
         noVaccinesTextView.hide()
         recordVaccineButton.hide()
-        showQRCodeButton.show()
-        reportAdverseEventButton.show()
+        showQRCodeButton.toggleVisibility(configuration != null && configuration.showScanBarcode)
+        reportAdverseEventButton.toggleVisibility(
+          configuration != null && configuration.showReportAdverseEvent
+        )
       }
     }
   }
@@ -215,6 +241,18 @@ class PatientDetailsFragment private constructor() : Fragment() {
         else ContextCompat.getColor(requireContext(), R.color.not_immune)
       )
     }
+  }
+
+  override fun configurableApplication(): ConfigurableApplication {
+    return requireActivity().application as ConfigurableApplication
+  }
+
+  override fun configureViews(viewViewConfiguration: ImmunizationProfileViewConfiguration) {
+    patientDetailsViewModel.updateViewConfiguration(viewViewConfiguration)
+  }
+
+  override fun setupConfigurableViews(viewViewConfiguration: ImmunizationProfileViewConfiguration) {
+    // Overridden. The configurable views are updated dynamically this is not required
   }
 
   companion object {
