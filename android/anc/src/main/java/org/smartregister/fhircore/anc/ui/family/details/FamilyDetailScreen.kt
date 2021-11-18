@@ -222,7 +222,7 @@ fun MembersList(
 
             Image(
               painter = painterResource(id = R.drawable.ic_forward_arrow),
-              contentDescription = "",
+              contentDescription = stringResource(id = R.string.forward_arrow),
               colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray))
             )
           }

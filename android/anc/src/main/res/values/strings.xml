@@ -97,4 +97,5 @@
     <string name="household_tasks">Household Tasks</string>
     <string name="monthly_visit">Monthly Visit</string>
     <string name="head_of_household">Head of household</string>
+    <string name="forward_arrow">Forward arrow</string>
 </resources>
