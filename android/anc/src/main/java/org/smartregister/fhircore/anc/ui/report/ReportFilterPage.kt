@@ -102,7 +102,7 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
     onDateRangePress = viewModel::onDateRangePress,
     patientSelectionText = patientSelectionType ?: "All",
     onPatientSelectionTypeChanged = viewModel::onPatientSelectionTypeChanged,
-    generateReportEnabled = generateReportEnabled,
+    generateReportEnabled = generateReportEnabled ?: true,
     onGenerateReportPress = viewModel::onGenerateReportPress,
     selectedPatient = viewModel.getSelectedPatient()
   )
@@ -174,7 +174,7 @@ fun SelectedPatientItem(
       modifier =
         modifier
           .clip(RoundedCornerShape(15.dp))
-          .background(color = DividerColor)
+          .background(color = colorResource(id = R.color.backgroundGray))
           .wrapContentWidth()
           .padding(8.dp),
       contentAlignment = Alignment.Center
@@ -185,7 +185,7 @@ fun SelectedPatientItem(
           modifier =
             modifier
               .clip(RoundedCornerShape(8.dp))
-              .background(color = DividerColor)
+              .background(color = colorResource(id = R.color.backgroundGray))
               .wrapContentWidth()
               .clickable { onCancelSelectedPatient() }
               .padding(4.dp)
