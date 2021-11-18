@@ -30,14 +30,14 @@ enum class VisitStatus {
 data class PatientItem(
   val patientIdentifier: String = "",
   val name: String = "",
-  val familyName: String = "",
   val gender: String = "",
   val age: String = "",
   val demographics: String = "",
   val atRisk: String = "",
   val address: String = "",
   val isPregnant: Boolean = true,
-  val visitStatus: VisitStatus = VisitStatus.PLANNED
+  val visitStatus: VisitStatus = VisitStatus.PLANNED,
+  val familyName: String = ""
 )
 
 @Stable

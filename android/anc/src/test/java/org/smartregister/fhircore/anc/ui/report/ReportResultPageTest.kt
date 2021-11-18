@@ -26,14 +26,13 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.report.ReportRepository
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
@@ -41,24 +40,25 @@ import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 class ReportResultPageTest : RobolectricTest() {
 
   private val app = ApplicationProvider.getApplicationContext<Application>()
-  private lateinit var fhirEngine: FhirEngine
-  private lateinit var repository: ReportRepository
   private lateinit var viewModel: ReportViewModel
   @get:Rule val composeRule = createComposeRule()
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
   private val testMeasureReportItem = MutableLiveData(ReportItem(title = "Test Report Title"))
+  private val patientSelectionType = MutableLiveData("")
+  private val selectionPatient = MutableLiveData(PatientItem(name = "Test Patient Name"))
 
   @Before
   fun setUp() {
-    fhirEngine = mockk()
-    repository =
-      spyk(
-        ReportRepository(fhirEngine, "testPatientID", ApplicationProvider.getApplicationContext())
-      )
     viewModel =
-      spyk(objToCopy = ReportViewModel(repository, coroutinesTestRule.testDispatcherProvider))
-    every { viewModel.selectedMeasureReportItem } returns
-      this@ReportResultPageTest.testMeasureReportItem
+      mockk {
+        every { selectedMeasureReportItem } returns this@ReportResultPageTest.testMeasureReportItem
+        every { isReadyToGenerateReport } returns MutableLiveData(true)
+        every { startDate } returns MutableLiveData("")
+        every { endDate } returns MutableLiveData("")
+        every { patientSelectionType } returns this@ReportResultPageTest.patientSelectionType
+        every { selectedPatientItem } returns this@ReportResultPageTest.selectionPatient
+      }
+
     composeRule.setContent { ReportResultScreen(viewModel = viewModel) }
   }
 

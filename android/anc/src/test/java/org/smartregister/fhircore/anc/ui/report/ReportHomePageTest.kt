@@ -23,6 +23,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
@@ -30,8 +31,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 
 @ExperimentalCoroutinesApi
 class ReportHomePageTest : RobolectricTest() {
@@ -39,19 +42,29 @@ class ReportHomePageTest : RobolectricTest() {
   private val app = ApplicationProvider.getApplicationContext<Application>()
   private lateinit var fhirEngine: FhirEngine
   private lateinit var repository: ReportRepository
+  private lateinit var ancPatientRepository: PatientRepository
   private lateinit var viewModel: ReportViewModel
   @get:Rule val composeRule = createComposeRule()
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
   @Before
   fun setUp() {
-    fhirEngine = spyk()
+    fhirEngine = mockk()
     repository =
       spyk(
         ReportRepository(fhirEngine, "testPatientID", ApplicationProvider.getApplicationContext())
       )
+    ancPatientRepository =
+      spyk(PatientRepository(fhirEngine, AncItemMapper, coroutinesTestRule.testDispatcherProvider))
     viewModel =
-      spyk(objToCopy = ReportViewModel(repository, coroutinesTestRule.testDispatcherProvider))
+      spyk(
+        objToCopy =
+          ReportViewModel(
+            repository,
+            ancPatientRepository,
+            coroutinesTestRule.testDispatcherProvider
+          )
+      )
     composeRule.setContent { ReportHomeScreen(viewModel = viewModel) }
   }
 

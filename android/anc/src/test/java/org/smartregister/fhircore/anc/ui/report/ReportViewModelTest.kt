@@ -34,6 +34,7 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -43,6 +44,7 @@ internal class ReportViewModelTest {
 
   private lateinit var fhirEngine: FhirEngine
   private lateinit var reportRepository: ReportRepository
+  private lateinit var ancPatientRepository: PatientRepository
   private lateinit var reportViewModel: ReportViewModel
   @MockK lateinit var parser: IParser
   @MockK lateinit var fhirResourceDataSource: FhirResourceDataSource
@@ -61,9 +63,15 @@ internal class ReportViewModelTest {
 
     fhirEngine = mockk(relaxed = true)
     reportRepository = mockk()
-
+    ancPatientRepository = mockk()
     reportViewModel =
-      spyk(ReportViewModel(reportRepository, coroutinesTestRule.testDispatcherProvider))
+      spyk(
+        ReportViewModel(
+          reportRepository,
+          ancPatientRepository,
+          coroutinesTestRule.testDispatcherProvider
+        )
+      )
   }
 
   @Test
