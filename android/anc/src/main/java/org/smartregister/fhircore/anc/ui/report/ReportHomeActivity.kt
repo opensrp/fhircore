@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Icon
@@ -28,19 +26,24 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.core.util.Pair
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.common.collect.Lists
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
-import java.util.concurrent.Executors
+import java.util.Calendar
+import kotlin.collections.ArrayList
+import kotlin.collections.List
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.smartregister.fhircore.anc.AncApplication
@@ -99,9 +102,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   lateinit var patientId: String
   lateinit var reportViewModel: ReportViewModel
 
-  val executor = Executors.newSingleThreadExecutor()
-  val handler = Handler(Looper.getMainLooper())
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     libraryEvaluator = LibraryEvaluator()
@@ -113,14 +113,24 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
 
     val patientId =
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-    val repository = ReportRepository((application as AncApplication).fhirEngine, patientId)
+    val repository = ReportRepository((application as AncApplication).fhirEngine, patientId, this)
     val dispatcher: DispatcherProvider = DefaultDispatcherProvider
     reportViewModel = ReportViewModel(repository, dispatcher)
+
     reportViewModel.backPress.observe(
       this,
       {
         if (it) {
           finish()
+        }
+      }
+    )
+
+    reportViewModel.showDatePicker.observe(
+      this,
+      {
+        if (it) {
+          showDateRangePicker(reportViewModel::onDateSelected)
         }
       }
     )
@@ -172,9 +182,10 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
                 ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
               }
             )
+            reportViewModel.reportState.currentScreen = ReportViewModel.ReportScreen.PREHOMElOADING
             loadCQLLibraryData()
             loadMeasureEvaluateLibrary()
-            ReportHomeScreen(reportViewModel)
+            ReportView(reportViewModel)
           }
         }
       }
@@ -244,6 +255,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       val libraryStreamMeasure: InputStream =
         ByteArrayInputStream(measureEvaluateLibraryData.toByteArray())
       libraryMeasure = parser.parseResource(libraryStreamMeasure) as IBaseBundle
+      reportViewModel.reportState.currentScreen = ReportViewModel.ReportScreen.HOME
     } else {
       reportViewModel
         .fetchCQLMeasureEvaluateLibraryAndValueSets(
@@ -333,6 +345,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     val libraryStreamMeasure: InputStream =
       ByteArrayInputStream(measureEvaluateLibraryData.toByteArray())
     libraryMeasure = parser.parseResource(libraryStreamMeasure) as IBaseBundle
+    reportViewModel.reportState.currentScreen = ReportViewModel.ReportScreen.HOME
   }
 
   fun loadCQLMeasurePatientData() {
@@ -343,5 +356,26 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
 
   fun handleCQLMeasureLoadPatient(auxPatientData: String) {
     patientDetailsData = auxPatientData
+  }
+
+  @Composable
+  fun ReportView(viewModel: ReportViewModel) {
+    // Choose which screen to show based on the value in the ReportScreen from ReportState
+    when (viewModel.reportState.currentScreen) {
+      ReportViewModel.ReportScreen.HOME -> ReportHomeScreen(viewModel)
+      ReportViewModel.ReportScreen.FILTER -> ReportFilterScreen(viewModel)
+      ReportViewModel.ReportScreen.PICK_PATIENT -> ReportFilterScreen(viewModel)
+      ReportViewModel.ReportScreen.RESULT -> ReportResultScreen(viewModel)
+      ReportViewModel.ReportScreen.PREHOMElOADING -> ReportPreLoadingHomePage()
+    }
+  }
+
+  private fun showDateRangePicker(onDateSelected: (Pair<Long, Long>?) -> Unit) {
+    val builder = MaterialDatePicker.Builder.dateRangePicker()
+    val now = Calendar.getInstance()
+    builder.setSelection(Pair(now.timeInMillis, now.timeInMillis))
+    val dateRangePicker = builder.build()
+    dateRangePicker.show(supportFragmentManager, dateRangePicker.toString())
+    dateRangePicker.addOnPositiveButtonClickListener { onDateSelected(dateRangePicker.selection) }
   }
 }
