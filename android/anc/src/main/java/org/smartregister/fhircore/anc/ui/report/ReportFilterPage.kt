@@ -53,7 +53,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.ui.report.ReportViewModel.PatientSelectionType
-import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 const val GENERATE_REPORT_BUTTON_TAG = "generateReportButtonTag"
@@ -83,8 +82,8 @@ fun ReportFilterPage(
 @Composable
 fun ReportFilterScreen(viewModel: ReportViewModel) {
 
-  val reportMeasureItem by remember { mutableStateOf(viewModel.getSelectedReport()) }
-  val patientSelectionType by remember { mutableStateOf(viewModel.getPatientSelectionType()) }
+  val reportMeasureItem by remember { mutableStateOf(viewModel.selectedMeasureReportItem.value) }
+  val patientSelectionType by remember { mutableStateOf(viewModel.patientSelectionType.value) }
   val generateReportEnabled by remember { mutableStateOf(viewModel.isReadyToGenerateReport.value) }
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
@@ -133,7 +132,7 @@ fun DateRangeItem(text: String, clickListener: () -> Unit, modifier: Modifier = 
       modifier =
         modifier
           .clip(RoundedCornerShape(15.dp))
-          .background(color = DividerColor)
+          .background(color = colorResource(id = R.color.backgroundGray))
           .wrapContentWidth()
           .padding(8.dp),
       contentAlignment = Alignment.Center

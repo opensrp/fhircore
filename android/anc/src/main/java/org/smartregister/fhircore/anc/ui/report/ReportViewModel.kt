@@ -76,14 +76,6 @@ class ReportViewModel(
     reportState.currentScreen = ReportScreen.FILTER
   }
 
-  fun getSelectedReport(): ReportItem? {
-    return selectedMeasureReportItem.value
-  }
-
-  fun getPatientSelectionType(): String? {
-    return patientSelectionType.value
-  }
-
   fun onBackPress() {
     backPress.value = true
   }

@@ -16,35 +16,32 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import android.app.Application
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
-import io.mockk.every
-import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.report.ReportRepository
-import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 @ExperimentalCoroutinesApi
-class ReportFilterPageTest : RobolectricTest() {
+class ReportPreLoadHomePageTest : RobolectricTest() {
 
+  private val app = ApplicationProvider.getApplicationContext<Application>()
   private lateinit var fhirEngine: FhirEngine
   private lateinit var repository: ReportRepository
   private lateinit var viewModel: ReportViewModel
   @get:Rule val composeRule = createComposeRule()
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
-  private val patientSelectionType = MutableLiveData("")
-  private val testMeasureReportItem = MutableLiveData(ReportItem(title = "Test Report Title"))
 
   @Before
   fun setUp() {
@@ -54,21 +51,14 @@ class ReportFilterPageTest : RobolectricTest() {
         ReportRepository(fhirEngine, "testPatientID", ApplicationProvider.getApplicationContext())
       )
     viewModel =
-      mockk {
-        every { selectedMeasureReportItem } returns this@ReportFilterPageTest.testMeasureReportItem
-        every { isReadyToGenerateReport } returns MutableLiveData(true)
-        every { startDate } returns MutableLiveData("")
-        every { endDate } returns MutableLiveData("")
-        every { patientSelectionType } returns this@ReportFilterPageTest.patientSelectionType
-      }
-
-    composeRule.setContent { ReportFilterScreen(viewModel = viewModel) }
+      spyk(objToCopy = ReportViewModel(repository, coroutinesTestRule.testDispatcherProvider))
+    composeRule.setContent { ReportHomeScreen(viewModel) }
   }
 
   @Test
-  fun testReportFilterPageComponents() {
+  fun testReportPreLoadingHomeScreenComponents() {
     // toolbar should have valid title and icon
-    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals("Test Report Title")
+    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals(app.getString(R.string.reports))
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
   }
 }

@@ -21,6 +21,7 @@ import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.every
@@ -45,6 +46,7 @@ class ReportResultPageTest : RobolectricTest() {
   private lateinit var viewModel: ReportViewModel
   @get:Rule val composeRule = createComposeRule()
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
+  private val testMeasureReportItem = MutableLiveData(ReportItem(title = "Test Report Title"))
 
   @Before
   fun setUp() {
@@ -55,7 +57,8 @@ class ReportResultPageTest : RobolectricTest() {
       )
     viewModel =
       spyk(objToCopy = ReportViewModel(repository, coroutinesTestRule.testDispatcherProvider))
-    every { viewModel.getSelectedReport() } returns ReportItem(title = "Reports")
+    every { viewModel.selectedMeasureReportItem } returns
+      this@ReportResultPageTest.testMeasureReportItem
     composeRule.setContent { ReportResultScreen(viewModel = viewModel) }
   }
 

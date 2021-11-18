@@ -173,7 +173,7 @@ internal class ReportViewModelTest {
   fun testShouldVerifyReportItemClickListener() {
     val expectedReportItem = testReportItem
     reportViewModel.onReportMeasureItemClicked(testReportItem)
-    Assert.assertEquals(expectedReportItem, reportViewModel.getSelectedReport())
+    Assert.assertEquals(expectedReportItem, reportViewModel.selectedMeasureReportItem.value)
     Assert.assertEquals(
       ReportViewModel.ReportScreen.FILTER,
       reportViewModel.reportState.currentScreen
