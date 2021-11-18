@@ -87,5 +87,6 @@
     <string name="done">Done</string>
     <string name="replace_photo">Replace photo</string>
     <string name="take_photo">Take photo</string>
+    <string name="edit">Edit</string>
     <string name="application_not_supported">Application %1$s is not supported</string>
 </resources>

@@ -38,10 +38,7 @@ import timber.log.Timber
 
 class RecordVaccineActivity : QuestionnaireActivity() {
 
-  override fun createViewModel(
-    application: Application,
-    readOnly: Boolean
-  ): QuestionnaireViewModel {
+  override fun createViewModel(application: Application): QuestionnaireViewModel {
     return ViewModelProvider(
         this@RecordVaccineActivity,
         RecordVaccineViewModel(

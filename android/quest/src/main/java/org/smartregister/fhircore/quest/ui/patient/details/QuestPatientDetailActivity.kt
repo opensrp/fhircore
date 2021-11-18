@@ -84,7 +84,7 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
         Intent(this, QuestionnaireActivity::class.java)
           .putExtras(
             QuestionnaireActivity.intentArgs(
-              clientIdentifier = "",
+              clientIdentifier = patientId,
               formName = questionnaireId,
               readOnly = true,
               populationResources = populationResources

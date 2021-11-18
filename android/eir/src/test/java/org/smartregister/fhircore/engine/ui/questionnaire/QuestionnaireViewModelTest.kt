@@ -203,7 +203,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireResponse
     )
 
-    coVerify(exactly = 1, timeout = 2000) { defaultRepo.save(capture(questionnaireResponseSlot)) }
+    coVerify(exactly = 1, timeout = 2000) {
+      defaultRepo.addOrUpdate(capture(questionnaireResponseSlot))
+    }
 
     coVerify(exactly = 1, timeout = 2000) { questionnaireViewModel.saveBundleResources(any()) }
 
