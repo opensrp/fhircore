@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -127,11 +128,16 @@ fun Toolbar(dataProvider: QuestPatientDetailDataProvider) {
 }
 
 @Composable
-fun FormItem(form: QuestionnaireConfig, clickHandler: (form: QuestionnaireConfig) -> Unit) {
+fun FormItem(
+  form: QuestionnaireConfig,
+  dataProvider: QuestPatientDetailDataProvider
+) { // clickHandler: (form: QuestionnaireConfig) -> Unit) {
   Card(
     backgroundColor = colorResource(id = R.color.cornflower_blue),
-    elevation = 0.dp,
-    modifier = Modifier.fillMaxWidth().clickable { clickHandler(form) }.testTag(FORM_ITEM)
+    modifier =
+      Modifier.fillMaxWidth()
+        .clickable { dataProvider.onFormItemClickListener().invoke(form) }
+        .testTag(FORM_ITEM)
   ) {
     Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(6.dp)) {
       Text(
@@ -141,6 +147,33 @@ fun FormItem(form: QuestionnaireConfig, clickHandler: (form: QuestionnaireConfig
         fontWeight = FontWeight.Bold,
       )
     }
+  }
+}
+
+@Composable
+fun ResultItem(form: QuestionnaireResponse, dataProvider: QuestPatientDetailDataProvider) {
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween,
+    modifier =
+      Modifier.fillMaxWidth()
+        .padding(12.dp)
+        .clickable { dataProvider.onTestResultItemClickListener().invoke(form) }
+        .testTag(RESULT_ITEM)
+  ) {
+    Text(
+      text = (form.meta?.tagFirstRep?.display ?: "") + " (${form.authored?.asDdMmmYyyy() ?: ""}) ",
+      color = colorResource(id = R.color.black),
+      fontSize = 17.sp,
+      textAlign = TextAlign.Start,
+      modifier = Modifier.padding(end = 12.dp)
+    )
+
+    Image(
+      painter = painterResource(id = R.drawable.ic_forward_arrow),
+      contentDescription = "",
+      colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray))
+    )
   }
 }
 
@@ -158,18 +191,18 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
             .background(color = colorResource(id = R.color.colorPrimary))
             .padding(12.dp)
       ) {
-        val patient = dataProvider.getDemographics().observeAsState().value
-
-        Text(
-          text =
-            "${patient?.extractName() ?: ""}, ${patient?.extractGender(LocalContext.current)?.first() ?: ""}, ${patient?.extractAge() ?: ""}",
-          color = colorResource(id = R.color.white),
-          fontSize = 18.sp,
-          fontWeight = FontWeight.Bold,
-          modifier = Modifier.testTag(PATIENT_NAME)
-        )
+        dataProvider.getDemographics().observeAsState().value.let {
+          Text(
+            text = "${extractPatientBioData(it, LocalContext.current)}",
+            color = colorResource(id = R.color.white),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.testTag(PATIENT_NAME)
+          )
+        }
       }
 
+      // Forms section
       Column(
         modifier =
           Modifier.fillMaxSize()
@@ -188,8 +221,7 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
             val forms = dataProvider.getAllForms().observeAsState()
             forms.value?.let { allForms ->
               allForms.forEachIndexed { index, it ->
-                FormItem(it) { dataProvider.onFormItemClickListener().invoke(it) }
-
+                FormItem(it, dataProvider)
                 if (index < allForms.size.minus(1)) {
                   Spacer(Modifier.height(16.dp))
                 }
@@ -198,51 +230,28 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
           }
         }
 
-        // responses section
-        Spacer(Modifier.height(24.dp))
-        Text(
-          text = "RESPONSES",
-          color = colorResource(id = R.color.grayText),
-          fontSize = 16.sp,
-          fontWeight = FontWeight.Bold
-        )
-        Card(
-          elevation = 4.dp,
-          modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-        ) {
-          Column() {
-            // fetch responses
-            val results = dataProvider.getAllResults().observeAsState()
+        // Responses section
+        dataProvider.getAllResults().observeAsState().value?.let {
+          Spacer(Modifier.height(24.dp))
+          Text(
+            text = "RESPONSES (${it.size})",
+            color = colorResource(id = R.color.grayText),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
+          )
+          Card(
+            elevation = 4.dp,
+            modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+          ) {
+            Column {
+              // fetch responses
 
-            val totalResultsCount = results.value?.count() ?: 0
-            results.value?.forEachIndexed { index, item ->
-              Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier =
-                  Modifier.fillMaxWidth()
-                    .padding(12.dp)
-                    .clickable { dataProvider.onTestResultItemClickListener().invoke(item) }
-                    .testTag(RESULT_ITEM)
-              ) {
-                Text(
-                  text = (item.meta?.tagFirstRep?.display
-                      ?: "") + " (${item.authored?.asDdMmmYyyy() ?: ""}) ",
-                  color = colorResource(id = R.color.black),
-                  fontSize = 17.sp,
-                  textAlign = TextAlign.Start,
-                  modifier = Modifier.padding(end = 12.dp)
-                )
+              it.forEachIndexed { index, item ->
+                ResultItem(item, dataProvider)
 
-                Image(
-                  painter = painterResource(id = R.drawable.ic_forward_arrow),
-                  contentDescription = "",
-                  colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray))
-                )
-              }
-
-              if (index < totalResultsCount) {
-                Divider(color = colorResource(id = R.color.white_smoke))
+                if (index < it.size) {
+                  Divider(color = colorResource(id = R.color.white_smoke))
+                }
               }
             }
           }
@@ -253,6 +262,13 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
       }
     }
   }
+}
+
+fun extractPatientBioData(patient: Patient?, context: Context): String {
+  return patient?.let {
+    "${it.extractName()}, ${it.extractGender(context)?.first() ?: ""}, ${it.extractAge()}"
+  }
+    ?: ""
 }
 
 @Preview
@@ -279,7 +295,7 @@ fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
                   listOf(
                     Address().apply {
                       city = "Nairobi"
-                      country = "Keynya"
+                      country = "Kenya"
                     }
                   )
                 identifier = listOf(Identifier().apply { value = "12345" })
@@ -294,9 +310,15 @@ fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
         listOf(
           QuestionnaireConfig(
             appId = "quest",
-            form = "sample-test-result",
-            title = "+ Sample Test Result",
+            form = "sample-order-result",
+            title = "Sample Order Result",
             identifier = "12345"
+          ),
+          QuestionnaireConfig(
+            appId = "quest",
+            form = "sample-test-result",
+            title = "Sample Test Result",
+            identifier = "67890"
           )
         )
       )
@@ -305,6 +327,10 @@ fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
     override fun getAllResults(): LiveData<List<QuestionnaireResponse>> {
       return MutableLiveData(
         listOf(
+          QuestionnaireResponse().apply {
+            meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Order" }) }
+            authored = Date()
+          },
           QuestionnaireResponse().apply {
             meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Test" }) }
             authored = Date()
@@ -318,6 +344,10 @@ fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
     }
 
     override fun onTestResultItemClickListener(): (item: QuestionnaireResponse) -> Unit {
+      return {}
+    }
+
+    override fun onMenuItemClickListener(): (menuItem: String) -> Unit {
       return {}
     }
   }
