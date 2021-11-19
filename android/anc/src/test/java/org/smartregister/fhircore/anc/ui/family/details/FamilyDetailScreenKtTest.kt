@@ -55,7 +55,7 @@ class FamilyDetailScreenKtTest : RobolectricTest() {
       }
     )
 
-  @Ignore
+  @Ignore("Fix tracked on https://github.com/opensrp/fhircore/issues/760")
   @Test
   fun testSurfaceComponent() {
     composeRule.setContent { FamilyDetailScreen(getDummyDataProvider()) }

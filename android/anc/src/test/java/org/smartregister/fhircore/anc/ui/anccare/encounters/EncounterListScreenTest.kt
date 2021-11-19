@@ -23,6 +23,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import java.text.SimpleDateFormat
 import org.hl7.fhir.r4.model.Encounter
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
@@ -31,6 +32,7 @@ class EncounterListScreenTest : RobolectricTest() {
 
   @get:Rule val composeRule = createComposeRule()
 
+  @Ignore("Fix tracked on https://github.com/opensrp/fhircore/issues/760")
   @Test
   fun testEncounterListScreen() {
     composeRule.setContent { EncounterListScreen(dummyData()) }
