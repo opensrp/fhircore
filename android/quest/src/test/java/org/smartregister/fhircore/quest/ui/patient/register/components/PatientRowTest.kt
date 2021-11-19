@@ -16,22 +16,20 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register.components
 
-import android.app.Application
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
-import androidx.test.core.app.ApplicationProvider
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
-class PatientListTest : RobolectricTest() {
+class PatientRowTest : RobolectricTest() {
 
   @get:Rule val composeRule = createComposeRule()
-  private val app = ApplicationProvider.getApplicationContext<Application>()
 
   @Test
-  fun testPatientListComponents() {
+  fun testPatientRowComponents() {
     val patientItem =
       PatientItem(
         id = "my-test-id",
@@ -44,6 +42,8 @@ class PatientListTest : RobolectricTest() {
     composeRule.setContent { PatientRow(patientItem = patientItem, { _, _ -> }) }
 
     composeRule.onNodeWithText("Male").assertExists()
+    composeRule.onNodeWithText("Male").assertIsDisplayed()
     composeRule.onNodeWithText("John Doe, 27").assertExists()
+    composeRule.onNodeWithText("John Doe, 27").assertIsDisplayed()
   }
 }
