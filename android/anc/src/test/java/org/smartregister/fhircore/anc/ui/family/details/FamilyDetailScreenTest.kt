@@ -23,6 +23,11 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import io.mockk.spyk
 import io.mockk.verify
+import java.text.SimpleDateFormat
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Period
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
@@ -35,21 +40,130 @@ class FamilyDetailScreenTest : RobolectricTest() {
   private val listenerObjectSpy =
     spyk(
       object {
-
+        fun onSeeAllEncounterClick() {
+          // imitate see all encounter click action by doing nothing
+        }
+        fun onEncounterItemClick(item: Encounter) {
+          // imitate encounter item click action by doing nothing
+        }
+        fun onMemberItemClick(memberItem: FamilyMemberItem) {
+          // imitate member item click action by doing nothing
+        }
+        fun onAddMemberItemClick() {
+          // imitate add member click action by doing nothing
+        }
         fun onSeeAllUpcomingServiceClick() {
 
           // imitate see all upcoming services click action by doing nothing
         }
-        fun onAddMemberItemClick() {
-
-          // imitate add member click action by doing nothing
-        }
-        fun onMemberItemClick(memberItem: FamilyMemberItem) {
-
-          // imitate member item click action by doing nothing
-        }
       }
     )
+
+  @Ignore("Fix tracked on https://github.com/opensrp/fhircore/issues/760")
+  @Test
+  fun testSurfaceComponent() {
+    composeRule.setContent { FamilyDetailScreen(getDummyDataProvider()) }
+
+    // Top bar is displayed
+    composeRule.onNodeWithText("All Families").assertExists()
+    composeRule.onNodeWithText("All Families").assertIsDisplayed()
+
+    // Family name is displayed
+    composeRule.onNodeWithText("Doe").assertExists()
+    composeRule.onNodeWithText("Doe").assertIsDisplayed()
+
+    // Given name is displayed
+    composeRule.onNodeWithText("John").assertExists()
+    composeRule.onNodeWithText("John").assertIsDisplayed()
+  }
+
+  @Test
+  fun testMemberHeadingComponent() {
+    composeRule.setContent { MemberHeading { listenerObjectSpy.onAddMemberItemClick() } }
+    composeRule.onNodeWithText("Members".uppercase()).assertExists()
+    composeRule.onNodeWithText("Members".uppercase()).assertIsDisplayed()
+  }
+
+  @Test
+  fun testMembersList() {
+    val familyMember = FamilyMemberItem("James", "1", "18", "Male", false, false)
+    val familyMembers = listOf(familyMember)
+
+    composeRule.setContent {
+      MembersList(familyMembers) { listenerObjectSpy.onMemberItemClick(familyMember) }
+    }
+
+    // Member name is displayed
+    composeRule.onNodeWithText("James").assertExists()
+    composeRule.onNodeWithText("James").assertIsDisplayed()
+
+    // Forward arrow image is displayed
+    composeRule.onNodeWithContentDescription("Forward arrow").assertExists()
+    composeRule.onNodeWithContentDescription("Forward arrow").assertIsDisplayed()
+  }
+
+  @Test
+  fun testMembersListWithPregnantHeadOfHouseHold() {
+    val familyMember = FamilyMemberItem("Jane", "1", "18", "Female", true, true)
+    val familyMembers = listOf(familyMember)
+
+    composeRule.setContent {
+      MembersList(familyMembers) { listenerObjectSpy.onMemberItemClick(familyMember) }
+    }
+
+    // Member name is displayed
+    composeRule.onNodeWithText("Jane").assertExists()
+    composeRule.onNodeWithText("Jane").assertIsDisplayed()
+
+    // Head of household label displayed
+    composeRule.onNodeWithText("Head of household").assertExists()
+    composeRule.onNodeWithText("Head of household").assertIsDisplayed()
+
+    // Pregnant lady image is displayed
+    composeRule.onNodeWithContentDescription("Pregnant woman").assertExists()
+    composeRule.onNodeWithContentDescription("Pregnant woman").assertIsDisplayed()
+
+    // ANC visit due text is displayed
+    composeRule.onNodeWithText("ANC visit due").assertExists()
+    composeRule.onNodeWithText("ANC visit due").assertIsDisplayed()
+
+    // Forward arrow image is displayed
+    composeRule.onNodeWithContentDescription("Forward arrow").assertExists()
+    composeRule.onNodeWithContentDescription("Forward arrow").assertIsDisplayed()
+  }
+
+  @Test
+  fun testEncounterHeaderComponent() {
+    composeRule.setContent { EncounterHeader { listenerObjectSpy.onSeeAllEncounterClick() } }
+    // Encounter heading is displayed
+    composeRule.onNodeWithText("Encounters".uppercase()).assertExists()
+    composeRule.onNodeWithText("Encounters".uppercase()).assertIsDisplayed()
+
+    // See All encounters buttons is displayed
+    composeRule.onNodeWithText("See All".uppercase()).assertExists()
+    composeRule.onNodeWithText("See All".uppercase()).assertIsDisplayed()
+
+    // clicking see all button should call 'onSeeAllEncounterClick' method of 'listenerObjectSpy'
+    composeRule.onNodeWithText("See All".uppercase()).performClick()
+    verify { listenerObjectSpy.onSeeAllEncounterClick() }
+  }
+
+  @Test
+  fun testEncounterList() {
+    val item = dummyEncounter("Encounter 1", "2020-05-22")
+    val encounters = listOf(item)
+    composeRule.setContent {
+      EncounterList(encounters) { listenerObjectSpy.onEncounterItemClick(item) }
+    }
+
+    // encounter text is displayed
+    composeRule.onNodeWithText("Encounter 1").assertExists()
+    composeRule.onNodeWithText("Encounter 1").assertIsDisplayed()
+
+    // encounter date is displayed
+    composeRule.onNodeWithText("22-May-2020").assertExists()
+    composeRule.onNodeWithText("22-May-2020").assertIsDisplayed()
+  }
 
   @Test
   fun testHouseHoldTaskHeading() {
@@ -85,33 +199,10 @@ class FamilyDetailScreenTest : RobolectricTest() {
     verify { listenerObjectSpy.onSeeAllUpcomingServiceClick() }
   }
 
-  @Test
-  fun testMembersListWithPregnantHeadOfHouseHold() {
-    val familyMember = FamilyMemberItem("Jane", "1", "18", "Female", true, true)
-    val familyMembers = listOf(familyMember)
-
-    composeRule.setContent {
-      MembersList(familyMembers) { listenerObjectSpy.onMemberItemClick(familyMember) }
+  private fun dummyEncounter(text: String, periodStartDate: String): Encounter {
+    return Encounter().apply {
+      class_ = Coding("", "", text)
+      period = Period().apply { start = SimpleDateFormat("yyyy-MM-dd").parse(periodStartDate) }
     }
-
-    // Member name is displayed
-    composeRule.onNodeWithText("Jane").assertExists()
-    composeRule.onNodeWithText("Jane").assertIsDisplayed()
-
-    // Head of household label displayed
-    composeRule.onNodeWithText("Head of household").assertExists()
-    composeRule.onNodeWithText("Head of household").assertIsDisplayed()
-
-    // Pregnant lady image is displayed
-    composeRule.onNodeWithContentDescription("Pregnant woman").assertExists()
-    composeRule.onNodeWithContentDescription("Pregnant woman").assertIsDisplayed()
-
-    // ANC visit due text is displayed
-    composeRule.onNodeWithText("ANC visit due").assertExists()
-    composeRule.onNodeWithText("ANC visit due").assertIsDisplayed()
-
-    // Forward arrow image is displayed
-    composeRule.onNodeWithContentDescription("Forward arrow").assertExists()
-    composeRule.onNodeWithContentDescription("Forward arrow").assertIsDisplayed()
   }
 }
