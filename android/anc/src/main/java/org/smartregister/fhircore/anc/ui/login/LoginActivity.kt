@@ -21,6 +21,8 @@ import android.os.Bundle
 import org.smartregister.fhircore.anc.BuildConfig
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
+import org.smartregister.fhircore.anc.util.AncConfigClassification
+import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
 
@@ -35,13 +37,13 @@ class LoginActivity : BaseLoginActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    configureViews(
-      loginViewConfigurationOf(
-        applicationName = getString(R.string.app_name),
-        applicationVersion = BuildConfig.VERSION_NAME,
-        applicationVersionCode = BuildConfig.VERSION_CODE,
-        darkMode = true
-      )
-    )
+    val loginViewConfiguration =
+      configurableApplication()
+        .configurationRegistry
+        .retrieveConfiguration<LoginViewConfiguration>(
+          context = this,
+          configClassification = AncConfigClassification.LOGIN,
+        )
+    configureViews(loginViewConfiguration)
   }
 }
