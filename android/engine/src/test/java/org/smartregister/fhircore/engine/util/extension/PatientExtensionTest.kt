@@ -78,4 +78,17 @@ class PatientExtensionTest {
     // if difference b/w current date and DOB is O from extractAge extension
     Assert.assertEquals(expectedAge12, getAgeStringFromDays(0))
   }
+
+  @Test
+  fun testExtractFamilyName() {
+    val patient =
+      Patient().apply {
+        addName().apply {
+          addGiven("Given Name")
+          family = "genealogy"
+        }
+      }
+
+    Assert.assertEquals("Genealogy Family", patient.extractFamilyName())
+  }
 }
