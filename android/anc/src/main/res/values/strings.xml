@@ -83,4 +83,13 @@
 
     <string name="families">Families</string>
     <string name="anc_clients">ANC Clients</string>
+
+    <string name="date_range">Date range</string>
+    <string name="patient">Patient</string>
+    <string name="all">All</string>
+    <string name="individual">Individual</string>
+    <string name="start_date">Start date</string>
+    <string name="end_date">End date</string>
+    <string name="generate_report">Generate Report</string>
+    <string name="change">Change</string>
 </resources>
