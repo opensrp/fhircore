@@ -25,7 +25,10 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.performClick
+import androidx.paging.LoadState
 import androidx.test.core.app.ApplicationProvider
+import io.mockk.every
+import io.mockk.spyk
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -42,7 +45,12 @@ class PatientRegisterListTest : RobolectricTest() {
   @Test
   fun testPatientRegisterListShouldHaveAllItemWithCorrectData() {
     composeRule.setContent {
-      PatientRegisterList(pagingItems = dummyPatientPagingList(), clickListener = { _, _ -> })
+      val pagingItemsSpy = spyk(dummyPatientPagingList())
+
+      every { pagingItemsSpy.loadState.append } returns LoadState.NotLoading(true)
+      every { pagingItemsSpy.loadState.refresh } returns LoadState.NotLoading(true)
+
+      PatientRegisterList(pagingItems = pagingItemsSpy, clickListener = { _, _ -> })
     }
 
     composeRule.onAllNodesWithTag(PATIENT_BIO).assertCountEquals(2)
@@ -63,8 +71,13 @@ class PatientRegisterListTest : RobolectricTest() {
     val clickedItemList = mutableListOf<PatientItem>()
 
     composeRule.setContent {
+      val pagingItemsSpy = spyk(dummyPatientPagingList())
+
+      every { pagingItemsSpy.loadState.append } returns LoadState.NotLoading(true)
+      every { pagingItemsSpy.loadState.refresh } returns LoadState.NotLoading(true)
+
       PatientRegisterList(
-        pagingItems = dummyPatientPagingList(),
+        pagingItems = pagingItemsSpy,
         clickListener = { i, p ->
           // click intent should be open profile
           Assert.assertEquals(OpenPatientProfile, i)
