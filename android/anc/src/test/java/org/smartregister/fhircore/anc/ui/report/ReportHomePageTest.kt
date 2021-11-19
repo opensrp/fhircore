@@ -26,6 +26,7 @@ import com.google.android.fhir.FhirEngine
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.R
@@ -55,6 +56,7 @@ class ReportHomePageTest : RobolectricTest() {
     composeRule.setContent { ReportHomeScreen(viewModel = viewModel) }
   }
 
+  @Ignore("Fix tracked on https://github.com/opensrp/fhircore/issues/760")
   @Test
   fun testReportHomeScreenComponents() {
     // toolbar should have valid title and icon
