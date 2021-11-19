@@ -59,9 +59,6 @@ import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.ui.report.ReportViewModel.PatientSelectionType
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-const val GENERATE_REPORT_BUTTON_TAG = "generateReportButtonTag"
-const val CHANGE_PATIENT_TAG = "changePatientButtonTag"
-
 @Composable
 fun ReportFilterPage(
   topBarTitle: String,
@@ -134,7 +131,8 @@ fun DateRangeItem(text: String, clickListener: () -> Unit, modifier: Modifier = 
       modifier
         .wrapContentWidth()
         .clickable { clickListener() }
-        .padding(vertical = 8.dp, horizontal = 12.dp),
+        .padding(vertical = 8.dp, horizontal = 12.dp)
+        .testTag(REPORT_DATE_SELECT_ITEM),
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
     Box(
@@ -168,7 +166,11 @@ fun SelectedPatientItem(
   modifier: Modifier = Modifier
 ) {
   Row(
-    modifier = modifier.wrapContentWidth().padding(vertical = 8.dp, horizontal = 12.dp),
+    modifier =
+      modifier
+        .wrapContentWidth()
+        .padding(vertical = 8.dp, horizontal = 12.dp)
+        .testTag(REPORT_PATIENT_ITEM),
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
     Box(
@@ -190,6 +192,7 @@ fun SelectedPatientItem(
               .wrapContentWidth()
               .clickable { onCancelSelectedPatient() }
               .padding(4.dp)
+              .testTag(REPORT_CANCEL_PATIENT)
         ) {
           Text(
             text = "X",
@@ -210,7 +213,8 @@ fun SelectedPatientItem(
         modifier
           .wrapContentWidth()
           .clickable { onChangeClickListener() }
-          .padding(vertical = 8.dp, horizontal = 12.dp),
+          .padding(vertical = 8.dp, horizontal = 12.dp)
+          .testTag(REPORT_CHANGE_PATIENT),
       horizontalArrangement = Arrangement.SpaceBetween,
     ) {
       Text(
@@ -234,8 +238,7 @@ fun BottomButtonBox(generateReportEnabled: Boolean, onGenerateReportClicked: () 
       Button(
         enabled = generateReportEnabled,
         onClick = onGenerateReportClicked,
-        modifier =
-          Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag(GENERATE_REPORT_BUTTON_TAG)
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag(REPORT_GENERATE_BUTTON)
       ) {
         Text(
           color = Color.White,
@@ -250,7 +253,7 @@ fun BottomButtonBox(generateReportEnabled: Boolean, onGenerateReportClicked: () 
 @Composable
 fun DateSelectionBox(startDate: String, endDate: String, onDateRangePress: () -> Unit) {
   Column(
-    modifier = Modifier.wrapContentWidth().padding(16.dp),
+    modifier = Modifier.wrapContentWidth().padding(16.dp).testTag(REPORT_DATE_RANGE_SELECTION),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.Start
   ) {
@@ -279,7 +282,7 @@ fun PatientSelectionBox(
   onPatientSelectionChange: (String) -> Unit,
 ) {
   Column(
-    modifier = Modifier.wrapContentWidth().padding(16.dp),
+    modifier = Modifier.wrapContentWidth().padding(16.dp).testTag(REPORT_PATIENT_SELECTION),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.Start
   ) {

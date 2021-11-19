@@ -24,6 +24,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import org.smartregister.fhircore.anc.R
@@ -39,7 +40,7 @@ fun ReportPreLoadingHomeScreen(viewModel: ReportViewModel) {
 @Composable
 fun ReportPreLoadingHomePage(topBarTitle: String, onBackPress: () -> Unit) {
   Surface(color = colorResource(id = R.color.white)) {
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().testTag(REPORT_HOME_PRELOAD)) {
       TopBarBox(topBarTitle, onBackPress)
       Box(modifier = Modifier.fillMaxSize()) {
         Column(

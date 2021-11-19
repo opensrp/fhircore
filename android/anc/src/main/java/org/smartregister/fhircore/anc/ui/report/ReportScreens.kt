@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
-import android.R.attr.maxLines
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -53,6 +52,31 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 
 const val TOOLBAR_TITLE = "toolbarTitle"
 const val TOOLBAR_BACK_ARROW = "toolbarBackArrow"
+const val REPORT_HOME_PRELOAD = "reportHomePreLoad"
+const val REPORT_MEASURE_LIST = "reportMeasureList"
+const val REPORT_MEASURE_ITEM = "reportMeasureItem"
+const val REPORT_DATE_RANGE_SELECTION = "reportDateRangeSelection"
+const val REPORT_DATE_SELECT_ITEM = "reportDateSelectItem"
+const val REPORT_PATIENT_SELECTION = "reportPatientSelection"
+const val REPORT_PATIENT_ITEM = "reportPatientItem"
+const val REPORT_CANCEL_PATIENT = "reportCancelPatient"
+const val REPORT_CHANGE_PATIENT = "reportChangePatient"
+const val REPORT_SELECT_PATIENT_LIST = "reportSelectPatientList"
+const val REPORT_SEARCH_PATIENT = "reportSearchPatient"
+const val REPORT_GENERATE_BUTTON = "reportGenerateButton"
+const val REPORT_RESULT_PAGE = "reportResultPage"
+
+@Composable
+fun ReportView(reportViewModel: ReportViewModel) {
+  // Choose which screen to show based on the value in the ReportScreen from ReportState
+  when (reportViewModel.reportState.currentScreen) {
+    ReportViewModel.ReportScreen.HOME -> ReportHomeScreen(reportViewModel)
+    ReportViewModel.ReportScreen.FILTER -> ReportFilterScreen(reportViewModel)
+    ReportViewModel.ReportScreen.PICK_PATIENT -> ReportSelectPatientScreen(reportViewModel)
+    ReportViewModel.ReportScreen.RESULT -> ReportResultScreen(reportViewModel)
+    ReportViewModel.ReportScreen.PREHOMElOADING -> ReportPreLoadingHomeScreen(reportViewModel)
+  }
+}
 
 @Composable
 fun LoadingItem() {
@@ -112,7 +136,7 @@ fun ReportRow(
     verticalAlignment = Alignment.CenterVertically,
     modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min),
   ) {
-    Column(modifier = modifier.padding(16.dp).weight(0.70f)) {
+    Column(modifier = modifier.padding(16.dp).weight(0.70f).testTag(REPORT_MEASURE_ITEM)) {
       Text(text = reportItem.title, fontSize = 18.sp, modifier = modifier.wrapContentWidth())
       Spacer(modifier = modifier.height(8.dp))
       Row(

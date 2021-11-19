@@ -71,7 +71,7 @@ fun ReportSelectPatientScreen(viewModel: ReportViewModel) {
   val showLoader by viewModel.registerDataViewModel.showLoader.observeAsState(false)
 
   if (showLoader) LoaderDialog(modifier = Modifier)
-  Column {
+  Column(modifier = Modifier.testTag(REPORT_SELECT_PATIENT_LIST)) {
     Row(modifier = Modifier.background(color = colorResource(id = R.color.white))) {
       SearchView(state = viewModel.searchTextState, viewModel)
     }
@@ -120,7 +120,7 @@ fun SearchView(state: MutableState<TextFieldValue>, viewModel: ReportViewModel) 
       state.value = value
       viewModel.filterValue.value = Pair(RegisterFilterType.SEARCH_FILTER, value)
     },
-    modifier = Modifier.fillMaxWidth(),
+    modifier = Modifier.fillMaxWidth().testTag(REPORT_SEARCH_PATIENT),
     textStyle = TextStyle(fontSize = 18.sp),
     leadingIcon = {
       IconButton(
@@ -162,9 +162,3 @@ fun SearchView(state: MutableState<TextFieldValue>, viewModel: ReportViewModel) 
       )
   )
 }
-// @Preview(showBackground = true)
-// @Composable
-// fun SearchViewPreview() {
-//  val textState = remember { mutableStateOf(TextFieldValue("")) }
-//  SearchView(textState)
-// }

@@ -169,6 +169,15 @@ internal class ReportViewModelTest {
   }
 
   @Test
+  fun testShouldVerifyBackFromPatientSelection() {
+    reportViewModel.onBackPressFromPatientSearch()
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.FILTER,
+      reportViewModel.reportState.currentScreen
+    )
+  }
+
+  @Test
   fun testShouldVerifyBackFromResultClickListener() {
     reportViewModel.onBackPressFromResult()
     Assert.assertEquals(

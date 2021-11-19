@@ -20,7 +20,6 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Surface
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.colorResource
 import androidx.core.util.Pair
 import androidx.lifecycle.ViewModelProvider
@@ -221,7 +220,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       AppTheme {
         Surface(color = colorResource(id = R.color.white)) {
           Column {
-            ReportView()
+            ReportView(reportViewModel)
             loadCQLLibraryData()
             loadMeasureEvaluateLibrary()
           }
@@ -412,18 +411,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       RegisterFilterType.OVERDUE_FILTER -> {
         return data.visitStatus == VisitStatus.OVERDUE
       }
-    }
-  }
-
-  @Composable
-  fun ReportView() {
-    // Choose which screen to show based on the value in the ReportScreen from ReportState
-    when (reportViewModel.reportState.currentScreen) {
-      ReportScreen.HOME -> ReportHomeScreen(reportViewModel)
-      ReportScreen.FILTER -> ReportFilterScreen(reportViewModel)
-      ReportScreen.PICK_PATIENT -> ReportSelectPatientScreen(reportViewModel)
-      ReportScreen.RESULT -> ReportResultScreen(reportViewModel)
-      ReportScreen.PREHOMElOADING -> ReportPreLoadingHomeScreen(reportViewModel)
     }
   }
 

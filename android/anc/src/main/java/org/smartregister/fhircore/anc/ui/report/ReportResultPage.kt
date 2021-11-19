@@ -26,6 +26,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -72,7 +73,7 @@ fun ReportResultPage(
   selectedPatient: PatientItem
 ) {
   Surface(color = colorResource(id = R.color.white)) {
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().testTag(REPORT_RESULT_PAGE)) {
       TopBarBox(topBarTitle = topBarTitle, onBackPress = onBackPress)
       Spacer(modifier = Modifier.height(16.dp))
       Text(text = reportMeasureItem.title, fontSize = 18.sp, modifier = Modifier.wrapContentWidth())

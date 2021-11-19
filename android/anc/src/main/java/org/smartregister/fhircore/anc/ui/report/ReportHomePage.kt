@@ -26,6 +26,7 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -85,7 +86,9 @@ fun ReportHomeListBox(
 ) {
   val lazyReportItems = dataList.collectAsLazyPagingItems()
 
-  LazyColumn(modifier = Modifier.background(Color.White).fillMaxSize()) {
+  LazyColumn(
+    modifier = Modifier.background(Color.White).fillMaxSize().testTag(REPORT_MEASURE_LIST)
+  ) {
     itemsIndexed(lazyReportItems) { _, item ->
       ReportRow(item!!, Modifier.clickable(onClick = { onReportMeasureItemClick(item) }))
       Divider(color = DividerColor, thickness = 1.dp)
