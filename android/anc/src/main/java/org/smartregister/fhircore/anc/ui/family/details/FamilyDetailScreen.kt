@@ -178,6 +178,13 @@ fun MembersList(
           modifier =
             Modifier.fillMaxWidth().padding(12.dp).clickable { memberItemClickListener(item) }
         ) {
+          if (item.pregnant) {
+            Image(
+              painter = painterResource(id = R.drawable.ic_pregnant),
+              contentDescription = "",
+            )
+          }
+
           Text(
             text = item.name,
             color = colorResource(id = R.color.black),

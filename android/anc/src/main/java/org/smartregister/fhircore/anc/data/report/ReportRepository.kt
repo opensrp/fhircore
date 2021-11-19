@@ -37,20 +37,7 @@ class ReportRepository(
 
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ReportItem> {
     return try {
-      // Todo: here @Davison will update logic to load reports type items
-      val nextPage = params.key ?: 0
-
-      //      val encounters =
-      //        fhirEngine.search<Encounter> {
-      //          filter(Encounter.SUBJECT) { value = "Patient/$patientId" }
-      //          from = nextPage * PaginationUtil.DEFAULT_PAGE_SIZE
-      //          count = PaginationUtil.DEFAULT_PAGE_SIZE
-      //        }
-      //      var data = encounters.map { ReportItem(it.id, it.id, "it.status", "it.status",
-      // "it.status") }
-
       val data = createTestData(mContext)
-
       LoadResult.Page(data = data, prevKey = null, nextKey = null)
     } catch (e: Exception) {
       LoadResult.Error(e)

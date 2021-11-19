@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,6 +51,16 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 
 const val TOOLBAR_TITLE = "toolbarTitle"
 const val TOOLBAR_BACK_ARROW = "toolbarBackArrow"
+
+@Composable
+fun ReportHomeScreen(viewModel: ReportViewModel) {
+  ReportHomePage(
+    topBarTitle = stringResource(id = R.string.reports),
+    onBackPress = viewModel::onBackPress,
+    dataList = viewModel.getReportsTypeList(),
+    onReportMeasureItemClick = viewModel::onReportMeasureItemClicked
+  )
+}
 
 @Composable
 fun LoadingItem() {

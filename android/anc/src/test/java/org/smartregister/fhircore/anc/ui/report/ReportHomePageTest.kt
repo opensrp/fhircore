@@ -24,13 +24,17 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.spyk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
+@ExperimentalCoroutinesApi
 class ReportHomePageTest : RobolectricTest() {
 
   private val app = ApplicationProvider.getApplicationContext<Application>()
@@ -38,16 +42,21 @@ class ReportHomePageTest : RobolectricTest() {
   private lateinit var repository: ReportRepository
   private lateinit var viewModel: ReportViewModel
   @get:Rule val composeRule = createComposeRule()
+  @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
   @Before
   fun setUp() {
     fhirEngine = spyk()
-    repository = spyk(ReportRepository(fhirEngine, "testPatientID", app.baseContext))
+    repository =
+      spyk(
+        ReportRepository(fhirEngine, "testPatientID", ApplicationProvider.getApplicationContext())
+      )
     viewModel =
-      spyk(objToCopy = ReportViewModel(ApplicationProvider.getApplicationContext(), repository))
+      spyk(objToCopy = ReportViewModel(repository, coroutinesTestRule.testDispatcherProvider))
     composeRule.setContent { ReportHomeScreen(viewModel = viewModel) }
   }
 
+  @Ignore("Fix tracked on https://github.com/opensrp/fhircore/issues/760")
   @Test
   fun testReportHomeScreenComponents() {
     // toolbar should have valid title and icon

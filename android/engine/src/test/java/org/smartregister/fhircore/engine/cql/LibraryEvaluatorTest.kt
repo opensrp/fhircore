@@ -16,7 +16,14 @@
 
 package org.smartregister.fhircore.engine.cql
 
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
+import com.google.common.collect.Lists
+import java.io.ByteArrayInputStream
 import java.io.IOException
+import java.io.InputStream
+import org.hl7.fhir.instance.model.api.IBaseBundle
+import org.hl7.fhir.instance.model.api.IBaseResource
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -34,15 +41,14 @@ class LibraryEvaluatorTest {
   var context = "Patient"
   var contextLabel = "mom-with-anemia"
 
-  val fileUtil = FileUtil()
   @Before
   fun setUp() {
     try {
-      libraryData = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/library.json")
-      helperData = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/helper.json")
-      valueSetData = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/valueSet.json")
-      testData = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/patient.json")
-      result = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/result.json")
+      libraryData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/library.json")
+      helperData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/helper.json")
+      valueSetData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/valueSet.json")
+      testData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/patient.json")
+      result = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/result.json")
       evaluator = LibraryEvaluator()
     } catch (e: IOException) {
       Timber.e(e, e.message)
@@ -51,12 +57,26 @@ class LibraryEvaluatorTest {
 
   @Test
   fun runCqlTest() {
+    val fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
+    val parser = fhirContext.newJsonParser()!!
+    val libraryStream: InputStream = ByteArrayInputStream(libraryData.toByteArray())
+    val fhirHelpersStream: InputStream = ByteArrayInputStream(helperData.toByteArray())
+    val library = parser.parseResource(libraryStream)
+    val fhirHelpersLibrary = parser.parseResource(fhirHelpersStream)
+    val patientResources: List<IBaseResource> = Lists.newArrayList(library, fhirHelpersLibrary)
+
+    val valueSetStream: InputStream = ByteArrayInputStream(valueSetData.toByteArray())
+    val valueSetBundle = parser.parseResource(valueSetStream) as IBaseBundle
+
+    val dataStream: InputStream = ByteArrayInputStream(testData.toByteArray())
+    val dataBundle = parser.parseResource(dataStream) as IBaseBundle
+
     val auxResult =
       evaluator!!.runCql(
-        libraryData,
-        helperData,
-        valueSetData,
-        testData,
+        patientResources,
+        valueSetBundle,
+        dataBundle,
+        fhirContext,
         evaluatorId,
         context,
         contextLabel
@@ -66,7 +86,7 @@ class LibraryEvaluatorTest {
 
   @Test
   fun processCQLPatientBundleTest() {
-    var results = evaluator!!.processCQLPatientBundle(testData)
+    val results = evaluator!!.processCQLPatientBundle(testData)
     Assert.assertNotNull(results)
   }
 }
