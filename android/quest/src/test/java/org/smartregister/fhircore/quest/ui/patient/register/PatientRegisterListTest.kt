@@ -28,7 +28,6 @@ import androidx.paging.LoadState
 import io.mockk.every
 import io.mockk.spyk
 import org.junit.Assert
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
@@ -42,55 +41,58 @@ class PatientRegisterListTest : RobolectricTest() {
 
   @Test
   fun testPatientRegisterListShouldHaveAllItemWithCorrectData() {
-    composeRule.setContent {
-      val pagingItemsSpy = spyk(dummyPatientPagingList())
+    composeRule.runOnIdle {
+      composeRule.setContent {
+        val pagingItemsSpy = spyk(dummyPatientPagingList())
 
-      every { pagingItemsSpy.loadState.append } returns LoadState.NotLoading(true)
-      every { pagingItemsSpy.loadState.refresh } returns LoadState.NotLoading(true)
+        every { pagingItemsSpy.loadState.append } returns LoadState.NotLoading(true)
+        every { pagingItemsSpy.loadState.refresh } returns LoadState.NotLoading(true)
 
-      PatientRegisterList(pagingItems = pagingItemsSpy, clickListener = { _, _ -> })
+        PatientRegisterList(pagingItems = pagingItemsSpy, clickListener = { _, _ -> })
+      }
+
+      composeRule.onAllNodesWithTag(PATIENT_BIO).assertCountEquals(2)
+
+      composeRule.onAllNodesWithTag(PATIENT_BIO, true)[0]
+        .assertHasClickAction()
+        .assert(hasAnyChild(hasText("John Doe, 27y")))
+        .assert(hasAnyChild(hasText("Male")))
+
+      composeRule.onAllNodesWithTag(PATIENT_BIO, true)[1]
+        .assertHasClickAction()
+        .assert(hasAnyChild(hasText("Jane Doe, 20y")))
+        .assert(hasAnyChild(hasText("Female")))
     }
-
-    composeRule.onAllNodesWithTag(PATIENT_BIO).assertCountEquals(2)
-
-    composeRule.onAllNodesWithTag(PATIENT_BIO, true)[0]
-      .assertHasClickAction()
-      .assert(hasAnyChild(hasText("John Doe, 27y")))
-      .assert(hasAnyChild(hasText("Male")))
-
-    composeRule.onAllNodesWithTag(PATIENT_BIO, true)[1]
-      .assertHasClickAction()
-      .assert(hasAnyChild(hasText("Jane Doe, 20y")))
-      .assert(hasAnyChild(hasText("Female")))
   }
 
   @Test
-  @Ignore
   fun testPatientRegisterListItemShouldCallItemClickListener() {
     val clickedItemList = mutableListOf<PatientItem>()
 
-    composeRule.setContent {
-      val pagingItemsSpy = spyk(dummyPatientPagingList())
+    composeRule.runOnIdle {
+      composeRule.setContent {
+        val pagingItemsSpy = spyk(dummyPatientPagingList())
 
-      every { pagingItemsSpy.loadState.append } returns LoadState.NotLoading(true)
-      every { pagingItemsSpy.loadState.refresh } returns LoadState.NotLoading(true)
+        every { pagingItemsSpy.loadState.append } returns LoadState.NotLoading(true)
+        every { pagingItemsSpy.loadState.refresh } returns LoadState.NotLoading(true)
 
-      PatientRegisterList(
-        pagingItems = pagingItemsSpy,
-        clickListener = { i, p ->
-          // click intent should be open profile
-          Assert.assertEquals(OpenPatientProfile, i)
+        PatientRegisterList(
+          pagingItems = pagingItemsSpy,
+          clickListener = { i, p ->
+            // click intent should be open profile
+            Assert.assertEquals(OpenPatientProfile, i)
 
-          clickedItemList.add(p)
-        }
-      )
+            clickedItemList.add(p)
+          }
+        )
+      }
+
+      composeRule.onAllNodesWithTag(PATIENT_BIO).assertCountEquals(2)
+      composeRule.onAllNodesWithTag(PATIENT_BIO)[0].performClick()
+      composeRule.onAllNodesWithTag(PATIENT_BIO)[1].performClick()
+
+      Assert.assertEquals("John Doe", clickedItemList[0].name)
+      Assert.assertEquals("Jane Doe", clickedItemList[1].name)
     }
-
-    composeRule.onAllNodesWithTag(PATIENT_BIO).assertCountEquals(2)
-    composeRule.onAllNodesWithTag(PATIENT_BIO)[0].performClick()
-    composeRule.onAllNodesWithTag(PATIENT_BIO)[1].performClick()
-
-    Assert.assertEquals("John Doe", clickedItemList[0].name)
-    Assert.assertEquals("Jane Doe", clickedItemList[1].name)
   }
 }
