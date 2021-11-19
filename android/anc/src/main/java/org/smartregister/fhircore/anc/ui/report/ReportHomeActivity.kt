@@ -19,19 +19,11 @@ package org.smartregister.fhircore.anc.ui.report
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
 import androidx.core.util.Pair
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
@@ -44,20 +36,31 @@ import java.io.InputStream
 import java.util.Calendar
 import kotlin.collections.ArrayList
 import kotlin.collections.List
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.model.VisitStatus
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
+import org.smartregister.fhircore.anc.ui.anccare.register.Anc
+import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
+import org.smartregister.fhircore.anc.ui.report.ReportViewModel.ReportScreen
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.cql.MeasureEvaluator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
+import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FileUtil
+import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class ReportHomeActivity : BaseMultiLanguageActivity() {
 
@@ -114,8 +117,16 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     val patientId =
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
     val repository = ReportRepository((application as AncApplication).fhirEngine, patientId, this)
+    val ancPatientRepository =
+      PatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
     val dispatcher: DispatcherProvider = DefaultDispatcherProvider
-    reportViewModel = ReportViewModel(repository, dispatcher)
+    reportViewModel = ReportViewModel(repository, ancPatientRepository, dispatcher)
+
+    reportViewModel.registerDataViewModel = initializeRegisterDataViewModel(ancPatientRepository)
+    reportViewModel.registerDataViewModel.currentPage.observe(
+      this,
+      { reportViewModel.registerDataViewModel.loadPageData(it) }
+    )
 
     reportViewModel.backPress.observe(
       this,
@@ -167,25 +178,51 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         FileUtil.getProperty("cql_measure_report_lib_initial_string", it, cqlConfigFileName)
       }!!
 
+    reportViewModel.patientSelectionType.observe(
+      this,
+      {
+        if (it.equals("Individual", true)) {
+          reportViewModel.reportState.currentScreen = ReportScreen.PICK_PATIENT
+        }
+      }
+    )
+
+    reportViewModel.isReadyToGenerateReport.observe(
+      this,
+      { reportViewModel.reportState.currentScreen = ReportScreen.FILTER }
+    )
+
+    reportViewModel.filterValue.observe(
+      this,
+      {
+        lifecycleScope.launch(Dispatchers.Main) {
+          val (registerFilterType, value) = it
+          if (value != null) {
+            reportViewModel.registerDataViewModel.run {
+              showResultsCount(true)
+              filterRegisterData(
+                registerFilterType = registerFilterType,
+                filterValue = value,
+                registerFilter = this@ReportHomeActivity::performFilter
+              )
+            }
+          } else {
+            reportViewModel.registerDataViewModel.run {
+              showResultsCount(false)
+              reloadCurrentPageData()
+            }
+          }
+        }
+      }
+    )
+
     setContent {
       AppTheme {
         Surface(color = colorResource(id = R.color.white)) {
           Column {
-            TopAppBar(
-              title = {
-                Text(text = stringResource(id = R.string.reports), Modifier.testTag(TOOLBAR_TITLE))
-              },
-              navigationIcon = {
-                IconButton(
-                  onClick = reportViewModel::onBackPress,
-                  Modifier.testTag(TOOLBAR_BACK_ARROW)
-                ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
-              }
-            )
-            reportViewModel.reportState.currentScreen = ReportViewModel.ReportScreen.PREHOMElOADING
+            ReportView(reportViewModel)
             loadCQLLibraryData()
             loadMeasureEvaluateLibrary()
-            ReportView(reportViewModel)
           }
         }
       }
@@ -204,6 +241,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         .fetchCQLLibraryData(parser, fhirResourceDataSource, libraryURL)
         .observe(this, this::handleCQLLibraryData)
     }
+    reportViewModel.reportState.currentScreen = ReportScreen.PREHOMElOADING
   }
 
   fun loadCQLHelperData() {
@@ -255,7 +293,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       val libraryStreamMeasure: InputStream =
         ByteArrayInputStream(measureEvaluateLibraryData.toByteArray())
       libraryMeasure = parser.parseResource(libraryStreamMeasure) as IBaseBundle
-      reportViewModel.reportState.currentScreen = ReportViewModel.ReportScreen.HOME
+      reportViewModel.reportState.currentScreen = ReportScreen.HOME
     } else {
       reportViewModel
         .fetchCQLMeasureEvaluateLibraryAndValueSets(
@@ -345,7 +383,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     val libraryStreamMeasure: InputStream =
       ByteArrayInputStream(measureEvaluateLibraryData.toByteArray())
     libraryMeasure = parser.parseResource(libraryStreamMeasure) as IBaseBundle
-    reportViewModel.reportState.currentScreen = ReportViewModel.ReportScreen.HOME
+    reportViewModel.reportState.currentScreen = ReportScreen.HOME
   }
 
   fun loadCQLMeasurePatientData() {
@@ -358,15 +396,21 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     patientDetailsData = auxPatientData
   }
 
-  @Composable
-  fun ReportView(viewModel: ReportViewModel) {
-    // Choose which screen to show based on the value in the ReportScreen from ReportState
-    when (viewModel.reportState.currentScreen) {
-      ReportViewModel.ReportScreen.HOME -> ReportHomeScreen(viewModel)
-      ReportViewModel.ReportScreen.FILTER -> ReportFilterScreen(viewModel)
-      ReportViewModel.ReportScreen.PICK_PATIENT -> ReportFilterScreen(viewModel)
-      ReportViewModel.ReportScreen.RESULT -> ReportResultScreen(viewModel)
-      ReportViewModel.ReportScreen.PREHOMElOADING -> ReportPreLoadingHomePage()
+  private fun performFilter(
+    registerFilterType: RegisterFilterType,
+    data: PatientItem,
+    value: Any
+  ): Boolean {
+    return when (registerFilterType) {
+      RegisterFilterType.SEARCH_FILTER -> {
+        if (value is String && value.isEmpty()) return true
+        else
+          data.name.contains(value.toString(), ignoreCase = true) ||
+            data.patientIdentifier.contentEquals(value.toString())
+      }
+      RegisterFilterType.OVERDUE_FILTER -> {
+        return data.visitStatus == VisitStatus.OVERDUE
+      }
     }
   }
 
@@ -377,5 +421,17 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     val dateRangePicker = builder.build()
     dateRangePicker.show(supportFragmentManager, dateRangePicker.toString())
     dateRangePicker.addOnPositiveButtonClickListener { onDateSelected(dateRangePicker.selection) }
+  }
+
+  @Suppress("UNCHECKED_CAST")
+  fun initializeRegisterDataViewModel(
+    ancPatientRepository: PatientRepository
+  ): RegisterDataViewModel<Anc, PatientItem> {
+    return ViewModelProvider(
+      viewModelStore,
+      RegisterDataViewModel(application = application, registerRepository = ancPatientRepository)
+        .createFactory()
+    )[RegisterDataViewModel::class.java] as
+      RegisterDataViewModel<Anc, PatientItem>
   }
 }

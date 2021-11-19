@@ -92,4 +92,6 @@
     <string name="end_date">End date</string>
     <string name="generate_report">Generate Report</string>
     <string name="change">Change</string>
+    <string name="select_patient">SELECT PATIENT</string>
+    <string name="search_patient_hint">Search for a patient name</string>
 </resources>

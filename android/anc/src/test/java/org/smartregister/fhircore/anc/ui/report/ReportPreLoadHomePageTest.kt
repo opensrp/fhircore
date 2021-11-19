@@ -27,7 +27,6 @@ import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.R
@@ -38,7 +37,7 @@ import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 
 @ExperimentalCoroutinesApi
-class ReportHomePageTest : RobolectricTest() {
+class ReportPreLoadHomePageTest : RobolectricTest() {
 
   private val app = ApplicationProvider.getApplicationContext<Application>()
   private lateinit var fhirEngine: FhirEngine
@@ -68,12 +67,19 @@ class ReportHomePageTest : RobolectricTest() {
       )
   }
 
-  @Ignore("Fix tracked on https://github.com/opensrp/fhircore/issues/760")
   @Test
-  fun testReportHomeScreenComponents() {
-    composeRule.setContent { ReportHomeScreen(viewModel = viewModel) }
+  fun testReportPreLoadingHomeScreenComponents() {
+    composeRule.setContent { ReportPreLoadingHomeScreen(viewModel) }
     // toolbar should have valid title and icon
     composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals(app.getString(R.string.reports))
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
+  }
+
+  @Test
+  fun testReportPreLoadHomePage() {
+    composeRule.setContent { ReportPreLoadingHomePage(topBarTitle = "testTitle", onBackPress = {}) }
+    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals("testTitle")
+    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
+    composeRule.onNodeWithTag("ProgressBarItem").assertExists()
   }
 }
