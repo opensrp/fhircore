@@ -74,12 +74,4 @@ class ReportHomePageTest : RobolectricTest() {
     composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals(app.getString(R.string.reports))
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
   }
-
-  @Test
-  fun testReportPatientListPage() {
-    composeRule.setContent { ReportSelectPatientScreen(viewModel = viewModel) }
-    composeRule.onNodeWithTag(REPORT_GENERATE_BUTTON).assertExists()
-    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals(app.getString(R.string.reports))
-    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
-  }
 }
