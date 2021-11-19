@@ -55,6 +55,7 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
   override fun onItemClicked(listenerIntent: ListenerIntent, data: PatientItem) {
     when (listenerIntent) {
       OpenPatientProfile -> navigateToDetails(data.id)
+      else -> throw UnsupportedOperationException("Given ListenerIntent is not supported")
     }
   }
 

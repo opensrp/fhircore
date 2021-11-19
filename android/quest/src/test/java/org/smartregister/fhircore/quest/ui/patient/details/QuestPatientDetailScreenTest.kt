@@ -191,4 +191,20 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
     assertEquals("Sample Order", resultItemClicks[0].meta.tagFirstRep.display)
     assertEquals("Sample Test", resultItemClicks[1].meta.tagFirstRep.display)
   }
+
+  @Test
+  fun testQuestPatientDetailScreenShouldHandleMissingData() {
+    composeRule.setContent { QuestPatientDetailScreen(dummyEmptyPatientDetailDataProvider()) }
+    composeRule
+      .onNodeWithTag(TOOLBAR_TITLE)
+      .assertTextEquals(app.getString(R.string.back_to_clients))
+    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
+
+    composeRule.onNodeWithTag(PATIENT_NAME).assertExists().assertTextEquals("")
+
+    composeRule.onNodeWithTag(FORM_CONTAINER_ITEM).assert(hasAnyChild(hasText("Loading forms ...")))
+    composeRule
+      .onNodeWithTag(RESULT_CONTAINER_ITEM)
+      .assert(hasAnyChild(hasText("Loading responses ...")))
+  }
 }

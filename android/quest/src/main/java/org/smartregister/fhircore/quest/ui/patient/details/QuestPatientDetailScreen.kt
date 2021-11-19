@@ -91,6 +91,8 @@ const val TOOLBAR_MENU = "toolbarMenuTag"
 const val PATIENT_NAME = "patientNameTag"
 const val FORM_ITEM = "formItemTag"
 const val RESULT_ITEM = "resultItemTag"
+const val FORM_CONTAINER_ITEM = "formItemContainerTag"
+const val RESULT_CONTAINER_ITEM = "resultItemContainerTag"
 
 @Composable
 fun Toolbar(dataProvider: QuestPatientDetailDataProvider) {
@@ -210,7 +212,7 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
         Card(
           elevation = 3.dp,
           backgroundColor = colorResource(id = R.color.white),
-          modifier = Modifier.fillMaxWidth()
+          modifier = Modifier.fillMaxWidth().testTag(FORM_CONTAINER_ITEM)
         ) {
           Column(modifier = Modifier.padding(16.dp)) {
 
@@ -224,25 +226,27 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
                 }
               }
             }
+              ?: Text(text = stringResource(id = R.string.loading_forms))
           }
         }
 
-        // Responses section
-        dataProvider.getAllResults().observeAsState().value?.let {
-          Spacer(Modifier.height(24.dp))
-          Text(
-            text = "RESPONSES (${it.size})",
-            color = colorResource(id = R.color.grayText),
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold
-          )
-          Card(
-            elevation = 4.dp,
-            modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-          ) {
-            Column {
-              // fetch responses
+        Spacer(Modifier.height(24.dp))
 
+        val responses = dataProvider.getAllResults().observeAsState()
+        // Responses section
+        Text(
+          text = "RESPONSES (${responses.value?.size?.toString() ?: ""})",
+          color = colorResource(id = R.color.grayText),
+          fontSize = 16.sp,
+          fontWeight = FontWeight.Bold
+        )
+        Card(
+          elevation = 4.dp,
+          modifier = Modifier.fillMaxWidth().padding(top = 12.dp).testTag(RESULT_CONTAINER_ITEM)
+        ) {
+          Column {
+            // fetch responses
+            responses.value?.let {
               it.forEachIndexed { index, item ->
                 ResultItem(item, dataProvider)
 
@@ -251,6 +255,10 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
                 }
               }
             }
+              ?: Text(
+                text = stringResource(id = R.string.loading_responses),
+                modifier = Modifier.padding(16.dp)
+              )
           }
         }
 
@@ -275,6 +283,7 @@ fun PreviewQuestionPatientDetailScreen() {
   AppTheme { QuestPatientDetailScreen(dummyQuestPatientDetailDataProvider()) }
 }
 
+// Dummy data providers initialized below
 fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
   return object : QuestPatientDetailDataProvider {
     override fun getDemographics(): LiveData<Patient> {
@@ -345,6 +354,30 @@ fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
     }
 
     override fun onMenuItemClickListener(): (menuItem: String) -> Unit {
+      return {}
+    }
+  }
+}
+
+fun dummyEmptyPatientDetailDataProvider(): QuestPatientDetailDataProvider {
+  return object : QuestPatientDetailDataProvider {
+    override fun getDemographics(): LiveData<Patient> {
+      return MutableLiveData()
+    }
+
+    override fun getAllForms(): LiveData<List<QuestionnaireConfig>> {
+      return MutableLiveData()
+    }
+
+    override fun getAllResults(): LiveData<List<QuestionnaireResponse>> {
+      return MutableLiveData()
+    }
+
+    override fun onFormItemClickListener(): (item: QuestionnaireConfig) -> Unit {
+      return {}
+    }
+
+    override fun onTestResultItemClickListener(): (item: QuestionnaireResponse) -> Unit {
       return {}
     }
   }
