@@ -65,6 +65,8 @@ const val REPORT_SELECT_PATIENT_LIST = "reportSelectPatientList"
 const val REPORT_SEARCH_PATIENT = "reportSearchPatient"
 const val REPORT_GENERATE_BUTTON = "reportGenerateButton"
 const val REPORT_RESULT_PAGE = "reportResultPage"
+const val ANC_PATIENT_ITEM = "ancPatientItem"
+const val PATIENT_ANC_VISIT = "patientAncVisit"
 
 @Composable
 fun ReportView(reportViewModel: ReportViewModel) {

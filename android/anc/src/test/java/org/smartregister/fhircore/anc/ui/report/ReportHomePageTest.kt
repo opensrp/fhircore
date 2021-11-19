@@ -27,7 +27,6 @@ import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.R
@@ -68,7 +67,6 @@ class ReportHomePageTest : RobolectricTest() {
       )
   }
 
-  @Ignore("Fix tracked on https://github.com/opensrp/fhircore/issues/760")
   @Test
   fun testReportHomeScreenComponents() {
     composeRule.setContent { ReportHomeScreen(viewModel = viewModel) }
