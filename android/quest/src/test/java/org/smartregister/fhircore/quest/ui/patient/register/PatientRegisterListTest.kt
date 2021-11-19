@@ -28,6 +28,7 @@ import androidx.paging.LoadState
 import io.mockk.every
 import io.mockk.spyk
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
@@ -64,6 +65,7 @@ class PatientRegisterListTest : RobolectricTest() {
   }
 
   @Test
+  @Ignore
   fun testPatientRegisterListItemShouldCallItemClickListener() {
     val clickedItemList = mutableListOf<PatientItem>()
 
