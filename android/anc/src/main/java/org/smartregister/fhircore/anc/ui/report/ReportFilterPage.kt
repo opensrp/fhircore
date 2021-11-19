@@ -31,9 +31,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
+import androidx.compose.material.Icon
 import androidx.compose.material.RadioButton
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -52,10 +55,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.ui.report.ReportViewModel.PatientSelectionType
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-
-const val GENERATE_REPORT_BUTTON_TAG = "generateReportButtonTag"
 
 @Composable
 fun ReportFilterPage(
@@ -67,13 +69,14 @@ fun ReportFilterPage(
   patientSelectionText: String,
   onPatientSelectionTypeChanged: (String) -> Unit,
   generateReportEnabled: Boolean,
-  onGenerateReportPress: () -> Unit
+  onGenerateReportPress: () -> Unit,
+  selectedPatient: PatientItem?
 ) {
   Surface(color = colorResource(id = R.color.white)) {
     Column(modifier = Modifier.fillMaxSize()) {
       TopBarBox(topBarTitle, onBackPress)
       DateSelectionBox(startDate, endDate, onDateRangePress)
-      PatientSelectionBox(patientSelectionText, onPatientSelectionTypeChanged)
+      PatientSelectionBox(patientSelectionText, selectedPatient, onPatientSelectionTypeChanged)
       BottomButtonBox(generateReportEnabled, onGenerateReportPress)
     }
   }
@@ -85,6 +88,7 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
   val reportMeasureItem by remember { mutableStateOf(viewModel.selectedMeasureReportItem.value) }
   val patientSelectionType by remember { mutableStateOf(viewModel.patientSelectionType.value) }
   val generateReportEnabled by remember { mutableStateOf(viewModel.isReadyToGenerateReport.value) }
+  val selectedPatient by remember { mutableStateOf(viewModel.selectedPatientItem.value) }
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
 
@@ -97,7 +101,8 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
     patientSelectionText = patientSelectionType ?: "All",
     onPatientSelectionTypeChanged = viewModel::onPatientSelectionTypeChanged,
     generateReportEnabled = generateReportEnabled ?: true,
-    onGenerateReportPress = viewModel::onGenerateReportPress
+    onGenerateReportPress = viewModel::onGenerateReportPress,
+    selectedPatient = selectedPatient ?: PatientItem()
   )
 }
 
@@ -114,7 +119,8 @@ fun ReportFilterPreview() {
     patientSelectionText = "ALL",
     onPatientSelectionTypeChanged = {},
     generateReportEnabled = false,
-    onGenerateReportPress = {}
+    onGenerateReportPress = {},
+    selectedPatient = PatientItem()
   )
 }
 
@@ -125,7 +131,8 @@ fun DateRangeItem(text: String, clickListener: () -> Unit, modifier: Modifier = 
       modifier
         .wrapContentWidth()
         .clickable { clickListener() }
-        .padding(vertical = 8.dp, horizontal = 12.dp),
+        .padding(vertical = 8.dp, horizontal = 12.dp)
+        .testTag(REPORT_DATE_SELECT_ITEM),
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
     Box(
@@ -141,6 +148,86 @@ fun DateRangeItem(text: String, clickListener: () -> Unit, modifier: Modifier = 
 }
 
 @Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun FilterSelectedPatientPreview() {
+  SelectedPatientItem(
+    selectedPatient = PatientItem(name = "PatientX"),
+    onCancelSelectedPatient = {},
+    onChangeClickListener = {}
+  )
+}
+
+@Composable
+fun SelectedPatientItem(
+  selectedPatient: PatientItem,
+  onCancelSelectedPatient: () -> Unit,
+  onChangeClickListener: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  Row(
+    modifier =
+      modifier
+        .wrapContentWidth()
+        .padding(vertical = 8.dp, horizontal = 12.dp)
+        .testTag(REPORT_PATIENT_ITEM),
+    horizontalArrangement = Arrangement.SpaceBetween
+  ) {
+    Box(
+      modifier =
+        modifier
+          .clip(RoundedCornerShape(15.dp))
+          .background(color = colorResource(id = R.color.backgroundGray))
+          .wrapContentWidth()
+          .padding(8.dp),
+      contentAlignment = Alignment.Center
+    ) {
+      Row {
+        Text(text = selectedPatient.name, textAlign = TextAlign.Center, fontSize = 16.sp)
+        Row(
+          modifier =
+            modifier
+              .clip(RoundedCornerShape(8.dp))
+              .background(color = colorResource(id = R.color.backgroundGray))
+              .wrapContentWidth()
+              .clickable { onCancelSelectedPatient() }
+              .padding(4.dp)
+              .testTag(REPORT_CANCEL_PATIENT)
+        ) {
+          Text(
+            text = "X",
+            textAlign = TextAlign.Center,
+            color = colorResource(id = android.R.color.transparent),
+            fontSize = 16.sp
+          )
+          Icon(
+            Icons.Filled.Close,
+            contentDescription = "Back arrow",
+            modifier = Modifier.padding(4.dp)
+          )
+        }
+      }
+    }
+    Row(
+      modifier =
+        modifier
+          .wrapContentWidth()
+          .clickable { onChangeClickListener() }
+          .padding(vertical = 8.dp, horizontal = 12.dp)
+          .testTag(REPORT_CHANGE_PATIENT),
+      horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Text(
+        text = stringResource(id = R.string.change),
+        textAlign = TextAlign.Center,
+        color = colorResource(id = android.R.color.holo_blue_light),
+        fontSize = 16.sp
+      )
+    }
+  }
+}
+
+@Composable
 fun BottomButtonBox(generateReportEnabled: Boolean, onGenerateReportClicked: () -> Unit) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -151,7 +238,8 @@ fun BottomButtonBox(generateReportEnabled: Boolean, onGenerateReportClicked: () 
       Button(
         enabled = generateReportEnabled,
         onClick = onGenerateReportClicked,
-        modifier = Modifier.fillMaxWidth().testTag(GENERATE_REPORT_BUTTON_TAG)
+        modifier =
+          Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag(REPORT_GENERATE_BUTTON)
       ) {
         Text(
           color = Color.White,
@@ -166,7 +254,7 @@ fun BottomButtonBox(generateReportEnabled: Boolean, onGenerateReportClicked: () 
 @Composable
 fun DateSelectionBox(startDate: String, endDate: String, onDateRangePress: () -> Unit) {
   Column(
-    modifier = Modifier.wrapContentWidth().padding(16.dp),
+    modifier = Modifier.wrapContentWidth().padding(16.dp).testTag(REPORT_DATE_RANGE_SELECTION),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.Start
   ) {
@@ -191,10 +279,11 @@ fun DateSelectionBox(startDate: String, endDate: String, onDateRangePress: () ->
 @Composable
 fun PatientSelectionBox(
   patientSelectionText: String,
+  selectedPatient: PatientItem?,
   onPatientSelectionChange: (String) -> Unit,
 ) {
   Column(
-    modifier = Modifier.wrapContentWidth().padding(16.dp),
+    modifier = Modifier.wrapContentWidth().padding(16.dp).testTag(REPORT_PATIENT_SELECTION),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.Start
   ) {
@@ -227,6 +316,17 @@ fun PatientSelectionBox(
       )
       Spacer(modifier = Modifier.size(16.dp))
       Text(PatientSelectionType.INDIVIDUAL, fontSize = 16.sp)
+    }
+
+    if (patientSelection.value == PatientSelectionType.INDIVIDUAL) {
+      Row {
+        Spacer(modifier = Modifier.size(8.dp))
+        SelectedPatientItem(
+          selectedPatient = selectedPatient!!,
+          onCancelSelectedPatient = { onPatientSelectionChange(PatientSelectionType.ALL) },
+          onChangeClickListener = { onPatientSelectionChange(PatientSelectionType.INDIVIDUAL) }
+        )
+      }
     }
   }
 }

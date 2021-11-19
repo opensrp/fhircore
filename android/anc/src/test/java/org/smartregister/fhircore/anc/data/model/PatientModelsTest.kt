@@ -37,7 +37,18 @@ class PatientModelsTest : RobolectricTest() {
   @Before
   fun setUp() {
     patientItem =
-      PatientItem("111", "anb", "M", "25", "PD", "none", "xyz", true, VisitStatus.PLANNED)
+      PatientItem(
+        "111",
+        "anb",
+        "M",
+        "25",
+        "PD",
+        "none",
+        "xyz",
+        true,
+        VisitStatus.PLANNED,
+        "TestFamily"
+      )
     patientItemHead =
       PatientItem("111", "anb", "M", "25", "PD", "none", "xyz", false, VisitStatus.PLANNED)
     encounterItem = EncounterItem("111", status = Encounter.EncounterStatus.ARRIVED, "abc", Date())
@@ -56,6 +67,7 @@ class PatientModelsTest : RobolectricTest() {
     Assert.assertEquals("none", patientItem.atRisk)
     Assert.assertEquals("xyz", patientItem.address)
     Assert.assertEquals(VisitStatus.PLANNED, patientItem.visitStatus)
+    Assert.assertEquals("TestFamily", patientItem.familyName)
   }
 
   @Test
