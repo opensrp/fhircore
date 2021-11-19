@@ -24,11 +24,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
@@ -51,16 +49,6 @@ fun ReportHomePreview() {
     onBackPress = {},
     dataList = emptyFlow(),
     onReportMeasureItemClick = {}
-  )
-}
-
-@Composable
-fun ReportHomeScreen(viewModel: ReportViewModel) {
-  ReportHomePage(
-    topBarTitle = stringResource(id = R.string.reports),
-    onBackPress = viewModel::onBackPress,
-    dataList = viewModel.getReportsTypeList(),
-    onReportMeasureItemClick = viewModel::onReportMeasureItemClicked
   )
 }
 

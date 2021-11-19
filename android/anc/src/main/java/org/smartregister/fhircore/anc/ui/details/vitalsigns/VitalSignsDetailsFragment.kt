@@ -58,6 +58,7 @@ class VitalSignsDetailsFragment : Fragment() {
     savedInstanceState: Bundle?
   ): View {
     binding = DataBindingUtil.inflate(inflater, R.layout.fragment_vital_details, container, false)
+
     return binding.root
   }
 
@@ -82,9 +83,21 @@ class VitalSignsDetailsFragment : Fragment() {
       )[VitalSignsDetailsViewModel::class.java]
 
     ancDetailsViewModel.fetchEncounters().observe(viewLifecycleOwner, this::handleEncounters)
+
+    binding.swipeContainer.setOnRefreshListener {
+      ancDetailsViewModel.fetchEncounters().observe(viewLifecycleOwner, this::handleEncounters)
+    }
+
+    binding.swipeContainer.setColorSchemeResources(
+      R.color.colorPrimary,
+      R.color.colorPrimaryLight,
+      R.color.colorAccent,
+      R.color.colorPrimaryLightDull
+    )
   }
 
   private fun handleEncounters(listEncounters: List<EncounterItem>) {
+    binding.swipeContainer.isRefreshing = false
     when {
       listEncounters.isEmpty() -> {
         binding.txtViewNoEncounter.visibility = View.VISIBLE

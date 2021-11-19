@@ -19,6 +19,10 @@ package org.smartregister.fhircore.anc.ui.anccare.register
 import android.content.Intent
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.sync.Sync
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
@@ -32,7 +36,7 @@ import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
-import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
+import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 
@@ -44,10 +48,16 @@ class AncRegisterFragmentTest : RobolectricTest() {
   @Before
   fun setUp() {
 
+    mockkObject(Sync)
     val registerActivity =
       Robolectric.buildActivity(FamilyRegisterActivity::class.java).create().resume().get()
     registerFragment = AncRegisterFragment()
     registerActivity.supportFragmentManager.commitNow { add(registerFragment, "") }
+  }
+
+  @After
+  fun cleanup() {
+    unmockkObject(Sync)
   }
 
   @Test
@@ -56,7 +66,7 @@ class AncRegisterFragmentTest : RobolectricTest() {
     val patientItem = PatientItem(patientIdentifier = "test_patient")
     registerFragment.onItemClicked(OpenPatientProfile, patientItem)
 
-    val expectedIntent = Intent(registerFragment.context, AncDetailsActivity::class.java)
+    val expectedIntent = Intent(registerFragment.context, PatientDetailsActivity::class.java)
     val actualIntent =
       shadowOf(ApplicationProvider.getApplicationContext<AncApplication>()).nextStartedActivity
 

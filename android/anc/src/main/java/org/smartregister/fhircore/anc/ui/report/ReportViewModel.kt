@@ -20,26 +20,29 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.util.Pair
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import ca.uhn.fhir.parser.IParser
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.flow.Flow
-import org.smartregister.fhircore.anc.AncApplication
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
-import org.smartregister.fhircore.engine.util.extension.createFactory
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-class ReportViewModel(application: AncApplication, private val repository: ReportRepository) :
-  AndroidViewModel(application) {
+class ReportViewModel(
+  private val repository: ReportRepository,
+  var dispatcher: DispatcherProvider,
+) : ViewModel() {
 
   val backPress: MutableLiveData<Boolean> = MutableLiveData(false)
   val showDatePicker: MutableLiveData<Boolean> = MutableLiveData(false)
@@ -73,16 +76,22 @@ class ReportViewModel(application: AncApplication, private val repository: Repor
     reportState.currentScreen = ReportScreen.FILTER
   }
 
-  fun getSelectedReport(): ReportItem? {
-    return selectedMeasureReportItem.value
-  }
-
-  fun getPatientSelectionType(): String? {
-    return patientSelectionType.value
-  }
-
   fun onBackPress() {
     backPress.value = true
+  }
+
+  fun fetchCQLLibraryData(
+    parser: IParser,
+    fhirResourceDataSource: FhirResourceDataSource,
+    libraryURL: String
+  ): LiveData<String> {
+    val libraryData = MutableLiveData<String>()
+    viewModelScope.launch(dispatcher.io()) {
+      val auxCQLLibraryData =
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(libraryURL).entry[0].resource)
+      libraryData.postValue(auxCQLLibraryData)
+    }
+    return libraryData
   }
 
   fun onBackPressFromFilter() {
@@ -124,15 +133,89 @@ class ReportViewModel(application: AncApplication, private val repository: Repor
     reportState.currentScreen = ReportScreen.FILTER
   }
 
-  companion object {
-    fun get(
-      owner: ViewModelStoreOwner,
-      application: AncApplication,
-      repository: ReportRepository
-    ): ReportViewModel {
-      return ViewModelProvider(owner, ReportViewModel(application, repository).createFactory())[
-        ReportViewModel::class.java]
+  fun fetchCQLFhirHelperData(
+    parser: IParser,
+    fhirResourceDataSource: FhirResourceDataSource,
+    helperURL: String
+  ): LiveData<String> {
+    val helperData = MutableLiveData<String>()
+    viewModelScope.launch(dispatcher.io()) {
+      val auxCQLHelperData =
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(helperURL).entry[0].resource)
+      helperData.postValue(auxCQLHelperData)
     }
+    return helperData
+  }
+
+  fun fetchCQLValueSetData(
+    parser: IParser,
+    fhirResourceDataSource: FhirResourceDataSource,
+    valueSetURL: String
+  ): LiveData<String> {
+    val valueSetData = MutableLiveData<String>()
+    viewModelScope.launch(dispatcher.io()) {
+      val auxCQLValueSetData =
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(valueSetURL))
+      valueSetData.postValue(auxCQLValueSetData)
+    }
+    return valueSetData
+  }
+
+  fun fetchCQLPatientData(
+    parser: IParser,
+    fhirResourceDataSource: FhirResourceDataSource,
+    patientURL: String
+  ): LiveData<String> {
+    val patientData = MutableLiveData<String>()
+    viewModelScope.launch(dispatcher.io()) {
+      val auxCQLPatientData =
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(patientURL))
+      patientData.postValue(auxCQLPatientData)
+    }
+    return patientData
+  }
+
+  fun fetchCQLMeasureEvaluateLibraryAndValueSets(
+    parser: IParser,
+    fhirResourceDataSource: FhirResourceDataSource,
+    libAndValueSetURL: String,
+    measureURL: String,
+    cqlMeasureReportLibInitialString: String
+  ): LiveData<String> {
+    val valueSetData = MutableLiveData<String>()
+    val equalsIndexUrl: Int = libAndValueSetURL.indexOf("=")
+
+    val libStrAfterEquals = libAndValueSetURL.substring(libAndValueSetURL.lastIndexOf("=") + 1)
+    val libList = libStrAfterEquals.split(",").map { it.trim() }
+
+    val libURLStrBeforeEquals = libAndValueSetURL.substring(0, equalsIndexUrl) + "="
+    val fullResourceString = StringBuilder(cqlMeasureReportLibInitialString)
+
+    viewModelScope.launch(dispatcher.io()) {
+      val measureObject =
+        parser.encodeResourceToString(fhirResourceDataSource.loadData(measureURL).entry[0].resource)
+
+      fullResourceString.append("{\"resource\":")
+      fullResourceString.append(measureObject)
+      fullResourceString.append("}")
+
+      var auxCQLValueSetData: String
+      for (lib in libList) {
+        auxCQLValueSetData =
+          parser.encodeResourceToString(
+            fhirResourceDataSource.loadData(libURLStrBeforeEquals + lib).entry[0].resource
+          )
+
+        fullResourceString.append(",")
+        fullResourceString.append("{\"resource\":")
+        fullResourceString.append(auxCQLValueSetData)
+        fullResourceString.append("}")
+      }
+      fullResourceString.deleteCharAt(fullResourceString.length - 1)
+      fullResourceString.append("}]}")
+      valueSetData.postValue(fullResourceString.toString())
+    }
+    return valueSetData
   }
 
   class ReportState {
@@ -143,7 +226,8 @@ class ReportViewModel(application: AncApplication, private val repository: Repor
     HOME,
     FILTER,
     PICK_PATIENT,
-    RESULT
+    RESULT,
+    PREHOMElOADING
   }
 
   object PatientSelectionType {

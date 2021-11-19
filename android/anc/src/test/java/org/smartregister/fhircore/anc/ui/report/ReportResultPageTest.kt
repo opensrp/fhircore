@@ -21,18 +21,23 @@ import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
+@ExperimentalCoroutinesApi
 class ReportResultPageTest : RobolectricTest() {
 
   private val app = ApplicationProvider.getApplicationContext<Application>()
@@ -40,14 +45,20 @@ class ReportResultPageTest : RobolectricTest() {
   private lateinit var repository: ReportRepository
   private lateinit var viewModel: ReportViewModel
   @get:Rule val composeRule = createComposeRule()
+  @get:Rule var coroutinesTestRule = CoroutineTestRule()
+  private val testMeasureReportItem = MutableLiveData(ReportItem(title = "Test Report Title"))
 
   @Before
   fun setUp() {
-    fhirEngine = spyk()
-    repository = spyk(ReportRepository(fhirEngine, "testPatientID", app.baseContext))
+    fhirEngine = mockk()
+    repository =
+      spyk(
+        ReportRepository(fhirEngine, "testPatientID", ApplicationProvider.getApplicationContext())
+      )
     viewModel =
-      spyk(objToCopy = ReportViewModel(ApplicationProvider.getApplicationContext(), repository))
-    every { viewModel.getSelectedReport() } returns ReportItem(title = "Reports")
+      spyk(objToCopy = ReportViewModel(repository, coroutinesTestRule.testDispatcherProvider))
+    every { viewModel.selectedMeasureReportItem } returns
+      this@ReportResultPageTest.testMeasureReportItem
     composeRule.setContent { ReportResultScreen(viewModel = viewModel) }
   }
 
