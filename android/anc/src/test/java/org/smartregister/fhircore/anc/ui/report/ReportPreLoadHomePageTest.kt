@@ -65,13 +65,21 @@ class ReportPreLoadHomePageTest : RobolectricTest() {
             coroutinesTestRule.testDispatcherProvider
           )
       )
-    composeRule.setContent { ReportPreLoadingHomeScreen(viewModel) }
   }
 
   @Test
   fun testReportPreLoadingHomeScreenComponents() {
+    composeRule.setContent { ReportPreLoadingHomeScreen(viewModel) }
     // toolbar should have valid title and icon
     composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals(app.getString(R.string.reports))
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
+  }
+
+  @Test
+  fun testReportPreLoadHomePage() {
+    composeRule.setContent { ReportPreLoadingHomePage(topBarTitle = "testTitle", onBackPress = {}) }
+    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals("testTitle")
+    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
+    composeRule.onNodeWithTag("ProgressBarItem").assertExists()
   }
 }

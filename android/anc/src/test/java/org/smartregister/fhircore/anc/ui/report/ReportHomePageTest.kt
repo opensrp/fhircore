@@ -65,12 +65,20 @@ class ReportHomePageTest : RobolectricTest() {
             coroutinesTestRule.testDispatcherProvider
           )
       )
-    composeRule.setContent { ReportHomeScreen(viewModel = viewModel) }
   }
 
   @Test
   fun testReportHomeScreenComponents() {
+    composeRule.setContent { ReportHomeScreen(viewModel = viewModel) }
     // toolbar should have valid title and icon
+    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals(app.getString(R.string.reports))
+    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
+  }
+
+  @Test
+  fun testReportPatientListPage() {
+    composeRule.setContent { ReportSelectPatientScreen(viewModel = viewModel) }
+    composeRule.onNodeWithTag(REPORT_GENERATE_BUTTON).assertExists()
     composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals(app.getString(R.string.reports))
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
   }
