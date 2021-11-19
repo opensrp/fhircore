@@ -46,13 +46,4 @@ class PatientRowTest : RobolectricTest() {
     composeRule.onNodeWithText("John Doe, 27").assertExists()
     composeRule.onNodeWithText("John Doe, 27").assertIsDisplayed()
   }
-
-  @Test
-  fun testPatientRowPreviewComponents() {
-    composeRule.setContent { PatientRowPreview() }
-    composeRule.onNodeWithText("Male").assertExists()
-    composeRule.onNodeWithText("Male").assertIsDisplayed()
-    composeRule.onNodeWithText("John Doe, 27").assertExists()
-    composeRule.onNodeWithText("John Doe, 27").assertIsDisplayed()
-  }
 }
