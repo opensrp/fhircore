@@ -36,7 +36,8 @@ data class PatientItem(
   val atRisk: String = "",
   val address: String = "",
   val isPregnant: Boolean = true,
-  val visitStatus: VisitStatus = VisitStatus.PLANNED
+  val visitStatus: VisitStatus = VisitStatus.PLANNED,
+  val familyName: String = ""
 )
 
 @Stable

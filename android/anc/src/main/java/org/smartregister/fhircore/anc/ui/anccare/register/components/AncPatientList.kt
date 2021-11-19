@@ -34,12 +34,20 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 fun AncPatientList(
   pagingItems: LazyPagingItems<PatientItem>,
   modifier: Modifier = Modifier,
-  clickListener: (AncRowClickListenerIntent, PatientItem) -> Unit
+  clickListener: (AncRowClickListenerIntent, PatientItem) -> Unit,
+  showAncVisitButton: Boolean = true,
+  displaySelectContentOnly: Boolean = false
 ) {
 
   LazyColumn {
     items(pagingItems, key = { it.patientIdentifier }) {
-      AncRow(patientItem = it!!, clickListener = clickListener, modifier = modifier)
+      AncRow(
+        patientItem = it!!,
+        clickListener = clickListener,
+        showAncVisitButton,
+        displaySelectContentOnly,
+        modifier = modifier
+      )
       Divider(color = DividerColor, thickness = 1.dp)
     }
 
