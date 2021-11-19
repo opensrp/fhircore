@@ -75,22 +75,20 @@ class FamilyDetailScreenKtTest : RobolectricTest() {
 
   @Test
   fun testMemberHeadingComponent() {
-    composeRule.setContent { MemberHeading() }
+    composeRule.setContent { MemberHeading { listenerObjectSpy.onAddMemberItemClick() } }
     composeRule.onNodeWithText("Members".uppercase()).assertExists()
     composeRule.onNodeWithText("Members".uppercase()).assertIsDisplayed()
   }
 
   @Test
   fun testMembersList() {
-    val familyMember = FamilyMemberItem("James", "1", "18", "Male", false)
+    val familyMember = FamilyMemberItem("James", "1", "18", "Male", false,false)
     val familyMembers = listOf(familyMember)
 
     composeRule.setContent {
       MembersList(
-        familyMembers,
-        { listenerObjectSpy.onMemberItemClick(familyMember) },
-        { listenerObjectSpy.onAddMemberItemClick() }
-      )
+        familyMembers
+      ) { listenerObjectSpy.onMemberItemClick(familyMember) }
     }
 
     // Member name is displayed
@@ -98,16 +96,39 @@ class FamilyDetailScreenKtTest : RobolectricTest() {
     composeRule.onNodeWithText("James").assertIsDisplayed()
 
     // Forward arrow image is displayed
-    composeRule.onNodeWithContentDescription("").assertExists()
-    composeRule.onNodeWithContentDescription("").assertIsDisplayed()
+    composeRule.onNodeWithContentDescription("Forward arrow").assertExists()
+    composeRule.onNodeWithContentDescription("Forward arrow").assertIsDisplayed()
 
-    // Add member button is displayed
-    composeRule.onNodeWithText("Add Member".uppercase()).assertExists()
-    composeRule.onNodeWithText("Add Member".uppercase()).assertIsDisplayed()
+  }
 
-    // clicking add member button should call 'onAddMemberItemClick' method of 'listenerObjectSpy'
-    composeRule.onNodeWithText("Add Member".uppercase()).performClick()
-    verify { listenerObjectSpy.onAddMemberItemClick() }
+  @Test
+  fun testMembersListWithPregnantHeadOfHouseHold() {
+    val familyMember = FamilyMemberItem("Jane", "1", "18", "Female", true, true)
+    val familyMembers = listOf(familyMember)
+
+    composeRule.setContent {
+      MembersList(familyMembers) { listenerObjectSpy.onMemberItemClick(familyMember) }
+    }
+
+    // Member name is displayed
+    composeRule.onNodeWithText("Jane").assertExists()
+    composeRule.onNodeWithText("Jane").assertIsDisplayed()
+
+    // Head of household label displayed
+    composeRule.onNodeWithText("Head of household").assertExists()
+    composeRule.onNodeWithText("Head of household").assertIsDisplayed()
+
+    // Pregnant lady image is displayed
+    composeRule.onNodeWithContentDescription("Pregnant woman").assertExists()
+    composeRule.onNodeWithContentDescription("Pregnant woman").assertIsDisplayed()
+
+    // ANC visit due text is displayed
+    composeRule.onNodeWithText("ANC visit due").assertExists()
+    composeRule.onNodeWithText("ANC visit due").assertIsDisplayed()
+
+    // Forward arrow image is displayed
+    composeRule.onNodeWithContentDescription("Forward arrow").assertExists()
+    composeRule.onNodeWithContentDescription("Forward arrow").assertIsDisplayed()
   }
 
   @Test
