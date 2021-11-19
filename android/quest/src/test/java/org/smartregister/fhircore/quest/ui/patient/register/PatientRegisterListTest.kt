@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register
 
-import android.app.Application
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
@@ -26,7 +25,6 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.performClick
 import androidx.paging.LoadState
-import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.spyk
 import org.junit.Assert
@@ -40,7 +38,6 @@ import org.smartregister.fhircore.quest.ui.patient.register.components.dummyPati
 
 class PatientRegisterListTest : RobolectricTest() {
   @get:Rule val composeRule = createComposeRule()
-  private val app = ApplicationProvider.getApplicationContext<Application>()
 
   @Test
   fun testPatientRegisterListShouldHaveAllItemWithCorrectData() {
