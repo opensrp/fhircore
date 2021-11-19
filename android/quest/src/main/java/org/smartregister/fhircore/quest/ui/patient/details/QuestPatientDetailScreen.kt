@@ -128,10 +128,7 @@ fun Toolbar(dataProvider: QuestPatientDetailDataProvider) {
 }
 
 @Composable
-fun FormItem(
-  form: QuestionnaireConfig,
-  dataProvider: QuestPatientDetailDataProvider
-) { // clickHandler: (form: QuestionnaireConfig) -> Unit) {
+fun FormItem(form: QuestionnaireConfig, dataProvider: QuestPatientDetailDataProvider) {
   Card(
     backgroundColor = colorResource(id = R.color.cornflower_blue),
     modifier =
