@@ -238,7 +238,8 @@ fun BottomButtonBox(generateReportEnabled: Boolean, onGenerateReportClicked: () 
       Button(
         enabled = generateReportEnabled,
         onClick = onGenerateReportClicked,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag(REPORT_GENERATE_BUTTON)
+        modifier =
+          Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag(REPORT_GENERATE_BUTTON)
       ) {
         Text(
           color = Color.White,

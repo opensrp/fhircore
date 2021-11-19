@@ -119,7 +119,8 @@ class ReportScreensTest : RobolectricTest() {
     composeRule.setContent {
       BottomButtonBox(
         generateReportEnabled = true,
-        onGenerateReportClicked = { listenerObjectSpy.onGenerateReportClick() })
+        onGenerateReportClicked = { listenerObjectSpy.onGenerateReportClick() }
+      )
     }
     composeRule.onNodeWithTag(REPORT_GENERATE_BUTTON).assertExists()
     composeRule.onNodeWithTag(REPORT_GENERATE_BUTTON).performClick()

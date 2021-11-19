@@ -37,7 +37,18 @@ class PatientModelsTest : RobolectricTest() {
   @Before
   fun setUp() {
     patientItem =
-      PatientItem("111", "anb", "M", "25", "PD", "none", "xyz", true, VisitStatus.PLANNED, "TestFamily")
+      PatientItem(
+        "111",
+        "anb",
+        "M",
+        "25",
+        "PD",
+        "none",
+        "xyz",
+        true,
+        VisitStatus.PLANNED,
+        "TestFamily"
+      )
     patientItemHead =
       PatientItem("111", "anb", "M", "25", "PD", "none", "xyz", false, VisitStatus.PLANNED)
     encounterItem = EncounterItem("111", status = Encounter.EncounterStatus.ARRIVED, "abc", Date())
