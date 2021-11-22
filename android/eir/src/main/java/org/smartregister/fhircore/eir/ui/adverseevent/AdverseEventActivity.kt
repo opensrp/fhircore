@@ -51,7 +51,6 @@ class AdverseEventActivity : BaseMultiLanguageActivity() {
 
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
-
     setupViews()
 
     adverseEventViewModel

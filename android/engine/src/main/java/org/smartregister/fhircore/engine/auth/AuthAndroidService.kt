@@ -20,9 +20,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.scopes.ServiceScoped
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 
 @AndroidEntryPoint
 class AuthAndroidService : Service() {

@@ -27,10 +27,11 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-class FamilyDetailRepository @Inject constructor(
+class FamilyDetailRepository
+@Inject
+constructor(
   private val familyId: String,
   private val fhirEngine: FhirEngine,
   private val dispatcherProvider: DispatcherProvider

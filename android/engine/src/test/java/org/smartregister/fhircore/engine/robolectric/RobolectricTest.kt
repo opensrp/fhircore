@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.robolectric
 import android.os.Build
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.clearAllMocks
 import java.util.concurrent.CountDownLatch

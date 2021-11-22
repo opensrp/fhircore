@@ -39,9 +39,7 @@ class AncApplicationTest : RobolectricTest() {
   }
   @Test
   fun testThatApplicationIsInstanceOfConfigurableApplication() {
-    Assert.assertTrue(
-      ApplicationProvider.getApplicationContext<AncApplication>() is ConfigService
-    )
+    Assert.assertTrue(ApplicationProvider.getApplicationContext<AncApplication>() is ConfigService)
   }
 
   @Test

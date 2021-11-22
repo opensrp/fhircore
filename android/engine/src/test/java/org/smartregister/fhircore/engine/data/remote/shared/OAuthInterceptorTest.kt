@@ -26,8 +26,5 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 @Config(sdk = [29])
 class OAuthInterceptorTest : RobolectricTest() {
 
-  @Test
-  fun testInterceptShouldAddTokenHeader() {
-
-  }
+  @Test fun testInterceptShouldAddTokenHeader() {}
 }

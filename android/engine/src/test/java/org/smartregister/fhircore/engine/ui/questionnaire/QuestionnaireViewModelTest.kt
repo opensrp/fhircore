@@ -82,11 +82,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.save(any()) } answers {}
     coEvery { fhirEngine.update(any()) } answers {}
 
-//    defaultRepo = spyk(DefaultRepository(fhirEngine))
+    //    defaultRepo = spyk(DefaultRepository(fhirEngine))
     coEvery { defaultRepo.save(any()) } returns Unit
     coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
 
-//    questionnaireViewModel = spyk(QuestionnaireViewModel(context))
+    //    questionnaireViewModel = spyk(QuestionnaireViewModel(context))
     ReflectionHelpers.setField(questionnaireViewModel, "defaultRepository", defaultRepo)
   }
 
@@ -127,7 +127,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           )
       }
     coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns questionnaire
-//    questionnaireViewModel = spyk(QuestionnaireViewModel(context))
+    //    questionnaireViewModel = spyk(QuestionnaireViewModel(context))
     ReflectionHelpers.setField(questionnaireViewModel, "defaultRepository", defaultRepo)
 
     val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345", true) }
@@ -314,13 +314,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         QuestionnaireConfig("appId", "my-form", "My Form", "0001"),
         QuestionnaireConfig("appId", "patient-registration", "Add Patient", "1903")
       )
-//
-//    val result = runBlocking {
-//      questionnaireViewModel.getQuestionnaireConfig("patient-registration")
-////    }
-//    Assert.assertEquals("patient-registration", result.form)
-//    Assert.assertEquals("Add Patient", result.title)
-//    Assert.assertEquals("1903", result.identifier)
+    //
+    //    val result = runBlocking {
+    //      questionnaireViewModel.getQuestionnaireConfig("patient-registration")
+    // //    }
+    //    Assert.assertEquals("patient-registration", result.form)
+    //    Assert.assertEquals("Add Patient", result.title)
+    //    Assert.assertEquals("1903", result.identifier)
 
     unmockkObject(AssetUtil)
   }
@@ -349,12 +349,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     val questionnaireResponse = QuestionnaireResponse()
 
-//    questionnaireViewModel.extractAndSaveResources(
-//      "12345",
-//      context,
-//      questionnaire,
-//      questionnaireResponse
-//    )
+    //    questionnaireViewModel.extractAndSaveResources(
+    //      "12345",
+    //      context,
+    //      questionnaire,
+    //      questionnaireResponse
+    //    )
 
     coVerify { defaultRepo.addOrUpdate(questionnaireResponse) }
     coVerify { defaultRepo.addOrUpdate(patient) }
@@ -382,13 +382,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           )
         )
       }
-//
-//    questionnaireViewModel.extractAndSaveResources(
-//      null,
-//      context,
-//      questionnaire,
-//      QuestionnaireResponse()
-//    )
+    //
+    //    questionnaireViewModel.extractAndSaveResources(
+    //      null,
+    //      context,
+    //      questionnaire,
+    //      QuestionnaireResponse()
+    //    )
 
     val patientSlot = slot<Patient>()
 
@@ -411,13 +411,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           value = CodeableConcept().apply { addCoding().apply { code = "1234567" } }
         }
       }
-//
-//    questionnaireViewModel.extractAndSaveResources(
-//      "12345",
-//      context,
-//      questionnaire,
-//      QuestionnaireResponse()
-//    )
+    //
+    //    questionnaireViewModel.extractAndSaveResources(
+    //      "12345",
+    //      context,
+    //      questionnaire,
+    //      QuestionnaireResponse()
+    //    )
 
     coVerify(timeout = 2000) { defaultRepo.addOrUpdate(capture(questionnaireResponseSlot)) }
 
@@ -617,13 +617,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireResponse = spyk(QuestionnaireResponse())
 
     questionnaireViewModel.editQuestionnaireResponse = oldQuestionnaireResponse
-//    questionnaireViewModel.extractAndSaveResources(
-//      "12345",
-//      context,
-//      questionnaire,
-//      questionnaireResponse,
-//      true
-//    )
+    //    questionnaireViewModel.extractAndSaveResources(
+    //      "12345",
+    //      context,
+    //      questionnaire,
+    //      questionnaireResponse,
+    //      true
+    //    )
 
     verify { questionnaireResponse.retainMetadata(oldQuestionnaireResponse) }
     coVerify { questionnaireResponse.deleteRelatedResources(defaultRepo) }

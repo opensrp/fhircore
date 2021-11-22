@@ -68,11 +68,7 @@ class PatientRepositoryTest : RobolectricTest() {
         )
 
     repository =
-      PatientRepository(
-          fhirEngine,
-          PatientItemMapper,
-          coroutinesTestRule.testDispatcherProvider
-      )
+      PatientRepository(fhirEngine, PatientItemMapper, coroutinesTestRule.testDispatcherProvider)
   }
 
   @Test

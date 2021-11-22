@@ -39,9 +39,8 @@ import timber.log.Timber
  * Immunization.Reaction
  */
 @Singleton
-class TransformSupportServices @Inject constructor(
-  val simpleWorkerContext: SimpleWorkerContext
-) : ITransformerServices {
+class TransformSupportServices @Inject constructor(val simpleWorkerContext: SimpleWorkerContext) :
+  ITransformerServices {
 
   val outputs: MutableList<Base> = mutableListOf()
 

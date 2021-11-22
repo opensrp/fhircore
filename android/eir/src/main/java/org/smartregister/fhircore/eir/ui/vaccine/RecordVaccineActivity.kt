@@ -31,41 +31,36 @@ import org.smartregister.fhircore.engine.util.DateUtils
 import timber.log.Timber
 
 class RecordVaccineActivity : QuestionnaireActivity() {
-  val recordVaccineViewModel : RecordVaccineViewModel by viewModels()
+  val recordVaccineViewModel: RecordVaccineViewModel by viewModels()
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
       clientIdentifier?.let { identifier: String ->
-        recordVaccineViewModel.getVaccineSummary(identifier).observe(
-            this@RecordVaccineActivity
-          ) { vaccineSummary: PatientVaccineSummary? ->
+        recordVaccineViewModel.getVaccineSummary(identifier).observe(this@RecordVaccineActivity) {
+          vaccineSummary: PatientVaccineSummary? ->
           if (vaccineSummary != null) {
             lifecycleScope.launch {
               questionnaire.let { questionnaire ->
-                questionnaireViewModel.performExtraction(
-                    questionnaire,
-                    questionnaireResponse
-                )
-                  .run {
-                    val immunizationEntry = entry.firstOrNull { it.resource is Immunization }
+                questionnaireViewModel.performExtraction(questionnaire, questionnaireResponse).run {
+                  val immunizationEntry = entry.firstOrNull { it.resource is Immunization }
 
-                    if (immunizationEntry == null) {
-                      val fhirJsonParser = FhirContext.forR4().newJsonParser()
-                      Timber.e(
-                        "Immunization extraction failed for ${
-                        fhirJsonParser.encodeResourceToString(
-                          questionnaireResponse
-                        )
-                        } producing ${
-                        fhirJsonParser.encodeResourceToString(
-                          this
-                        )
-                        }"
+                  if (immunizationEntry == null) {
+                    val fhirJsonParser = FhirContext.forR4().newJsonParser()
+                    Timber.e(
+                      "Immunization extraction failed for ${
+                      fhirJsonParser.encodeResourceToString(
+                        questionnaireResponse
                       )
-                      lifecycleScope.launch(Dispatchers.Main) { handleExtractionError() }
-                    } else {
-                      showVaccineRecordDialog(this, vaccineSummary)
-                    }
+                      } producing ${
+                      fhirJsonParser.encodeResourceToString(
+                        this
+                      )
+                      }"
+                    )
+                    lifecycleScope.launch(Dispatchers.Main) { handleExtractionError() }
+                  } else {
+                    showVaccineRecordDialog(this, vaccineSummary)
                   }
+                }
               }
             }
           }

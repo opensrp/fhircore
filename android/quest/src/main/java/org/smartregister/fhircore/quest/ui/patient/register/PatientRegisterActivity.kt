@@ -40,10 +40,9 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     super.onCreate(savedInstanceState)
 
     val registerViewConfiguration =
-        configurationRegistry
-        .retrieveConfiguration<RegisterViewConfiguration>(
-          configClassification = QuestConfigClassification.PATIENT_REGISTER
-        )
+      configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
+        configClassification = QuestConfigClassification.PATIENT_REGISTER
+      )
     configureViews(registerViewConfiguration)
   }
 

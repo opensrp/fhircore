@@ -41,9 +41,7 @@ class EirApplicationTest : RobolectricTest() {
   }
   @Test
   fun testThatApplicationIsInstanceOfConfigurableApplication() {
-    Assert.assertTrue(
-      ApplicationProvider.getApplicationContext<EirApplication>() is ConfigService
-    )
+    Assert.assertTrue(ApplicationProvider.getApplicationContext<EirApplication>() is ConfigService)
   }
 
   @Test
