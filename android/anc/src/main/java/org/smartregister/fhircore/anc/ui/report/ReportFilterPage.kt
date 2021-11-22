@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import android.app.Activity
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -91,6 +94,7 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
   val selectedPatient by remember { mutableStateOf(viewModel.selectedPatientItem.value) }
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
+  val reportHomeActivity = LocalContext.current as ReportHomeActivity
 
   ReportFilterPage(
     topBarTitle = reportMeasureItem?.title ?: "",
@@ -101,9 +105,32 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
     patientSelectionText = patientSelectionType ?: "All",
     onPatientSelectionTypeChanged = viewModel::onPatientSelectionTypeChanged,
     generateReportEnabled = generateReportEnabled ?: true,
-    onGenerateReportPress = viewModel::onGenerateReportPress,
+    onGenerateReportPress = { testRunCQL(startDate,endDate,
+      reportMeasureItem!!.reportType,
+      selectedPatient!!.patientIdentifier,
+      reportHomeActivity
+    ) },
     selectedPatient = selectedPatient ?: PatientItem()
   )
+}
+
+fun testRunCQL(
+  startDate:String,
+  endDate:String,
+  reportType:String,
+  patientId:String,
+  reportHomeActivity:ReportHomeActivity
+  ){
+  Log.i("startDate",startDate)
+  Log.i("endDate",endDate)
+  Log.i("reportType",reportType)
+  Log.i("patientId",patientId)
+
+  reportHomeActivity.patientId=patientId
+  reportHomeActivity.cqlMeasureReportReportType=reportType
+  reportHomeActivity.loadCQLMeasurePatientData()
+
+
 }
 
 @Composable

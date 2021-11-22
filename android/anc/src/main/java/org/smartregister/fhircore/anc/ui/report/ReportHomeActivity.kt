@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Surface
@@ -101,7 +102,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   val fileNameMeasureLibraryCql = "measure_library_cql"
   var patientResourcesIBase = ArrayList<IBaseResource>()
   lateinit var patientDataIBase: IBaseBundle
-  lateinit var patientDetailsData: String
   lateinit var patientId: String
   lateinit var reportViewModel: ReportViewModel
 
@@ -221,7 +221,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         Surface(color = colorResource(id = R.color.white)) {
           Column {
             ReportView(reportViewModel)
-            loadCQLLibraryData()
+//            loadCQLLibraryData()
             loadMeasureEvaluateLibrary()
           }
         }
@@ -358,16 +358,18 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   }
 
   fun handleMeasureEvaluate(): String {
-    return measureEvaluator.runMeasureEvaluate(
+    val parameters= measureEvaluator.runMeasureEvaluate(
       patientResourcesIBase,
       libraryMeasure,
       fhirContext,
       cqlMeasureReportURL,
-      cqlMeasureReportStartDate,
-      cqlMeasureReportEndDate,
+      "2020-01-01",
+      "2020-01-31",
       cqlMeasureReportReportType,
-      patientDetailsData.substring(0, patientDetailsData.indexOf(","))
+      "Mom"
     )
+    Log.i("parameters",parameters)
+    return parameters
   }
 
   fun handleMeasureEvaluateLibrary(auxMeasureEvaluateLibData: String) {
@@ -393,7 +395,14 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   }
 
   fun handleCQLMeasureLoadPatient(auxPatientData: String) {
-    patientDetailsData = auxPatientData
+    Log.i("auxPatientData",auxPatientData)
+
+    val testData = libraryEvaluator.processCQLPatientBundle(auxPatientData)
+    val patientDataStream: InputStream = ByteArrayInputStream(testData!!.toByteArray())
+    patientDataIBase = parser.parseResource(patientDataStream) as IBaseBundle
+    patientResourcesIBase.add(patientDataIBase)
+
+    handleMeasureEvaluate()
   }
 
   private fun performFilter(
