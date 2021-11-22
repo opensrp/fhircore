@@ -16,20 +16,17 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
-import android.app.Application
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.lifecycle.MutableLiveData
-import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
@@ -38,13 +35,12 @@ import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 @ExperimentalCoroutinesApi
 class ReportResultPageTest : RobolectricTest() {
 
-  private val app = ApplicationProvider.getApplicationContext<Application>()
   private lateinit var viewModel: ReportViewModel
   @get:Rule val composeRule = createComposeRule()
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
-  private val testMeasureReportItem = MutableLiveData(ReportItem(title = "Test Report Title"))
+  private val testMeasureReportItem = MutableLiveData(ReportItem(title = "Report Result Title"))
   private val patientSelectionType = MutableLiveData("")
-  private val selectionPatient = MutableLiveData(PatientItem(name = "Test Patient Name"))
+  private val selectedPatient = MutableLiveData(PatientItem(name = "Test Patient Name"))
 
   @Before
   fun setUp() {
@@ -55,16 +51,33 @@ class ReportResultPageTest : RobolectricTest() {
         every { startDate } returns MutableLiveData("")
         every { endDate } returns MutableLiveData("")
         every { patientSelectionType } returns this@ReportResultPageTest.patientSelectionType
-        every { selectedPatientItem } returns this@ReportResultPageTest.selectionPatient
+        every { selectedPatientItem } returns this@ReportResultPageTest.selectedPatient
       }
-
-    composeRule.setContent { ReportResultScreen(viewModel = viewModel) }
   }
 
   @Test
-  fun testReportHomeScreenComponents() {
+  fun testReportResultScreen() {
+    composeRule.setContent { ReportResultScreen(viewModel = viewModel) }
     // toolbar should have valid title and icon
-    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals(app.getString(R.string.reports))
+    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals("Report Result Title")
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
+  }
+
+  @Test
+  fun testReportPageView() {
+    composeRule.setContent {
+      ReportResultPage(
+        topBarTitle = "FilterResultReportTitle",
+        onBackPress = {},
+        reportMeasureItem = ReportItem(),
+        startDate = "",
+        endDate = "",
+        isAllPatientSelection = true,
+        selectedPatient = PatientItem()
+      )
+    }
+    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals("FilterResultReportTitle")
+    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
+    composeRule.onNodeWithTag(REPORT_DATE_RANGE_SELECTION).assertExists()
   }
 }
