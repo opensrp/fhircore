@@ -40,7 +40,6 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 
-@ViewModelScoped
 class PatientRepository
 @Inject
 constructor(

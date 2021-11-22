@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.patient.details
 
 import android.content.Context
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -44,15 +43,11 @@ class QuestPatientDetailViewModel @Inject constructor(val patientRepository: Pat
   val onFormItemClicked = MutableLiveData<QuestionnaireConfig>(null)
   val onFormTestResultClicked = MutableLiveData<QuestionnaireResponse>(null)
 
-  fun getDemographics(patientId: String): LiveData<Patient> {
-    val mutableLiveData = MutableLiveData<Patient>()
-    viewModelScope.launch {
-      mutableLiveData.postValue(patientRepository.fetchDemographics(patientId))
-    }
-    return mutableLiveData
+  fun getDemographics(patientId: String) {
+    viewModelScope.launch { patient.postValue(patientRepository.fetchDemographics(patientId)) }
   }
 
-  fun getAllForms(context: Context): LiveData<List<QuestionnaireConfig>> {
+  fun getAllForms(context: Context) {
     viewModelScope.launch {
       // TODO Load binary resources
       val config =
@@ -61,7 +56,6 @@ class QuestPatientDetailViewModel @Inject constructor(val patientRepository: Pat
         patientRepository.fetchTestForms(config.profileQuestionnaireFilter)
       )
     }
-    return questionnaireConfigs
   }
 
   fun getAllResults(patientId: String) {

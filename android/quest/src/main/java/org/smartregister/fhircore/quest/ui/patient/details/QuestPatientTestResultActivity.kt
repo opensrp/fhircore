@@ -33,13 +33,9 @@ class QuestPatientTestResultActivity : BaseMultiLanguageActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: "1"
-
+    patientViewModel.onBackPressClicked.observe(this, { finish() })
+    patientViewModel.getDemographics(patientId)
     setContent { AppTheme { QuestPatientTestResultScreen(patientViewModel) } }
-  }
-
-  private fun onBackPressListener() {
-    finish()
   }
 }

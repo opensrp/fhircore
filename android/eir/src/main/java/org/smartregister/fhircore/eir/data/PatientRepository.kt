@@ -37,7 +37,6 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.searchActivePatients
 
-@ViewModelScoped
 class PatientRepository
 @Inject
 constructor(
