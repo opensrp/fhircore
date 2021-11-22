@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.data
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
@@ -70,10 +69,9 @@ class PatientRepositoryTest : RobolectricTest() {
 
     repository =
       PatientRepository(
-        fhirEngine,
-        PatientItemMapper,
-        MutableLiveData(config),
-        coroutinesTestRule.testDispatcherProvider
+          fhirEngine,
+          PatientItemMapper,
+          coroutinesTestRule.testDispatcherProvider
       )
   }
 

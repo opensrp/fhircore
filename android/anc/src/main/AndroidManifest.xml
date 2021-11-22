@@ -17,7 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
         <activity
-            android:name=".ui.login.LoginActivity"
+            android:name="org.smartregister.fhircore.engine.ui.login.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -38,7 +38,7 @@
         <activity android:name=".ui.anccare.encounters.EncounterListActivity" />
         <activity android:name=".ui.family.details.FamilyDetailsActivity" />
 
-        <service android:name=".AncAuthAndroidService">
+        <service android:name="org.smartregister.fhircore.engine.auth.AuthAndroidService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>

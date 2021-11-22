@@ -6,6 +6,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'de.mannodermaus.android-junit5'
     id 'jacoco'
+    id 'dagger.hilt.android.plugin'
 }
 
 android {
@@ -120,6 +121,9 @@ dependencies {
     implementation 'org.opencds.cqf.cql:evaluator.builder:1.2.1-SNAPSHOT'
     implementation 'org.opencds.cqf.cql:evaluator.dagger:1.2.1-SNAPSHOT'
 
+    //Hilt - Dependency Injection
+    implementation "com.google.dagger:hilt-android:$hiltVersion"
+    kapt "com.google.dagger:hilt-compiler:$hiltVersion"
 
     //Configure Jetpack Compose
     def composeVersion = "1.0.1"
@@ -181,6 +185,10 @@ dependencies {
     def okhttpVersion = '4.9.1'
     api "com.squareup.okhttp3:okhttp:$okhttpVersion"
     api "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
+
+    // Hilt test dependencies
+    testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
+    kaptTest("com.google.dagger:hilt-android-compiler:$hiltVersion")
 
     testImplementation deps.junit5_api
     testRuntimeOnly deps.junit5_engine

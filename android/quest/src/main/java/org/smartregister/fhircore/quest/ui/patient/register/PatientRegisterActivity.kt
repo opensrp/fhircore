@@ -20,6 +20,9 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
@@ -28,16 +31,17 @@ import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
+@AndroidEntryPoint
 class PatientRegisterActivity : BaseRegisterActivity() {
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     val registerViewConfiguration =
-      configurableApplication()
-        .configurationRegistry
+        configurationRegistry
         .retrieveConfiguration<RegisterViewConfiguration>(
-          context = this,
           configClassification = QuestConfigClassification.PATIENT_REGISTER
         )
     configureViews(registerViewConfiguration)

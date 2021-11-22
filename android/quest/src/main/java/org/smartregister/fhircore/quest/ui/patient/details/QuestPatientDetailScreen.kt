@@ -58,25 +58,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import java.text.SimpleDateFormat
-import java.util.Date
-import org.hl7.fhir.r4.model.Address
-import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.HumanName
-import org.hl7.fhir.r4.model.Identifier
-import org.hl7.fhir.r4.model.Meta
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
@@ -92,7 +76,7 @@ const val FORM_ITEM = "formItemTag"
 const val RESULT_ITEM = "resultItemTag"
 
 @Composable
-fun Toolbar(dataProvider: QuestPatientDetailDataProvider) {
+fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
   var showMenu by remember { mutableStateOf(false) }
 
   TopAppBar(
@@ -101,7 +85,7 @@ fun Toolbar(dataProvider: QuestPatientDetailDataProvider) {
     },
     navigationIcon = {
       IconButton(
-        onClick = { dataProvider.onBackPressListener().invoke() },
+        onClick = { questPatientDetailViewModel.onBackPressed(true) },
         Modifier.testTag(TOOLBAR_BACK_ARROW)
       ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
     },
@@ -118,7 +102,7 @@ fun Toolbar(dataProvider: QuestPatientDetailDataProvider) {
         DropdownMenuItem(
           onClick = {
             showMenu = false
-            dataProvider.onMenuItemClickListener().invoke("")
+            questPatientDetailViewModel.onMenuItemClickListener(true)
           }
         ) { Text(text = stringResource(id = R.string.test_results)) }
       }
@@ -145,11 +129,14 @@ fun FormItem(form: QuestionnaireConfig, clickHandler: (form: QuestionnaireConfig
 }
 
 @Composable
-fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
+fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailViewModel) {
+  val patient by questPatientDetailViewModel.patient.observeAsState(null)
+  val forms by questPatientDetailViewModel.questionnaireConfigs.observeAsState(null)
+  val testResults by questPatientDetailViewModel.testResults.observeAsState(null)
 
   Surface(color = colorResource(id = R.color.white_smoke)) {
     Column {
-      Toolbar(dataProvider)
+      Toolbar(questPatientDetailViewModel)
 
       // full name with gender and age
       Column(
@@ -158,8 +145,6 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
             .background(color = colorResource(id = R.color.colorPrimary))
             .padding(12.dp)
       ) {
-        val patient = dataProvider.getDemographics().observeAsState().value
-
         Text(
           text =
             "${patient?.extractName() ?: ""}, ${patient?.extractGender(LocalContext.current)?.first() ?: ""}, ${patient?.extractAge() ?: ""}",
@@ -183,12 +168,9 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
           modifier = Modifier.fillMaxWidth()
         ) {
           Column(modifier = Modifier.padding(16.dp)) {
-
-            // fetch forms
-            val forms = dataProvider.getAllForms().observeAsState()
-            forms.value?.let { allForms ->
+            forms?.let { allForms ->
               allForms.forEachIndexed { index, it ->
-                FormItem(it) { dataProvider.onFormItemClickListener().invoke(it) }
+                FormItem(it) { questPatientDetailViewModel.onFormItemClickListener(it) }
 
                 if (index < allForms.size.minus(1)) {
                   Spacer(Modifier.height(16.dp))
@@ -211,18 +193,15 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
           modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
         ) {
           Column() {
-            // fetch responses
-            val results = dataProvider.getAllResults().observeAsState()
-
-            val totalResultsCount = results.value?.count() ?: 0
-            results.value?.forEachIndexed { index, item ->
+            val totalResultsCount = testResults?.count() ?: 0
+            testResults?.forEachIndexed { index, item ->
               Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier =
                   Modifier.fillMaxWidth()
                     .padding(12.dp)
-                    .clickable { dataProvider.onTestResultItemClickListener().invoke(item) }
+                    .clickable { questPatientDetailViewModel.onTestResultItemClickListener(item) }
                     .testTag(RESULT_ITEM)
               ) {
                 Text(
@@ -247,78 +226,8 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
             }
           }
         }
-
-        // for bottom padding
         Spacer(Modifier.height(24.dp))
       }
-    }
-  }
-}
-
-@Preview
-@Composable
-@ExcludeFromJacocoGeneratedReport
-fun PreviewQuestionPatientDetailScreen() {
-  AppTheme { QuestPatientDetailScreen(dummyQuestPatientDetailDataProvider()) }
-}
-
-fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
-  return object : QuestPatientDetailDataProvider {
-    override fun getDemographics(): LiveData<Patient> {
-      return MutableLiveData(
-        Patient().apply {
-          name =
-            listOf(
-              HumanName().apply {
-                id = "5583145"
-                family = "Doe"
-                given = listOf(StringType("John"))
-                gender = Enumerations.AdministrativeGender.MALE
-                birthDate = SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01")
-                address =
-                  listOf(
-                    Address().apply {
-                      city = "Nairobi"
-                      country = "Keynya"
-                    }
-                  )
-                identifier = listOf(Identifier().apply { value = "12345" })
-              }
-            )
-        }
-      )
-    }
-
-    override fun getAllForms(): LiveData<List<QuestionnaireConfig>> {
-      return MutableLiveData(
-        listOf(
-          QuestionnaireConfig(
-            appId = "quest",
-            form = "sample-test-result",
-            title = "+ Sample Test Result",
-            identifier = "12345"
-          )
-        )
-      )
-    }
-
-    override fun getAllResults(): LiveData<List<QuestionnaireResponse>> {
-      return MutableLiveData(
-        listOf(
-          QuestionnaireResponse().apply {
-            meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Test" }) }
-            authored = Date()
-          }
-        )
-      )
-    }
-
-    override fun onFormItemClickListener(): (item: QuestionnaireConfig) -> Unit {
-      return {}
-    }
-
-    override fun onTestResultItemClickListener(): (item: QuestionnaireResponse) -> Unit {
-      return {}
     }
   }
 }

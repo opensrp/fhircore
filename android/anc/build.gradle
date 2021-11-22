@@ -7,6 +7,7 @@ plugins {
     id 'org.jetbrains.dokka'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'jacoco'
+    id 'dagger.hilt.android.plugin'
 }
 
 Properties props = new Properties()
@@ -134,11 +135,13 @@ dependencies {
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
     implementation deps.work.runtime
 
+    //Hilt - Dependency Injection
+    implementation "com.google.dagger:hilt-android:$hiltVersion"
+    kapt "com.google.dagger:hilt-compiler:$hiltVersion"
+
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.2'
-
-
 
     testImplementation deps.junit5_api
     testRuntimeOnly deps.junit5_engine

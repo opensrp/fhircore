@@ -25,7 +25,7 @@ import org.junit.Test
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 
 @Config(shadows = [AncApplicationShadow::class])
 class AncApplicationTest : RobolectricTest() {
@@ -40,7 +40,7 @@ class AncApplicationTest : RobolectricTest() {
   @Test
   fun testThatApplicationIsInstanceOfConfigurableApplication() {
     Assert.assertTrue(
-      ApplicationProvider.getApplicationContext<AncApplication>() is ConfigurableApplication
+      ApplicationProvider.getApplicationContext<AncApplication>() is ConfigService
     )
   }
 

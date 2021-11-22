@@ -20,57 +20,59 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import dagger.hilt.android.AndroidEntryPoint
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.data.patient.PatientRepository
-import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import timber.log.Timber
 
+@AndroidEntryPoint
 class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
 
   private lateinit var patientId: String
 
+  val patientViewModel by viewModels<QuestPatientDetailViewModel>()
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: "1"
-    val fhirEngine = (QuestApplication.getContext() as ConfigurableApplication).fhirEngine
-    val repository = PatientRepository(fhirEngine, PatientItemMapper)
-    val viewModel =
-      QuestPatientDetailViewModel.get(this, application as QuestApplication, repository, patientId)
 
-    viewModel.setOnBackPressListener(this::onBackPressListener)
-    viewModel.setOnMenuItemClickListener(this::onMenuItemClickListener)
-    viewModel.setOnFormItemClickListener(this::onFormItemClickListener)
-    viewModel.setOnTestResultItemClickListener(this::onTestResultItemClickListener)
+    patientViewModel.onBackPressClicked.observe(this, { finish() })
+    patientViewModel.onMenuItemClicked.observe(this, this::launchTestResults)
+    patientViewModel.onFormItemClicked.observe(this, this::launchQuestionnaireForm)
+    patientViewModel.onFormTestResultClicked.observe(this, this::onTestResultItemClickListener)
 
-    setContent { AppTheme { QuestPatientDetailScreen(viewModel) } }
+    patientViewModel.run {
+      getDemographics(patientId)
+      getAllResults(patientId)
+      getAllForms(this@QuestPatientDetailActivity)
+    }
+    setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
   }
 
-  private fun onBackPressListener() {
-    finish()
+  private fun launchTestResults(isClicked: Boolean) {
+    if (isClicked) {
+      startActivity(
+        Intent(this, QuestPatientTestResultActivity::class.java).apply {
+          putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
+        }
+      )
+    }
   }
 
-  private fun onMenuItemClickListener(menuItem: String) {
-    startActivity(
-      Intent(this, QuestPatientTestResultActivity::class.java).apply {
-        putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
-      }
-    )
-  }
-
-  private fun onFormItemClickListener(item: QuestionnaireConfig) {
+  private fun launchQuestionnaireForm(questionnaireConfig: QuestionnaireConfig) {
     startActivity(
       Intent(this, QuestionnaireActivity::class.java).apply {
         putExtras(
-          QuestionnaireActivity.intentArgs(clientIdentifier = patientId, formName = item.identifier)
+          QuestionnaireActivity.intentArgs(
+            clientIdentifier = patientId,
+            formName = questionnaireConfig.identifier
+          )
         )
       }
     )

@@ -23,7 +23,6 @@ import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.login.LoginActivity
 
 class QuestAuthenticationServiceTest : RobolectricTest() {
 

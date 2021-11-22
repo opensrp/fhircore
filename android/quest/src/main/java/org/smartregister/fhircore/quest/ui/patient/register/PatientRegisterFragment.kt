@@ -21,6 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.LazyPagingItems
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
@@ -28,13 +30,15 @@ import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
-import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
 import org.smartregister.fhircore.quest.ui.patient.register.components.PatientRegisterList
 
+@AndroidEntryPoint
 class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() {
+
+  @Inject lateinit var patientRepository: PatientRepository
 
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
@@ -77,12 +81,6 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
 
   @Suppress("UNCHECKED_CAST")
   override fun initializeRegisterDataViewModel(): RegisterDataViewModel<Patient, PatientItem> {
-    val patientRepository =
-      PatientRepository(
-        (requireActivity().application as QuestApplication).fhirEngine,
-        PatientItemMapper,
-        registerViewModel.registerViewConfiguration
-      )
     return ViewModelProvider(
       viewModelStore,
       RegisterDataViewModel(

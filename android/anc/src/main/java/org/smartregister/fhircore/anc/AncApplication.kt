@@ -17,75 +17,13 @@
 package org.smartregister.fhircore.anc
 
 import android.app.Application
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.FhirEngineProvider
-import com.google.android.fhir.sync.Sync
-import com.google.android.fhir.sync.SyncJob
-import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.auth.AuthenticationService
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
-import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
-import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
-class AncApplication : Application(), ConfigurableApplication {
-
-  override val syncJob: SyncJob
-    get() = Sync.basicSyncJob(getContext())
-
-  override lateinit var applicationConfiguration: ApplicationConfiguration
-
-  override val authenticationService: AuthenticationService
-    get() = AncAuthenticationService(applicationContext)
-
-  override val fhirEngine: FhirEngine by lazy { FhirEngineProvider.getInstance(this) }
-
-  override val secureSharedPreference: SecureSharedPreference
-    get() = SecureSharedPreference(applicationContext)
-
-  override val resourceSyncParams: Map<ResourceType, Map<String, String>>
-    get() =
-      mapOf(
-        ResourceType.Patient to mapOf(),
-        ResourceType.Questionnaire to mapOf(),
-        ResourceType.Observation to mapOf(),
-        ResourceType.Encounter to mapOf(),
-        ResourceType.CarePlan to mapOf(),
-        ResourceType.Condition to mapOf(),
-      )
-
-  override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
-    this.applicationConfiguration = applicationConfiguration
-  }
-
-  override fun schedulePeriodicSync() {
-    this.runPeriodicSync<AncFhirSyncWorker>()
-  }
-
+class AncApplication : Application() {
   override fun onCreate() {
     super.onCreate()
-    SharedPreferencesHelper.init(this)
-    ancApplication = this
-    configureApplication(
-      applicationConfigurationOf(
-        oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL,
-        fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL,
-        clientId = BuildConfig.OAUTH_CIENT_ID,
-        clientSecret = BuildConfig.OAUTH_CLIENT_SECRET,
-        languages = listOf("en", "sw")
-      )
-    )
-
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
-  }
-
-  companion object {
-    private lateinit var ancApplication: AncApplication
-    fun getContext() = ancApplication
   }
 }

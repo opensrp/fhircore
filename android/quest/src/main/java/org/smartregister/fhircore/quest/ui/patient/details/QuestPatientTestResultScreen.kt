@@ -33,40 +33,35 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.quest.R
 
 @Composable
-fun QuestPatientTestResultScreen(dataProvider: QuestPatientDetailDataProvider) {
+fun QuestPatientTestResultScreen(questPatientDetailViewModel: QuestPatientDetailViewModel) {
 
   Surface(color = colorResource(id = R.color.white_smoke)) {
     Column {
       TopAppBar(
         title = { Text(text = stringResource(id = R.string.back_to_clients)) },
         navigationIcon = {
-          IconButton(onClick = { dataProvider.onBackPressListener().invoke() }) {
+          IconButton(onClick = { questPatientDetailViewModel.onBackPressed(true) }) {
             Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")
           }
         }
       )
 
       // full name with gender and age
-      val patient = dataProvider.getDemographics().observeAsState().value
+      val patient = questPatientDetailViewModel.getDemographics().observeAsState().value
 
       Column(
         modifier =
@@ -110,11 +105,4 @@ fun QuestPatientTestResultScreen(dataProvider: QuestPatientDetailDataProvider) {
       }
     }
   }
-}
-
-@Preview
-@Composable
-@ExcludeFromJacocoGeneratedReport
-fun PreviewQuestPatientTestResultScreen() {
-  AppTheme { QuestPatientTestResultScreen(dummyQuestPatientDetailDataProvider()) }
 }

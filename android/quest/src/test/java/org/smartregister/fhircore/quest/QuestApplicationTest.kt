@@ -20,7 +20,7 @@ import androidx.test.core.app.ApplicationProvider
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 class QuestApplicationTest : RobolectricTest() {
@@ -33,7 +33,7 @@ class QuestApplicationTest : RobolectricTest() {
   }
   @Test
   fun testThatApplicationIsInstanceOfConfigurableApplication() {
-    Assert.assertTrue(app is ConfigurableApplication)
+    Assert.assertTrue(app is ConfigService)
   }
 
   @Test

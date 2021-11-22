@@ -20,6 +20,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.search
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Encounter
@@ -29,10 +30,10 @@ import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-class FamilyDetailRepository(
+class FamilyDetailRepository @Inject constructor(
   private val familyId: String,
   private val fhirEngine: FhirEngine,
-  private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+  private val dispatcherProvider: DispatcherProvider
 ) {
 
   fun fetchDemographics(): LiveData<Patient> {

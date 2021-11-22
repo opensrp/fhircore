@@ -39,7 +39,6 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.quest.QuestApplication
-import org.smartregister.fhircore.quest.ui.login.LoginActivity
 
 class QuestTestApplication : QuestApplication() {
 

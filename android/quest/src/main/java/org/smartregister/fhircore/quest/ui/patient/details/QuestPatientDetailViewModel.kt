@@ -16,103 +16,76 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import androidx.lifecycle.AndroidViewModel
+import android.content.Context
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
-import kotlinx.coroutines.runBlocking
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.engine.util.extension.createFactory
-import org.smartregister.fhircore.engine.util.extension.decodeJson
-import org.smartregister.fhircore.engine.util.extension.loadBinaryResourceConfiguration
-import org.smartregister.fhircore.quest.QuestApplication
-import org.smartregister.fhircore.quest.QuestApplication.Companion.getProfileConfigId
+import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 
-class QuestPatientDetailViewModel(
-  val application: QuestApplication,
-  private val repository: PatientRepository,
-  private val patientId: String
-) : AndroidViewModel(application), QuestPatientDetailDataProvider {
+@HiltViewModel
+class QuestPatientDetailViewModel @Inject constructor(val patientRepository: PatientRepository) :
+  ViewModel() {
 
-  private var mOnBackPressListener: () -> Unit = {}
-  private var mOnMenuItemClickListener: (menuItem: String) -> Unit = {}
-  private var mOnFormItemClickListener: (item: QuestionnaireConfig) -> Unit = {}
-  private var mOnTestResultItemClickListener: (item: QuestionnaireResponse) -> Unit = {}
+  val patient = MutableLiveData<Patient>()
+  val questionnaireConfigs = MutableLiveData<List<QuestionnaireConfig>>()
+  val testResults = MutableLiveData<List<QuestionnaireResponse>>()
+  val onBackPressClicked = MutableLiveData(false)
+  val onMenuItemClicked = MutableLiveData(false)
+  val onFormItemClicked = MutableLiveData<QuestionnaireConfig>(null)
+  val onFormTestResultClicked = MutableLiveData<QuestionnaireResponse>(null)
 
-  override fun getDemographics(): LiveData<Patient> {
-    return repository.fetchDemographics(patientId)
-  }
-
-  override fun onBackPressListener(): () -> Unit {
-    return mOnBackPressListener
-  }
-
-  override fun onMenuItemClickListener(): (menuItem: String) -> Unit {
-    return mOnMenuItemClickListener
-  }
-
-  override fun getAllForms(): LiveData<List<QuestionnaireConfig>> {
-    return runBlocking {
-      val config = loadProfileConfig()
-
-      repository.fetchTestForms(config.profileQuestionnaireFilter)
+  fun getDemographics(patientId: String): LiveData<Patient> {
+    val mutableLiveData = MutableLiveData<Patient>()
+    viewModelScope.launch {
+      mutableLiveData.postValue(patientRepository.fetchDemographics(patientId))
     }
+    return mutableLiveData
   }
 
-  override fun getAllResults(): LiveData<List<QuestionnaireResponse>> {
-    return repository.fetchTestResults(patientId)
+  fun getAllForms(context: Context): LiveData<List<QuestionnaireConfig>> {
+    viewModelScope.launch {
+      // TODO Load binary resources
+      val config =
+        AssetUtil.decodeAsset<ProfileConfig>(fileName = PROFILE_CONFIG, context = context)
+      questionnaireConfigs.postValue(
+        patientRepository.fetchTestForms(config.profileQuestionnaireFilter)
+      )
+    }
+    return questionnaireConfigs
   }
 
-  override fun onFormItemClickListener(): (item: QuestionnaireConfig) -> Unit {
-    return mOnFormItemClickListener
+  fun getAllResults(patientId: String) {
+    viewModelScope.launch { testResults.postValue(patientRepository.fetchTestResults(patientId)) }
   }
 
-  override fun onTestResultItemClickListener(): (item: QuestionnaireResponse) -> Unit {
-    return mOnTestResultItemClickListener
+  fun onMenuItemClickListener(menuClicked: Boolean) {
+    onMenuItemClicked.value = menuClicked
   }
 
-  fun setOnBackPressListener(onBackPressListener: () -> Unit) {
-    this.mOnBackPressListener = onBackPressListener
+  fun onFormItemClickListener(questionnaireConfig: QuestionnaireConfig) {
+    onFormItemClicked.value = questionnaireConfig
   }
 
-  fun setOnMenuItemClickListener(onMenuItemClickListener: (menuItem: String) -> Unit) {
-    this.mOnMenuItemClickListener = onMenuItemClickListener
+  fun onTestResultItemClickListener(questionnaireResponse: QuestionnaireResponse) {
+    onFormTestResultClicked.value = questionnaireResponse
   }
 
-  fun setOnFormItemClickListener(onFormItemClickListener: (item: QuestionnaireConfig) -> Unit) {
-    this.mOnFormItemClickListener = onFormItemClickListener
-  }
-
-  fun setOnTestResultItemClickListener(
-    onTestResultItemClickListener: (item: QuestionnaireResponse) -> Unit
-  ) {
-    this.mOnTestResultItemClickListener = onTestResultItemClickListener
-  }
-
-  private suspend fun loadProfileConfig(): ProfileConfig {
-    return application.loadBinaryResourceConfiguration<ProfileConfig>(getProfileConfigId())
-      ?: application.assets.open(PROFILE_CONFIG).bufferedReader().use { it.readText() }.decodeJson()
+  fun onBackPressed(backPressed: Boolean) {
+    onBackPressClicked.value = backPressed
   }
 
   companion object {
     const val PROFILE_CONFIG = "configurations/form/profile_config.json"
-
-    fun get(
-      owner: ViewModelStoreOwner,
-      application: QuestApplication,
-      repository: PatientRepository,
-      patientId: String
-    ): QuestPatientDetailViewModel {
-      return ViewModelProvider(
-        owner,
-        QuestPatientDetailViewModel(application, repository, patientId).createFactory()
-      )[QuestPatientDetailViewModel::class.java]
-    }
   }
 
   @Serializable data class ProfileConfig(val profileQuestionnaireFilter: SearchFilter)
