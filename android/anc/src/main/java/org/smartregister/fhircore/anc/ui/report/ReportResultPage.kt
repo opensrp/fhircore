@@ -70,7 +70,7 @@ fun ReportResultScreen(viewModel: ReportViewModel) {
   val isAllPatientSelected = patientSelectionType == "All"
   ReportResultPage(
     topBarTitle = reportMeasureItem?.title ?: "",
-    onBackPress = viewModel::onBackPressFromFilter,
+    onBackPress = viewModel::onBackPressFromResult,
     reportMeasureItem = reportMeasureItem ?: ReportItem(title = "Measure Report Missing"),
     startDate = startDate,
     endDate = endDate,

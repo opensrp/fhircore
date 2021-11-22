@@ -182,6 +182,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       this,
       {
         if (it.equals("Individual", true)) {
+          reportViewModel.filterValue.postValue(kotlin.Pair(RegisterFilterType.SEARCH_FILTER, ""))
           reportViewModel.reportState.currentScreen = ReportScreen.PICK_PATIENT
         }
       }
@@ -205,12 +206,14 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
                 filterValue = value,
                 registerFilter = this@ReportHomeActivity::performFilter
               )
+              reportViewModel.reportState.currentScreen = ReportScreen.PICK_PATIENT
             }
           } else {
             reportViewModel.registerDataViewModel.run {
               showResultsCount(false)
               reloadCurrentPageData()
             }
+            reportViewModel.reportState.currentScreen = ReportScreen.PICK_PATIENT
           }
         }
       }

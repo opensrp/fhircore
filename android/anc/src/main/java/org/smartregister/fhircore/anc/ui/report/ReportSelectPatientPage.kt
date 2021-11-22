@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
@@ -39,6 +42,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -71,9 +75,7 @@ fun ReportSelectPatientScreen(viewModel: ReportViewModel) {
 
   if (showLoader) LoaderDialog(modifier = Modifier)
   Column(modifier = Modifier.testTag(REPORT_SELECT_PATIENT_LIST)) {
-    Row(modifier = Modifier.background(color = colorResource(id = R.color.white))) {
-      SearchView(state = viewModel.searchTextState, viewModel)
-    }
+    SearchView(state = viewModel.searchTextState, viewModel)
     Divider(color = DividerColor)
     Spacer(modifier = Modifier.height(16.dp))
     Text(
@@ -113,51 +115,73 @@ fun ConstructPatientSelectList(
 
 @Composable
 fun SearchView(state: MutableState<TextFieldValue>, viewModel: ReportViewModel) {
-  TextField(
-    value = state.value,
-    onValueChange = { value ->
-      state.value = value
-      viewModel.filterValue.value = Pair(RegisterFilterType.SEARCH_FILTER, value)
-    },
-    modifier = Modifier.fillMaxWidth().testTag(REPORT_SEARCH_PATIENT),
-    textStyle = TextStyle(fontSize = 18.sp),
-    leadingIcon = {
-      IconButton(
-        onClick = viewModel::onBackPressFromPatientSearch,
-        Modifier.testTag(TOOLBAR_BACK_ARROW)
-      ) {
-        Icon(
-          Icons.Filled.ArrowBack,
-          contentDescription = "Back arrow",
-          modifier = Modifier.padding(15.dp)
-        )
-      }
-    },
-    trailingIcon = {
-      if (state.value != TextFieldValue("")) {
+  Box(modifier = Modifier.background(color = colorResource(id = R.color.white))) {
+    TextField(
+      value = state.value,
+      onValueChange = { value ->
+        state.value = value
+        viewModel.filterValue.postValue(Pair(RegisterFilterType.SEARCH_FILTER, value))
+        viewModel.reportState.currentScreen = ReportViewModel.ReportScreen.PICK_PATIENT
+      },
+      modifier = Modifier.fillMaxWidth().testTag(REPORT_SEARCH_PATIENT),
+      textStyle = TextStyle(fontSize = 18.sp),
+      leadingIcon = {
         IconButton(
-          onClick = {
-            // Remove text from TextField when you press the 'X' icon
-            state.value = TextFieldValue("")
-            viewModel.filterValue.value = Pair(RegisterFilterType.SEARCH_FILTER, state.value)
-          }
+          onClick = viewModel::onBackPressFromPatientSearch,
+          Modifier.testTag(TOOLBAR_BACK_ARROW)
         ) {
           Icon(
-            Icons.Default.Close,
-            contentDescription = "",
-            modifier = Modifier.padding(15.dp).size(24.dp)
+            Icons.Filled.ArrowBack,
+            contentDescription = "Back arrow",
+            modifier = Modifier.padding(15.dp)
           )
         }
-      }
-    },
-    singleLine = true,
-    shape = RectangleShape, // The TextFiled has rounded corners top left and right by default
-    colors =
-      TextFieldDefaults.textFieldColors(
-        backgroundColor = Color.White,
-        focusedIndicatorColor = Color.Transparent,
-        unfocusedIndicatorColor = Color.Transparent,
-        disabledIndicatorColor = Color.Transparent
-      )
-  )
+      },
+      trailingIcon = {
+        if (state.value != TextFieldValue("")) {
+          IconButton(
+            onClick = {
+              // Remove text from TextField when you press the 'X' icon
+              state.value = TextFieldValue("")
+              viewModel.filterValue.postValue(Pair(RegisterFilterType.SEARCH_FILTER, state.value))
+              viewModel.reportState.currentScreen = ReportViewModel.ReportScreen.PICK_PATIENT
+            }
+          ) {
+            Icon(
+              Icons.Default.Close,
+              contentDescription = "",
+              modifier = Modifier.padding(15.dp).size(24.dp)
+            )
+          }
+        }
+      },
+      singleLine = true,
+      shape = RectangleShape, // The TextFiled has rounded corners top left and right by default
+      colors =
+        TextFieldDefaults.textFieldColors(
+          backgroundColor = Color.White,
+          focusedIndicatorColor = Color.Transparent,
+          unfocusedIndicatorColor = Color.Transparent,
+          disabledIndicatorColor = Color.Transparent
+        )
+    )
+    if (viewModel.searchTextState.value.text == "") SearchHint()
+  }
+}
+
+@Composable
+private fun SearchHint(modifier: Modifier = Modifier) {
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    modifier =
+      Modifier.wrapContentHeight()
+        .padding(start = 48.dp, top = 16.dp)
+        .focusable(false)
+        .then(modifier)
+  ) {
+    Text(
+      color = Color(0xff757575),
+      text = stringResource(id = R.string.search_hint),
+    )
+  }
 }
