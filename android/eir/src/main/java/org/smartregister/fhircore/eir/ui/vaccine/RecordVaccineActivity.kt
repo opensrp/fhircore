@@ -17,8 +17,7 @@
 package org.smartregister.fhircore.eir.ui.vaccine
 
 import android.app.AlertDialog
-import android.app.Application
-import androidx.lifecycle.ViewModelProvider
+import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
 import kotlinx.coroutines.Dispatchers
@@ -26,37 +25,17 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
-import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
 import org.smartregister.fhircore.engine.util.DateUtils
-import org.smartregister.fhircore.engine.util.extension.createFactory
 import timber.log.Timber
 
 class RecordVaccineActivity : QuestionnaireActivity() {
-
-  override fun createViewModel(application: Application): QuestionnaireViewModel {
-    return ViewModelProvider(
-        this@RecordVaccineActivity,
-        RecordVaccineViewModel(
-            application,
-            PatientRepository(
-              (application as ConfigurableApplication).fhirEngine,
-              PatientItemMapper
-            )
-          )
-          .createFactory()
-      )
-      .get(RecordVaccineViewModel::class.java)
-  }
-
+  val recordVaccineViewModel : RecordVaccineViewModel by viewModels()
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
       clientIdentifier?.let { identifier: String ->
-        (questionnaireViewModel as RecordVaccineViewModel).getVaccineSummary(identifier).observe(
+        recordVaccineViewModel.getVaccineSummary(identifier).observe(
             this@RecordVaccineActivity
           ) { vaccineSummary: PatientVaccineSummary? ->
           if (vaccineSummary != null) {
@@ -64,9 +43,8 @@ class RecordVaccineActivity : QuestionnaireActivity() {
               questionnaire.let { questionnaire ->
                 questionnaireViewModel.performExtraction(
                     questionnaire,
-                    questionnaireResponse,
-                    this@RecordVaccineActivity
-                  )
+                    questionnaireResponse
+                )
                   .run {
                     val immunizationEntry = entry.firstOrNull { it.resource is Immunization }
 

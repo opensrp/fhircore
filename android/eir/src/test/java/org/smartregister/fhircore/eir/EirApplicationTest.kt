@@ -31,8 +31,7 @@ import org.junit.Assert
 import org.junit.Ignore
 import org.junit.Test
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
-import org.smartregister.fhircore.engine.util.extension.runOneTimeSync
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 
 class EirApplicationTest : RobolectricTest() {
 
@@ -43,7 +42,7 @@ class EirApplicationTest : RobolectricTest() {
   @Test
   fun testThatApplicationIsInstanceOfConfigurableApplication() {
     Assert.assertTrue(
-      ApplicationProvider.getApplicationContext<EirApplication>() is ConfigurableApplication
+      ApplicationProvider.getApplicationContext<EirApplication>() is ConfigService
     )
   }
 

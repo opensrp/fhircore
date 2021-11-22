@@ -22,7 +22,6 @@ import org.junit.Before
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
-import org.smartregister.fhircore.eir.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
 
 class EirAuthenticationServiceTest : RobolectricTest() {

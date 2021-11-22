@@ -95,8 +95,8 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
   @Test
   fun testVerifyRecordedVaccineSavedDialogProperty() = runBlockingTest {
     val spyViewModel =
-      spyk((recordVaccineActivity.questionnaireViewModel as RecordVaccineViewModel))
-    recordVaccineActivity.questionnaireViewModel = spyViewModel
+      spyk((recordVaccineActivity.recordVaccineViewModel as RecordVaccineViewModel))
+    recordVaccineActivity.recordVaccineViewModel = spyViewModel
 
     val callback = slot<Observer<PatientVaccineSummary>>()
 

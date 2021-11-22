@@ -191,7 +191,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireResponseSlot = slot<QuestionnaireResponse>()
 
     every { questionnaireViewModel.saveBundleResources(any()) } just runs
-    coEvery { questionnaireViewModel.performExtraction(any(), any(), any()) } returns
+    coEvery { questionnaireViewModel.performExtraction(any(), any()) } returns
       Bundle().apply { addEntry().resource = Patient() }
 
     ReflectionHelpers.setField(context, "workerContextProvider", mockk<SimpleWorkerContext>())

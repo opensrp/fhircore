@@ -34,7 +34,6 @@ import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.eir.EirApplication
-import org.smartregister.fhircore.eir.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration

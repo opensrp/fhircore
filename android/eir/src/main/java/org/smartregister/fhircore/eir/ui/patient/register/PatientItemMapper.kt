@@ -16,14 +16,16 @@
 
 package org.smartregister.fhircore.eir.ui.patient.register
 
+import android.content.Context
 import com.google.android.fhir.logicalId
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.data.model.PatientItem
 import org.smartregister.fhircore.eir.data.model.PatientVaccineStatus
 import org.smartregister.fhircore.eir.data.model.VaccineStatus
@@ -34,12 +36,13 @@ import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.getLastSeen
 
-object PatientItemMapper : DomainMapper<Pair<Patient, List<Immunization>>, PatientItem> {
+class PatientItemMapper @Inject constructor(@ApplicationContext val context: Context) :
+  DomainMapper<Pair<Patient, List<Immunization>>, PatientItem> {
 
   override fun mapToDomainModel(dto: Pair<Patient, List<Immunization>>): PatientItem {
     val (patient, immunizations) = dto
     val name = patient.extractName()
-    val gender = patient.extractGender(EirApplication.getContext())?.first() ?: ""
+    val gender = patient.extractGender(context)?.first() ?: ""
     val age = patient.extractAge()
     return PatientItem(
       patientIdentifier = patient.logicalId,
