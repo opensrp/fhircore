@@ -66,11 +66,25 @@ class ReportScreensTest : RobolectricTest() {
   }
 
   @Test
-  fun testDateRangeBox() {
+  fun testDateRangeBoxInFilter() {
     composeRule.setContent {
       DateSelectionBox(
         startDate = "startDate",
         endDate = "endDate",
+        canChange = true,
+        onDateRangePress = { listenerObjectSpy.onDateRangePress() }
+      )
+    }
+    composeRule.onNodeWithTag(REPORT_DATE_RANGE_SELECTION).assertExists()
+  }
+
+  @Test
+  fun testDateRangeBoxInResult() {
+    composeRule.setContent {
+      DateSelectionBox(
+        startDate = "startDate",
+        endDate = "endDate",
+        canChange = false,
         onDateRangePress = { listenerObjectSpy.onDateRangePress() }
       )
     }
@@ -80,7 +94,11 @@ class ReportScreensTest : RobolectricTest() {
   @Test
   fun testDateRangeItem() {
     composeRule.setContent {
-      DateRangeItem(text = "startDate", clickListener = { listenerObjectSpy.onDateRangePress() })
+      DateRangeItem(
+        text = "startDate",
+        canChange = true,
+        clickListener = { listenerObjectSpy.onDateRangePress() }
+      )
     }
     composeRule.onNodeWithTag(REPORT_DATE_SELECT_ITEM).assertExists()
     // composeRule.onNodeWithTag(REPORT_DATE_SELECT_ITEM).performClick()
@@ -120,7 +138,7 @@ class ReportScreensTest : RobolectricTest() {
   @Test
   fun testGenerateReportButton() {
     composeRule.setContent {
-      BottomButtonBox(
+      GenerateReportButton(
         generateReportEnabled = true,
         onGenerateReportClicked = { listenerObjectSpy.onGenerateReportClick() }
       )
