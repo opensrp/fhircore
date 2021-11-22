@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +48,8 @@ import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
 import org.smartregister.fhircore.anc.ui.anccare.register.RecordAncVisit
+import org.smartregister.fhircore.anc.ui.report.ANC_PATIENT_ITEM
+import org.smartregister.fhircore.anc.ui.report.PATIENT_ANC_VISIT
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DueLightColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
@@ -84,7 +87,10 @@ fun AncRow(
   ) {
     Column(
       modifier =
-        modifier.wrapContentWidth(Alignment.Start).padding(horizontal = 16.dp, vertical = 16.dp)
+        modifier
+          .wrapContentWidth(Alignment.Start)
+          .padding(horizontal = 16.dp, vertical = 16.dp)
+          .testTag(ANC_PATIENT_ITEM)
     ) {
       Text(text = titleText, fontSize = 18.sp, modifier = modifier.wrapContentWidth())
       Spacer(modifier = modifier.height(8.dp))
@@ -99,7 +105,11 @@ fun AncRow(
     }
     if (showAncVisitButton) {
       AncVisitButton(
-        modifier = modifier.wrapContentWidth(Alignment.End).padding(horizontal = 16.dp),
+        modifier =
+          modifier
+            .wrapContentWidth(Alignment.End)
+            .padding(horizontal = 16.dp)
+            .testTag(PATIENT_ANC_VISIT),
         patientItem = patientItem,
         clickListener = clickListener
       )
