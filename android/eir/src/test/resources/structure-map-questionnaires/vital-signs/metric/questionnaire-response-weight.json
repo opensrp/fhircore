@@ -1,0 +1,24 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "item": [
+    {
+      "linkId": "select-vital-sign",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "weight",
+            "display": "Weight"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "vital-signs-body-wight_kg",
+      "answer": [
+        {
+          "valueDecimal": 123.0
+        }
+      ]
+    }
+  ]
+}
