@@ -17,7 +17,10 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -25,21 +28,31 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -65,6 +78,8 @@ const val REPORT_SELECT_PATIENT_LIST = "reportSelectPatientList"
 const val REPORT_SEARCH_PATIENT = "reportSearchPatient"
 const val REPORT_GENERATE_BUTTON = "reportGenerateButton"
 const val REPORT_RESULT_PAGE = "reportResultPage"
+const val ANC_PATIENT_ITEM = "ancPatientItem"
+const val PATIENT_ANC_VISIT = "patientAncVisit"
 
 @Composable
 fun ReportView(reportViewModel: ReportViewModel) {
@@ -79,32 +94,10 @@ fun ReportView(reportViewModel: ReportViewModel) {
 }
 
 @Composable
-fun LoadingItem() {
-  CircularProgressIndicator(
-    modifier =
-      Modifier.testTag("ProgressBarItem")
-        .fillMaxWidth()
-        .padding(16.dp)
-        .wrapContentWidth(Alignment.CenterHorizontally)
-  )
-}
-
-@Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
-fun PatientSelectionPreview() {
-  PatientSelectionBox(
-    patientSelectionText = ReportViewModel.PatientSelectionType.ALL,
-    onPatientSelectionChange = {},
-    selectedPatient = PatientItem()
-  )
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun DateRangePreview() {
-  DateSelectionBox(startDate = "Start date", endDate = "End date", onDateRangePress = {})
+fun TopBarPreview() {
+  TopBarBox(topBarTitle = "Reports", onBackPress = {})
 }
 
 @Composable
@@ -124,6 +117,297 @@ fun TopBarBox(topBarTitle: String, onBackPress: () -> Unit) {
       }
     }
   )
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun LoadingItemPreview() {
+  LoadingItem()
+}
+
+@Composable
+fun LoadingItem() {
+  CircularProgressIndicator(
+    modifier =
+      Modifier.testTag("ProgressBarItem")
+        .fillMaxWidth()
+        .padding(16.dp)
+        .wrapContentWidth(Alignment.CenterHorizontally)
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun PreviewDateRangeChangable() {
+  DateSelectionBox(
+    startDate = "Start date",
+    endDate = "End date",
+    canChange = true,
+    onDateRangePress = {}
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun PreviewDateRangeFixed() {
+  DateSelectionBox(
+    startDate = "Start date",
+    endDate = "End date",
+    canChange = false,
+    onDateRangePress = {}
+  )
+}
+
+@Composable
+fun DateSelectionBox(
+  startDate: String,
+  endDate: String,
+  canChange: Boolean,
+  onDateRangePress: () -> Unit
+) {
+  Column(
+    modifier = Modifier.wrapContentWidth().padding(16.dp).testTag(REPORT_DATE_RANGE_SELECTION),
+    verticalArrangement = Arrangement.Center,
+    horizontalAlignment = Alignment.Start
+  ) {
+    Text(
+      text = stringResource(id = R.string.date_range),
+      fontWeight = FontWeight.Bold,
+      fontSize = 18.sp,
+      modifier = Modifier.wrapContentWidth()
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+    Row(
+      horizontalArrangement = Arrangement.SpaceAround,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      DateRangeItem(text = startDate, canChange = canChange, clickListener = onDateRangePress)
+      Text("-", fontSize = 18.sp, modifier = Modifier.padding(horizontal = 8.dp))
+      DateRangeItem(text = endDate, canChange = canChange, clickListener = onDateRangePress)
+    }
+  }
+}
+
+@Composable
+fun DateRangeItem(
+  text: String,
+  canChange: Boolean,
+  clickListener: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  var newClickListener = {}
+  var newBackGroundColor = colorResource(id = R.color.transparent)
+  var textPadding = 0.dp
+
+  if (canChange) {
+    newClickListener = clickListener
+    newBackGroundColor = colorResource(id = R.color.backgroundGray)
+    textPadding = 12.dp
+  }
+
+  Row(
+    modifier =
+      modifier
+        .wrapContentWidth()
+        .clickable { newClickListener() }
+        .padding(vertical = 4.dp)
+        .testTag(REPORT_DATE_SELECT_ITEM),
+    horizontalArrangement = Arrangement.SpaceBetween
+  ) {
+    Box(
+      modifier =
+        modifier
+          .clip(RoundedCornerShape(15.dp))
+          .background(color = newBackGroundColor)
+          .wrapContentWidth()
+          .padding(start = textPadding, end = textPadding, top = 6.dp, bottom = 6.dp),
+      contentAlignment = Alignment.Center
+    ) { Text(text = text, textAlign = TextAlign.Start, fontSize = 16.sp) }
+  }
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun PreviewPatientSelectionAll() {
+  PatientSelectionBox(
+    patientSelectionText = ReportViewModel.PatientSelectionType.ALL,
+    onPatientSelectionChange = {},
+    selectedPatient = PatientItem()
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun PreviewPatientSelectionIndividual() {
+  PatientSelectionBox(
+    patientSelectionText = ReportViewModel.PatientSelectionType.INDIVIDUAL,
+    onPatientSelectionChange = {},
+    selectedPatient = PatientItem(name = "Ind Patient Item")
+  )
+}
+
+@Composable
+fun PatientSelectionBox(
+  patientSelectionText: String,
+  selectedPatient: PatientItem?,
+  onPatientSelectionChange: (String) -> Unit,
+) {
+  Column(
+    modifier = Modifier.wrapContentWidth().padding(16.dp).testTag(REPORT_PATIENT_SELECTION),
+    verticalArrangement = Arrangement.Center,
+    horizontalAlignment = Alignment.Start
+  ) {
+    val patientSelection = remember { mutableStateOf(patientSelectionText) }
+    Text(
+      text = stringResource(id = R.string.patient),
+      fontSize = 18.sp,
+      fontWeight = FontWeight.Bold
+    )
+    Spacer(modifier = Modifier.size(8.dp))
+    Row {
+      RadioButton(
+        selected = patientSelection.value == ReportViewModel.PatientSelectionType.ALL,
+        onClick = {
+          patientSelection.value = ReportViewModel.PatientSelectionType.ALL
+          onPatientSelectionChange(patientSelection.value)
+        }
+      )
+      Spacer(modifier = Modifier.size(16.dp))
+      Text(ReportViewModel.PatientSelectionType.ALL, fontSize = 16.sp)
+    }
+    Spacer(modifier = Modifier.size(8.dp))
+    Row {
+      RadioButton(
+        selected = patientSelection.value == ReportViewModel.PatientSelectionType.INDIVIDUAL,
+        onClick = {
+          patientSelection.value = ReportViewModel.PatientSelectionType.INDIVIDUAL
+          onPatientSelectionChange(patientSelection.value)
+        }
+      )
+      Spacer(modifier = Modifier.size(16.dp))
+      Text(ReportViewModel.PatientSelectionType.INDIVIDUAL, fontSize = 16.sp)
+    }
+
+    if (patientSelection.value == ReportViewModel.PatientSelectionType.INDIVIDUAL) {
+      Row(modifier = Modifier.padding(start = 24.dp)) {
+        Spacer(modifier = Modifier.size(8.dp))
+        SelectedPatientItem(
+          selectedPatient = selectedPatient!!,
+          onCancelSelectedPatient = {
+            onPatientSelectionChange(ReportViewModel.PatientSelectionType.ALL)
+          },
+          onChangeClickListener = {
+            onPatientSelectionChange(ReportViewModel.PatientSelectionType.INDIVIDUAL)
+          }
+        )
+      }
+    }
+  }
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun SelectedPatientPreview() {
+  SelectedPatientItem(
+    selectedPatient = PatientItem(name = "PatientX"),
+    onCancelSelectedPatient = {},
+    onChangeClickListener = {}
+  )
+}
+
+@Composable
+fun SelectedPatientItem(
+  selectedPatient: PatientItem,
+  onCancelSelectedPatient: () -> Unit,
+  onChangeClickListener: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  Row(
+    modifier =
+      modifier
+        .wrapContentWidth()
+        .padding(vertical = 8.dp, horizontal = 8.dp)
+        .testTag(REPORT_PATIENT_ITEM),
+    horizontalArrangement = Arrangement.SpaceBetween,
+    verticalAlignment = Alignment.CenterVertically
+  ) {
+    Box(
+      modifier =
+        modifier
+          .clip(RoundedCornerShape(15.dp))
+          .background(color = colorResource(id = R.color.backgroundGray))
+          .wrapContentWidth()
+          .padding(8.dp),
+      contentAlignment = Alignment.Center
+    ) {
+      Row(
+        modifier = Modifier.align(Alignment.Center),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Text(text = selectedPatient.name, textAlign = TextAlign.Center, fontSize = 16.sp)
+        Spacer(modifier = Modifier.size(8.dp))
+        Row(
+          modifier =
+            modifier
+              .clip(RoundedCornerShape(8.dp))
+              .background(color = colorResource(id = R.color.backgroundGray))
+              .wrapContentWidth()
+              .clickable { onCancelSelectedPatient() }
+              .testTag(REPORT_CANCEL_PATIENT)
+        ) {
+          Box(
+            modifier =
+              modifier
+                .clip(RoundedCornerShape(25.dp))
+                .size(24.dp)
+                .background(color = colorResource(id = R.color.darkGrayText))
+                .wrapContentWidth()
+                .padding(4.dp)
+                .testTag(REPORT_CANCEL_PATIENT),
+            contentAlignment = Alignment.Center
+          ) {
+            Icon(
+              Icons.Filled.Close,
+              contentDescription = "Back arrow",
+              modifier = Modifier.size(20.dp)
+            )
+          }
+        }
+      }
+    }
+    Row(
+      modifier =
+        modifier
+          .wrapContentWidth()
+          .clickable { onChangeClickListener() }
+          .padding(vertical = 8.dp, horizontal = 12.dp)
+          .testTag(REPORT_CHANGE_PATIENT),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Text(
+        text = stringResource(id = R.string.change),
+        textAlign = TextAlign.Center,
+        color = colorResource(id = android.R.color.holo_blue_light),
+        fontSize = 16.sp
+      )
+    }
+  }
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun ReportRowPreview() {
+  val reportItem =
+    ReportItem("fid", "4+ ANC Contacts ", "Pregnant women with at least four ANC Contacts", "4")
+  ReportRow(reportItem = reportItem)
 }
 
 @Composable
@@ -158,13 +442,4 @@ fun ReportRow(
       modifier = Modifier.padding(end = 12.dp)
     )
   }
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun ReportRowPreview() {
-  val reportItem =
-    ReportItem("fid", "4+ ANC Contacts ", "Pregnant women with at least four ANC Contacts", "4")
-  ReportRow(reportItem = reportItem)
 }
