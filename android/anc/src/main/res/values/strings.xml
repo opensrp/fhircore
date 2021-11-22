@@ -98,4 +98,6 @@
     <string name="monthly_visit">Monthly Visit</string>
     <string name="head_of_household">Head of household</string>
     <string name="forward_arrow">Forward arrow</string>
+    <string name="select_patient">SELECT PATIENT</string>
+    <string name="search_patient_hint">Search for a patient name</string>
 </resources>
