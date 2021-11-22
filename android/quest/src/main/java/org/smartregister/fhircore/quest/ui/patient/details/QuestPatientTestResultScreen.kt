@@ -33,6 +33,7 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -48,6 +49,7 @@ import org.smartregister.fhircore.quest.R
 
 @Composable
 fun QuestPatientTestResultScreen(questPatientDetailViewModel: QuestPatientDetailViewModel) {
+  val patient by questPatientDetailViewModel.patient.observeAsState(null)
 
   Surface(color = colorResource(id = R.color.white_smoke)) {
     Column {
@@ -59,9 +61,6 @@ fun QuestPatientTestResultScreen(questPatientDetailViewModel: QuestPatientDetail
           }
         }
       )
-
-      // full name with gender and age
-      val patient = questPatientDetailViewModel.getDemographics().observeAsState().value
 
       Column(
         modifier =
