@@ -17,166 +17,140 @@
 package org.smartregister.fhircore.engine.auth
 
 import android.accounts.Account
-import android.accounts.AccountAuthenticatorResponse
 import android.accounts.AccountManager
-import android.app.Application
-import android.content.Context
+import android.accounts.AccountManager.KEY_ACCOUNT_NAME
+import android.accounts.AccountManager.KEY_ACCOUNT_TYPE
+import android.accounts.AccountManager.KEY_INTENT
 import android.content.Intent
-import android.os.Parcel
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
-import io.mockk.every
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.mockk
 import io.mockk.spyk
-import io.mockk.verify
-import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertFalse
-import junit.framework.Assert.assertNotNull
-import junit.framework.Assert.assertTrue
+import java.util.Locale
+import javax.inject.Inject
+import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
-import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator.Companion.AUTH_TOKEN_TYPE
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator.Companion.IS_NEW_ACCOUNT
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
+@HiltAndroidTest
 class AccountAuthenticatorTest : RobolectricTest() {
 
+  @get:Rule val hiltRule = HiltAndroidRule(this)
+
+  @Inject lateinit var accountManager: AccountManager
+
+  @Inject lateinit var oAuthService: OAuthService
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
+  @Inject lateinit var tokenManagerService: TokenManagerService
+
   private lateinit var accountAuthenticator: AccountAuthenticator
-  private lateinit var context: Application
-  private lateinit var authenticationService: FakeAuthenticationService
+
+  private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
+
+  private val authTokenType = "authTokenType"
 
   @Before
   fun setUp() {
-    context = ApplicationProvider.getApplicationContext()
-    authenticationService = spyk(FakeAuthenticationService(context))
-    accountAuthenticator = AccountAuthenticator(context, authenticationService)
-  }
-
-  @Test
-  fun addAccountShouldBuildBundleWithCustomData() {
-    val response = AccountAuthenticatorResponse(Parcel.obtain())
-    val bundle = accountAuthenticator.addAccount(response, "", "dummy-auth", null, bundleOf())
-    val intent = bundle.getParcelable<Intent>(AccountManager.KEY_INTENT)
-
-    assertNotNull(intent)
-    assertEquals(BaseLoginActivity::class.java.canonicalName, intent?.component?.className)
-    assertEquals(
-      authenticationService.getAccountType(),
-      intent?.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE)
-    )
-    assertEquals(
-      response.javaClass.canonicalName,
-      intent?.getParcelableExtra<AccountAuthenticatorResponse>(
-          AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE
+    hiltRule.inject()
+    accountAuthenticator =
+      spyk(
+        AccountAuthenticator(
+          context = context,
+          accountManager = accountManager,
+          oAuthService = oAuthService,
+          configurationRegistry = configurationRegistry,
+          secureSharedPreference = secureSharedPreference,
+          tokenManagerService = tokenManagerService
         )
-        ?.javaClass
-        ?.canonicalName
-    )
-    assertEquals("dummy-auth", intent?.getStringExtra(AuthenticationService.AUTH_TOKEN_TYPE))
-    assertTrue(intent?.getBooleanExtra(AuthenticationService.IS_NEW_ACCOUNT, false) ?: false)
-  }
-
-  @Test
-  fun getAuthTokenShouldVerifyDifferentScenarios() {
-
-    val response = AccountAuthenticatorResponse(Parcel.obtain())
-    val account = Account("demo", "local")
-    val authTokenType = "dummy-auth"
-    val options = bundleOf()
-
-    val accountManager = mockk<AccountManager>()
-    ReflectionHelpers.setField(accountAuthenticator, "accountManager", accountManager)
-
-    every { authenticationService.getLocalSessionToken() } returns null
-    every { authenticationService.getRefreshToken() } returns "12345"
-    every { authenticationService.refreshToken("12345") } returns OAuthResponse("6789")
-    every { authenticationService.updateSession(any()) } returns Unit
-    every { accountManager.notifyAccountAuthenticated(account) } returns true
-
-    var bundle = accountAuthenticator.getAuthToken(response, account, authTokenType, options)
-
-    verify(exactly = 1) { authenticationService.getLocalSessionToken() }
-    verify(exactly = 1) { authenticationService.getRefreshToken() }
-    verify(exactly = 1) { authenticationService.refreshToken("12345") }
-    verify(exactly = 1) { authenticationService.updateSession(any()) }
-    verify(exactly = 1) { accountManager.notifyAccountAuthenticated(account) }
-
-    assertEquals(account.name, bundle.getString(AccountManager.KEY_ACCOUNT_NAME))
-    assertEquals(account.type, bundle.getString(AccountManager.KEY_ACCOUNT_TYPE))
-    assertEquals("6789", bundle.getString(AccountManager.KEY_AUTHTOKEN))
-
-    every { authenticationService.refreshToken(any()) } throws RuntimeException()
-    bundle = accountAuthenticator.getAuthToken(response, account, authTokenType, options)
-
-    val intent = bundle.getParcelable<Intent>(AccountManager.KEY_INTENT)
-
-    assertNotNull(intent)
-    assertEquals(BaseLoginActivity::class.java.canonicalName, intent?.component?.className)
-    assertEquals(account.name, intent?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME))
-    assertEquals(account.type, intent?.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE))
-    assertEquals(
-      response.javaClass.canonicalName,
-      intent?.getParcelableExtra<AccountAuthenticatorResponse>(
-          AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE
-        )
-        ?.javaClass
-        ?.canonicalName
-    )
-    assertEquals(authTokenType, intent?.getStringExtra(AuthenticationService.AUTH_TOKEN_TYPE))
-  }
-
-  @Test
-  fun editPropertiesShouldReturnEmptyBundle() {
-    val bundle = accountAuthenticator.editProperties(null, null)
-    assertNotNull(bundle)
-    assertTrue(bundle.isEmpty)
-  }
-
-  @Test
-  fun confirmCredentialsShouldReturnEmptyBundle() {
-    val bundle = accountAuthenticator.confirmCredentials(mockk(), mockk(), null)
-    assertNotNull(bundle)
-    assertTrue(bundle.isEmpty)
-  }
-
-  @Test
-  fun getAuthTokenLabelShouldReturnUppercase() {
-    val authTokenType = accountAuthenticator.getAuthTokenLabel("auth_type")
-    assertEquals("AUTH_TYPE", authTokenType)
-  }
-
-  @Test
-  fun hasFeaturesShouldReturnBundledData() {
-    val bundle = accountAuthenticator.hasFeatures(mockk(), mockk(), arrayOf())
-    assertEquals(1, bundle.size())
-    assertFalse(bundle.getBoolean(AccountManager.KEY_BOOLEAN_RESULT, true))
-  }
-
-  class FakeAuthenticationService(override val context: Context) : AuthenticationService(context) {
-
-    private val applicationConfiguration =
-      ApplicationConfiguration(
-        "https://keycloak-stage.smartregister.org/auth/realms/FHIR_Android/",
-        "https://fhir.labs.smartregister.org/fhir/",
-        "fhir-core-client",
-        "1528b638-9344-4409-9cbf-10680b4ca5f5",
-        "openid"
       )
+  }
 
-    override fun skipLogin() = true
+  @Test
+  fun testThatAccountIsAddedWithCorrectConfigs() {
 
-    override fun getLoginActivityClass() = BaseLoginActivity::class.java
+    val bundle =
+      accountAuthenticator.addAccount(
+        response = mockk(relaxed = true),
+        accountType = configurationRegistry.authConfiguration.accountType,
+        authTokenType = authTokenType,
+        requiredFeatures = emptyArray(),
+        options = bundleOf()
+      )
+    Assert.assertNotNull(bundle)
+    val parcelable = bundle.getParcelable<Intent>(KEY_INTENT)
+    Assert.assertNotNull(parcelable)
+    Assert.assertNotNull(parcelable!!.extras)
+    Assert.assertEquals(
+      configurationRegistry.authConfiguration.accountType,
+      parcelable.getStringExtra(KEY_ACCOUNT_TYPE)
+    )
 
-    override fun getAccountType() = "org.smartregister.fhircore.eir"
+    Assert.assertTrue(parcelable.extras!!.containsKey(AUTH_TOKEN_TYPE))
+    Assert.assertEquals(authTokenType, parcelable.getStringExtra(AUTH_TOKEN_TYPE))
+    Assert.assertTrue(parcelable.extras!!.containsKey(IS_NEW_ACCOUNT))
+    Assert.assertTrue(parcelable.extras!!.getBoolean(IS_NEW_ACCOUNT))
+  }
 
-    override fun clientSecret() = applicationConfiguration.clientSecret
+  @Test
+  fun testThatEditPropertiesIsNotNull() {
+    Assert.assertNotNull(
+      accountAuthenticator.editProperties(
+        response = null,
+        accountType = configurationRegistry.authConfiguration.accountType
+      )
+    )
+  }
 
-    override fun clientId() = applicationConfiguration.clientId
+  @Test
+  fun testThatConfirmCredentialsIsNotNull() {
+    Assert.assertNotNull(
+      accountAuthenticator.confirmCredentials(
+        response = mockk(relaxed = true),
+        account = mockk(relaxed = true),
+        options = bundleOf()
+      )
+    )
+  }
 
-    override fun providerScope() = applicationConfiguration.scope
+  @Test
+  fun testThatAuthTokenLabelIsCapitalized() {
+    val capitalizedAuthToken = authTokenType.uppercase(Locale.ROOT)
+    Assert.assertEquals(capitalizedAuthToken, accountAuthenticator.getAuthTokenLabel(authTokenType))
+  }
 
-    override fun getApplicationConfigurations() = applicationConfiguration
+  @Test
+  fun testThatCredentialsAreUpdated() {
+
+    val account = spyk(Account("newAccName", "newAccType"))
+
+    val bundle =
+      accountAuthenticator.updateCredentials(
+        response = mockk(relaxed = true),
+        account = account,
+        authTokenType = authTokenType,
+        options = bundleOf()
+      )
+    Assert.assertNotNull(bundle)
+    val parcelable = bundle.getParcelable<Intent>(KEY_INTENT)
+    Assert.assertNotNull(parcelable)
+    Assert.assertNotNull(parcelable!!.extras)
+    Assert.assertEquals(account.type, parcelable.getStringExtra(KEY_ACCOUNT_TYPE))
+    Assert.assertEquals(account.name, parcelable.getStringExtra(KEY_ACCOUNT_NAME))
+    Assert.assertTrue(parcelable.extras!!.containsKey(AUTH_TOKEN_TYPE))
+    Assert.assertEquals(authTokenType, parcelable.getStringExtra(AUTH_TOKEN_TYPE))
   }
 }

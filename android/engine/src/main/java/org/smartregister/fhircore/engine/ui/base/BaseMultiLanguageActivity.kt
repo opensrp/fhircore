@@ -19,26 +19,44 @@ package org.smartregister.fhircore.engine.ui.base
 import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import java.lang.UnsupportedOperationException
 import java.util.Locale
+import javax.inject.Inject
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.getTheme
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
 abstract class BaseMultiLanguageActivity : AppCompatActivity() {
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
 
-    val themePref = SharedPreferencesHelper.read(SharedPreferencesHelper.THEME, "")!!
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    inject()
+    super.onCreate(savedInstanceState)
+    val themePref =
+      sharedPreferencesHelper.read(key = SharedPreferencesHelper.THEME, defaultValue = "")!!
     theme.applyStyle(getTheme(themePref), true)
   }
 
   override fun attachBaseContext(baseContext: Context) {
     val lang =
-      SharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
+      baseContext
+        .getSharedPreferences(SharedPreferencesHelper.PREFS_NAME, Context.MODE_PRIVATE)
+        .getString(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
         ?: Locale.ENGLISH.toLanguageTag()
     baseContext.setAppLocale(lang).run {
       super.attachBaseContext(baseContext)
       applyOverrideConfiguration(this)
     }
+  }
+
+  /**
+   * This method is required by Hilt to inject dependencies for the base class. Hilt injection
+   * occurs within super.onCreate() instead of before super.onCreate()
+   */
+  protected open fun inject() {
+    throw UnsupportedOperationException(
+      "Annotate $this with @AndroidEntryPoint annotation. The inject method should be overridden by the Hilt generated class."
+    )
   }
 }

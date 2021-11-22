@@ -22,13 +22,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
+import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.extension.createFactory
 
+@AndroidEntryPoint
 class UserProfileFragment : Fragment() {
 
-  private lateinit var userProfileViewModel: UserProfileViewModel
+  private val userProfileViewModel: UserProfileViewModel by viewModels()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -41,11 +42,6 @@ class UserProfileFragment : Fragment() {
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    userProfileViewModel =
-      ViewModelProvider(
-        viewModelStore,
-        UserProfileViewModel(application = requireActivity().application).createFactory()
-      )[UserProfileViewModel::class.java]
 
     userProfileViewModel.onLogout.observe(
       viewLifecycleOwner,

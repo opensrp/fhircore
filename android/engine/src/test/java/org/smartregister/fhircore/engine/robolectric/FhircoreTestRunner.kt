@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.robolectric
 
+import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.runners.model.FrameworkMethod
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.internal.bytecode.InstrumentationConfiguration

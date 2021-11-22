@@ -20,20 +20,22 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import java.util.UUID
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 
-class DefaultRepository(
+@Singleton
+class DefaultRepository @Inject constructor(
   val fhirEngine: FhirEngine,
-  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+  val dispatcherProvider: DispatcherProvider
 ) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {

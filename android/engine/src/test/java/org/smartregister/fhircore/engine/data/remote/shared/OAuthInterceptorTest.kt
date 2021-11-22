@@ -16,20 +16,9 @@
 
 package org.smartregister.fhircore.engine.data.remote.shared
 
-import android.app.Application
-import androidx.test.core.app.ApplicationProvider
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.spyk
-import io.mockk.verify
-import okhttp3.Interceptor
-import okhttp3.Request
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
-import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.auth.AuthenticationService
-import org.smartregister.fhircore.engine.data.remote.shared.interceptor.OAuthInterceptor
 import org.smartregister.fhircore.engine.robolectric.FhircoreTestRunner
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
@@ -39,23 +28,6 @@ class OAuthInterceptorTest : RobolectricTest() {
 
   @Test
   fun testInterceptShouldAddTokenHeader() {
-    val context = ApplicationProvider.getApplicationContext<Application>()
 
-    val interceptor = OAuthInterceptor(context)
-    val authService = mockk<AuthenticationService>()
-    ReflectionHelpers.setField(interceptor, "authenticationService\$delegate", lazy { authService })
-    every { authService.getBlockingActiveAuthToken() } returns "my-access-token"
-
-    val requestBuilder = spyk(Request.Builder())
-    val request = spyk(Request.Builder().url("http://test-url.com").build())
-    val chain = mockk<Interceptor.Chain>()
-    every { chain.request() } returns request
-    every { request.newBuilder() } returns requestBuilder.url("http://test-url.com")
-    every { chain.proceed(any()) } returns mockk()
-
-    interceptor.intercept(chain)
-
-    verify { authService.getBlockingActiveAuthToken() }
-    verify { requestBuilder.addHeader("Authorization", "Bearer my-access-token") }
   }
 }

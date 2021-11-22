@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util
 
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 
@@ -26,4 +27,4 @@ interface DispatcherProvider {
   fun unconfined(): CoroutineDispatcher = Dispatchers.Unconfined
 }
 
-object DefaultDispatcherProvider : DispatcherProvider
+class DefaultDispatcherProvider @Inject constructor() : DispatcherProvider

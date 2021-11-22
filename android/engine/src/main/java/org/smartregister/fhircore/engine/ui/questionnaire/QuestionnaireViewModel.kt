@@ -16,18 +16,20 @@
 
 package org.smartregister.fhircore.engine.ui.questionnaire
 
-import android.app.Application
 import android.content.Context
 import android.content.Intent
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.targetStructureMap
 import com.google.android.fhir.logicalId
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
 import java.util.UUID
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -42,25 +44,30 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.FormConfigUtil
+import org.smartregister.fhircore.engine.util.AssetUtil
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
-open class QuestionnaireViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+open class QuestionnaireViewModel
+@Inject
+constructor(
+  val fhirEngine: FhirEngine,
+  val defaultRepository: DefaultRepository,
+  val configurationRegistry: ConfigurationRegistry,
+  val transformSupportServices: TransformSupportServices,
+  val dispatcherProvider: DispatcherProvider
+) : ViewModel() {
 
   val extractionProgress = MutableLiveData<Boolean>()
-  var editQuestionnaireResponse: QuestionnaireResponse? = null
 
-  val defaultRepository: DefaultRepository =
-    DefaultRepository(
-      (application as ConfigurableApplication).fhirEngine,
-    )
+  var editQuestionnaireResponse: QuestionnaireResponse? = null
 
   var structureMapProvider: (suspend (String, IWorkerContext) -> StructureMap?)? = null
 
@@ -75,13 +82,16 @@ open class QuestionnaireViewModel(application: Application) : AndroidViewModel(a
       }
     }
 
-  suspend fun getQuestionnaireConfig(form: String): QuestionnaireConfig {
+  suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
     val loadConfig =
-      withContext(DefaultDispatcherProvider.io()) {
-        FormConfigUtil.loadConfig(QuestionnaireActivity.FORM_CONFIGURATIONS, getApplication())
+      withContext(dispatcherProvider.io()) {
+        AssetUtil.decodeAsset<List<QuestionnaireConfig>>(
+          fileName = QuestionnaireActivity.FORM_CONFIGURATIONS,
+          context = context
+        )
       }
 
-    val appId = (getApplication() as ConfigurableApplication).configurationRegistry.appId
+    val appId = configurationRegistry.appId
     return loadConfig.associateBy { it.appId + it.form }.getValue(appId + form)
   }
 
@@ -95,7 +105,6 @@ open class QuestionnaireViewModel(application: Application) : AndroidViewModel(a
 
   fun extractAndSaveResources(
     resourceId: String?,
-    context: Context,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     editMode: Boolean = false
@@ -106,7 +115,7 @@ open class QuestionnaireViewModel(application: Application) : AndroidViewModel(a
       if (questionnaire.targetStructureMap != null ||
           questionnaire.extension.any { it.url.contains("sdc-questionnaire-itemExtractionContext") }
       ) {
-        val bundle = performExtraction(questionnaire, questionnaireResponse, context)
+        val bundle = performExtraction(questionnaire, questionnaireResponse)
 
         bundle.entry.forEach { bun ->
           // if it is a registration questionnaire add tags to entities representing individuals
@@ -171,14 +180,8 @@ open class QuestionnaireViewModel(application: Application) : AndroidViewModel(a
 
   suspend fun performExtraction(
     questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
-    context: Context
+    questionnaireResponse: QuestionnaireResponse
   ): Bundle {
-    val transformSupportServices =
-      TransformSupportServices(
-        mutableListOf(),
-        getApplication<Application>() as ConfigurableApplication
-      )
 
     return ResourceMapper.extract(
       questionnaire = questionnaire,
@@ -201,7 +204,7 @@ open class QuestionnaireViewModel(application: Application) : AndroidViewModel(a
   fun retrieveStructureMapProvider(): (suspend (String, IWorkerContext) -> StructureMap?) {
     if (structureMapProvider == null) {
       structureMapProvider =
-        { structureMapUrl: String, workerContext: IWorkerContext ->
+        { structureMapUrl: String, _: IWorkerContext ->
           fetchStructureMap(structureMapUrl)
         }
     }

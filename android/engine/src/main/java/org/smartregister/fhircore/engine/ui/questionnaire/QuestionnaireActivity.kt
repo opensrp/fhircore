@@ -17,14 +17,13 @@
 package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.app.AlertDialog
-import android.app.Application
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
+import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngineProvider.fhirEngine
@@ -34,6 +33,8 @@ import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDL
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
@@ -43,15 +44,12 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
-import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -64,12 +62,17 @@ import timber.log.Timber
  * Implement a subclass of this [QuestionnaireActivity] to provide functionality on how to
  * [handleQuestionnaireResponse]
  */
+@AndroidEntryPoint
 open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickListener {
 
-  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
   lateinit var questionnaireConfig: QuestionnaireConfig
-  lateinit var questionnaireViewModel: QuestionnaireViewModel
+
   protected lateinit var questionnaire: Questionnaire
   protected var clientIdentifier: String? = null
   protected var immunizationId: String? = null
@@ -81,7 +84,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_questionnaire)
-    application.assertIsConfigurable()
     if (!intent.hasExtra(QUESTIONNAIRE_ARG_FORM)) {
       showToast(getString(R.string.error_loading_form))
       finish()
@@ -94,7 +96,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     lifecycleScope.launchWhenCreated {
       readOnly = intent.getBooleanExtra(QUESTIONNAIRE_READ_ONLY, false)
-      questionnaireViewModel = createViewModel(application)
 
       if (readOnly) {
         findViewById<Button>(R.id.btn_edit_qr).apply {
@@ -107,17 +108,21 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       // form is either name of form in asset/form-config or questionnaire-id
       // load from assets and get questionnaire or if not found build it from questionnaire
       questionnaireConfig =
-        kotlin.runCatching { questionnaireViewModel.getQuestionnaireConfig(formName) }.getOrElse {
-          // load questionnaire from db and build config
-          questionnaire = questionnaireViewModel.loadQuestionnaire(formName, readOnly)!!
+        kotlin
+          .runCatching {
+            questionnaireViewModel.getQuestionnaireConfig(formName, this@QuestionnaireActivity)
+          }
+          .getOrElse {
+            // load questionnaire from db and build config
+            questionnaire = questionnaireViewModel.loadQuestionnaire(formName, readOnly)!!
 
-          QuestionnaireConfig(
-            appId = (application as ConfigurableApplication).configurationRegistry.appId,
-            form = questionnaire.name ?: "",
-            title = questionnaire.title ?: "",
-            identifier = questionnaire.logicalId
-          )
-        }
+            QuestionnaireConfig(
+              appId = configurationRegistry.appId,
+              form = questionnaire.name ?: "",
+              title = questionnaire.title ?: "",
+              identifier = questionnaire.logicalId
+            )
+          }
 
       // if questionnaire is still not initialized load using config loaded from assets
       if (!::questionnaire.isInitialized)
@@ -168,7 +173,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
               val serializedQuestionnaireResponse =
                 parser.encodeResourceToString(
-                  questionnaireViewModel.generateQuestionnaireResponse(questionnaire!!, intent)
+                  questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
                 )
 
               bundleOf(
@@ -189,12 +194,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       readOnly = readonly
     }
   }
-
-  open fun createViewModel(application: Application) =
-    ViewModelProvider(
-      this@QuestionnaireActivity,
-      QuestionnaireViewModel(application).createFactory()
-    )[QuestionnaireViewModel::class.java]
 
   override fun onClick(view: View) {
     if (view.id == R.id.btn_save_client_info) {
@@ -333,7 +332,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     editMode: Boolean = false
   ) {
     questionnaireViewModel.extractAndSaveResources(
-      context = this@QuestionnaireActivity,
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
       resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),

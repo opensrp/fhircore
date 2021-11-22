@@ -16,11 +16,13 @@
 
 package org.smartregister.fhircore.engine.configuration
 
-import android.app.Application
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
-import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 
 /**
@@ -30,14 +32,16 @@ import org.smartregister.fhircore.engine.util.extension.decodeJson
  * are accessible from one place. If no configurations are retrieved from the server, then the
  * defaults are used.
  */
-object ConfigurationRegistry {
+@Singleton
+class ConfigurationRegistry @Inject constructor(@ApplicationContext val context: Context) {
 
-  private const val APP_WORKFLOW_CONFIG_FILE = "configurations/app/application_workflow.json"
-  const val APP_CONFIG_FILE = "configurations/app/application_configurations.json"
+  @Inject lateinit var configService: ConfigService
 
   val configurationsMap = mutableMapOf<String, Configuration>()
 
   val workflowPointsMap = mutableMapOf<String, WorkflowPoint>()
+
+  val authConfiguration by lazy { configService.provideAuthConfiguration() }
 
   lateinit var appId: String
 
@@ -50,12 +54,13 @@ object ConfigurationRegistry {
    * becomes register_view_configurations.json
    */
   inline fun <reified C : Configuration> retrieveConfiguration(
-    context: Context,
     configClassification: ConfigClassification
   ): C {
 
     val workflowPointName = workflowPointName(configClassification.classification)
-    val isApplicationConfig = configClassification is AppConfigClassification
+    val isApplicationConfig =
+      configClassification is AppConfigClassification &&
+        configClassification.name == AppConfigClassification.APPLICATION.name
     val viewConfigDir = "configurations/view"
 
     return configurationsMap.getOrPut(workflowPointName) {
@@ -102,14 +107,13 @@ object ConfigurationRegistry {
 
   fun loadAppConfigurations(
     appId: String,
-    application: Application,
+    accountAuthenticator: AccountAuthenticator,
     configsLoadedCallback: (Boolean) -> Unit
   ) {
     // TODO Download configurations that do not require login at this point. Default to assets
-    application.assertIsConfigurable()
     this.appId = appId
     val applicationWorkflowsMap =
-      application
+      context
         .assets
         .open(APP_WORKFLOW_CONFIG_FILE)
         .bufferedReader()
@@ -124,17 +128,10 @@ object ConfigurationRegistry {
           workflowPointsMap.clear()
           workflowPointsMap.putAll(it)
         }
-      val configurableApplication = application as ConfigurableApplication
-      configurableApplication.run {
-        val appConfig =
-          retrieveConfiguration<ApplicationConfiguration>(
-            context = application,
-            configClassification = AppConfigClassification.APPLICATION
-          )
-        configureApplication(appConfig)
-        authenticationService.launchLoginScreen()
-        configsLoadedCallback(true)
-      }
+
+      retrieveConfiguration<ApplicationConfiguration>(AppConfigClassification.APPLICATION)
+      accountAuthenticator.launchLoginScreen()
+      configsLoadedCallback(true)
     } else {
       configsLoadedCallback(false)
     }
@@ -142,8 +139,8 @@ object ConfigurationRegistry {
 
   fun workflowPointName(classification: String) = "$appId|$classification"
 
-  enum class AppConfigClassification : ConfigClassification {
-    APPLICATION;
-    override val classification: String = name.lowercase()
+  companion object {
+    private const val APP_WORKFLOW_CONFIG_FILE = "configurations/app/application_workflow.json"
+    const val APP_CONFIG_FILE = "configurations/app/application_configurations.json"
   }
 }

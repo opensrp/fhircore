@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.util.helper
 
+import javax.inject.Inject
+import javax.inject.Singleton
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
@@ -25,7 +27,6 @@ import org.hl7.fhir.r4.model.ResourceFactory
 import org.hl7.fhir.r4.model.RiskAssessment.RiskAssessmentPredictionComponent
 import org.hl7.fhir.r4.terminologies.ConceptMapEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities.ITransformerServices
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import timber.log.Timber
 
 /**
@@ -37,16 +38,15 @@ import timber.log.Timber
  * The missing Types and Resources are internal model types eg RiskAssessment.Prediction,
  * Immunization.Reaction
  */
-class TransformSupportServices(
-  private val outputs: MutableList<Base>,
-  private val application: ConfigurableApplication
+@Singleton
+class TransformSupportServices @Inject constructor(
+  val simpleWorkerContext: SimpleWorkerContext
 ) : ITransformerServices {
+
+  val outputs: MutableList<Base> = mutableListOf()
+
   override fun log(message: String) {
     Timber.i(message)
-  }
-
-  fun getContext(): SimpleWorkerContext {
-    return application.workerContextProvider
   }
 
   @Throws(FHIRException::class)
@@ -66,7 +66,7 @@ class TransformSupportServices(
 
   @Throws(FHIRException::class)
   override fun translate(appInfo: Any, source: Coding, conceptMapUrl: String): Coding {
-    val cme = ConceptMapEngine(getContext())
+    val cme = ConceptMapEngine(simpleWorkerContext)
     return cme.translate(source, conceptMapUrl)
   }
 

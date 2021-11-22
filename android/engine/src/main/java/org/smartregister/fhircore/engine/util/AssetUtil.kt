@@ -17,12 +17,10 @@
 package org.smartregister.fhircore.engine.util
 
 import android.content.Context
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 
-object FormConfigUtil {
-
-  /** Load configs from asset directory */
-  fun loadConfig(config: String, context: Context): List<QuestionnaireConfig> =
-    context.assets.open(config).bufferedReader().use { it.readText() }.decodeJson()
+object AssetUtil {
+  /** Read a file from the assets directory and decode to type T */
+  inline fun <reified T> decodeAsset(fileName: String, context: Context): T =
+    context.assets.open(fileName).bufferedReader().use { it.readText() }.decodeJson()
 }

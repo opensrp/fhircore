@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.register
+package org.smartregister.fhircore.engine.data.remote.shared.interceptor
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import org.smartregister.fhircore.engine.R
+import javax.inject.Inject
+import okhttp3.Interceptor
 
-abstract class RecyclerRegisterFragment<I : Any, O : Any> : BaseRegisterFragment<I, O>() {
+class LoginInterceptor @Inject constructor() : Interceptor {
 
-  override fun onCreateView(
-    inflater: LayoutInflater,
-    container: ViewGroup?,
-    savedInstanceState: Bundle?
-  ): View = inflater.inflate(R.layout.base_register_fragment, container, false)
+  override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
+    val request = chain.request()
+    return chain.proceed(request)
+  }
 }

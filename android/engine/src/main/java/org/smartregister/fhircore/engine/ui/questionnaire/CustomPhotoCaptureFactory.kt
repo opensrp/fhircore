@@ -85,7 +85,7 @@ class CustomPhotoCaptureFactory(fragment: Fragment) :
   internal fun populateCameraResponse(
     fragment: Fragment,
     imageBitmap: Bitmap,
-    dispatcher: DispatcherProvider = DefaultDispatcherProvider
+    dispatcher: DispatcherProvider = DefaultDispatcherProvider()
   ) {
     fragment.lifecycleScope.launch(dispatcher.io()) {
       val imageFile =

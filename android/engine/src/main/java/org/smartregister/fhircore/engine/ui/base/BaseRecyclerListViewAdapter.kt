@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.ui.base
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
+import org.smartregister.fhircore.engine.ui.base.BaseRecyclerListViewAdapter.DataDiffCallback
 import org.smartregister.fhircore.engine.util.ListenerIntent
 
 /**

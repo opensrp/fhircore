@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.ui.appsetting
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -44,27 +45,35 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModelProvider
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.showToast
 
+@AndroidEntryPoint
 class AppSettingActivity : AppCompatActivity() {
 
-  private lateinit var appSettingViewModel: AppSettingViewModel
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  private val appSettingViewModel: AppSettingViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    appSettingViewModel =
-      ViewModelProvider(this, AppSettingViewModel(application).createFactory())[
-        AppSettingViewModel::class.java]
-    appSettingViewModel.configsLoaded.observe(
+    appSettingViewModel.loadConfigs.observe(
       this,
-      { isLoaded ->
-        if (isLoaded != null && isLoaded) finish()
-        else if (isLoaded != null && !isLoaded)
+      { loadConfigs ->
+        if (loadConfigs != null && loadConfigs) {
+          configurationRegistry.loadAppConfigurations(
+            appId = appSettingViewModel.appId.value!!,
+            accountAuthenticator = accountAuthenticator
+          ) { finish() }
+        } else if (loadConfigs != null && !loadConfigs)
           showToast(getString(R.string.application_not_supported, appSettingViewModel.appId.value))
       }
     )
@@ -92,7 +101,7 @@ private fun AppSettingScreen(
   rememberApp: Boolean,
   onAppIdChanged: (String) -> Unit,
   onRememberAppChecked: (Boolean) -> Unit,
-  onLoadConfigurations: () -> Unit
+  onLoadConfigurations: (Boolean) -> Unit
 ) {
 
   Column(
@@ -137,7 +146,7 @@ private fun AppSettingScreen(
     }
     Spacer(modifier = modifier.height(20.dp))
     Button(
-      onClick = onLoadConfigurations,
+      onClick = { onLoadConfigurations(true) },
       enabled = appId.isNotEmpty(),
       modifier = modifier.fillMaxWidth()
     ) {

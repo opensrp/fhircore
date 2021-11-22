@@ -19,29 +19,34 @@ package org.smartregister.fhircore.engine.ui.userprofile
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.spyk
 import io.mockk.verify
+import javax.inject.Inject
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.shadow.FakeKeyStore
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncInitiator
 
+@HiltAndroidTest
 class UserProfileScreenKtTest : RobolectricTest() {
 
-  private lateinit var userProfileViewModel: UserProfileViewModel
+  lateinit var userProfileViewModel: UserProfileViewModel
+
+  @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
   @get:Rule val composeRule = createComposeRule()
 
+  @get:Rule var hiltRule = HiltAndroidRule(this)
+
   @Before
   fun setUp() {
-    userProfileViewModel =
-      spyk(objToCopy = UserProfileViewModel(ApplicationProvider.getApplicationContext()))
     composeRule.setContent { UserProfileScreen(userProfileViewModel = userProfileViewModel) }
   }
 
@@ -55,13 +60,8 @@ class UserProfileScreenKtTest : RobolectricTest() {
   @Test
   fun testSyncRowClickShouldInitiateSync() {
     val mockSyncInitiator = mockk<SyncInitiator> { every { runSync() } returns Unit }
-
-    every { userProfileViewModel.configurableApplication } returns
-      mockk {
-        every { syncBroadcaster } returns
-          mockk { every { syncInitiator } returns mockSyncInitiator }
-      }
-
+    syncBroadcaster.unRegisterSyncInitiator()
+    syncBroadcaster.registerSyncInitiator(mockSyncInitiator)
     composeRule.onNodeWithText("Sync").performClick()
     verify { mockSyncInitiator.runSync() }
   }

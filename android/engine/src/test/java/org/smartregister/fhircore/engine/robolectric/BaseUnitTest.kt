@@ -14,10 +14,27 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.shadow.activity
+package org.smartregister.fhircore.engine.robolectric
 
-import org.robolectric.annotation.Implements
-import org.robolectric.shadows.ShadowActivity
-import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
+import io.mockk.clearAllMocks
+import org.junit.AfterClass
+import org.junit.BeforeClass
+import org.smartregister.fhircore.engine.shadow.FakeKeyStore
 
-@Implements(BaseLoginActivity::class) class ShadowLoginActivity : ShadowActivity()
+abstract class BaseUnitTest {
+
+  companion object {
+
+    @JvmStatic
+    @BeforeClass
+    fun beforeClass() {
+      FakeKeyStore.setup
+    }
+
+    @JvmStatic
+    @AfterClass
+    fun resetMocks() {
+      clearAllMocks()
+    }
+  }
+}
