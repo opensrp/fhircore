@@ -19,10 +19,12 @@ package org.smartregister.fhircore.quest.ui.patient.register.components
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.patient.register.OpenPatientProfile
 
 class PatientRowTest : RobolectricTest() {
 
@@ -45,5 +47,30 @@ class PatientRowTest : RobolectricTest() {
     composeRule.onNodeWithText("Male").assertIsDisplayed()
     composeRule.onNodeWithText("John Doe, 27").assertExists()
     composeRule.onNodeWithText("John Doe, 27").assertIsDisplayed()
+  }
+
+  @Test
+  fun testPatientRegisterListItemShouldCallItemClickListener() {
+
+    composeRule.runOnIdle {
+      composeRule.setContent {
+        val patientItem =
+          PatientItem(
+            id = "my-test-id",
+            identifier = "10001",
+            name = "John Doe",
+            gender = "Male",
+            age = "27",
+            address = "Nairobi"
+          )
+        PatientRow(
+          patientItem = patientItem,
+          clickListener = { i, p ->
+            // click intent should be open profile
+            Assert.assertEquals(OpenPatientProfile, i)
+          }
+        )
+      }
+    }
   }
 }
