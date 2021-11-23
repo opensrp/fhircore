@@ -95,17 +95,18 @@ constructor(
           val errorResponse = response.errorBody()?.string()
           _loginError.postValue(errorResponse?.decodeJson<LoginError>()?.errorDescription)
           Timber.e("Error fetching access token %s", errorResponse)
+          return
+        } else {
           if (attemptLocalLogin()) _navigateToHome.value = true
           _showProgressBar.postValue(false)
-          return
-        }
-        with(accountAuthenticator) {
-          addAuthenticatedAccount(
-            response,
-            username.value!!.trim(),
-            password.value?.trim()?.toCharArray()!!
-          )
-          getUserInfo().enqueue(userInfoResponseCallback)
+          with(accountAuthenticator) {
+            addAuthenticatedAccount(
+              response,
+              username.value!!.trim(),
+              password.value?.trim()?.toCharArray()!!
+            )
+            getUserInfo().enqueue(userInfoResponseCallback)
+          }
         }
       }
 

@@ -44,9 +44,9 @@ class LoginActivity :
     super.onCreate(savedInstanceState)
     loginService.loginActivity = this
     loginViewModel.apply {
-      loginUser()
       navigateToHome.observe(this@LoginActivity, { loginService.navigateToHome() })
       launchDialPad.observe(this@LoginActivity, { if (!it.isNullOrEmpty()) launchDialPad(it) })
+      loginUser()
     }
 
     configureViews(configurationRegistry.retrieveConfiguration(AppConfigClassification.LOGIN))
