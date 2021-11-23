@@ -23,7 +23,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Surface
 import androidx.compose.ui.res.colorResource
-import androidx.core.util.Pair
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
@@ -36,7 +35,6 @@ import com.google.common.collect.Lists
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
-import java.util.Calendar
 import java.util.Date
 import kotlin.collections.ArrayList
 import kotlin.collections.List
@@ -420,15 +418,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         return data.visitStatus == VisitStatus.OVERDUE
       }
     }
-  }
-
-  private fun showDateRangePicker(onDateSelected: (Pair<Long, Long>?) -> Unit) {
-    val builder = MaterialDatePicker.Builder.dateRangePicker()
-    val now = Calendar.getInstance()
-    builder.setSelection(Pair(now.timeInMillis, now.timeInMillis))
-    val dateRangePicker = builder.build()
-    dateRangePicker.show(supportFragmentManager, dateRangePicker.toString())
-    dateRangePicker.addOnPositiveButtonClickListener { onDateSelected(dateRangePicker.selection) }
   }
 
   private fun showDatePicker() {
