@@ -4,5 +4,11 @@
     "classification": "application",
     "theme": "AppTheme",
     "languages": ["en", "sw"]
+  },
+  {
+    "appId": "ecbis",
+    "classification": "application",
+    "theme": "AppTheme",
+    "languages": ["en", "sw"]
   }
 ]
