@@ -27,6 +27,8 @@ import org.smartregister.fhircore.eir.EirApplication
 import org.smartregister.fhircore.eir.data.model.PatientItem
 import org.smartregister.fhircore.eir.data.model.PatientVaccineStatus
 import org.smartregister.fhircore.eir.data.model.VaccineStatus
+import org.smartregister.fhircore.eir.ui.patient.details.dueDateFmt
+import org.smartregister.fhircore.eir.ui.patient.details.isOverdue
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.extension.atRisk
 import org.smartregister.fhircore.engine.util.extension.extractAge
@@ -54,17 +56,13 @@ object PatientItemMapper : DomainMapper<Pair<Patient, List<Immunization>>, Patie
   }
 
   private fun List<Immunization>.getVaccineStatus(): PatientVaccineStatus {
-    val calendar: Calendar = Calendar.getInstance()
-    calendar.add(Calendar.DATE, -28)
-    val overDueStart: Date = calendar.time
-    val formatter = SimpleDateFormat("dd-MM-yy", Locale.US)
     val computedStatus =
       if (this.size >= 2) VaccineStatus.VACCINATED
-      else if (this.size == 1 && this[0].recorded.before(overDueStart)) VaccineStatus.OVERDUE
-      else if (this.size == 1) VaccineStatus.PARTIAL else VaccineStatus.DUE
+      else if (this.size == 1 && this[0].isOverdue()) VaccineStatus.OVERDUE
+      else if (this.size == 1) VaccineStatus.PARTIAL
+      else VaccineStatus.DUE
 
-    val date = if (this.isNotEmpty()) this[0].recorded else null
-    val dateUpToDate = if (date == null) "" else formatter.format(date)
-    return PatientVaccineStatus(status = computedStatus, date = dateUpToDate)
+    val date = if(this.isNullOrEmpty()) "" else this[0].dueDateFmt()
+    return PatientVaccineStatus(status = computedStatus, date = date)
   }
 }

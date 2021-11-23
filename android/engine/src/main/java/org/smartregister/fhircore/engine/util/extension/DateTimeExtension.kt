@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import org.hl7.fhir.r4.model.DateTimeType
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -50,3 +51,13 @@ fun DateType.format(): String =
   DateTimeFormatter.ISO_LOCAL_DATE.format(
     this.dateTimeValue().value.toInstant().atOffset(ZoneOffset.UTC)
   )
+
+fun DateTimeType.plusDaysAsString(days: Int): String {
+  val clone = this.copy()
+  clone.add(Calendar.DATE, days)
+  return clone.value.asDdMmmYyyy()
+}
+
+fun DateTimeType.toDisplay(): String {
+  return value?.asDdMmmYyyy()?:""
+}

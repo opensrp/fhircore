@@ -97,19 +97,11 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
     val spyViewModel =
       spyk((recordVaccineActivity.questionnaireViewModel as RecordVaccineViewModel))
     recordVaccineActivity.questionnaireViewModel = spyViewModel
-
-    val callback = slot<Observer<PatientVaccineSummary>>()
-
+    
     coEvery { spyViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
-    every { spyViewModel.getVaccineSummary(any()) } returns
-      mockk<LiveData<PatientVaccineSummary>>().apply {
-        every { observe(any(), capture(callback)) } answers
-          {
-            callback.captured.onChanged(PatientVaccineSummary(1, "vaccine"))
-          }
-      }
+    coEvery { spyViewModel.loadLatestVaccine(any()) } returns PatientVaccineSummary(1, "vaccine")
 
     recordVaccineActivity.handleQuestionnaireResponse(mockk())
 

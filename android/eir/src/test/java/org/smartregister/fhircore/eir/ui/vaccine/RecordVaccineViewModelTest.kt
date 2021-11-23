@@ -68,19 +68,6 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testGetVaccineSummary() =
-    coroutinesTestRule.runBlockingTest {
-      val vaccineSummary = recordVaccineViewModel.getVaccineSummary("1")
-      Assert.assertNotNull(vaccineSummary)
-
-      val patientVaccineSummary = getLiveDataValue(vaccineSummary)
-      Assert.assertNotNull(patientVaccineSummary)
-      Assert.assertTrue(patientVaccineSummary is PatientVaccineSummary)
-      Assert.assertEquals(1, patientVaccineSummary?.doseNumber)
-      Assert.assertEquals("code", patientVaccineSummary?.initialDose)
-    }
-
-  @Test
   fun `getPopulationResources() should call loadPatient() and loadPatientImmunization()`() {
     val patientId = "2892347"
     val patient = Patient()

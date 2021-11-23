@@ -29,15 +29,16 @@ import org.smartregister.fhircore.engine.util.extension.show
 enum class AlertIntent {
   PROGRESS,
   CONFIRM,
-  ERROR
+  ERROR,
+  INFO
 }
 
 object AlertDialogue {
   fun showAlert(
     context: Activity,
     alertIntent: AlertIntent,
-    @StringRes message: Int,
-    @StringRes title: Int? = null,
+    message: String,
+    title: String? = null,
     confirmButtonListener: ((d: DialogInterface) -> Unit)? = null,
     @StringRes confirmButtonText: Int = R.string.questionnaire_alert_confirm_button_title,
     neutralButtonListener: ((d: DialogInterface) -> Unit)? = null,
@@ -66,15 +67,32 @@ object AlertDialogue {
       } else this.hide()
     }
 
-    dialog.findViewById<TextView>(R.id.tv_alert_message)?.apply { this.setText(message) }
+    dialog.findViewById<TextView>(R.id.tv_alert_message)?.apply { this.text = message }
 
     return dialog
   }
 
+  fun showInfoAlert(
+    context: Activity,
+    message: String,
+    title: String? = null,
+    confirmButtonListener: ((d: DialogInterface) -> Unit) = { d -> d.dismiss() },
+    @StringRes confirmButtonText: Int = R.string.questionnaire_alert_ack_button_title
+  ): AlertDialog {
+    return showAlert(
+      context = context,
+      alertIntent = AlertIntent.INFO,
+      message = message,
+      title = title,
+      confirmButtonListener = confirmButtonListener,
+      confirmButtonText = confirmButtonText
+    )
+  }
+
   fun showErrorAlert(
     context: Activity,
-    @StringRes message: Int,
-    @StringRes title: Int? = null
+    message: String,
+    title: String? = null
   ): AlertDialog {
     return showAlert(
       context = context,
@@ -86,12 +104,20 @@ object AlertDialogue {
     )
   }
 
-  fun showProgressAlert(context: Activity, @StringRes message: Int): AlertDialog {
-    return showAlert(context, AlertIntent.PROGRESS, message)
+  fun showErrorAlert(
+    context: Activity,
+    @StringRes message: Int,
+    @StringRes title: Int? = null
+  ): AlertDialog {
+    return showErrorAlert(
+      context = context,
+      message = context.getString(message),
+      title = title?.let { context.getString(it) }
+    )
   }
 
-  fun hideProgressAlert(alert: AlertDialog) {
-    if (alert.isShowing) alert.dismiss()
+  fun showProgressAlert(context: Activity, @StringRes message: Int): AlertDialog {
+    return showAlert(context, AlertIntent.PROGRESS, context.getString(message))
   }
 
   fun showConfirmAlert(
@@ -104,8 +130,8 @@ object AlertDialogue {
     return showAlert(
       context = context,
       alertIntent = AlertIntent.CONFIRM,
-      message = message,
-      title = title,
+      message = context.getString(message),
+      title = title?.let { context.getString(it) },
       confirmButtonListener = confirmButtonListener,
       confirmButtonText = confirmButtonText,
       neutralButtonListener = { d -> d.dismiss() },
