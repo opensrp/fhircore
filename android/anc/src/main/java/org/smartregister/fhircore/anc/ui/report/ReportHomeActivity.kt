@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -99,7 +100,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   lateinit var patientDataIBase: IBaseBundle
   lateinit var patientDetailsData: String
   lateinit var patientId: String
-  lateinit var reportViewModel: ReportViewModel
+  val reportViewModel by viewModels<ReportViewModel>()
 
   val executor = Executors.newSingleThreadExecutor()
   val handler = Handler(Looper.getMainLooper())

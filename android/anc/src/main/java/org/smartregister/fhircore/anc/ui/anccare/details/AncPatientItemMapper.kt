@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc.ui.anccare.details
 import android.app.Application
 import android.content.Context
 import com.google.android.fhir.logicalId
+import dagger.hilt.android.qualifiers.ApplicationContext
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.ui.anccare.register.Anc
@@ -29,10 +30,8 @@ import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.isPregnant
 import javax.inject.Inject
 
-class AncPatientItemMapper : DomainMapper<Anc, PatientItem> {
-
-  @Inject
-  lateinit var context: Context
+class AncPatientItemMapper @Inject constructor(
+  @ApplicationContext val context: Context) : DomainMapper<Anc, PatientItem> {
 
   override fun mapToDomainModel(dto: Anc): PatientItem {
     val patient = dto.patient
