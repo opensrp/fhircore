@@ -16,9 +16,11 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.core.util.Pair
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -32,21 +34,35 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
+import org.smartregister.fhircore.anc.ui.anccare.register.Anc
+import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
+import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
+import org.smartregister.fhircore.engine.data.domain.util.PaginatedDataSource
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
+import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.ListenerIntent
 
 class ReportViewModel(
   private val repository: ReportRepository,
-  var dispatcher: DispatcherProvider,
+  val patientRepository: PatientRepository,
+  var dispatcher: DispatcherProvider
 ) : ViewModel() {
+
+  lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
 
   val backPress: MutableLiveData<Boolean> = MutableLiveData(false)
   val showDatePicker: MutableLiveData<Boolean> = MutableLiveData(false)
   val selectedMeasureReportItem: MutableLiveData<ReportItem> = MutableLiveData(null)
+  val selectedPatientItem: MutableLiveData<PatientItem> = MutableLiveData(null)
   val simpleDateFormatPattern = "d MMM, yyyy"
 
   private val _startDate = MutableLiveData("start date")
@@ -61,6 +77,12 @@ class ReportViewModel(
   val patientSelectionType: LiveData<String>
     get() = _patientSelectionType
 
+  var searchTextState = mutableStateOf(TextFieldValue(""))
+
+  private val _filterValue = MutableLiveData<kotlin.Pair<RegisterFilterType, Any?>>()
+  val filterValue
+    get() = _filterValue
+
   private val _isReadyToGenerateReport = MutableLiveData(true)
   val isReadyToGenerateReport: LiveData<Boolean>
     get() = _isReadyToGenerateReport
@@ -69,6 +91,25 @@ class ReportViewModel(
 
   fun getReportsTypeList(): Flow<PagingData<ReportItem>> {
     return Pager(PagingConfig(pageSize = PaginationUtil.DEFAULT_PAGE_SIZE)) { repository }.flow
+  }
+
+  fun getPatientList(): Flow<PagingData<PatientItem>> {
+    //    return Pager(PagingConfig(pageSize = PaginationUtil.DEFAULT_PAGE_SIZE)) { repository
+    // }.flow
+    return getPagingData(0, true)
+  }
+
+  fun onPatientItemClicked(listenerIntent: ListenerIntent, data: PatientItem) {
+    if (listenerIntent is AncRowClickListenerIntent) {
+      when (listenerIntent) {
+        OpenPatientProfile -> updateSelectedPatient(data)
+      }
+    }
+  }
+
+  fun updateSelectedPatient(patient: PatientItem) {
+    selectedPatientItem.value = patient
+    reportState.currentScreen = ReportScreen.FILTER
   }
 
   fun onReportMeasureItemClicked(item: ReportItem) {
@@ -96,6 +137,10 @@ class ReportViewModel(
 
   fun onBackPressFromFilter() {
     reportState.currentScreen = ReportScreen.HOME
+  }
+
+  fun onBackPressFromPatientSearch() {
+    reportState.currentScreen = ReportScreen.FILTER
   }
 
   fun onBackPressFromResult() {
@@ -132,6 +177,26 @@ class ReportViewModel(
     _isReadyToGenerateReport.value = true
     reportState.currentScreen = ReportScreen.FILTER
   }
+
+  @Stable
+  val allRegisterData: MutableStateFlow<Flow<PagingData<PatientItem>>> =
+    MutableStateFlow(getPagingData(currentPage = 0, loadAll = true))
+
+  private fun getPagingData(currentPage: Int, loadAll: Boolean) =
+    Pager(
+        config =
+          PagingConfig(
+            pageSize = PaginationUtil.DEFAULT_PAGE_SIZE,
+            initialLoadSize = PaginationUtil.DEFAULT_INITIAL_LOAD_SIZE,
+          ),
+        pagingSourceFactory = {
+          PaginatedDataSource(patientRepository).apply {
+            this.loadAll = loadAll
+            this.currentPage = currentPage
+          }
+        }
+      )
+      .flow
 
   fun fetchCQLFhirHelperData(
     parser: IParser,
@@ -219,7 +284,7 @@ class ReportViewModel(
   }
 
   class ReportState {
-    var currentScreen by mutableStateOf(ReportScreen.HOME)
+    var currentScreen by mutableStateOf(ReportScreen.PREHOMElOADING)
   }
 
   enum class ReportScreen {

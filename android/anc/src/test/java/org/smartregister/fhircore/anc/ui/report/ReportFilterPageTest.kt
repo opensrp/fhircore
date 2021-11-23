@@ -20,39 +20,42 @@ import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import androidx.lifecycle.MutableLiveData
-import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.FhirEngine
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.report.ReportRepository
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 @ExperimentalCoroutinesApi
 class ReportFilterPageTest : RobolectricTest() {
 
-  private lateinit var fhirEngine: FhirEngine
-  private lateinit var repository: ReportRepository
   private lateinit var viewModel: ReportViewModel
   @get:Rule val composeRule = createComposeRule()
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
   private val patientSelectionType = MutableLiveData("")
   private val testMeasureReportItem = MutableLiveData(ReportItem(title = "Test Report Title"))
+  private val selectionPatient = MutableLiveData(PatientItem(name = "Test Patient Name"))
+  private val listenerObjectSpy =
+    spyk(
+      object {
+        // Imitate click action by doing nothing
+        fun onDateRangePress() {}
+        fun onPatientSelectionChanged() {}
+        fun onGenerateReportClick() {}
+      }
+    )
 
   @Before
   fun setUp() {
-    fhirEngine = spyk()
-    repository =
-      spyk(
-        ReportRepository(fhirEngine, "testPatientID", ApplicationProvider.getApplicationContext())
-      )
     viewModel =
       mockk {
         every { selectedMeasureReportItem } returns this@ReportFilterPageTest.testMeasureReportItem
@@ -60,15 +63,38 @@ class ReportFilterPageTest : RobolectricTest() {
         every { startDate } returns MutableLiveData("")
         every { endDate } returns MutableLiveData("")
         every { patientSelectionType } returns this@ReportFilterPageTest.patientSelectionType
+        every { selectedPatientItem } returns this@ReportFilterPageTest.selectionPatient
       }
-
-    composeRule.setContent { ReportFilterScreen(viewModel = viewModel) }
   }
 
   @Test
-  fun testReportFilterPageComponents() {
-    // toolbar should have valid title and icon
+  fun testReportFilterScreen() {
+    composeRule.setContent { ReportFilterScreen(viewModel = viewModel) }
     composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals("Test Report Title")
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
+  }
+
+  @Test
+  fun testReportFilterPage() {
+    composeRule.setContent {
+      ReportFilterPage(
+        topBarTitle = "FilterPageReportTitle",
+        onBackPress = {},
+        startDate = "",
+        endDate = "",
+        onDateRangePress = { listenerObjectSpy.onDateRangePress() },
+        patientSelectionText = "All",
+        onPatientSelectionTypeChanged = { listenerObjectSpy.onPatientSelectionChanged() },
+        generateReportEnabled = true,
+        onGenerateReportPress = { listenerObjectSpy.onGenerateReportClick() },
+        selectedPatient = selectionPatient.value
+      )
+    }
+    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals("FilterPageReportTitle")
+    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
+    composeRule.onNodeWithTag(REPORT_DATE_RANGE_SELECTION).assertExists()
+    composeRule.onNodeWithTag(REPORT_GENERATE_BUTTON).assertExists()
+    composeRule.onNodeWithTag(REPORT_GENERATE_BUTTON).performClick()
+    verify { listenerObjectSpy.onGenerateReportClick() }
   }
 }

@@ -17,10 +17,12 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.MutableLiveData
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.spyk
@@ -30,10 +32,10 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Resource
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -43,6 +45,7 @@ internal class ReportViewModelTest {
 
   private lateinit var fhirEngine: FhirEngine
   private lateinit var reportRepository: ReportRepository
+  private lateinit var ancPatientRepository: PatientRepository
   private lateinit var reportViewModel: ReportViewModel
   @MockK lateinit var parser: IParser
   @MockK lateinit var fhirResourceDataSource: FhirResourceDataSource
@@ -52,8 +55,8 @@ internal class ReportViewModelTest {
 
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
-  private lateinit var repository: ReportRepository
   private val testReportItem = ReportItem(title = "TestReportItem")
+  private val patientSelectionType = MutableLiveData("All")
 
   @Before
   fun setUp() {
@@ -61,9 +64,17 @@ internal class ReportViewModelTest {
 
     fhirEngine = mockk(relaxed = true)
     reportRepository = mockk()
-
+    ancPatientRepository = mockk()
     reportViewModel =
-      spyk(ReportViewModel(reportRepository, coroutinesTestRule.testDispatcherProvider))
+      spyk(
+        ReportViewModel(
+          reportRepository,
+          ancPatientRepository,
+          coroutinesTestRule.testDispatcherProvider
+        )
+      )
+    every { reportViewModel.patientSelectionType } returns
+      this@ReportViewModelTest.patientSelectionType
   }
 
   @Test
@@ -161,6 +172,15 @@ internal class ReportViewModelTest {
   }
 
   @Test
+  fun testShouldVerifyBackFromPatientSelection() {
+    reportViewModel.onBackPressFromPatientSearch()
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.FILTER,
+      reportViewModel.reportState.currentScreen
+    )
+  }
+
+  @Test
   fun testShouldVerifyBackFromResultClickListener() {
     reportViewModel.onBackPressFromResult()
     Assert.assertEquals(
@@ -181,7 +201,6 @@ internal class ReportViewModelTest {
   }
 
   @Test
-  @Ignore("no assert")
   fun testShouldVerifyPatientSelectionChanged() {
     val expectedSelection = ReportViewModel.PatientSelectionType.ALL
     reportViewModel.onPatientSelectionTypeChanged("All")
