@@ -158,7 +158,7 @@ internal class ReportViewModelTest {
 
   @Test
   fun testShouldVerifyDatePickerPressListener() {
-    reportViewModel.onDateRangePress()
+    reportViewModel.onStartDatePress()
     Assert.assertEquals(true, reportViewModel.showDatePicker.value)
   }
 

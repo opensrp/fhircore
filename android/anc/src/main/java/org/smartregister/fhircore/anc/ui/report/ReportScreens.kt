@@ -141,32 +141,23 @@ fun LoadingItem() {
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun PreviewDateRangeChangable() {
-  DateSelectionBox(
-    startDate = "Start date",
-    endDate = "End date",
-    canChange = true,
-    onDateRangePress = {}
-  )
+  DateSelectionBox(startDate = "Start date", endDate = "End date", canChange = true)
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun PreviewDateRangeFixed() {
-  DateSelectionBox(
-    startDate = "Start date",
-    endDate = "End date",
-    canChange = false,
-    onDateRangePress = {}
-  )
+  DateSelectionBox(startDate = "Start date", endDate = "End date", canChange = false)
 }
 
 @Composable
 fun DateSelectionBox(
-  startDate: String,
-  endDate: String,
-  canChange: Boolean,
-  onDateRangePress: () -> Unit
+  startDate: String = "",
+  endDate: String = "",
+  canChange: Boolean = false,
+  onStartDatePress: () -> Unit = {},
+  onEndDatePress: () -> Unit = {}
 ) {
   Column(
     modifier = Modifier.wrapContentWidth().padding(16.dp).testTag(REPORT_DATE_RANGE_SELECTION),
@@ -184,9 +175,9 @@ fun DateSelectionBox(
       horizontalArrangement = Arrangement.SpaceAround,
       verticalAlignment = Alignment.CenterVertically
     ) {
-      DateRangeItem(text = startDate, canChange = canChange, clickListener = onDateRangePress)
+      DateRangeItem(text = startDate, canChange = canChange, clickListener = onStartDatePress)
       Text("-", fontSize = 18.sp, modifier = Modifier.padding(horizontal = 8.dp))
-      DateRangeItem(text = endDate, canChange = canChange, clickListener = onDateRangePress)
+      DateRangeItem(text = endDate, canChange = canChange, clickListener = onEndDatePress)
     }
   }
 }

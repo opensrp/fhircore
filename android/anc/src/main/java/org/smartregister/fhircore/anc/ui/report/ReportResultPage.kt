@@ -100,12 +100,7 @@ fun ReportResultPage(
         Modifier.padding(start = 8.dp)
       )
       Spacer(modifier = Modifier.height(8.dp))
-      DateSelectionBox(
-        startDate = startDate,
-        endDate = endDate,
-        canChange = false,
-        onDateRangePress = {}
-      )
+      DateSelectionBox(startDate = startDate, endDate = endDate, canChange = false)
       Spacer(modifier = Modifier.height(16.dp))
       if (isAllPatientSelection) {
         Text(

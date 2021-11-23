@@ -29,7 +29,9 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import ca.uhn.fhir.parser.IParser
+import java.text.ParseException
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.flow.Flow
@@ -58,6 +60,7 @@ class ReportViewModel(
 
   val backPress: MutableLiveData<Boolean> = MutableLiveData(false)
   val showDatePicker: MutableLiveData<Boolean> = MutableLiveData(false)
+  val isChangingStartDate: MutableLiveData<Boolean> = MutableLiveData(false)
   val selectedMeasureReportItem: MutableLiveData<ReportItem> = MutableLiveData(null)
   val selectedPatientItem: MutableLiveData<PatientItem> = MutableLiveData(null)
   val simpleDateFormatPattern = "d MMM, yyyy"
@@ -104,8 +107,25 @@ class ReportViewModel(
   }
 
   fun onReportMeasureItemClicked(item: ReportItem) {
+    setDefaultDates()
     selectedMeasureReportItem.value = item
     reportState.currentScreen = ReportScreen.FILTER
+  }
+
+  private fun setDefaultDates() {
+    val endDate = Date()
+    val cal: Calendar = Calendar.getInstance()
+    // Subtract 30 days from the calendar
+    cal.add(Calendar.DATE, -30)
+    val startDate = cal.time
+
+    val formattedStartDate =
+      SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(startDate)
+    val formattedEndDate =
+      SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(endDate)
+
+    _startDate.value = formattedStartDate
+    _endDate.value = formattedEndDate
   }
 
   fun onBackPress() {
@@ -138,7 +158,29 @@ class ReportViewModel(
     reportState.currentScreen = ReportScreen.FILTER
   }
 
-  fun onDateRangePress() {
+  fun getSelectionDate(): Long {
+    val sdf = SimpleDateFormat(simpleDateFormatPattern, Locale.ENGLISH)
+    try {
+      var mDate = sdf.parse(_endDate.value!!)
+      if (isChangingStartDate.value != false) {
+        mDate = sdf.parse(_startDate.value!!)
+      }
+      val timeInMilliseconds = mDate?.time
+      println("Date in milli :: $timeInMilliseconds")
+      return timeInMilliseconds!!
+    } catch (e: ParseException) {
+      e.printStackTrace()
+      return Date().time
+    }
+  }
+
+  fun onStartDatePress() {
+    isChangingStartDate.value = true
+    showDatePicker.value = true
+  }
+
+  fun onEndDatePress() {
+    isChangingStartDate.value = false
     showDatePicker.value = true
   }
 
@@ -165,6 +207,23 @@ class ReportViewModel(
 
     _startDate.value = formattedStartDate
     _endDate.value = formattedEndDate
+    _isReadyToGenerateReport.value = true
+    reportState.currentScreen = ReportScreen.FILTER
+  }
+
+  fun onDatePicked(selection: Long) {
+    showDatePicker.value = false
+    if (isChangingStartDate.value != false) {
+      val startDate = Date().apply { time = selection }
+      val formattedStartDate =
+        SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(startDate)
+      _startDate.value = formattedStartDate
+    } else {
+      val endDate = Date().apply { time = selection }
+      val formattedEndDate =
+        SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(endDate)
+      _endDate.value = formattedEndDate
+    }
     _isReadyToGenerateReport.value = true
     reportState.currentScreen = ReportScreen.FILTER
   }

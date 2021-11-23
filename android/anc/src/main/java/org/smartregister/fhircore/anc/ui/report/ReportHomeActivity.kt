@@ -141,7 +141,8 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       this,
       {
         if (it) {
-          showDateRangePicker(reportViewModel::onDateSelected)
+          // showDateRangePicker(reportViewModel::onDateSelected)
+          showDatePicker(reportViewModel::onDatePicked)
         }
       }
     )
@@ -424,6 +425,14 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     val dateRangePicker = builder.build()
     dateRangePicker.show(supportFragmentManager, dateRangePicker.toString())
     dateRangePicker.addOnPositiveButtonClickListener { onDateSelected(dateRangePicker.selection) }
+  }
+
+  private fun showDatePicker(onDatePicked: (Long) -> Unit) {
+    val builder = MaterialDatePicker.Builder.datePicker()
+    builder.setSelection(reportViewModel.getSelectionDate())
+    val picker = builder.build()
+    picker.show(supportFragmentManager, picker.toString())
+    picker.addOnPositiveButtonClickListener { onDatePicked(it) }
   }
 
   @Suppress("UNCHECKED_CAST")
