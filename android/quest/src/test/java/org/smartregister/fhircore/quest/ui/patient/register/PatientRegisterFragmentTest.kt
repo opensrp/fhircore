@@ -23,9 +23,11 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
+import org.junit.jupiter.api.assertThrows
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
+import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -79,6 +81,13 @@ class PatientRegisterFragmentTest : RobolectricTest() {
   }
 
   @Test
+  fun testPerformFilterShouldReturnTrueForEmptyFilter() {
+    Assert.assertTrue(
+      registerFragment.performFilter(RegisterFilterType.SEARCH_FILTER, PatientItem(), "")
+    )
+  }
+
+  @Test
   fun testPerformFilterShouldReturnFalseForUnhandledFilterType() {
     Assert.assertFalse(
       registerFragment.performFilter(RegisterFilterType.OVERDUE_FILTER, PatientItem(), "222")
@@ -107,6 +116,17 @@ class PatientRegisterFragmentTest : RobolectricTest() {
         .nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testOnItemClickedWithUnrecognizedIntentShouldThrowUnsupportedException() {
+    val result =
+      assertThrows<UnsupportedOperationException> {
+        registerFragment.onItemClicked(object : ListenerIntent {}, PatientItem())
+      }
+
+    Assert.assertEquals(UnsupportedOperationException::class.java.name, result::class.java.name)
+    Assert.assertEquals("Given ListenerIntent is not supported", result.message)
   }
 
   companion object {

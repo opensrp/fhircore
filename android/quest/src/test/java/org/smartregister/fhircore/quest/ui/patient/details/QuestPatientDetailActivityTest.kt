@@ -22,6 +22,7 @@ import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.spyk
 import io.mockk.verify
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -29,6 +30,8 @@ import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_READ_ONLY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
@@ -85,6 +88,26 @@ class QuestPatientDetailActivityTest : ActivityRobolectricTest() {
       shadowOf(ApplicationProvider.getApplicationContext<QuestApplication>()).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testOnTestResultItemClickListenerShouldStartQuestionnaireActivity() {
+    ReflectionHelpers.callInstanceMethod<Any>(
+      activity,
+      "onTestResultItemClickListener",
+      ReflectionHelpers.ClassParameter(
+        QuestionnaireResponse::class.java,
+        QuestionnaireResponse().apply { questionnaire = "Questionnaire/12345" }
+      )
+    )
+
+    val expectedIntent = Intent(activity, QuestionnaireActivity::class.java)
+    val actualIntent =
+      shadowOf(ApplicationProvider.getApplicationContext<QuestApplication>()).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    Assert.assertEquals("12345", actualIntent.getStringExtra(QUESTIONNAIRE_ARG_FORM))
+    Assert.assertEquals(true, actualIntent.getBooleanExtra(QUESTIONNAIRE_READ_ONLY, false))
   }
 
   override fun getActivity(): Activity {
