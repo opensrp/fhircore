@@ -18,12 +18,9 @@ package org.smartregister.fhircore.anc.ui.login
 
 import android.content.Intent
 import android.os.Bundle
-import org.smartregister.fhircore.anc.BuildConfig
-import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.util.AncConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
-import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
 
 class LoginActivity : BaseLoginActivity() {
