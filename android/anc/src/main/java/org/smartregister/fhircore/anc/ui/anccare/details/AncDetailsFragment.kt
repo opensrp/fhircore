@@ -43,18 +43,11 @@ import javax.inject.Inject
 class AncDetailsFragment : Fragment() {
 
   lateinit var patientId: String
-
   val ancDetailsViewModel by viewModels<AncDetailsViewModel>()
-
-  @Inject lateinit var patientRepository: PatientRepository
   @Inject lateinit var ancPatientItemMapper: AncPatientItemMapper
-
   private var carePlanAdapter = CarePlanAdapter()
-
   private val upcomingServicesAdapter = UpcomingServicesAdapter()
-
   private val lastSeen = EncounterAdapter()
-
   lateinit var binding: FragmentAncDetailsBinding
 
   override fun onCreateView(
@@ -72,11 +65,10 @@ class AncDetailsFragment : Fragment() {
 
     setupViews()
 
-    // TODO: We might have a crash if patientRepository is used here
-    //patientRepository = getAncPatientRepository()
-
-    patientRepository.domainMapperInUse = ancPatientItemMapper
+    // Set the patient id and correct DomainMapper to use
+    ancDetailsViewModel.patientRepository.domainMapperInUse = ancPatientItemMapper
     ancDetailsViewModel.patientId = patientId
+
     Timber.d(patientId)
 
     ancDetailsViewModel.fetchCarePlan().observe(viewLifecycleOwner, this::handleCarePlan)

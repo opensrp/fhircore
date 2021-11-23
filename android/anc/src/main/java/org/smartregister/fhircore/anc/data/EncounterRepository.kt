@@ -23,9 +23,12 @@ import com.google.android.fhir.search.search
 import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
+import javax.inject.Inject
 
-class EncounterRepository(val fhirEngine: FhirEngine, private val patientId: String) :
+class EncounterRepository @Inject constructor(val fhirEngine: FhirEngine) :
   PagingSource<Int, EncounterItem>() {
+
+  lateinit var patientId: String
 
   override fun getRefreshKey(state: PagingState<Int, EncounterItem>): Int? {
     return state.anchorPosition

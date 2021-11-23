@@ -18,6 +18,7 @@ package org.smartregister.fhircore.anc.ui.anccare.encounters
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.anc.AncApplication
@@ -30,19 +31,17 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class EncounterListActivity : BaseMultiLanguageActivity() {
 
-  @Inject lateinit var fhirEngine: FhirEngine
+  val encounterListViewModel by viewModels<EncounterListViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     val patientId =
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-    val repository = EncounterRepository(fhirEngine, patientId)
-    val viewModel = EncounterListViewModel.get(this, application as AncApplication, repository)
+    encounterListViewModel.repository.patientId = patientId
+    encounterListViewModel.setAppBackClickListener(this::handleBackClicked)
 
-    viewModel.setAppBackClickListener(this::handleBackClicked)
-
-    setContent { AppTheme { EncounterListScreen(viewModel) } }
+    setContent { AppTheme { EncounterListScreen(encounterListViewModel) } }
   }
 
   private fun handleBackClicked() {

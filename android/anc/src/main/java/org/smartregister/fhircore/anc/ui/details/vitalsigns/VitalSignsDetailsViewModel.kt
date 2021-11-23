@@ -20,19 +20,21 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import javax.inject.Inject
 
-class VitalSignsDetailsViewModel(
+@HiltViewModel
+class VitalSignsDetailsViewModel @Inject constructor(
   val ancPatientRepository: PatientRepository,
-  var dispatcher: DispatcherProvider,
-  val patientId: String
+  var dispatcher: DispatcherProvider
 ) : ViewModel() {
 
-  fun fetchEncounters(): LiveData<List<EncounterItem>> {
+  fun fetchEncounters(patientId: String): LiveData<List<EncounterItem>> {
     val patientEncounters = MutableLiveData<List<EncounterItem>>()
     viewModelScope.launch(dispatcher.io()) {
       val listEncounters = ancPatientRepository.fetchEncounters(patientId = patientId)

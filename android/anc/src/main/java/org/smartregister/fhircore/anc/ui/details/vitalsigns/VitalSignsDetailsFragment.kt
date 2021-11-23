@@ -22,6 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.fhir.FhirEngine
@@ -44,13 +45,11 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class VitalSignsDetailsFragment : Fragment() {
 
-  private lateinit var patientId: String
-  lateinit var ancDetailsViewModel: VitalSignsDetailsViewModel
+  val ancDetailsViewModel by viewModels<VitalSignsDetailsViewModel>()
   private val allergiesAdapter = AllergiesAdapter()
   private val conditionsAdapter = ConditionsAdapter()
   private val encounterAdapter = EncounterAdapter()
 
-  @Inject lateinit var ancPatientRepository: PatientRepository
   @Inject lateinit var ancPatientItemMapper: AncPatientItemMapper
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
@@ -68,20 +67,14 @@ class VitalSignsDetailsFragment : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    patientId = arguments?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+    var patientId = arguments?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
     setupViews()
-    ancPatientRepository.domainMapperInUse = ancPatientItemMapper
-    ancDetailsViewModel =
-      ViewModelProvider(
-        viewModelStore,
-        VitalSignsDetailsViewModel(ancPatientRepository, dispatcherProvider, patientId = patientId).createFactory()
-      )[VitalSignsDetailsViewModel::class.java]
-
-    ancDetailsViewModel.fetchEncounters().observe(viewLifecycleOwner, this::handleEncounters)
+    ancDetailsViewModel.ancPatientRepository.domainMapperInUse = ancPatientItemMapper
+    ancDetailsViewModel.fetchEncounters(patientId).observe(viewLifecycleOwner, this::handleEncounters)
 
     binding.swipeContainer.setOnRefreshListener {
-      ancDetailsViewModel.fetchEncounters().observe(viewLifecycleOwner, this::handleEncounters)
+      ancDetailsViewModel.fetchEncounters(patientId).observe(viewLifecycleOwner, this::handleEncounters)
     }
 
     binding.swipeContainer.setColorSchemeResources(

@@ -22,6 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.fhir.FhirEngine
@@ -44,9 +45,7 @@ import javax.inject.Inject
 class CarePlanDetailsFragment : Fragment() {
 
   private lateinit var patientId: String
-  lateinit var ancDetailsViewModel: CarePlanDetailsViewModel
-  @Inject lateinit var ancPatientRepository: PatientRepository
-  @Inject lateinit var dispatcherProvider: DispatcherProvider
+  val ancDetailsViewModel by viewModels<CarePlanDetailsViewModel>()
   private val carePlanAdapter = CarePlanAdapter()
   private val upcomingServicesAdapter = UpcomingServicesAdapter()
 
@@ -67,14 +66,8 @@ class CarePlanDetailsFragment : Fragment() {
 
     setupViews()
 
-    ancDetailsViewModel =
-      ViewModelProvider(
-        viewModelStore,
-        CarePlanDetailsViewModel(ancPatientRepository, dispatcherProvider, patientId = patientId).createFactory()
-      )[CarePlanDetailsViewModel::class.java]
-
+    ancDetailsViewModel.patientId = patientId
     ancDetailsViewModel.fetchCarePlan().observe(viewLifecycleOwner, this::handleCarePlan)
-
     ancDetailsViewModel.fetchEncounters().observe(viewLifecycleOwner, this::handleEncounters)
   }
 

@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc.ui.family.details
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Encounter
@@ -34,7 +35,7 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 @AndroidEntryPoint
 class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
-  @Inject lateinit var familyDetailRepository: FamilyDetailRepository
+  val viewModel by viewModels<FamilyDetailViewModel>()
 
   private lateinit var familyId: String
 
@@ -42,9 +43,8 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
     super.onCreate(savedInstanceState)
 
     familyId = intent.extras?.getString(QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-    familyDetailRepository.familyId = familyId
-    val viewModel =
-      FamilyDetailViewModel.get(this, application as AncApplication, familyDetailRepository)
+
+    viewModel.repository.familyId = familyId
 
     viewModel.setAppBackClickListener(this::onBackIconClicked)
     viewModel.setMemberItemClickListener(this::onFamilyMemberItemClicked)

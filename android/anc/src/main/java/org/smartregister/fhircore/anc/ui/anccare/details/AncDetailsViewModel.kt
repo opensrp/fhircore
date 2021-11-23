@@ -39,12 +39,10 @@ class AncDetailsViewModel @Inject constructor(
   var dispatcher: DispatcherProvider
 ) : ViewModel() {
 
-  lateinit var patientDemographics: MutableLiveData<PatientDetailItem>
-
   lateinit var patientId: String
 
   fun fetchDemographics(): LiveData<PatientDetailItem> {
-    patientDemographics = MutableLiveData<PatientDetailItem>()
+    val patientDemographics = MutableLiveData<PatientDetailItem>()
     viewModelScope.launch(dispatcher.io()) {
       val ancPatientDetailItem = patientRepository.fetchDemographics(patientId = patientId)
       patientDemographics.postValue(ancPatientDetailItem)
