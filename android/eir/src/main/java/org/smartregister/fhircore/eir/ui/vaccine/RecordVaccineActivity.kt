@@ -30,6 +30,7 @@ import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
+import org.smartregister.fhircore.eir.ui.patient.details.nextDueDateFmt
 import org.smartregister.fhircore.eir.ui.patient.details.ordinalOf
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
@@ -37,12 +38,11 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
 import org.smartregister.fhircore.engine.util.extension.createFactory
-import org.smartregister.fhircore.engine.util.extension.plusDaysAsString
 import timber.log.Timber
 
 class RecordVaccineActivity : QuestionnaireActivity() {
 
-  private lateinit var immunization: Immunization
+  private lateinit var savedImmunization: Immunization
   private val fhirParser = FhirContext.forR4Cached().newJsonParser()
 
   override fun createViewModel(application: Application): QuestionnaireViewModel {
@@ -74,12 +74,13 @@ class RecordVaccineActivity : QuestionnaireActivity() {
         )
 
       if (bundle.entryFirstRep.resource is Immunization) {
-        immunization = bundle.entry.first { it.resource is Immunization }.resource as Immunization
+        savedImmunization =
+          bundle.entry.first { it.resource is Immunization }.resource as Immunization
 
         val lastVaccine = getViewModel().loadLatestVaccine(clientIdentifier!!)
 
-        if (handleValidation(lastVaccine, immunization)) {
-          sanitizeExtractedData(immunization, lastVaccine)
+        if (handleValidation(lastVaccine, savedImmunization)) {
+          sanitizeExtractedData(savedImmunization, lastVaccine)
 
           // method below triggers save success automatically
           questionnaireViewModel.saveBundleResources(bundle)
@@ -99,13 +100,13 @@ class RecordVaccineActivity : QuestionnaireActivity() {
   }
 
   override fun postSaveSuccessful() {
-    val nextVaccineDate = immunization.occurrenceDateTimeType.plusDaysAsString(28)
-    val currentDose = immunization.protocolAppliedFirstRep.doseNumberPositiveIntType.value
+    val nextVaccineDate = savedImmunization.nextDueDateFmt()
+    val currentDose = savedImmunization.protocolAppliedFirstRep.doseNumberPositiveIntType.value
 
     val title =
       getString(
         R.string.ordinal_vaccine_dose_recorded,
-        immunization.vaccineCode.codingFirstRep.code,
+        savedImmunization.vaccineCode.codingFirstRep.code,
         currentDose.ordinalOf()
       )
     val message =

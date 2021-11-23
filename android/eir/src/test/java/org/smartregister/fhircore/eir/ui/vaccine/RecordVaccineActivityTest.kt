@@ -25,6 +25,7 @@ import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verify
 import java.text.SimpleDateFormat
 import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -109,6 +110,62 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
     Assert.assertNotNull(dialog)
     Assert.assertEquals(
       getString(R.string.already_fully_vaccinated),
+      dialog.view.findViewById<TextView>(R.id.tv_alert_message)!!.text
+    )
+  }
+
+  @Test
+  fun testHandleQuestionnaireResponseShouldCallSaveBundleResources() = runBlockingTest {
+    val spyViewModel =
+      spyk((recordVaccineActivity.questionnaireViewModel as RecordVaccineViewModel))
+
+    val spyActivity = spyk(recordVaccineActivity)
+    spyActivity.questionnaireViewModel = spyViewModel
+
+    coEvery { spyViewModel.performExtraction(any(), any(), any()) } returns
+      Bundle().apply { addEntry().apply { resource = getImmunization() } }
+
+    coEvery { spyViewModel.loadLatestVaccine(any()) } returns PatientVaccineSummary(1, "vaccineA")
+
+    spyActivity.handleQuestionnaireResponse(mockk())
+
+    verify { spyViewModel.saveBundleResources(any()) }
+  }
+
+  @Test
+  fun testPostSaveSuccessfulWithDose2ShouldShowAlertWithFullyImmunized() = runBlockingTest {
+    val savedImmunization =
+      getImmunization().apply { protocolAppliedFirstRep.doseNumber = PositiveIntType(2) }
+
+    ReflectionHelpers.setField(recordVaccineActivity, "savedImmunization", savedImmunization)
+
+    recordVaccineActivity.postSaveSuccessful()
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    Assert.assertNotNull(dialog)
+    Assert.assertEquals("vaccineA 2nd dose recorded", dialog.title)
+    Assert.assertEquals(
+      getString(org.smartregister.fhircore.eir.R.string.fully_vaccinated),
+      dialog.view.findViewById<TextView>(R.id.tv_alert_message)!!.text
+    )
+  }
+
+  @Test
+  fun testPostSaveSuccessfulWithDose1ShouldShowAlertWithFullyImmunized() = runBlockingTest {
+    val savedImmunization =
+      getImmunization().apply { protocolAppliedFirstRep.doseNumber = PositiveIntType(1) }
+
+    ReflectionHelpers.setField(recordVaccineActivity, "savedImmunization", savedImmunization)
+
+    recordVaccineActivity.postSaveSuccessful()
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    Assert.assertNotNull(dialog)
+    Assert.assertEquals("vaccineA 1st dose recorded", dialog.title)
+    Assert.assertEquals(
+      "Dose 2 due ${savedImmunization.nextDueDateFmt()}",
       dialog.view.findViewById<TextView>(R.id.tv_alert_message)!!.text
     )
   }
