@@ -65,6 +65,9 @@ class ReportViewModel(
   val selectedPatientItem: MutableLiveData<PatientItem> = MutableLiveData(null)
   val simpleDateFormatPattern = "d MMM, yyyy"
 
+  val startDateTimeMillis: MutableLiveData<Long> = MutableLiveData(0L)
+  val endDateTimeMillis: MutableLiveData<Long> = MutableLiveData(0L)
+
   private val _startDate = MutableLiveData("start date")
   val startDate: LiveData<String>
     get() = _startDate
@@ -123,6 +126,9 @@ class ReportViewModel(
       SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(startDate)
     val formattedEndDate =
       SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(endDate)
+
+    startDateTimeMillis.value = startDate.time
+    endDateTimeMillis.value = endDate.time
 
     _startDate.value = formattedStartDate
     _endDate.value = formattedEndDate
@@ -217,11 +223,13 @@ class ReportViewModel(
       val startDate = Date().apply { time = selection }
       val formattedStartDate =
         SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(startDate)
+      startDateTimeMillis.value = startDate.time
       _startDate.value = formattedStartDate
     } else {
       val endDate = Date().apply { time = selection }
       val formattedEndDate =
         SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(endDate)
+      endDateTimeMillis.value = endDate.time
       _endDate.value = formattedEndDate
     }
     _isReadyToGenerateReport.value = true
