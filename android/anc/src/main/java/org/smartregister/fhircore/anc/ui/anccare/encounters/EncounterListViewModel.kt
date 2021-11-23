@@ -16,28 +16,20 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.encounters
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.EncounterRepository
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
-import org.smartregister.fhircore.engine.util.extension.createFactory
-import javax.inject.Inject
 
 @HiltViewModel
-class EncounterListViewModel @Inject constructor(
-  val repository: EncounterRepository
-) : ViewModel(), EncounterDataProvider {
+class EncounterListViewModel @Inject constructor(val repository: EncounterRepository) :
+  ViewModel(), EncounterDataProvider {
 
   private var mBackClickListener: () -> Unit = {}
 

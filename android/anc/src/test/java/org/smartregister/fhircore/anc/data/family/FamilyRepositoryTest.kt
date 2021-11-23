@@ -25,6 +25,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Coding
@@ -47,7 +48,6 @@ import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.util.RegisterConfiguration
 import org.smartregister.fhircore.anc.util.SearchFilter
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import javax.inject.Inject
 
 class FamilyRepositoryTest : RobolectricTest() {
 
@@ -61,7 +61,13 @@ class FamilyRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     fhirEngine = spyk()
-    repository = FamilyRepository(ApplicationProvider.getApplicationContext(), fhirEngine, familyItemMapper, dispatcherProvider)
+    repository =
+      FamilyRepository(
+        ApplicationProvider.getApplicationContext(),
+        fhirEngine,
+        familyItemMapper,
+        dispatcherProvider
+      )
   }
 
   @Test

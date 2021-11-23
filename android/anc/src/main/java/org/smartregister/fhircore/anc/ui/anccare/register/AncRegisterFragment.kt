@@ -23,6 +23,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.LazyPagingItems
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
@@ -34,17 +35,13 @@ import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class AncRegisterFragment : ComposeRegisterFragment<Anc, PatientItem>() {
 
-  @Inject
-  lateinit var fhirEngine: FhirEngine
+  @Inject lateinit var fhirEngine: FhirEngine
 
-  @Inject
-  lateinit var ancPatientRepository: PatientRepository
-
+  @Inject lateinit var ancPatientRepository: PatientRepository
 
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(

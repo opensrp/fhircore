@@ -19,14 +19,10 @@ package org.smartregister.fhircore.anc.ui.anccare.encounters
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.AndroidEntryPoint
-import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.EncounterRepository
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class EncounterListActivity : BaseMultiLanguageActivity() {

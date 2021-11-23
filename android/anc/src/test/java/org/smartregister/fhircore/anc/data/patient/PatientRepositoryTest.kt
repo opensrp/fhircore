@@ -34,6 +34,7 @@ import io.mockk.spyk
 import io.mockk.unmockkStatic
 import java.text.SimpleDateFormat
 import java.util.Date
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
@@ -68,7 +69,6 @@ import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
-import javax.inject.Inject
 
 class PatientRepositoryTest : RobolectricTest() {
   private lateinit var repository: PatientRepository
@@ -81,7 +81,15 @@ class PatientRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     fhirEngine = spyk()
-    repository = spyk(PatientRepository(ApplicationProvider.getApplicationContext(), fhirEngine, AncPatientItemMapper, dispatcherProvider))
+    repository =
+      spyk(
+        PatientRepository(
+          ApplicationProvider.getApplicationContext(),
+          fhirEngine,
+          AncPatientItemMapper,
+          dispatcherProvider
+        )
+      )
   }
 
   @Test

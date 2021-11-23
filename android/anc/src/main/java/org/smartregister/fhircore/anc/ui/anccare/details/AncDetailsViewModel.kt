@@ -21,6 +21,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.data.model.AncOverviewItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
@@ -29,15 +30,13 @@ import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import javax.inject.Inject
 
 @HiltViewModel
-class AncDetailsViewModel @Inject constructor(
-  val patientRepository: PatientRepository,
-  var dispatcher: DispatcherProvider
-) : ViewModel() {
+class AncDetailsViewModel
+@Inject
+constructor(val patientRepository: PatientRepository, var dispatcher: DispatcherProvider) :
+  ViewModel() {
 
   lateinit var patientId: String
 

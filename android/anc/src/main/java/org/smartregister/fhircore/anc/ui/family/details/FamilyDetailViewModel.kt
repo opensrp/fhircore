@@ -16,22 +16,19 @@
 
 package org.smartregister.fhircore.anc.ui.family.details
 
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
-import org.smartregister.fhircore.engine.util.extension.createFactory
-import javax.inject.Inject
 
 @HiltViewModel
-class FamilyDetailViewModel @Inject constructor(
+class FamilyDetailViewModel
+@Inject
+constructor(
   val repository: FamilyDetailRepository,
 ) : ViewModel(), FamilyDetailDataProvider {
 

@@ -19,8 +19,8 @@ package org.smartregister.fhircore.anc.data.report
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.google.android.fhir.FhirEngine
-import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import javax.inject.Inject
+import org.smartregister.fhircore.anc.data.report.model.ReportItem
 
 class ReportRepository @Inject constructor(val fhirEngine: FhirEngine) :
   PagingSource<Int, ReportItem>() {

@@ -20,10 +20,10 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.search
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
-import javax.inject.Inject
 
 class EncounterRepository @Inject constructor(val fhirEngine: FhirEngine) :
   PagingSource<Int, EncounterItem>() {

@@ -23,24 +23,18 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.AndroidEntryPoint
-import org.smartregister.fhircore.anc.AncApplication
+import javax.inject.Inject
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.EncounterItem
-import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.databinding.FragmentVitalDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
 import org.smartregister.fhircore.anc.ui.details.adapter.AllergiesAdapter
 import org.smartregister.fhircore.anc.ui.details.adapter.ConditionsAdapter
 import org.smartregister.fhircore.anc.ui.details.adapter.EncounterAdapter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.createFactory
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class VitalSignsDetailsFragment : Fragment() {
@@ -71,10 +65,14 @@ class VitalSignsDetailsFragment : Fragment() {
 
     setupViews()
     ancDetailsViewModel.ancPatientRepository.domainMapperInUse = ancPatientItemMapper
-    ancDetailsViewModel.fetchEncounters(patientId).observe(viewLifecycleOwner, this::handleEncounters)
+    ancDetailsViewModel
+      .fetchEncounters(patientId)
+      .observe(viewLifecycleOwner, this::handleEncounters)
 
     binding.swipeContainer.setOnRefreshListener {
-      ancDetailsViewModel.fetchEncounters(patientId).observe(viewLifecycleOwner, this::handleEncounters)
+      ancDetailsViewModel
+        .fetchEncounters(patientId)
+        .observe(viewLifecycleOwner, this::handleEncounters)
     }
 
     binding.swipeContainer.setColorSchemeResources(

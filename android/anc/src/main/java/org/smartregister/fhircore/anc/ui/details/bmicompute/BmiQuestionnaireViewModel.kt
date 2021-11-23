@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.anc.ui.details.bmicompute
 
-import android.app.Application
 import android.content.Context
 import android.graphics.Color
 import android.text.SpannableString
@@ -25,6 +24,7 @@ import android.text.style.ForegroundColorSpan
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.R
@@ -33,18 +33,17 @@ import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
 import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
 import org.smartregister.fhircore.anc.util.computeBMIViaStandardUnits
 import org.smartregister.fhircore.engine.util.extension.find
-import javax.inject.Inject
 
 @HiltViewModel
-class BmiQuestionnaireViewModel @Inject constructor(
-  @ApplicationContext val context: Context,
-  val bmiPatientRepository: PatientRepository
-) : ViewModel() {
+class BmiQuestionnaireViewModel
+@Inject
+constructor(@ApplicationContext val context: Context, val bmiPatientRepository: PatientRepository) :
+  ViewModel() {
 
   @Inject lateinit var ancPatientItemMapper: AncPatientItemMapper
 
   init {
-      bmiPatientRepository.domainMapperInUse = ancPatientItemMapper
+    bmiPatientRepository.domainMapperInUse = ancPatientItemMapper
   }
 
   companion object {
@@ -180,8 +179,7 @@ class BmiQuestionnaireViewModel @Inject constructor(
   }
 
   fun getEndingIndexInCategories(bmiCategory: BmiCategory): Int {
-    return getStartingIndexInCategories(bmiCategory) +
-      context.getString(bmiCategory.value).length
+    return getStartingIndexInCategories(bmiCategory) + context.getString(bmiCategory.value).length
   }
 
   suspend fun saveComputedBmi(

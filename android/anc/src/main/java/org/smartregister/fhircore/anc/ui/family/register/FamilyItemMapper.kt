@@ -16,13 +16,12 @@
 
 package org.smartregister.fhircore.anc.ui.family.register
 
-import android.app.Application
 import android.content.Context
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
@@ -33,14 +32,14 @@ import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.isPregnant
 import org.smartregister.fhircore.engine.util.extension.overdue
-import javax.inject.Inject
-import javax.inject.Singleton
 
 data class Family(val head: Patient, val members: List<Patient>, val servicesDue: List<CarePlan>)
 
-class FamilyItemMapper @Inject constructor(
+class FamilyItemMapper
+@Inject
+constructor(
   @ApplicationContext val context: Context,
-  ) : DomainMapper<Family, FamilyItem> {
+) : DomainMapper<Family, FamilyItem> {
 
   override fun mapToDomainModel(dto: Family): FamilyItem {
     val head = dto.head

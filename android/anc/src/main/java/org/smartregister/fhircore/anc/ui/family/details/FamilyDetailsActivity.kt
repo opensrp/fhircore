@@ -21,10 +21,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import org.hl7.fhir.r4.model.Encounter
-import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.util.startFamilyMemberRegistration

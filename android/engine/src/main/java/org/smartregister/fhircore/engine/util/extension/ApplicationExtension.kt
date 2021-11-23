@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.app.Application
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
@@ -56,11 +55,7 @@ suspend fun FhirEngine.runOneTimeSync(
   )
 }
 
-fun <T> Context.loadResourceTemplate(
-  id: String,
-  clazz: Class<T>,
-  data: Map<String, String?>
-): T {
+fun <T> Context.loadResourceTemplate(id: String, clazz: Class<T>, data: Map<String, String?>): T {
   var json = assets.open(id).bufferedReader().use { it.readText() }
 
   data.entries.forEach { it.value?.let { v -> json = json.replace(it.key, v) } }
