@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -153,6 +154,17 @@ fun LoginPage(
       Spacer(modifier = modifier.height(20.dp))
       Column(modifier = modifier.padding(4.dp), verticalArrangement = Arrangement.Center) {
         // TODO Add configurable logo. Images to be downloaded from server
+        if (viewConfiguration.applicationName == stringResource(R.string.eCBIS_app_name)) {
+          Image(
+            painter = painterResource(id = R.drawable.ic_liberia),
+            contentDescription = stringResource(id = R.string.app_logo),
+            modifier =
+              modifier
+                .align(Alignment.CenterHorizontally)
+                .requiredHeight(120.dp)
+                .requiredWidth(140.dp),
+          )
+        }
         Text(
           color = if (viewConfiguration.darkMode) Color.White else LoginDarkColor,
           text = viewConfiguration.applicationName,
