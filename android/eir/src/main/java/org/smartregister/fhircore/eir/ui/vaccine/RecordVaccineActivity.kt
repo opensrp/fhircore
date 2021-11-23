@@ -30,6 +30,7 @@ import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
+import org.smartregister.fhircore.eir.ui.patient.details.ordinalOf
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
@@ -107,7 +108,8 @@ class RecordVaccineActivity : QuestionnaireActivity() {
     val title =
       getString(
         R.string.ordinal_vaccine_dose_recorded,
-        immunization.vaccineCode.codingFirstRep.code
+        immunization.vaccineCode.codingFirstRep.code,
+        currentDose.ordinalOf()
       )
     val message =
       when (currentDose) {
