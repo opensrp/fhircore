@@ -26,6 +26,7 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
 import java.text.SimpleDateFormat
+import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Bundle
@@ -53,6 +54,7 @@ import org.smartregister.fhircore.eir.ui.patient.details.nextDueDateFmt
 import org.smartregister.fhircore.eir.util.RECORD_VACCINE_FORM
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 
 @ExperimentalCoroutinesApi
 class RecordVaccineActivityTest : ActivityRobolectricTest() {
@@ -90,6 +92,28 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testHandleQuestionnaireResponseWithDose2ShouldShowAlert() = runBlockingTest {
+    val spyViewModel =
+      spyk((recordVaccineActivity.questionnaireViewModel as RecordVaccineViewModel))
+    recordVaccineActivity.questionnaireViewModel = spyViewModel
+
+    coEvery { spyViewModel.performExtraction(any(), any(), any()) } returns
+      Bundle().apply { addEntry().apply { resource = getImmunization() } }
+
+    coEvery { spyViewModel.loadLatestVaccine(any()) } returns PatientVaccineSummary(2, "vaccine")
+
+    recordVaccineActivity.handleQuestionnaireResponse(mockk())
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    Assert.assertNotNull(dialog)
+    Assert.assertEquals(
+      getString(R.string.already_fully_vaccinated),
+      dialog.view.findViewById<TextView>(R.id.tv_alert_message)!!.text
+    )
+  }
+
+  @Test
   fun testVerifyRecordedVaccineSavedDialogProperty() = runBlockingTest {
     val spyViewModel =
       spyk((recordVaccineActivity.questionnaireViewModel as RecordVaccineViewModel))
@@ -110,6 +134,20 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
       "Second vaccine dose should be same as first",
       dialog.view.findViewById<TextView>(R.id.tv_alert_message)!!.text
     )
+  }
+
+  @Test
+  fun testSanitizeExtractedDataWithFirstDoseShouldSetRelevantProperties() {
+    val immunization = Immunization()
+    recordVaccineActivity.sanitizeExtractedData(immunization, null)
+
+    Assert.assertEquals(1, immunization.protocolAppliedFirstRep.doseNumberPositiveIntType.value)
+    Assert.assertEquals(
+      Date().asDdMmmYyyy(),
+      immunization.occurrenceDateTimeType.value.asDdMmmYyyy()
+    )
+    Assert.assertEquals(Immunization.ImmunizationStatus.COMPLETED, immunization.status)
+    Assert.assertEquals("Patient/test_patient_id", immunization.patient.reference)
   }
 
   @Test

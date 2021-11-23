@@ -88,10 +88,7 @@ class RecordVaccineActivity : QuestionnaireActivity() {
     }
   }
 
-  private fun sanitizeExtractedData(
-    immunization: Immunization,
-    lastVaccine: PatientVaccineSummary?
-  ) {
+  fun sanitizeExtractedData(immunization: Immunization, lastVaccine: PatientVaccineSummary?) {
     // get from previous vaccine plus one OR as first dose
     var currentDose = lastVaccine?.doseNumber?.plus(1) ?: 1
 
