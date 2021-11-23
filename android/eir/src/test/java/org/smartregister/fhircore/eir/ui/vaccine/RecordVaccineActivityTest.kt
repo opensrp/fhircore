@@ -17,18 +17,16 @@
 package org.smartregister.fhircore.eir.ui.vaccine
 
 import android.app.Activity
-import android.content.DialogInterface
 import android.content.Intent
+import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import java.text.SimpleDateFormat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -51,12 +49,12 @@ import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
 import org.smartregister.fhircore.eir.shadow.TestUtils
+import org.smartregister.fhircore.eir.ui.patient.details.nextDueDateFmt
 import org.smartregister.fhircore.eir.util.RECORD_VACCINE_FORM
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.DateUtils
 
 @ExperimentalCoroutinesApi
-@Ignore("Fix tests failing when run with others")
 class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   private lateinit var recordVaccineActivity: RecordVaccineActivity
@@ -73,6 +71,8 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
     coEvery { fhirEngine.search<Immunization>(any()) } returns listOf()
     coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns Questionnaire()
+    coEvery { fhirEngine.load(Immunization::class.java, any()) } returns Immunization()
+    coEvery { fhirEngine.save(any()) } answers {}
     ReflectionHelpers.setField(
       ApplicationProvider.getApplicationContext(),
       "fhirEngine\$delegate",
@@ -106,72 +106,60 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
     Assert.assertNotNull(dialog)
     Assert.assertEquals("Initially received vaccine", dialog.title)
-    Assert.assertEquals("Second vaccine dose should be same as first", dialog.message)
+    Assert.assertEquals(
+      "Second vaccine dose should be same as first",
+      dialog.view.findViewById<TextView>(R.id.tv_alert_message)!!.text
+    )
   }
 
   @Test
-  fun testShowVaccineRecordDialogVerifyAllOptions() {
-    runBlocking {
-      var vaccineSummary = patientVaccineSummaryOf(1, "vaccineA")
+  @Ignore("Still not working with progress alert; progress alert is not getting dismissed")
+  fun testShowVaccineRecordDialogShouldShowNextDue() {
+    val spyViewModel =
+      spyk((recordVaccineActivity.questionnaireViewModel as RecordVaccineViewModel))
+    recordVaccineActivity.questionnaireViewModel = spyViewModel
 
-      val immunization = getImmunization()
+    coEvery { spyViewModel.performExtraction(any(), any(), any()) } returns
+      Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
-      val vaccineDate = immunization.occurrenceDateTimeType.toHumanDisplay()
-      val nextVaccineDate =
-        DateUtils.addDays(vaccineDate, 28, dateTimeFormat = "MMM d, yyyy h:mm:ss a")
-      val bundle = Bundle().apply { addEntry().apply { resource = immunization } }
+    coEvery { spyViewModel.loadLatestVaccine(any()) } returns PatientVaccineSummary(1, "vaccineA")
 
-      ReflectionHelpers.callInstanceMethod<Any>(
-        recordVaccineActivity,
-        "showVaccineRecordDialog",
-        ReflectionHelpers.ClassParameter.from(Bundle::class.java, bundle),
-        ReflectionHelpers.ClassParameter.from(PatientVaccineSummary::class.java, vaccineSummary)
-      )
+    val immunization = getImmunization()
 
-      val shadowAlertDialog = ShadowAlertDialog.getLatestAlertDialog()
-      var dialog = shadowOf(shadowAlertDialog)
+    recordVaccineActivity.handleQuestionnaireResponse(mockk())
 
-      Assert.assertNotNull(dialog)
-      Assert.assertEquals("vaccineA 1st dose recorded", dialog.title)
-      Assert.assertEquals("Dose 2 due $nextVaccineDate", dialog.message)
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
 
-      shadowAlertDialog.getButton(DialogInterface.BUTTON_NEGATIVE).performClick()
-      immunization.protocolApplied[0].doseNumber = PositiveIntType(2)
-
-      ReflectionHelpers.callInstanceMethod<Any>(
-        recordVaccineActivity,
-        "showVaccineRecordDialog",
-        ReflectionHelpers.ClassParameter.from(Bundle::class.java, bundle),
-        ReflectionHelpers.ClassParameter.from(PatientVaccineSummary::class.java, vaccineSummary)
-      )
-      dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
-
-      Assert.assertNotNull(dialog)
-      Assert.assertEquals("vaccineA 1st dose recorded", dialog.title)
-      Assert.assertEquals("Fully vaccinated", dialog.message)
-
-      immunization.vaccineCode.coding[0].code = "another_dose"
-      vaccineSummary = patientVaccineSummaryOf(1, "someother_vaccine")
-
-      ReflectionHelpers.callInstanceMethod<Any>(
-        recordVaccineActivity,
-        "showVaccineRecordDialog",
-        ReflectionHelpers.ClassParameter.from(Bundle::class.java, bundle),
-        ReflectionHelpers.ClassParameter.from(PatientVaccineSummary::class.java, vaccineSummary)
-      )
-      dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
-
-      Assert.assertNotNull(dialog)
-      Assert.assertEquals("Initially received someother_vaccine", dialog.title)
-      Assert.assertEquals("Second vaccine dose should be same as first", dialog.message)
-    }
+    Assert.assertNotNull(dialog)
+    Assert.assertEquals("vaccineA 1st dose recorded", dialog.title)
+    Assert.assertEquals(
+      "Dose 2 due ${immunization.nextDueDateFmt()}",
+      dialog.view.findViewById<TextView>(R.id.tv_alert_message)!!.text
+    )
   }
 
-  private fun patientVaccineSummaryOf(
-    doseNumber: Int = 1,
-    initialDose: String,
-  ): PatientVaccineSummary {
-    return PatientVaccineSummary(doseNumber, initialDose)
+  @Test
+  @Ignore("Still not working with progress alert; progress alert is not getting dismissed")
+  fun testShowVaccineRecordDialogShouldShowFullyVaccinated() {
+    val spyViewModel =
+      spyk((recordVaccineActivity.questionnaireViewModel as RecordVaccineViewModel))
+    recordVaccineActivity.questionnaireViewModel = spyViewModel
+
+    coEvery { spyViewModel.performExtraction(any(), any(), any()) } returns
+      Bundle().apply { addEntry().apply { resource = getImmunization() } }
+
+    coEvery { spyViewModel.loadLatestVaccine(any()) } returns PatientVaccineSummary(2, "vaccineA")
+
+    recordVaccineActivity.handleQuestionnaireResponse(mockk())
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    Assert.assertNotNull(dialog)
+    Assert.assertEquals("vaccineA 1st dose recorded", dialog.title)
+    Assert.assertEquals(
+      "Fully vaccinated",
+      dialog.view.findViewById<TextView>(R.id.tv_alert_message)!!.text
+    )
   }
 
   private fun getImmunization(): Immunization {
@@ -182,15 +170,9 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
           this.text = "vaccineA"
           this.coding = listOf(Coding("", "vaccineA", "vaccineA"))
         }
-      occurrence =
-        mockk<DateTimeType>().apply { every { toHumanDisplay() } returns "Sep 16, 2021 6:13:22 PM" }
+      occurrence = DateTimeType.now()
 
-      protocolApplied =
-        listOf(
-          Immunization.ImmunizationProtocolAppliedComponent().apply {
-            doseNumber = PositiveIntType(1)
-          }
-        )
+      addProtocolApplied().doseNumber = PositiveIntType(1)
     }
   }
 

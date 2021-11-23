@@ -68,7 +68,7 @@ fun Immunization.getDoseLabel(context: Context, fullyImmunized: Boolean): Pair<S
   } else {
     val isOverDue = this.isOverdue()
 
-    val dueDate = this.dueDateFmt()
+    val dueDate = this.nextDueDateFmt()
     val nextDoseNumber = doseNumber + 1
     val doseLabel =
       if (!isOverDue)
@@ -137,7 +137,7 @@ fun Immunization.isOverdue() =
   if (!this.occurrenceDateTimeType.hasValue()) false
   else DateUtils.hasPastDays(this.occurrenceDateTimeType, OVERDUE_GAP_DAYS)
 
-fun Immunization.dueDateFmt() =
+fun Immunization.nextDueDateFmt() =
   if (!this.occurrenceDateTimeType.hasValue()) ""
   else this.occurrenceDateTimeType.plusDaysAsString(VACCINE_GAP_DAYS)
 

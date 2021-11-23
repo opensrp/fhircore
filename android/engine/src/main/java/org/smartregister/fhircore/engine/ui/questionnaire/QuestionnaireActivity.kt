@@ -247,7 +247,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   private lateinit var saveProcessingAlertDialog: AlertDialog
 
   fun dismissSaveProcessing() {
-    saveProcessingAlertDialog.dismiss()
+    if (::saveProcessingAlertDialog.isInitialized && saveProcessingAlertDialog.isShowing)
+      saveProcessingAlertDialog.dismiss()
   }
 
   open fun handleQuestionnaireSubmit() {
