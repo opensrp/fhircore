@@ -255,13 +255,7 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
           CodeableConcept(Coding("system", "vaccine_code", "code display")).setText("Astrazeneca")
         protocolApplied =
           listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(1)))
-        occurrence =
-          mockk<DateTimeType>().apply {
-            every { toHumanDisplay() } returns "Sep 16, 2021 6:13:22 PM"
-            every { copy() } returns this
-            every { add(any(), any()) } returns Unit
-            every { after(any()) } returns true
-          }
+        occurrence = DateTimeType.now().setDay(16).setMonth(8).setYear(2021)
       }
 
     val immunization2 =
@@ -270,28 +264,16 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
           CodeableConcept(Coding("system", "vaccine_code", "code display")).setText("Astrazeneca")
         protocolApplied =
           listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(2)))
-        occurrence =
-          mockk<DateTimeType>().apply {
-            every { toHumanDisplay() } returns "Sep 16, 2021 6:13:22 PM"
-            every { copy() } returns this
-            every { add(any(), any()) } returns Unit
-            every { after(any()) } returns true
-          }
+        occurrence = DateTimeType.now().setDay(16).setMonth(8).setYear(2021)
       }
 
     val immunization3 =
       spyk<Immunization>().apply {
         vaccineCode =
-          CodeableConcept(Coding("system", "vaccine_code", "code display")).setText("Pfizer")
+          CodeableConcept(Coding("system", "vaccine_code2", "code display")).setText("Pfizer")
         protocolApplied =
           listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(2)))
-        occurrence =
-          mockk<DateTimeType>().apply {
-            every { toHumanDisplay() } returns "Sep 16, 2021 6:13:22 PM"
-            every { copy() } returns this
-            every { add(any(), any()) } returns Unit
-            every { after(any()) } returns true
-          }
+        occurrence = DateTimeType.now().setDay(16).setMonth(8).setYear(2021)
       }
     return listOf(immunization1, immunization2, immunization3)
   }

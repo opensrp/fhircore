@@ -49,8 +49,8 @@ class AlertDialogueTest : ActivityRobolectricTest() {
     AlertDialogue.showAlert(
       context = context,
       alertIntent = AlertIntent.ERROR,
-      message = R.string.questionnaire_alert_invalid_message,
-      title = R.string.questionnaire_alert_invalid_title,
+      message = getString(R.string.questionnaire_alert_invalid_message),
+      title = getString(R.string.questionnaire_alert_invalid_title),
       confirmButtonText = R.string.questionnaire_alert_confirm_button_title,
       confirmButtonListener = { confirmCalled.add(true) },
       neutralButtonText = R.string.questionnaire_alert_ack_button_title,
