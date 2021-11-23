@@ -21,12 +21,13 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
@@ -56,13 +57,33 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     patientRepository = mockk()
-    val immunization = spyk<Immunization>()
-    every { immunization.protocolApplied } returns
-      listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(1)))
-    every { immunization.vaccineCode.coding } returns listOf(Coding("sys", "code", "disp"))
+    val immunization =
+      Immunization().apply {
+        addProtocolApplied().doseNumber = PositiveIntType(1)
+        vaccineCode.addCoding(Coding("sys", "code", "disp"))
+        occurrence = DateTimeType.now()
+      }
     coEvery { patientRepository.getPatientImmunizations(any()) } returns listOf(immunization)
     recordVaccineViewModel =
       spyk(RecordVaccineViewModel(ApplicationProvider.getApplicationContext(), patientRepository))
+  }
+
+  @Test
+  fun testGetVaccineSummaryShouldReturnValidData() = runBlockingTest {
+    val patientVaccineSummary = recordVaccineViewModel.loadLatestVaccine("1")
+
+    Assert.assertNotNull(patientVaccineSummary)
+    Assert.assertEquals(1, patientVaccineSummary?.doseNumber)
+    Assert.assertEquals("code", patientVaccineSummary?.initialDose)
+  }
+
+  @Test
+  fun testGetVaccineSummaryShouldReturnNullWithMissingOccurence() = runBlockingTest {
+    coEvery { patientRepository.getPatientImmunizations(any()) } returns listOf(Immunization())
+
+    val patientVaccineSummary = recordVaccineViewModel.loadLatestVaccine("1")
+
+    Assert.assertNull(patientVaccineSummary)
   }
 
   @Test
