@@ -35,17 +35,16 @@ import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.details.adapter.CarePlanAdapter
 import org.smartregister.fhircore.anc.ui.details.adapter.UpcomingServicesAdapter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import javax.inject.Inject
 
 class CarePlanDetailsFragment : Fragment() {
 
   private lateinit var patientId: String
-  private lateinit var fhirEngine: FhirEngine
-
   lateinit var ancDetailsViewModel: CarePlanDetailsViewModel
-
-  private lateinit var ancPatientRepository: PatientRepository
-
+  @Inject lateinit var ancPatientRepository: PatientRepository
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private val carePlanAdapter = CarePlanAdapter()
   private val upcomingServicesAdapter = UpcomingServicesAdapter()
 
@@ -64,17 +63,12 @@ class CarePlanDetailsFragment : Fragment() {
     super.onViewCreated(view, savedInstanceState)
     patientId = arguments?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
-    fhirEngine = AncApplication.getContext().fhirEngine
-
     setupViews()
-
-    ancPatientRepository =
-      PatientRepository((requireActivity().application as AncApplication).fhirEngine, AncItemMapper)
 
     ancDetailsViewModel =
       ViewModelProvider(
         viewModelStore,
-        CarePlanDetailsViewModel(ancPatientRepository, patientId = patientId).createFactory()
+        CarePlanDetailsViewModel(ancPatientRepository, dispatcherProvider, patientId = patientId).createFactory()
       )[CarePlanDetailsViewModel::class.java]
 
     ancDetailsViewModel.fetchCarePlan().observe(viewLifecycleOwner, this::handleCarePlan)

@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.data.patient
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
@@ -65,18 +66,22 @@ import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
+import javax.inject.Inject
 
 class PatientRepositoryTest : RobolectricTest() {
   private lateinit var repository: PatientRepository
   private lateinit var fhirEngine: FhirEngine
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   @Before
   fun setUp() {
     fhirEngine = spyk()
-    repository = spyk(PatientRepository(fhirEngine, AncPatientItemMapper))
+    repository = spyk(PatientRepository(ApplicationProvider.getApplicationContext(), fhirEngine, AncPatientItemMapper, dispatcherProvider))
   }
 
   @Test

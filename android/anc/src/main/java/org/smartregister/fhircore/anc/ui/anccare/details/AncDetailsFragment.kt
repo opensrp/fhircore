@@ -22,6 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.smartregister.fhircore.anc.AncApplication
@@ -35,14 +36,16 @@ import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import timber.log.Timber
+import javax.inject.Inject
 
 class AncDetailsFragment : Fragment() {
 
   lateinit var patientId: String
 
-  lateinit var ancDetailsViewModel: AncDetailsViewModel
+  val ancDetailsViewModel by viewModels<AncDetailsViewModel>()
 
-  private lateinit var patientRepository: PatientRepository
+  @Inject lateinit var patientRepository: PatientRepository
+  @Inject lateinit var ancPatientItemMapper: AncPatientItemMapper
 
   private var carePlanAdapter = CarePlanAdapter()
 
@@ -67,14 +70,11 @@ class AncDetailsFragment : Fragment() {
 
     setupViews()
 
-    patientRepository = getAncPatientRepository()
+    // TODO: We might have a crash if patientRepository is used here
+    //patientRepository = getAncPatientRepository()
 
-    ancDetailsViewModel =
-      ViewModelProvider(
-        viewModelStore,
-        AncDetailsViewModel(patientRepository, patientId = patientId).createFactory()
-      )[AncDetailsViewModel::class.java]
-
+    patientRepository.domainMapperInUse = ancPatientItemMapper
+    ancDetailsViewModel.patientId = patientId
     Timber.d(patientId)
 
     ancDetailsViewModel.fetchCarePlan().observe(viewLifecycleOwner, this::handleCarePlan)
@@ -176,12 +176,5 @@ class AncDetailsFragment : Fragment() {
   }
   private fun populateLastSeenList(upcomingServiceItem: List<EncounterItem>) {
     lastSeen.submitList(upcomingServiceItem)
-  }
-
-  fun getAncPatientRepository(): PatientRepository {
-    return PatientRepository(
-      (requireActivity().application as AncApplication).fhirEngine,
-      AncPatientItemMapper
-    )
   }
 }

@@ -37,6 +37,7 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.common.collect.Lists
+import dagger.hilt.android.AndroidEntryPoint
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
@@ -55,11 +56,12 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FileUtil
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class ReportHomeActivity : BaseMultiLanguageActivity() {
 
-  lateinit var fhirResourceDataSource: FhirResourceDataSource
-  private lateinit var fhirEngine: FhirEngine
+  @Inject lateinit var fhirResourceDataSource: FhirResourceDataSource
   lateinit var parser: IParser
   lateinit var fhirContext: FhirContext
   lateinit var libraryEvaluator: LibraryEvaluator
@@ -108,14 +110,10 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     measureEvaluator = MeasureEvaluator()
     fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
     parser = fhirContext.newJsonParser()
-    fhirResourceDataSource = FhirResourceDataSource.getInstance(AncApplication.getContext())
-    fhirEngine = AncApplication.getContext().fhirEngine
 
     val patientId =
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-    val repository = ReportRepository((application as AncApplication).fhirEngine, patientId)
-    val dispatcher: DispatcherProvider = DefaultDispatcherProvider
-    reportViewModel = ReportViewModel(repository, dispatcher)
+    reportViewModel.patientId = patientId
     reportViewModel.backPress.observe(
       this,
       {

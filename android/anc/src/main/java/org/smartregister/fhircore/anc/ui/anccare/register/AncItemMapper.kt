@@ -16,10 +16,12 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.register
 
+import android.app.Application
+import android.content.Context
 import com.google.android.fhir.logicalId
+import dagger.hilt.android.qualifiers.ApplicationContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
@@ -29,15 +31,18 @@ import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.overdue
+import javax.inject.Inject
 
 data class Anc(val patient: Patient, val head: Patient?, val carePlans: List<CarePlan>)
 
-object AncItemMapper : DomainMapper<Anc, PatientItem> {
+class AncItemMapper @Inject constructor(
+  @ApplicationContext val context: Context
+  ) : DomainMapper<Anc, PatientItem> {
 
   override fun mapToDomainModel(dto: Anc): PatientItem {
     val patient = dto.patient
     val name = patient.extractName()
-    val gender = patient.extractGender(AncApplication.getContext())?.first() ?: ""
+    val gender = patient.extractGender(context)?.first() ?: ""
     val age = patient.extractAge()
     var visitStatus = VisitStatus.PLANNED
 

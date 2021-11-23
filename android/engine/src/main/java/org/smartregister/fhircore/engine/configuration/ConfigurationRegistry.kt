@@ -139,6 +139,8 @@ class ConfigurationRegistry @Inject constructor(@ApplicationContext val context:
 
   fun workflowPointName(classification: String) = "$appId|$classification"
 
+  fun isAppIdInitialized() = this::appId.isInitialized
+
   companion object {
     private const val APP_WORKFLOW_CONFIG_FILE = "configurations/app/application_workflow.json"
     const val APP_CONFIG_FILE = "configurations/app/application_configurations.json"

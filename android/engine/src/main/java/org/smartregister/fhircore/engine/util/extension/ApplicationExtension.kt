@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Application
+import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
@@ -55,7 +56,7 @@ suspend fun FhirEngine.runOneTimeSync(
   )
 }
 
-fun <T> Application.loadResourceTemplate(
+fun <T> Context.loadResourceTemplate(
   id: String,
   clazz: Class<T>,
   data: Map<String, String?>

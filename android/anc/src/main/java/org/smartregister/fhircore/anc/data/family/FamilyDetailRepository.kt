@@ -32,10 +32,12 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 class FamilyDetailRepository
 @Inject
 constructor(
-  private val familyId: String,
-  private val fhirEngine: FhirEngine,
-  private val dispatcherProvider: DispatcherProvider
+  val fhirEngine: FhirEngine,
+  val familyItemMapper: FamilyItemMapper,
+  val dispatcherProvider: DispatcherProvider
 ) {
+
+  lateinit var familyId: String
 
   fun fetchDemographics(): LiveData<Patient> {
     val data = MutableLiveData<Patient>()
@@ -51,7 +53,7 @@ constructor(
       val members =
         fhirEngine
           .search<Patient> { filter(Patient.LINK) { this.value = "Patient/$familyId" } }
-          .map { FamilyItemMapper.toFamilyMemberItem(it) }
+          .map { familyItemMapper.toFamilyMemberItem(it) }
       data.postValue(members)
     }
     return data

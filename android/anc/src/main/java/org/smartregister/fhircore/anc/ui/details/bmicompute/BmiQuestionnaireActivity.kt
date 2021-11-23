@@ -29,11 +29,13 @@ import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils
 import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import javax.inject.Inject
 
 class BmiQuestionnaireActivity : QuestionnaireActivity() {
 
   lateinit var bmiQuestionnaireViewModel: BmiQuestionnaireViewModel
-  internal lateinit var patientBmiRepository: PatientRepository
+  @Inject lateinit var patientBmiRepository: PatientRepository
+  @Inject lateinit var ancPatientItemMapper: AncPatientItemMapper
   private var encounterID = QuestionnaireUtils.getUniqueId()
   private lateinit var saveBtn: Button
 
@@ -41,8 +43,7 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
     super.onCreate(savedInstanceState)
     saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
     saveBtn.text = getString(R.string.compute_bmi)
-    patientBmiRepository =
-      PatientRepository(AncApplication.getContext().fhirEngine, AncPatientItemMapper)
+    patientBmiRepository.domainMapperInUse = ancPatientItemMapper
     bmiQuestionnaireViewModel =
       BmiQuestionnaireViewModel.get(this, application as AncApplication, patientBmiRepository)
     encounterID = QuestionnaireUtils.getUniqueId()

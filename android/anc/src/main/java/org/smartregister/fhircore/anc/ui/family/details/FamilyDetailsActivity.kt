@@ -19,7 +19,7 @@ package org.smartregister.fhircore.anc.ui.family.details
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.AncApplication
@@ -31,9 +31,10 @@ import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
+@AndroidEntryPoint
 class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
-  @Inject lateinit var fhirEngine: FhirEngine
+  @Inject lateinit var familyDetailRepository: FamilyDetailRepository
 
   private lateinit var familyId: String
 
@@ -41,7 +42,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
     super.onCreate(savedInstanceState)
 
     familyId = intent.extras?.getString(QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-    val familyDetailRepository = FamilyDetailRepository(familyId, fhirEngine)
+    familyDetailRepository.familyId = familyId
     val viewModel =
       FamilyDetailViewModel.get(this, application as AncApplication, familyDetailRepository)
 

@@ -35,20 +35,22 @@ import org.smartregister.fhircore.anc.ui.details.adapter.AllergiesAdapter
 import org.smartregister.fhircore.anc.ui.details.adapter.ConditionsAdapter
 import org.smartregister.fhircore.anc.ui.details.adapter.EncounterAdapter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import javax.inject.Inject
 
 class VitalSignsDetailsFragment : Fragment() {
 
   private lateinit var patientId: String
-  private lateinit var fhirEngine: FhirEngine
-
   lateinit var ancDetailsViewModel: VitalSignsDetailsViewModel
-
   private val allergiesAdapter = AllergiesAdapter()
   private val conditionsAdapter = ConditionsAdapter()
   private val encounterAdapter = EncounterAdapter()
 
-  private lateinit var ancPatientRepository: PatientRepository
+  @Inject lateinit var ancPatientRepository: PatientRepository
+  @Inject lateinit var ancPatientItemMapper: AncPatientItemMapper
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   lateinit var binding: FragmentVitalDetailsBinding
 
@@ -66,20 +68,12 @@ class VitalSignsDetailsFragment : Fragment() {
     super.onViewCreated(view, savedInstanceState)
     patientId = arguments?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
-    fhirEngine = AncApplication.getContext().fhirEngine
-
     setupViews()
-
-    ancPatientRepository =
-      PatientRepository(
-        (requireActivity().application as AncApplication).fhirEngine,
-        AncPatientItemMapper
-      )
-
+    ancPatientRepository.domainMapperInUse = ancPatientItemMapper
     ancDetailsViewModel =
       ViewModelProvider(
         viewModelStore,
-        VitalSignsDetailsViewModel(ancPatientRepository, patientId = patientId).createFactory()
+        VitalSignsDetailsViewModel(ancPatientRepository, dispatcherProvider, patientId = patientId).createFactory()
       )[VitalSignsDetailsViewModel::class.java]
 
     ancDetailsViewModel.fetchEncounters().observe(viewLifecycleOwner, this::handleEncounters)

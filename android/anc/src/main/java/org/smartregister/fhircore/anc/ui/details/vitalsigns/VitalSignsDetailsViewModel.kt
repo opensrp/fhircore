@@ -28,7 +28,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class VitalSignsDetailsViewModel(
   val ancPatientRepository: PatientRepository,
-  var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
+  var dispatcher: DispatcherProvider,
   val patientId: String
 ) : ViewModel() {
 

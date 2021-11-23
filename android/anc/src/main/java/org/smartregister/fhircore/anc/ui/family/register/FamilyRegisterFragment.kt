@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.LazyPagingItems
+import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
@@ -32,8 +33,12 @@ import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
+
+  @Inject lateinit var familyRepository : FamilyRepository
 
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
@@ -81,11 +86,6 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
 
   @Suppress("UNCHECKED_CAST")
   override fun initializeRegisterDataViewModel(): RegisterDataViewModel<Family, FamilyItem> {
-    val familyRepository =
-      FamilyRepository(
-        (requireActivity().application as AncApplication).fhirEngine,
-        FamilyItemMapper
-      )
     return ViewModelProvider(
       viewModelStore,
       RegisterDataViewModel(

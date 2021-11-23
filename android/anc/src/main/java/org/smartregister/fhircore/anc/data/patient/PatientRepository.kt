@@ -16,10 +16,13 @@
 
 package org.smartregister.fhircore.anc.data.patient
 
+import android.app.Application
+import android.content.Context
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
@@ -46,6 +49,8 @@ import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.anccare.details.CarePlanItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.Anc
+import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
+import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.util.AncOverviewType
 import org.smartregister.fhircore.anc.util.RegisterType
 import org.smartregister.fhircore.anc.util.SearchFilter
@@ -70,20 +75,29 @@ import org.smartregister.fhircore.engine.util.extension.loadResourceTemplate
 import org.smartregister.fhircore.engine.util.extension.overdue
 import org.smartregister.fhircore.engine.util.extension.plusMonthsAsString
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
+import javax.inject.Inject
 
-class PatientRepository(
+class PatientRepository
+@Inject
+constructor(
+  @ApplicationContext val context: Context,
   override val fhirEngine: FhirEngine,
-  override val domainMapper: DomainMapper<Anc, PatientItem>,
-  private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+  override val domainMapper: AncItemMapper,
+  val dispatcherProvider: DispatcherProvider
 ) : RegisterRepository<Anc, PatientItem> {
 
   private val registerConfig =
-    AncApplication.getContext().loadRegisterConfig(RegisterType.ANC_REGISTER_ID)
+    context.loadRegisterConfig(RegisterType.ANC_REGISTER_ID)
 
   private val ancOverviewConfig =
-    AncApplication.getContext().loadRegisterConfigAnc(AncOverviewType.ANC_OVERVIEW_ID)
+    context.loadRegisterConfigAnc(AncOverviewType.ANC_OVERVIEW_ID)
 
   val resourceMapperExtended = ResourceMapperExtended(fhirEngine)
+
+  // PatientRepository is used with either AncItemMapper or AncPatientItemMapper
+  // This allows the specific class to change this from the default AncItemMapper
+  // TODO: Find a better way to do this eg. Hilt Module
+  var domainMapperInUse : DomainMapper<Anc, PatientItem> = domainMapper
 
   override suspend fun loadData(
     query: String,
@@ -116,7 +130,7 @@ class PatientRepository(
             .getOrNull()
 
         val carePlans = searchCarePlan(it.logicalId)
-        domainMapper.mapToDomainModel(Anc(it, head, carePlans))
+        domainMapperInUse.mapToDomainModel(Anc(it, head, carePlans))
       }
     }
   }
@@ -150,7 +164,7 @@ class PatientRepository(
             PatientItem(
               patientIdentifier = patient.logicalId,
               name = patientHead.extractName(),
-              gender = patientHead.extractGender(AncApplication.getContext()) ?: "",
+              gender = patientHead.extractGender(context) ?: "",
               age = patientHead.extractAge(),
               demographics = patientHead.extractAddress()
             )
@@ -160,7 +174,7 @@ class PatientRepository(
           PatientItem(
             patientIdentifier = patient.logicalId,
             name = patient.extractName(),
-            gender = patient.extractGender(AncApplication.getContext()) ?: "",
+            gender = patient.extractGender(context) ?: "",
             isPregnant = patient.isPregnant(),
             age = patient.extractAge()
           )
@@ -264,7 +278,7 @@ class PatientRepository(
     clazz: Class<T>,
     data: Map<String, String?> = emptyMap()
   ): T {
-    return AncApplication.getContext().loadResourceTemplate(id, clazz, data)
+    return context.loadResourceTemplate(id, clazz, data)
   }
 
   private fun buildConfigData(

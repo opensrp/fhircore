@@ -49,7 +49,9 @@ class LoginActivity :
       launchDialPad.observe(this@LoginActivity, { if (!it.isNullOrEmpty()) launchDialPad(it) })
     }
 
-    configureViews(configurationRegistry.retrieveConfiguration(AppConfigClassification.LOGIN))
+    if (configurationRegistry.isAppIdInitialized()) {
+      configureViews(configurationRegistry.retrieveConfiguration(AppConfigClassification.LOGIN))
+    }
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
   }

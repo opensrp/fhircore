@@ -23,11 +23,13 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.material.tabs.TabLayoutMediator
+import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
@@ -44,7 +46,9 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
   private lateinit var adapter: ViewPagerAdapter
@@ -52,12 +56,8 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
   private var isPregnant: Boolean = false
   private var isMale: Boolean = false
   private lateinit var loadProgress: AlertDialog
-  private lateinit var fhirEngine: FhirEngine
 
-  lateinit var ancDetailsViewModel: AncDetailsViewModel
-
-  private lateinit var patientRepository: PatientRepository
-
+  val ancDetailsViewModel by viewModels<AncDetailsViewModel>()
   private lateinit var activityAncDetailsBinding: ActivityNonAncDetailsBinding
 
   val details = arrayOf("CARE PLAN", "DETAILS")
@@ -69,18 +69,8 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
     setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
     loadProgress = showProgressAlert(this@PatientDetailsActivity, R.string.loading)
 
-    fhirEngine = AncApplication.getContext().fhirEngine
-
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-
-    patientRepository = PatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
-
-    ancDetailsViewModel =
-      ViewModelProvider(
-        this,
-        AncDetailsViewModel(patientRepository, patientId = patientId).createFactory()
-      )[AncDetailsViewModel::class.java]
-
+    ancDetailsViewModel.patientId = patientId
     activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
   }
 
