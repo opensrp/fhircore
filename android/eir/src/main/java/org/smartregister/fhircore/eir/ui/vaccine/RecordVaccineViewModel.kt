@@ -18,12 +18,7 @@ package org.smartregister.fhircore.eir.ui.vaccine
 
 import android.app.Application
 import android.content.Intent
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
-import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary

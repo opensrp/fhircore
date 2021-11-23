@@ -82,14 +82,15 @@ class RecordVaccineActivity : QuestionnaireActivity() {
 
           // method below triggers save success automatically
           questionnaireViewModel.saveBundleResources(bundle)
-        }
-        else dismissSaveProcessing()
-      }
-      else handleExtractionError(questionnaireResponse)
+        } else dismissSaveProcessing()
+      } else handleExtractionError(questionnaireResponse)
     }
   }
 
-  private fun sanitizeExtractedData(immunization: Immunization, lastVaccine: PatientVaccineSummary?){
+  private fun sanitizeExtractedData(
+    immunization: Immunization,
+    lastVaccine: PatientVaccineSummary?
+  ) {
     // get from previous vaccine plus one OR as first dose
     var currentDose = lastVaccine?.doseNumber?.plus(1) ?: 1
 
@@ -103,7 +104,11 @@ class RecordVaccineActivity : QuestionnaireActivity() {
     val nextVaccineDate = immunization.occurrenceDateTimeType.plusDaysAsString(28)
     val currentDose = immunization.protocolAppliedFirstRep.doseNumberPositiveIntType.value
 
-    val title = getString(R.string.ordinal_vaccine_dose_recorded, immunization.vaccineCode.codingFirstRep.code)
+    val title =
+      getString(
+        R.string.ordinal_vaccine_dose_recorded,
+        immunization.vaccineCode.codingFirstRep.code
+      )
     val message =
       when (currentDose) {
         2 -> resources.getString(R.string.fully_vaccinated)
@@ -150,9 +155,9 @@ class RecordVaccineActivity : QuestionnaireActivity() {
   private fun handleExtractionError(questionnaireResponse: QuestionnaireResponse) {
     Timber.e(
       "Immunization extraction failed for ${
-        fhirParser.encodeResourceToString(
-          questionnaireResponse
-        )
+      fhirParser.encodeResourceToString(
+        questionnaireResponse
+      )
       }"
     )
 

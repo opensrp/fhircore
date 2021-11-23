@@ -17,10 +17,6 @@
 package org.smartregister.fhircore.eir.ui.patient.register
 
 import com.google.android.fhir.logicalId
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.EirApplication
@@ -59,10 +55,9 @@ object PatientItemMapper : DomainMapper<Pair<Patient, List<Immunization>>, Patie
     val computedStatus =
       if (this.size >= 2) VaccineStatus.VACCINATED
       else if (this.size == 1 && this[0].isOverdue()) VaccineStatus.OVERDUE
-      else if (this.size == 1) VaccineStatus.PARTIAL
-      else VaccineStatus.DUE
+      else if (this.size == 1) VaccineStatus.PARTIAL else VaccineStatus.DUE
 
-    val date = if(this.isNullOrEmpty()) "" else this[0].dueDateFmt()
+    val date = if (this.isNullOrEmpty()) "" else this[0].dueDateFmt()
     return PatientVaccineStatus(status = computedStatus, date = date)
   }
 }

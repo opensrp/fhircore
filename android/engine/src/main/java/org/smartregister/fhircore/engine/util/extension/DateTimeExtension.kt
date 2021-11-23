@@ -16,13 +16,13 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import org.hl7.fhir.r4.model.DateTimeType
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 
 val SDF_DD_MMM_YYYY = SimpleDateFormat("dd-MMM-yyyy")
@@ -59,5 +59,5 @@ fun DateTimeType.plusDaysAsString(days: Int): String {
 }
 
 fun DateTimeType.toDisplay(): String {
-  return value?.asDdMmmYyyy()?:""
+  return value?.asDdMmmYyyy() ?: ""
 }

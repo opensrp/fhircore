@@ -89,11 +89,7 @@ object AlertDialogue {
     )
   }
 
-  fun showErrorAlert(
-    context: Activity,
-    message: String,
-    title: String? = null
-  ): AlertDialog {
+  fun showErrorAlert(context: Activity, message: String, title: String? = null): AlertDialog {
     return showAlert(
       context = context,
       alertIntent = AlertIntent.ERROR,

@@ -20,14 +20,11 @@ import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
 import io.mockk.spyk
 import java.text.SimpleDateFormat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -97,7 +94,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
     val spyViewModel =
       spyk((recordVaccineActivity.questionnaireViewModel as RecordVaccineViewModel))
     recordVaccineActivity.questionnaireViewModel = spyViewModel
-    
+
     coEvery { spyViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
