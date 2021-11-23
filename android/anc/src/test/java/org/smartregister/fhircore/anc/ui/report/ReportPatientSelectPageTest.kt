@@ -36,6 +36,7 @@ import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.ui.anccare.register.components.AncRow
 
 @ExperimentalCoroutinesApi
 class ReportPatientSelectPageTest : RobolectricTest() {
@@ -45,8 +46,9 @@ class ReportPatientSelectPageTest : RobolectricTest() {
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
   private val patientSelectionType = MutableLiveData("")
   private val testMeasureReportItem = MutableLiveData(ReportItem(title = "Test Report Title"))
-  private val selectionPatient = MutableLiveData(PatientItem(name = "Test Patient Name"))
+  private val selectedPatient = MutableLiveData(PatientItem(name = "Test Patient Name"))
   private val searchTextState = mutableStateOf(TextFieldValue(""))
+
   private val listenerObjectSpy =
     spyk(
       object {
@@ -69,7 +71,7 @@ class ReportPatientSelectPageTest : RobolectricTest() {
         every { startDate } returns MutableLiveData("")
         every { endDate } returns MutableLiveData("")
         every { patientSelectionType } returns this@ReportPatientSelectPageTest.patientSelectionType
-        every { selectedPatientItem } returns this@ReportPatientSelectPageTest.selectionPatient
+        every { selectedPatientItem } returns this@ReportPatientSelectPageTest.selectedPatient
         every { searchTextState } returns this@ReportPatientSelectPageTest.searchTextState
         every { registerDataViewModel } returns
           mockk {
@@ -95,5 +97,19 @@ class ReportPatientSelectPageTest : RobolectricTest() {
   fun testReportSelectPatientSearchView() {
     composeRule.setContent { SearchView(searchTextState, viewModel = viewModel) }
     composeRule.onNodeWithTag(REPORT_SEARCH_PATIENT).assertExists()
+  }
+
+  @Test
+  fun testPatientListItem() {
+    val expectedPatient = selectedPatient.value ?: PatientItem(name = "Test SelectPatient")
+    composeRule.setContent {
+      AncRow(
+        patientItem = expectedPatient,
+        clickListener = { _, _ -> },
+        showAncVisitButton = true,
+        displaySelectContentOnly = true
+      )
+    }
+    composeRule.onNodeWithTag(PATIENT_ANC_VISIT).assertExists()
   }
 }
