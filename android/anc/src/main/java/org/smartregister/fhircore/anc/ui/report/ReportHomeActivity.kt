@@ -466,7 +466,9 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   ) : CalendarConstraints.DateValidator {
     constructor(parcel: Parcel) : this(parcel.readLong(), parcel.readLong(), parcel.readLong())
     override fun writeToParcel(dest: Parcel?, flags: Int) {}
-    override fun describeContents(): Int { TODO("nothing to implement") }
+    override fun describeContents(): Int {
+      TODO("nothing to implement")
+    }
     override fun isValid(date: Long): Boolean {
       return if (forStartDateOnly == 1L) maxDate >= date else minDate <= date
     }

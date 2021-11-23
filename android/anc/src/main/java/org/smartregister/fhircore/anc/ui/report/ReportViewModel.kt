@@ -20,7 +20,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.core.util.Pair
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -82,7 +81,7 @@ class ReportViewModel(
 
   var searchTextState = mutableStateOf(TextFieldValue(""))
 
-  private val _filterValue = MutableLiveData<kotlin.Pair<RegisterFilterType, Any?>>()
+  private val _filterValue = MutableLiveData<Pair<RegisterFilterType, Any?>>()
   val filterValue
     get() = _filterValue
 
@@ -196,25 +195,6 @@ class ReportViewModel(
 
   fun onGenerateReportPress() {
     reportState.currentScreen = ReportScreen.RESULT
-  }
-
-  fun onDateSelected(selection: Pair<Long, Long>?) {
-    showDatePicker.value = false
-    if (selection == null) {
-      _isReadyToGenerateReport.value = false
-      return
-    }
-    val startDate = Date().apply { time = selection.first }
-    val endDate = Date().apply { time = selection.second }
-    val formattedStartDate =
-      SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(startDate)
-    val formattedEndDate =
-      SimpleDateFormat(simpleDateFormatPattern, Locale.getDefault()).format(endDate)
-
-    _startDate.value = formattedStartDate
-    _endDate.value = formattedEndDate
-    _isReadyToGenerateReport.value = true
-    reportState.currentScreen = ReportScreen.FILTER
   }
 
   fun onDatePicked(selection: Long) {
