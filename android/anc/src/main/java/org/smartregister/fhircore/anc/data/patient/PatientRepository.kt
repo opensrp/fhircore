@@ -164,7 +164,8 @@ class PatientRepository(
             gender = patient.extractGender(AncApplication.getContext()) ?: "",
             isPregnant = patient.isPregnant(),
             age = patient.extractAge(),
-            familyName = patient.extractFamilyName()
+            familyName = patient.extractFamilyName(),
+            demographics = patient.extractAddress()
           )
         ancPatientDetailItem = PatientDetailItem(ancPatientItem, ancPatientItemHead)
       }

@@ -94,4 +94,5 @@
     <string name="change">Change</string>
     <string name="select_patient">SELECT PATIENT</string>
     <string name="search_patient_hint">Search for a patient name</string>
+    <string name="bullet_character">\u00b7</string>
 </resources>
