@@ -25,6 +25,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.EncounterItem
@@ -40,6 +41,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class VitalSignsDetailsFragment : Fragment() {
 
   private lateinit var patientId: String

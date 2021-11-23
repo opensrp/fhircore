@@ -25,6 +25,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.AncOverviewItem
@@ -38,6 +39,7 @@ import org.smartregister.fhircore.engine.util.extension.createFactory
 import timber.log.Timber
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class AncDetailsFragment : Fragment() {
 
   lateinit var patientId: String
