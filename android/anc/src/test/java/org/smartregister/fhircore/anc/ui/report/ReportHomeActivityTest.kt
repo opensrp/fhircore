@@ -293,4 +293,16 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   fun tearDown() {
     unmockkObject(FileUtil)
   }
+
+  @Test
+  fun testShowDatePicker() {
+    coEvery { reportViewModel.showDatePicker.value } returns true
+    reportHomeActivitySpy.showDatePicker()
+    Assert.assertEquals(true, reportViewModel.showDatePicker.value)
+  }
+
+  @Test
+  fun testLimitRange() {
+    Assert.assertNotNull(reportHomeActivitySpy.limitRange(1L, 2L, 3L))
+  }
 }
