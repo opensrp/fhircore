@@ -46,7 +46,7 @@ object DateUtils {
   fun hasPastDays(initialDate: DateTimeType, days: Int = 0): Boolean {
     val copy = initialDate.copy()
     copy.add(Calendar.DATE, days)
-    return copy.after(DateTimeType.now())
+    return copy.before(DateTimeType.now())
   }
 
   fun Date.toHumanDisplay(): String =
