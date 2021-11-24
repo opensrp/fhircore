@@ -90,7 +90,8 @@ class ReportViewModel(
   val isReadyToGenerateReport: LiveData<Boolean>
     get() = _isReadyToGenerateReport
 
-  val resultForIndividual: MutableLiveData<ResultItem> = MutableLiveData(ResultItem(status = "True", isMatchedIndicator = true))
+  val resultForIndividual: MutableLiveData<ResultItem> =
+    MutableLiveData(ResultItem(status = "True", isMatchedIndicator = true))
 
   var reportState: ReportState = ReportState()
 

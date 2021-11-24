@@ -76,7 +76,11 @@ fun ReportResultPreview() {
     isAllPatientSelection = false,
     selectedPatient =
       PatientItem(name = "Test Selected Patient", demographics = "Test Select, F, 28"),
-    ResultItem(status = "True", description = "Testing Preview text")
+    ResultItem(
+      status = "True",
+      isMatchedIndicator = true,
+      description = "Jacky Got her first ANC contact"
+    )
   )
 }
 
