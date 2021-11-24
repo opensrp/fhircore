@@ -109,12 +109,22 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
     listOf(
       SideMenuOption(
         itemId = R.id.menu_item_families,
-        titleResource = R.string.families,
+        titleResource = R.string.households,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
       ),
       SideMenuOption(
         itemId = R.id.menu_item_anc_clients,
-        titleResource = R.string.anc_clients,
+        titleResource = R.string.pregnant_clients,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
+      ),
+      SideMenuOption(
+        itemId = R.id.menu_item_post_natal_clients,
+        titleResource = R.string.post_natal_clients,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
+      ),
+      SideMenuOption(
+        itemId = R.id.menu_item_child_clients,
+        titleResource = R.string.child_clients,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
       )
     )
