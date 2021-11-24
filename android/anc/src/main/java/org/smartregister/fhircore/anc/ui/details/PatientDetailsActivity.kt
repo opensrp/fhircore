@@ -162,11 +162,11 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       val patientAddress =
         if (this.patientDetailsHead.demographics.isNotBlank()) this.patientDetailsHead.demographics
         else this.patientDetails.demographics
-      val patientId =
+      val patientIdText =
         listOf(patientAddress, "ID: " + this.patientDetails.patientIdentifier)
-          .joinToString(separator = " " + getString(R.string.bullet_character))
+          .joinToString(separator = " " + getString(R.string.bullet_character) + " ")
       activityAncDetailsBinding.txtViewPatientDetails.text = patientDetails
-      activityAncDetailsBinding.txtViewPatientId.text = patientId
+      activityAncDetailsBinding.txtViewPatientId.text = patientIdText
       isMale = this.patientDetails.gender == getString(R.string.male)
       isPregnant = this.patientDetails.isPregnant
 
