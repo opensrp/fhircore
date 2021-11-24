@@ -111,9 +111,9 @@ fun Patient.atRisk() =
 
 fun Patient.getLastSeen(immunizations: List<Immunization>): String {
   return immunizations
-    .maxByOrNull { it.protocolApplied.first().doseNumberPositiveIntType.value }
+    .maxByOrNull { it.protocolAppliedFirstRep.doseNumberPositiveIntType.value }
     ?.occurrenceDateTimeType
-    ?.toHumanDisplay()
+    ?.toDisplay()
     ?: this.meta?.lastUpdated.makeItReadable()
 }
 

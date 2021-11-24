@@ -18,12 +18,7 @@ package org.smartregister.fhircore.eir.ui.vaccine
 
 import android.app.Application
 import android.content.Intent
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
-import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
@@ -38,21 +33,19 @@ class RecordVaccineViewModel(
   val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) : QuestionnaireViewModel(application) {
 
-  fun getVaccineSummary(logicalId: String): LiveData<PatientVaccineSummary> {
-    val mutableLiveData: MutableLiveData<PatientVaccineSummary> = MutableLiveData()
-    viewModelScope.launch(dispatcherProvider.io()) {
-      val immunizations = patientRepository.getPatientImmunizations(patientId = logicalId)
-      if (!immunizations.isNullOrEmpty()) {
-        val immunization = immunizations.first()
-        mutableLiveData.postValue(
-          PatientVaccineSummary(
-            doseNumber = (immunization.protocolApplied[0].doseNumber as PositiveIntType).value,
-            initialDose = immunization.vaccineCode.coding.first().code
-          )
-        )
-      } else mutableLiveData.postValue(PatientVaccineSummary(doseNumber = 0, initialDose = ""))
-    }
-    return mutableLiveData
+  suspend fun loadLatestVaccine(patientId: String): PatientVaccineSummary? {
+    val lastImmunization =
+      patientRepository
+        .getPatientImmunizations(patientId)
+        // take only if received datetime is assigned to vaccine otherwise consider invalid
+        .filter { it.hasOccurrenceDateTimeType() }
+        .maxByOrNull { it.occurrenceDateTimeType.value }
+        ?: return null
+
+    return PatientVaccineSummary(
+      doseNumber = lastImmunization.protocolAppliedFirstRep.doseNumberPositiveIntType?.value ?: 0,
+      initialDose = lastImmunization.vaccineCode.coding.first().code
+    )
   }
 
   override suspend fun getPopulationResources(intent: Intent): Array<Resource> {
