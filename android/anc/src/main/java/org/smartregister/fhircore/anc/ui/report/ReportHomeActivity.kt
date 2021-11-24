@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -35,31 +36,28 @@ import androidx.compose.ui.res.stringResource
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
-import com.google.android.fhir.FhirEngine
 import com.google.common.collect.Lists
+import dagger.hilt.android.AndroidEntryPoint
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
 import java.util.concurrent.Executors
+import javax.inject.Inject
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.cql.MeasureEvaluator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FileUtil
 
+@AndroidEntryPoint
 class ReportHomeActivity : BaseMultiLanguageActivity() {
 
-  lateinit var fhirResourceDataSource: FhirResourceDataSource
-  private lateinit var fhirEngine: FhirEngine
+  @Inject lateinit var fhirResourceDataSource: FhirResourceDataSource
   lateinit var parser: IParser
   lateinit var fhirContext: FhirContext
   lateinit var libraryEvaluator: LibraryEvaluator
@@ -97,7 +95,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   lateinit var patientDataIBase: IBaseBundle
   lateinit var patientDetailsData: String
   lateinit var patientId: String
-  lateinit var reportViewModel: ReportViewModel
+  val reportViewModel by viewModels<ReportViewModel>()
 
   val executor = Executors.newSingleThreadExecutor()
   val handler = Handler(Looper.getMainLooper())
@@ -108,14 +106,10 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     measureEvaluator = MeasureEvaluator()
     fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
     parser = fhirContext.newJsonParser()
-    fhirResourceDataSource = FhirResourceDataSource.getInstance(AncApplication.getContext())
-    fhirEngine = AncApplication.getContext().fhirEngine
 
     val patientId =
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-    val repository = ReportRepository((application as AncApplication).fhirEngine, patientId)
-    val dispatcher: DispatcherProvider = DefaultDispatcherProvider
-    reportViewModel = ReportViewModel(repository, dispatcher)
+    reportViewModel.patientId = patientId
     reportViewModel.backPress.observe(
       this,
       {

@@ -22,30 +22,22 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.fhir.FhirEngine
-import org.smartregister.fhircore.anc.AncApplication
+import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
-import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.databinding.FragmentNonAncDetailsBinding
-import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.details.adapter.CarePlanAdapter
 import org.smartregister.fhircore.anc.ui.details.adapter.UpcomingServicesAdapter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.extension.createFactory
 
+@AndroidEntryPoint
 class CarePlanDetailsFragment : Fragment() {
 
   private lateinit var patientId: String
-  private lateinit var fhirEngine: FhirEngine
-
-  lateinit var ancDetailsViewModel: CarePlanDetailsViewModel
-
-  private lateinit var ancPatientRepository: PatientRepository
-
+  val ancDetailsViewModel by viewModels<CarePlanDetailsViewModel>()
   private val carePlanAdapter = CarePlanAdapter()
   private val upcomingServicesAdapter = UpcomingServicesAdapter()
 
@@ -64,21 +56,10 @@ class CarePlanDetailsFragment : Fragment() {
     super.onViewCreated(view, savedInstanceState)
     patientId = arguments?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
-    fhirEngine = AncApplication.getContext().fhirEngine
-
     setupViews()
 
-    ancPatientRepository =
-      PatientRepository((requireActivity().application as AncApplication).fhirEngine, AncItemMapper)
-
-    ancDetailsViewModel =
-      ViewModelProvider(
-        viewModelStore,
-        CarePlanDetailsViewModel(ancPatientRepository, patientId = patientId).createFactory()
-      )[CarePlanDetailsViewModel::class.java]
-
+    ancDetailsViewModel.patientId = patientId
     ancDetailsViewModel.fetchCarePlan().observe(viewLifecycleOwner, this::handleCarePlan)
-
     ancDetailsViewModel.fetchEncounters().observe(viewLifecycleOwner, this::handleEncounters)
   }
 

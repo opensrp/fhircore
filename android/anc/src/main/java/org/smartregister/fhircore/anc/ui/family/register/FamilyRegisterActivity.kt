@@ -21,11 +21,11 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import org.smartregister.fhircore.anc.AncApplication
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
 import org.smartregister.fhircore.anc.ui.report.ReportHomeActivity
 import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
@@ -34,11 +34,12 @@ import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 
+@AndroidEntryPoint
 class FamilyRegisterActivity : BaseRegisterActivity() {
 
-  private lateinit var familyRepository: FamilyRepository
+  @Inject lateinit var familyRepository: FamilyRepository
 
-  private lateinit var patientRepository: PatientRepository
+  @Inject lateinit var patientRepository: PatientRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -51,11 +52,6 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
         showBottomMenu = true
       )
     )
-
-    familyRepository =
-      FamilyRepository((application as AncApplication).fhirEngine, FamilyItemMapper)
-
-    patientRepository = PatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
   }
 
   override fun supportedFragments(): Map<String, Fragment> =

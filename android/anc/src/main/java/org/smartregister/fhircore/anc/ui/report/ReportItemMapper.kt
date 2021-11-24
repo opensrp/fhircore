@@ -16,10 +16,12 @@
 
 package org.smartregister.fhircore.anc.ui.family.register
 
+import android.content.Context
 import com.google.android.fhir.logicalId
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.extension.extractAge
@@ -28,7 +30,8 @@ import org.smartregister.fhircore.engine.util.extension.extractName
 
 data class Report(val head: Patient, val members: List<Patient>, val servicesDue: List<CarePlan>)
 
-object ReportsItemMapper : DomainMapper<Report, ReportItem> {
+class ReportItemMapper @Inject constructor(@ApplicationContext val context: Context) :
+  DomainMapper<Report, ReportItem> {
 
   override fun mapToDomainModel(dto: Report): ReportItem {
     val head = dto.head
@@ -36,8 +39,7 @@ object ReportsItemMapper : DomainMapper<Report, ReportItem> {
     return ReportItem(
       id = head.logicalId,
       title = head.extractName(),
-      description =
-        (head.extractGender(AncApplication.getContext())?.firstOrNull() ?: "").toString(),
+      description = (head.extractGender(context)?.firstOrNull() ?: "").toString(),
       reportType = head.extractAge()
     )
   }

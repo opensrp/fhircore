@@ -16,40 +16,37 @@
 
 package org.smartregister.fhircore.anc.ui.details.bmicompute
 
-import android.app.Application
+import android.content.Context
 import android.graphics.Color
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
 import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
 import org.smartregister.fhircore.anc.util.computeBMIViaStandardUnits
-import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.find
 
-class BmiQuestionnaireViewModel(
-  private val application: Application,
-  private val bmiPatientRepository: PatientRepository
-) : ViewModel() {
+@HiltViewModel
+class BmiQuestionnaireViewModel
+@Inject
+constructor(@ApplicationContext val context: Context, val bmiPatientRepository: PatientRepository) :
+  ViewModel() {
+
+  @Inject lateinit var ancPatientItemMapper: AncPatientItemMapper
+
+  init {
+    bmiPatientRepository.domainMapperInUse = ancPatientItemMapper
+  }
 
   companion object {
-    fun get(
-      owner: ViewModelStoreOwner,
-      application: AncApplication,
-      repository: PatientRepository
-    ): BmiQuestionnaireViewModel {
-      return ViewModelProvider(
-        owner,
-        BmiQuestionnaireViewModel(application, repository).createFactory()
-      )[BmiQuestionnaireViewModel::class.java]
-    }
 
     const val KEY_UNIT_SELECTION = "select-mode"
     const val KEY_WEIGHT_LB = "vital-signs-body-wight_lb"
@@ -158,13 +155,13 @@ class BmiQuestionnaireViewModel(
   }
 
   private fun getBmiCategories(): String {
-    return application.baseContext.getString(
+    return context.getString(
       R.string.bmi_categories_text,
-      application.baseContext.getString(R.string.bmi_categories_label),
-      application.baseContext.getString(R.string.bmi_category_underweight),
-      application.baseContext.getString(R.string.bmi_category_normal),
-      application.baseContext.getString(R.string.bmi_category_overweight),
-      application.baseContext.getString(R.string.bmi_category_obesity)
+      context.getString(R.string.bmi_categories_label),
+      context.getString(R.string.bmi_category_underweight),
+      context.getString(R.string.bmi_category_normal),
+      context.getString(R.string.bmi_category_overweight),
+      context.getString(R.string.bmi_category_obesity)
     )
   }
 
@@ -178,12 +175,11 @@ class BmiQuestionnaireViewModel(
   }
 
   fun getStartingIndexInCategories(bmiCategory: BmiCategory): Int {
-    return getBmiCategories().indexOf(application.baseContext.getString(bmiCategory.value))
+    return getBmiCategories().indexOf(context.getString(bmiCategory.value))
   }
 
   fun getEndingIndexInCategories(bmiCategory: BmiCategory): Int {
-    return getStartingIndexInCategories(bmiCategory) +
-      application.baseContext.getString(bmiCategory.value).length
+    return getStartingIndexInCategories(bmiCategory) + context.getString(bmiCategory.value).length
   }
 
   suspend fun saveComputedBmi(

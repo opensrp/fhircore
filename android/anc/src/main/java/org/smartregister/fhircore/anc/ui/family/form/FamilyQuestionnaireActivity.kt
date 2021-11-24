@@ -21,21 +21,22 @@ import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
-import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.hide
 
+@AndroidEntryPoint
 class FamilyQuestionnaireActivity : QuestionnaireActivity() {
-  internal lateinit var familyRepository: FamilyRepository
+  @Inject lateinit var familyRepository: FamilyRepository
   private lateinit var saveBtn: Button
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,8 +50,6 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
         saveBtn.setText(R.string.family_member_save_label)
       FamilyFormConstants.FAMILY_REGISTER_FORM -> saveBtn.setText(R.string.family_save_label)
     }
-
-    familyRepository = FamilyRepository(AncApplication.getContext().fhirEngine, FamilyItemMapper)
   }
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {

@@ -16,21 +16,22 @@
 
 package org.smartregister.fhircore.anc.data.family
 
+import android.content.Context
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
 import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
-import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.Family
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.util.RegisterType
@@ -38,23 +39,23 @@ import org.smartregister.fhircore.anc.util.filterBy
 import org.smartregister.fhircore.anc.util.filterByPatient
 import org.smartregister.fhircore.anc.util.filterByPatientName
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
-import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.find
 
-class FamilyRepository(
+class FamilyRepository
+@Inject
+constructor(
+  @ApplicationContext val context: Context,
   override val fhirEngine: FhirEngine,
-  override val domainMapper: DomainMapper<Family, FamilyItem>,
-  private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+  override val domainMapper: FamilyItemMapper,
+  val dispatcherProvider: DispatcherProvider
 ) : RegisterRepository<Family, FamilyItem> {
 
-  private val registerConfig =
-    AncApplication.getContext().loadRegisterConfig(RegisterType.FAMILY_REGISTER_ID)
+  private val registerConfig = context.loadRegisterConfig(RegisterType.FAMILY_REGISTER_ID)
 
-  private val ancPatientRepository = PatientRepository(fhirEngine, AncItemMapper)
+  @Inject lateinit var ancPatientRepository: PatientRepository
 
   private val resourceMapperExtended = ResourceMapperExtended(fhirEngine)
 
@@ -81,7 +82,7 @@ class FamilyRepository(
 
         members.forEach { carePlans.addAll(ancPatientRepository.searchCarePlan(it.logicalId)) }
 
-        FamilyItemMapper.mapToDomainModel(Family(p, members, carePlans))
+        domainMapper.mapToDomainModel(Family(p, members, carePlans))
       }
     }
   }

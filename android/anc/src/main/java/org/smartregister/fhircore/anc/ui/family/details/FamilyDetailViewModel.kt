@@ -16,21 +16,21 @@
 
 package org.smartregister.fhircore.anc.ui.family.details
 
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
-import org.smartregister.fhircore.engine.util.extension.createFactory
 
-class FamilyDetailViewModel(
-  application: AncApplication,
-  private val repository: FamilyDetailRepository,
-) : AndroidViewModel(application), FamilyDetailDataProvider {
+@HiltViewModel
+class FamilyDetailViewModel
+@Inject
+constructor(
+  val repository: FamilyDetailRepository,
+) : ViewModel(), FamilyDetailDataProvider {
 
   private val mDemographics: LiveData<Patient> by lazy { repository.fetchDemographics() }
 
@@ -96,18 +96,5 @@ class FamilyDetailViewModel(
 
   fun setEncounterItemClickListener(listener: (item: Encounter) -> Unit) {
     mEncounterItemClickListener = listener
-  }
-
-  companion object {
-    fun get(
-      owner: ViewModelStoreOwner,
-      application: AncApplication,
-      repository: FamilyDetailRepository
-    ): FamilyDetailViewModel {
-      return ViewModelProvider(
-        owner,
-        FamilyDetailViewModel(application, repository).createFactory()
-      )[FamilyDetailViewModel::class.java]
-    }
   }
 }
