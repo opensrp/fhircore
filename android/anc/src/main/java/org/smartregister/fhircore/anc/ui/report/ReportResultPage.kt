@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
@@ -45,7 +46,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -172,12 +175,13 @@ fun ReportResultPage(
             Modifier.clip(RoundedCornerShape(8.dp))
               .background(color = colorResource(id = R.color.light_gray))
               .padding(12.dp)
-              .wrapContentWidth(),
+              .wrapContentWidth()
+              .testTag(REPORT_RESULT_MEASURE_DESCRIPTION),
           contentAlignment = Alignment.Center
         ) {
           Text(text = reportMeasureItem.description, textAlign = TextAlign.Start, fontSize = 16.sp)
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         DateSelectionBox(startDate = startDate, endDate = endDate, canChange = false)
         Spacer(modifier = Modifier.height(16.dp))
         if (isAllPatientSelection) {
@@ -272,7 +276,7 @@ fun ResultPopulationBox(
   resultItem: ResultItemPopulation,
   modifier: Modifier = Modifier,
 ) {
-  Column(modifier = Modifier.padding(top = 12.dp)) {
+  Column(modifier = Modifier.padding(top = 12.dp).testTag(REPORT_RESULT_POPULATION_BOX)) {
     Box(
       modifier =
         Modifier.clip(RoundedCornerShape(8.dp))
@@ -281,8 +285,15 @@ fun ResultPopulationBox(
           .fillMaxWidth()
     ) {
       Column {
-        Text(text = resultItem.title, fontSize = 18.sp, modifier = modifier.wrapContentWidth())
-        Spacer(modifier = modifier.height(8.dp))
+        Text(
+          text = resultItem.title.toUpperCase(Locale.current),
+          color = colorResource(id = R.color.darkGrayText),
+          fontSize = 16.sp,
+          modifier = modifier.wrapContentWidth()
+        )
+        Spacer(modifier = modifier.height(6.dp))
+        Divider(color = DividerColor)
+        Spacer(modifier = modifier.height(6.dp))
         resultItem.dataList.forEach { item -> ResultPopulationItem(item) }
       }
     }
@@ -294,16 +305,38 @@ fun ResultPopulationItem(
   resultItem: ResultItem,
   modifier: Modifier = Modifier,
 ) {
-  Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-    Text(text = resultItem.title, fontSize = 18.sp, modifier = modifier.wrapContentWidth())
-    Spacer(modifier = modifier.height(8.dp))
-    Text(text = resultItem.percentage, fontSize = 18.sp, modifier = modifier.wrapContentWidth())
+  Row(
+    modifier =
+      Modifier.fillMaxWidth().padding(vertical = 4.dp).testTag(REPORT_RESULT_POPULATION_ITEM),
+    horizontalArrangement = Arrangement.SpaceBetween
+  ) {
+    Text(
+      text = resultItem.title,
+      fontSize = 16.sp,
+      fontWeight = FontWeight.Bold,
+      modifier = modifier.wrapContentWidth()
+    )
+    Row(modifier = Modifier.wrapContentWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+      Text(
+        text = resultItem.percentage,
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+        modifier = modifier.wrapContentWidth()
+      )
+      Spacer(modifier = modifier.width(12.dp))
+      Text(
+        text = resultItem.count,
+        fontSize = 16.sp,
+        color = colorResource(id = R.color.darkGrayText),
+        modifier = modifier.wrapContentWidth()
+      )
+    }
   }
 }
 
 @Composable
 fun ResultForPopulation(dataList: List<ResultItemPopulation>) {
-  Column(modifier = Modifier.testTag(REPORT_RESULT_POPULATION)) {
+  Column(modifier = Modifier.testTag(REPORT_RESULT_POPULATION_DATA)) {
     dataList.forEach { message -> ResultPopulationBox(message) }
   }
 }

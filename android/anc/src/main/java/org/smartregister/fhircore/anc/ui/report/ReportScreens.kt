@@ -81,9 +81,13 @@ const val REPORT_RESULT_PAGE = "reportResultPage"
 const val ANC_PATIENT_ITEM = "ancPatientItem"
 const val PATIENT_ANC_VISIT = "patientAncVisit"
 const val REPORT_SEARCH_HINT = "reportSearchHint"
+const val REPORT_RESULT_MEASURE_DESCRIPTION = "reportResultMeasureDescription"
 const val REPORT_RESULT_ITEM_INDIVIDUAL = "reportResultIndividual"
 const val REPORT_RESULT_PATIENT_DATA = "reportResultPatientData"
-const val REPORT_RESULT_POPULATION = "reportResultPopulation"
+const val REPORT_RESULT_POPULATION_DATA = "reportResultPopulationData"
+const val REPORT_RESULT_POPULATION_BOX = "reportResultPopulationBox"
+const val REPORT_RESULT_POPULATION_ITEM = "reportResultPopulationItem"
+
 const val INDICATOR_STATUS = "indicatorStatus"
 
 @Composable
@@ -143,6 +147,20 @@ fun LoadingItem() {
 }
 
 @Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun PreviewDateSelection() {
+  DateSelectionBox(startDate = "Start date", endDate = "End date", canChange = true)
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun PreviewDateRangeSelected() {
+  DateSelectionBox(startDate = "Start date", endDate = "End date", canChange = false)
+}
+
+@Composable
 fun DateSelectionBox(
   startDate: String = "",
   endDate: String = "",
@@ -182,12 +200,14 @@ fun DateRangeItem(
 ) {
   var newClickListener = {}
   var newBackGroundColor = colorResource(id = R.color.transparent)
-  var textPadding = 0.dp
+  var textPaddingHorizontal = 0.dp
+  var textPaddingVertical = 0.dp
 
   if (canChange) {
     newClickListener = clickListener
     newBackGroundColor = colorResource(id = R.color.light)
-    textPadding = 12.dp
+    textPaddingHorizontal = 12.dp
+    textPaddingVertical = 4.dp
   }
 
   Row(
@@ -201,7 +221,7 @@ fun DateRangeItem(
           .clip(RoundedCornerShape(15.dp))
           .background(color = newBackGroundColor)
           .wrapContentWidth()
-          .padding(start = textPadding, end = textPadding, top = 6.dp, bottom = 6.dp),
+          .padding(horizontal = textPaddingHorizontal, vertical = textPaddingVertical),
       contentAlignment = Alignment.Center
     ) { Text(text = text, textAlign = TextAlign.Start, fontSize = 16.sp) }
   }

@@ -107,20 +107,6 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
-fun PreviewDateRangeChangable() {
-  DateSelectionBox(startDate = "Start date", endDate = "End date", canChange = true)
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun PreviewDateRangeFixed() {
-  DateSelectionBox(startDate = "Start date", endDate = "End date", canChange = false)
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 fun PreviewPatientSelectionAll() {
   PatientSelectionBox(
     patientSelectionText = ReportViewModel.PatientSelectionType.ALL,
@@ -165,7 +151,7 @@ fun GenerateReportButton(generateReportEnabled: Boolean, onGenerateReportClicked
     Button(
       enabled = generateReportEnabled,
       onClick = onGenerateReportClicked,
-      modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag(REPORT_GENERATE_BUTTON)
+      modifier = Modifier.fillMaxWidth().testTag(REPORT_GENERATE_BUTTON)
     ) {
       Text(
         color = Color.White,

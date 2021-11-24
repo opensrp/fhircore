@@ -33,6 +33,7 @@ import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItem
+import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 @ExperimentalCoroutinesApi
@@ -88,6 +89,7 @@ class ReportResultPageTest : RobolectricTest() {
     composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals("FilterResultReportTitle")
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
     composeRule.onNodeWithTag(REPORT_DATE_RANGE_SELECTION).assertExists()
+    composeRule.onNodeWithTag(REPORT_RESULT_MEASURE_DESCRIPTION).assertExists()
   }
 
   @Test
@@ -99,8 +101,20 @@ class ReportResultPageTest : RobolectricTest() {
   }
 
   @Test
-  fun testResultPopulation() {
+  fun testResultPopulationData() {
     composeRule.setContent { ResultForPopulation(emptyList()) }
-    composeRule.onNodeWithTag(REPORT_RESULT_POPULATION).assertExists()
+    composeRule.onNodeWithTag(REPORT_RESULT_POPULATION_DATA).assertExists()
+  }
+
+  @Test
+  fun testResultPopulationBox() {
+    composeRule.setContent { ResultPopulationBox(ResultItemPopulation()) }
+    composeRule.onNodeWithTag(REPORT_RESULT_POPULATION_BOX).assertExists()
+  }
+
+  @Test
+  fun testResultPopulation() {
+    composeRule.setContent { ResultPopulationItem(ResultItem()) }
+    composeRule.onNodeWithTag(REPORT_RESULT_POPULATION_ITEM).assertExists()
   }
 }
