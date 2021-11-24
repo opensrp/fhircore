@@ -30,11 +30,8 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 
-@Config(shadows = [AncApplicationShadow::class])
 class QuestionnaireUtilsTest : RobolectricTest() {
   private val iParser: IParser = FhirContext.forR4().newJsonParser()
 

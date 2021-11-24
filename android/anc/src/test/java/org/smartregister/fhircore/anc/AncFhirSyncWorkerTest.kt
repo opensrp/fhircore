@@ -25,11 +25,8 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 
-@Config(shadows = [AncApplicationShadow::class])
 class AncFhirSyncWorkerTest : RobolectricTest() {
 
   private lateinit var ancFhirSyncWorker: AncFhirSyncWorker

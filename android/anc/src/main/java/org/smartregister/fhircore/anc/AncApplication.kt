@@ -30,7 +30,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
-class AncApplication : Application(), ConfigurableApplication {
+open class AncApplication : Application(), ConfigurableApplication {
 
   override val syncJob: SyncJob
     get() = Sync.basicSyncJob(getContext())
