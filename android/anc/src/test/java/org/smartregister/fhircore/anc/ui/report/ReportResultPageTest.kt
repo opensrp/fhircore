@@ -42,6 +42,8 @@ class ReportResultPageTest : RobolectricTest() {
   private val testMeasureReportItem = MutableLiveData(ReportItem(title = "Report Result Title"))
   private val patientSelectionType = MutableLiveData("")
   private val selectedPatient = MutableLiveData(PatientItem(name = "Test Patient Name"))
+  private val resultForIndividual =
+    MutableLiveData(ResultItem(status = "True", isMatchedIndicator = true))
 
   @Before
   fun setUp() {
@@ -53,6 +55,7 @@ class ReportResultPageTest : RobolectricTest() {
         every { endDate } returns MutableLiveData("")
         every { patientSelectionType } returns this@ReportResultPageTest.patientSelectionType
         every { selectedPatientItem } returns this@ReportResultPageTest.selectedPatient
+        every { resultForIndividual } returns this@ReportResultPageTest.resultForIndividual
       }
   }
 
