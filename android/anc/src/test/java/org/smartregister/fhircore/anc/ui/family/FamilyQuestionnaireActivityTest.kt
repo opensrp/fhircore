@@ -46,13 +46,11 @@ import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
-import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
-import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
@@ -62,7 +60,6 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 
-@Config(shadows = [AncApplicationShadow::class])
 internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
 
   private lateinit var familyQuestionnaireActivity: FamilyQuestionnaireActivity

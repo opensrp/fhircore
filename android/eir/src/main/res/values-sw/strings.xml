@@ -26,7 +26,7 @@
     <string name="login_error_message">Jina la mtumiaji au neno la siri sio sahihi</string>
     <string name="done">Imekamilika</string>
     <string name="second_dose_due_at"> Dozi ya pili inapaswa kutolewa %1$s</string>
-    <string name="ordinal_vaccine_dose_recorded">%1$s Dozi ya kwanza imerekodiwa</string>
+    <string name="ordinal_vaccine_dose_recorded">%1$s %2$s ya kwanza imerekodiwa</string>
     <string name="please_select_vaccine">Tafadhali Chagua Chanjo</string>
     <string name="at_risk">Hatarini</string>
     <string name="vaccine">Chanjo</string>

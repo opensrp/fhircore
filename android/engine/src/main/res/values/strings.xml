@@ -29,6 +29,7 @@
     <string name="status_overdue">Overdue</string>
     <string name="status_received_vaccine">Vaccine %1$d \n%2$s</string>
     <string name="fully_vaccinated">"Fully vaccinated"</string>
+    <string name="already_fully_vaccinated">"Can not receive another dose. Already fully vaccinated"</string>
     <string name="record_vaccine_nl">Record\nVaccine</string>
     <string name="date_last_seen">Last seen %1$s</string>
     <string name="str_save">Save</string>

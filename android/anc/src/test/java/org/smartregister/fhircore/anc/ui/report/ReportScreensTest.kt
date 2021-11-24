@@ -38,7 +38,8 @@ class ReportScreensTest : RobolectricTest() {
       object {
         // Imitate click action by doing nothing
         fun onReportMeasureItemClick() {}
-        fun onDateRangePress() {}
+        fun onStartDatePress() {}
+        fun onEndDatePress() {}
         fun onPatientSelectionChanged() {}
         fun onCancelSelectedPatient() {}
         fun onPatientChangeClick() {}
@@ -72,7 +73,8 @@ class ReportScreensTest : RobolectricTest() {
         startDate = "startDate",
         endDate = "endDate",
         canChange = true,
-        onDateRangePress = { listenerObjectSpy.onDateRangePress() }
+        onStartDatePress = { listenerObjectSpy.onStartDatePress() },
+        onEndDatePress = { listenerObjectSpy.onEndDatePress() }
       )
     }
     composeRule.onNodeWithTag(REPORT_DATE_RANGE_SELECTION).assertExists()
@@ -85,7 +87,8 @@ class ReportScreensTest : RobolectricTest() {
         startDate = "startDate",
         endDate = "endDate",
         canChange = false,
-        onDateRangePress = { listenerObjectSpy.onDateRangePress() }
+        onStartDatePress = { listenerObjectSpy.onStartDatePress() },
+        onEndDatePress = { listenerObjectSpy.onEndDatePress() }
       )
     }
     composeRule.onNodeWithTag(REPORT_DATE_RANGE_SELECTION).assertExists()
@@ -97,7 +100,7 @@ class ReportScreensTest : RobolectricTest() {
       DateRangeItem(
         text = "startDate",
         canChange = true,
-        clickListener = { listenerObjectSpy.onDateRangePress() }
+        clickListener = { listenerObjectSpy.onStartDatePress() }
       )
     }
     composeRule.onNodeWithTag(REPORT_DATE_SELECT_ITEM).assertExists()

@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import java.text.SimpleDateFormat
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.HumanName
@@ -94,14 +95,16 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
             .padding(12.dp)
       ) {
         val patient = dataProvider.getDemographics().observeAsState()
+        val familyName = patient.value?.name?.firstOrNull()?.family ?: ""
+        val firstName = patient.value?.name?.firstOrNull()?.given?.firstOrNull()?.value ?: ""
         Text(
-          text = patient.value?.name?.firstOrNull()?.family ?: "",
+          text = "$familyName $firstName",
           color = colorResource(id = R.color.white),
           fontSize = 25.sp
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
-          text = patient.value?.name?.firstOrNull()?.given?.firstOrNull()?.value ?: "",
+          text = patient.value?.address?.firstOrNull()?.city.toString() ?: "",
           color = colorResource(id = R.color.white),
           fontSize = 25.sp
         )
@@ -113,54 +116,83 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
             .padding(start = 12.dp, end = 12.dp)
             .verticalScroll(rememberScrollState()),
       ) {
+        if (hasFamilyCarePlans(dataProvider)) {
+          // spacer for padding
+          Spacer(Modifier.height(12.dp))
+
+          // Household tasks heading
+          HouseHoldTaskHeading()
+
+          // spacer for padding
+          Spacer(Modifier.height(12.dp))
+
+          // Monthly Visit heading
+          MonthlyVisitHeading()
+        }
 
         // spacer for padding
         Spacer(Modifier.height(12.dp))
 
         // members heading
-        MemberHeading()
+        MemberHeading(dataProvider.getAddMemberItemClickListener())
 
         // members list
         dataProvider.getFamilyMembers().observeAsState().value?.run {
-          MembersList(
-            this,
-            dataProvider.getMemberItemClickListener(),
-            dataProvider.getAddMemberItemClickListener()
-          )
+          MembersList(this, dataProvider.getMemberItemClickListener())
         }
 
-        // encounter heading and see all button
-        EncounterHeader(dataProvider.getSeeAllEncounterClickListener())
+        if (hasFamilyCarePlans(dataProvider)) { // upcoming services heading and see all button
+          UpcomingServiceHeader(dataProvider.getSeeAllUpcomingServiceClickListener())
 
-        // encounter list
-        dataProvider.getEncounters().observeAsState().value?.run {
-          EncounterList(this, dataProvider.getEncounterItemClickListener())
+          // encounter heading and see all button
+          EncounterHeader(dataProvider.getSeeAllEncounterClickListener())
+
+          // encounter list
+          dataProvider.getEncounters().observeAsState().value?.run {
+            EncounterList(this, dataProvider.getEncounterItemClickListener())
+          }
+
+          // spacer for padding
+          Spacer(Modifier.height(12.dp))
         }
-
-        // spacer for padding
-        Spacer(Modifier.height(12.dp))
       }
     }
   }
 }
 
 @Composable
-fun MemberHeading() {
-  Text(
-    text = stringResource(id = R.string.members).uppercase(),
-    color = colorResource(id = R.color.status_gray),
-    fontWeight = FontWeight.Bold,
-    textAlign = TextAlign.Start,
-    fontSize = 16.sp,
-    modifier = Modifier.fillMaxWidth().padding(top = 6.dp)
-  )
+fun MemberHeading(addMemberItemClickListener: () -> Unit) {
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween,
+    modifier = Modifier.fillMaxWidth().padding(top = 18.dp)
+  ) {
+    // Members header
+    Text(
+      text = stringResource(id = R.string.members).uppercase(),
+      color = colorResource(id = R.color.status_gray),
+      fontWeight = FontWeight.Bold,
+      textAlign = TextAlign.Start,
+      fontSize = 16.sp,
+    )
+
+    // Add button
+    TextButton(contentPadding = PaddingValues(0.dp), onClick = { addMemberItemClickListener() }) {
+      Text(
+        text = stringResource(id = R.string.add).uppercase() + "+",
+        color = colorResource(id = R.color.colorPrimaryLight),
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Start
+      )
+    }
+  }
 }
 
 @Composable
 fun MembersList(
   members: List<FamilyMemberItem>,
-  memberItemClickListener: (item: FamilyMemberItem) -> Unit,
-  addMemberItemClickListener: () -> Unit
+  memberItemClickListener: (item: FamilyMemberItem) -> Unit
 ) {
 
   Card(
@@ -172,32 +204,60 @@ fun MembersList(
     ) {
       val totalMemberCount = members.count()
       members.forEachIndexed { index, item ->
-        Row(
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.SpaceBetween,
-          modifier =
-            Modifier.fillMaxWidth().padding(12.dp).clickable { memberItemClickListener(item) }
+        Column(
+          modifier = Modifier.fillMaxWidth().clickable { memberItemClickListener(item) },
         ) {
-          if (item.pregnant) {
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth().padding(12.dp)
+          ) {
+            Text(
+              text = item.name,
+              color = colorResource(id = R.color.black),
+              fontSize = 17.sp,
+              textAlign = TextAlign.Start,
+              modifier = Modifier.padding(end = 12.dp)
+            )
+
             Image(
-              painter = painterResource(id = R.drawable.ic_pregnant),
-              contentDescription = "",
+              painter = painterResource(id = R.drawable.ic_forward_arrow),
+              contentDescription = stringResource(id = R.string.forward_arrow),
+              colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray))
             )
           }
-
-          Text(
-            text = item.name,
-            color = colorResource(id = R.color.black),
-            fontSize = 17.sp,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.padding(end = 12.dp)
-          )
-
-          Image(
-            painter = painterResource(id = R.drawable.ic_forward_arrow),
-            contentDescription = "",
-            colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray))
-          )
+          Row(
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            if (item.houseHoldHead) {
+              Text(
+                text = stringResource(id = R.string.head_of_household),
+                color = colorResource(id = R.color.status_gray),
+                fontSize = 14.sp,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.padding(start = 12.dp)
+              )
+            }
+          }
+          Row(
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            if (item.pregnant) {
+              Image(
+                painter = painterResource(R.drawable.ic_pregnant),
+                contentDescription = stringResource(id = R.string.pregnant_woman),
+                modifier = Modifier.padding(start = 12.dp)
+              )
+              Text(
+                text = stringResource(id = R.string.anc_visit_due),
+                color = colorResource(id = R.color.colorPrimaryLight),
+                fontSize = 14.sp,
+                textAlign = TextAlign.Start
+              )
+            }
+          }
         }
 
         if (index < totalMemberCount) {
@@ -208,17 +268,6 @@ fun MembersList(
                 .background(color = colorResource(id = R.color.white_smoke))
           )
         }
-      }
-
-      TextButton(onClick = { addMemberItemClickListener() }, modifier = Modifier.fillMaxWidth()) {
-        Text(
-          text = stringResource(id = R.string.add_member).uppercase(),
-          color = colorResource(id = R.color.colorPrimaryLight),
-          fontSize = 16.sp,
-          fontWeight = FontWeight.Bold,
-          textAlign = TextAlign.Center,
-          modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
-        )
       }
     }
   }
@@ -309,6 +358,74 @@ fun EncounterList(members: List<Encounter>, encounterItemClickListener: (item: E
 }
 
 @Composable
+fun HouseHoldTaskHeading() {
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween,
+    modifier = Modifier.fillMaxWidth().padding(top = 18.dp)
+  ) {
+    // HouseHold Task header
+    Text(
+      text = stringResource(id = R.string.household_tasks).uppercase(),
+      color = colorResource(id = R.color.status_gray),
+      fontWeight = FontWeight.Bold,
+      textAlign = TextAlign.Start,
+      fontSize = 16.sp,
+    )
+  }
+}
+
+@Composable
+fun MonthlyVisitHeading() {
+  Card(elevation = 0.dp, modifier = Modifier.fillMaxWidth()) {
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(6.dp)) {
+      Text(
+        text = "+" + stringResource(id = R.string.monthly_visit).uppercase(),
+        color = colorResource(id = R.color.colorPrimaryLight),
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+      )
+    }
+  }
+}
+
+@Composable
+fun UpcomingServiceHeader(seeAllUpcomingServiceClickListener: () -> Unit) {
+
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween,
+    modifier = Modifier.fillMaxWidth().padding(top = 18.dp)
+  ) {
+
+    // upcoming service heading
+    Text(
+      text = stringResource(id = R.string.upcoming_services).uppercase(),
+      color = colorResource(id = R.color.status_gray),
+      fontWeight = FontWeight.Bold,
+      textAlign = TextAlign.Start,
+      fontSize = 16.sp
+    )
+
+    // button see all upcoming services
+    TextButton(
+      contentPadding = PaddingValues(0.dp),
+      onClick = { seeAllUpcomingServiceClickListener() }
+    ) {
+      Text(
+        text = stringResource(id = R.string.see_all).uppercase(),
+        color = colorResource(id = R.color.colorPrimaryLight),
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Start
+      )
+
+      Icon(painterResource(id = R.drawable.ic_forward_arrow), "", Modifier.padding(start = 4.dp))
+    }
+  }
+}
+
+@Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun PreviewFamilyDetailScreen() {
@@ -334,9 +451,9 @@ fun getDummyDataProvider(): FamilyDetailDataProvider {
     override fun getFamilyMembers(): LiveData<List<FamilyMemberItem>> {
       return MutableLiveData(
         listOf(
-          dummyFamilyMemberItem("Kevin"),
+          dummyFamilyMemberItem("Kevin", false, true),
           dummyFamilyMemberItem("Julie"),
-          dummyFamilyMemberItem("Salina")
+          dummyFamilyMemberItem("Salina", true)
         )
       )
     }
@@ -351,11 +468,19 @@ fun getDummyDataProvider(): FamilyDetailDataProvider {
         )
       )
     }
+
+    override fun getFamilyCarePlans(): LiveData<List<CarePlan>> {
+      TODO("Not yet implemented")
+    }
   }
 }
 
-private fun dummyFamilyMemberItem(name: String): FamilyMemberItem {
-  return FamilyMemberItem(name, "1", "18", "Male", false)
+private fun dummyFamilyMemberItem(
+  name: String,
+  isPregnant: Boolean = false,
+  isHouseHoldHead: Boolean = false
+): FamilyMemberItem {
+  return FamilyMemberItem(name, "1", "18", "Male", isPregnant, isHouseHoldHead)
 }
 
 private fun dummyEncounter(text: String, periodStartDate: String): Encounter {
@@ -363,4 +488,9 @@ private fun dummyEncounter(text: String, periodStartDate: String): Encounter {
     class_ = Coding("", "", text)
     period = Period().apply { start = SimpleDateFormat("yyyy-MM-dd").parse(periodStartDate) }
   }
+}
+
+@Composable
+private fun hasFamilyCarePlans(dataProvider: FamilyDetailDataProvider): Boolean {
+  return !dataProvider.getFamilyCarePlans().observeAsState().value.isNullOrEmpty()
 }

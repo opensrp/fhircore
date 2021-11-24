@@ -20,13 +20,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
+import kotlinx.coroutines.flow.flowOf
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRowClickListenerIntent
 
@@ -65,4 +70,34 @@ fun PatientRegisterList(
       }
     }
   }
+}
+
+@Composable
+@Preview
+@ExcludeFromJacocoGeneratedReport
+fun dummyPatientPagingList(): LazyPagingItems<PatientItem> {
+  val listFlow =
+    flowOf(
+      PagingData.from(
+        listOf(
+          PatientItem(
+            id = "my-test-id1",
+            identifier = "10001",
+            name = "John Doe",
+            gender = "M",
+            age = "27y",
+            address = "Nairobi"
+          ),
+          PatientItem(
+            id = "my-test-id2",
+            identifier = "10002",
+            name = "Jane Doe",
+            gender = "F",
+            age = "20y",
+            address = "Nairobi"
+          )
+        )
+      )
+    )
+  return listFlow.collectAsLazyPagingItems()
 }

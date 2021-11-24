@@ -38,7 +38,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
@@ -48,13 +47,11 @@ import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.FragmentRobolectricTest
-import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.ui.details.adapter.CarePlanAdapter
 import org.smartregister.fhircore.anc.ui.details.adapter.UpcomingServicesAdapter
 
 @ExperimentalCoroutinesApi
-@Config(shadows = [AncApplicationShadow::class])
 internal class CarePlanDetailsFragmentTest : FragmentRobolectricTest() {
 
   private lateinit var fhirEngine: FhirEngine

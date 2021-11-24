@@ -145,7 +145,7 @@ fun ServicesCard(modifier: Modifier, text: String, color: Color) {
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun FamilyRowPreview() {
-  val fmi = FamilyMemberItem("fmname", "fm1", "21", "F", true)
+  val fmi = FamilyMemberItem("fmname", "fm1", "21", "F", true, false)
 
   val familyItem =
     FamilyItem("fid", "1111", "Name ", "M", "27", "Nairobi", true, listOf(fmi, fmi, fmi), 4, 5)
