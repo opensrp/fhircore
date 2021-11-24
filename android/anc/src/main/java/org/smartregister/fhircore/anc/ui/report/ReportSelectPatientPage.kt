@@ -170,7 +170,7 @@ fun SearchView(state: MutableState<TextFieldValue>, viewModel: ReportViewModel) 
 }
 
 @Composable
-private fun SearchHint(modifier: Modifier = Modifier) {
+fun SearchHint(modifier: Modifier = Modifier) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
     modifier =
@@ -178,6 +178,7 @@ private fun SearchHint(modifier: Modifier = Modifier) {
         .padding(start = 48.dp, top = 16.dp)
         .focusable(false)
         .then(modifier)
+        .testTag(REPORT_SEARCH_HINT)
   ) {
     Text(
       color = Color(0xff757575),

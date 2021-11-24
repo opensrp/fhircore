@@ -143,7 +143,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       this,
       {
         if (it) {
-          // showDateRangePicker(reportViewModel::onDateSelected)
           showDatePicker()
         }
       }
@@ -420,7 +419,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     }
   }
 
-  private fun showDatePicker() {
+  fun showDatePicker() {
     val builder = MaterialDatePicker.Builder.datePicker()
     builder.setSelection(reportViewModel.getSelectionDate())
     val startDateMillis = reportViewModel.startDateTimeMillis.value ?: Date().time
@@ -434,7 +433,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   }
 
   /*  Limit selectable range to start and end Date provided */
-  private fun limitRange(
+  fun limitRange(
     forStartDateOnly: Long,
     startDateMillis: Long,
     endDateMillis: Long
