@@ -22,12 +22,9 @@ import androidx.work.WorkManager
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 
-@Config(shadows = [AncApplicationShadow::class])
 class AncApplicationTest : RobolectricTest() {
 
   private val app by lazy { ApplicationProvider.getApplicationContext<AncApplication>() }

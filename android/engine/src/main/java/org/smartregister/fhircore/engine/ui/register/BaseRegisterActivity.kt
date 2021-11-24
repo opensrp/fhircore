@@ -100,6 +100,8 @@ abstract class BaseRegisterActivity :
   OnSyncListener,
   SyncInitiator {
 
+  private lateinit var drawerMenuHeaderBinding: DrawerMenuHeaderBinding
+
   lateinit var registerViewModel: RegisterViewModel
 
   private lateinit var registerActivityBinding: BaseRegisterActivityBinding
@@ -231,13 +233,13 @@ abstract class BaseRegisterActivity :
 
     setupNewClientButtonView(registerViewModel.registerViewConfiguration.value!!)
 
-    updateRegisterTitle()
-
     setupSearchView()
 
     setupDueButtonView()
 
     switchFragment(mainFragmentTag())
+
+    updateRegisterTitle()
   }
 
   private fun syncButtonClick() {
@@ -348,7 +350,7 @@ abstract class BaseRegisterActivity :
       }
     }
 
-    val drawerMenuHeaderBinding: DrawerMenuHeaderBinding =
+    drawerMenuHeaderBinding =
       DataBindingUtil.bind(registerActivityBinding.navView.getHeaderView(0))!!
     drawerMenuHeaderBinding.tvNavHeader.text = viewConfiguration.appTitle
 
