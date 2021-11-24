@@ -24,5 +24,6 @@ data class FamilyMemberItem(
   val id: String,
   val age: String,
   val gender: String,
-  val pregnant: Boolean
+  val pregnant: Boolean,
+  val houseHoldHead: Boolean
 )
