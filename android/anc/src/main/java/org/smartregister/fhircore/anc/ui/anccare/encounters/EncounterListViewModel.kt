@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.encounters
 
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -29,19 +30,15 @@ import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 
 @HiltViewModel
 class EncounterListViewModel @Inject constructor(val repository: EncounterRepository) :
-  ViewModel(), EncounterDataProvider {
+  ViewModel() {
 
-  private var mBackClickListener: () -> Unit = {}
+  val onBackClick = MutableLiveData(false)
 
-  override fun getEncounterList(): Flow<PagingData<EncounterItem>> {
+  fun getEncounterList(): Flow<PagingData<EncounterItem>> {
     return Pager(PagingConfig(pageSize = PaginationUtil.DEFAULT_PAGE_SIZE)) { repository }.flow
   }
 
-  override fun getAppBackClickListener(): () -> Unit {
-    return mBackClickListener
-  }
-
-  fun setAppBackClickListener(listener: () -> Unit) {
-    this.mBackClickListener = listener
+  fun onAppBackClick() {
+    onBackClick.value = true
   }
 }

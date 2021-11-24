@@ -21,7 +21,6 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
-import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.util.startFamilyMemberRegistration
@@ -32,7 +31,7 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 @AndroidEntryPoint
 class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
-  val viewModel by viewModels<FamilyDetailViewModel>()
+  val familyDetailViewModel by viewModels<FamilyDetailViewModel>()
 
   private lateinit var familyId: String
 
@@ -41,35 +40,40 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
     familyId = intent.extras?.getString(QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
-    viewModel.repository.familyId = familyId
+    familyDetailViewModel.apply {
+      val familyDetailsActivity = this@FamilyDetailsActivity
+      backClicked.observe(familyDetailsActivity, { if (it) finish() })
+      memberItemClicked.observe(
+        familyDetailsActivity,
+        familyDetailsActivity::onFamilyMemberItemClicked
+      )
+      addNewMember.observe(
+        familyDetailsActivity,
+        { addNewMember ->
+          if (addNewMember) {
+            familyDetailsActivity.startFamilyMemberRegistration(familyId)
+            finish()
+          }
+        }
+      )
+    }
 
-    viewModel.setAppBackClickListener(this::onBackIconClicked)
-    viewModel.setMemberItemClickListener(this::onFamilyMemberItemClicked)
-    viewModel.setAddMemberItemClickListener(this::onAddNewMemberButtonClicked)
-    viewModel.setSeeAllEncounterClickListener(this::onSeeAllEncounterClicked)
-    viewModel.setEncounterItemClickListener(this::onFamilyEncounterItemClicked)
+    familyDetailViewModel.run {
+      fetchDemographics(familyId)
+      fetchFamilyMembers(familyId)
+      fetchCarePlans(familyId)
+      fetchEncounters(familyId)
+    }
 
-    setContent { AppTheme { FamilyDetailScreen(viewModel) } }
+    setContent { AppTheme { FamilyDetailScreen(familyDetailViewModel) } }
   }
 
-  private fun onBackIconClicked() {
-    finish()
+  private fun onFamilyMemberItemClicked(familyMemberItem: FamilyMemberItem?) {
+    if (familyMemberItem != null)
+      startActivity(
+        Intent(this, PatientDetailsActivity::class.java).apply {
+          putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, familyMemberItem.id)
+        }
+      )
   }
-
-  private fun onFamilyMemberItemClicked(item: FamilyMemberItem) {
-    startActivity(
-      Intent(this, PatientDetailsActivity::class.java).apply {
-        putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, item.id)
-      }
-    )
-  }
-
-  private fun onAddNewMemberButtonClicked() {
-    this.startFamilyMemberRegistration(familyId)
-    finish()
-  }
-
-  private fun onSeeAllEncounterClicked() {}
-
-  private fun onFamilyEncounterItemClicked(item: Encounter) {}
 }

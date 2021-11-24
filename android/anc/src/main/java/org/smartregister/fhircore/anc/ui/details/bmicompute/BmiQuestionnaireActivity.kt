@@ -94,7 +94,7 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
     weight: Double,
     computedBMI: Double
   ) {
-    val message = bmiQuestionnaireViewModel.getBmiResult(computedBMI)
+    val message = bmiQuestionnaireViewModel.getBmiResult(computedBMI, this)
     AlertDialog.Builder(this)
       .setTitle(getString(R.string.your_bmi) + " $computedBMI")
       .setMessage(message)
@@ -120,7 +120,7 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
     lifecycleScope.launch {
       val success =
         bmiQuestionnaireViewModel.saveComputedBmi(
-          questionnaire!!,
+          questionnaire,
           questionnaireResponse,
           patientId,
           encounterID,

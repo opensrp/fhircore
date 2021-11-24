@@ -56,7 +56,7 @@ class EncounterListScreenTest : RobolectricTest() {
         "Dummy",
         encounterDate
       )
-    composeRule.setContent { EncounterItem(encounterItem, false) }
+    composeRule.setContent { EncounterItemRow(encounterItem, false) }
 
     // verify encounter date is displayed
     composeRule.onNodeWithText("22-May-2020").assertExists()

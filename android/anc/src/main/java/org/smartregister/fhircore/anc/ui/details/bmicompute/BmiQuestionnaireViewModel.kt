@@ -23,7 +23,6 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -37,10 +36,10 @@ import org.smartregister.fhircore.engine.util.extension.find
 @HiltViewModel
 class BmiQuestionnaireViewModel
 @Inject
-constructor(@ApplicationContext val context: Context, val bmiPatientRepository: PatientRepository) :
-  ViewModel() {
-
-  @Inject lateinit var ancPatientItemMapper: AncPatientItemMapper
+constructor(
+  val bmiPatientRepository: PatientRepository,
+  ancPatientItemMapper: AncPatientItemMapper
+) : ViewModel() {
 
   init {
     bmiPatientRepository.domainMapperInUse = ancPatientItemMapper
@@ -133,15 +132,15 @@ constructor(@ApplicationContext val context: Context, val bmiPatientRepository: 
     else computeBMIViaStandardUnits(heightInInches = height, weightInPounds = weight)
   }
 
-  fun getBmiResult(computedBMI: Double): SpannableString {
-    val message = getBmiCategories()
+  fun getBmiResult(computedBMI: Double, context: Context): SpannableString {
+    val message = getBmiCategories(context)
     val matchedCategoryIndex = getBmiResultCategoryIndex(computedBMI)
     val mSpannableString = SpannableString(message)
     val mGreenSpannedText = ForegroundColorSpan(getBmiResultHighlightColor(matchedCategoryIndex))
     mSpannableString.setSpan(
       mGreenSpannedText,
-      getStartingIndexInCategories(matchedCategoryIndex),
-      getEndingIndexInCategories(matchedCategoryIndex),
+      getStartingIndexInCategories(bmiCategory = matchedCategoryIndex, context = context),
+      getEndingIndexInCategories(bmiCategory = matchedCategoryIndex, context = context),
       Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
     )
     return mSpannableString
@@ -154,7 +153,7 @@ constructor(@ApplicationContext val context: Context, val bmiPatientRepository: 
     }
   }
 
-  private fun getBmiCategories(): String {
+  private fun getBmiCategories(context: Context): String {
     return context.getString(
       R.string.bmi_categories_text,
       context.getString(R.string.bmi_categories_label),
@@ -174,12 +173,13 @@ constructor(@ApplicationContext val context: Context, val bmiPatientRepository: 
     }
   }
 
-  fun getStartingIndexInCategories(bmiCategory: BmiCategory): Int {
-    return getBmiCategories().indexOf(context.getString(bmiCategory.value))
+  fun getStartingIndexInCategories(bmiCategory: BmiCategory, context: Context): Int {
+    return getBmiCategories(context).indexOf(context.getString(bmiCategory.value))
   }
 
-  fun getEndingIndexInCategories(bmiCategory: BmiCategory): Int {
-    return getStartingIndexInCategories(bmiCategory) + context.getString(bmiCategory.value).length
+  fun getEndingIndexInCategories(bmiCategory: BmiCategory, context: Context): Int {
+    return getStartingIndexInCategories(bmiCategory = bmiCategory, context = context) +
+      context.getString(bmiCategory.value).length
   }
 
   suspend fun saveComputedBmi(

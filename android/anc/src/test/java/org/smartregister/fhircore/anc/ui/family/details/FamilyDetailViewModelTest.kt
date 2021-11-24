@@ -120,14 +120,6 @@ class FamilyDetailViewModelTest : RobolectricTest() {
       ++count
       Assert.assertEquals(7, count)
     }
-
-    viewModel.getAppBackClickListener().invoke()
-    viewModel.getMemberItemClickListener().invoke(mockk())
-    viewModel.getAddMemberItemClickListener().invoke()
-    viewModel.getSeeAllEncounterClickListener().invoke()
-    viewModel.getEncounterItemClickListener().invoke(mockk())
-    viewModel.getSeeAllUpcomingServiceClickListener().invoke()
-    viewModel.getUpcomingServiceItemClickListener().invoke(mockk())
   }
 
   @Test

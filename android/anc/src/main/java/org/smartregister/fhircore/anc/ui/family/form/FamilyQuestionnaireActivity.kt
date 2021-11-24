@@ -21,7 +21,6 @@ import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
-import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -34,7 +33,6 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.hide
 
-@AndroidEntryPoint
 class FamilyQuestionnaireActivity : QuestionnaireActivity() {
   @Inject lateinit var familyRepository: FamilyRepository
   private lateinit var saveBtn: Button

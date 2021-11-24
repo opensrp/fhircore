@@ -34,13 +34,12 @@ class EncounterListActivity : BaseMultiLanguageActivity() {
 
     val patientId =
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-    encounterListViewModel.repository.patientId = patientId
-    encounterListViewModel.setAppBackClickListener(this::handleBackClicked)
+
+    encounterListViewModel.apply {
+      repository.patientId = patientId
+      onBackClick.observe(this@EncounterListActivity, { finish() })
+    }
 
     setContent { AppTheme { EncounterListScreen(encounterListViewModel) } }
-  }
-
-  private fun handleBackClicked() {
-    finish()
   }
 }
