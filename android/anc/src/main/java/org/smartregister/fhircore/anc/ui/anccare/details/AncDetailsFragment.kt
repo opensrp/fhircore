@@ -22,34 +22,28 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import org.smartregister.fhircore.anc.AncApplication
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.AncOverviewItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
-import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.extension.createFactory
 import timber.log.Timber
 
+@AndroidEntryPoint
 class AncDetailsFragment : Fragment() {
 
   lateinit var patientId: String
-
-  lateinit var ancDetailsViewModel: AncDetailsViewModel
-
-  private lateinit var patientRepository: PatientRepository
-
+  val ancDetailsViewModel by viewModels<AncDetailsViewModel>()
+  @Inject lateinit var ancPatientItemMapper: AncPatientItemMapper
   private var carePlanAdapter = CarePlanAdapter()
-
   private val upcomingServicesAdapter = UpcomingServicesAdapter()
-
   private val lastSeen = EncounterAdapter()
-
   lateinit var binding: FragmentAncDetailsBinding
 
   override fun onCreateView(
@@ -67,13 +61,9 @@ class AncDetailsFragment : Fragment() {
 
     setupViews()
 
-    patientRepository = getAncPatientRepository()
-
-    ancDetailsViewModel =
-      ViewModelProvider(
-        viewModelStore,
-        AncDetailsViewModel(patientRepository, patientId = patientId).createFactory()
-      )[AncDetailsViewModel::class.java]
+    // Set the patient id and correct DomainMapper to use
+    ancDetailsViewModel.patientRepository.domainMapperInUse = ancPatientItemMapper
+    ancDetailsViewModel.patientId = patientId
 
     Timber.d(patientId)
 
@@ -176,12 +166,5 @@ class AncDetailsFragment : Fragment() {
   }
   private fun populateLastSeenList(upcomingServiceItem: List<EncounterItem>) {
     lastSeen.submitList(upcomingServiceItem)
-  }
-
-  fun getAncPatientRepository(): PatientRepository {
-    return PatientRepository(
-      (requireActivity().application as AncApplication).fhirEngine,
-      AncPatientItemMapper
-    )
   }
 }

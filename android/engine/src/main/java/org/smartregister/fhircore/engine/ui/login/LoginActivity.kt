@@ -49,7 +49,9 @@ class LoginActivity :
       loginUser()
     }
 
-    configureViews(configurationRegistry.retrieveConfiguration(AppConfigClassification.LOGIN))
+    if (configurationRegistry.isAppIdInitialized()) {
+      configureViews(configurationRegistry.retrieveConfiguration(AppConfigClassification.LOGIN))
+    }
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
   }

@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.data.family
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -24,6 +25,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Coding
@@ -45,18 +47,27 @@ import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.util.RegisterConfiguration
 import org.smartregister.fhircore.anc.util.SearchFilter
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class FamilyRepositoryTest : RobolectricTest() {
 
   private lateinit var repository: FamilyRepository
   private lateinit var fhirEngine: FhirEngine
+  @Inject lateinit var familyItemMapper: FamilyItemMapper
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   @Before
   fun setUp() {
     fhirEngine = spyk()
-    repository = FamilyRepository(fhirEngine, FamilyItemMapper)
+    repository =
+      FamilyRepository(
+        ApplicationProvider.getApplicationContext(),
+        fhirEngine,
+        familyItemMapper,
+        dispatcherProvider
+      )
   }
 
   @Test

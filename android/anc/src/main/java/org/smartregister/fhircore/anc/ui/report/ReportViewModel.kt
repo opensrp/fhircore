@@ -24,6 +24,8 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import ca.uhn.fhir.parser.IParser
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.data.report.ReportRepository
@@ -32,10 +34,15 @@ import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-class ReportViewModel(
-  private val repository: ReportRepository,
+@HiltViewModel
+class ReportViewModel
+@Inject
+constructor(
+  val repository: ReportRepository,
   var dispatcher: DispatcherProvider,
 ) : ViewModel() {
+
+  lateinit var patientId: String
 
   val backPress: MutableLiveData<Boolean> = MutableLiveData(false)
 
