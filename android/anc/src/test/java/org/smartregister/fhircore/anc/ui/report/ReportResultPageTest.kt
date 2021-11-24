@@ -24,6 +24,7 @@ import androidx.lifecycle.MutableLiveData
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
@@ -80,7 +81,8 @@ class ReportResultPageTest : RobolectricTest() {
         endDate = "",
         isAllPatientSelection = true,
         selectedPatient = PatientItem(),
-        resultForIndividual = ResultItem()
+        resultForIndividual = ResultItem(),
+        resultItemPopulation = emptyList()
       )
     }
     composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals("FilterResultReportTitle")
@@ -91,7 +93,14 @@ class ReportResultPageTest : RobolectricTest() {
   @Test
   fun testResultItemIndividual() {
     composeRule.setContent { ResultItemIndividual(selectedPatient = PatientItem()) }
+    Assert.assertEquals(resultForIndividual, viewModel.resultForIndividual)
     composeRule.onNodeWithTag(REPORT_RESULT_ITEM_INDIVIDUAL).assertExists()
     composeRule.onNodeWithTag(REPORT_RESULT_PATIENT_DATA).assertExists()
+  }
+
+  @Test
+  fun testResultPopulation() {
+    composeRule.setContent { ResultForPopulation(emptyList()) }
+    composeRule.onNodeWithTag(REPORT_RESULT_POPULATION).assertExists()
   }
 }
