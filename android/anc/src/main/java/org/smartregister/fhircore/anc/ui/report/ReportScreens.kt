@@ -146,20 +146,6 @@ fun LoadingItem() {
 }
 
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun PreviewDateRangeChangable() {
-  DateSelectionBox(startDate = "Start date", endDate = "End date", canChange = true)
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun PreviewDateRangeFixed() {
-  DateSelectionBox(startDate = "Start date", endDate = "End date", canChange = false)
-}
-
-@Composable
 fun DateSelectionBox(
   startDate: String = "",
   endDate: String = "",
@@ -225,35 +211,13 @@ fun DateRangeItem(
 }
 
 @Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun PreviewPatientSelectionAll() {
-  PatientSelectionBox(
-    patientSelectionText = ReportViewModel.PatientSelectionType.ALL,
-    onPatientSelectionChange = {},
-    selectedPatient = PatientItem()
-  )
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun PreviewPatientSelectionIndividual() {
-  PatientSelectionBox(
-    patientSelectionText = ReportViewModel.PatientSelectionType.INDIVIDUAL,
-    onPatientSelectionChange = {},
-    selectedPatient = PatientItem(name = "Ind Patient Item")
-  )
-}
-
-@Composable
 fun PatientSelectionBox(
   patientSelectionText: String,
   selectedPatient: PatientItem?,
   onPatientSelectionChange: (String) -> Unit,
 ) {
   Column(
-    modifier = Modifier.wrapContentWidth().padding(16.dp).testTag(REPORT_PATIENT_SELECTION),
+    modifier = Modifier.wrapContentWidth().testTag(REPORT_PATIENT_SELECTION),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.Start
   ) {
@@ -437,18 +401,6 @@ fun ReportRow(
       modifier = Modifier.padding(end = 12.dp)
     )
   }
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun PreviewResultItemIndividual() {
-  ResultItemIndividual(
-    selectedPatient = PatientItem(demographics = "Jacky Coughlin, F, 27"),
-    isMatchedIndicator = true,
-    indicatorStatus = "True",
-    indicatorDescription = "Jacky Got her first ANC contact"
-  )
 }
 
 @Composable

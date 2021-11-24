@@ -50,6 +50,18 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
+fun PreviewResultItemIndividual() {
+  ResultItemIndividual(
+    selectedPatient = PatientItem(demographics = "Jacky Coughlin, F, 27"),
+    isMatchedIndicator = true,
+    indicatorStatus = "True",
+    indicatorDescription = "Jacky Got her first ANC contact"
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun ReportResultPreview() {
   ReportResultPage(
     topBarTitle = "PageTitle",
@@ -105,7 +117,6 @@ fun ReportResultPage(
           .testTag(REPORT_RESULT_PAGE)
     ) {
       TopBarBox(topBarTitle = topBarTitle, onBackPress = onBackPress)
-      Spacer(modifier = Modifier.height(16.dp))
       Column(modifier = Modifier.padding(16.dp)) {
         Box(
           modifier =
