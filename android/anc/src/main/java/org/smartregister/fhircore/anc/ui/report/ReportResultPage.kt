@@ -76,7 +76,7 @@ fun ReportResultPreview() {
     isAllPatientSelection = false,
     selectedPatient =
       PatientItem(name = "Test Selected Patient", demographics = "Test Select, F, 28"),
-    ResultItem(title = "Preview", description = "testing preview")
+    ResultItem(status = "True", description = "Testing Preview text")
   )
 }
 
@@ -147,7 +147,7 @@ fun ReportResultPage(
           ResultItemIndividual(
             selectedPatient = selectedPatient,
             isMatchedIndicator = resultForIndividual.isMatchedIndicator,
-            indicatorStatus = resultForIndividual.title,
+            indicatorStatus = resultForIndividual.status,
             indicatorDescription = resultForIndividual.description
           )
         }

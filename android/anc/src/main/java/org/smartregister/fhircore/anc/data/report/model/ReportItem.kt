@@ -30,15 +30,8 @@ data class ReportItem(
 
 @Stable
 @Serializable
-data class ReportResult(
-  val isForAllPatient: Boolean = false,
-  val individualResultItem: ResultItem
-)
-
-@Stable
-@Serializable
 data class ResultItem(
-  val title: String = "",
+  val status: String = "",
   val isMatchedIndicator: Boolean = false,
   val description: String = "",
 )
