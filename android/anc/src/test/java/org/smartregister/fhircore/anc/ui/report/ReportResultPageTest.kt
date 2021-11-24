@@ -80,4 +80,11 @@ class ReportResultPageTest : RobolectricTest() {
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
     composeRule.onNodeWithTag(REPORT_DATE_RANGE_SELECTION).assertExists()
   }
+
+  @Test
+  fun testResultItemIndividual() {
+    composeRule.setContent { ResultItemIndividual(selectedPatient = PatientItem()) }
+    composeRule.onNodeWithTag(REPORT_RESULT_ITEM_INDIVIDUAL).assertExists()
+    composeRule.onNodeWithTag(REPORT_RESULT_PATIENT_DATA).assertExists()
+  }
 }
