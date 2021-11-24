@@ -123,6 +123,7 @@ private fun AppSettingScreen(
     OutlinedTextField(
       onValueChange = onAppIdChanged,
       value = appId,
+      maxLines = 1,
       placeholder = {
         Text(
           color = Color.LightGray,
@@ -141,7 +142,7 @@ private fun AppSettingScreen(
       Text(
         text = stringResource(R.string.remember_app),
         fontSize = 14.sp,
-        modifier = modifier.clickable { onRememberAppChecked(true) }
+        modifier = modifier.padding(start = 8.dp).clickable { onRememberAppChecked(!rememberApp) }
       )
     }
     Spacer(modifier = modifier.height(20.dp))

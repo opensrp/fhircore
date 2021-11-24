@@ -81,9 +81,9 @@
     <string name="logout">Log out</string>
     <string name="application_id">Application ID</string>
     <string name="enter_app_id">Enter Application ID</string>
-    <string name="app_id_sample" translatable="false">E.g. covax, jnj, quest, g6pd</string>
+    <string name="app_id_sample" translatable="false">E.g. anc, covax, g6pd, jnj, quest</string>
     <string name="load_configurations">LOAD CONFIGURATIONS</string>
-    <string name="fhir_core_app">FHIR Core App</string>
+    <string name="fhir_core_app">FHIRCORE APP</string>
     <string name="remember_app">Remember application</string>
     <string name="done">Done</string>
     <string name="replace_photo">Replace photo</string>
