@@ -16,14 +16,21 @@
 
 package org.smartregister.fhircore.anc.data.report
 
+import android.content.Context
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 
-class ReportRepository @Inject constructor(val fhirEngine: FhirEngine) :
+class ReportRepository
+@Inject
+constructor(val fhirEngine: FhirEngine, @ApplicationContext val context: Context) :
   PagingSource<Int, ReportItem>() {
+
+  val SAMPLE_REPORT_MEASURES_FILE = "sample_data_report_measures.json"
 
   override fun getRefreshKey(state: PagingState<Int, ReportItem>): Int? {
     return state.anchorPosition
@@ -31,43 +38,17 @@ class ReportRepository @Inject constructor(val fhirEngine: FhirEngine) :
 
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ReportItem> {
     return try {
-      // Todo: here @Davison will update logic to load reports type items
-      val nextPage = params.key ?: 0
-
-      //      val encounters =
-      //        fhirEngine.search<Encounter> {
-      //          filter(Encounter.SUBJECT) { value = "Patient/$patientId" }
-      //          from = nextPage * PaginationUtil.DEFAULT_PAGE_SIZE
-      //          count = PaginationUtil.DEFAULT_PAGE_SIZE
-      //        }
-      //
-      //      var data = encounters.map { ReportItem(it.id, it.id, "it.status", "it.status",
-      // "it.status") }
-
-      //      if(data.isEmpty()){
-      //        data = listOf(ReportItem(title = "Test Report", description = "Women having test
-      // reports encounters"))
-      //      }
-
-      val data =
-        listOf(
-          ReportItem(
-            id = "1",
-            title = "Test Report 1",
-            description = "Women having test reports encounters",
-            reportType = "4"
-          ),
-          ReportItem(
-            id = "2",
-            title = "Test Report 2",
-            description = "Women having test reports ANC",
-            reportType = "4"
-          )
-        )
-
+      val data = createTestData(context)
       LoadResult.Page(data = data, prevKey = null, nextKey = null)
     } catch (e: Exception) {
       LoadResult.Error(e)
     }
+  }
+
+  /** Load report-measures from asset directory */
+  fun createTestData(context: Context): List<ReportItem> {
+    val json =
+      context.assets.open(SAMPLE_REPORT_MEASURES_FILE).bufferedReader().use { it.readText() }
+    return json.decodeJson()
   }
 }

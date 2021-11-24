@@ -94,6 +94,7 @@ constructor(
         if (!response.isSuccessful) {
           val errorResponse = response.errorBody()?.string()
           _loginError.postValue(errorResponse?.decodeJson<LoginError>()?.errorDescription)
+          _showProgressBar.postValue(false)
           Timber.e("Error fetching access token %s", errorResponse)
           return
         } else {

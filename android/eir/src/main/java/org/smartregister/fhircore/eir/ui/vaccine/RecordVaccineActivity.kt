@@ -19,110 +19,123 @@ package org.smartregister.fhircore.eir.ui.vaccine
 import android.app.AlertDialog
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
-import ca.uhn.fhir.context.FhirContext
-import kotlinx.coroutines.Dispatchers
+import ca.uhn.fhir.parser.IParser
+import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
+import org.smartregister.fhircore.eir.ui.patient.details.nextDueDateFmt
+import org.smartregister.fhircore.eir.ui.patient.details.ordinalOf
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.DateUtils
 import timber.log.Timber
 
 class RecordVaccineActivity : QuestionnaireActivity() {
+
+  private lateinit var savedImmunization: Immunization
+
+  @Inject lateinit var fhirParser: IParser
+
   val recordVaccineViewModel: RecordVaccineViewModel by viewModels()
+
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
-      clientIdentifier?.let { identifier: String ->
-        recordVaccineViewModel.getVaccineSummary(identifier).observe(this@RecordVaccineActivity) {
-          vaccineSummary: PatientVaccineSummary? ->
-          if (vaccineSummary != null) {
-            lifecycleScope.launch {
-              questionnaire.let { questionnaire ->
-                questionnaireViewModel.performExtraction(questionnaire, questionnaireResponse).run {
-                  val immunizationEntry = entry.firstOrNull { it.resource is Immunization }
+      val bundle = questionnaireViewModel.performExtraction(questionnaire, questionnaireResponse)
 
-                  if (immunizationEntry == null) {
-                    val fhirJsonParser = FhirContext.forR4().newJsonParser()
-                    Timber.e(
-                      "Immunization extraction failed for ${
-                      fhirJsonParser.encodeResourceToString(
-                        questionnaireResponse
-                      )
-                      } producing ${
-                      fhirJsonParser.encodeResourceToString(
-                        this
-                      )
-                      }"
-                    )
-                    lifecycleScope.launch(Dispatchers.Main) { handleExtractionError() }
-                  } else {
-                    showVaccineRecordDialog(this, vaccineSummary)
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      if (bundle.entryFirstRep.resource is Immunization) {
+        savedImmunization =
+          bundle.entry.first { it.resource is Immunization }.resource as Immunization
+
+        val lastVaccine = recordVaccineViewModel.loadLatestVaccine(clientIdentifier!!)
+
+        if (handleValidation(lastVaccine, savedImmunization)) {
+          sanitizeExtractedData(savedImmunization, lastVaccine)
+
+          // method below triggers save success automatically
+          questionnaireViewModel.saveBundleResources(bundle)
+        } else dismissSaveProcessing()
+      } else handleExtractionError(questionnaireResponse)
     }
   }
 
-  private fun showVaccineRecordDialog(
-    bundle: org.hl7.fhir.r4.model.Bundle,
-    vaccineSummary: PatientVaccineSummary
-  ) {
-    val immunization = bundle.entry.first { it.resource is Immunization }.resource as Immunization
-
-    val doseNumber = immunization.protocolApplied.first().doseNumberPositiveIntType.value
-    val message: String
-    val titleText: String
-    val vaccineDate = immunization.occurrenceDateTimeType.toHumanDisplay()
-    val nextVaccineDate =
-      DateUtils.addDays(vaccineDate, 28, dateTimeFormat = "MMM d, yyyy h:mm:ss a")
-    val currentDose = immunization.vaccineCode.coding.first().code
-    val initialDose = vaccineSummary.initialDose
-    val isSameAsFirstDose =
-      initialDose.isEmpty() || currentDose.equals(initialDose, ignoreCase = true)
-    if (isSameAsFirstDose) {
-      message =
-        when (doseNumber) {
-          2 -> resources.getString(R.string.fully_vaccinated)
-          else ->
-            resources.getString(
-              R.string.immunization_next_dose_text,
-              doseNumber + 1,
-              nextVaccineDate
-            )
-        }
-      titleText =
-        this.getString(R.string.ordinal_vaccine_dose_recorded, immunization.vaccineCode.text)
-    } else {
-      message = getString(R.string.second_vaccine_dose_should_be_same_first)
-      titleText = getString(R.string.initially_received_x).format(initialDose)
-    }
-
-    val dialogBuilder =
-      AlertDialog.Builder(this).apply {
-        setTitle(titleText)
-        setMessage(message)
-        setNegativeButton(R.string.done) { dialogInterface, _ ->
-          dialogInterface.dismiss()
-          if (isSameAsFirstDose) {
-            questionnaireViewModel.saveBundleResources(bundle)
-            finish()
-          }
-        }
-      }
-
-    dialogBuilder.create().run {
-      setCancelable(false)
-      show()
+  fun sanitizeExtractedData(immunization: Immunization, lastVaccine: PatientVaccineSummary?) {
+    // get from previous vaccine plus one OR as first dose
+    val currentDose = lastVaccine?.doseNumber?.plus(1) ?: 1
+    immunization.apply {
+      protocolAppliedFirstRep.doseNumber = PositiveIntType(currentDose)
+      occurrence = DateTimeType.now()
+      patient = Reference().apply { reference = "Patient/$clientIdentifier" }
+      status = Immunization.ImmunizationStatus.COMPLETED
     }
   }
 
-  private fun handleExtractionError() {
+  override fun postSaveSuccessful() {
+    val nextVaccineDate = savedImmunization.nextDueDateFmt()
+    val currentDose = savedImmunization.protocolAppliedFirstRep.doseNumberPositiveIntType.value
+
+    val title =
+      getString(
+        R.string.ordinal_vaccine_dose_recorded,
+        savedImmunization.vaccineCode.codingFirstRep.code,
+        currentDose.ordinalOf()
+      )
+    val message =
+      when (currentDose) {
+        2 -> resources.getString(R.string.fully_vaccinated)
+        else ->
+          resources.getString(
+            R.string.immunization_next_dose_text,
+            currentDose + 1,
+            nextVaccineDate
+          )
+      }
+
+    AlertDialogue.showInfoAlert(
+      this,
+      message,
+      title,
+      {
+        it.dismiss()
+        finish()
+      },
+      R.string.done
+    )
+  }
+
+  private fun handleValidation(previous: PatientVaccineSummary?, current: Immunization): Boolean {
+    if (previous?.doseNumber == 2) {
+      AlertDialogue.showErrorAlert(this, R.string.already_fully_vaccinated)
+      return false
+    }
+
+    if (previous != null &&
+        !current.vaccineCode.codingFirstRep.code.contentEquals(previous.initialDose, true)
+    ) {
+      AlertDialogue.showErrorAlert(
+        this,
+        getString(R.string.second_vaccine_dose_should_be_same_first),
+        getString(R.string.initially_received_x).format(previous.initialDose)
+      )
+      return false
+    }
+
+    return true
+  }
+
+  private fun handleExtractionError(questionnaireResponse: QuestionnaireResponse) {
+    Timber.e(
+      "Immunization extraction failed for ${
+      fhirParser.encodeResourceToString(
+        questionnaireResponse
+      )
+      }"
+    )
+
     AlertDialog.Builder(this)
       .setTitle(getString(R.string.error_reading_immunization_details))
       .setMessage(getString(R.string.kindly_retry_contact_devs_problem_persists))

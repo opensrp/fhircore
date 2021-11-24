@@ -28,6 +28,7 @@ import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.overdue
@@ -56,7 +57,8 @@ class AncItemMapper @Inject constructor(@ApplicationContext val context: Context
       age = age,
       demographics = "$name, $gender, $age",
       address = if (dto.head == null) patient.extractAddress() else dto.head.extractAddress(),
-      visitStatus = visitStatus
+      visitStatus = visitStatus,
+      familyName = patient.extractFamilyName()
     )
   }
 }

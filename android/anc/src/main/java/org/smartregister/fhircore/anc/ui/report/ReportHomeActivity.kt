@@ -17,47 +17,57 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.os.Parcel
+import android.os.Parcelable
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
+import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.common.collect.Lists
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
-import java.util.concurrent.Executors
+import java.util.Date
 import javax.inject.Inject
+import kotlin.collections.ArrayList
+import kotlin.collections.List
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.model.VisitStatus
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.ui.anccare.register.Anc
+import org.smartregister.fhircore.anc.ui.report.ReportViewModel.ReportScreen
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.cql.MeasureEvaluator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
+import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.FileUtil
+import org.smartregister.fhircore.engine.util.extension.createFactory
 
 @AndroidEntryPoint
 class ReportHomeActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var fhirResourceDataSource: FhirResourceDataSource
+
+  @Inject lateinit var ancPatientRepository: PatientRepository
+
   lateinit var parser: IParser
   lateinit var fhirContext: FhirContext
   lateinit var libraryEvaluator: LibraryEvaluator
@@ -97,9 +107,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   lateinit var patientId: String
   val reportViewModel by viewModels<ReportViewModel>()
 
-  val executor = Executors.newSingleThreadExecutor()
-  val handler = Handler(Looper.getMainLooper())
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     libraryEvaluator = LibraryEvaluator()
@@ -109,12 +116,30 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
 
     val patientId =
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-    reportViewModel.patientId = patientId
+    reportViewModel.apply {
+      this.patientId = patientId
+      registerDataViewModel = initializeRegisterDataViewModel(ancPatientRepository)
+    }
+
+    reportViewModel.registerDataViewModel.currentPage.observe(
+      this,
+      { reportViewModel.registerDataViewModel.loadPageData(it) }
+    )
+
     reportViewModel.backPress.observe(
       this,
       {
         if (it) {
           finish()
+        }
+      }
+    )
+
+    reportViewModel.showDatePicker.observe(
+      this,
+      {
+        if (it) {
+          showDatePicker()
         }
       }
     )
@@ -151,24 +176,54 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         FileUtil.getProperty("cql_measure_report_lib_initial_string", it, cqlConfigFileName)
       }!!
 
+    reportViewModel.patientSelectionType.observe(
+      this,
+      {
+        if (it.equals("Individual", true)) {
+          reportViewModel.filterValue.postValue(kotlin.Pair(RegisterFilterType.SEARCH_FILTER, ""))
+          reportViewModel.reportState.currentScreen = ReportScreen.PICK_PATIENT
+        }
+      }
+    )
+
+    reportViewModel.isReadyToGenerateReport.observe(
+      this,
+      { reportViewModel.reportState.currentScreen = ReportScreen.FILTER }
+    )
+
+    reportViewModel.filterValue.observe(
+      this,
+      {
+        lifecycleScope.launch(Dispatchers.Main) {
+          val (registerFilterType, value) = it
+          if (value != null) {
+            reportViewModel.registerDataViewModel.run {
+              showResultsCount(true)
+              filterRegisterData(
+                registerFilterType = registerFilterType,
+                filterValue = value,
+                registerFilter = this@ReportHomeActivity::performFilter
+              )
+              reportViewModel.reportState.currentScreen = ReportScreen.PICK_PATIENT
+            }
+          } else {
+            reportViewModel.registerDataViewModel.run {
+              showResultsCount(false)
+              reloadCurrentPageData()
+            }
+            reportViewModel.reportState.currentScreen = ReportScreen.PICK_PATIENT
+          }
+        }
+      }
+    )
+
     setContent {
       AppTheme {
         Surface(color = colorResource(id = R.color.white)) {
           Column {
-            TopAppBar(
-              title = {
-                Text(text = stringResource(id = R.string.reports), Modifier.testTag(TOOLBAR_TITLE))
-              },
-              navigationIcon = {
-                IconButton(
-                  onClick = reportViewModel::onBackPress,
-                  Modifier.testTag(TOOLBAR_BACK_ARROW)
-                ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
-              }
-            )
+            ReportView(reportViewModel)
             loadCQLLibraryData()
             loadMeasureEvaluateLibrary()
-            ReportHomeScreen(reportViewModel)
           }
         }
       }
@@ -187,6 +242,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         .fetchCQLLibraryData(parser, fhirResourceDataSource, libraryURL)
         .observe(this, this::handleCQLLibraryData)
     }
+    reportViewModel.reportState.currentScreen = ReportScreen.PREHOMElOADING
   }
 
   fun loadCQLHelperData() {
@@ -238,6 +294,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       val libraryStreamMeasure: InputStream =
         ByteArrayInputStream(measureEvaluateLibraryData.toByteArray())
       libraryMeasure = parser.parseResource(libraryStreamMeasure) as IBaseBundle
+      reportViewModel.reportState.currentScreen = ReportScreen.HOME
     } else {
       reportViewModel
         .fetchCQLMeasureEvaluateLibraryAndValueSets(
@@ -327,6 +384,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     val libraryStreamMeasure: InputStream =
       ByteArrayInputStream(measureEvaluateLibraryData.toByteArray())
     libraryMeasure = parser.parseResource(libraryStreamMeasure) as IBaseBundle
+    reportViewModel.reportState.currentScreen = ReportScreen.HOME
   }
 
   fun loadCQLMeasurePatientData() {
@@ -337,5 +395,88 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
 
   fun handleCQLMeasureLoadPatient(auxPatientData: String) {
     patientDetailsData = auxPatientData
+  }
+
+  private fun performFilter(
+    registerFilterType: RegisterFilterType,
+    data: PatientItem,
+    value: Any
+  ): Boolean {
+    return when (registerFilterType) {
+      RegisterFilterType.SEARCH_FILTER -> {
+        if (value is String && value.isEmpty()) return true
+        else
+          data.name.contains(value.toString(), ignoreCase = true) ||
+            data.patientIdentifier.contentEquals(value.toString())
+      }
+      RegisterFilterType.OVERDUE_FILTER -> {
+        return data.visitStatus == VisitStatus.OVERDUE
+      }
+    }
+  }
+
+  fun showDatePicker() {
+    val builder = MaterialDatePicker.Builder.datePicker()
+    builder.setSelection(reportViewModel.getSelectionDate())
+    val startDateMillis = reportViewModel.startDateTimeMillis.value ?: Date().time
+    val endDateMillis = reportViewModel.endDateTimeMillis.value ?: Date().time
+    val forStartOnly = if (reportViewModel.isChangingStartDate.value != false) 1L else 0L
+    builder.setCalendarConstraints(limitRange(forStartOnly, startDateMillis, endDateMillis).build())
+    val picker = builder.build()
+    picker.show(supportFragmentManager, picker.toString())
+    val funOnDatePicked = reportViewModel::onDatePicked
+    picker.addOnPositiveButtonClickListener { funOnDatePicked(it) }
+  }
+
+  /*  Limit selectable range to start and end Date provided */
+  fun limitRange(
+    forStartDateOnly: Long,
+    startDateMillis: Long,
+    endDateMillis: Long
+  ): CalendarConstraints.Builder {
+    val constraintsBuilderRange = CalendarConstraints.Builder()
+    if (forStartDateOnly == 1L) constraintsBuilderRange.setEnd(endDateMillis)
+    else constraintsBuilderRange.setStart(startDateMillis)
+    constraintsBuilderRange.setValidator(
+      RangeValidator(forStartDateOnly, startDateMillis, endDateMillis)
+    )
+    return constraintsBuilderRange
+  }
+
+  class RangeValidator(
+    private val forStartDateOnly: Long,
+    private val minDate: Long,
+    private val maxDate: Long
+  ) : CalendarConstraints.DateValidator {
+    constructor(parcel: Parcel) : this(parcel.readLong(), parcel.readLong(), parcel.readLong())
+
+    override fun writeToParcel(dest: Parcel?, flags: Int) {}
+
+    override fun describeContents(): Int {
+      TODO("nothing to implement")
+    }
+    override fun isValid(date: Long): Boolean {
+      return if (forStartDateOnly == 1L) maxDate >= date else minDate <= date
+    }
+    companion object CREATOR : Parcelable.Creator<RangeValidator> {
+      override fun createFromParcel(parcel: Parcel): RangeValidator {
+        return RangeValidator(parcel)
+      }
+      override fun newArray(size: Int): Array<RangeValidator?> {
+        return arrayOfNulls(size)
+      }
+    }
+  }
+
+  @Suppress("UNCHECKED_CAST")
+  fun initializeRegisterDataViewModel(
+    ancPatientRepository: PatientRepository
+  ): RegisterDataViewModel<Anc, PatientItem> {
+    return ViewModelProvider(
+      viewModelStore,
+      RegisterDataViewModel(application = application, registerRepository = ancPatientRepository)
+        .createFactory()
+    )[RegisterDataViewModel::class.java] as
+      RegisterDataViewModel<Anc, PatientItem>
   }
 }

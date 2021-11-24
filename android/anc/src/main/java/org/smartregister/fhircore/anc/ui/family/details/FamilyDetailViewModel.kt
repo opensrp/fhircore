@@ -20,8 +20,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 
@@ -40,11 +42,17 @@ constructor(
 
   private val mEncounters: LiveData<List<Encounter>> by lazy { repository.fetchEncounters() }
 
+  private val mFamilyCarePlans: LiveData<List<CarePlan>> by lazy {
+    repository.fetchFamilyCarePlans()
+  }
+
   private var mAppBackClickListener: () -> Unit = {}
   private var mAddMemberItemClickListener: () -> Unit = {}
   private var mMemberItemClickListener: (item: FamilyMemberItem) -> Unit = {}
   private var mSeeAllEncounterClickListener: () -> Unit = {}
   private var mEncounterItemClickListener: (item: Encounter) -> Unit = {}
+  private var mSeeAllUpcomingServiceClickListener: () -> Unit = {}
+  private var mUpcomingServiceItemClickListener: (item: Task) -> Unit = {}
 
   override fun getDemographics(): LiveData<Patient> {
     return mDemographics
@@ -56,6 +64,10 @@ constructor(
 
   override fun getEncounters(): LiveData<List<Encounter>> {
     return mEncounters
+  }
+
+  override fun getFamilyCarePlans(): LiveData<List<CarePlan>> {
+    return mFamilyCarePlans
   }
 
   override fun getAppBackClickListener(): () -> Unit {
@@ -78,6 +90,14 @@ constructor(
     return mEncounterItemClickListener
   }
 
+  override fun getSeeAllUpcomingServiceClickListener(): () -> Unit {
+    return mSeeAllUpcomingServiceClickListener
+  }
+
+  override fun getUpcomingServiceItemClickListener(): (item: Task) -> Unit {
+    return mUpcomingServiceItemClickListener
+  }
+
   fun setAppBackClickListener(listener: () -> Unit) {
     mAppBackClickListener = listener
   }
@@ -96,5 +116,13 @@ constructor(
 
   fun setEncounterItemClickListener(listener: (item: Encounter) -> Unit) {
     mEncounterItemClickListener = listener
+  }
+
+  fun setSeeAllUpcomingServiceClickListener(listener: () -> Unit) {
+    mSeeAllUpcomingServiceClickListener = listener
+  }
+
+  fun setUpcomingServiceItemClickListener(listener: (item: Task) -> Unit) {
+    mUpcomingServiceItemClickListener = listener
   }
 }

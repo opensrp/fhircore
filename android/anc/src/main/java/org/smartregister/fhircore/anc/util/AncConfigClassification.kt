@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.ui.report
+package org.smartregister.fhircore.anc.util
 
-import org.smartregister.fhircore.engine.util.ListenerIntent
+import org.smartregister.fhircore.engine.configuration.ConfigClassification
 
-/** [ListenerIntent] used on individual rows click listeners for reports type items. */
-sealed class ReportListenerIntent : ListenerIntent
-
-object OpenReportFilter : ReportListenerIntent()
+enum class AncConfigClassification : ConfigClassification {
+  PATIENT_REGISTER,
+  LOGIN;
+  override val classification: String = name.lowercase()
+}

@@ -28,10 +28,13 @@ import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
 import org.smartregister.fhircore.anc.ui.report.ReportHomeActivity
-import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
+import org.smartregister.fhircore.anc.util.AncConfigClassification
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
+import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 
 @AndroidEntryPoint
@@ -41,17 +44,15 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
 
   @Inject lateinit var patientRepository: PatientRepository
 
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    configureViews(
-      registerViewConfigurationOf(
-        showScanQRCode = false,
-        appTitle = getString(R.string.family_register_title),
-        newClientButtonText = getString(R.string.add_family),
-        showSideMenu = false,
-        showBottomMenu = true
+    val registerViewConfiguration =
+      configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
+        configClassification = AncConfigClassification.PATIENT_REGISTER,
       )
-    )
+    configureViews(registerViewConfiguration)
   }
 
   override fun supportedFragments(): Map<String, Fragment> =
@@ -93,11 +94,26 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
           isRegisterFragment = false,
           toolbarTitle = getString(R.string.profile)
         )
-      R.id.menu_item_register -> switchFragment(mainFragmentTag())
+      R.id.menu_item_register, R.id.menu_item_families -> switchFragment(mainFragmentTag())
       R.id.menu_item_reports -> navigateToReports()
+      R.id.menu_item_anc_clients -> switchFragment(tag = AncRegisterFragment.TAG)
     }
     return true
   }
+
+  override fun sideMenuOptions(): List<SideMenuOption> =
+    listOf(
+      SideMenuOption(
+        itemId = R.id.menu_item_families,
+        titleResource = R.string.families,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
+      ),
+      SideMenuOption(
+        itemId = R.id.menu_item_anc_clients,
+        titleResource = R.string.anc_clients,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
+      )
+    )
 
   fun navigateToReports() {
     val intent = Intent(this, ReportHomeActivity::class.java)

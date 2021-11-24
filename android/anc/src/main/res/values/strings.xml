@@ -83,4 +83,21 @@
 
     <string name="families">Families</string>
     <string name="anc_clients">ANC Clients</string>
+
+    <string name="date_range">Date range</string>
+    <string name="patient">Patient</string>
+    <string name="all">All</string>
+    <string name="individual">Individual</string>
+    <string name="start_date">Start date</string>
+    <string name="end_date">End date</string>
+    <string name="generate_report">Generate Report</string>
+    <string name="change">Change</string>
+    <string name="add">ADD</string>
+    <string name="anc_visit_due">ANC visit due</string>
+    <string name="household_tasks">Household Tasks</string>
+    <string name="monthly_visit">Monthly Visit</string>
+    <string name="head_of_household">Head of household</string>
+    <string name="forward_arrow">Forward arrow</string>
+    <string name="select_patient">SELECT PATIENT</string>
+    <string name="search_patient_hint">Search for a patient name</string>
 </resources>

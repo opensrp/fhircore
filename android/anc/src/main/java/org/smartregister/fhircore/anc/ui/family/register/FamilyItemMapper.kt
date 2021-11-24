@@ -54,19 +54,20 @@ constructor(
       age = head.extractAge(),
       address = head.extractAddress(),
       isPregnant = head.isPregnant(),
-      members = members.map { toFamilyMemberItem(it) },
+      members = members.map { toFamilyMemberItem(it, head.logicalId) },
       servicesDue = servicesDue.flatMap { it.activity }.filter { it.detail.due() }.size,
       servicesOverdue = servicesDue.flatMap { it.activity }.filter { it.detail.overdue() }.size
     )
   }
 
-  fun toFamilyMemberItem(member: Patient): FamilyMemberItem {
+  fun toFamilyMemberItem(member: Patient, familyId: String): FamilyMemberItem {
     return FamilyMemberItem(
       name = member.extractName(),
       id = member.logicalId,
       age = member.extractAge(),
       gender = (member.extractGender(context)?.firstOrNull() ?: "").toString(),
-      pregnant = member.isPregnant()
+      pregnant = member.isPregnant(),
+      houseHoldHead = familyId == member.logicalId
     )
   }
 }

@@ -8,13 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2021-xx-xx
 
 ### Added
+- ANC | Update Family Profile view
 - ANC | Migrated loading of measure report libraries to the report module from anc details page. Also did some optimizations.
+- ANC | Report Measures List Items, Filter Selection, Patient Selection, Compose UI unit tests
+- ANC | Report Patient Date Range Selection with year, Patient Search compose UI
+- ANC | Report Result Page Individual Patient Item plus unit tests 
 - EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
 - Quest | Add the ability to search for patients by id
 - Quest | Add ability to view previous QuestionnaireResponse
 - Quest | Added workflow configurations
 - EIR | Added workflow configurations
-- ANC | Report Measures List Items, Filter Selection
 - Quest | Add photo capture questionnaire widget
 - Quest | Add ability to edit questionnaire responses
 
@@ -53,7 +56,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Bottom sheet for switching registers added
 - ANC | User actions, profile screen implemented
 - ANC | Drawer menu removed
-- ANC | Reports List UI Items
 
 ### Fixed
 

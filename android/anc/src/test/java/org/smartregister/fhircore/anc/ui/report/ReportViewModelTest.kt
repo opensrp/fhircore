@@ -17,10 +17,12 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.MutableLiveData
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.spyk
@@ -33,7 +35,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
+import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 
 @ExperimentalCoroutinesApi
@@ -41,6 +45,7 @@ internal class ReportViewModelTest {
 
   private lateinit var fhirEngine: FhirEngine
   private lateinit var reportRepository: ReportRepository
+  private lateinit var ancPatientRepository: PatientRepository
   private lateinit var reportViewModel: ReportViewModel
   @MockK lateinit var parser: IParser
   @MockK lateinit var fhirResourceDataSource: FhirResourceDataSource
@@ -50,6 +55,10 @@ internal class ReportViewModelTest {
 
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
+  private val testReportItem = ReportItem(title = "TestReportItem")
+  private val patientSelectionType = MutableLiveData("All")
+  private val isChangingStartDate = MutableLiveData(true)
+  private val isChangingEndDate = MutableLiveData(true)
 
   @Before
   fun setUp() {
@@ -57,9 +66,17 @@ internal class ReportViewModelTest {
 
     fhirEngine = mockk(relaxed = true)
     reportRepository = mockk()
-
+    ancPatientRepository = mockk()
     reportViewModel =
-      spyk(ReportViewModel(reportRepository, coroutinesTestRule.testDispatcherProvider))
+      spyk(
+        ReportViewModel(
+          reportRepository,
+          ancPatientRepository,
+          coroutinesTestRule.testDispatcherProvider
+        )
+      )
+    every { reportViewModel.patientSelectionType } returns
+      this@ReportViewModelTest.patientSelectionType
   }
 
   @Test
@@ -139,5 +156,105 @@ internal class ReportViewModelTest {
         )
         .value!!
     Assert.assertNotNull(libraryDataLiveData)
+  }
+
+  @Test
+  fun testShouldVerifyStartDatePressListener() {
+    reportViewModel.onStartDatePress()
+    Assert.assertEquals(true, reportViewModel.isChangingStartDate.value)
+    Assert.assertEquals(true, reportViewModel.showDatePicker.value)
+  }
+
+  @Test
+  fun testShouldVerifyEndDatePressListener() {
+    reportViewModel.onEndDatePress()
+    Assert.assertEquals(true, reportViewModel.showDatePicker.value)
+    Assert.assertEquals(false, reportViewModel.isChangingStartDate.value)
+  }
+
+  @Test
+  fun testShouldVerifyBackFromFilterClickListener() {
+    reportViewModel.onBackPressFromFilter()
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.HOME,
+      reportViewModel.reportState.currentScreen
+    )
+  }
+
+  @Test
+  fun testShouldVerifyBackFromPatientSelection() {
+    reportViewModel.onBackPressFromPatientSearch()
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.FILTER,
+      reportViewModel.reportState.currentScreen
+    )
+  }
+
+  @Test
+  fun testShouldVerifyBackFromResultClickListener() {
+    reportViewModel.onBackPressFromResult()
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.FILTER,
+      reportViewModel.reportState.currentScreen
+    )
+  }
+
+  @Test
+  fun testGetSelectionDate() {
+    Assert.assertNotNull(reportViewModel.getSelectionDate())
+  }
+
+  @Test
+  fun testShouldVerifyReportItemClickListener() {
+    val expectedReportItem = testReportItem
+    reportViewModel.onReportMeasureItemClicked(testReportItem)
+    Assert.assertEquals(expectedReportItem, reportViewModel.selectedMeasureReportItem.value)
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.FILTER,
+      reportViewModel.reportState.currentScreen
+    )
+  }
+
+  @Test
+  fun testShouldVerifyPatientSelectionChanged() {
+    val expectedSelection = ReportViewModel.PatientSelectionType.ALL
+    reportViewModel.onPatientSelectionTypeChanged("All")
+    Assert.assertEquals(expectedSelection, reportViewModel.patientSelectionType.value)
+  }
+
+  @Test
+  fun testShouldVerifyGenerateReportClickListener() {
+    reportViewModel.onGenerateReportPress()
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.RESULT,
+      reportViewModel.reportState.currentScreen
+    )
+  }
+
+  @Test
+  fun testVerifyOnDatePickedForStartAndEndDate() {
+    //  2021-11-11 16:04:43.212 E/aw: onDatePicked-> start=1637798400000 end=1639094400000
+    //  25 Nov, 2021  -  10 Dec, 2021
+    //  val dateSelection = androidx.core.util.Pair(1637798400000, 1639094400000)
+    val expectedStartDate = "25 Nov, 2021"
+    val expectedEndDate = "10 Dec, 2021"
+
+    every { reportViewModel.isChangingStartDate } returns
+      this@ReportViewModelTest.isChangingStartDate
+    every { reportViewModel.startDate.value } returns "25 Nov, 2021"
+    every { reportViewModel.endDate.value } returns "10 Dec, 2021"
+
+    reportViewModel.onDatePicked(1637798400000)
+    Assert.assertEquals(expectedStartDate, reportViewModel.startDate.value)
+
+    every { reportViewModel.isChangingStartDate } returns this@ReportViewModelTest.isChangingEndDate
+    reportViewModel.onDatePicked(1639094400000)
+    Assert.assertEquals(expectedEndDate, reportViewModel.endDate.value)
+
+    Assert.assertEquals(true, reportViewModel.isReadyToGenerateReport.value)
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.FILTER,
+      reportViewModel.reportState.currentScreen
+    )
   }
 }

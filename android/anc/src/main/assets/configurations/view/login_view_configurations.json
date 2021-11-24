@@ -1,0 +1,18 @@
+[
+  {
+    "appId": "anc",
+    "classification": "login",
+    "applicationName": "ANC",
+    "applicationVersion": "0.0.3",
+    "darkMode": true,
+    "showLogo": false
+  },
+  {
+    "appId": "ecbis",
+    "classification": "login",
+    "applicationName": "ECBIS",
+    "applicationVersion": "0.0.1",
+    "darkMode": false,
+    "showLogo": true
+  }
+]

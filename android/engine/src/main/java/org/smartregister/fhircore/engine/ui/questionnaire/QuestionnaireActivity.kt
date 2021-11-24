@@ -204,7 +204,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           context = this,
           message = R.string.questionnaire_alert_submit_message,
           title = R.string.questionnaire_alert_submit_title,
-          confirmButtonListener = { handleQuestionnaireSubmit(editMode) },
+          confirmButtonListener = { handleQuestionnaireSubmit() },
           confirmButtonText = R.string.questionnaire_alert_submit_button_title
         )
       }
@@ -246,10 +246,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   private lateinit var saveProcessingAlertDialog: AlertDialog
 
   fun dismissSaveProcessing() {
-    saveProcessingAlertDialog.dismiss()
+    if (::saveProcessingAlertDialog.isInitialized && saveProcessingAlertDialog.isShowing)
+      saveProcessingAlertDialog.dismiss()
   }
 
-  open fun handleQuestionnaireSubmit(editMode: Boolean = false) {
+  open fun handleQuestionnaireSubmit() {
     saveProcessingAlertDialog = showProgressAlert(this, R.string.saving_registration)
 
     val questionnaireResponse = getQuestionnaireResponse()
@@ -264,19 +265,23 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       return
     }
 
-    handleQuestionnaireResponse(questionnaireResponse, editMode)
+    handleQuestionnaireResponse(questionnaireResponse)
 
     questionnaireViewModel.extractionProgress.observe(
       this,
       { result ->
         saveProcessingAlertDialog.dismiss()
         if (result) {
-          finish()
+          postSaveSuccessful()
         } else {
           Timber.e("An error occurred during extraction")
         }
       }
     )
+  }
+
+  open fun postSaveSuccessful() {
+    finish()
   }
 
   // TODO remove this when SDK bug for validation is fixed
@@ -324,13 +329,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
-    handleQuestionnaireResponse(questionnaireResponse, false)
-  }
-
-  open fun handleQuestionnaireResponse(
-    questionnaireResponse: QuestionnaireResponse,
-    editMode: Boolean = false
-  ) {
     questionnaireViewModel.extractAndSaveResources(
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,

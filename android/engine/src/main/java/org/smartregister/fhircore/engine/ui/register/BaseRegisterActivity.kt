@@ -110,6 +110,8 @@ abstract class BaseRegisterActivity :
 
   val registerViewModel: RegisterViewModel by viewModels()
 
+  private lateinit var drawerMenuHeaderBinding: DrawerMenuHeaderBinding
+
   private lateinit var registerActivityBinding: BaseRegisterActivityBinding
 
   override val configurableViews: Map<String, View> = mutableMapOf()
@@ -224,13 +226,13 @@ abstract class BaseRegisterActivity :
 
     setupNewClientButtonView(registerViewModel.registerViewConfiguration.value!!)
 
-    updateRegisterTitle()
-
     setupSearchView()
 
     setupDueButtonView()
 
     switchFragment(mainFragmentTag())
+
+    updateRegisterTitle()
   }
 
   private fun syncButtonClick() {
@@ -341,7 +343,7 @@ abstract class BaseRegisterActivity :
       }
     }
 
-    val drawerMenuHeaderBinding: DrawerMenuHeaderBinding =
+    drawerMenuHeaderBinding =
       DataBindingUtil.bind(registerActivityBinding.navView.getHeaderView(0))!!
     drawerMenuHeaderBinding.tvNavHeader.text = viewConfiguration.appTitle
 

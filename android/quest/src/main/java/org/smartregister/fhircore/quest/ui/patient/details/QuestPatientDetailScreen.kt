@@ -60,6 +60,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.extractAge
@@ -74,6 +75,8 @@ const val TOOLBAR_MENU = "toolbarMenuTag"
 const val PATIENT_NAME = "patientNameTag"
 const val FORM_ITEM = "formItemTag"
 const val RESULT_ITEM = "resultItemTag"
+const val FORM_CONTAINER_ITEM = "formItemContainerTag"
+const val RESULT_CONTAINER_ITEM = "resultItemContainerTag"
 
 @Composable
 fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
@@ -111,11 +114,40 @@ fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
 }
 
 @Composable
-fun FormItem(form: QuestionnaireConfig, clickHandler: (form: QuestionnaireConfig) -> Unit) {
+fun ResultItem(form: QuestionnaireResponse, dataProvider: QuestPatientDetailViewModel) {
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween,
+    modifier =
+      Modifier.fillMaxWidth()
+        .padding(12.dp)
+        .clickable { dataProvider.onTestResultItemClickListener(form) }
+        .testTag(RESULT_ITEM)
+  ) {
+    Text(
+      text = (form.meta?.tagFirstRep?.display ?: "") + " (${form.authored?.asDdMmmYyyy() ?: ""}) ",
+      color = colorResource(id = R.color.black),
+      fontSize = 17.sp,
+      textAlign = TextAlign.Start,
+      modifier = Modifier.padding(end = 12.dp)
+    )
+
+    Image(
+      painter = painterResource(id = R.drawable.ic_forward_arrow),
+      contentDescription = "",
+      colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray))
+    )
+  }
+}
+
+@Composable
+fun FormItem(form: QuestionnaireConfig, dataProvider: QuestPatientDetailViewModel) {
   Card(
     backgroundColor = colorResource(id = R.color.cornflower_blue),
-    elevation = 0.dp,
-    modifier = Modifier.fillMaxWidth().clickable { clickHandler(form) }.testTag(FORM_ITEM)
+    modifier =
+      Modifier.fillMaxWidth()
+        .clickable { dataProvider.onFormItemClickListener(form) }
+        .testTag(FORM_ITEM)
   ) {
     Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(6.dp)) {
       Text(
@@ -137,8 +169,6 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
   Surface(color = colorResource(id = R.color.white_smoke)) {
     Column {
       Toolbar(questPatientDetailViewModel)
-
-      // full name with gender and age
       Column(
         modifier =
           Modifier.fillMaxWidth()
@@ -155,6 +185,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
         )
       }
 
+      // Forms section
       Column(
         modifier =
           Modifier.fillMaxSize()
@@ -165,32 +196,33 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
         Card(
           elevation = 3.dp,
           backgroundColor = colorResource(id = R.color.white),
-          modifier = Modifier.fillMaxWidth()
+          modifier = Modifier.fillMaxWidth().testTag(FORM_CONTAINER_ITEM)
         ) {
           Column(modifier = Modifier.padding(16.dp)) {
             forms?.let { allForms ->
               allForms.forEachIndexed { index, it ->
-                FormItem(it) { questPatientDetailViewModel.onFormItemClickListener(it) }
-
+                FormItem(it, questPatientDetailViewModel)
                 if (index < allForms.size.minus(1)) {
                   Spacer(Modifier.height(16.dp))
                 }
               }
             }
+              ?: Text(text = stringResource(id = R.string.loading_forms))
           }
         }
 
-        // responses section
         Spacer(Modifier.height(24.dp))
+
+        // Responses section
         Text(
-          text = "RESPONSES",
+          text = "RESPONSES (${testResults?.size?.toString() ?: ""})",
           color = colorResource(id = R.color.grayText),
           fontSize = 16.sp,
           fontWeight = FontWeight.Bold
         )
         Card(
           elevation = 4.dp,
-          modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+          modifier = Modifier.fillMaxWidth().padding(top = 12.dp).testTag(RESULT_CONTAINER_ITEM)
         ) {
           Column() {
             val totalResultsCount = testResults?.count() ?: 0
@@ -222,11 +254,27 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
 
               if (index < totalResultsCount) {
                 Divider(color = colorResource(id = R.color.white_smoke))
+                Column {
+                  // fetch responses
+                  testResults?.let {
+                    it.forEachIndexed { index, item ->
+                      ResultItem(item, questPatientDetailViewModel)
+
+                      if (index < it.size) {
+                        Divider(color = colorResource(id = R.color.white_smoke))
+                      }
+                    }
+                  }
+                    ?: Text(
+                      text = stringResource(id = R.string.loading_responses),
+                      modifier = Modifier.padding(16.dp)
+                    )
+                }
               }
+              Spacer(Modifier.height(24.dp))
             }
           }
         }
-        Spacer(Modifier.height(24.dp))
       }
     }
   }

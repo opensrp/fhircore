@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +48,8 @@ import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.quest.R
 
+const val PATIENT_BIO_INFO = "patientBioInfo"
+
 @Composable
 fun QuestPatientTestResultScreen(questPatientDetailViewModel: QuestPatientDetailViewModel) {
   val patient by questPatientDetailViewModel.patient.observeAsState(null)
@@ -54,11 +57,17 @@ fun QuestPatientTestResultScreen(questPatientDetailViewModel: QuestPatientDetail
   Surface(color = colorResource(id = R.color.white_smoke)) {
     Column {
       TopAppBar(
-        title = { Text(text = stringResource(id = R.string.back_to_clients)) },
+        title = {
+          Text(
+            text = stringResource(id = R.string.back_to_clients),
+            Modifier.testTag(TOOLBAR_TITLE)
+          )
+        },
         navigationIcon = {
-          IconButton(onClick = { questPatientDetailViewModel.onBackPressed(true) }) {
-            Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")
-          }
+          IconButton(
+            onClick = { questPatientDetailViewModel.onBackPressed(true) },
+            Modifier.testTag(TOOLBAR_BACK_ARROW)
+          ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
         }
       )
 
@@ -67,6 +76,7 @@ fun QuestPatientTestResultScreen(questPatientDetailViewModel: QuestPatientDetail
           Modifier.fillMaxWidth()
             .background(color = colorResource(id = R.color.colorPrimary))
             .padding(12.dp)
+            .testTag(PATIENT_BIO_INFO)
       ) {
         Text(
           text = patient?.extractName() ?: "",

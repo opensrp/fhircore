@@ -37,6 +37,11 @@ class QuestApplicationTest : RobolectricTest() {
   }
 
   @Test
+  fun testSyncJobShouldReturnNonNull() {
+    Assert.assertNotNull(QuestApplication.getContext().syncJob)
+  }
+
+  @Test
   fun testResourceSyncParam() {
     val syncParam = app.resourceSyncParams
     Assert.assertTrue(syncParam.isNotEmpty())

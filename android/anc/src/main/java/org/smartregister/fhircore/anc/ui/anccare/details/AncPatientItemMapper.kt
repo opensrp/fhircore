@@ -24,6 +24,7 @@ import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.ui.anccare.register.Anc
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.isPregnant
@@ -44,6 +45,7 @@ class AncPatientItemMapper @Inject constructor(@ApplicationContext val context: 
       age = age,
       isPregnant = isPregnant,
       demographics = "$name, $gender, $age",
+      familyName = patient.extractFamilyName()
     )
   }
 }

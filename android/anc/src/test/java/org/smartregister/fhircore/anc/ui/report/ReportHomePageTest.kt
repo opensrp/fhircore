@@ -17,43 +17,63 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import android.app.Application
+import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.FhirEngine
 import io.mockk.mockk
 import io.mockk.spyk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.robolectric.annotation.Config
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
+import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 
-@Config(shadows = [AncApplicationShadow::class])
-class ReportHomeScreenTest : RobolectricTest() {
+@ExperimentalCoroutinesApi
+class ReportHomePageTest : RobolectricTest() {
 
   private val app = ApplicationProvider.getApplicationContext<Application>()
+  private lateinit var fhirEngine: FhirEngine
   private lateinit var repository: ReportRepository
+  private lateinit var ancPatientRepository: PatientRepository
   private lateinit var viewModel: ReportViewModel
+  @get:Rule val composeRule = createComposeRule()
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
   @Before
   fun setUp() {
-    repository = mockk()
+    fhirEngine = mockk()
+    repository =
+      spyk(
+        ReportRepository(fhirEngine, "testPatientID", ApplicationProvider.getApplicationContext())
+      )
+    ancPatientRepository =
+      spyk(PatientRepository(fhirEngine, AncItemMapper, coroutinesTestRule.testDispatcherProvider))
     viewModel =
       spyk(
         objToCopy =
           ReportViewModel(
-            ApplicationProvider.getApplicationContext(),
+            repository,
+            ancPatientRepository,
             coroutinesTestRule.testDispatcherProvider
           )
       )
   }
 
+  @Ignore("Fix tracked on https://github.com/opensrp/fhircore/issues/760")
   @Test
-  @Ignore("composeRule.setContent is failing")
   fun testReportHomeScreenComponents() {
+    composeRule.setContent { ReportHomeScreen(viewModel = viewModel) }
     // toolbar should have valid title and icon
+    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals(app.getString(R.string.reports))
+    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
   }
 }

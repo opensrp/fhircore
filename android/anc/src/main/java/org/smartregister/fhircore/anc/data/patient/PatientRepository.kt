@@ -63,6 +63,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
@@ -170,7 +171,8 @@ constructor(
             name = patient.extractName(),
             gender = patient.extractGender(context) ?: "",
             isPregnant = patient.isPregnant(),
-            age = patient.extractAge()
+            age = patient.extractAge(),
+            familyName = patient.extractFamilyName()
           )
         ancPatientDetailItem = PatientDetailItem(ancPatientItem, ancPatientItemHead)
       }

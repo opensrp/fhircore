@@ -19,22 +19,20 @@ package org.smartregister.fhircore.eir.ui.patient.register
 import android.content.Context
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.data.model.PatientItem
 import org.smartregister.fhircore.eir.data.model.PatientVaccineStatus
 import org.smartregister.fhircore.eir.data.model.VaccineStatus
+import org.smartregister.fhircore.eir.ui.patient.details.isOverdue
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.extension.atRisk
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.getLastSeen
+import org.smartregister.fhircore.engine.util.extension.toDisplay
 
 class PatientItemMapper @Inject constructor(@ApplicationContext val context: Context) :
   DomainMapper<Pair<Patient, List<Immunization>>, PatientItem> {
@@ -57,17 +55,12 @@ class PatientItemMapper @Inject constructor(@ApplicationContext val context: Con
   }
 
   private fun List<Immunization>.getVaccineStatus(): PatientVaccineStatus {
-    val calendar: Calendar = Calendar.getInstance()
-    calendar.add(Calendar.DATE, -28)
-    val overDueStart: Date = calendar.time
-    val formatter = SimpleDateFormat("dd-MM-yy", Locale.US)
     val computedStatus =
       if (this.size >= 2) VaccineStatus.VACCINATED
-      else if (this.size == 1 && this[0].recorded.before(overDueStart)) VaccineStatus.OVERDUE
+      else if (this.size == 1 && this[0].isOverdue()) VaccineStatus.OVERDUE
       else if (this.size == 1) VaccineStatus.PARTIAL else VaccineStatus.DUE
 
-    val date = if (this.isNotEmpty()) this[0].recorded else null
-    val dateUpToDate = if (date == null) "" else formatter.format(date)
-    return PatientVaccineStatus(status = computedStatus, date = dateUpToDate)
+    val date = if (this.isNullOrEmpty()) "" else this[0].occurrenceDateTimeType.toDisplay()
+    return PatientVaccineStatus(status = computedStatus, date = date)
   }
 }
