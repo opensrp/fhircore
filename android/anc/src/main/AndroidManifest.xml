@@ -17,7 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
         <activity
-            android:name=".ui.login.LoginActivity"
+            android:name="org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,6 +25,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ui.login.LoginActivity" />
         <activity android:name=".ui.family.register.FamilyRegisterActivity" />
         <activity android:name=".ui.report.ReportHomeActivity" />
         <activity

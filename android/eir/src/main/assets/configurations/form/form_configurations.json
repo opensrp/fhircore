@@ -12,6 +12,12 @@
     "identifier": "800"
   },
   {
+    "appId": "covax",
+    "form": "adverse-event",
+    "title": "Adverse Event",
+    "identifier": "1568"
+  },
+  {
     "appId": "jnj",
     "form": "patient-registration",
     "title": "Add Patient",
