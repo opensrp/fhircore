@@ -17,23 +17,25 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import android.os.Bundle
+import android.os.Parcel
+import android.os.Parcelable
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Surface
 import androidx.compose.ui.res.colorResource
-import androidx.core.util.Pair
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.common.collect.Lists
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
-import java.util.Calendar
+import java.util.Date
 import kotlin.collections.ArrayList
 import kotlin.collections.List
 import kotlinx.coroutines.Dispatchers
@@ -141,7 +143,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       this,
       {
         if (it) {
-          showDateRangePicker(reportViewModel::onDateSelected)
+          showDatePicker()
         }
       }
     )
@@ -182,6 +184,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       this,
       {
         if (it.equals("Individual", true)) {
+          reportViewModel.filterValue.postValue(kotlin.Pair(RegisterFilterType.SEARCH_FILTER, ""))
           reportViewModel.reportState.currentScreen = ReportScreen.PICK_PATIENT
         }
       }
@@ -205,12 +208,14 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
                 filterValue = value,
                 registerFilter = this@ReportHomeActivity::performFilter
               )
+              reportViewModel.reportState.currentScreen = ReportScreen.PICK_PATIENT
             }
           } else {
             reportViewModel.registerDataViewModel.run {
               showResultsCount(false)
               reloadCurrentPageData()
             }
+            reportViewModel.reportState.currentScreen = ReportScreen.PICK_PATIENT
           }
         }
       }
@@ -419,13 +424,55 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     }
   }
 
-  private fun showDateRangePicker(onDateSelected: (Pair<Long, Long>?) -> Unit) {
-    val builder = MaterialDatePicker.Builder.dateRangePicker()
-    val now = Calendar.getInstance()
-    builder.setSelection(Pair(now.timeInMillis, now.timeInMillis))
-    val dateRangePicker = builder.build()
-    dateRangePicker.show(supportFragmentManager, dateRangePicker.toString())
-    dateRangePicker.addOnPositiveButtonClickListener { onDateSelected(dateRangePicker.selection) }
+  fun showDatePicker() {
+    val builder = MaterialDatePicker.Builder.datePicker()
+    builder.setSelection(reportViewModel.getSelectionDate())
+    val startDateMillis = reportViewModel.startDateTimeMillis.value ?: Date().time
+    val endDateMillis = reportViewModel.endDateTimeMillis.value ?: Date().time
+    val forStartOnly = if (reportViewModel.isChangingStartDate.value != false) 1L else 0L
+    builder.setCalendarConstraints(limitRange(forStartOnly, startDateMillis, endDateMillis).build())
+    val picker = builder.build()
+    picker.show(supportFragmentManager, picker.toString())
+    val funOnDatePicked = reportViewModel::onDatePicked
+    picker.addOnPositiveButtonClickListener { funOnDatePicked(it) }
+  }
+
+  /*  Limit selectable range to start and end Date provided */
+  fun limitRange(
+    forStartDateOnly: Long,
+    startDateMillis: Long,
+    endDateMillis: Long
+  ): CalendarConstraints.Builder {
+    val constraintsBuilderRange = CalendarConstraints.Builder()
+    if (forStartDateOnly == 1L) constraintsBuilderRange.setEnd(endDateMillis)
+    else constraintsBuilderRange.setStart(startDateMillis)
+    constraintsBuilderRange.setValidator(
+      RangeValidator(forStartDateOnly, startDateMillis, endDateMillis)
+    )
+    return constraintsBuilderRange
+  }
+
+  class RangeValidator(
+    private val forStartDateOnly: Long,
+    private val minDate: Long,
+    private val maxDate: Long
+  ) : CalendarConstraints.DateValidator {
+    constructor(parcel: Parcel) : this(parcel.readLong(), parcel.readLong(), parcel.readLong())
+    override fun writeToParcel(dest: Parcel?, flags: Int) {}
+    override fun describeContents(): Int {
+      TODO("nothing to implement")
+    }
+    override fun isValid(date: Long): Boolean {
+      return if (forStartDateOnly == 1L) maxDate >= date else minDate <= date
+    }
+    companion object CREATOR : Parcelable.Creator<RangeValidator> {
+      override fun createFromParcel(parcel: Parcel): RangeValidator {
+        return RangeValidator(parcel)
+      }
+      override fun newArray(size: Int): Array<RangeValidator?> {
+        return arrayOfNulls(size)
+      }
+    }
   }
 
   @Suppress("UNCHECKED_CAST")

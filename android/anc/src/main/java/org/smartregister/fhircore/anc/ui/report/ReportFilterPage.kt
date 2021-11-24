@@ -51,7 +51,8 @@ fun ReportFilterPage(
   onBackPress: () -> Unit,
   startDate: String,
   endDate: String,
-  onDateRangePress: () -> Unit,
+  onStartDatePress: () -> Unit,
+  onEndDatePress: () -> Unit,
   patientSelectionText: String,
   onPatientSelectionTypeChanged: (String) -> Unit,
   generateReportEnabled: Boolean,
@@ -61,7 +62,7 @@ fun ReportFilterPage(
   Surface(color = colorResource(id = R.color.white)) {
     Column(modifier = Modifier.fillMaxSize()) {
       TopBarBox(topBarTitle, onBackPress)
-      DateSelectionBox(startDate, endDate, true, onDateRangePress)
+      DateSelectionBox(startDate, endDate, true, onStartDatePress, onEndDatePress)
       PatientSelectionBox(patientSelectionText, selectedPatient, onPatientSelectionTypeChanged)
       GenerateReportButton(generateReportEnabled, onGenerateReportPress)
     }
@@ -84,7 +85,8 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
     onBackPress = viewModel::onBackPressFromFilter,
     startDate = startDate,
     endDate = endDate,
-    onDateRangePress = viewModel::onDateRangePress,
+    onStartDatePress = viewModel::onStartDatePress,
+    onEndDatePress = viewModel::onEndDatePress,
     patientSelectionText = patientSelectionType ?: "All",
     onPatientSelectionTypeChanged = viewModel::onPatientSelectionTypeChanged,
     generateReportEnabled = generateReportEnabled ?: true,
@@ -134,7 +136,8 @@ fun ReportFilterPreview() {
     onBackPress = {},
     startDate = "StartDate",
     endDate = "EndDate",
-    onDateRangePress = {},
+    onStartDatePress = {},
+    onEndDatePress = {},
     patientSelectionText = "ALL",
     onPatientSelectionTypeChanged = {},
     generateReportEnabled = false,
