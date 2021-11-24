@@ -114,18 +114,24 @@ fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
 }
 
 @Composable
-fun ResultItem(form: QuestionnaireResponse, dataProvider: QuestPatientDetailViewModel) {
+fun ResultItem(
+  questionnaireResponse: QuestionnaireResponse,
+  questPatientDetailViewModel: QuestPatientDetailViewModel
+) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween,
     modifier =
       Modifier.fillMaxWidth()
         .padding(12.dp)
-        .clickable { dataProvider.onTestResultItemClickListener(form) }
+        .clickable {
+          questPatientDetailViewModel.onTestResultItemClickListener(questionnaireResponse)
+        }
         .testTag(RESULT_ITEM)
   ) {
     Text(
-      text = (form.meta?.tagFirstRep?.display ?: "") + " (${form.authored?.asDdMmmYyyy() ?: ""}) ",
+      text = (questionnaireResponse.meta?.tagFirstRep?.display
+          ?: "") + " (${questionnaireResponse.authored?.asDdMmmYyyy() ?: ""}) ",
       color = colorResource(id = R.color.black),
       fontSize = 17.sp,
       textAlign = TextAlign.Start,
@@ -141,17 +147,20 @@ fun ResultItem(form: QuestionnaireResponse, dataProvider: QuestPatientDetailView
 }
 
 @Composable
-fun FormItem(form: QuestionnaireConfig, dataProvider: QuestPatientDetailViewModel) {
+fun FormItem(
+  questionnaireConfig: QuestionnaireConfig,
+  questPatientDetailViewModel: QuestPatientDetailViewModel
+) {
   Card(
     backgroundColor = colorResource(id = R.color.cornflower_blue),
     modifier =
       Modifier.fillMaxWidth()
-        .clickable { dataProvider.onFormItemClickListener(form) }
+        .clickable { questPatientDetailViewModel.onFormItemClickListener(questionnaireConfig) }
         .testTag(FORM_ITEM)
   ) {
     Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(6.dp)) {
       Text(
-        text = form.title.uppercase(),
+        text = questionnaireConfig.title.uppercase(),
         color = colorResource(id = R.color.colorPrimary),
         fontSize = 15.sp,
         fontWeight = FontWeight.Bold,
