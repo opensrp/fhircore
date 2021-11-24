@@ -16,10 +16,6 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
-import android.app.Activity
-import android.util.Log
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -46,6 +42,8 @@ import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun ReportFilterPage(
@@ -90,31 +88,40 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
     patientSelectionText = patientSelectionType ?: "All",
     onPatientSelectionTypeChanged = viewModel::onPatientSelectionTypeChanged,
     generateReportEnabled = generateReportEnabled ?: true,
-    onGenerateReportPress = { testRunCQL(startDate,endDate,
-      reportMeasureItem!!.reportType,
-      selectedPatient!!.patientIdentifier,
-      reportHomeActivity
-    ) },
+    onGenerateReportPress = {
+      generateMeasureReport(
+        startDate,
+        endDate,
+        reportMeasureItem!!.reportType,
+        selectedPatient!!.patientIdentifier,
+        selectedPatient!!.familyName,
+        reportHomeActivity,
+        viewModel
+      )
+    },
     selectedPatient = selectedPatient ?: PatientItem()
   )
 }
 
-fun testRunCQL(
+fun generateMeasureReport(
   startDate:String,
   endDate:String,
   reportType:String,
   patientId:String,
-  reportHomeActivity:ReportHomeActivity
+  subject:String,
+  reportHomeActivity:ReportHomeActivity,
+  reportViewModel: ReportViewModel
   ){
-  Log.i("startDate",startDate)
-  Log.i("endDate",endDate)
-  Log.i("reportType",reportType)
-  Log.i("patientId",patientId)
+  val pattern = "yyyy-MM-dd"
+  val simpleDateFormat = SimpleDateFormat(pattern)
 
+  reportHomeActivity.cqlMeasureReportStartDate=simpleDateFormat.format(Date(startDate))
+  reportHomeActivity.cqlMeasureReportEndDate=simpleDateFormat.format(Date(endDate))
   reportHomeActivity.patientId=patientId
+  reportHomeActivity.cqlMeasureReportSubject=subject
   reportHomeActivity.cqlMeasureReportReportType=reportType
+  reportViewModel.reportState.currentScreen = ReportViewModel.ReportScreen.PREHOMElOADING
   reportHomeActivity.loadCQLMeasurePatientData()
-
 
 }
 
@@ -140,7 +147,9 @@ fun ReportFilterPreview() {
 fun GenerateReportButton(generateReportEnabled: Boolean, onGenerateReportClicked: () -> Unit) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
-    modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(vertical = 20.dp),
     verticalAlignment = Alignment.Bottom
   ) {
     Column(modifier = Modifier.align(Alignment.Bottom)) {
@@ -148,7 +157,10 @@ fun GenerateReportButton(generateReportEnabled: Boolean, onGenerateReportClicked
         enabled = generateReportEnabled,
         onClick = onGenerateReportClicked,
         modifier =
-          Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag(REPORT_GENERATE_BUTTON)
+        Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp)
+          .testTag(REPORT_GENERATE_BUTTON)
       ) {
         Text(
           color = Color.White,

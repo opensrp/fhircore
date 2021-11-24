@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Surface
@@ -87,6 +86,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   var cqlMeasureReportEndDate = ""
   var cqlMeasureReportReportType = ""
   var cqlMeasureReportLibInitialString = ""
+  var cqlMeasureReportSubject = ""
   var cqlHelperURL = ""
   var valueSetURL = ""
   var patientURL = ""
@@ -221,7 +221,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         Surface(color = colorResource(id = R.color.white)) {
           Column {
             ReportView(reportViewModel)
-//            loadCQLLibraryData()
             loadMeasureEvaluateLibrary()
           }
         }
@@ -357,19 +356,18 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     )
   }
 
-  fun handleMeasureEvaluate(): String {
+  fun handleMeasureEvaluate() {
     val parameters= measureEvaluator.runMeasureEvaluate(
       patientResourcesIBase,
       libraryMeasure,
       fhirContext,
       cqlMeasureReportURL,
-      "2020-01-01",
-      "2020-01-31",
+      cqlMeasureReportStartDate,
+      cqlMeasureReportEndDate,
       cqlMeasureReportReportType,
-      "Mom"
+      cqlMeasureReportSubject
     )
-    Log.i("parameters",parameters)
-    return parameters
+    reportViewModel.reportState.currentScreen = ReportScreen.RESULT
   }
 
   fun handleMeasureEvaluateLibrary(auxMeasureEvaluateLibData: String) {
@@ -395,8 +393,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   }
 
   fun handleCQLMeasureLoadPatient(auxPatientData: String) {
-    Log.i("auxPatientData",auxPatientData)
-
     val testData = libraryEvaluator.processCQLPatientBundle(auxPatientData)
     val patientDataStream: InputStream = ByteArrayInputStream(testData!!.toByteArray())
     patientDataIBase = parser.parseResource(patientDataStream) as IBaseBundle
