@@ -36,21 +36,18 @@ import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.annotation.Config
 import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.activity.BaseRegisterActivityTest
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 
-@Config(shadows = [AncApplicationShadow::class])
 internal class FamilyRegisterActivityTest : BaseRegisterActivityTest() {
 
   private lateinit var familyRegisterActivity: FamilyRegisterActivity
