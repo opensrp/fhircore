@@ -16,12 +16,15 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -29,9 +32,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,8 +60,9 @@ fun ReportResultPreview() {
       ),
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
-    isAllPatientSelection = true,
-    selectedPatient = PatientItem(name = "Test Selected Patient")
+    isAllPatientSelection = false,
+    selectedPatient =
+      PatientItem(name = "Test Selected Patient", demographics = "Test Select, F, 28")
   )
 }
 
@@ -68,9 +75,10 @@ fun ReportResultScreen(viewModel: ReportViewModel) {
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
   val isAllPatientSelected = patientSelectionType == "All"
+
   ReportResultPage(
     topBarTitle = reportMeasureItem?.title ?: "",
-    onBackPress = viewModel::onBackPressFromFilter,
+    onBackPress = viewModel::onBackPressFromResult,
     reportMeasureItem = reportMeasureItem ?: ReportItem(title = "Measure Report Missing"),
     startDate = startDate,
     endDate = endDate,
@@ -90,37 +98,38 @@ fun ReportResultPage(
   selectedPatient: PatientItem
 ) {
   Surface(color = colorResource(id = R.color.white)) {
-    Column(modifier = Modifier.fillMaxSize().testTag(REPORT_RESULT_PAGE)) {
+    Column(
+      modifier =
+        Modifier.background(color = colorResource(id = R.color.backgroundGray))
+          .fillMaxSize()
+          .testTag(REPORT_RESULT_PAGE)
+    ) {
       TopBarBox(topBarTitle = topBarTitle, onBackPress = onBackPress)
       Spacer(modifier = Modifier.height(16.dp))
-      DateRangeItem(
-        text = reportMeasureItem.description,
-        canChange = true,
-        clickListener = {},
-        Modifier.padding(start = 8.dp)
-      )
-      Spacer(modifier = Modifier.height(8.dp))
-      DateSelectionBox(
-        startDate = startDate,
-        endDate = endDate,
-        canChange = false,
-        onDateRangePress = {}
-      )
-      Spacer(modifier = Modifier.height(16.dp))
-      if (isAllPatientSelection) {
-        Text(
-          color = SubtitleTextColor,
-          text = "Patient = All",
-          fontSize = 14.sp,
-          modifier = Modifier.wrapContentWidth()
-        )
-      } else {
-        Text(
-          color = SubtitleTextColor,
-          text = "Patient = ${selectedPatient.name}",
-          fontSize = 14.sp,
-          modifier = Modifier.wrapContentWidth()
-        )
+      Column(modifier = Modifier.padding(16.dp)) {
+        Box(
+          modifier =
+            Modifier.clip(RoundedCornerShape(8.dp))
+              .background(color = colorResource(id = R.color.light_gray))
+              .padding(12.dp)
+              .wrapContentWidth(),
+          contentAlignment = Alignment.Center
+        ) {
+          Text(text = reportMeasureItem.description, textAlign = TextAlign.Start, fontSize = 16.sp)
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        DateSelectionBox(startDate = startDate, endDate = endDate, canChange = false)
+        Spacer(modifier = Modifier.height(16.dp))
+        if (isAllPatientSelection) {
+          Text(
+            color = SubtitleTextColor,
+            text = "Patient = All",
+            fontSize = 14.sp,
+            modifier = Modifier.wrapContentWidth()
+          )
+        } else {
+          ResultItemIndividual(selectedPatient = selectedPatient)
+        }
       }
     }
   }

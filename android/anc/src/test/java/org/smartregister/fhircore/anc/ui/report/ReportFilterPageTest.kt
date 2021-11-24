@@ -48,7 +48,8 @@ class ReportFilterPageTest : RobolectricTest() {
     spyk(
       object {
         // Imitate click action by doing nothing
-        fun onDateRangePress() {}
+        fun onStartDatePress() {}
+        fun onEndDatePress() {}
         fun onPatientSelectionChanged() {}
         fun onGenerateReportClick() {}
       }
@@ -82,7 +83,8 @@ class ReportFilterPageTest : RobolectricTest() {
         onBackPress = {},
         startDate = "",
         endDate = "",
-        onDateRangePress = { listenerObjectSpy.onDateRangePress() },
+        onStartDatePress = { listenerObjectSpy.onStartDatePress() },
+        onEndDatePress = { listenerObjectSpy.onEndDatePress() },
         patientSelectionText = "All",
         onPatientSelectionTypeChanged = { listenerObjectSpy.onPatientSelectionChanged() },
         generateReportEnabled = true,
