@@ -30,6 +30,7 @@ import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
+import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 @ExperimentalCoroutinesApi
@@ -73,7 +74,8 @@ class ReportResultPageTest : RobolectricTest() {
         startDate = "",
         endDate = "",
         isAllPatientSelection = true,
-        selectedPatient = PatientItem()
+        selectedPatient = PatientItem(),
+        resultForIndividual = ResultItem()
       )
     }
     composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals("FilterResultReportTitle")

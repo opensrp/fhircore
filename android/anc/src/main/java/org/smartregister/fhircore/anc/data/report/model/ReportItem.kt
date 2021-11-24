@@ -27,3 +27,18 @@ data class ReportItem(
   val description: String = "",
   val reportType: String = "",
 )
+
+@Stable
+@Serializable
+data class ReportResult(
+  val isForAllPatient: Boolean = false,
+  val individualResultItem: ResultItem
+)
+
+@Stable
+@Serializable
+data class ResultItem(
+  val title: String = "",
+  val isMatchedIndicator: Boolean = false,
+  val description: String = "",
+)

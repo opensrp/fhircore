@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
+import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
@@ -74,7 +75,8 @@ fun ReportResultPreview() {
     endDate = "29 Nov, 2021",
     isAllPatientSelection = false,
     selectedPatient =
-      PatientItem(name = "Test Selected Patient", demographics = "Test Select, F, 28")
+      PatientItem(name = "Test Selected Patient", demographics = "Test Select, F, 28"),
+    ResultItem(title = "Preview", description = "testing preview")
   )
 }
 
@@ -87,6 +89,7 @@ fun ReportResultScreen(viewModel: ReportViewModel) {
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
   val isAllPatientSelected = patientSelectionType == "All"
+  val resultForIndividual by viewModel.resultForIndividual.observeAsState(ResultItem())
 
   ReportResultPage(
     topBarTitle = reportMeasureItem?.title ?: "",
@@ -95,7 +98,8 @@ fun ReportResultScreen(viewModel: ReportViewModel) {
     startDate = startDate,
     endDate = endDate,
     isAllPatientSelection = isAllPatientSelected,
-    selectedPatient = selectedPatient ?: PatientItem(name = "Patient Missing")
+    selectedPatient = selectedPatient ?: PatientItem(name = "Patient Missing"),
+    resultForIndividual = resultForIndividual
   )
 }
 
@@ -107,7 +111,8 @@ fun ReportResultPage(
   startDate: String,
   endDate: String,
   isAllPatientSelection: Boolean,
-  selectedPatient: PatientItem
+  selectedPatient: PatientItem,
+  resultForIndividual: ResultItem
 ) {
   Surface(color = colorResource(id = R.color.white)) {
     Column(
@@ -139,7 +144,12 @@ fun ReportResultPage(
             modifier = Modifier.wrapContentWidth()
           )
         } else {
-          ResultItemIndividual(selectedPatient = selectedPatient)
+          ResultItemIndividual(
+            selectedPatient = selectedPatient,
+            isMatchedIndicator = resultForIndividual.isMatchedIndicator,
+            indicatorStatus = resultForIndividual.title,
+            indicatorDescription = resultForIndividual.description
+          )
         }
       }
     }
