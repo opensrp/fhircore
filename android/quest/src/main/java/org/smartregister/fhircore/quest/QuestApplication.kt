@@ -17,13 +17,18 @@
 package org.smartregister.fhircore.quest
 
 import android.app.Application
+import android.content.Context
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJob
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.hl7.fhir.r4.model.*
+import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.json.JSONArray
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
@@ -40,25 +45,82 @@ open class QuestApplication : Application(), ConfigurableApplication {
     get() = Sync.basicSyncJob(getContext())
 
   override lateinit var applicationConfiguration: ApplicationConfiguration
+  val SAMPLE_SEARCH_PARAMETER_PATIENT_FILE = "sample_search_parameter_patient.json"
+  val SYNC_BY_TAGS = "sync_by_tags.json"
 
   override val authenticationService: AuthenticationService
     get() = QuestAuthenticationService(applicationContext)
 
   override val fhirEngine: FhirEngine by lazy { FhirEngineProvider.getInstance(this) }
 
+  override val fhirPathEngine = FHIRPathEngine(SimpleWorkerContext())
+
   override val secureSharedPreference: SecureSharedPreference
     get() = SecureSharedPreference(applicationContext)
 
+
+/*  override val resourceSyncParams: Map<ResourceType, Map<String, String>>
+  get() {
+    return mapOf(
+            ResourceType.CarePlan to mapOf(),
+            ResourceType.Patient to mapOf(),
+            ResourceType.Questionnaire to mapOf(),
+            ResourceType.QuestionnaireResponse to mapOf(),
+            ResourceType.Binary to mapOf()
+    )
+  }*/
+
+  /*override val resourceSyncParams: Map<ResourceType, Map<String, String>>
+    get() {
+      val searchParams = loadSearchParams(this)
+
+      val practitionerRole: PractitionerRole = PractitionerRole().apply {
+        this.organization = Reference().apply {
+          this.reference = "Organization/3454"
+        }
+      }
+
+      val organization = fhirPathEngine.evaluate(practitionerRole, "organization")
+
+      val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
+      for (i in searchParams.indices) {
+        pairs.add(Pair(ResourceType.fromCode(searchParams[i].base[0].code), mapOf(searchParams[i].expression to (organization.first() as Reference).reference)))
+      }
+
+      return mapOf(*pairs.toTypedArray())
+    }*/
+
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() {
-      return mapOf(
-        ResourceType.CarePlan to mapOf(),
-        ResourceType.Patient to mapOf(),
-        ResourceType.Questionnaire to mapOf(),
-        ResourceType.QuestionnaireResponse to mapOf(),
-        ResourceType.Binary to mapOf()
-      )
+      val searchParams = loadSearchParams(this)
+
+      val practitionerRole: PractitionerRole = PractitionerRole().apply {
+        this.meta.tag = listOf(Coding("https://www.snomed.org", "35359004", "Tag-code"))
+      }
+
+      val tag = fhirPathEngine.evaluate(practitionerRole, "meta.tag")
+
+      val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
+      for (i in searchParams.indices) {
+        pairs.add(Pair(ResourceType.fromCode(searchParams[i].base[0].code), mapOf(searchParams[i].expression to (tag.first() as Coding).code)))
+      }
+
+      return mapOf(*pairs.toTypedArray())
     }
+
+
+  private fun loadSearchParams(context: Context): List<SearchParameter> {
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val json = context.assets.open(SYNC_BY_TAGS)
+            .bufferedReader().use { it.readText() }
+    val searchParameters = mutableListOf<SearchParameter>()
+
+    val jsonArrayEntry = JSONArray(json)
+    for (i in 0 until jsonArrayEntry.length()) {
+      searchParameters.add(iParser.parseResource(jsonArrayEntry[i].toString()) as SearchParameter)
+    }
+    return searchParameters
+  }
 
   private fun buildPublisherFilterMap(): MutableMap<String, String> {
     val questionnaireFilterMap: MutableMap<String, String> = HashMap()

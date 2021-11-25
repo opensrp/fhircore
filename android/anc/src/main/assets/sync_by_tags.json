@@ -1,0 +1,67 @@
+[
+  {
+    "resourceType": "SearchParameter",
+    "id": "_tag",
+    "url": "http://hl7.org/fhir/SearchParameter/Patient-tag",
+    "version": "4.0.1",
+    "name": "_tag",
+    "code": "_tag",
+    "base": [
+      "Patient"
+    ],
+    "type": "token",
+    "expression": "_tag"
+  },
+  {
+    "resourceType": "SearchParameter",
+    "id": "_tag",
+    "url": "http://hl7.org/fhir/SearchParameter/Patient-tag",
+    "version": "4.0.1",
+    "name": "_tag",
+    "code": "_tag",
+    "base": [
+      "Encounter"
+    ],
+    "type": "token",
+    "expression": "patient._tag"
+  },
+  {
+    "resourceType": "SearchParameter",
+    "id": "_tag",
+    "url": "http://hl7.org/fhir/SearchParameter/Patient-tag",
+    "version": "4.0.1",
+    "name": "_tag",
+    "code": "_tag",
+    "base": [
+      "Observation"
+    ],
+    "type": "token",
+    "expression": "patient._tag"
+  },
+  {
+    "resourceType": "SearchParameter",
+    "id": "_tag",
+    "url": "http://hl7.org/fhir/SearchParameter/Patient-tag",
+    "version": "4.0.1",
+    "name": "_tag",
+    "code": "_tag",
+    "base": [
+      "CarePlan"
+    ],
+    "type": "token",
+    "expression": "patient._tag"
+  },
+  {
+    "resourceType": "SearchParameter",
+    "id": "_tag",
+    "url": "http://hl7.org/fhir/SearchParameter/Patient-tag",
+    "version": "4.0.1",
+    "name": "_tag",
+    "code": "_tag",
+    "base": [
+      "Condition"
+    ],
+    "type": "token",
+    "expression": "patient._tag"
+  }
+]

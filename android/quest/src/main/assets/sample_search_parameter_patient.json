@@ -1,0 +1,54 @@
+[
+  {
+    "resourceType": "SearchParameter",
+    "id": "Organization-identifier",
+    "url": "http://hl7.org/fhir/SearchParameter/Organization-identifier",
+    "version": "4.0.1",
+    "name": "organization",
+    "code": "organization",
+    "base": [
+      "Patient"
+    ],
+    "type": "token",
+    "expression": "organization"
+  },
+  {
+    "resourceType": "SearchParameter",
+    "id": "Organization-identifier",
+    "url": "http://hl7.org/fhir/SearchParameter/Organization-identifier",
+    "version": "4.0.1",
+    "name": "organization",
+    "code": "organization",
+    "base": [
+      "Encounter"
+    ],
+    "type": "token",
+    "expression": "subject.organization"
+  },
+  {
+    "resourceType": "SearchParameter",
+    "id": "Organization-identifier",
+    "url": "http://hl7.org/fhir/SearchParameter/Organization-identifier",
+    "version": "4.0.1",
+    "name": "organization",
+    "code": "organization",
+    "base": [
+      "Observation"
+    ],
+    "type": "token",
+    "expression": "subject.organization"
+  },
+  {
+    "resourceType": "SearchParameter",
+    "id": "Organization-identifier",
+    "url": "http://hl7.org/fhir/SearchParameter/Organization-identifier",
+    "version": "4.0.1",
+    "name": "organization",
+    "code": "organization",
+    "base": [
+      "CarePlan"
+    ],
+    "type": "token",
+    "expression": "subject.organization"
+  }
+]
