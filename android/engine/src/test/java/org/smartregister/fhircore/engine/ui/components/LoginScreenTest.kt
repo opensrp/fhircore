@@ -33,7 +33,6 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.ui.login.APP_LOGO_TAG
 import org.smartregister.fhircore.engine.ui.login.APP_NAME_TEXT_TAG
 import org.smartregister.fhircore.engine.ui.login.LOGIN_BUTTON_TAG
 import org.smartregister.fhircore.engine.ui.login.LOGIN_FOOTER
@@ -47,7 +46,6 @@ class LoginScreenTest : RobolectricTest() {
   @get:Rule val composeRule = createComposeRule()
 
   private lateinit var loginViewModel: LoginViewModel
-  private lateinit var loginViewModelWithLogo: LoginViewModel
   private val app = ApplicationProvider.getApplicationContext<Application>()
   private val username = MutableLiveData("")
   private val password = MutableLiveData("")
@@ -58,25 +56,6 @@ class LoginScreenTest : RobolectricTest() {
   @Before
   fun setUp() {
     loginViewModel =
-      mockk {
-        every { loginViewConfiguration } returns MutableLiveData(loginConfig)
-        every { username } returns this@LoginScreenTest.username
-        every { password } returns this@LoginScreenTest.password
-        every { loginError } returns this@LoginScreenTest.loginError
-        every { showProgressBar } returns this@LoginScreenTest.showProgressBar
-        every { onUsernameUpdated(any()) } answers
-          {
-            this@LoginScreenTest.username.value = firstArg()
-          }
-        every { onPasswordUpdated(any()) } answers
-          {
-            this@LoginScreenTest.password.value = firstArg()
-          }
-        every { attemptRemoteLogin() } returns Unit
-      }
-
-    loginConfig.showLogo = true
-    loginViewModelWithLogo =
       mockk {
         every { loginViewConfiguration } returns MutableLiveData(loginConfig)
         every { username } returns this@LoginScreenTest.username
@@ -131,15 +110,5 @@ class LoginScreenTest : RobolectricTest() {
 
     // verify login footer group properties
     composeRule.onNodeWithTag(LOGIN_FOOTER).assertExists()
-  }
-
-  @Test
-  fun testLoginScreenComponentsWithLogo() {
-
-    composeRule.setContent { LoginScreen(loginViewModelWithLogo) }
-
-    // verifying app logo properties
-    composeRule.onNodeWithTag(APP_LOGO_TAG).assertExists()
-    composeRule.onNodeWithTag(APP_LOGO_TAG).assertIsDisplayed()
   }
 }
