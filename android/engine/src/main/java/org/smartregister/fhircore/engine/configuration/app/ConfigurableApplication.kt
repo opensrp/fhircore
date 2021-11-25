@@ -25,6 +25,7 @@ import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 
 /**
  * An interface that provides the application configurations. Every FHIR based application is

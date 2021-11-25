@@ -31,8 +31,11 @@ import org.json.JSONArray
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
@@ -50,12 +53,17 @@ open class AncApplication : Application(), ConfigurableApplication {
 
   override val fhirEngine: FhirEngine by lazy { FhirEngineProvider.getInstance(this) }
 
-  override val fhirPathEngine = FHIRPathEngine(SimpleWorkerContext())
+  override val fhirPathEngine = FHIRPathEngine(workerContextProvider)
 
   override val secureSharedPreference: SecureSharedPreference
     get() = SecureSharedPreference(applicationContext)
 
-/*  override val resourceSyncParams: Map<ResourceType, Map<String, String>>
+  override val authenticatedUserInfo: UserInfo?
+    get() = SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)
+            ?.decodeJson<UserInfo>()
+
+
+  override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() =
       mapOf(
               ResourceType.Patient to mapOf(),
@@ -64,39 +72,7 @@ open class AncApplication : Application(), ConfigurableApplication {
               ResourceType.Encounter to mapOf(),
               ResourceType.CarePlan to mapOf(),
               ResourceType.Condition to mapOf(),
-      )*/
-
-  override val resourceSyncParams: Map<ResourceType, Map<String, String>>
-    get() {
-      val searchParams = loadSearchParams(this)
-
-      val practitionerRole: PractitionerRole = PractitionerRole().apply {
-        this.meta.tag = listOf(Coding("https://www.snomed.org", "35359004", "Tag-code"))
-      }
-
-      val tag = fhirPathEngine.evaluate(practitionerRole, "meta.tag")
-
-      val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
-      for (i in searchParams.indices) {
-        pairs.add(Pair(ResourceType.fromCode(searchParams[i].base[0].code), mapOf(searchParams[i].expression to (tag.first() as Coding).code)))
-      }
-
-      return mapOf(*pairs.toTypedArray())
-    }
-
-
-  private fun loadSearchParams(context: Context): List<SearchParameter> {
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
-    val json = context.assets.open(SYNC_BY_TAGS)
-            .bufferedReader().use { it.readText() }
-    val searchParameters = mutableListOf<SearchParameter>()
-
-    val jsonArrayEntry = JSONArray(json)
-    for (i in 0 until jsonArrayEntry.length()) {
-      searchParameters.add(iParser.parseResource(jsonArrayEntry[i].toString()) as SearchParameter)
-    }
-    return searchParameters
-  }
+      )
 
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
     this.applicationConfiguration = applicationConfiguration

@@ -46,9 +46,35 @@
     "name": "organization",
     "code": "organization",
     "base": [
-      "CarePlan"
+      "Condition"
     ],
     "type": "token",
     "expression": "subject.organization"
+  },
+  {
+    "resourceType": "SearchParameter",
+    "id": "Organization-identifier",
+    "url": "http://hl7.org/fhir/SearchParameter/Organization-identifier",
+    "version": "4.0.1",
+    "name": "organization",
+    "code": "organization",
+    "base": [
+      "QuestionnaireResponse"
+    ],
+    "type": "token",
+    "expression": "subject.organization"
+  },
+  {
+    "resourceType": "SearchParameter",
+    "id": "Questionnaire-publisher",
+    "url": "http://hl7.org/fhir/SearchParameter/Questionnaire-publisher",
+    "version": "4.0.1",
+    "name": "publisher",
+    "code": "publisher",
+    "base": [
+      "Questionnaire"
+    ],
+    "type": "token",
+    "expression": "publisher"
   }
 ]
