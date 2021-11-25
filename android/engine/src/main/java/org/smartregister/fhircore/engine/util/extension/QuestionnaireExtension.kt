@@ -68,3 +68,46 @@ private fun List<QuestionnaireResponse.QuestionnaireResponseItemComponent>.find(
 
   return result
 }
+
+enum class FieldType {
+  EXTENSION,
+  DEFINITION
+}
+
+fun QuestionnaireResponse.find(
+  fieldType: FieldType,
+  value: String
+): List<QuestionnaireResponse.QuestionnaireResponseItemComponent> {
+  val result = mutableListOf<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
+  item.find(fieldType, value, result)
+  return result
+}
+
+private fun List<QuestionnaireResponse.QuestionnaireResponseItemComponent>.find(
+  fieldType: FieldType,
+  value: String,
+  target: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>
+) {
+  forEach {
+    when (fieldType) {
+      FieldType.EXTENSION -> {
+        if (it.extension.any { ex -> ex.url.contentEquals(value, true) }) {
+          target.add(it)
+        }
+      }
+      FieldType.DEFINITION -> {
+        if (it.definition.contains(value, true)) {
+          target.add(it)
+        }
+      }
+    }
+
+    if (it.item.isNotEmpty()) {
+      it.item.find(fieldType, value, target)
+    }
+
+    it.answer.forEach {
+      it.item.find(fieldType, value, target)
+    }
+  }
+}

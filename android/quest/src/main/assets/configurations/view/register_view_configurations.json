@@ -14,7 +14,7 @@
     "showNewClientButton": true,
     "showSideMenu": false,
     "showBottomMenu": true,
-    "registrationForm": "3435",
+    "registrationForm": "sample_patient_registration.json",
     "primaryFilter": {
       "key": "_tag",
       "system": "http://fhir.ona.io",

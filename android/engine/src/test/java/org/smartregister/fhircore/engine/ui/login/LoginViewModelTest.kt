@@ -36,7 +36,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
-import org.smartregister.fhircore.engine.data.remote.model.response.UserResponse
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.shadow.FakeKeyStore
@@ -166,7 +166,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testResponseBodyHandlerWithSuccessfulResponse() {
     val realResponseBody = spyk(RealResponseBody("", 10, spyk()))
-    val userResponse = UserResponse("G6PD")
+    val userResponse = UserInfo("G6PD")
     every { realResponseBody.string() } returns userResponse.encodeJson()
     val response: Response<ResponseBody> = spyk(Response.success(realResponseBody))
     loginViewModel.responseBodyHandler.handleResponse(spyk(), response)

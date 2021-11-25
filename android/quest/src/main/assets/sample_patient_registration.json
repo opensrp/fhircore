@@ -153,6 +153,116 @@
           "text": "Date of Birth"
         },
         {
+          "linkId": "PR-marital-status",
+          "type": "choice",
+          "required": true,
+          "text": "Marital Status",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.maritalStatus",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.maritalStatus"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            }
+          ],
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "unmarried",
+                "display": "Unmarried"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "married",
+                "display": "Married"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "divorced",
+                "display": "Divorced"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "widowed",
+                "display": "Widowed"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "PR-ethnicity-group",
+          "type": "group",
+          "text": "Ethnicity",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension",
+          "item": [
+            {
+              "linkId": "PR-ethnicity-authority",
+              "type": "string",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension.url",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  "valueExpression": {
+                    "language": "text/fhirpath",
+                    "expression": "Patient.extension[0].url"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+                  "valueBoolean": true
+                }
+              ]
+            },
+            {
+              "linkId": "PR-ethnicity",
+              "type": "choice",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension.value",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  "valueExpression": {
+                    "language": "text/fhirpath",
+                    "expression": "Patient.extension[0].value"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+                  "valueCode": "horizontal"
+                }
+              ],
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "code": "pakistani",
+                    "display": "Pakistan"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "code": "kenyan",
+                    "display": "Kenyan"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "code": "american",
+                    "display": "American"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "linkId": "is_pregnant",
           "type": "boolean",
           "text": "Is Pregnant?",

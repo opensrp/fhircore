@@ -19,11 +19,17 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
+import com.google.android.fhir.datacapture.mapping.definitionPath
+import com.google.android.fhir.datacapture.mapping.getFieldOrNull
+import com.google.android.fhir.datacapture.mapping.getNestedFieldOfChoiceType
+import com.google.android.fhir.datacapture.mapping.isChoiceElement
+import com.google.android.fhir.datacapture.mapping.nonParameterizedType
 import com.google.android.fhir.datacapture.targetStructureMap
 import com.google.android.fhir.logicalId
 import java.util.Date
@@ -33,6 +39,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -42,15 +49,21 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
+import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FormConfigUtil
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.FieldType
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
+import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import timber.log.Timber
+import java.lang.reflect.Field
 
 open class QuestionnaireViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -69,11 +82,14 @@ open class QuestionnaireViewModel(application: Application) : AndroidViewModel(a
     readOnly: Boolean = false,
     editMode: Boolean = false
   ): Questionnaire? =
-    defaultRepository.loadResource<Questionnaire>(id)?.apply {
+    FhirContext.forR4().newJsonParser().parseResource(
+      getApplication<Application>().assets.open(id).bufferedReader().use { it.readText() }
+    ) as Questionnaire
+    /*defaultRepository.loadResource<Questionnaire>(id)?.apply {
       if (readOnly || editMode) {
         item.prepareQuestionsForReadingOrEditing("QuestionnaireResponse.item", readOnly)
       }
-    }
+    }*/
 
   suspend fun getQuestionnaireConfig(form: String): QuestionnaireConfig {
     val loadConfig =
@@ -115,6 +131,18 @@ open class QuestionnaireViewModel(application: Application) : AndroidViewModel(a
           ) {
             questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
               it.valueCodeableConcept.coding.forEach { bun.resource.meta.addTag(it) }
+            }
+
+            // add managing organization of logged in user to record
+            (getApplication<Application>() as ConfigurableApplication)
+              .authenticatedUserInfo?.organization?.let { org->
+                val organizationRef = Reference().apply { reference = "Organization/$org" }
+                val resource = bun.resource
+
+                if (resource is Patient)
+                  resource.managingOrganization = organizationRef
+                else if (resource is Group)
+                  resource.managingEntity = organizationRef
             }
           }
 
@@ -255,4 +283,45 @@ open class QuestionnaireViewModel(application: Application) : AndroidViewModel(a
   ): QuestionnaireResponse {
     return ResourceMapper.populate(questionnaire, *getPopulationResources(intent))
   }
+
+  val DEFINITION_PATIENT_EXTENSION = "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension"
+  private val fhirPathEngine = FHIRPathEngine((getApplication<Application>() as ConfigurableApplication).workerContextProvider)
+
+  fun handleMissingSdkFunctionalityExtension(questionnaireResponse: QuestionnaireResponse){
+    // SDK missing DomainResource properties ResourceMapping implementation
+    kotlin.runCatching {
+      questionnaireResponse.find(FieldType.DEFINITION, DEFINITION_PATIENT_EXTENSION)
+        .forEach {
+          it.addAnswer().apply {
+            val ext = it.extension.first { it.url.contentEquals(INITIAL_EXPRESSION_EXTENSION, true)}
+            val exp = ext.castToExpression(ext.value).expression
+            val resolvedValue = fhirPathEngine.evaluate(questionnaireResponse, exp).first()
+            this.value =  resolvedValue.castToType(resolvedValue)
+          }
+        }
+    }.onFailure {
+      Timber.w(it)
+    }
+  }
+
+  // copied and simplified from SDK ResourceMapper#L499
+  private val Questionnaire.QuestionnaireItemComponent.definitionPath: List<String>
+    get() {
+      return definition.substringAfter('#', "").split(".")
+    }
+
+  // copied and simplified from SDK ResourceMapper#L512
+  private val Questionnaire.QuestionnaireItemComponent.getDefinitionField: Field?
+    get() {
+      val path = definitionPath
+      if (path.size < 2) return null
+      val resourceClass: Class<*> = Class.forName("org.hl7.fhir.r4.model.${path[0]}")
+      val definitionField: Field = getFieldOrNull(resourceClass, 1) ?: return null
+      if (isChoiceElement(choiceTypeFieldIndex = 1) && path.size > 2) {
+        return getNestedFieldOfChoiceType()
+      }
+      return path.drop(2).fold(definitionField) { field: Field?, nestedFieldName: String ->
+        field?.nonParameterizedType?.getFieldOrNull(nestedFieldName)
+      }
+    }
 }

@@ -25,8 +25,11 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
@@ -38,6 +41,9 @@ open class EirApplication : Application(), ConfigurableApplication {
     get() = EirAuthenticationService(applicationContext)
 
   override val fhirEngine: FhirEngine by lazy { FhirEngineProvider.getInstance(this) }
+
+  override val authenticatedUserInfo: UserInfo?
+    get() = SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() =

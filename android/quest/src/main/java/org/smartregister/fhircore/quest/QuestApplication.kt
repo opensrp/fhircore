@@ -27,9 +27,11 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.join
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
@@ -60,13 +62,16 @@ open class QuestApplication : Application(), ConfigurableApplication {
       )
     }
 
+  override val authenticatedUserInfo: UserInfo?
+    get() = SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
+
   private fun buildPublisherFilterMap(): MutableMap<String, String> {
     val questionnaireFilterMap: MutableMap<String, String> = HashMap()
-    val publisher = getPublisher()
+    val publisher = authenticatedUserInfo?.questionnairePublisher
     if (publisher != null) questionnaireFilterMap[Questionnaire.SP_PUBLISHER] = publisher
     return questionnaireFilterMap
   }
-
+ //TODO............ http://hl7.org/fhir/us/odh/Patient-patient-odh-maya-gordon.json.html
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
     this.applicationConfiguration = applicationConfiguration
     this.applicationConfiguration.apply {
@@ -97,11 +102,8 @@ open class QuestApplication : Application(), ConfigurableApplication {
     private lateinit var questApplication: QuestApplication
     private const val CONFIG_PROFILE = "quest-app-profile"
 
-    fun getProfileConfigId() = CONFIG_PROFILE.join(getPublisher()?.lowercase()?.let { "-$it" }, "")
+    fun getProfileConfigId() = CONFIG_PROFILE.join(getContext().authenticatedUserInfo?.questionnairePublisher?.lowercase()?.let { "-$it" }, "")
 
     fun getContext() = questApplication
-
-    fun getPublisher() =
-      SharedPreferencesHelper.read(USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY, null)
   }
 }
