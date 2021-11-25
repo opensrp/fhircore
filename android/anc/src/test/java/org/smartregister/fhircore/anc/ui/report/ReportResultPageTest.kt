@@ -47,6 +47,7 @@ class ReportResultPageTest : RobolectricTest() {
   private val selectedPatient = MutableLiveData(PatientItem(name = "Test Patient Name"))
   private val resultForIndividual =
     MutableLiveData(ResultItem(status = "True", isMatchedIndicator = true))
+  private val resultForPopulation = MutableLiveData(listOf(ResultItemPopulation()))
 
   @Before
   fun setUp() {
@@ -59,11 +60,11 @@ class ReportResultPageTest : RobolectricTest() {
         every { patientSelectionType } returns this@ReportResultPageTest.patientSelectionType
         every { selectedPatientItem } returns this@ReportResultPageTest.selectedPatient
         every { resultForIndividual } returns this@ReportResultPageTest.resultForIndividual
+        every { resultForPopulation } returns this@ReportResultPageTest.resultForPopulation
       }
   }
 
   @Test
-  @Ignore("Failing in PR, though passing at local")
   fun testReportResultScreen() {
     composeRule.setContent { ReportResultScreen(viewModel = viewModel) }
     // toolbar should have valid title and icon

@@ -125,6 +125,7 @@ fun PreviewAllPatientReportResult() {
 }
 
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun ReportResultScreen(viewModel: ReportViewModel) {
 
   val reportMeasureItem by remember { mutableStateOf(viewModel.selectedMeasureReportItem.value) }
