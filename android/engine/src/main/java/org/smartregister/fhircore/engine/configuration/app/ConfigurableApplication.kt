@@ -54,6 +54,8 @@ interface ConfigurableApplication {
 
   val authenticationService: AuthenticationService
 
+  val authenticatedUserInfo: UserInfo?
+
   val fhirEngine: FhirEngine
 
   val fhirPathEngine: FHIRPathEngine
