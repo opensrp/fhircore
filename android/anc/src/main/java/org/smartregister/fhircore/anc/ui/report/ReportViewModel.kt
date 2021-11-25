@@ -41,6 +41,8 @@ import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
+import org.smartregister.fhircore.anc.data.report.model.ResultItem
+import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.anc.ui.anccare.register.Anc
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
@@ -95,6 +97,21 @@ constructor(
   private val _isReadyToGenerateReport = MutableLiveData(true)
   val isReadyToGenerateReport: LiveData<Boolean>
     get() = _isReadyToGenerateReport
+
+  val resultForIndividual: MutableLiveData<ResultItem> =
+    MutableLiveData(ResultItem(status = "True", isMatchedIndicator = true))
+
+  val resultForPopulation: MutableLiveData<List<ResultItemPopulation>> =
+    MutableLiveData(loadDummyResultForPopulation())
+
+  fun loadDummyResultForPopulation(): List<ResultItemPopulation>? {
+    val testResultItem1 = ResultItem(title = "10 - 15 years", percentage = "10%", count = "1/10")
+    val testResultItem2 = ResultItem(title = "16 - 20 years", percentage = "50%", count = "30/60")
+    return listOf(
+      ResultItemPopulation(title = "Age Range", listOf(testResultItem1, testResultItem2)),
+      ResultItemPopulation(title = "Education Level", listOf(testResultItem1, testResultItem2))
+    )
+  }
 
   var reportState: ReportState = ReportState()
 
