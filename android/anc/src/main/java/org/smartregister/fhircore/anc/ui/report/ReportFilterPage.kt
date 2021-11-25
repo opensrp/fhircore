@@ -61,7 +61,7 @@ fun ReportFilterPage(
   selectedPatient: PatientItem?
 ) {
   Surface(color = colorResource(id = R.color.white)) {
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().testTag(REPORT_FILTER_PAGE)) {
       TopBarBox(topBarTitle, onBackPress)
       Box(modifier = Modifier.padding(16.dp)) {
         Column {
