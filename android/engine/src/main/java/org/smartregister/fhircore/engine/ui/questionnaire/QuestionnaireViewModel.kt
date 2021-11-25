@@ -47,7 +47,6 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplicati
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FormConfigUtil
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
@@ -120,15 +119,13 @@ open class QuestionnaireViewModel(application: Application) : AndroidViewModel(a
             }
 
             // add managing organization of logged in user to record
-            (getApplication<Application>() as ConfigurableApplication)
-              .authenticatedUserInfo?.organization?.let { org->
-                val organizationRef = Reference().apply { reference = "Organization/$org" }
-                val resource = bun.resource
+            (getApplication<Application>() as ConfigurableApplication).authenticatedUserInfo
+              ?.organization?.let { org ->
+              val organizationRef = Reference().apply { reference = "Organization/$org" }
+              val resource = bun.resource
 
-                if (resource is Patient)
-                  resource.managingOrganization = organizationRef
-                else if (resource is Group)
-                  resource.managingEntity = organizationRef
+              if (resource is Patient) resource.managingOrganization = organizationRef
+              else if (resource is Group) resource.managingEntity = organizationRef
             }
           }
 

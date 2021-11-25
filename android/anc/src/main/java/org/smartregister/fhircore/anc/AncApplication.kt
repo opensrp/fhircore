@@ -17,17 +17,12 @@
 package org.smartregister.fhircore.anc
 
 import android.app.Application
-import android.content.Context
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJob
-import org.hl7.fhir.r4.context.SimpleWorkerContext
-import org.hl7.fhir.r4.model.*
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.utils.FHIRPathEngine
-import org.json.JSONArray
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
@@ -59,19 +54,18 @@ open class AncApplication : Application(), ConfigurableApplication {
     get() = SecureSharedPreference(applicationContext)
 
   override val authenticatedUserInfo: UserInfo?
-    get() = SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)
-            ?.decodeJson<UserInfo>()
-
+    get() =
+      SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() =
       mapOf(
-              ResourceType.Patient to mapOf(),
-              ResourceType.Questionnaire to mapOf(),
-              ResourceType.Observation to mapOf(),
-              ResourceType.Encounter to mapOf(),
-              ResourceType.CarePlan to mapOf(),
-              ResourceType.Condition to mapOf(),
+        ResourceType.Patient to mapOf(),
+        ResourceType.Questionnaire to mapOf(),
+        ResourceType.Observation to mapOf(),
+        ResourceType.Encounter to mapOf(),
+        ResourceType.CarePlan to mapOf(),
+        ResourceType.Condition to mapOf(),
       )
 
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {

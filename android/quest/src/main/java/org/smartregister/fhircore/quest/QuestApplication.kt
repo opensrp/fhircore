@@ -61,31 +61,38 @@ open class QuestApplication : Application(), ConfigurableApplication {
   override val fhirPathEngine = FHIRPathEngine(workerContextProvider)
 
   override val authenticatedUserInfo: UserInfo?
-    get() = SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)
-            ?.decodeJson<UserInfo>()
+    get() =
+      SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() {
       val searchParams = loadSearchParams(this)
       val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
       for (i in searchParams.indices) {
-       //TODO: expressionValue is supporting for Organization and Publisher, extend it using Composition resource
-        val expressionValue = if (searchParams[i].expression.contains("organization")) {
-          authenticatedUserInfo?.organization
-        } else if(searchParams[i].expression.contains("questionnairePublisher"))  {
-          authenticatedUserInfo?.questionnairePublisher
-        } else {
-          null
-        }
+        // TODO: expressionValue is supporting for Organization and Publisher, extend it using
+        // Composition resource
+        val expressionValue =
+          if (searchParams[i].expression.contains("organization")) {
+            authenticatedUserInfo?.organization
+          } else if (searchParams[i].expression.contains("questionnairePublisher")) {
+            authenticatedUserInfo?.questionnairePublisher
+          } else {
+            null
+          }
 
         expressionValue?.let {
-          pairs.add(Pair(ResourceType.fromCode(searchParams[i].base[0].code), mapOf(searchParams[i].expression to it)))
-        } ?: kotlin.run {
-          pairs.add(Pair(ResourceType.fromCode(searchParams[i].base[0].code), mapOf()))
+          pairs.add(
+            Pair(
+              ResourceType.fromCode(searchParams[i].base[0].code),
+              mapOf(searchParams[i].expression to it)
+            )
+          )
         }
-
+          ?: kotlin.run {
+            pairs.add(Pair(ResourceType.fromCode(searchParams[i].base[0].code), mapOf()))
+          }
       }
-      //TODO: Extend this Binary resource using the Composition resource
+      // TODO: Extend this Binary resource using the Composition resource
       pairs.add(ResourceType.Binary to mapOf())
 
       return mapOf(*pairs.toTypedArray())
@@ -93,8 +100,8 @@ open class QuestApplication : Application(), ConfigurableApplication {
 
   private fun loadSearchParams(context: Context): List<SearchParameter> {
     val iParser: IParser = FhirContext.forR4().newJsonParser()
-    val json = context.assets.open(SYNC_BY_ORGANIZATION_PUBLISHER)
-            .bufferedReader().use { it.readText() }
+    val json =
+      context.assets.open(SYNC_BY_ORGANIZATION_PUBLISHER).bufferedReader().use { it.readText() }
     val searchParameters = mutableListOf<SearchParameter>()
 
     val jsonArrayEntry = JSONArray(json)
@@ -145,7 +152,6 @@ open class QuestApplication : Application(), ConfigurableApplication {
 
     fun getContext() = questApplication
 
-    fun getPublisher() =
-      SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)
+    fun getPublisher() = SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)
   }
 }

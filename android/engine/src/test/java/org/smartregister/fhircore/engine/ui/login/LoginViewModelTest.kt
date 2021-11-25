@@ -174,10 +174,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     // Shared preference saved G6PD
     Assert.assertEquals(
       userResponse.questionnairePublisher,
-      loginViewModel.sharedPreferences.read(
-        USER_INFO_SHARED_PREFERENCE_KEY,
-        null
-      )
+      loginViewModel.sharedPreferences.read(USER_INFO_SHARED_PREFERENCE_KEY, null)
     )
     Assert.assertNotNull(loginViewModel.showProgressBar.value)
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)

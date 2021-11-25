@@ -46,8 +46,8 @@ open class EirApplication : Application(), ConfigurableApplication {
   override val fhirPathEngine = FHIRPathEngine(workerContextProvider)
 
   override val authenticatedUserInfo: UserInfo?
-    get() = SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)
-            ?.decodeJson<UserInfo>()
+    get() =
+      SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() =
