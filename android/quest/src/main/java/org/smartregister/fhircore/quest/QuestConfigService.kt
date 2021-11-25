@@ -23,8 +23,11 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 
-class QuestConfigService @Inject constructor(@ApplicationContext val context: Context) :
-  ConfigService {
+class QuestConfigService
+@Inject
+constructor(
+  @ApplicationContext val context: Context,
+) : ConfigService {
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() {

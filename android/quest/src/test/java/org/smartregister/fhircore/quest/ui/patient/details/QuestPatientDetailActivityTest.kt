@@ -16,101 +16,104 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import android.app.Activity
 import android.content.Intent
+import android.widget.Toast
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
-import io.mockk.every
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.spyk
-import io.mockk.verify
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
-import org.robolectric.util.ReflectionHelpers
+import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_READ_ONLY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.quest.QuestApplication
-import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.data.patient.PatientRepository
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
-class QuestPatientDetailActivityTest : ActivityRobolectricTest() {
+@HiltAndroidTest
+class QuestPatientDetailActivityTest : RobolectricTest() {
 
-  private lateinit var activity: QuestPatientDetailActivity
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  @BindValue val patientRepository: PatientRepository = Faker.patientRepository
+
+  private val hiltTestApplication = ApplicationProvider.getApplicationContext<HiltTestApplication>()
+
+  private lateinit var questPatientDetailActivity: QuestPatientDetailActivity
 
   @Before
   fun setUp() {
-    activity = Robolectric.buildActivity(QuestPatientDetailActivity::class.java).create().get()
+    hiltRule.inject()
+
+    questPatientDetailActivity =
+      spyk(
+        Robolectric.buildActivity(QuestPatientDetailActivity::class.java).create().resume().get()
+      )
+  }
+
+  @After
+  fun tearDown() {
+    questPatientDetailActivity.finish()
   }
 
   @Test
-  fun testOnBackPressListenerShouldCallFinishActivity() {
-    val spyActivity = spyk(activity)
-    every { spyActivity.finish() } returns Unit
-
-    ReflectionHelpers.callInstanceMethod<Any>(spyActivity, "onBackPressListener")
-
-    verify(exactly = 1) { spyActivity.finish() }
+  fun testOnBackPressListenerShouldFinishActivity() {
+    questPatientDetailActivity.patientViewModel.onBackPressed(true)
+    Assert.assertTrue(questPatientDetailActivity.isFinishing)
   }
 
   @Test
   fun testOnMenuItemClickListenerShouldStartQuestPatientTestResultActivity() {
-
-    ReflectionHelpers.callInstanceMethod<Any>(
-      activity,
-      "onMenuItemClickListener",
-      ReflectionHelpers.ClassParameter(String::class.java, "")
-    )
-
-    val expectedIntent = Intent(activity, QuestPatientTestResultActivity::class.java)
-    val actualIntent =
-      shadowOf(ApplicationProvider.getApplicationContext<QuestApplication>()).nextStartedActivity
-
+    questPatientDetailActivity.patientViewModel.onMenuItemClickListener(true)
+    val expectedIntent =
+      Intent(questPatientDetailActivity, QuestPatientTestResultActivity::class.java)
+    val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test
   fun testOnFormItemClickListenerShouldStartQuestionnaireActivity() {
-
-    ReflectionHelpers.callInstanceMethod<Any>(
-      activity,
-      "onFormItemClickListener",
-      ReflectionHelpers.ClassParameter(
-        QuestionnaireConfig::class.java,
-        QuestionnaireConfig("quest", "test-form", "Title", "1234")
-      )
+    questPatientDetailActivity.patientViewModel.onFormItemClickListener(
+      QuestionnaireConfig(appId = "quest", form = "test-form", title = "Title", identifier = "1234")
     )
 
-    val expectedIntent = Intent(activity, QuestionnaireActivity::class.java)
-    val actualIntent =
-      shadowOf(ApplicationProvider.getApplicationContext<QuestApplication>()).nextStartedActivity
-
+    val expectedIntent = Intent(questPatientDetailActivity, QuestionnaireActivity::class.java)
+    val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test
   fun testOnTestResultItemClickListenerShouldStartQuestionnaireActivity() {
-    ReflectionHelpers.callInstanceMethod<Any>(
-      activity,
-      "onTestResultItemClickListener",
-      ReflectionHelpers.ClassParameter(
-        QuestionnaireResponse::class.java,
-        QuestionnaireResponse().apply { questionnaire = "Questionnaire/12345" }
-      )
+    questPatientDetailActivity.patientViewModel.onTestResultItemClickListener(
+      QuestionnaireResponse().apply { questionnaire = "Questionnaire/12345" }
     )
 
-    val expectedIntent = Intent(activity, QuestionnaireActivity::class.java)
-    val actualIntent =
-      shadowOf(ApplicationProvider.getApplicationContext<QuestApplication>()).nextStartedActivity
+    val expectedIntent = Intent(questPatientDetailActivity, QuestionnaireActivity::class.java)
+    val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
     Assert.assertEquals("12345", actualIntent.getStringExtra(QUESTIONNAIRE_ARG_FORM))
     Assert.assertEquals(true, actualIntent.getBooleanExtra(QUESTIONNAIRE_READ_ONLY, false))
   }
 
-  override fun getActivity(): Activity {
-    return activity
+  @Test
+  fun testOnTestResultItemClickListenerWithNullResponseShouldDisplayToast() {
+    questPatientDetailActivity.patientViewModel.onFormTestResultClicked.value = null
+    val latestToast = ShadowToast.getLatestToast()
+    Assert.assertEquals(Toast.LENGTH_LONG, latestToast.duration)
   }
 }

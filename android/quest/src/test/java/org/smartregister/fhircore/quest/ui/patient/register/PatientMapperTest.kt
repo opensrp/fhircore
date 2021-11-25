@@ -16,21 +16,37 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register
 
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import java.util.Calendar
 import java.util.Date
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert.assertEquals
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
+@HiltAndroidTest
 class PatientMapperTest : RobolectricTest() {
+
+  @get:Rule val hiltRule = HiltAndroidRule(this)
+
+  @Inject lateinit var patientItemMapper: PatientItemMapper
+
+  @Before
+  fun setup() {
+    hiltRule.inject()
+  }
 
   @Test
   fun testMapToDomainModel() {
+
     val dto = buildPatient("123456", "123456", "Doe", "John", 12)
-    val patientItem = PatientItemMapper.mapToDomainModel(dto)
+    val patientItem = patientItemMapper.mapToDomainModel(dto)
     with(patientItem) {
       assertEquals("12y", age)
       assertEquals("John Doe", name)
@@ -43,7 +59,7 @@ class PatientMapperTest : RobolectricTest() {
   @Test
   fun testMapToDomainModelWithoutIdentifier() {
     val dto = buildPatient("123456", null, "Doe", "John", 12)
-    val patientItem = PatientItemMapper.mapToDomainModel(dto)
+    val patientItem = patientItemMapper.mapToDomainModel(dto)
     with(patientItem) {
       assertEquals("12y", age)
       assertEquals("John Doe", name)

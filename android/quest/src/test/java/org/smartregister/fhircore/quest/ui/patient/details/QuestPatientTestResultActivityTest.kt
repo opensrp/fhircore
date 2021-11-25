@@ -17,35 +17,50 @@
 package org.smartregister.fhircore.quest.ui.patient.details
 
 import android.app.Activity
-import io.mockk.every
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.spyk
-import io.mockk.verify
+import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 
+@HiltAndroidTest
 class QuestPatientTestResultActivityTest : ActivityRobolectricTest() {
 
-  private lateinit var activity: QuestPatientTestResultActivity
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  @BindValue val patientRepository: PatientRepository = Faker.patientRepository
+
+  private lateinit var patientTestResultActivity: QuestPatientTestResultActivity
 
   @Before
   fun setUp() {
-    activity = Robolectric.buildActivity(QuestPatientTestResultActivity::class.java).create().get()
+    hiltRule.inject()
+    patientTestResultActivity =
+      spyk(
+        Robolectric.buildActivity(QuestPatientTestResultActivity::class.java)
+          .create()
+          .resume()
+          .get()
+      )
   }
 
   @Test
   fun testOnBackPressListenerShouldCallFinishActivity() {
-    val spyActivity = spyk(activity)
-    every { spyActivity.finish() } returns Unit
-
-    ReflectionHelpers.callInstanceMethod<Any>(spyActivity, "onBackPressListener")
-
-    verify(exactly = 1) { spyActivity.finish() }
+    patientTestResultActivity.patientViewModel.onBackPressed(true)
+    Assert.assertTrue(patientTestResultActivity.isFinishing)
   }
 
   override fun getActivity(): Activity {
-    return activity
+    return patientTestResultActivity
   }
 }

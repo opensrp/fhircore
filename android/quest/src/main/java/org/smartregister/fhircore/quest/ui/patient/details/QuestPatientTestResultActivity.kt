@@ -29,7 +29,7 @@ class QuestPatientTestResultActivity : BaseMultiLanguageActivity() {
 
   private lateinit var patientId: String
 
-  private val patientViewModel by viewModels<QuestPatientDetailViewModel>()
+  val patientViewModel by viewModels<QuestPatientDetailViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)

@@ -42,11 +42,16 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
     super.onCreate(savedInstanceState)
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: "1"
 
-    patientViewModel.onBackPressClicked.observe(this, { finish() })
-    patientViewModel.onMenuItemClicked.observe(this, this::launchTestResults)
-    patientViewModel.onFormItemClicked.observe(this, this::launchQuestionnaireForm)
-    patientViewModel.onFormTestResultClicked.observe(this, this::onTestResultItemClickListener)
-
+    patientViewModel.apply {
+      val detailActivity = this@QuestPatientDetailActivity
+      onBackPressClicked.observe(
+        detailActivity,
+        { backPressed -> if (backPressed) detailActivity.finish() }
+      )
+      onMenuItemClicked.observe(detailActivity, detailActivity::launchTestResults)
+      onFormItemClicked.observe(detailActivity, detailActivity::launchQuestionnaireForm)
+      onFormTestResultClicked.observe(detailActivity, detailActivity::onTestResultItemClickListener)
+    }
     patientViewModel.run {
       getDemographics(patientId)
       getAllResults(patientId)
@@ -65,21 +70,23 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
     }
   }
 
-  private fun launchQuestionnaireForm(questionnaireConfig: QuestionnaireConfig) {
-    startActivity(
-      Intent(this, QuestionnaireActivity::class.java).apply {
-        putExtras(
-          QuestionnaireActivity.intentArgs(
-            clientIdentifier = patientId,
-            formName = questionnaireConfig.identifier
+  private fun launchQuestionnaireForm(questionnaireConfig: QuestionnaireConfig?) {
+    if (questionnaireConfig != null) {
+      startActivity(
+        Intent(this, QuestionnaireActivity::class.java).apply {
+          putExtras(
+            QuestionnaireActivity.intentArgs(
+              clientIdentifier = patientId,
+              formName = questionnaireConfig.identifier
+            )
           )
-        )
-      }
-    )
+        }
+      )
+    }
   }
 
-  private fun onTestResultItemClickListener(questionnaireResponse: QuestionnaireResponse) {
-    if (questionnaireResponse.questionnaire != null) {
+  private fun onTestResultItemClickListener(questionnaireResponse: QuestionnaireResponse?) {
+    if (questionnaireResponse != null && questionnaireResponse.questionnaire != null) {
       val questionnaireId = questionnaireResponse.questionnaire.split("/")[1]
       val populationResources = ArrayList<Resource>().apply { add(questionnaireResponse) }
       startActivity(

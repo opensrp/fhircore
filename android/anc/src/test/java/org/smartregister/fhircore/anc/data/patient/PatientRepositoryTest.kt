@@ -56,7 +56,6 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -309,21 +308,6 @@ class PatientRepositoryTest : RobolectricTest() {
     }
 
     unmockkStatic(FhirContext::class)
-  }
-
-  private fun buildPatient(id: String, family: String, given: String): Patient {
-    return Patient().apply {
-      this.id = id
-      this.addName().apply {
-        this.family = family
-        this.given.add(StringType(given))
-      }
-      this.addAddress().apply {
-        district = "Dist 1"
-        city = "City 1"
-      }
-      this.addLink().apply { this.other = Reference().apply { reference = "Patient/1110" } }
-    }
   }
 
   @Test

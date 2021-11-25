@@ -21,7 +21,6 @@ import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert
 import org.junit.Before
-import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.jupiter.api.assertThrows
 import org.robolectric.Robolectric
@@ -31,7 +30,6 @@ import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.shadow.FakeKeyStore
 import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
 
 class PatientRegisterFragmentTest : RobolectricTest() {
@@ -127,13 +125,5 @@ class PatientRegisterFragmentTest : RobolectricTest() {
 
     Assert.assertEquals(UnsupportedOperationException::class.java.name, result::class.java.name)
     Assert.assertEquals("Given ListenerIntent is not supported", result.message)
-  }
-
-  companion object {
-    @JvmStatic
-    @BeforeClass
-    fun beforeClass() {
-      FakeKeyStore.setup
-    }
   }
 }

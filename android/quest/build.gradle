@@ -149,6 +149,10 @@ dependencies {
     testImplementation deps.mockk
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1'
 
+    // Hilt test dependencies
+    testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
+    kaptTest("com.google.dagger:hilt-android-compiler:$hiltVersion")
+
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
     def composeVersion = "1.0.1"

@@ -23,7 +23,6 @@ import android.widget.TextView
 import androidx.core.view.size
 import org.junit.Assert
 import org.junit.Before
-import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.fakes.RoboMenuItem
@@ -33,7 +32,6 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
-import org.smartregister.fhircore.quest.shadow.FakeKeyStore
 
 class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
@@ -148,13 +146,5 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   override fun getActivity(): Activity {
     return patientRegisterActivity
-  }
-
-  companion object {
-    @JvmStatic
-    @BeforeClass
-    fun beforeClass() {
-      FakeKeyStore.setup
-    }
   }
 }

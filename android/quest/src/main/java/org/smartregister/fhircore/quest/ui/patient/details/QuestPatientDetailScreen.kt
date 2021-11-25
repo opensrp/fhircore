@@ -264,11 +264,9 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
               if (index < totalResultsCount) {
                 Divider(color = colorResource(id = R.color.white_smoke))
                 Column {
-                  // fetch responses
                   testResults?.let {
                     it.forEachIndexed { index, item ->
                       ResultItem(item, questPatientDetailViewModel)
-
                       if (index < it.size) {
                         Divider(color = colorResource(id = R.color.white_smoke))
                       }
