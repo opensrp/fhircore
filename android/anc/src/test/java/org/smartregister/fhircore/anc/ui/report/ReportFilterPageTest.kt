@@ -94,9 +94,23 @@ class ReportFilterPageTest : RobolectricTest() {
     }
     composeRule.onNodeWithTag(TOOLBAR_TITLE).assertTextEquals("FilterPageReportTitle")
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
+    composeRule.onNodeWithTag(REPORT_FILTER_PAGE).assertExists()
     composeRule.onNodeWithTag(REPORT_DATE_RANGE_SELECTION).assertExists()
     composeRule.onNodeWithTag(REPORT_GENERATE_BUTTON).assertExists()
     composeRule.onNodeWithTag(REPORT_GENERATE_BUTTON).performClick()
     verify { listenerObjectSpy.onGenerateReportClick() }
+  }
+
+  @Test
+  fun testGenerateReportButton() {
+    composeRule.setContent {
+      GenerateReportButton(
+        generateReportEnabled = true,
+        onGenerateReportClicked = { listenerObjectSpy.onGenerateReportClick() }
+      )
+    }
+    composeRule.onNodeWithTag(REPORT_GENERATE_BUTTON).assertExists()
+    // composeRule.onNodeWithTag(REPORT_GENERATE_BUTTON).performClick()
+    // verify { listenerObjectSpy.onGenerateReportClick() }
   }
 }
