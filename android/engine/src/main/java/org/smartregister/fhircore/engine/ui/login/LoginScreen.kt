@@ -154,7 +154,7 @@ fun LoginPage(
       Spacer(modifier = modifier.height(20.dp))
       Column(modifier = modifier.padding(4.dp), verticalArrangement = Arrangement.Center) {
         // TODO Add configurable logo. Images to be downloaded from server
-        if (viewConfiguration.applicationName == stringResource(R.string.eCBIS_app_name)) {
+        if (viewConfiguration.showLogo) {
           Image(
             painter = painterResource(id = R.drawable.ic_liberia),
             contentDescription = stringResource(id = R.string.app_logo),
