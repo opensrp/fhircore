@@ -87,6 +87,7 @@ const val PASSWORD_FIELD_TAG = "passwordFieldTag"
 const val LOGIN_BUTTON_TAG = "loginButtonTag"
 const val LOGIN_ERROR_TEXT_TAG = "loginErrorTextTag"
 const val LOGIN_FOOTER = "loginFooter"
+const val APP_LOGO_TAG = "appLogoTag"
 
 @Composable
 fun LoginScreen(loginViewModel: LoginViewModel) {
@@ -162,7 +163,8 @@ fun LoginPage(
               modifier
                 .align(Alignment.CenterHorizontally)
                 .requiredHeight(120.dp)
-                .requiredWidth(140.dp),
+                .requiredWidth(140.dp)
+                .testTag(APP_LOGO_TAG),
           )
         }
         Text(
