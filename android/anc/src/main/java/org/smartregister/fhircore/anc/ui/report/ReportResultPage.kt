@@ -116,11 +116,12 @@ fun PreviewAllPatientReportResult() {
     isAllPatientSelection = true,
     selectedPatient =
       PatientItem(name = "Test Selected Patient", demographics = "Test Select, F, 28"),
-    null,
-    listOf(
-      ResultItemPopulation(title = "Age Range", listOf(testResultItem1, testResultItem2)),
-      ResultItemPopulation(title = "Education Level", listOf(testResultItem1, testResultItem2))
-    )
+    resultForIndividual = ResultItem(),
+    resultItemPopulation =
+      listOf(
+        ResultItemPopulation(title = "Age Range", listOf(testResultItem1, testResultItem2)),
+        ResultItemPopulation(title = "Education Level", listOf(testResultItem1, testResultItem2))
+      )
   )
 }
 

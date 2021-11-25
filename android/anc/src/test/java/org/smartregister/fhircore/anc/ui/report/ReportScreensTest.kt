@@ -120,15 +120,28 @@ class ReportScreensTest : RobolectricTest() {
   }
 
   @Test
-  fun testPatientSelection() {
+  fun testPatientSelectionForAll() {
     composeRule.setContent {
       PatientSelectionBox(
         patientSelectionText = "All",
+        selectedPatient = null,
+        onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged() }
+      )
+    }
+    composeRule.onNodeWithTag(REPORT_PATIENT_SELECTION).assertExists()
+  }
+
+  @Test
+  fun testPatientSelectionForIndividual() {
+    composeRule.setContent {
+      PatientSelectionBox(
+        patientSelectionText = "Individual",
         selectedPatient = PatientItem(),
         onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged() }
       )
     }
     composeRule.onNodeWithTag(REPORT_PATIENT_SELECTION).assertExists()
+    composeRule.onNodeWithTag(REPORT_PATIENT_ITEM).assertExists()
   }
 
   @Test

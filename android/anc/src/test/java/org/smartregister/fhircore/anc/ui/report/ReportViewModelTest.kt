@@ -38,6 +38,8 @@ import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
+import org.smartregister.fhircore.anc.data.report.model.ResultItem
+import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 
 @ExperimentalCoroutinesApi
@@ -59,6 +61,10 @@ internal class ReportViewModelTest {
   private val patientSelectionType = MutableLiveData("All")
   private val isChangingStartDate = MutableLiveData(true)
   private val isChangingEndDate = MutableLiveData(true)
+  private val resultForIndividual =
+    MutableLiveData(ResultItem(status = "True", isMatchedIndicator = true))
+  private val resultForPopulation =
+    MutableLiveData(listOf(ResultItemPopulation(title = "resultForPopulation")))
 
   @Before
   fun setUp() {
@@ -77,6 +83,10 @@ internal class ReportViewModelTest {
       )
     every { reportViewModel.patientSelectionType } returns
       this@ReportViewModelTest.patientSelectionType
+    every { reportViewModel.resultForIndividual } returns
+      this@ReportViewModelTest.resultForIndividual
+    every { reportViewModel.resultForPopulation } returns
+      this@ReportViewModelTest.resultForPopulation
   }
 
   @Test
@@ -261,5 +271,17 @@ internal class ReportViewModelTest {
       ReportViewModel.ReportScreen.FILTER,
       reportViewModel.reportState.currentScreen
     )
+  }
+
+  @Test
+  fun testReportResultForIndividual() {
+    val expectedResult = ResultItem(status = "True", isMatchedIndicator = true)
+    Assert.assertEquals(expectedResult, reportViewModel.resultForIndividual.value)
+  }
+
+  @Test
+  fun testReportResultForPopulation() {
+    val expectedResult = listOf(ResultItemPopulation(title = "resultForPopulation"))
+    Assert.assertEquals(expectedResult, reportViewModel.resultForPopulation.value)
   }
 }
