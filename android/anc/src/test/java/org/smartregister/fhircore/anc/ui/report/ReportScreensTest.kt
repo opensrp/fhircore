@@ -21,7 +21,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.model.PatientItem
@@ -48,7 +47,6 @@ class ReportScreensTest : RobolectricTest() {
     )
 
   @Test
-  @Ignore("passes at local, failed in PR")
   fun testReportMeasureList() {
     composeRule.setContent {
       ReportHomeListBox(
@@ -60,7 +58,6 @@ class ReportScreensTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("passes at local, failed in PR")
   fun testReportMeasureItem() {
     composeRule.setContent { ReportRow(reportItem = ReportItem("test")) }
     composeRule.onNodeWithTag(REPORT_MEASURE_ITEM).assertExists()
