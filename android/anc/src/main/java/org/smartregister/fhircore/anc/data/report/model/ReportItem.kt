@@ -27,3 +27,21 @@ data class ReportItem(
   val description: String = "",
   val reportType: String = "",
 )
+
+@Stable
+@Serializable
+data class ResultItem(
+  val status: String = "",
+  val isMatchedIndicator: Boolean = false,
+  val description: String = "",
+  val title: String = "",
+  val percentage: String = "",
+  val count: String = ""
+)
+
+@Stable
+@Serializable
+data class ResultItemPopulation(
+  val title: String = "",
+  val dataList: List<ResultItem> = emptyList()
+)
