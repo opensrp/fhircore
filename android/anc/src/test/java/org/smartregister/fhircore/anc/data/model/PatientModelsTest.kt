@@ -61,7 +61,8 @@ class PatientModelsTest : RobolectricTest() {
     patientBmiItem = PatientBmiItem("1111", "testBMI1", "5'7", "50lbs", "22.22")
     reportItem = ReportItem("1111", "test report ANC", "women having test report ANC", "4")
     resulttItem = ResultItem("True", true, "Test description")
-    resulttItemPopulation = ResultItemPopulation(title = "testTitlePopulation", dataList = emptyList())
+    resulttItemPopulation =
+      ResultItemPopulation(title = "testTitlePopulation", dataList = emptyList())
   }
 
   @Test

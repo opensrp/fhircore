@@ -65,7 +65,7 @@ class ReportResultPageTest : RobolectricTest() {
   }
 
   @Test
-  //@Ignore("Failing in PR, though passing at local")
+  @Ignore("Failing in PR, though passing at local")
   fun testReportResultScreen() {
     composeRule.setContent { ReportResultScreen(viewModel = viewModel) }
     // toolbar should have valid title and icon
