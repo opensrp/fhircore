@@ -26,6 +26,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
@@ -64,6 +65,7 @@ class ReportResultPageTest : RobolectricTest() {
   }
 
   @Test
+  //@Ignore("Failing in PR, though passing at local")
   fun testReportResultScreen() {
     composeRule.setContent { ReportResultScreen(viewModel = viewModel) }
     // toolbar should have valid title and icon

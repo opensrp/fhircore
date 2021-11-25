@@ -205,6 +205,11 @@ internal class ReportViewModelTest {
   }
 
   @Test
+  fun testLoadDummyResultData() {
+    Assert.assertNotNull(reportViewModel.loadDummyResultForPopulation())
+  }
+
+  @Test
   fun testShouldVerifyReportItemClickListener() {
     val expectedReportItem = testReportItem
     reportViewModel.onReportMeasureItemClicked(testReportItem)

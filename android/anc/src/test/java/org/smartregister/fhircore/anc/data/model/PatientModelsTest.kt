@@ -23,6 +23,7 @@ import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItem
+import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 class PatientModelsTest : RobolectricTest() {
@@ -35,6 +36,7 @@ class PatientModelsTest : RobolectricTest() {
   private lateinit var patientBmiItem: PatientBmiItem
   private lateinit var reportItem: ReportItem
   private lateinit var resulttItem: ResultItem
+  private lateinit var resulttItemPopulation: ResultItemPopulation
 
   @Before
   fun setUp() {
@@ -59,6 +61,7 @@ class PatientModelsTest : RobolectricTest() {
     patientBmiItem = PatientBmiItem("1111", "testBMI1", "5'7", "50lbs", "22.22")
     reportItem = ReportItem("1111", "test report ANC", "women having test report ANC", "4")
     resulttItem = ResultItem("True", true, "Test description")
+    resulttItemPopulation = ResultItemPopulation(title = "testTitlePopulation", dataList = emptyList())
   }
 
   @Test
@@ -127,5 +130,11 @@ class PatientModelsTest : RobolectricTest() {
     Assert.assertEquals("True", resulttItem.status)
     Assert.assertEquals(true, resulttItem.isMatchedIndicator)
     Assert.assertEquals("Test description", resulttItem.description)
+  }
+
+  @Test
+  fun testResultItemPopulation() {
+    Assert.assertEquals("testTitlePopulation", resulttItemPopulation.title)
+    Assert.assertNotNull(resulttItemPopulation.dataList)
   }
 }

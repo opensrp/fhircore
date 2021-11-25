@@ -97,7 +97,7 @@ class ReportViewModel(
   val resultForPopulation: MutableLiveData<List<ResultItemPopulation>> =
     MutableLiveData(loadDummyResultForPopulation())
 
-  private fun loadDummyResultForPopulation(): List<ResultItemPopulation>? {
+  fun loadDummyResultForPopulation(): List<ResultItemPopulation>? {
     val testResultItem1 = ResultItem(title = "10 - 15 years", percentage = "10%", count = "1/10")
     val testResultItem2 = ResultItem(title = "16 - 20 years", percentage = "50%", count = "30/60")
     return listOf(
