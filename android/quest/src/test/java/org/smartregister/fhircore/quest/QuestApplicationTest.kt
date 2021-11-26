@@ -49,6 +49,8 @@ class QuestApplicationTest : RobolectricTest() {
     Assert.assertTrue(syncParam.containsKey(ResourceType.QuestionnaireResponse))
     Assert.assertTrue(syncParam.containsKey(ResourceType.Questionnaire))
     Assert.assertTrue(syncParam.containsKey(ResourceType.Patient))
-    Assert.assertTrue(syncParam.containsKey(ResourceType.CarePlan))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Condition))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Observation))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Encounter))
   }
 }
