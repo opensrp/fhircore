@@ -40,6 +40,7 @@ import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.shadow.activity.ShadowLoginActivity
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
@@ -52,6 +53,9 @@ class FhirApplication : Application(), ConfigurableApplication {
 
   override val authenticationService: AuthenticationService
     get() = spyk(FhirAuthenticationService())
+
+  override val authenticatedUserInfo: UserInfo?
+    get() = UserInfo("test-pub", "test-org")
 
   override val fhirEngine: FhirEngine by lazy { spyk(FhirEngineImpl()) }
 
