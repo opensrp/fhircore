@@ -46,8 +46,6 @@ import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-import java.text.SimpleDateFormat
-import java.util.*
 
 @Composable
 fun ReportFilterPage(
@@ -115,8 +113,6 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
     selectedPatient = selectedPatient ?: PatientItem()
   )
 }
-
-
 
 @Composable
 @Preview(showBackground = true)

@@ -35,6 +35,7 @@ import com.google.common.collect.Lists
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
+import java.text.SimpleDateFormat
 import java.util.Date
 import kotlin.collections.ArrayList
 import kotlin.collections.List
@@ -64,7 +65,6 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FileUtil
 import org.smartregister.fhircore.engine.util.extension.createFactory
-import java.text.SimpleDateFormat
 
 class ReportHomeActivity : BaseMultiLanguageActivity() {
 
@@ -364,18 +364,19 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   }
 
   fun handleMeasureEvaluate() {
-    val parameters= measureEvaluator.runMeasureEvaluate(
-      patientResourcesIBase,
-      libraryMeasure,
-      fhirContext,
-      cqlMeasureReportURL,
-      cqlMeasureReportStartDate,
-      cqlMeasureReportEndDate,
-      cqlMeasureReportReportType,
-      cqlMeasureReportSubject
-    )
-    var resultItem=ResultItem("True",true,"","100","100")
-    reportViewModel.resultForIndividual.value=resultItem
+    val parameters =
+      measureEvaluator.runMeasureEvaluate(
+        patientResourcesIBase,
+        libraryMeasure,
+        fhirContext,
+        cqlMeasureReportURL,
+        cqlMeasureReportStartDate,
+        cqlMeasureReportEndDate,
+        cqlMeasureReportReportType,
+        cqlMeasureReportSubject
+      )
+    var resultItem = ResultItem("True", true, "", "100", "100")
+    reportViewModel.resultForIndividual.value = resultItem
     reportViewModel.reportState.currentScreen = ReportScreen.RESULT
   }
 
@@ -411,25 +412,23 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   }
 
   fun generateMeasureReport(
-    startDate:String,
-    endDate:String,
-    reportType:String,
-    patientId:String,
-    subject:String,
-
-  ){
+    startDate: String,
+    endDate: String,
+    reportType: String,
+    patientId: String,
+    subject: String,
+  ) {
     val pattern = "yyyy-MM-dd"
     val simpleDateFormat = SimpleDateFormat(pattern)
 
-    cqlMeasureReportStartDate=simpleDateFormat.format(Date(startDate))
-    cqlMeasureReportEndDate=simpleDateFormat.format(Date(endDate))
-    this.patientId=patientId
-    cqlMeasureReportSubject=subject
-    cqlMeasureReportReportType=reportType
+    cqlMeasureReportStartDate = simpleDateFormat.format(Date(startDate))
+    cqlMeasureReportEndDate = simpleDateFormat.format(Date(endDate))
+    this.patientId = patientId
+    cqlMeasureReportSubject = subject
+    cqlMeasureReportReportType = reportType
 
     reportViewModel.reportState.currentScreen = ReportScreen.PREHOMElOADING
     loadCQLMeasurePatientData()
-
   }
 
   private fun performFilter(
