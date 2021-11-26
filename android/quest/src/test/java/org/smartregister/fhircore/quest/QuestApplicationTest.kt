@@ -17,15 +17,30 @@
 package org.smartregister.fhircore.quest
 
 import androidx.test.core.app.ApplicationProvider
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import org.hl7.fhir.r4.model.ResourceType
+import org.junit.After
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 class QuestApplicationTest : RobolectricTest() {
 
   private val app by lazy { ApplicationProvider.getApplicationContext<QuestApplication>() }
+
+  @Before
+  fun setUp() {
+    mockkObject(SharedPreferencesHelper)
+    every { SharedPreferencesHelper.read("USER_INFO_SHARED_PREFERENCE_KEY", null) } returns
+      UserInfo("ONA-Systems", "105", "Nairobi").encodeJson()
+  }
 
   @Test
   fun testConstructFhirEngineShouldReturnNonNull() {
@@ -53,5 +68,21 @@ class QuestApplicationTest : RobolectricTest() {
     Assert.assertTrue(syncParam.containsKey(ResourceType.Condition))
     Assert.assertTrue(syncParam.containsKey(ResourceType.Observation))
     Assert.assertTrue(syncParam.containsKey(ResourceType.Encounter))
+  }
+
+  @Test
+  fun testResourceSyncParam_ExpressionValueNull_ShouldReturnEmptyMap() {
+    val syncParam = app.resourceSyncParams
+    Assert.assertTrue(syncParam[ResourceType.Binary]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.QuestionnaireResponse]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Questionnaire]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Condition]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Observation]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Encounter]!!.isEmpty())
+  }
+
+  @After
+  fun cleanup() {
+    unmockkObject(SharedPreferencesHelper)
   }
 }
