@@ -21,9 +21,10 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.engine.util.DateUtils
+import org.smartregister.fhircore.engine.util.extension.plusDaysAsString
 
-const val DAYS_IN_MONTH: Int = 28
-const val OVERDUE_DAYS_IN_MONTH: Int = 14
+const val VACCINE_GAP_DAYS: Int = 21
+const val OVERDUE_GAP_DAYS: Int = VACCINE_GAP_DAYS + 1
 
 data class ImmunizationItem(val vaccine: String, val doses: List<Pair<String, Int>>)
 
@@ -38,11 +39,11 @@ data class AdverseEventItem(val date: String, val detail: String)
 fun List<Immunization>.toImmunizationItems(context: Context): MutableList<ImmunizationItem> {
   if (this.isEmpty()) return mutableListOf()
   val immunizationItems = mutableListOf<ImmunizationItem>()
-  val immunizationsMap = this.groupBy { it.vaccineCode.text }
+  val immunizationsMap = this.groupBy { it.vaccineCode.codingFirstRep.code }
 
   immunizationsMap.forEach { vaccine ->
     val doses: List<Pair<String, Int>> =
-      vaccine.value.sortedBy { it.protocolApplied.first().doseNumberPositiveIntType.value }.map {
+      vaccine.value.sortedBy { it.protocolAppliedFirstRep.doseNumberPositiveIntType.value }.map {
         it.getDoseLabel(context, this.size >= 2)
       }
     immunizationItems.add(ImmunizationItem(vaccine.key, doses = doses))
@@ -52,29 +53,26 @@ fun List<Immunization>.toImmunizationItems(context: Context): MutableList<Immuni
 }
 
 fun Immunization.getDoseLabel(context: Context, fullyImmunized: Boolean): Pair<String, Int> {
-  val doseNumber = (this.protocolApplied[0].doseNumber as PositiveIntType).value
+  val doseNumber = this.protocolAppliedFirstRep.doseNumberPositiveIntType?.value ?: 0
+  val vaccineDate = this.occurrenceDateTimeType
+
   if (fullyImmunized) {
     return Pair(
       context.getString(
         R.string.immunization_given,
         doseNumber.ordinalOf(),
-        this.occurrenceDateTimeType.toHumanDisplay()
+        vaccineDate?.toHumanDisplay() ?: "-"
       ),
       R.color.black
     )
   } else {
-    val isDue =
-      DateUtils.hasPastDays(this.occurrenceDateTimeType, DAYS_IN_MONTH + OVERDUE_DAYS_IN_MONTH)
+    val isOverDue = this.isOverdue()
 
-    val dueDate =
-      DateUtils.addDays(
-        this.occurrenceDateTimeType.toHumanDisplay(),
-        DAYS_IN_MONTH,
-        dateTimeFormat = "MMM d, yyyy h:mm:ss a"
-      )
+    val dueDate = this.nextDueDateFmt()
     val nextDoseNumber = doseNumber + 1
     val doseLabel =
-      if (isDue) context.getString(R.string.immunization_due, nextDoseNumber.ordinalOf(), dueDate)
+      if (!isOverDue)
+        context.getString(R.string.immunization_due, nextDoseNumber.ordinalOf(), dueDate)
       else context.getString(R.string.immunization_overdue, nextDoseNumber.ordinalOf(), dueDate)
 
     return Pair(doseLabel, if (fullyImmunized) R.color.black else R.color.not_immune)
@@ -134,6 +132,14 @@ fun Immunization.getDoseLabelWithAdverseEvent(
     Pair("", listOf())
   }
 }
+
+fun Immunization.isOverdue() =
+  if (!this.occurrenceDateTimeType.hasValue()) false
+  else DateUtils.hasPastDays(this.occurrenceDateTimeType, OVERDUE_GAP_DAYS)
+
+fun Immunization.nextDueDateFmt() =
+  if (!this.occurrenceDateTimeType.hasValue()) ""
+  else this.occurrenceDateTimeType.plusDaysAsString(VACCINE_GAP_DAYS)
 
 fun Int.ordinalOf() =
   "$this" +

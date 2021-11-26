@@ -49,8 +49,8 @@ class AlertDialogueTest : ActivityRobolectricTest() {
     AlertDialogue.showAlert(
       context = context,
       alertIntent = AlertIntent.ERROR,
-      message = R.string.questionnaire_alert_invalid_message,
-      title = R.string.questionnaire_alert_invalid_title,
+      message = getString(R.string.questionnaire_alert_invalid_message),
+      title = getString(R.string.questionnaire_alert_invalid_title),
       confirmButtonText = R.string.questionnaire_alert_confirm_button_title,
       confirmButtonListener = { confirmCalled.add(true) },
       neutralButtonText = R.string.questionnaire_alert_ack_button_title,
@@ -60,25 +60,17 @@ class AlertDialogueTest : ActivityRobolectricTest() {
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
     val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realAlertDialog")
 
-    Assert.assertNotNull(dialog)
-    Assert.assertTrue(alertDialog.isShowing)
-
-    Assert.assertEquals(
+    assertSimpleMessageDialog(
+      dialog,
       getString(R.string.questionnaire_alert_invalid_message),
-      dialog.view.findViewById<TextView>(R.id.tv_alert_message)!!.text
-    )
-
-    Assert.assertEquals(getString(R.string.questionnaire_alert_invalid_title), dialog.title)
-
-    val confirmButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)
-    Assert.assertEquals(
-      getString(R.string.questionnaire_alert_confirm_button_title),
-      confirmButton.text
+      getString(R.string.questionnaire_alert_invalid_title),
+      getString(R.string.questionnaire_alert_confirm_button_title)
     )
 
     // confirmButton.performClick()
     // Assert.assertTrue(confirmCalled.size > 0)
 
+    // test additional neutral button
     val neutralButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL)
     Assert.assertEquals(
       getString(R.string.questionnaire_alert_ack_button_title),
@@ -126,26 +118,78 @@ class AlertDialogueTest : ActivityRobolectricTest() {
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
     val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realAlertDialog")
 
-    Assert.assertNotNull(dialog)
-    Assert.assertTrue(alertDialog.isShowing)
-
-    Assert.assertEquals(
+    assertSimpleMessageDialog(
+      dialog,
       getString(R.string.saving_registration),
-      dialog.view.findViewById<TextView>(R.id.tv_alert_message)!!.text
+      getString(R.string.questionnaire_alert_invalid_title),
+      getString(R.string.submit_button_text)
     )
 
-    Assert.assertEquals(View.GONE, dialog.view.findViewById<View>(R.id.pr_circular)!!.visibility)
-
-    val confirmButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)
-    Assert.assertEquals(View.VISIBLE, confirmButton.visibility)
-    Assert.assertEquals(getString(R.string.submit_button_text), confirmButton.text)
-
+    // test an additional cancel or neutral button in confirm alert
     val neutralButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL)
     Assert.assertEquals(View.VISIBLE, neutralButton.visibility)
     Assert.assertEquals(
       getString(R.string.questionnaire_alert_neutral_button_title),
       neutralButton.text
     )
+  }
+
+  @Test
+  fun testShowErrorAlertShouldShowAlertWithCorrectData() {
+    AlertDialogue.showErrorAlert(
+      context = context,
+      message = R.string.error_saving_form,
+      title = R.string.default_app_title
+    )
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    assertSimpleMessageDialog(
+      dialog,
+      getString(R.string.error_saving_form),
+      getString(R.string.default_app_title),
+      getString(R.string.questionnaire_alert_ack_button_title)
+    )
+  }
+
+  @Test
+  fun testShowInfoAlertShouldShowAlertWithCorrectData() {
+    AlertDialogue.showInfoAlert(
+      context = context,
+      message = "Here is the complete info",
+      title = "Info title",
+      confirmButtonText = R.string.submit_button_text
+    )
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    assertSimpleMessageDialog(
+      dialog,
+      "Here is the complete info",
+      "Info title",
+      getString(R.string.submit_button_text)
+    )
+  }
+
+  private fun assertSimpleMessageDialog(
+    dialog: ShadowAlertDialog,
+    message: String,
+    title: String,
+    confirmButtonTitle: String
+  ) {
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realAlertDialog")
+
+    Assert.assertNotNull(dialog)
+    Assert.assertTrue(alertDialog.isShowing)
+
+    Assert.assertEquals(message, dialog.view.findViewById<TextView>(R.id.tv_alert_message)!!.text)
+    Assert.assertEquals(title, dialog.title)
+
+    Assert.assertEquals(View.GONE, dialog.view.findViewById<View>(R.id.pr_circular)!!.visibility)
+
+    val confirmButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)
+    Assert.assertEquals(View.VISIBLE, confirmButton.visibility)
+    Assert.assertEquals(confirmButtonTitle, confirmButton.text)
   }
 
   override fun getActivity(): Activity {

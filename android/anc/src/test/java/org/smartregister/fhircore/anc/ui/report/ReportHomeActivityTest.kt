@@ -39,15 +39,12 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.FileUtil
 
 @ExperimentalCoroutinesApi
-@Config(shadows = [AncApplicationShadow::class])
 class ReportHomeActivityTest : ActivityRobolectricTest() {
 
   private lateinit var reportHomeActivity: ReportHomeActivity

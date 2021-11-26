@@ -28,12 +28,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.RadioButton
@@ -62,7 +60,6 @@ import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
-import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
@@ -71,6 +68,7 @@ const val TOOLBAR_BACK_ARROW = "toolbarBackArrow"
 const val REPORT_HOME_PRELOAD = "reportHomePreLoad"
 const val REPORT_MEASURE_LIST = "reportMeasureList"
 const val REPORT_MEASURE_ITEM = "reportMeasureItem"
+const val REPORT_FILTER_PAGE = "reportFiltertPage"
 const val REPORT_DATE_RANGE_SELECTION = "reportDateRangeSelection"
 const val REPORT_DATE_SELECT_ITEM = "reportDateSelectItem"
 const val REPORT_PATIENT_SELECTION = "reportPatientSelection"
@@ -84,9 +82,13 @@ const val REPORT_RESULT_PAGE = "reportResultPage"
 const val ANC_PATIENT_ITEM = "ancPatientItem"
 const val PATIENT_ANC_VISIT = "patientAncVisit"
 const val REPORT_SEARCH_HINT = "reportSearchHint"
+const val REPORT_RESULT_MEASURE_DESCRIPTION = "reportResultMeasureDescription"
 const val REPORT_RESULT_ITEM_INDIVIDUAL = "reportResultIndividual"
 const val REPORT_RESULT_PATIENT_DATA = "reportResultPatientData"
-const val REPORT_RESULT_ITEM_ALL = "reportResultAll"
+const val REPORT_RESULT_POPULATION_DATA = "reportResultPopulationData"
+const val REPORT_RESULT_POPULATION_BOX = "reportResultPopulationBox"
+const val REPORT_RESULT_POPULATION_ITEM = "reportResultPopulationItem"
+
 const val INDICATOR_STATUS = "indicatorStatus"
 
 @Composable
@@ -148,14 +150,14 @@ fun LoadingItem() {
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
-fun PreviewDateRangeChangable() {
+fun PreviewDateSelection() {
   DateSelectionBox(startDate = "Start date", endDate = "End date", canChange = true)
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
-fun PreviewDateRangeFixed() {
+fun PreviewDateRangeSelected() {
   DateSelectionBox(startDate = "Start date", endDate = "End date", canChange = false)
 }
 
@@ -178,7 +180,7 @@ fun DateSelectionBox(
       fontSize = 18.sp,
       modifier = Modifier.wrapContentWidth()
     )
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(4.dp))
     Row(
       horizontalArrangement = Arrangement.SpaceAround,
       verticalAlignment = Alignment.CenterVertically
@@ -199,12 +201,14 @@ fun DateRangeItem(
 ) {
   var newClickListener = {}
   var newBackGroundColor = colorResource(id = R.color.transparent)
-  var textPadding = 0.dp
+  var textPaddingHorizontal = 0.dp
+  var textPaddingVertical = 0.dp
 
   if (canChange) {
     newClickListener = clickListener
     newBackGroundColor = colorResource(id = R.color.light)
-    textPadding = 12.dp
+    textPaddingHorizontal = 12.dp
+    textPaddingVertical = 4.dp
   }
 
   Row(
@@ -218,32 +222,10 @@ fun DateRangeItem(
           .clip(RoundedCornerShape(15.dp))
           .background(color = newBackGroundColor)
           .wrapContentWidth()
-          .padding(start = textPadding, end = textPadding, top = 6.dp, bottom = 6.dp),
+          .padding(horizontal = textPaddingHorizontal, vertical = textPaddingVertical),
       contentAlignment = Alignment.Center
     ) { Text(text = text, textAlign = TextAlign.Start, fontSize = 16.sp) }
   }
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun PreviewPatientSelectionAll() {
-  PatientSelectionBox(
-    patientSelectionText = ReportViewModel.PatientSelectionType.ALL,
-    onPatientSelectionChange = {},
-    selectedPatient = PatientItem()
-  )
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun PreviewPatientSelectionIndividual() {
-  PatientSelectionBox(
-    patientSelectionText = ReportViewModel.PatientSelectionType.INDIVIDUAL,
-    onPatientSelectionChange = {},
-    selectedPatient = PatientItem(name = "Ind Patient Item")
-  )
 }
 
 @Composable
@@ -253,7 +235,7 @@ fun PatientSelectionBox(
   onPatientSelectionChange: (String) -> Unit,
 ) {
   Column(
-    modifier = Modifier.wrapContentWidth().padding(16.dp).testTag(REPORT_PATIENT_SELECTION),
+    modifier = Modifier.wrapContentWidth().testTag(REPORT_PATIENT_SELECTION),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.Start
   ) {
@@ -436,89 +418,5 @@ fun ReportRow(
       colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray)),
       modifier = Modifier.padding(end = 12.dp)
     )
-  }
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun PreviewResultItemIndividual() {
-  ResultItemIndividual(
-    selectedPatient = PatientItem(demographics = "Jacky Coughlin, F, 27"),
-    isMatchedIndicator = true,
-    indicatorStatus = "True",
-    indicatorDescription = "Jacky Got her first ANC contact"
-  )
-}
-
-@Composable
-fun ResultItemIndividual(
-  selectedPatient: PatientItem,
-  isMatchedIndicator: Boolean = true,
-  indicatorStatus: String = "",
-  indicatorDescription: String = "",
-  modifier: Modifier = Modifier
-) {
-  Box(
-    modifier =
-      modifier
-        .clip(RoundedCornerShape(15.dp))
-        .background(color = colorResource(id = R.color.white))
-        .wrapContentWidth()
-        .testTag(REPORT_RESULT_ITEM_INDIVIDUAL),
-    contentAlignment = Alignment.Center
-  ) {
-    Column(
-      modifier = Modifier.wrapContentWidth().padding(16.dp),
-      verticalArrangement = Arrangement.Center,
-      horizontalAlignment = Alignment.Start
-    ) {
-      Text(
-        color = SubtitleTextColor,
-        text = selectedPatient.demographics,
-        fontSize = 16.sp,
-        modifier = Modifier.wrapContentWidth().testTag(REPORT_RESULT_PATIENT_DATA)
-      )
-      Spacer(modifier = Modifier.height(12.dp))
-      Divider(color = DividerColor)
-      Spacer(modifier = Modifier.height(12.dp))
-      Row(
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        if (isMatchedIndicator) {
-          Image(
-            painter = painterResource(id = R.drawable.ic_check),
-            contentDescription = INDICATOR_STATUS,
-            modifier = modifier.wrapContentWidth().requiredHeight(40.dp)
-          )
-        } else {
-          Image(
-            painter = painterResource(id = R.drawable.ic_stalled),
-            contentDescription = INDICATOR_STATUS,
-            modifier = modifier.wrapContentWidth().requiredHeight(40.dp)
-          )
-        }
-        Column(
-          modifier = Modifier.wrapContentWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-          verticalArrangement = Arrangement.Center,
-          horizontalAlignment = Alignment.Start
-        ) {
-          Text(
-            text = indicatorStatus,
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp,
-            modifier = Modifier.wrapContentWidth()
-          )
-          Spacer(modifier = Modifier.height(4.dp))
-          Text(
-            color = SubtitleTextColor,
-            text = indicatorDescription,
-            fontSize = 14.sp,
-            modifier = modifier.wrapContentWidth()
-          )
-        }
-      }
-    }
   }
 }
