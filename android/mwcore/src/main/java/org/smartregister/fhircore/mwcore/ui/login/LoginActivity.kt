@@ -22,12 +22,12 @@ import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurati
 import org.smartregister.fhircore.engine.ui.login.BaseLoginActivity
 import org.smartregister.fhircore.mwcore.BuildConfig
 import org.smartregister.fhircore.mwcore.R
-import org.smartregister.fhircore.mwcore.ui.patient.register.PatientRegisterActivity
+import org.smartregister.fhircore.mwcore.ui.patient.register.ClientRegisterActivity
 
 class LoginActivity : BaseLoginActivity() {
 
   override fun navigateToHome() {
-    val intent = Intent(this, PatientRegisterActivity::class.java)
+    val intent = Intent(this, ClientRegisterActivity::class.java)
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     startActivity(intent)
     finish()

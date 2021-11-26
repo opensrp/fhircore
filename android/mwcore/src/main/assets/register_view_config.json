@@ -1,9 +1,9 @@
 [
   {
-    "id": "mwcore-app-patient-register",
+    "id": "mwcore-app-clients-register",
     "appTitle": "Clients",
     "filterText": "Show overdue",
-    "searchBarHint": "Search for ID or client name",
+    "searchBarHint": "Search ART number or client name",
     "newClientButtonText": "Add new client",
     "newClientButtonStyle": "rounded_corner",
     "showSearchBar": true,
@@ -13,11 +13,53 @@
     "showNewClientButton": true,
     "showSideMenu": true,
     "showBottomMenu": false,
-    "registrationForm": "1",
+    "registrationForm": "client-questionnaire",
     "primaryFilter": {
       "key": "_tag",
       "system": "http://fhir.ona.io",
       "code": "000003"
+    }
+  },
+  {
+    "id": "mwcore-app-contacts-register",
+    "appTitle": "Contacts",
+    "filterText": "Show overdue",
+    "searchBarHint": "Search contact name",
+    "newClientButtonText": "Add new contact",
+    "newClientButtonStyle": "rounded_corner",
+    "showSearchBar": true,
+    "showFilter": false,
+    "switchLanguages": true,
+    "showScanQRCode": false,
+    "showNewClientButton": true,
+    "showSideMenu": true,
+    "showBottomMenu": false,
+    "registrationForm": "contact-questionnaire",
+    "primaryFilter": {
+      "key": "_tag",
+      "system": "http://fhir.ona.io",
+      "code": "patient-contact"
+    }
+  },
+  {
+    "id": "mwcore-app-exposed-infants-register",
+    "appTitle": "Exposed Infants",
+    "filterText": "Show overdue",
+    "searchBarHint": "Search HCC number or exposed infant name",
+    "newClientButtonText": "Add new exposed infant",
+    "newClientButtonStyle": "rounded_corner",
+    "showSearchBar": true,
+    "showFilter": false,
+    "switchLanguages": true,
+    "showScanQRCode": false,
+    "showNewClientButton": true,
+    "showSideMenu": true,
+    "showBottomMenu": false,
+    "registrationForm": "exposed-infant-questionnaire",
+    "primaryFilter": {
+      "key": "_tag",
+      "system": "http://fhir.ona.io",
+      "code": "patient-exposed-infant"
     }
   }
 ]

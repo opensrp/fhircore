@@ -120,7 +120,9 @@ class MwCoreApplication : Application(), ConfigurableApplication {
 
   fun initializeWorkerContextProvider() {
     CoroutineScope(defaultDispatcherProvider.io()).launch {
+      println("INIT START")
       workerContextProvider = this@MwCoreApplication.initializeWorkerContext()!!
+      println("INIT END")
     }
 
     schedulePeriodicSync()

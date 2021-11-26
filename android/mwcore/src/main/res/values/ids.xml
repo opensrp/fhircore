@@ -2,4 +2,13 @@
 <resources>
     <item name="menu_item_clients" type="id" />
     <item name="menu_item_settings" type="id" />
+
+    <item name="bottom_nav_clients" type="id" />
+    <item name="bottom_nav_contacts" type="id" />
+    <item name="bottom_nav_exposed_infants" type="id" />
+
+    <item name="nav_drawer_patient_list" type="id" />
+    <item name="nav_drawer_clients" type="id" />
+    <item name="nav_drawer_contacts" type="id" />
+    <item name="nav_drawer_exposed_infants" type="id" />
 </resources>
