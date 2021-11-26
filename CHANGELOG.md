@@ -62,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Bottom sheet for switching registers added
 - ANC | User actions, profile screen implemented
 - ANC | Drawer menu removed
+- eCBIS | Login page updated
 
 ### Fixed
 
