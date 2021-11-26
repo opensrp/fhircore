@@ -48,7 +48,7 @@ open class QuestApplication : Application(), ConfigurableApplication {
     get() = Sync.basicSyncJob(getContext())
 
   override lateinit var applicationConfiguration: ApplicationConfiguration
-  val SYNC_BY_ORGANIZATION_PUBLISHER = "sync_by_organization_publisher.json"
+  val SYNC_BY_ORGANIZATION_PUBLISHER = "configurations/app/sync_config.json"
 
   override val authenticationService: AuthenticationService
     get() = QuestAuthenticationService(applicationContext)

@@ -1,9 +1,6 @@
 [
   {
     "resourceType": "SearchParameter",
-    "id": "Organization-identifier",
-    "url": "http://hl7.org/fhir/SearchParameter/Organization-identifier",
-    "version": "4.0.1",
     "name": "organization",
     "code": "organization",
     "base": [
@@ -14,9 +11,6 @@
   },
   {
     "resourceType": "SearchParameter",
-    "id": "Organization-identifier",
-    "url": "http://hl7.org/fhir/SearchParameter/Organization-identifier",
-    "version": "4.0.1",
     "name": "organization",
     "code": "organization",
     "base": [
@@ -27,9 +21,6 @@
   },
   {
     "resourceType": "SearchParameter",
-    "id": "Organization-identifier",
-    "url": "http://hl7.org/fhir/SearchParameter/Organization-identifier",
-    "version": "4.0.1",
     "name": "organization",
     "code": "organization",
     "base": [
@@ -40,9 +31,6 @@
   },
   {
     "resourceType": "SearchParameter",
-    "id": "Organization-identifier",
-    "url": "http://hl7.org/fhir/SearchParameter/Organization-identifier",
-    "version": "4.0.1",
     "name": "organization",
     "code": "organization",
     "base": [
@@ -53,9 +41,6 @@
   },
   {
     "resourceType": "SearchParameter",
-    "id": "Organization-identifier",
-    "url": "http://hl7.org/fhir/SearchParameter/Organization-identifier",
-    "version": "4.0.1",
     "name": "organization",
     "code": "organization",
     "base": [
@@ -66,9 +51,6 @@
   },
   {
     "resourceType": "SearchParameter",
-    "id": "Questionnaire-publisher",
-    "url": "http://hl7.org/fhir/SearchParameter/Questionnaire-publisher",
-    "version": "4.0.1",
     "name": "publisher",
     "code": "publisher",
     "base": [
