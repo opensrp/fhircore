@@ -25,7 +25,6 @@ import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJob
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
 import org.hl7.fhir.r4.utils.FHIRPathEngine
@@ -72,32 +71,21 @@ open class QuestApplication : Application(), ConfigurableApplication {
         // TODO: expressionValue supports for Organization and Publisher, extend it using
         // Composition resource
         val expressionValue =
-          when {
-            searchParams[i].expression.contains("organization") -> {
-              authenticatedUserInfo?.organization
-            }
-            searchParams[i].expression.contains("publisher") -> {
-              authenticatedUserInfo?.questionnairePublisher
-            }
-            else -> {
-              null
+          searchParams[i].expression?.let {
+            when {
+              it.contains("organization") -> authenticatedUserInfo?.organization
+              it.contains("publisher") -> authenticatedUserInfo?.questionnairePublisher
+              else -> null
             }
           }
 
-        expressionValue?.let {
-          pairs.add(
-            Pair(
-              ResourceType.fromCode(searchParams[i].base[0].code),
-              mapOf(searchParams[i].expression to it)
-            )
+        pairs.add(
+          Pair(
+            ResourceType.fromCode(searchParams[i].base[0].code),
+            expressionValue?.let { mapOf(searchParams[i].expression to it) } ?: mapOf()
           )
-        }
-          ?: kotlin.run {
-            pairs.add(Pair(ResourceType.fromCode(searchParams[i].base[0].code), mapOf()))
-          }
+        )
       }
-      // TODO: Extend this Binary resource using the Composition resource
-      pairs.add(ResourceType.Binary to mapOf())
 
       return mapOf(*pairs.toTypedArray())
     }
@@ -112,13 +100,6 @@ open class QuestApplication : Application(), ConfigurableApplication {
       searchParameters.add(iParser.parseResource(jsonArrayEntry[i].toString()) as SearchParameter)
     }
     return searchParameters
-  }
-
-  private fun buildPublisherFilterMap(): MutableMap<String, String> {
-    val questionnaireFilterMap: MutableMap<String, String> = HashMap()
-    val publisher = getPublisher()
-    if (publisher != null) questionnaireFilterMap[Questionnaire.SP_PUBLISHER] = publisher
-    return questionnaireFilterMap
   }
 
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {

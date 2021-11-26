@@ -38,8 +38,11 @@ class QuestApplicationTest : RobolectricTest() {
   @Before
   fun setUp() {
     mockkObject(SharedPreferencesHelper)
-    every { SharedPreferencesHelper.read("USER_INFO_SHARED_PREFERENCE_KEY", null) } returns
-      UserInfo("ONA-Systems", "105", "Nairobi").encodeJson()
+  }
+
+  @After
+  fun cleanup() {
+    unmockkObject(SharedPreferencesHelper)
   }
 
   @Test
@@ -59,6 +62,9 @@ class QuestApplicationTest : RobolectricTest() {
 
   @Test
   fun testResourceSyncParam_shouldHaveResourceTypes() {
+    every { SharedPreferencesHelper.read(any(), any()) } returns
+      UserInfo("ONA-Systems", "105", "Nairobi").encodeJson()
+
     val syncParam = app.resourceSyncParams
     Assert.assertTrue(syncParam.isNotEmpty())
     Assert.assertTrue(syncParam.containsKey(ResourceType.Binary))
@@ -68,21 +74,26 @@ class QuestApplicationTest : RobolectricTest() {
     Assert.assertTrue(syncParam.containsKey(ResourceType.Condition))
     Assert.assertTrue(syncParam.containsKey(ResourceType.Observation))
     Assert.assertTrue(syncParam.containsKey(ResourceType.Encounter))
+
+    Assert.assertTrue(syncParam[ResourceType.Binary]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.QuestionnaireResponse]!!.isNotEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Questionnaire]!!.isNotEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Condition]!!.isNotEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Observation]!!.isNotEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Encounter]!!.isNotEmpty())
   }
 
   @Test
-  fun testResourceSyncParam_ExpressionValueNull_ShouldReturnEmptyMap() {
+  fun testResourceSyncParam_WithNullExpressionValue_ShouldReturnEmptyMap() {
+    every { SharedPreferencesHelper.read(any(), any()) } returns null
+
     val syncParam = app.resourceSyncParams
+
     Assert.assertTrue(syncParam[ResourceType.Binary]!!.isEmpty())
     Assert.assertTrue(syncParam[ResourceType.QuestionnaireResponse]!!.isEmpty())
     Assert.assertTrue(syncParam[ResourceType.Questionnaire]!!.isEmpty())
     Assert.assertTrue(syncParam[ResourceType.Condition]!!.isEmpty())
     Assert.assertTrue(syncParam[ResourceType.Observation]!!.isEmpty())
     Assert.assertTrue(syncParam[ResourceType.Encounter]!!.isEmpty())
-  }
-
-  @After
-  fun cleanup() {
-    unmockkObject(SharedPreferencesHelper)
   }
 }

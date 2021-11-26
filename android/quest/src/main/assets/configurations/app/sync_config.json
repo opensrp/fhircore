@@ -58,5 +58,15 @@
     ],
     "type": "token",
     "expression": "publisher"
+  },
+  {
+    "resourceType": "SearchParameter",
+    "name": "organization",
+    "code": "organization",
+    "base": [
+      "Binary"
+    ],
+    "type": "token",
+    "expression": ""
   }
 ]
