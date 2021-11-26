@@ -5,9 +5,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, dependency-injection ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, dependency-injection ]
 
 env:
  FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}

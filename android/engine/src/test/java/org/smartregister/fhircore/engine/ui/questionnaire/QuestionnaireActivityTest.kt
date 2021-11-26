@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.app.Application
 import android.content.Intent
 import android.widget.Button
 import android.widget.TextView
@@ -26,9 +25,12 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.fragment.app.commitNow
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
@@ -56,9 +58,8 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 @HiltAndroidTest
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
-  private lateinit var context: Application
   private lateinit var questionnaireActivity: QuestionnaireActivity
-  private lateinit var questionnaireViewModel: QuestionnaireViewModel
+
   private lateinit var intent: Intent
 
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
@@ -66,6 +67,10 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
+
+  @BindValue
+  val questionnaireViewModel: QuestionnaireViewModel =
+    spyk(QuestionnaireViewModel(mockk(), mockk(), mockk(), mockk(), mockk()))
 
   @Before
   fun setUp() {
@@ -75,6 +80,13 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, "patient-registration")
       }
+
+    hiltRule.inject()
+
+    val questionnaireConfig = QuestionnaireConfig("appId", "form", "title", "form-id")
+    coEvery { questionnaireViewModel.getQuestionnaireConfig(any(), any()) } returns
+      questionnaireConfig
+    coEvery { questionnaireViewModel.loadQuestionnaire(any()) } returns mockk()
 
     val questionnaireFragment = spyk<QuestionnaireFragment>()
     every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()

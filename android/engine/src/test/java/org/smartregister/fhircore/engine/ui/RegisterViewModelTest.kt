@@ -17,10 +17,12 @@
 package org.smartregister.fhircore.engine.ui
 
 import android.os.Looper
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.spyk
 import io.mockk.unmockkStatic
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertTrue
@@ -28,19 +30,40 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.Shadows.shadowOf
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.register.RegisterViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.runOneTimeSync
 
 class RegisterViewModelTest : RobolectricTest() {
 
   private lateinit var viewModel: RegisterViewModel
+  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Before
   fun setUp() {
+    val configurationRegistry =
+      spyk(ConfigurationRegistry(ApplicationProvider.getApplicationContext()))
+    configurationRegistry.appId = "appId"
+    val applicationConfiguration = mockk<ApplicationConfiguration>(relaxed = true)
+    /*every { configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+    AppConfigClassification.APPLICATION) } returns applicationConfiguration*/
+    every { configurationRegistry.workflowPointName(any()) } returns "sample-app"
+    every { configurationRegistry.configurationsMap } returns mutableMapOf()
 
-    // TODO proper setup
+    sharedPreferencesHelper = SharedPreferencesHelper(ApplicationProvider.getApplicationContext())
+    viewModel =
+      RegisterViewModel(
+        mockk(),
+        mockk(),
+        mockk(),
+        configurationRegistry,
+        mockk(),
+        sharedPreferencesHelper
+      )
   }
 
   @Test
