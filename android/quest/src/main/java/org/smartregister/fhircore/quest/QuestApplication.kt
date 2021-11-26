@@ -69,7 +69,7 @@ open class QuestApplication : Application(), ConfigurableApplication {
       val searchParams = loadSearchParams(this)
       val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
       for (i in searchParams.indices) {
-        // TODO: expressionValue is supporting for Organization and Publisher, extend it using
+        // TODO: expressionValue supports for Organization and Publisher, extend it using
         // Composition resource
         val expressionValue =
           when {

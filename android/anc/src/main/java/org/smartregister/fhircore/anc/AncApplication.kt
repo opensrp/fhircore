@@ -39,8 +39,6 @@ open class AncApplication : Application(), ConfigurableApplication {
   override val syncJob: SyncJob
     get() = Sync.basicSyncJob(getContext())
 
-  val SYNC_BY_TAGS = "sync_by_tags.json"
-
   override lateinit var applicationConfiguration: ApplicationConfiguration
 
   override val authenticationService: AuthenticationService
