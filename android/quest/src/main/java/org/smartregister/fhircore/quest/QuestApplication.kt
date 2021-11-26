@@ -48,7 +48,7 @@ open class QuestApplication : Application(), ConfigurableApplication {
     get() = Sync.basicSyncJob(getContext())
 
   override lateinit var applicationConfiguration: ApplicationConfiguration
-  val SYNC_BY_ORGANIZATION_PUBLISHER = "configurations/app/sync_config.json"
+  val SYNC_CONFIG = "configurations/app/sync_config.json"
 
   override val authenticationService: AuthenticationService
     get() = QuestAuthenticationService(applicationContext)
@@ -104,8 +104,7 @@ open class QuestApplication : Application(), ConfigurableApplication {
 
   private fun loadSearchParams(context: Context): List<SearchParameter> {
     val iParser: IParser = FhirContext.forR4().newJsonParser()
-    val json =
-      context.assets.open(SYNC_BY_ORGANIZATION_PUBLISHER).bufferedReader().use { it.readText() }
+    val json = context.assets.open(SYNC_CONFIG).bufferedReader().use { it.readText() }
     val searchParameters = mutableListOf<SearchParameter>()
 
     val jsonArrayEntry = JSONArray(json)

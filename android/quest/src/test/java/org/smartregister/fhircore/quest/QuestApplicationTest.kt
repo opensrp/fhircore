@@ -17,32 +17,15 @@
 package org.smartregister.fhircore.quest
 
 import androidx.test.core.app.ApplicationProvider
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.unmockkObject
 import org.hl7.fhir.r4.model.ResourceType
-import org.junit.After
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
-import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
-import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.decodeJson
-import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 class QuestApplicationTest : RobolectricTest() {
 
   private val app by lazy { ApplicationProvider.getApplicationContext<QuestApplication>() }
-
-  @Before
-  fun setUp() {
-    val sharedPreferencesHelper = mockk<SharedPreferencesHelper>()
-    every { sharedPreferencesHelper.read("USER_INFO_SHARED_PREFERENCE_KEY", null) } returns UserInfo("ONA-Systems", "105", "Nairobi").encodeJson()
-  }
 
   @Test
   fun testConstructFhirEngineShouldReturnNonNull() {
@@ -70,17 +53,5 @@ class QuestApplicationTest : RobolectricTest() {
     Assert.assertTrue(syncParam.containsKey(ResourceType.Condition))
     Assert.assertTrue(syncParam.containsKey(ResourceType.Observation))
     Assert.assertTrue(syncParam.containsKey(ResourceType.Encounter))
-  }
-
-  @Test
-  fun testResourceSyncParam_Patient_ShouldReturnNonEmptyMap() {
-    val syncParam = app.resourceSyncParams
-    Assert.assertTrue(syncParam[ResourceType.Patient]!!.isNotEmpty())
-    Assert.assertTrue(syncParam[ResourceType.Patient]!!.containsKey("organization"))
-  }
-
-  @After
-  fun cleanup() {
-    unmockkObject(SharedPreferencesHelper)
   }
 }
