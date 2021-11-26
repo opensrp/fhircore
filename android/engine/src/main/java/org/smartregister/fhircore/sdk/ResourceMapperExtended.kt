@@ -21,12 +21,15 @@ import java.lang.reflect.Field
 import java.lang.reflect.ParameterizedType
 import org.apache.commons.lang3.ClassUtils
 import org.hl7.fhir.r4.model.Base
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.util.extension.FieldType
 import org.smartregister.fhircore.engine.util.extension.find
 import timber.log.Timber
+import java.util.Locale
 
 object ResourceMapperExtended {
   val DEFINITION_PATIENT_EXTENSION =
@@ -39,51 +42,59 @@ object ResourceMapperExtended {
   suspend fun handleMissingSdkFunctionalityExtension(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
-    resource: Resource
+    bundle: Bundle
   ) {
     kotlin
       .runCatching {
-        questionnaire.find(FieldType.DEFINITION, DEFINITION_PATIENT_EXTENSION).forEach { qit ->
-          questionnaireResponse.find(qit.linkId)!!.apply { resource.extractField(qit, this) }
+        bundle.entry.single { it.resource is Patient  }.run {
+          questionnaire.find(FieldType.DEFINITION, DEFINITION_PATIENT_EXTENSION).forEach { qit ->
+            questionnaireResponse.find(qit.linkId)!!.also {
+              this@run.resource.extractField(bundle, qit, it)
+            }
+          }
         }
       }
       .onFailure { Timber.w(it) }
   }
 
   private suspend fun Base.extractFields(
+    bundle: Bundle,
     questionnaireItemList: List<Questionnaire.QuestionnaireItemComponent>,
     questionnaireResponseItemList: List<QuestionnaireResponse.QuestionnaireResponseItemComponent>
   ) {
     questionnaireItemList.forEach { qit ->
-      questionnaireResponseItemList.find(qit.linkId, null)?.let { qrit -> extractField(qit, qrit) }
+      questionnaireResponseItemList.find(qit.linkId, null)?.let { qrit -> extractField(bundle, qit, qrit) }
     }
   }
 
   private suspend fun Base.extractField(
+    bundle: Bundle,
     questionnaireItem: Questionnaire.QuestionnaireItemComponent,
     questionnaireResponseItem: QuestionnaireResponse.QuestionnaireResponseItemComponent
   ) {
     if (questionnaireItem.type == Questionnaire.QuestionnaireItemType.GROUP) {
+      val groupBase = invokeResourceMapperExtension(questionnaireItem, "createBase") as Base
       if (questionnaireItem.definition == null) {
-        this.extractFields(questionnaireItem.item, questionnaireResponseItem.item)
+        this.extractFields(bundle, questionnaireItem.item, questionnaireResponseItem.item)
         return
       }
 
       val definitionField = questionnaireItem.getDefinitionField ?: return
 
       if (isChoiceElement(questionnaireItem)) {
-        val value: Base =
-          (invokeResourceMapperExtension(questionnaireItem, "createBase") as Base).apply {
-            this.extractFields(questionnaireItem.item, questionnaireResponseItem.item)
-          }
+        val value: Base = groupBase.apply {
+            this.extractFields(bundle, questionnaireItem.item, questionnaireResponseItem.item)
+        }
         invokeResourceMapperExtension(this, "updateField", definitionField, value)
         return
       }
       val value: Base =
         (definitionField.nonParameterizedType.newInstance() as Base).apply {
-          this.extractFields(questionnaireItem.item, questionnaireResponseItem.item)
+          this.extractFields(bundle, questionnaireItem.item, questionnaireResponseItem.item)
         }
-      invokeResourceMapperExtension(this, "updateField", definitionField, value)
+
+      if (isList(definitionField)) updateListField(this,definitionField, value)
+      else invokeResourceMapperExtension(this, "updateField", definitionField, value)
       return
     }
     if (questionnaireResponseItem.answer.isEmpty()) return
@@ -153,6 +164,16 @@ object ResourceMapperExtended {
 
   fun isChoiceElement(item: Questionnaire.QuestionnaireItemComponent) =
     invokeResourceMapperExtension(item, "isChoiceElement", 1) as Boolean
+
+  fun isList(field: Field) =
+    invokeResourceMapperExtension(field, "isList") as Boolean
+
+  // copied and modified fro list from SDK ResourceMapper#L397
+  private fun updateListField(base: Base, field: Field, answerValue: Base) {
+    base.javaClass
+      .getMethod("add${field.name.capitalize()}", answerValue::class.java)
+      .invoke(base, answerValue)
+  }
 
   // copied from SDK ResourceMapper#L610
   private val Field.nonParameterizedType: Class<*>

@@ -180,6 +180,15 @@
           "type": "group",
           "text": "Ethnicity",
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+              "valueExpression": {
+                "language": "application/x-fhir-query",
+                "expression": "Extension"
+              }
+            }
+          ],
           "item": [
             {
               "linkId": "PR-ethnicity-authority",
@@ -235,6 +244,15 @@
           "type": "group",
           "text": "Occupation",
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+              "valueExpression": {
+                "language": "application/x-fhir-query",
+                "expression": "Extension"
+              }
+            }
+          ],
           "item": [
             {
               "linkId": "PR-occupation-authority",

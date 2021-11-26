@@ -9,7 +9,7 @@
           "linkId": "a-url",
           "answer": [
             {
-              "valueString": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity"
+              "valueString": "http://fhir/StructureDefinition/us-core-ethnicity"
             }
           ]
         },
@@ -20,6 +20,30 @@
               "valueCoding": {
                 "code": "option 1",
                 "display": "Option 1"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "b",
+      "item": [
+        {
+          "linkId": "b-url",
+          "answer": [
+            {
+              "valueString": "http://fhir/StructureDefinition/current-occupation"
+            }
+          ]
+        },
+        {
+          "linkId": "b-value",
+          "answer": [
+            {
+              "valueCoding": {
+                "code": "option I",
+                "display": "Option I"
               }
             }
           ]

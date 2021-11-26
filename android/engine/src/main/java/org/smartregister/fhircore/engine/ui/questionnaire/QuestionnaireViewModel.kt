@@ -140,7 +140,7 @@ open class QuestionnaireViewModel(application: Application) : AndroidViewModel(a
           ResourceMapperExtended.handleMissingSdkFunctionalityExtension(
             questionnaire,
             questionnaireResponse,
-            bun.resource
+            bundle
           )
         }
 

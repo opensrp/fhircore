@@ -15,6 +15,15 @@
       "linkId": "a",
       "type": "group",
       "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+          "valueExpression": {
+            "language": "application/x-fhir-query",
+            "expression": "Extension"
+          }
+        }
+      ],
       "item": [
         {
           "linkId": "a-url",
@@ -22,7 +31,7 @@
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension.url",
           "initial": [
             {
-              "valueString": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity"
+              "valueString": "http://fhir/StructureDefinition/us-core-ethnicity"
             }
           ]
         },
@@ -43,6 +52,53 @@
               "valueCoding": {
                 "code": "option 1",
                 "display": "Option 1"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "b",
+      "type": "group",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+          "valueExpression": {
+            "language": "application/x-fhir-query",
+            "expression": "Extension"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "b-url",
+          "type": "string",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension.url",
+          "initial": [
+            {
+              "valueString": "http://fhir/StructureDefinition/current-occupation"
+            }
+          ]
+        },
+        {
+          "linkId": "b-value",
+          "type": "choice",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension.value",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "option I",
+                "display": "Option I"
+              }
+            }
+          ],
+          "initial": [
+            {
+              "valueCoding": {
+                "code": "option I",
+                "display": "Option I"
               }
             }
           ]

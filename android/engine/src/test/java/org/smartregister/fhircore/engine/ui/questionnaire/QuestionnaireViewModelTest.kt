@@ -445,11 +445,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coVerify { defaultRepo.addOrUpdate(capture(patientSlot)) }
 
-    Assert.assertEquals(
-      "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity",
-      patientSlot.captured.extension[0].url
-    )
-    Assert.assertEquals("option 1", (patientSlot.captured.extension[0].value as Coding).code)
+    val extensions = patientSlot.captured.extension
+
+    Assert.assertEquals(2, extensions.size)
+    Assert.assertEquals("http://fhir/StructureDefinition/us-core-ethnicity", extensions[0].url)
+    Assert.assertEquals("option 1", (extensions[0].value as Coding).code)
+
+    Assert.assertEquals("http://fhir/StructureDefinition/current-occupation", extensions[1].url)
+    Assert.assertEquals("option I", (extensions[1].value as Coding).code)
   }
 
   @Test
