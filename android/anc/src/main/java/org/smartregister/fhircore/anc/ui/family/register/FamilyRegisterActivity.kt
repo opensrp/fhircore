@@ -98,7 +98,8 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
           isRegisterFragment = false,
           toolbarTitle = getString(R.string.profile)
         )
-      R.id.menu_item_register, R.id.menu_item_families -> switchFragment(mainFragmentTag())
+      R.id.menu_item_register, R.id.menu_item_families, R.id.menu_item_family_planning_clients ->
+        switchFragment(mainFragmentTag())
       R.id.menu_item_reports -> navigateToReports()
       R.id.menu_item_anc_clients -> switchFragment(tag = AncRegisterFragment.TAG)
     }
