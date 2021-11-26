@@ -10,7 +10,7 @@
   {
     "appId": "ecbis",
     "classification": "login",
-    "applicationName": "ECBIS",
+    "applicationName": "eCBIS",
     "applicationVersion": "0.0.1",
     "darkMode": false,
     "showLogo": true
