@@ -62,7 +62,7 @@
       "QuestionnaireResponse"
     ],
     "type": "token",
-    "expression": "subject.organization"
+    "expression": "patient.organization"
   },
   {
     "resourceType": "SearchParameter",

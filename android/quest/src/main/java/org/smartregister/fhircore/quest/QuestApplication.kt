@@ -72,12 +72,16 @@ open class QuestApplication : Application(), ConfigurableApplication {
         // TODO: expressionValue is supporting for Organization and Publisher, extend it using
         // Composition resource
         val expressionValue =
-          if (searchParams[i].expression.contains("organization")) {
-            authenticatedUserInfo?.organization
-          } else if (searchParams[i].expression.contains("questionnairePublisher")) {
-            authenticatedUserInfo?.questionnairePublisher
-          } else {
-            null
+          when {
+            searchParams[i].expression.contains("organization") -> {
+              authenticatedUserInfo?.organization
+            }
+            searchParams[i].expression.contains("publisher") -> {
+              authenticatedUserInfo?.questionnairePublisher
+            }
+            else -> {
+              null
+            }
           }
 
         expressionValue?.let {
