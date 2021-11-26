@@ -110,22 +110,27 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
       SideMenuOption(
         itemId = R.id.menu_item_families,
         titleResource = R.string.households,
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_households)!!,
       ),
       SideMenuOption(
         itemId = R.id.menu_item_anc_clients,
         titleResource = R.string.pregnant_clients,
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_pregnant_clients)!!,
       ),
       SideMenuOption(
         itemId = R.id.menu_item_post_natal_clients,
         titleResource = R.string.post_natal_clients,
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_post_natal_client)!!,
       ),
       SideMenuOption(
         itemId = R.id.menu_item_child_clients,
         titleResource = R.string.child_clients,
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_family_clients)!!,
+      ),
+      SideMenuOption(
+        itemId = R.id.menu_item_family_planning_clients,
+        titleResource = R.string.family_planning_clients,
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_family_clients)!!,
       ),
       SideMenuOption(
         itemId = R.id.menu_item_profile,
