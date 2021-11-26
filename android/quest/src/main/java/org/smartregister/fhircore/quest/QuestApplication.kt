@@ -63,7 +63,8 @@ open class QuestApplication : Application(), ConfigurableApplication {
     }
 
   override val authenticatedUserInfo: UserInfo?
-    get() = SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
+    get() =
+      SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
 
   private fun buildPublisherFilterMap(): MutableMap<String, String> {
     val questionnaireFilterMap: MutableMap<String, String> = HashMap()
@@ -71,7 +72,7 @@ open class QuestApplication : Application(), ConfigurableApplication {
     if (publisher != null) questionnaireFilterMap[Questionnaire.SP_PUBLISHER] = publisher
     return questionnaireFilterMap
   }
- //TODO............ http://hl7.org/fhir/us/odh/Patient-patient-odh-maya-gordon.json.html
+
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
     this.applicationConfiguration = applicationConfiguration
     this.applicationConfiguration.apply {
@@ -102,7 +103,11 @@ open class QuestApplication : Application(), ConfigurableApplication {
     private lateinit var questApplication: QuestApplication
     private const val CONFIG_PROFILE = "quest-app-profile"
 
-    fun getProfileConfigId() = CONFIG_PROFILE.join(getContext().authenticatedUserInfo?.questionnairePublisher?.lowercase()?.let { "-$it" }, "")
+    fun getProfileConfigId() =
+      CONFIG_PROFILE.join(
+        getContext().authenticatedUserInfo?.questionnairePublisher?.lowercase()?.let { "-$it" },
+        ""
+      )
 
     fun getContext() = questApplication
   }

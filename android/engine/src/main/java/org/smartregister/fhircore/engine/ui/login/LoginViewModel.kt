@@ -79,10 +79,7 @@ class LoginViewModel(
     val responseBodyString = responseBody.string()
     Timber.d(responseBodyString)
     val userResponse = responseBodyString.decodeJson<UserInfo>()
-    sharedPreferences.write(
-      USER_INFO_SHARED_PREFERENCE_KEY,
-      userResponse.encodeJson()
-    )
+    sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, userResponse.encodeJson())
   }
 
   private val userInfoResponseCallback: ResponseCallback<ResponseBody> by lazy {
