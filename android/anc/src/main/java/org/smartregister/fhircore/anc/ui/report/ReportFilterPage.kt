@@ -104,41 +104,19 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
     onPatientSelectionTypeChanged = viewModel::onPatientSelectionTypeChanged,
     generateReportEnabled = generateReportEnabled ?: true,
     onGenerateReportPress = {
-      generateMeasureReport(
+      reportHomeActivity.generateMeasureReport(
         startDate,
         endDate,
         reportMeasureItem!!.reportType,
         selectedPatient!!.patientIdentifier,
-        selectedPatient!!.familyName,
-        reportHomeActivity,
-        viewModel
+        selectedPatient!!.familyName
       )
     },
     selectedPatient = selectedPatient ?: PatientItem()
   )
 }
 
-fun generateMeasureReport(
-  startDate:String,
-  endDate:String,
-  reportType:String,
-  patientId:String,
-  subject:String,
-  reportHomeActivity:ReportHomeActivity,
-  reportViewModel: ReportViewModel
-  ){
-  val pattern = "yyyy-MM-dd"
-  val simpleDateFormat = SimpleDateFormat(pattern)
 
-  reportHomeActivity.cqlMeasureReportStartDate=simpleDateFormat.format(Date(startDate))
-  reportHomeActivity.cqlMeasureReportEndDate=simpleDateFormat.format(Date(endDate))
-  reportHomeActivity.patientId=patientId
-  reportHomeActivity.cqlMeasureReportSubject=subject
-  reportHomeActivity.cqlMeasureReportReportType=reportType
-  reportViewModel.reportState.currentScreen = ReportViewModel.ReportScreen.PREHOMElOADING
-  reportHomeActivity.loadCQLMeasurePatientData()
-
-}
 
 @Composable
 @Preview(showBackground = true)
@@ -183,29 +161,6 @@ fun ReportFilterPreview() {
 
 @Composable
 fun GenerateReportButton(generateReportEnabled: Boolean, onGenerateReportClicked: () -> Unit) {
-  Row(
-    horizontalArrangement = Arrangement.SpaceBetween,
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(vertical = 20.dp),
-    verticalAlignment = Alignment.Bottom
-  ) {
-    Column(modifier = Modifier.align(Alignment.Bottom)) {
-      Button(
-        enabled = generateReportEnabled,
-        onClick = onGenerateReportClicked,
-        modifier =
-        Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 16.dp)
-          .testTag(REPORT_GENERATE_BUTTON)
-      ) {
-        Text(
-          color = Color.White,
-          text = stringResource(id = R.string.generate_report),
-          modifier = Modifier.padding(8.dp)
-        )
-      }
   Column {
     Button(
       enabled = generateReportEnabled,

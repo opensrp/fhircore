@@ -48,6 +48,7 @@ import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
+import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.ui.anccare.register.Anc
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.report.ReportViewModel.ReportScreen
@@ -63,6 +64,7 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FileUtil
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import java.text.SimpleDateFormat
 
 class ReportHomeActivity : BaseMultiLanguageActivity() {
 
@@ -372,6 +374,8 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       cqlMeasureReportReportType,
       cqlMeasureReportSubject
     )
+    var resultItem=ResultItem("True",true,"","100","100")
+    reportViewModel.resultForIndividual.value=resultItem
     reportViewModel.reportState.currentScreen = ReportScreen.RESULT
   }
 
@@ -404,6 +408,28 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     patientResourcesIBase.add(patientDataIBase)
 
     handleMeasureEvaluate()
+  }
+
+  fun generateMeasureReport(
+    startDate:String,
+    endDate:String,
+    reportType:String,
+    patientId:String,
+    subject:String,
+
+  ){
+    val pattern = "yyyy-MM-dd"
+    val simpleDateFormat = SimpleDateFormat(pattern)
+
+    cqlMeasureReportStartDate=simpleDateFormat.format(Date(startDate))
+    cqlMeasureReportEndDate=simpleDateFormat.format(Date(endDate))
+    this.patientId=patientId
+    cqlMeasureReportSubject=subject
+    cqlMeasureReportReportType=reportType
+
+    reportViewModel.reportState.currentScreen = ReportScreen.PREHOMElOADING
+    loadCQLMeasurePatientData()
+
   }
 
   private fun performFilter(

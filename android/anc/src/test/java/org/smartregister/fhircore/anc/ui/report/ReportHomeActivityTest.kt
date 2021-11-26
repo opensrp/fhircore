@@ -92,9 +92,10 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testHandleCQLMeasureLoadPatient() {
-    val testData = "test"
+    val testData = patientData
+    every {  reportHomeActivitySpy.handleMeasureEvaluate() } returns Unit
     reportHomeActivitySpy.handleCQLMeasureLoadPatient(testData)
-    Assert.assertEquals(reportHomeActivitySpy.patientDetailsData, testData)
+    Assert.assertNotNull(reportHomeActivitySpy.patientDataIBase)
   }
 
   @Test
@@ -159,7 +160,6 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testHandleMeasureEvaluate() {
-    reportHomeActivitySpy.patientDetailsData = "Every,Woman Pregnant"
     every {
       reportHomeActivitySpy.measureEvaluator.runMeasureEvaluate(
         any(),
@@ -304,5 +304,25 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   @Test
   fun testLimitRange() {
     Assert.assertNotNull(reportHomeActivitySpy.limitRange(1L, 2L, 3L))
+  }
+
+  @Test
+  fun generateMeasureReportTest(){
+    val reportMeasureItem ="ANC"
+    val selectedPatientId ="123456789"
+    val selectedPatientName ="Patient Mom"
+    val startDate ="01/12/2020"
+    val endDate ="01/12/2021"
+
+    every { reportHomeActivitySpy.loadCQLMeasurePatientData() } returns Unit
+
+    reportHomeActivitySpy.generateMeasureReport(
+      startDate,
+      endDate,
+      reportMeasureItem,
+      selectedPatientId,
+      selectedPatientName
+    )
+    Assert.assertEquals(reportHomeActivitySpy.patientId,selectedPatientId)
   }
 }
