@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -89,7 +90,7 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
   val selectedPatient by remember { mutableStateOf(viewModel.selectedPatientItem.value) }
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
-  val reportHomeActivity = LocalContext.current as ReportHomeActivity
+  val reportHomeActivity = LocalContext.current
 
   ReportFilterPage(
     topBarTitle = reportMeasureItem?.title ?: "",
@@ -102,7 +103,8 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
     onPatientSelectionTypeChanged = viewModel::onPatientSelectionTypeChanged,
     generateReportEnabled = generateReportEnabled ?: true,
     onGenerateReportPress = {
-      reportHomeActivity.generateMeasureReport(
+      auxGenerateReport(
+        reportHomeActivity,
         startDate,
         endDate,
         reportMeasureItem!!.reportType,
@@ -111,6 +113,23 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
       )
     },
     selectedPatient = selectedPatient ?: PatientItem()
+  )
+}
+
+fun auxGenerateReport(
+  context: Context,
+  startDate: String,
+  endDate: String,
+  reportType: String,
+  patientIdentifier: String,
+  familyName: String
+) {
+  (context as ReportHomeActivity).generateMeasureReport(
+    startDate,
+    endDate,
+    reportType,
+    patientIdentifier,
+    familyName
   )
 }
 

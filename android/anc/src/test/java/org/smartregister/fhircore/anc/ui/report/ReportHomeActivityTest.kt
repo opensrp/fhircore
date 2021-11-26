@@ -325,4 +325,12 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
     )
     Assert.assertEquals(reportHomeActivitySpy.patientId, selectedPatientId)
   }
+
+  @Test
+  fun auxGenerateReportTest() {
+    every { reportHomeActivitySpy.generateMeasureReport(any(), any(), any(), any(), any()) } returns
+      Unit
+
+    auxGenerateReport(reportHomeActivitySpy, "", "", "", "", "")
+  }
 }
