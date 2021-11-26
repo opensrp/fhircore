@@ -20,6 +20,7 @@ import android.app.Application
 import android.content.Intent
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.logicalId
@@ -428,6 +429,30 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testExtractAndSaveResourcesWithExtensionMappingShouldAddExtensionToResource() {
+    val questionnaire = getQuestionnaire("questionnaire-registration-extension")
+    val questionnaireResponse =
+      getQuestionnaireResponse("questionnaire-registration-extension-response")
+
+    val patientSlot = slot<Patient>()
+
+    questionnaireViewModel.extractAndSaveResources(
+      null,
+      context,
+      questionnaire,
+      questionnaireResponse
+    )
+
+    coVerify { defaultRepo.addOrUpdate(capture(patientSlot)) }
+
+    Assert.assertEquals(
+      "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity",
+      patientSlot.captured.extension[0].url
+    )
+    Assert.assertEquals("option 1", (patientSlot.captured.extension[0].value as Coding).code)
+  }
+
+  @Test
   fun testLoadPatientShouldReturnPatientResource() {
     val patient =
       Patient().apply {
@@ -629,5 +654,19 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals(patient, questionnaireResponse.contained[0])
 
     unmockkObject(ResourceMapper)
+  }
+
+  fun getQuestionnaire(name: String): Questionnaire {
+    return FhirContext.forR4()
+      .newJsonParser()
+      .parseResource(context.assets.open("test/$name.json").readBytes().decodeToString()) as
+      Questionnaire
+  }
+
+  fun getQuestionnaireResponse(name: String): QuestionnaireResponse {
+    return FhirContext.forR4()
+      .newJsonParser()
+      .parseResource(context.assets.open("test/$name.json").readBytes().decodeToString()) as
+      QuestionnaireResponse
   }
 }

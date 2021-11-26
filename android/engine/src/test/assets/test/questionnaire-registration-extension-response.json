@@ -1,0 +1,30 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "questionnaire": "Questionnaire/questionnaire-registration-extension",
+  "item": [
+    {
+      "linkId": "a",
+      "item": [
+        {
+          "linkId": "a-url",
+          "answer": [
+            {
+              "valueString": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity"
+            }
+          ]
+        },
+        {
+          "linkId": "a-value",
+          "answer": [
+            {
+              "valueCoding": {
+                "code": "option 1",
+                "display": "Option 1"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

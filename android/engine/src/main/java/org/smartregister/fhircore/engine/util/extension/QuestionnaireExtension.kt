@@ -53,7 +53,6 @@ fun List<QuestionnaireResponse.QuestionnaireResponseItemComponent>.find(
 }
 
 enum class FieldType {
-  EXTENSION,
   DEFINITION,
   LINK_ID
 }
@@ -74,11 +73,6 @@ fun List<Questionnaire.QuestionnaireItemComponent>.find(
 ) {
   forEach {
     when (fieldType) {
-      FieldType.EXTENSION -> {
-        if (it.extension.any { ex -> ex.url.contentEquals(value, true) }) {
-          target.add(it)
-        }
-      }
       FieldType.DEFINITION -> {
         if (it.definition?.contentEquals(value, true) == true) {
           target.add(it)
