@@ -16,14 +16,13 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import android.util.Log
 import org.hl7.fhir.r4.model.DateType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import org.junit.Ignore
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-@Ignore("Tests passing locally but failing assertion on ci")
 class DateTimeExtensionTest : RobolectricTest() {
 
   @Test
@@ -40,6 +39,10 @@ class DateTimeExtensionTest : RobolectricTest() {
     val date = DateType("2012-10-12")
 
     val formatted = date.plusWeeksAsString(2)
+
+    System.out.println(formatted)
+    System.err.println(formatted)
+    Log.e("DateTimeExtensionTest", "formatted")
 
     assertTrue("2012-10-25".contentEquals(formatted))
   }
