@@ -44,7 +44,7 @@ class DateTimeExtensionTest : RobolectricTest() {
     System.err.println(formatted)
     Log.e("DateTimeExtensionTest", "formatted")
 
-    assertTrue("2012-10-25".contentEquals(formatted))
+    assertTrue("2012-10-26".contentEquals(formatted))
   }
 
   @Test
@@ -53,6 +53,6 @@ class DateTimeExtensionTest : RobolectricTest() {
 
     val formatted = date.plusMonthsAsString(3)
 
-    assertTrue("2013-01-11".contentEquals(formatted))
+    assertTrue("2013-01-12".contentEquals(formatted))
   }
 }
