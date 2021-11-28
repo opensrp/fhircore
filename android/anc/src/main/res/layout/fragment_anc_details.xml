@@ -85,7 +85,7 @@
                         android:orientation="vertical">
 
 
-                        <androidx.recyclerview.widget.RecyclerView
+                       <!-- <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/carePlanListView"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -96,7 +96,20 @@
                             android:layout_marginBottom="14dp"
                             android:visibility="visible"
                             tools:itemCount="3"
-                            tools:listitem="@layout/item_careplan" />
+                            tools:listitem="@layout/item_careplan" />-->
+
+                        <TextView
+                            android:id="@+id/carePlanListView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="14dp"
+                            android:layout_marginTop="16dp"
+                            android:text="+ ANC Visit"
+                            android:textColor="@color/grayText"
+                            android:textSize="18sp"
+                            android:visibility="visible"
+                            app:layout_constraintLeft_toLeftOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
 
                         <TextView
                             android:id="@+id/txtView_noCarePlan"

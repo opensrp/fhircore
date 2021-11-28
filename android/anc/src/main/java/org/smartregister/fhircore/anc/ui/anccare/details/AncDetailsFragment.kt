@@ -129,10 +129,12 @@ class AncDetailsFragment : Fragment() {
   }
 
   private fun setupViews() {
-    binding.carePlanListView.apply {
-      adapter = carePlanAdapter
-      layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-    }
+    /*
+        binding.carePlanListView.apply {
+          adapter = carePlanAdapter
+          layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        }
+    */
 
     binding.upcomingServicesListView.apply {
       adapter = upcomingServicesAdapter
@@ -168,7 +170,15 @@ class AncDetailsFragment : Fragment() {
   }
 
   private fun populateImmunizationList(listCarePlan: List<CarePlanItem>) {
-    carePlanAdapter.submitList(listCarePlan)
+    val countOverdue = listCarePlan.filter { it.overdue }.size
+    val countDue = listCarePlan.filter { it.due }.size
+    if (countOverdue > 0) {
+      binding.carePlanListView.text = "+ANC Visit $countOverdue Overdue"
+      binding.carePlanListView.setTextColor(resources.getColor(R.color.status_red))
+    } else if (countDue > 0) {
+      binding.carePlanListView.text = "+ANC Visit "
+      binding.carePlanListView.setTextColor(resources.getColor(R.color.colorPrimaryLight))
+    }
   }
 
   private fun populateUpcomingServicesList(upcomingServiceItem: List<UpcomingServiceItem>) {
