@@ -31,9 +31,9 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import org.hl7.fhir.r4.model.Attachment
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -66,17 +66,23 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
   }
 
   @Test
-  fun testQuestionnaireResponseShouldReturnStringTypeValue() {
+  fun testQuestionnaireResponseShouldReturnAttachmentTypeValue() {
     val fragment = FhirCoreQuestionnaireFragment()
     val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
+    val file = "file".toByteArray()
 
     every { photoCaptureFactory.questionnaireResponse } returns
       QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
-        value = StringType("file")
+        value =
+          Attachment().apply {
+            contentType = "image/jpg"
+            data = file
+          }
       }
 
     val response = photoCaptureFactory.questionnaireResponse
-    assertEquals("file", response.valueStringType.value)
+    assertEquals("image/jpg", response.valueAttachment.contentType)
+    assertEquals(file, response.valueAttachment.data)
   }
 
   @Test

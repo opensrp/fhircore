@@ -29,11 +29,13 @@ class FileExtensionTest {
   fun testFileShouldReturnBase64Encoded() {
     mockkStatic(File::encodeToBase64)
 
+    val file = "Zmls".toByteArray()
     val filePath = javaClass.getResource("/sample/file.txt").path
-    every { File(filePath).encodeToBase64() } returns "Zmls"
+
+    every { File(filePath).encodeToBase64() } returns file
 
     val base64 = File(filePath).encodeToBase64()
-    assertEquals("Zmls", base64)
+    assertEquals(file, base64)
 
     verify { File(filePath).encodeToBase64() }
   }
