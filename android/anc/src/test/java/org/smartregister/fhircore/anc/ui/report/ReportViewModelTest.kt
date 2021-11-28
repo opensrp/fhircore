@@ -38,6 +38,8 @@ import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
+import org.smartregister.fhircore.anc.data.report.model.ResultItem
+import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 
 @ExperimentalCoroutinesApi
@@ -57,6 +59,12 @@ internal class ReportViewModelTest {
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
   private val testReportItem = ReportItem(title = "TestReportItem")
   private val patientSelectionType = MutableLiveData("All")
+  private val isChangingStartDate = MutableLiveData(true)
+  private val isChangingEndDate = MutableLiveData(true)
+  private val resultForIndividual =
+    MutableLiveData(ResultItem(status = "True", isMatchedIndicator = true))
+  private val resultForPopulation =
+    MutableLiveData(listOf(ResultItemPopulation(title = "resultForPopulation")))
 
   @Before
   fun setUp() {
@@ -75,6 +83,10 @@ internal class ReportViewModelTest {
       )
     every { reportViewModel.patientSelectionType } returns
       this@ReportViewModelTest.patientSelectionType
+    every { reportViewModel.resultForIndividual } returns
+      this@ReportViewModelTest.resultForIndividual
+    every { reportViewModel.resultForPopulation } returns
+      this@ReportViewModelTest.resultForPopulation
   }
 
   @Test
@@ -157,9 +169,17 @@ internal class ReportViewModelTest {
   }
 
   @Test
-  fun testShouldVerifyDatePickerPressListener() {
-    reportViewModel.onDateRangePress()
+  fun testShouldVerifyStartDatePressListener() {
+    reportViewModel.onStartDatePress()
+    Assert.assertEquals(true, reportViewModel.isChangingStartDate.value)
     Assert.assertEquals(true, reportViewModel.showDatePicker.value)
+  }
+
+  @Test
+  fun testShouldVerifyEndDatePressListener() {
+    reportViewModel.onEndDatePress()
+    Assert.assertEquals(true, reportViewModel.showDatePicker.value)
+    Assert.assertEquals(false, reportViewModel.isChangingStartDate.value)
   }
 
   @Test
@@ -190,6 +210,16 @@ internal class ReportViewModelTest {
   }
 
   @Test
+  fun testGetSelectionDate() {
+    Assert.assertNotNull(reportViewModel.getSelectionDate())
+  }
+
+  @Test
+  fun testLoadDummyResultData() {
+    Assert.assertNotNull(reportViewModel.loadDummyResultForPopulation())
+  }
+
+  @Test
   fun testShouldVerifyReportItemClickListener() {
     val expectedReportItem = testReportItem
     reportViewModel.onReportMeasureItemClicked(testReportItem)
@@ -217,19 +247,41 @@ internal class ReportViewModelTest {
   }
 
   @Test
-  fun testShouldVerifyDateRangeSelected() {
+  fun testVerifyOnDatePickedForStartAndEndDate() {
     //  2021-11-11 16:04:43.212 E/aw: onDatePicked-> start=1637798400000 end=1639094400000
     //  25 Nov, 2021  -  10 Dec, 2021
+    //  val dateSelection = androidx.core.util.Pair(1637798400000, 1639094400000)
     val expectedStartDate = "25 Nov, 2021"
     val expectedEndDate = "10 Dec, 2021"
-    val dateSelection = androidx.core.util.Pair(1637798400000, 1639094400000)
-    reportViewModel.onDateSelected(dateSelection)
+
+    every { reportViewModel.isChangingStartDate } returns
+      this@ReportViewModelTest.isChangingStartDate
+    every { reportViewModel.startDate.value } returns "25 Nov, 2021"
+    every { reportViewModel.endDate.value } returns "10 Dec, 2021"
+
+    reportViewModel.onDatePicked(1637798400000)
     Assert.assertEquals(expectedStartDate, reportViewModel.startDate.value)
+
+    every { reportViewModel.isChangingStartDate } returns this@ReportViewModelTest.isChangingEndDate
+    reportViewModel.onDatePicked(1639094400000)
     Assert.assertEquals(expectedEndDate, reportViewModel.endDate.value)
+
     Assert.assertEquals(true, reportViewModel.isReadyToGenerateReport.value)
     Assert.assertEquals(
       ReportViewModel.ReportScreen.FILTER,
       reportViewModel.reportState.currentScreen
     )
+  }
+
+  @Test
+  fun testReportResultForIndividual() {
+    val expectedResult = ResultItem(status = "True", isMatchedIndicator = true)
+    Assert.assertEquals(expectedResult, reportViewModel.resultForIndividual.value)
+  }
+
+  @Test
+  fun testReportResultForPopulation() {
+    val expectedResult = listOf(ResultItemPopulation(title = "resultForPopulation"))
+    Assert.assertEquals(expectedResult, reportViewModel.resultForPopulation.value)
   }
 }

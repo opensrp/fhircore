@@ -17,11 +17,15 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Button
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -48,7 +52,8 @@ fun ReportFilterPage(
   onBackPress: () -> Unit,
   startDate: String,
   endDate: String,
-  onDateRangePress: () -> Unit,
+  onStartDatePress: () -> Unit,
+  onEndDatePress: () -> Unit,
   patientSelectionText: String,
   onPatientSelectionTypeChanged: (String) -> Unit,
   generateReportEnabled: Boolean,
@@ -56,11 +61,20 @@ fun ReportFilterPage(
   selectedPatient: PatientItem?
 ) {
   Surface(color = colorResource(id = R.color.white)) {
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().testTag(REPORT_FILTER_PAGE)) {
       TopBarBox(topBarTitle, onBackPress)
-      DateSelectionBox(startDate, endDate, true, onDateRangePress)
-      PatientSelectionBox(patientSelectionText, selectedPatient, onPatientSelectionTypeChanged)
-      GenerateReportButton(generateReportEnabled, onGenerateReportPress)
+      Box(modifier = Modifier.padding(16.dp)) {
+        Column {
+          DateSelectionBox(startDate, endDate, true, onStartDatePress, onEndDatePress)
+          Spacer(modifier = Modifier.size(16.dp))
+          PatientSelectionBox(patientSelectionText, selectedPatient, onPatientSelectionTypeChanged)
+          Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Bottom) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
+              GenerateReportButton(generateReportEnabled, onGenerateReportPress)
+            }
+          }
+        }
+      }
     }
   }
 }
@@ -80,12 +94,35 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
     onBackPress = viewModel::onBackPressFromFilter,
     startDate = startDate,
     endDate = endDate,
-    onDateRangePress = viewModel::onDateRangePress,
+    onStartDatePress = viewModel::onStartDatePress,
+    onEndDatePress = viewModel::onEndDatePress,
     patientSelectionText = patientSelectionType ?: "All",
     onPatientSelectionTypeChanged = viewModel::onPatientSelectionTypeChanged,
     generateReportEnabled = generateReportEnabled ?: true,
     onGenerateReportPress = viewModel::onGenerateReportPress,
     selectedPatient = selectedPatient ?: PatientItem()
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun PreviewPatientSelectionAll() {
+  PatientSelectionBox(
+    patientSelectionText = ReportViewModel.PatientSelectionType.ALL,
+    onPatientSelectionChange = {},
+    selectedPatient = PatientItem()
+  )
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun PreviewPatientSelectionIndividual() {
+  PatientSelectionBox(
+    patientSelectionText = ReportViewModel.PatientSelectionType.INDIVIDUAL,
+    onPatientSelectionChange = {},
+    selectedPatient = PatientItem(name = "Ind Patient Item")
   )
 }
 
@@ -98,7 +135,8 @@ fun ReportFilterPreview() {
     onBackPress = {},
     startDate = "StartDate",
     endDate = "EndDate",
-    onDateRangePress = {},
+    onStartDatePress = {},
+    onEndDatePress = {},
     patientSelectionText = "ALL",
     onPatientSelectionTypeChanged = {},
     generateReportEnabled = false,
@@ -109,24 +147,17 @@ fun ReportFilterPreview() {
 
 @Composable
 fun GenerateReportButton(generateReportEnabled: Boolean, onGenerateReportClicked: () -> Unit) {
-  Row(
-    horizontalArrangement = Arrangement.SpaceBetween,
-    modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
-    verticalAlignment = Alignment.Bottom
-  ) {
-    Column(modifier = Modifier.align(Alignment.Bottom)) {
-      Button(
-        enabled = generateReportEnabled,
-        onClick = onGenerateReportClicked,
-        modifier =
-          Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag(REPORT_GENERATE_BUTTON)
-      ) {
-        Text(
-          color = Color.White,
-          text = stringResource(id = R.string.generate_report),
-          modifier = Modifier.padding(8.dp)
-        )
-      }
+  Column {
+    Button(
+      enabled = generateReportEnabled,
+      onClick = onGenerateReportClicked,
+      modifier = Modifier.fillMaxWidth().testTag(REPORT_GENERATE_BUTTON)
+    ) {
+      Text(
+        color = Color.White,
+        text = stringResource(id = R.string.generate_report),
+        modifier = Modifier.padding(8.dp)
+      )
     }
   }
 }

@@ -68,6 +68,7 @@ const val TOOLBAR_BACK_ARROW = "toolbarBackArrow"
 const val REPORT_HOME_PRELOAD = "reportHomePreLoad"
 const val REPORT_MEASURE_LIST = "reportMeasureList"
 const val REPORT_MEASURE_ITEM = "reportMeasureItem"
+const val REPORT_FILTER_PAGE = "reportFiltertPage"
 const val REPORT_DATE_RANGE_SELECTION = "reportDateRangeSelection"
 const val REPORT_DATE_SELECT_ITEM = "reportDateSelectItem"
 const val REPORT_PATIENT_SELECTION = "reportPatientSelection"
@@ -80,6 +81,15 @@ const val REPORT_GENERATE_BUTTON = "reportGenerateButton"
 const val REPORT_RESULT_PAGE = "reportResultPage"
 const val ANC_PATIENT_ITEM = "ancPatientItem"
 const val PATIENT_ANC_VISIT = "patientAncVisit"
+const val REPORT_SEARCH_HINT = "reportSearchHint"
+const val REPORT_RESULT_MEASURE_DESCRIPTION = "reportResultMeasureDescription"
+const val REPORT_RESULT_ITEM_INDIVIDUAL = "reportResultIndividual"
+const val REPORT_RESULT_PATIENT_DATA = "reportResultPatientData"
+const val REPORT_RESULT_POPULATION_DATA = "reportResultPopulationData"
+const val REPORT_RESULT_POPULATION_BOX = "reportResultPopulationBox"
+const val REPORT_RESULT_POPULATION_ITEM = "reportResultPopulationItem"
+
+const val INDICATOR_STATUS = "indicatorStatus"
 
 @Composable
 fun ReportView(reportViewModel: ReportViewModel) {
@@ -140,36 +150,27 @@ fun LoadingItem() {
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
-fun PreviewDateRangeChangable() {
-  DateSelectionBox(
-    startDate = "Start date",
-    endDate = "End date",
-    canChange = true,
-    onDateRangePress = {}
-  )
+fun PreviewDateSelection() {
+  DateSelectionBox(startDate = "Start date", endDate = "End date", canChange = true)
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
-fun PreviewDateRangeFixed() {
-  DateSelectionBox(
-    startDate = "Start date",
-    endDate = "End date",
-    canChange = false,
-    onDateRangePress = {}
-  )
+fun PreviewDateRangeSelected() {
+  DateSelectionBox(startDate = "Start date", endDate = "End date", canChange = false)
 }
 
 @Composable
 fun DateSelectionBox(
-  startDate: String,
-  endDate: String,
-  canChange: Boolean,
-  onDateRangePress: () -> Unit
+  startDate: String = "",
+  endDate: String = "",
+  canChange: Boolean = false,
+  onStartDatePress: () -> Unit = {},
+  onEndDatePress: () -> Unit = {}
 ) {
   Column(
-    modifier = Modifier.wrapContentWidth().padding(16.dp).testTag(REPORT_DATE_RANGE_SELECTION),
+    modifier = Modifier.wrapContentWidth().testTag(REPORT_DATE_RANGE_SELECTION),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.Start
   ) {
@@ -179,14 +180,14 @@ fun DateSelectionBox(
       fontSize = 18.sp,
       modifier = Modifier.wrapContentWidth()
     )
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(4.dp))
     Row(
       horizontalArrangement = Arrangement.SpaceAround,
       verticalAlignment = Alignment.CenterVertically
     ) {
-      DateRangeItem(text = startDate, canChange = canChange, clickListener = onDateRangePress)
+      DateRangeItem(text = startDate, canChange = canChange, clickListener = onStartDatePress)
       Text("-", fontSize = 18.sp, modifier = Modifier.padding(horizontal = 8.dp))
-      DateRangeItem(text = endDate, canChange = canChange, clickListener = onDateRangePress)
+      DateRangeItem(text = endDate, canChange = canChange, clickListener = onEndDatePress)
     }
   }
 }
@@ -200,21 +201,19 @@ fun DateRangeItem(
 ) {
   var newClickListener = {}
   var newBackGroundColor = colorResource(id = R.color.transparent)
-  var textPadding = 0.dp
+  var textPaddingHorizontal = 0.dp
+  var textPaddingVertical = 0.dp
 
   if (canChange) {
     newClickListener = clickListener
-    newBackGroundColor = colorResource(id = R.color.backgroundGray)
-    textPadding = 12.dp
+    newBackGroundColor = colorResource(id = R.color.light)
+    textPaddingHorizontal = 12.dp
+    textPaddingVertical = 4.dp
   }
 
   Row(
     modifier =
-      modifier
-        .wrapContentWidth()
-        .clickable { newClickListener() }
-        .padding(vertical = 4.dp)
-        .testTag(REPORT_DATE_SELECT_ITEM),
+      modifier.wrapContentWidth().clickable { newClickListener() }.testTag(REPORT_DATE_SELECT_ITEM),
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
     Box(
@@ -223,32 +222,10 @@ fun DateRangeItem(
           .clip(RoundedCornerShape(15.dp))
           .background(color = newBackGroundColor)
           .wrapContentWidth()
-          .padding(start = textPadding, end = textPadding, top = 6.dp, bottom = 6.dp),
+          .padding(horizontal = textPaddingHorizontal, vertical = textPaddingVertical),
       contentAlignment = Alignment.Center
     ) { Text(text = text, textAlign = TextAlign.Start, fontSize = 16.sp) }
   }
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun PreviewPatientSelectionAll() {
-  PatientSelectionBox(
-    patientSelectionText = ReportViewModel.PatientSelectionType.ALL,
-    onPatientSelectionChange = {},
-    selectedPatient = PatientItem()
-  )
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun PreviewPatientSelectionIndividual() {
-  PatientSelectionBox(
-    patientSelectionText = ReportViewModel.PatientSelectionType.INDIVIDUAL,
-    onPatientSelectionChange = {},
-    selectedPatient = PatientItem(name = "Ind Patient Item")
-  )
 }
 
 @Composable
@@ -258,7 +235,7 @@ fun PatientSelectionBox(
   onPatientSelectionChange: (String) -> Unit,
 ) {
   Column(
-    modifier = Modifier.wrapContentWidth().padding(16.dp).testTag(REPORT_PATIENT_SELECTION),
+    modifier = Modifier.wrapContentWidth().testTag(REPORT_PATIENT_SELECTION),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.Start
   ) {

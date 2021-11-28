@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import io.mockk.spyk
@@ -37,8 +38,10 @@ class ReportScreensTest : RobolectricTest() {
     spyk(
       object {
         // Imitate click action by doing nothing
+        fun onBackPress() {}
         fun onReportMeasureItemClick() {}
-        fun onDateRangePress() {}
+        fun onStartDatePress() {}
+        fun onEndDatePress() {}
         fun onPatientSelectionChanged() {}
         fun onCancelSelectedPatient() {}
         fun onPatientChangeClick() {}
@@ -66,13 +69,23 @@ class ReportScreensTest : RobolectricTest() {
   }
 
   @Test
+  fun testTopBarBox() {
+    composeRule.setContent {
+      TopBarBox(topBarTitle = "test", onBackPress = { listenerObjectSpy.onBackPress() })
+    }
+    composeRule.onNodeWithTag(TOOLBAR_TITLE).assertExists()
+    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
+  }
+
+  @Test
   fun testDateRangeBoxInFilter() {
     composeRule.setContent {
       DateSelectionBox(
         startDate = "startDate",
         endDate = "endDate",
         canChange = true,
-        onDateRangePress = { listenerObjectSpy.onDateRangePress() }
+        onStartDatePress = { listenerObjectSpy.onStartDatePress() },
+        onEndDatePress = { listenerObjectSpy.onEndDatePress() }
       )
     }
     composeRule.onNodeWithTag(REPORT_DATE_RANGE_SELECTION).assertExists()
@@ -85,7 +98,8 @@ class ReportScreensTest : RobolectricTest() {
         startDate = "startDate",
         endDate = "endDate",
         canChange = false,
-        onDateRangePress = { listenerObjectSpy.onDateRangePress() }
+        onStartDatePress = { listenerObjectSpy.onStartDatePress() },
+        onEndDatePress = { listenerObjectSpy.onEndDatePress() }
       )
     }
     composeRule.onNodeWithTag(REPORT_DATE_RANGE_SELECTION).assertExists()
@@ -97,7 +111,7 @@ class ReportScreensTest : RobolectricTest() {
       DateRangeItem(
         text = "startDate",
         canChange = true,
-        clickListener = { listenerObjectSpy.onDateRangePress() }
+        clickListener = { listenerObjectSpy.onStartDatePress() }
       )
     }
     composeRule.onNodeWithTag(REPORT_DATE_SELECT_ITEM).assertExists()
@@ -106,15 +120,28 @@ class ReportScreensTest : RobolectricTest() {
   }
 
   @Test
-  fun testPatientSelection() {
+  fun testPatientSelectionForAll() {
     composeRule.setContent {
       PatientSelectionBox(
         patientSelectionText = "All",
+        selectedPatient = null,
+        onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged() }
+      )
+    }
+    composeRule.onNodeWithTag(REPORT_PATIENT_SELECTION).assertExists()
+  }
+
+  @Test
+  fun testPatientSelectionForIndividual() {
+    composeRule.setContent {
+      PatientSelectionBox(
+        patientSelectionText = "Individual",
         selectedPatient = PatientItem(),
         onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged() }
       )
     }
     composeRule.onNodeWithTag(REPORT_PATIENT_SELECTION).assertExists()
+    composeRule.onNodeWithTag(REPORT_PATIENT_ITEM).assertExists()
   }
 
   @Test
@@ -133,18 +160,5 @@ class ReportScreensTest : RobolectricTest() {
     composeRule.onNodeWithTag(REPORT_CHANGE_PATIENT).assertExists()
     // composeRule.onNodeWithTag(REPORT_CHANGE_PATIENT).performClick()
     // verify { listenerObjectSpy.onPatientChangeClick() }
-  }
-
-  @Test
-  fun testGenerateReportButton() {
-    composeRule.setContent {
-      GenerateReportButton(
-        generateReportEnabled = true,
-        onGenerateReportClicked = { listenerObjectSpy.onGenerateReportClick() }
-      )
-    }
-    composeRule.onNodeWithTag(REPORT_GENERATE_BUTTON).assertExists()
-    // composeRule.onNodeWithTag(REPORT_GENERATE_BUTTON).performClick()
-    // verify { listenerObjectSpy.onGenerateReportClick() }
   }
 }

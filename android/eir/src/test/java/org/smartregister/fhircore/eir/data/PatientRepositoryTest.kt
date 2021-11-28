@@ -79,9 +79,9 @@ class PatientRepositoryTest : RobolectricTest() {
         Assert.assertEquals("M", gender)
         Assert.assertEquals("0d", age)
         Assert.assertEquals("Jane Mc, M, 0d", demographics)
-        Assert.assertEquals(SimpleDateFormat("yyyy-MM-dd").format(Date()), lastSeen)
+        Assert.assertEquals(SimpleDateFormat("dd-MMM-yyyy").format(Date()), lastSeen)
         Assert.assertEquals(VaccineStatus.PARTIAL, vaccineStatus.status)
-        Assert.assertEquals(SimpleDateFormat("dd-MM-yy").format(Date()), vaccineStatus.date)
+        Assert.assertEquals(SimpleDateFormat("dd-MMM-yyyy").format(Date()), vaccineStatus.date)
         Assert.assertEquals("", atRisk)
       }
     }

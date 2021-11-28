@@ -100,6 +100,12 @@ class ReportPatientSelectPageTest : RobolectricTest() {
   }
 
   @Test
+  fun testReportSelectPatientSearchHint() {
+    composeRule.setContent { SearchHint() }
+    composeRule.onNodeWithTag(REPORT_SEARCH_HINT).assertExists()
+  }
+
+  @Test
   fun testPatientListItem() {
     val expectedPatient = selectedPatient.value ?: PatientItem(name = "Test SelectPatient")
     composeRule.setContent {
