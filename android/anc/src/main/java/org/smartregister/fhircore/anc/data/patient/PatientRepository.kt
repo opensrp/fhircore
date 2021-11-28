@@ -165,7 +165,8 @@ class PatientRepository(
             isPregnant = patient.isPregnant(),
             age = patient.extractAge(),
             familyName = patient.extractFamilyName(),
-            demographics = patient.extractAddress()
+            demographics = patient.extractAddress(),
+            isHouseHoldHead = patient.link.isEmpty()
           )
         ancPatientDetailItem = PatientDetailItem(ancPatientItem, ancPatientItemHead)
       }
