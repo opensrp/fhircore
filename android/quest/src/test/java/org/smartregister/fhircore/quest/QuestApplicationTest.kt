@@ -131,7 +131,8 @@ class QuestApplicationTest : RobolectricTest() {
 
   @Test
   fun testResourceSyncParam_WithNullExpressionValue_ShouldReturnEmptyMap() {
-    every { SharedPreferencesHelper.read(any(), any()) } returns null
+    every { SharedPreferencesHelper.read(any(), any()) } returns
+      UserInfo(null, null, null).encodeJson()
 
     val syncParam = app.resourceSyncParams
 
