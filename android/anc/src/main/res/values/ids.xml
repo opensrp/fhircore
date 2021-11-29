@@ -8,4 +8,7 @@
     <item name="menu_item_profile" type="id" />
     <item name="menu_item_families" type="id" />
     <item name="menu_item_anc_clients" type="id" />
+    <item name="menu_item_post_natal_clients" type="id" />
+    <item name="menu_item_child_clients" type="id" />
+    <item name="menu_item_family_planning_clients" type="id" />
 </resources>

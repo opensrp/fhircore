@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -86,6 +87,7 @@ const val PASSWORD_FIELD_TAG = "passwordFieldTag"
 const val LOGIN_BUTTON_TAG = "loginButtonTag"
 const val LOGIN_ERROR_TEXT_TAG = "loginErrorTextTag"
 const val LOGIN_FOOTER = "loginFooter"
+const val APP_LOGO_TAG = "appLogoTag"
 
 @Composable
 fun LoginScreen(loginViewModel: LoginViewModel) {
@@ -153,6 +155,18 @@ fun LoginPage(
       Spacer(modifier = modifier.height(20.dp))
       Column(modifier = modifier.padding(4.dp), verticalArrangement = Arrangement.Center) {
         // TODO Add configurable logo. Images to be downloaded from server
+        if (viewConfiguration.showLogo) {
+          Image(
+            painter = painterResource(id = R.drawable.ic_liberia),
+            contentDescription = stringResource(id = R.string.app_logo),
+            modifier =
+              modifier
+                .align(Alignment.CenterHorizontally)
+                .requiredHeight(120.dp)
+                .requiredWidth(140.dp)
+                .testTag(APP_LOGO_TAG),
+          )
+        }
         Text(
           color = if (viewConfiguration.darkMode) Color.White else LoginDarkColor,
           text = viewConfiguration.applicationName,
