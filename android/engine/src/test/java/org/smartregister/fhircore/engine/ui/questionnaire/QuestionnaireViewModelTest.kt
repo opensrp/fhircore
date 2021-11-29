@@ -20,7 +20,6 @@ import android.app.Application
 import android.content.Intent
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
-import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.logicalId
@@ -657,19 +656,5 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals(patient, questionnaireResponse.contained[0])
 
     unmockkObject(ResourceMapper)
-  }
-
-  fun getQuestionnaire(name: String): Questionnaire {
-    return FhirContext.forR4()
-      .newJsonParser()
-      .parseResource(context.assets.open("test/$name.json").readBytes().decodeToString()) as
-      Questionnaire
-  }
-
-  fun getQuestionnaireResponse(name: String): QuestionnaireResponse {
-    return FhirContext.forR4()
-      .newJsonParser()
-      .parseResource(context.assets.open("test/$name.json").readBytes().decodeToString()) as
-      QuestionnaireResponse
   }
 }

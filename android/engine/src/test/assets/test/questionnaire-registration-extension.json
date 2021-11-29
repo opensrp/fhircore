@@ -12,47 +12,53 @@
   ],
   "item": [
     {
-      "linkId": "a",
+      "linkId": "deep-nesting-item",
       "type": "group",
-      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension",
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
-          "valueExpression": {
-            "language": "application/x-fhir-query",
-            "expression": "Extension"
-          }
-        }
-      ],
       "item": [
         {
-          "linkId": "a-url",
-          "type": "string",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension.url",
-          "initial": [
+          "linkId": "a",
+          "type": "group",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension",
+          "extension": [
             {
-              "valueString": "http://fhir/StructureDefinition/us-core-ethnicity"
-            }
-          ]
-        },
-        {
-          "linkId": "a-value",
-          "type": "choice",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension.value",
-          "answerOption": [
-            {
-              "valueCoding": {
-                "code": "option 1",
-                "display": "Option 1"
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+              "valueExpression": {
+                "language": "application/x-fhir-query",
+                "expression": "Extension"
               }
             }
           ],
-          "initial": [
+          "item": [
             {
-              "valueCoding": {
-                "code": "option 1",
-                "display": "Option 1"
-              }
+              "linkId": "a-url",
+              "type": "string",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension.url",
+              "initial": [
+                {
+                  "valueString": "http://fhir/StructureDefinition/us-core-ethnicity"
+                }
+              ]
+            },
+            {
+              "linkId": "a-value",
+              "type": "choice",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension.value",
+              "answerOption": [
+                {
+                  "valueCoding": {
+                    "code": "option 1",
+                    "display": "Option 1"
+                  }
+                }
+              ],
+              "initial": [
+                {
+                  "valueCoding": {
+                    "code": "option 1",
+                    "display": "Option 1"
+                  }
+                }
+              ]
             }
           ]
         }

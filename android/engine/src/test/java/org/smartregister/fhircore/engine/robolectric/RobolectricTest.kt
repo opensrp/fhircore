@@ -16,12 +16,17 @@
 
 package org.smartregister.fhircore.engine.robolectric
 
+import android.app.Application
 import android.os.Build
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.test.core.app.ApplicationProvider
+import ca.uhn.fhir.context.FhirContext
 import io.mockk.clearAllMocks
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.AfterClass
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
@@ -54,5 +59,27 @@ abstract class RobolectricTest {
     fun resetMocks() {
       clearAllMocks()
     }
+  }
+
+  fun getQuestionnaire(name: String): Questionnaire {
+    return FhirContext.forR4()
+      .newJsonParser()
+      .parseResource(
+        getApplicationContext().assets.open("test/$name.json").readBytes().decodeToString()
+      ) as
+      Questionnaire
+  }
+
+  fun getQuestionnaireResponse(name: String): QuestionnaireResponse {
+    return FhirContext.forR4()
+      .newJsonParser()
+      .parseResource(
+        getApplicationContext().assets.open("test/$name.json").readBytes().decodeToString()
+      ) as
+      QuestionnaireResponse
+  }
+
+  fun getApplicationContext(): Application {
+    return ApplicationProvider.getApplicationContext()
   }
 }
