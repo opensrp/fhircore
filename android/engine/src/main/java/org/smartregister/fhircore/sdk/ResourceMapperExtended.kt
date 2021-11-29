@@ -95,21 +95,13 @@ object ResourceMapperExtended {
     if (questionnaireResponseItem.answer.isEmpty()) return
 
     val definitionField = questionnaireItem.getDefinitionField ?: return
-    if (definitionField.nonParameterizedType.isEnum) {
-      invokeResourceMapperExtension(
-        this,
-        "updateFieldWithEnum",
-        definitionField,
-        questionnaireResponseItem.answer.first().value
-      )
-    } else {
-      invokeResourceMapperExtension(
-        this,
-        "updateField",
-        definitionField,
-        questionnaireResponseItem.answer
-      )
-    }
+    // definitionField is never Enum for extension hence handling non-Enum only
+    invokeResourceMapperExtension(
+      this,
+      "updateField",
+      definitionField,
+      questionnaireResponseItem.answer
+    )
   }
 
   private fun invokeResourceMapperExtension(onObj: Any, method: String, vararg args: Any): Any? {
@@ -140,12 +132,8 @@ object ResourceMapperExtended {
       val resourceClass: Class<*> = Class.forName("org.hl7.fhir.r4.model.${path[0]}")
 
       val definitionField: Field =
-        if (isChoiceElement(this)) {
-          resourceClass.getFieldOrNull(CHOICE_ELEMENT_CONSTANT_NAME)
-        } else {
-          resourceClass.getFieldOrNull(path[1])
-        }
-          ?: return null
+      // extension does not send choice element or nullable hence handling accordingly
+      resourceClass.getFieldOrNull(path[1])!!
 
       // isChoiceElement filter not applicable for extension hence skipping check
 
@@ -153,9 +141,6 @@ object ResourceMapperExtended {
         field?.nonParameterizedType?.getFieldOrNull(nestedFieldName)
       }
     }
-
-  fun isChoiceElement(item: Questionnaire.QuestionnaireItemComponent) =
-    invokeResourceMapperExtension(item, "isChoiceElement", 1) as Boolean
 
   fun isList(field: Field) = invokeResourceMapperExtension(field, "isList") as Boolean
 
