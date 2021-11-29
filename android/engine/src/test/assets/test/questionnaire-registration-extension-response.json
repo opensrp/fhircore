@@ -6,21 +6,26 @@
       "linkId": "a",
       "item": [
         {
-          "linkId": "a-url",
-          "answer": [
+          "linkId": "deep-nesting-item",
+          "item": [
             {
-              "valueString": "http://fhir/StructureDefinition/us-core-ethnicity"
-            }
-          ]
-        },
-        {
-          "linkId": "a-value",
-          "answer": [
+              "linkId": "a-url",
+              "answer": [
+                {
+                  "valueString": "http://fhir/StructureDefinition/us-core-ethnicity"
+                }
+              ]
+            },
             {
-              "valueCoding": {
-                "code": "option 1",
-                "display": "Option 1"
-              }
+              "linkId": "a-value",
+              "answer": [
+                {
+                  "valueCoding": {
+                    "code": "option 1",
+                    "display": "Option 1"
+                  }
+                }
+              ]
             }
           ]
         }

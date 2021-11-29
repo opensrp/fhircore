@@ -12,22 +12,22 @@
   ],
   "item": [
     {
-      "linkId": "deep-nesting-item",
+      "linkId": "a",
       "type": "group",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+          "valueExpression": {
+            "language": "application/x-fhir-query",
+            "expression": "Extension"
+          }
+        }
+      ],
       "item": [
         {
-          "linkId": "a",
+          "linkId": "deep-nesting-item",
           "type": "group",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.extension",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
-              "valueExpression": {
-                "language": "application/x-fhir-query",
-                "expression": "Extension"
-              }
-            }
-          ],
           "item": [
             {
               "linkId": "a-url",

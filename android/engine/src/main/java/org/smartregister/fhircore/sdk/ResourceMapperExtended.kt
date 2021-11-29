@@ -73,11 +73,11 @@ object ResourceMapperExtended {
     questionnaireResponseItem: QuestionnaireResponse.QuestionnaireResponseItemComponent
   ) {
     if (questionnaireItem.type == Questionnaire.QuestionnaireItemType.GROUP) {
-      val groupBase = invokeResourceMapperExtension(questionnaireItem, "createBase") as Base
       if (questionnaireItem.definition == null) {
         this.extractFields(bundle, questionnaireItem.item, questionnaireResponseItem.item)
         return
       }
+      val groupBase = invokeResourceMapperExtension(questionnaireItem, "createBase") as Base
 
       val definitionField = questionnaireItem.getDefinitionField ?: return
 
