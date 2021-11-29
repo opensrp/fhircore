@@ -21,29 +21,19 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJob
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
-import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
-class AncApplication : Application(), ConfigurableApplication {
+open class AncApplication : Application(), ConfigurableApplication {
 
   override val syncJob: SyncJob
     get() = Sync.basicSyncJob(getContext())
-
-  private val defaultDispatcherProvider = DefaultDispatcherProvider
-
-  override lateinit var workerContextProvider: SimpleWorkerContext
 
   override lateinit var applicationConfiguration: ApplicationConfiguration
 
@@ -68,6 +58,12 @@ class AncApplication : Application(), ConfigurableApplication {
 
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
     this.applicationConfiguration = applicationConfiguration
+    this.applicationConfiguration.apply {
+      fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL
+      oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL
+      clientId = BuildConfig.OAUTH_CIENT_ID
+      clientSecret = BuildConfig.OAUTH_CLIENT_SECRET
+    }
   }
 
   override fun schedulePeriodicSync() {
@@ -78,28 +74,9 @@ class AncApplication : Application(), ConfigurableApplication {
     super.onCreate()
     SharedPreferencesHelper.init(this)
     ancApplication = this
-    configureApplication(
-      applicationConfigurationOf(
-        oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL,
-        fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL,
-        clientId = BuildConfig.OAUTH_CIENT_ID,
-        clientSecret = BuildConfig.OAUTH_CLIENT_SECRET,
-        languages = listOf("en", "sw")
-      )
-    )
 
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
-    }
-
-    initializeWorkerContextProvider()
-
-    schedulePeriodicSync()
-  }
-
-  fun initializeWorkerContextProvider() {
-    CoroutineScope(defaultDispatcherProvider.io()).launch {
-      workerContextProvider = this@AncApplication.initializeWorkerContext()!!
     }
   }
 

@@ -19,6 +19,7 @@
   "item": [
     {
       "linkId": "Record-Vaccine",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Immunization#Immunization.vaccineCode",
       "type": "choice",
       "extension": [
         {

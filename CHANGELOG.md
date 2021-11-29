@@ -8,15 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2021-xx-xx
 
 ### Added
-- EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
+- ANC | Update Family Profile view
+- ANC | Migrated loading of measure report libraries to the report module from anc details page. Also did some optimizations.
+- ANC | Report Measures List Items, Filter Selection, Patient Selection, Compose UI unit tests
+- ANC | Report Patient Date Range Selection with year, Patient Search compose UI
+- ANC | Report Result Page Individual Patient Item UI update plus Unit Tests
+- ANC | Report Result Page For All Population compose UI update plus Unit Tests
+
 - Quest | Add the ability to search for patients by id
 - Quest | Add ability to view previous QuestionnaireResponse
+- Quest | Added workflow configurations
+- Quest | Add photo capture questionnaire widget
+- Quest | Add ability to edit questionnaire responses
+
+- EIR | Added workflow configurations
+- EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
 
 ### Fixed
--
+- EIR | Resolved a bug in the vaccination flow : App crush when saving vaccine
+- EIR | Ability for a complete immunixation flow from Record 1st Vaccine to Full Immunization
+
 
 ### Changed
--
+- EIR | Updated overdue trigger flow for Vaccine Due date
+- EIR | Updated on save vaccine received alert dialogue
 
 
 ## [0.0.2 Quest, 0.0.3 - ANC] - 2021-10-27
@@ -59,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Fix crashes due to invalid data
 - Engine | Remove the menu icon on the login screen
 - Engine: Fixes Structure map based resource extraction not working
+- eCBIS | Login page updated
 
 ### Changed
 
@@ -81,6 +97,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Refactor COVAX Immunization extraction to use StructureMap-based extractio
+- eCBIS | Side menu changed
 
 ## [0.0.8 EIR, 0.0.1 - ANC] - 2021-09-11
 

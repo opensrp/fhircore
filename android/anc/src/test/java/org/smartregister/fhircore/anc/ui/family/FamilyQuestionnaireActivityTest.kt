@@ -46,13 +46,11 @@ import org.junit.BeforeClass
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
-import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
-import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
@@ -62,7 +60,6 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 
-@Config(shadows = [AncApplicationShadow::class])
 internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
 
   private lateinit var familyQuestionnaireActivity: FamilyQuestionnaireActivity
@@ -105,7 +102,12 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     runBlocking { fhirEngine.save(Questionnaire().apply { id = "1832" }) }
 
     familyQuestionnaireActivity.questionnaireConfig =
-      QuestionnaireConfig(FamilyFormConstants.FAMILY_REGISTER_FORM, "Add Family", "1832")
+      QuestionnaireConfig(
+        appId = "appId",
+        form = FamilyFormConstants.FAMILY_REGISTER_FORM,
+        title = "Add Family",
+        identifier = "1832"
+      )
 
     familyQuestionnaireActivity.familyRepository = familyRepository
 
@@ -147,9 +149,10 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
 
     familyQuestionnaireActivity.questionnaireConfig =
       QuestionnaireConfig(
-        FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM,
-        "Add Family Member",
-        "1832"
+        appId = "appId",
+        form = FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM,
+        title = "Add Family Member",
+        identifier = "1832"
       )
 
     familyQuestionnaireActivity.familyRepository = familyRepository
@@ -202,7 +205,12 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     runBlocking { fhirEngine.save(Questionnaire().apply { id = "1832" }) }
 
     familyQuestionnaireActivity.questionnaireConfig =
-      QuestionnaireConfig(FamilyFormConstants.ANC_ENROLLMENT_FORM, "Enroll into ANC", "1832")
+      QuestionnaireConfig(
+        appId = "appId",
+        form = FamilyFormConstants.ANC_ENROLLMENT_FORM,
+        title = "Enroll into ANC",
+        identifier = "1832"
+      )
 
     familyQuestionnaireActivity.familyRepository = familyRepository
     familyQuestionnaireActivity.intent.putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, "123456")

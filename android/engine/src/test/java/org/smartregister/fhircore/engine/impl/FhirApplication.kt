@@ -35,20 +35,15 @@ import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
-import org.smartregister.fhircore.engine.shadow.ShadowNpmPackageProvider
 import org.smartregister.fhircore.engine.shadow.activity.ShadowLoginActivity
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
-@Config(shadows = [ShadowNpmPackageProvider::class])
 class FhirApplication : Application(), ConfigurableApplication {
-
-  val fhirEngineImpl = spyk(FhirEngineImpl())
 
   override val syncJob: SyncJob
     get() = spyk(Sync.basicSyncJob(ApplicationProvider.getApplicationContext()))
@@ -58,8 +53,7 @@ class FhirApplication : Application(), ConfigurableApplication {
   override val authenticationService: AuthenticationService
     get() = spyk(FhirAuthenticationService())
 
-  override val fhirEngine: FhirEngine
-    get() = fhirEngineImpl
+  override val fhirEngine: FhirEngine by lazy { spyk(FhirEngineImpl()) }
 
   override val secureSharedPreference: SecureSharedPreference by lazy {
     val secureSharedPreferenceSpy =
@@ -86,6 +80,13 @@ class FhirApplication : Application(), ConfigurableApplication {
 
   override fun schedulePeriodicSync() {
     // Do nothing
+  }
+
+  override fun onCreate() {
+
+    configurationRegistry.loadAppConfigurations("appId", this) {
+      // Do nothing
+    }
   }
 
   inner class FhirEngineImpl : FhirEngine {

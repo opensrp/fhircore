@@ -21,38 +21,60 @@ import org.hl7.fhir.r4.model.Encounter
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.smartregister.fhircore.anc.data.report.model.ReportItem
+import org.smartregister.fhircore.anc.data.report.model.ResultItem
+import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 class PatientModelsTest : RobolectricTest() {
 
-  private lateinit var ancPatientItem: AncPatientItem
-  private lateinit var ancPatientItemHead: AncPatientItem
+  private lateinit var patientItem: PatientItem
+  private lateinit var patientItemHead: PatientItem
   private lateinit var encounterItem: EncounterItem
   private lateinit var upcomingServiceItem: UpcomingServiceItem
-  private lateinit var ancPatientDetailItem: AncPatientDetailItem
+  private lateinit var patientDetailItem: PatientDetailItem
   private lateinit var patientBmiItem: PatientBmiItem
+  private lateinit var reportItem: ReportItem
+  private lateinit var resulttItem: ResultItem
+  private lateinit var resulttItemPopulation: ResultItemPopulation
 
   @Before
   fun setUp() {
-    ancPatientItem =
-      AncPatientItem("111", "anb", "M", "25", "PD", "none", "xyz", VisitStatus.PLANNED)
-    ancPatientItemHead =
-      AncPatientItem("111", "anb", "M", "25", "PD", "none", "xyz", VisitStatus.PLANNED)
+    patientItem =
+      PatientItem(
+        "111",
+        "anb",
+        "M",
+        "25",
+        "PD",
+        "none",
+        "xyz",
+        true,
+        VisitStatus.PLANNED,
+        "TestFamily"
+      )
+    patientItemHead =
+      PatientItem("111", "anb", "M", "25", "PD", "none", "xyz", false, VisitStatus.PLANNED)
     encounterItem = EncounterItem("111", status = Encounter.EncounterStatus.ARRIVED, "abc", Date())
     upcomingServiceItem = UpcomingServiceItem("111", "1bc", "2020-02-12")
-    ancPatientDetailItem = AncPatientDetailItem(ancPatientItem, ancPatientItemHead)
+    patientDetailItem = PatientDetailItem(patientItem, patientItemHead)
     patientBmiItem = PatientBmiItem("1111", "testBMI1", "5'7", "50lbs", "22.22")
+    reportItem = ReportItem("1111", "test report ANC", "women having test report ANC", "4")
+    resulttItem = ResultItem("True", true, "Test description")
+    resulttItemPopulation =
+      ResultItemPopulation(title = "testTitlePopulation", dataList = emptyList())
   }
 
   @Test
   fun testAncPatientItem() {
-    Assert.assertEquals("111", ancPatientItem.patientIdentifier)
-    Assert.assertEquals("anb", ancPatientItem.name)
-    Assert.assertEquals("M", ancPatientItem.gender)
-    Assert.assertEquals("PD", ancPatientItem.demographics)
-    Assert.assertEquals("none", ancPatientItem.atRisk)
-    Assert.assertEquals("xyz", ancPatientItem.address)
-    Assert.assertEquals(VisitStatus.PLANNED, ancPatientItem.visitStatus)
+    Assert.assertEquals("111", patientItem.patientIdentifier)
+    Assert.assertEquals("anb", patientItem.name)
+    Assert.assertEquals("M", patientItem.gender)
+    Assert.assertEquals("PD", patientItem.demographics)
+    Assert.assertEquals("none", patientItem.atRisk)
+    Assert.assertEquals("xyz", patientItem.address)
+    Assert.assertEquals(VisitStatus.PLANNED, patientItem.visitStatus)
+    Assert.assertEquals("TestFamily", patientItem.familyName)
   }
 
   @Test
@@ -71,20 +93,20 @@ class PatientModelsTest : RobolectricTest() {
 
   @Test
   fun testAncPatientDetailItem() {
-    Assert.assertEquals("111", ancPatientDetailItem.patientDetails.patientIdentifier)
-    Assert.assertEquals("anb", ancPatientDetailItem.patientDetails.name)
-    Assert.assertEquals("M", ancPatientDetailItem.patientDetails.gender)
-    Assert.assertEquals("PD", ancPatientDetailItem.patientDetails.demographics)
-    Assert.assertEquals("none", ancPatientDetailItem.patientDetails.atRisk)
-    Assert.assertEquals("xyz", ancPatientDetailItem.patientDetails.address)
-    Assert.assertEquals(VisitStatus.PLANNED, ancPatientDetailItem.patientDetails.visitStatus)
-    Assert.assertEquals("111", ancPatientDetailItem.patientDetailsHead.patientIdentifier)
-    Assert.assertEquals("anb", ancPatientDetailItem.patientDetailsHead.name)
-    Assert.assertEquals("M", ancPatientDetailItem.patientDetailsHead.gender)
-    Assert.assertEquals("PD", ancPatientDetailItem.patientDetailsHead.demographics)
-    Assert.assertEquals("none", ancPatientDetailItem.patientDetailsHead.atRisk)
-    Assert.assertEquals("xyz", ancPatientDetailItem.patientDetailsHead.address)
-    Assert.assertEquals(VisitStatus.PLANNED, ancPatientDetailItem.patientDetailsHead.visitStatus)
+    Assert.assertEquals("111", patientDetailItem.patientDetails.patientIdentifier)
+    Assert.assertEquals("anb", patientDetailItem.patientDetails.name)
+    Assert.assertEquals("M", patientDetailItem.patientDetails.gender)
+    Assert.assertEquals("PD", patientDetailItem.patientDetails.demographics)
+    Assert.assertEquals("none", patientDetailItem.patientDetails.atRisk)
+    Assert.assertEquals("xyz", patientDetailItem.patientDetails.address)
+    Assert.assertEquals(VisitStatus.PLANNED, patientDetailItem.patientDetails.visitStatus)
+    Assert.assertEquals("111", patientDetailItem.patientDetailsHead.patientIdentifier)
+    Assert.assertEquals("anb", patientDetailItem.patientDetailsHead.name)
+    Assert.assertEquals("M", patientDetailItem.patientDetailsHead.gender)
+    Assert.assertEquals("PD", patientDetailItem.patientDetailsHead.demographics)
+    Assert.assertEquals("none", patientDetailItem.patientDetailsHead.atRisk)
+    Assert.assertEquals("xyz", patientDetailItem.patientDetailsHead.address)
+    Assert.assertEquals(VisitStatus.PLANNED, patientDetailItem.patientDetailsHead.visitStatus)
   }
 
   @Test
@@ -94,5 +116,26 @@ class PatientModelsTest : RobolectricTest() {
     Assert.assertEquals("5'7", patientBmiItem.height)
     Assert.assertEquals("50lbs", patientBmiItem.weight)
     Assert.assertEquals("22.22", patientBmiItem.bmi)
+  }
+
+  @Test
+  fun testReportItem() {
+    Assert.assertEquals("1111", reportItem.id)
+    Assert.assertEquals("test report ANC", reportItem.title)
+    Assert.assertEquals("women having test report ANC", reportItem.description)
+    Assert.assertEquals("4", reportItem.reportType)
+  }
+
+  @Test
+  fun testResultItem() {
+    Assert.assertEquals("True", resulttItem.status)
+    Assert.assertEquals(true, resulttItem.isMatchedIndicator)
+    Assert.assertEquals("Test description", resulttItem.description)
+  }
+
+  @Test
+  fun testResultItemPopulation() {
+    Assert.assertEquals("testTitlePopulation", resulttItemPopulation.title)
+    Assert.assertNotNull(resulttItemPopulation.dataList)
   }
 }

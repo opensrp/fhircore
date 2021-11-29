@@ -22,23 +22,30 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.eir.R
+import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
-import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
+import org.smartregister.fhircore.eir.util.EirConfigClassification
+import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 
 class PatientRegisterActivity : BaseRegisterActivity() {
 
+  lateinit var patientRepository: PatientRepository
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    configureViews(
-      registerViewConfigurationOf(
-        appTitle = getString(R.string.covax_app),
-        registrationForm = "patient-registration",
-        showSideMenu = true
-      )
-    )
+    val registerViewConfiguration =
+      configurableApplication()
+        .configurationRegistry
+        .retrieveConfiguration<RegisterViewConfiguration>(
+          context = this,
+          configClassification = EirConfigClassification.PATIENT_REGISTER
+        )
+    patientRepository = PatientRepository(fhirEngine, PatientItemMapper)
+    configureViews(registerViewConfiguration)
   }
 
   override fun sideMenuOptions(): List<SideMenuOption> =
@@ -47,6 +54,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         itemId = R.id.menu_item_covax,
         titleResource = R.string.client_list_title_covax,
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_baby_mother)!!,
+        countMethod = { runBlocking { patientRepository.countAll() } }
       )
     )
 

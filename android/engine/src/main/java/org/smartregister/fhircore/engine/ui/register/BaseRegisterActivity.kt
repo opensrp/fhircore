@@ -100,6 +100,8 @@ abstract class BaseRegisterActivity :
   OnSyncListener,
   SyncInitiator {
 
+  private lateinit var drawerMenuHeaderBinding: DrawerMenuHeaderBinding
+
   lateinit var registerViewModel: RegisterViewModel
 
   private lateinit var registerActivityBinding: BaseRegisterActivityBinding
@@ -111,6 +113,7 @@ abstract class BaseRegisterActivity :
   private lateinit var sideMenuOptionMap: Map<Int, SideMenuOption>
 
   lateinit var fhirEngine: FhirEngine
+
   val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
 
   protected lateinit var navigationBottomSheet: NavigationBottomSheet
@@ -172,6 +175,14 @@ abstract class BaseRegisterActivity :
     sideMenuOptions().forEach { updateCount(it) }
   }
 
+  override fun onDestroy() {
+    configurableApplication().syncBroadcaster.run {
+      unRegisterSyncListener(this@BaseRegisterActivity)
+      unRegisterSyncInitiator()
+    }
+    super.onDestroy()
+  }
+
   private fun BaseRegisterActivityBinding.updateSyncStatus(state: State) {
     when (state) {
       is State.Started, is State.InProgress -> {
@@ -222,13 +233,13 @@ abstract class BaseRegisterActivity :
 
     setupNewClientButtonView(registerViewModel.registerViewConfiguration.value!!)
 
-    updateRegisterTitle()
-
     setupSearchView()
 
     setupDueButtonView()
 
     switchFragment(mainFragmentTag())
+
+    updateRegisterTitle()
   }
 
   private fun syncButtonClick() {
@@ -238,6 +249,7 @@ abstract class BaseRegisterActivity :
   }
 
   private fun String.formatSyncDate(): String {
+    if (this.equals(ignoreCase = true, other = getString(R.string.syncing_retry))) return this
     if (this.isEmpty()) return ""
     val date =
       try {
@@ -338,7 +350,7 @@ abstract class BaseRegisterActivity :
       }
     }
 
-    val drawerMenuHeaderBinding: DrawerMenuHeaderBinding =
+    drawerMenuHeaderBinding =
       DataBindingUtil.bind(registerActivityBinding.navView.getHeaderView(0))!!
     drawerMenuHeaderBinding.tvNavHeader.text = viewConfiguration.appTitle
 

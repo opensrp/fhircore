@@ -89,6 +89,7 @@ android {
 
 dependencies {
 
+    implementation 'androidx.preference:preference:1.1.1'
     coreLibraryDesugaring deps.desugar
 
     implementation 'androidx.core:core-ktx:1.6.0'
@@ -105,6 +106,8 @@ dependencies {
     implementation "androidx.cardview:cardview:1.0.0"
     implementation 'joda-time:joda-time:2.10.6'
     implementation 'androidx.paging:paging-runtime-ktx:3.0.1'
+    implementation 'com.github.bumptech.glide:glide:4.12.0'
+    implementation 'id.zelory:compressor:3.0.1'
 
     //CQL
     implementation group: 'xerces', name: 'xercesImpl', version: '2.11.0'
@@ -135,7 +138,7 @@ dependencies {
     def coroutineVersion = '1.5.1'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
-    api('org.smartregister:data-capture:0.1.0-alpha05-preview-6-SNAPSHOT') {
+    api('org.smartregister:data-capture:0.1.0-alpha05-preview-8-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'

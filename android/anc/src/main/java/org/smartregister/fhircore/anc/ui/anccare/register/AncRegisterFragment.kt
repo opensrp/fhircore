@@ -22,11 +22,11 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.LazyPagingItems
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsActivity
 import org.smartregister.fhircore.anc.ui.anccare.register.components.AncPatientList
+import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
@@ -34,18 +34,18 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
-class AncRegisterFragment : ComposeRegisterFragment<Anc, AncPatientItem>() {
+class AncRegisterFragment : ComposeRegisterFragment<Anc, PatientItem>() {
 
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
-      Intent(requireActivity(), AncDetailsActivity::class.java).apply {
+      Intent(requireActivity(), PatientDetailsActivity::class.java).apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier)
       }
     )
   }
 
   @Composable
-  override fun ConstructRegisterList(pagingItems: LazyPagingItems<AncPatientItem>) {
+  override fun ConstructRegisterList(pagingItems: LazyPagingItems<PatientItem>) {
     AncPatientList(
       pagingItems = pagingItems,
       modifier = Modifier,
@@ -53,7 +53,7 @@ class AncRegisterFragment : ComposeRegisterFragment<Anc, AncPatientItem>() {
     )
   }
 
-  override fun onItemClicked(listenerIntent: ListenerIntent, data: AncPatientItem) {
+  override fun onItemClicked(listenerIntent: ListenerIntent, data: PatientItem) {
     if (listenerIntent is AncRowClickListenerIntent) {
       when (listenerIntent) {
         OpenPatientProfile -> navigateToDetails(data.patientIdentifier)
@@ -63,7 +63,7 @@ class AncRegisterFragment : ComposeRegisterFragment<Anc, AncPatientItem>() {
 
   override fun performFilter(
     registerFilterType: RegisterFilterType,
-    data: AncPatientItem,
+    data: PatientItem,
     value: Any
   ): Boolean {
     return when (registerFilterType) {
@@ -80,7 +80,7 @@ class AncRegisterFragment : ComposeRegisterFragment<Anc, AncPatientItem>() {
   }
 
   @Suppress("UNCHECKED_CAST")
-  override fun initializeRegisterDataViewModel(): RegisterDataViewModel<Anc, AncPatientItem> {
+  override fun initializeRegisterDataViewModel(): RegisterDataViewModel<Anc, PatientItem> {
     val ancPatientRepository =
       PatientRepository((requireActivity().application as AncApplication).fhirEngine, AncItemMapper)
     return ViewModelProvider(
@@ -91,7 +91,7 @@ class AncRegisterFragment : ComposeRegisterFragment<Anc, AncPatientItem>() {
         )
         .createFactory()
     )[RegisterDataViewModel::class.java] as
-      RegisterDataViewModel<Anc, AncPatientItem>
+      RegisterDataViewModel<Anc, PatientItem>
   }
 
   companion object {

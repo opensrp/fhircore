@@ -1,0 +1,8 @@
+[
+  {
+    "appId": "appId",
+    "classification": "application",
+    "theme": "AppTheme",
+    "languages": ["en", "sw"]
+  }
+]

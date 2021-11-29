@@ -22,6 +22,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 
 val SDF_DD_MMM_YYYY = SimpleDateFormat("dd-MMM-yyyy")
@@ -50,3 +51,13 @@ fun DateType.format(): String =
   DateTimeFormatter.ISO_LOCAL_DATE.format(
     this.dateTimeValue().value.toInstant().atOffset(ZoneOffset.UTC)
   )
+
+fun DateTimeType.plusDaysAsString(days: Int): String {
+  val clone = this.copy()
+  clone.add(Calendar.DATE, days)
+  return clone.value.asDdMmmYyyy()
+}
+
+fun DateTimeType.toDisplay(): String {
+  return value?.asDdMmmYyyy() ?: ""
+}

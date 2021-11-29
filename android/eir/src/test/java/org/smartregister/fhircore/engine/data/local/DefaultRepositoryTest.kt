@@ -33,12 +33,8 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
-import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
-import org.smartregister.fhircore.eir.shadow.ShadowNpmPackageProvider
 
-@Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
 class DefaultRepositoryTest : RobolectricTest() {
 
   @Test

@@ -52,7 +52,7 @@
     <string name="login_error_message">Invalid username or password</string>
     <string name="done">Done</string>
     <string name="second_dose_due_at"> Second dose due on %1$s</string>
-    <string name="ordinal_vaccine_dose_recorded">%1$s 1st dose recorded</string>
+    <string name="ordinal_vaccine_dose_recorded">%1$s %2$s dose recorded</string>
     <string name="please_select_vaccine">Please Select Vaccine</string>
     <string name="at_risk">At Risk</string>
     <string name="vaccine">Vaccine</string>

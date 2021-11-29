@@ -37,10 +37,7 @@ import timber.log.Timber
 
 class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
 
-  override fun createViewModel(
-    application: Application,
-    readOnly: Boolean
-  ): QuestionnaireViewModel {
+  override fun createViewModel(application: Application): QuestionnaireViewModel {
     return ViewModelProvider(
         this@AdverseEventQuestionnaireActivity,
         AdverseEventViewModel(
@@ -63,7 +60,7 @@ class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
           ) { oldImmunization ->
           if (oldImmunization != null) {
             lifecycleScope.launch {
-              questionnaire?.let { questionnaire ->
+              questionnaire.let { questionnaire ->
                 val alertDialog =
                   AlertDialogue.showProgressAlert(
                     this@AdverseEventQuestionnaireActivity,

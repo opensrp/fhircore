@@ -16,22 +16,29 @@
 
 package org.smartregister.fhircore
 
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
 import java.util.Date
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.StringType
 import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
-import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
-import org.smartregister.fhircore.eir.shadow.ShadowNpmPackageProvider
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
+import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 
-@Config(shadows = [EirApplicationShadow::class, ShadowNpmPackageProvider::class])
 class ResourceExtensionTest : RobolectricTest() {
 
   @Test
@@ -95,5 +102,48 @@ class ResourceExtensionTest : RobolectricTest() {
     )
     Assert.assertEquals("Kamau", patient.name[0].family)
     Assert.assertEquals("Andrew", patient.name[0].given[0].value)
+  }
+
+  @Test
+  fun `QuestionnaireResponse#deleteRelatedResources() should call defaultRepository#deleteResource for resources in contained`() {
+    val patient = Patient()
+    val relatedPerson = RelatedPerson()
+    val observation = Observation()
+    val questionnaireResponse =
+      QuestionnaireResponse().apply { contained = listOf(patient, relatedPerson, observation) }
+
+    val defaultRepository = mockk<DefaultRepository>()
+
+    coEvery { defaultRepository.delete(any()) } returns Unit
+
+    runBlocking { questionnaireResponse.deleteRelatedResources(defaultRepository) }
+
+    coVerify { defaultRepository.delete(patient) }
+    coVerify { defaultRepository.delete(relatedPerson) }
+    coVerify { defaultRepository.delete(observation) }
+  }
+
+  @Test
+  fun `QuestionnaireResponse#retainMetadata() should call retain details from previous QR`() {
+    val id = "qrId"
+    val authoredDate = Date()
+    val versionId = "5"
+    val author = Reference()
+    val oldQr =
+      QuestionnaireResponse().apply {
+        setId(id)
+        authored = authoredDate
+        setAuthor(author)
+        meta.apply { setVersionId(versionId) }
+      }
+    val questionnaireResponse = QuestionnaireResponse()
+
+    questionnaireResponse.retainMetadata(oldQr)
+
+    Assert.assertEquals(id, oldQr.id)
+    Assert.assertEquals(author, oldQr.author)
+    Assert.assertEquals(authoredDate, oldQr.authored)
+    Assert.assertEquals("6", oldQr.meta.versionId)
+    Assert.assertNotNull(oldQr.meta.lastUpdated)
   }
 }
