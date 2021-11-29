@@ -17,7 +17,9 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.util.Log
+import java.util.Date
 import org.hl7.fhir.r4.model.DateType
+import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -54,5 +56,12 @@ class DateTimeExtensionTest : RobolectricTest() {
     val formatted = date.plusMonthsAsString(3)
 
     assertTrue("2013-01-12".contentEquals(formatted))
+  }
+
+  @Test
+  fun `toHumanDisplay() should return Date in the correct format`() {
+    val date = Date("Fri, 1 Oct 2021 13:30:00")
+    val formattedDate = date.toHumanDisplay()
+    Assert.assertEquals("Oct 1, 2021 1:30:00 PM", formattedDate)
   }
 }

@@ -21,6 +21,7 @@ import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 
@@ -34,6 +35,9 @@ fun OffsetDateTime.asString(): String {
 fun Date.asDdMmmYyyy(): String {
   return SDF_DD_MMM_YYYY.format(this)
 }
+
+fun Date.toHumanDisplay(): String =
+  SimpleDateFormat("MMM d, yyyy h:mm:ss a", Locale.getDefault()).format(this)
 
 fun DateType.plusWeeksAsString(weeks: Int): String {
   val clone = this.copy()
