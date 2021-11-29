@@ -81,14 +81,8 @@ object ResourceMapperExtended {
 
       val definitionField = questionnaireItem.getDefinitionField ?: return
 
-      if (isChoiceElement(questionnaireItem)) {
-        val value: Base =
-          groupBase.apply {
-            this.extractFields(bundle, questionnaireItem.item, questionnaireResponseItem.item)
-          }
-        invokeResourceMapperExtension(this, "updateField", definitionField, value)
-        return
-      }
+      // isChoiceElement filter not applicable for extension hence skipping check
+
       val value: Base =
         (definitionField.nonParameterizedType.newInstance() as Base).apply {
           this.extractFields(bundle, questionnaireItem.item, questionnaireResponseItem.item)
@@ -153,11 +147,8 @@ object ResourceMapperExtended {
         }
           ?: return null
 
-      if (isChoiceElement(this) && path.size > 2) {
-        val typeChoice = path[1].substringAfter(CHOICE_ELEMENT_CONSTANT_NAME)
-        val resourceClass: Class<*> = Class.forName("org.hl7.fhir.r4.model.$typeChoice")
-        return resourceClass.getFieldOrNull(path[2]) // getNestedFieldOfChoiceType()
-      }
+      // isChoiceElement filter not applicable for extension hence skipping check
+
       return path.drop(2).fold(definitionField) { field: Field?, nestedFieldName: String ->
         field?.nonParameterizedType?.getFieldOrNull(nestedFieldName)
       }
