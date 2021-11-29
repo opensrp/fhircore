@@ -108,7 +108,7 @@ class PatientRepository(
           filter(QuestionnaireResponse.SUBJECT) { value = "Patient/$patientId" }
         }
 
-      data.postValue(result.sortedByDescending { it.authored })
+      data.postValue(result)
     }
     return data
   }
