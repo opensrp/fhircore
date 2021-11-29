@@ -39,6 +39,11 @@ fun Date.asDdMmmYyyy(): String {
 fun Date.toHumanDisplay(): String =
   SimpleDateFormat("MMM d, yyyy h:mm:ss a", Locale.getDefault()).format(this)
 
+fun Date?.makeItReadable(): String {
+  val simpleDateFormat = SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault())
+  return if (this != null) simpleDateFormat.format(this) else "N/A"
+}
+
 fun DateType.plusWeeksAsString(weeks: Int): String {
   val clone = this.copy()
   clone.add(Calendar.DATE, weeks * 7)

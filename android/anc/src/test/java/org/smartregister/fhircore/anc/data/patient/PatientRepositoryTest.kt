@@ -65,8 +65,8 @@ import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
-import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
 class PatientRepositoryTest : RobolectricTest() {

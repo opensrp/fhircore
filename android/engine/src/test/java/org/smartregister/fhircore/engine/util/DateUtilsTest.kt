@@ -19,7 +19,7 @@ package org.smartregister.fhircore.engine.util
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
-import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
 class DateUtilsTest {
 

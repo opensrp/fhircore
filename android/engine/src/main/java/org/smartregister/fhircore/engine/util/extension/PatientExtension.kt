@@ -28,7 +28,6 @@ import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.smartregister.fhircore.engine.R
 
 private const val RISK = "risk"
-private val simpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.ENGLISH)
 const val DAYS_IN_YEAR = 365
 const val DAYS_IN_MONTH = 30
 const val DAYS_IN_WEEK = 7
@@ -114,10 +113,13 @@ fun Patient.getLastSeen(immunizations: List<Immunization>): String {
     .maxByOrNull { it.protocolAppliedFirstRep.doseNumberPositiveIntType.value }
     ?.occurrenceDateTimeType
     ?.toDisplay()
-    ?: this.meta?.lastUpdated.makeItReadable()
+    ?: this.meta?.lastUpdated.lastSeenFormat()
 }
 
-private fun Date?.makeItReadable() = if (this != null) simpleDateFormat.format(this) else ""
+private fun Date?.lastSeenFormat(): String {
+  val simpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.ENGLISH)
+  return if (this != null) simpleDateFormat.format(this) else ""
+}
 
 fun Patient.extractAddress(): String {
   if (!hasAddress()) return ""

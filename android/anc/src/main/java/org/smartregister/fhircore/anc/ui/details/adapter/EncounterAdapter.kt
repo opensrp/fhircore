@@ -23,7 +23,7 @@ import androidx.recyclerview.widget.ListAdapter
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.databinding.ItemEncountersBinding
 import org.smartregister.fhircore.engine.ui.base.BaseSimpleRecyclerViewHolder
-import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
 /** Subclass of [ListAdapter] used to display encounter for the non ANC client */
 class EncounterAdapter :

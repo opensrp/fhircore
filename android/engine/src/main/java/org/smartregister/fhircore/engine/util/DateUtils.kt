@@ -28,8 +28,6 @@ import org.joda.time.format.DateTimeFormatter
 
 object DateUtils {
 
-  private var simpleDateFormat = SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault())
-
   fun addDays(
     initialDate: String,
     daysToAdd: Int = 0,
@@ -51,7 +49,6 @@ object DateUtils {
 
   fun simpleDateFormat(pattern: String = "hh:mm aa, MMM d") =
     SimpleDateFormat(pattern, Locale.getDefault())
-  fun Date?.makeItReadable(): String = if (this != null) simpleDateFormat.format(this) else "N/A"
 
   fun String.getDate(formatNeeded: String): Date {
     val format = SimpleDateFormat(formatNeeded)
