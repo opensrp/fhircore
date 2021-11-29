@@ -84,6 +84,52 @@ class QuestApplicationTest : RobolectricTest() {
   }
 
   @Test
+  fun testResourceSyncParam_organizationNull_shouldHaveEmptyMapForOrganizationBasedResources() {
+    every { SharedPreferencesHelper.read(any(), any()) } returns
+      UserInfo("ONA-Systems", null, "Nairobi").encodeJson()
+
+    val syncParam = app.resourceSyncParams
+    Assert.assertTrue(syncParam.isNotEmpty())
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Binary))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.QuestionnaireResponse))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Questionnaire))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Patient))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Condition))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Observation))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Encounter))
+
+    Assert.assertTrue(syncParam[ResourceType.Binary]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.QuestionnaireResponse]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Questionnaire]!!.isNotEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Condition]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Observation]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Encounter]!!.isEmpty())
+  }
+
+  @Test
+  fun testResourceSyncParam_publisherNull_shouldHaveEmptyMapForQuestionnaire() {
+    every { SharedPreferencesHelper.read(any(), any()) } returns
+      UserInfo(null, "105", "Nairobi").encodeJson()
+
+    val syncParam = app.resourceSyncParams
+    Assert.assertTrue(syncParam.isNotEmpty())
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Binary))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.QuestionnaireResponse))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Questionnaire))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Patient))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Condition))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Observation))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Encounter))
+
+    Assert.assertTrue(syncParam[ResourceType.Binary]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.QuestionnaireResponse]!!.isNotEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Questionnaire]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Condition]!!.isNotEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Observation]!!.isNotEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Encounter]!!.isNotEmpty())
+  }
+
+  @Test
   fun testResourceSyncParam_WithNullExpressionValue_ShouldReturnEmptyMap() {
     every { SharedPreferencesHelper.read(any(), any()) } returns null
 
