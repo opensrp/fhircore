@@ -89,7 +89,8 @@ object ResourceMapperExtended {
         }
 
       if (isList(definitionField)) updateListField(this, definitionField, value)
-      else invokeResourceMapperExtension(this, "updateField", definitionField, value)
+      // only list field is possible for extension hence skipping object handling
+      // else invokeResourceMapperExtension(this, "updateField", definitionField, value)
       return
     }
     if (questionnaireResponseItem.answer.isEmpty()) return
