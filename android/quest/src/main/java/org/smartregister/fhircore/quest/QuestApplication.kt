@@ -96,8 +96,10 @@ open class QuestApplication : Application(), ConfigurableApplication {
     val searchParameters = mutableListOf<SearchParameter>()
 
     val jsonArrayEntry = JSONArray(json)
-    for (i in 0 until jsonArrayEntry.length()) {
-      searchParameters.add(iParser.parseResource(jsonArrayEntry[i].toString()) as SearchParameter)
+    (0 until jsonArrayEntry.length()).forEach {
+      searchParameters.add(
+        iParser.parseResource(jsonArrayEntry.getJSONObject(it).toString()) as SearchParameter
+      )
     }
     return searchParameters
   }
