@@ -23,6 +23,8 @@ import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
@@ -107,15 +109,29 @@ class PatientRepositoryTest : RobolectricTest() {
   @Test
   fun testFetchTestResultsShouldReturnListOfTestReports() {
 
+    val today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
+    val yesterday =
+      Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
+
     coEvery { fhirEngine.search<QuestionnaireResponse>(any()) } returns
       listOf(
         QuestionnaireResponse().apply {
           meta = Meta().apply { tag = listOf(Coding().apply { display = "Blood Count" }) }
+          authored = yesterday
+        },
+        QuestionnaireResponse().apply {
+          meta = Meta().apply { tag = listOf(Coding().apply { display = "Cell Count" }) }
+          authored = today
         }
       )
 
     val results = runBlocking { repository.fetchTestResults("1") }.value
-    Assert.assertEquals("Blood Count", results?.first()?.meta?.tagFirstRep?.display)
+
+    Assert.assertEquals("Cell Count", results?.get(0)?.meta?.tagFirstRep?.display)
+    Assert.assertEquals(today.time, results?.get(0)?.authored?.time)
+
+    Assert.assertEquals("Blood Count", results?.get(1)?.meta?.tagFirstRep?.display)
+    Assert.assertEquals(yesterday.time, results?.get(1)?.authored?.time)
   }
 
   @Test
