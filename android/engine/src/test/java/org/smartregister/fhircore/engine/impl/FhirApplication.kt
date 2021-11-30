@@ -58,9 +58,6 @@ class FhirApplication : Application(), ConfigurableApplication {
   override val authenticationService: AuthenticationService
     get() = spyk(FhirAuthenticationService())
 
-  override val authenticatedUserInfo: UserInfo?
-    get() = UserInfo("test-pub", "test-org")
-
   override val fhirEngine: FhirEngine by lazy { spyk(FhirEngineImpl()) }
 
   override val fhirPathEngine = FHIRPathEngine(workerContextProvider)
