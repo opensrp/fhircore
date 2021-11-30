@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -115,6 +116,16 @@ open class QuestionnaireViewModel(application: Application) : AndroidViewModel(a
           ) {
             questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
               it.valueCodeableConcept.coding.forEach { bun.resource.meta.addTag(it) }
+            }
+
+            // add managing organization of logged in user to record
+            (getApplication<Application>() as ConfigurableApplication).authenticatedUserInfo
+              ?.organization?.let { org ->
+              val organizationRef = Reference().apply { reference = "Organization/$org" }
+              val resource = bun.resource
+
+              if (resource is Patient) resource.managingOrganization = organizationRef
+              else if (resource is Group) resource.managingEntity = organizationRef
             }
           }
 

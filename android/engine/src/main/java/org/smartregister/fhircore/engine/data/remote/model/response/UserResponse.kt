@@ -20,6 +20,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UserResponse(
-  @SerialName("questionnaire_publisher") val questionnairePublisher: String? = null
+data class UserInfo(
+  @SerialName("questionnaire_publisher") val questionnairePublisher: String? = null,
+  @SerialName("organization") val organization: String? = null,
+  @SerialName("location") val location: String? = null
 )
