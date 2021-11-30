@@ -117,8 +117,9 @@ fun Patient.getLastSeen(immunizations: List<Immunization>): String {
 }
 
 private fun Date?.lastSeenFormat(): String {
-  val simpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.ENGLISH)
-  return if (this != null) simpleDateFormat.format(this) else ""
+  return if (this != null) {
+    SimpleDateFormat("MM-dd-yyyy", Locale.ENGLISH).run { format(this@lastSeenFormat) }
+  } else ""
 }
 
 fun Patient.extractAddress(): String {

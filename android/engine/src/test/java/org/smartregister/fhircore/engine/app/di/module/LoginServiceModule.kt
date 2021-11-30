@@ -16,16 +16,17 @@
 
 package org.smartregister.fhircore.engine.app.di.module
 
-import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ActivityComponent
-import org.smartregister.fhircore.engine.app.AppLoginService
+import io.mockk.spyk
+import org.smartregister.fhircore.engine.ui.login.LoginActivityTest
 import org.smartregister.fhircore.engine.ui.login.LoginService
 
 @InstallIn(ActivityComponent::class)
 @Module
-abstract class LoginServiceModule {
+object LoginServiceModule {
 
-  @Binds abstract fun bindLoginService(appLoginService: AppLoginService): LoginService
+  @Provides fun bindLoginService(): LoginService = spyk(LoginActivityTest.TestLoginService())
 }

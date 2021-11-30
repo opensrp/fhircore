@@ -16,10 +16,8 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.util.Log
 import java.util.Date
 import org.hl7.fhir.r4.model.DateType
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -28,7 +26,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 class DateTimeExtensionTest : RobolectricTest() {
 
   @Test
-  fun testAsDdMmmYyyyShouldReturnFormattedDate() {
+  fun testDateTypeAsDdMmmYyyyShouldReturnFormattedDate() {
     val date = DateType("2012-10-12").dateTimeValue().value
 
     val result = date.asDdMmmYyyy()
@@ -37,20 +35,16 @@ class DateTimeExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun testPlusWeeksAsStringShouldAddWeeksAndReturnFormattedDate() {
+  fun testDateTypePlusWeeksAsStringShouldAddWeeksAndReturnFormattedDate() {
     val date = DateType("2012-10-12")
 
     val formatted = date.plusWeeksAsString(2)
-
-    System.out.println(formatted)
-    System.err.println(formatted)
-    Log.e("DateTimeExtensionTest", "formatted")
 
     assertTrue("2012-10-26".contentEquals(formatted))
   }
 
   @Test
-  fun testPlusWeeksAsStringShouldAddMonthsAndReturnFormattedDate() {
+  fun testDateTypePlusWeeksAsStringShouldAddMonthsAndReturnFormattedDate() {
     val date = DateType("2012-10-12")
 
     val formatted = date.plusMonthsAsString(3)
@@ -59,9 +53,9 @@ class DateTimeExtensionTest : RobolectricTest() {
   }
 
   @Test
-  fun `toHumanDisplay() should return Date in the correct format`() {
+  fun `Date#toHumanDisplay() should return Date in the correct format`() {
     val date = Date("Fri, 1 Oct 2021 13:30:00")
     val formattedDate = date.toHumanDisplay()
-    Assert.assertEquals("Oct 1, 2021 1:30:00 PM", formattedDate)
+    assertEquals("Oct 1, 2021 1:30:00 PM", formattedDate)
   }
 }
