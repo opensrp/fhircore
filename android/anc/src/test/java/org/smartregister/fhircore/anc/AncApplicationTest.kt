@@ -19,11 +19,18 @@ package org.smartregister.fhircore.anc
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 
 class AncApplicationTest : RobolectricTest() {
 
@@ -61,5 +68,22 @@ class AncApplicationTest : RobolectricTest() {
     Assert.assertEquals(BuildConfig.OAUTH_BASE_URL, config.oauthServerBaseUrl)
     Assert.assertEquals(BuildConfig.OAUTH_CIENT_ID, config.clientId)
     Assert.assertEquals(BuildConfig.OAUTH_CLIENT_SECRET, config.clientSecret)
+  }
+
+  @Test
+  fun testAuthenticateUserInfoShouldReturnNonNull() {
+    mockkObject(SharedPreferencesHelper)
+
+    every { SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null) } returns
+      UserInfo("ONA-Systems", "105", "Nairobi").encodeJson()
+
+    Assert.assertEquals(
+      "ONA-Systems",
+      AncApplication.getContext().authenticatedUserInfo?.questionnairePublisher
+    )
+    Assert.assertEquals("105", AncApplication.getContext().authenticatedUserInfo?.organization)
+    Assert.assertEquals("Nairobi", AncApplication.getContext().authenticatedUserInfo?.location)
+
+    unmockkObject(SharedPreferencesHelper)
   }
 }
