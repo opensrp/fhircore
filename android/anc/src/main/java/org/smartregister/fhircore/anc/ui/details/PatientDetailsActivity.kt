@@ -100,23 +100,25 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
     return true
   }
 
-  override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-    val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
-    val ancEnrollment = menu!!.findItem(R.id.anc_enrollment)
-    val pregnancyOutcome = menu!!.findItem(R.id.pregnancy_outcome)
-    if (isMale) pregnancyOutcome.isVisible = false
-    ancEnrollment.isVisible = if (isMale) false else !isPregnant
-    val title = removeThisPerson.title.toString()
-    val s = SpannableString(title)
-    with(s) {
-      setSpan(
-        ForegroundColorSpan(android.graphics.Color.parseColor("#DD0000")),
-        0,
-        length,
-        android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE
-      )
-    } // provide whatever color you want here.
-    removeThisPerson.title = s
+  override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+    menu.findItem(R.id.anc_enrollment).run {
+      this.isVisible = !isMale && !isPregnant
+    }
+    menu.findItem(R.id.pregnancy_outcome).run {
+      this.isVisible = !isMale
+    }
+
+    menu.findItem(R.id.remove_this_person).run {
+      val span = SpannableString(this.title).apply {
+        setSpan(
+          ForegroundColorSpan(android.graphics.Color.parseColor("#DD0000")),
+          0,
+          length,
+          android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE
+        )
+      }
+      this.title = span
+    }
     return super.onPrepareOptionsMenu(menu)
   }
 
@@ -149,6 +151,9 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
             )
         )
         true
+      }
+      R.id.remove_this_person -> {
+
       }
       else -> return super.onOptionsItemSelected(item)
     }
