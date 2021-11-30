@@ -212,7 +212,7 @@ class PatientRepositoryTest : RobolectricTest() {
       Assert.assertEquals("Jane Mc", name)
       Assert.assertEquals("Male", gender)
       Assert.assertEquals("0d", age)
-      Assert.assertEquals("", demographics)
+      Assert.assertEquals("Nairobi Kenya", demographics)
       Assert.assertEquals("", atRisk)
     }
   }

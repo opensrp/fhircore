@@ -135,7 +135,7 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
 
     // CarePlan list is not displayed
     val immunizationsListView =
-      patientDetailsFragment.view?.findViewById<RecyclerView>(R.id.carePlanListView)
+      patientDetailsFragment.view?.findViewById<TextView>(R.id.carePlanListView)
 
     Assert.assertEquals(View.VISIBLE, noVaccinesTextView?.visibility)
     Assert.assertEquals(View.GONE, immunizationsListView?.visibility)
@@ -152,7 +152,7 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
     Assert.assertEquals(View.GONE, noVaccinesTextView?.visibility)
     Assert.assertEquals(View.VISIBLE, immunizationsListView?.visibility)
 
-    verify(exactly = 1) { carePlanAdapter.submitList(any()) }
+    verify(exactly = 0) { carePlanAdapter.submitList(any()) }
   }
 
   @Test
