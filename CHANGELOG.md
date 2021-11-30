@@ -34,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EIR | Updated overdue trigger flow for Vaccine Due date
 - EIR | Updated on save vaccine received alert dialogue
 
+- Quest | Updated Sync to sync user specific fhir resources using Search Parameters from assets
+
 
 ## [0.0.2 Quest, 0.0.3 - ANC] - 2021-10-27
 
