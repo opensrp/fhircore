@@ -91,6 +91,8 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
   val reportHomeActivity = LocalContext.current
+  val patientIdentifier = selectedPatient!!.patientIdentifier
+  val patientFamilyName = selectedPatient!!.familyName
 
   ReportFilterPage(
     topBarTitle = reportMeasureItem?.title ?: "",
@@ -108,8 +110,8 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
         startDate,
         endDate,
         reportMeasureItem!!.reportType,
-        selectedPatient!!.patientIdentifier,
-        selectedPatient!!.familyName
+        patientIdentifier,
+        patientFamilyName
       )
     },
     selectedPatient = selectedPatient ?: PatientItem()
