@@ -46,6 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
@@ -90,11 +91,7 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
   val selectedPatient by remember { mutableStateOf(viewModel.selectedPatientItem.value) }
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
-  val reportHomeActivity = LocalContext.current
-  val reportType = reportMeasureItem!!.reportType
-  val patientMap = HashMap<String, String>()
-  patientMap.put("patientIdentifier", selectedPatient!!.patientIdentifier)
-  patientMap.put("familyName", selectedPatient!!.familyName)
+  val homeActivity = LocalContext.current
 
   ReportFilterPage(
     topBarTitle = reportMeasureItem?.title ?: "",
@@ -107,7 +104,7 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
     onPatientSelectionTypeChanged = viewModel::onPatientSelectionTypeChanged,
     generateReportEnabled = generateReportEnabled ?: true,
     onGenerateReportPress = {
-      auxGenerateReport(reportHomeActivity, startDate, endDate, reportType, patientMap)
+      auxGenerateReport(homeActivity, startDate, endDate, reportMeasureItem!!, selectedPatient!!)
     },
     selectedPatient = selectedPatient ?: PatientItem()
   )
@@ -117,15 +114,15 @@ fun auxGenerateReport(
   context: Context,
   startDate: String,
   endDate: String,
-  reportType: String,
-  selectedPatient: HashMap<String, String>,
+  reportItem: ReportItem,
+  selectedPatient: PatientItem,
 ) {
   (context as ReportHomeActivity).generateMeasureReport(
     startDate,
     endDate,
-    reportType,
-    selectedPatient.get("patientIdentifier")!!,
-    selectedPatient.get("familyName")!!
+    reportItem.reportType,
+    selectedPatient.patientIdentifier,
+    selectedPatient.familyName
   )
 }
 

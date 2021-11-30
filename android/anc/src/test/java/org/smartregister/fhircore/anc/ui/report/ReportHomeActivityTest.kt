@@ -41,6 +41,8 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.FileUtil
 
@@ -330,9 +332,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   fun auxGenerateReportTest() {
     every { reportHomeActivitySpy.generateMeasureReport(any(), any(), any(), any(), any()) } returns
       Unit
-    val patientMap = HashMap<String, String>()
-    patientMap.put("patientIdentifier", "")
-    patientMap.put("familyName", "")
-    auxGenerateReport(reportHomeActivitySpy, "", "", "", patientMap)
+
+    auxGenerateReport(reportHomeActivitySpy, "", "", ReportItem(), PatientItem())
   }
 }
