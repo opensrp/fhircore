@@ -102,7 +102,16 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
     patientSelectionText = patientSelectionType ?: "All",
     onPatientSelectionTypeChanged = viewModel::onPatientSelectionTypeChanged,
     generateReportEnabled = generateReportEnabled ?: true,
-    onGenerateReportPress = { auxGenerateReport(reportHomeActivity, startDate, endDate, reportMeasureItem!!.reportType, selectedPatient!!.patientIdentifier, selectedPatient!!.familyName) },
+    onGenerateReportPress = {
+      auxGenerateReport(
+        reportHomeActivity,
+        startDate,
+        endDate,
+        reportMeasureItem!!.reportType,
+        selectedPatient!!.patientIdentifier,
+        selectedPatient!!.familyName
+      )
+    },
     selectedPatient = selectedPatient ?: PatientItem()
   )
 }
