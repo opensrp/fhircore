@@ -66,6 +66,19 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun testPopulateQuestionnaireResponseShouldMatch() {
+    val fragment = spyk<FhirCoreQuestionnaireFragment>()
+    val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
+    val base64 = "file".toByteArray()
+
+    photoCaptureFactory.populateQuestionnaireResponse(base64)
+
+    assertEquals(photoCaptureFactory.questionnaireResponse.valueAttachment.data, base64)
+
+    verify { photoCaptureFactory.populateQuestionnaireResponse(any()) }
+  }
+
+  @Test
   fun testQuestionnaireResponseShouldReturnAttachmentTypeValue() {
     val fragment = FhirCoreQuestionnaireFragment()
     val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
