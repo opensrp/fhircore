@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - EIR | Resolved a bug in the vaccination flow : App crush when saving vaccine
 - EIR | Ability for a complete immunixation flow from Record 1st Vaccine to Full Immunization
+- Quest | fixed test result sorting issues
 
 
 ### Changed
