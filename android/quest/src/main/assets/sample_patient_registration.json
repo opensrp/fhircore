@@ -219,20 +219,26 @@
               "answerOption": [
                 {
                   "valueCoding": {
-                    "code": "pakistani",
-                    "display": "Pakistan"
+                    "code": "black",
+                    "display": "Black"
                   }
                 },
                 {
                   "valueCoding": {
-                    "code": "kenyan",
-                    "display": "Kenyan"
+                    "code": "white",
+                    "display": "White"
                   }
                 },
                 {
                   "valueCoding": {
-                    "code": "american",
-                    "display": "American"
+                    "code": "asian",
+                    "display": "Asian"
+                  }
+                },
+                {
+                  "valueCoding": {
+                    "code": "other",
+                    "display": "Other"
                   }
                 }
               ]
@@ -283,32 +289,20 @@
               "answerOption": [
                 {
                   "valueCoding": {
-                    "code": "daily-wage",
-                    "display": "Daily Wage"
+                    "code": "employed",
+                    "display": "Employed"
                   }
                 },
                 {
                   "valueCoding": {
-                    "code": "doctor",
-                    "display": "Doctor"
+                    "code": "self-employed",
+                    "display": "Self-Employed"
                   }
                 },
                 {
                   "valueCoding": {
-                    "code": "engineer",
-                    "display": "Engineer"
-                  }
-                },
-                {
-                  "valueCoding": {
-                    "code": "teacher",
-                    "display": "Teacher"
-                  }
-                },
-                {
-                  "valueCoding": {
-                    "code": "politician",
-                    "display": "Politician"
+                    "code": "unemployed",
+                    "display": "Unemployed"
                   }
                 }
               ]
