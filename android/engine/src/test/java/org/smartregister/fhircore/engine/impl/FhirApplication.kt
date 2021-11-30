@@ -35,6 +35,7 @@ import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -43,6 +44,9 @@ import org.smartregister.fhircore.engine.configuration.app.applicationConfigurat
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.shadow.activity.ShadowLoginActivity
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 
 class FhirApplication : Application(), ConfigurableApplication {
 
@@ -58,6 +62,12 @@ class FhirApplication : Application(), ConfigurableApplication {
     get() = UserInfo("test-pub", "test-org")
 
   override val fhirEngine: FhirEngine by lazy { spyk(FhirEngineImpl()) }
+
+  override val fhirPathEngine = FHIRPathEngine(workerContextProvider)
+
+  override val authenticatedUserInfo: UserInfo?
+    get() =
+      SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
 
   override val secureSharedPreference: SecureSharedPreference by lazy {
     val secureSharedPreferenceSpy =

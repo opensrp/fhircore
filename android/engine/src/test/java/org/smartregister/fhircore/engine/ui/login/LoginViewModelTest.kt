@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.shadow.FakeKeyStore
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import retrofit2.Response
 
@@ -172,10 +173,12 @@ internal class LoginViewModelTest : RobolectricTest() {
     loginViewModel.responseBodyHandler.handleResponse(spyk(), response)
 
     // Shared preference saved G6PD
-    Assert.assertEquals(
-      userResponse.encodeJson(),
-      loginViewModel.sharedPreferences.read(USER_INFO_SHARED_PREFERENCE_KEY, null)
-    )
+    val userInfo =
+      loginViewModel
+        .sharedPreferences
+        .read(USER_INFO_SHARED_PREFERENCE_KEY, null)
+        ?.decodeJson<UserInfo>()
+    Assert.assertEquals(userResponse.questionnairePublisher, userInfo?.questionnairePublisher)
     Assert.assertNotNull(loginViewModel.showProgressBar.value)
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
   }

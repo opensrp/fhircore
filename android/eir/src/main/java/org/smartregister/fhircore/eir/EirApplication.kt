@@ -22,6 +22,7 @@ import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJob
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
@@ -41,6 +42,8 @@ open class EirApplication : Application(), ConfigurableApplication {
     get() = EirAuthenticationService(applicationContext)
 
   override val fhirEngine: FhirEngine by lazy { FhirEngineProvider.getInstance(this) }
+
+  override val fhirPathEngine = FHIRPathEngine(workerContextProvider)
 
   override val authenticatedUserInfo: UserInfo?
     get() =

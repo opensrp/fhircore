@@ -17,13 +17,18 @@
 package org.smartregister.fhircore.quest
 
 import android.app.Application
+import android.content.Context
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJob
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.SearchParameter
+import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.json.JSONArray
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
@@ -42,6 +47,7 @@ open class QuestApplication : Application(), ConfigurableApplication {
     get() = Sync.basicSyncJob(getContext())
 
   override lateinit var applicationConfiguration: ApplicationConfiguration
+  val SYNC_CONFIG = "configurations/app/sync_config.json"
 
   override val authenticationService: AuthenticationService
     get() = QuestAuthenticationService(applicationContext)
@@ -51,26 +57,51 @@ open class QuestApplication : Application(), ConfigurableApplication {
   override val secureSharedPreference: SecureSharedPreference
     get() = SecureSharedPreference(applicationContext)
 
-  override val resourceSyncParams: Map<ResourceType, Map<String, String>>
-    get() {
-      return mapOf(
-        ResourceType.CarePlan to mapOf(),
-        ResourceType.Patient to mapOf(),
-        ResourceType.Questionnaire to mapOf(),
-        ResourceType.QuestionnaireResponse to mapOf(),
-        ResourceType.Binary to mapOf()
-      )
-    }
+  override val fhirPathEngine = FHIRPathEngine(workerContextProvider)
 
   override val authenticatedUserInfo: UserInfo?
     get() =
       SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
 
-  private fun buildPublisherFilterMap(): MutableMap<String, String> {
-    val questionnaireFilterMap: MutableMap<String, String> = HashMap()
-    val publisher = authenticatedUserInfo?.questionnairePublisher
-    if (publisher != null) questionnaireFilterMap[Questionnaire.SP_PUBLISHER] = publisher
-    return questionnaireFilterMap
+  override val resourceSyncParams: Map<ResourceType, Map<String, String>>
+    get() {
+      val searchParams = loadSearchParams(this)
+      val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
+      for (i in searchParams.indices) {
+        // TODO: expressionValue supports for Organization and Publisher, extend it using
+        // Composition resource
+        val expressionValue =
+          searchParams[i].expression?.let {
+            when {
+              it.contains("organization") -> authenticatedUserInfo?.organization
+              it.contains("publisher") -> authenticatedUserInfo?.questionnairePublisher
+              else -> null
+            }
+          }
+
+        pairs.add(
+          Pair(
+            ResourceType.fromCode(searchParams[i].base[0].code),
+            expressionValue?.let { mapOf(searchParams[i].expression to it) } ?: mapOf()
+          )
+        )
+      }
+
+      return mapOf(*pairs.toTypedArray())
+    }
+
+  private fun loadSearchParams(context: Context): List<SearchParameter> {
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val json = context.assets.open(SYNC_CONFIG).bufferedReader().use { it.readText() }
+    val searchParameters = mutableListOf<SearchParameter>()
+
+    val jsonArrayEntry = JSONArray(json)
+    (0 until jsonArrayEntry.length()).forEach {
+      searchParameters.add(
+        iParser.parseResource(jsonArrayEntry.getJSONObject(it).toString()) as SearchParameter
+      )
+    }
+    return searchParameters
   }
 
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
@@ -103,12 +134,10 @@ open class QuestApplication : Application(), ConfigurableApplication {
     private lateinit var questApplication: QuestApplication
     private const val CONFIG_PROFILE = "quest-app-profile"
 
-    fun getProfileConfigId() =
-      CONFIG_PROFILE.join(
-        getContext().authenticatedUserInfo?.questionnairePublisher?.lowercase()?.let { "-$it" },
-        ""
-      )
+    fun getProfileConfigId() = CONFIG_PROFILE.join(getPublisher()?.lowercase()?.let { "-$it" }, "")
 
     fun getContext() = questApplication
+
+    fun getPublisher() = SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)
   }
 }
