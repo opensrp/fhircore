@@ -330,7 +330,9 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   fun auxGenerateReportTest() {
     every { reportHomeActivitySpy.generateMeasureReport(any(), any(), any(), any(), any()) } returns
       Unit
-
-    auxGenerateReport(reportHomeActivitySpy, "", "", "", "", "")
+    val patientMap = HashMap<String, String>()
+    patientMap.put("patientIdentifier", "")
+    patientMap.put("familyName", "")
+    auxGenerateReport(reportHomeActivitySpy, "", "", "", patientMap)
   }
 }

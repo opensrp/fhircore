@@ -91,8 +91,10 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
   val reportHomeActivity = LocalContext.current
-  val patientIdentifier = selectedPatient!!.patientIdentifier
-  val patientFamilyName = selectedPatient!!.familyName
+  val reportType = reportMeasureItem!!.reportType
+  val patientMap = HashMap<String, String>()
+  patientMap.put("patientIdentifier", selectedPatient!!.patientIdentifier)
+  patientMap.put("familyName", selectedPatient!!.familyName)
 
   ReportFilterPage(
     topBarTitle = reportMeasureItem?.title ?: "",
@@ -105,14 +107,7 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
     onPatientSelectionTypeChanged = viewModel::onPatientSelectionTypeChanged,
     generateReportEnabled = generateReportEnabled ?: true,
     onGenerateReportPress = {
-      auxGenerateReport(
-        reportHomeActivity,
-        startDate,
-        endDate,
-        reportMeasureItem!!.reportType,
-        patientIdentifier,
-        patientFamilyName
-      )
+      auxGenerateReport(reportHomeActivity, startDate, endDate, reportType, patientMap)
     },
     selectedPatient = selectedPatient ?: PatientItem()
   )
@@ -123,15 +118,14 @@ fun auxGenerateReport(
   startDate: String,
   endDate: String,
   reportType: String,
-  patientIdentifier: String,
-  familyName: String
+  selectedPatient: HashMap<String, String>,
 ) {
   (context as ReportHomeActivity).generateMeasureReport(
     startDate,
     endDate,
     reportType,
-    patientIdentifier,
-    familyName
+    selectedPatient.get("patientIdentifier")!!,
+    selectedPatient.get("familyName")!!
   )
 }
 
