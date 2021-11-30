@@ -32,6 +32,10 @@ import org.junit.Ignore
 import org.junit.Test
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.runOneTimeSync
 
 class EirApplicationTest : RobolectricTest() {
@@ -70,5 +74,22 @@ class EirApplicationTest : RobolectricTest() {
     }
 
     unmockkObject(Sync)
+  }
+
+  @Test
+  fun testAuthenticateUserInfoShouldReturnNonNull() {
+    mockkObject(SharedPreferencesHelper)
+
+    every { SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null) } returns
+      UserInfo("ONA-Systems", "105", "Nairobi").encodeJson()
+
+    Assert.assertEquals(
+      "ONA-Systems",
+      EirApplication.getContext().authenticatedUserInfo?.questionnairePublisher
+    )
+    Assert.assertEquals("105", EirApplication.getContext().authenticatedUserInfo?.organization)
+    Assert.assertEquals("Nairobi", EirApplication.getContext().authenticatedUserInfo?.location)
+
+    unmockkObject(SharedPreferencesHelper)
   }
 }
