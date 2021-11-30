@@ -323,7 +323,7 @@ class PatientRepository(
               UpcomingServiceItem(
                 task.logicalId,
                 task.code.text,
-                task.executionPeriod?.start.toString()
+                DateType(task.executionPeriod?.start).format()
               )
             )
           }
