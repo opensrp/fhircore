@@ -31,14 +31,15 @@ import okhttp3.ResponseBody
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
-import org.smartregister.fhircore.engine.data.remote.model.response.UserResponse
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
@@ -77,11 +78,8 @@ class LoginViewModel(
   private fun storeUserPreferences(responseBody: ResponseBody) {
     val responseBodyString = responseBody.string()
     Timber.d(responseBodyString)
-    val userResponse = responseBodyString.decodeJson<UserResponse>()
-    sharedPreferences.write(
-      USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY,
-      userResponse.questionnairePublisher
-    )
+    val userResponse = responseBodyString.decodeJson<UserInfo>()
+    sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, userResponse.encodeJson())
   }
 
   private val userInfoResponseCallback: ResponseCallback<ResponseBody> by lazy {

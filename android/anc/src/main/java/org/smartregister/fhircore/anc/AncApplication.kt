@@ -22,11 +22,15 @@ import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJob
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
@@ -42,8 +46,14 @@ open class AncApplication : Application(), ConfigurableApplication {
 
   override val fhirEngine: FhirEngine by lazy { FhirEngineProvider.getInstance(this) }
 
+  override val fhirPathEngine = FHIRPathEngine(workerContextProvider)
+
   override val secureSharedPreference: SecureSharedPreference
     get() = SecureSharedPreference(applicationContext)
+
+  override val authenticatedUserInfo: UserInfo?
+    get() =
+      SharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
 
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() =
