@@ -96,12 +96,17 @@ class CustomPhotoCaptureFactory(fragment: Fragment) :
         }
       val imageFileCompressed =
         compress(fragment.requireContext(), imageFile) { size(MAX_COMPRESSION_SIZE) }
-      questionnaireResponse.value =
-        Attachment().apply {
-          contentType = CONTENT_TYPE
-          data = imageFileCompressed.encodeToBase64()
-        }
+      val base64 = imageFileCompressed.encodeToBase64()
+      populateQuestionnaireResponse(base64)
     }
+  }
+
+  fun populateQuestionnaireResponse(base64: ByteArray) {
+    questionnaireResponse.value =
+      Attachment().apply {
+        contentType = CONTENT_TYPE
+        data = base64
+      }
   }
 
   override fun getQuestionnaireItemViewHolderDelegate(): QuestionnaireItemViewHolderDelegate =
