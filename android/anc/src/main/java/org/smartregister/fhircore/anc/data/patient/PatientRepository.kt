@@ -33,6 +33,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
@@ -305,13 +306,28 @@ class PatientRepository(
     )
   }
 
-  fun fetchUpcomingServiceItem(carePlan: List<CarePlan>): List<UpcomingServiceItem> {
+  suspend fun fetchUpcomingServiceItem(carePlan: List<CarePlan>): List<UpcomingServiceItem> {
     val listCarePlan = arrayListOf<UpcomingServiceItem>()
     val listCarePlanList = arrayListOf<CarePlan>()
     if (carePlan.isNotEmpty()) {
-      listCarePlanList.addAll(carePlan.filter { it.due() })
+      listCarePlanList.addAll(carePlan.filter { it.overdue() })
       for (i in listCarePlanList.indices) {
-        listCarePlan.add(CarePlanItemMapper.mapToUpcomingServiceItem(listCarePlanList[i]))
+        var task: Task
+        withContext(dispatcherProvider.io()) {
+          val carePlanId = listCarePlanList[i].logicalId
+          var tasks =
+            fhirEngine.search<Task> { filter(Task.FOCUS) { value = "CarePlan/$carePlanId" } }
+          if (!tasks.isNullOrEmpty()) {
+            task = tasks[0]
+            listCarePlan.add(
+              UpcomingServiceItem(
+                task.logicalId,
+                task.code.text,
+                task.executionPeriod?.start.toString()
+              )
+            )
+          }
+        }
       }
     }
     return listCarePlan
