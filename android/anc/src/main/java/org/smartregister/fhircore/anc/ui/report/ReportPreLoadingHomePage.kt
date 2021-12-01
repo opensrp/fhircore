@@ -47,7 +47,7 @@ fun ReportPreLoadingHomePage(topBarTitle: String, onBackPress: () -> Unit) {
           modifier = Modifier.align(Alignment.Center),
           horizontalAlignment = Alignment.CenterHorizontally
         ) {
-          Text(text = "Loading libraries..")
+          Text(text = "Loading..")
           LoadingItem()
         }
       }
