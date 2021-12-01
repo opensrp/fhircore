@@ -34,6 +34,8 @@ import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.databinding.FragmentAncDetailsBinding
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import org.smartregister.fhircore.engine.util.extension.hide
+import org.smartregister.fhircore.engine.util.extension.show
 import timber.log.Timber
 
 class AncDetailsFragment : Fragment() {
@@ -148,16 +150,21 @@ class AncDetailsFragment : Fragment() {
   private fun handleCarePlan(immunizations: List<CarePlanItem>) {
     when {
       immunizations.isEmpty() -> {
-        binding.txtViewNoCarePlan.visibility = View.VISIBLE
-        binding.txtViewCarePlanSeeAllHeading.visibility = View.GONE
-        binding.imageViewSeeAllArrow.visibility = View.GONE
-        binding.txtViewCarePlan.visibility = View.GONE
+        binding.apply {
+          txtViewNoCarePlan.show()
+          txtViewCarePlanSeeAllHeading.hide()
+          imageViewSeeAllArrow.hide()
+          txtViewCarePlan.hide()
+        }
       }
       else -> {
-        binding.txtViewNoCarePlan.visibility = View.GONE
-        binding.txtViewCarePlanSeeAllHeading.visibility = View.VISIBLE
-        binding.imageViewSeeAllArrow.visibility = View.VISIBLE
-        binding.txtViewCarePlan.visibility = View.VISIBLE
+        binding.apply {
+          txtViewNoCarePlan.hide()
+          txtViewCarePlanSeeAllHeading.show()
+          imageViewSeeAllArrow.show()
+          txtViewCarePlan.show()
+        }
+
         populateImmunizationList(immunizations)
       }
     }
@@ -167,10 +174,13 @@ class AncDetailsFragment : Fragment() {
     val countOverdue = listCarePlan.filter { it.overdue }.size
     val countDue = listCarePlan.filter { it.due }.size
     if (countOverdue > 0) {
-      binding.txtViewCarePlan.text = "+ANC Visit $countOverdue Overdue"
+      binding.txtViewCarePlan.text =
+        this.getString(R.string.anc_record_visit_button_title) +
+          " $countOverdue " +
+          this.getString(R.string.overdue)
       binding.txtViewCarePlan.setTextColor(resources.getColor(R.color.status_red))
     } else if (countDue > 0) {
-      binding.txtViewCarePlan.text = "+ANC Visit "
+      binding.txtViewCarePlan.text = this.getString(R.string.anc_record_visit_button_title)
       binding.txtViewCarePlan.setTextColor(resources.getColor(R.color.colorPrimaryLight))
     }
   }

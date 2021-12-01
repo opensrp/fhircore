@@ -312,10 +312,10 @@ class PatientRepository(
     val listCarePlanList = arrayListOf<CarePlan>()
     if (carePlan.isNotEmpty()) {
       listCarePlanList.addAll(carePlan.filter { it.due() })
-      for (i in listCarePlanList.indices) {
+      listCarePlanList.forEach {
         var task: Task
         withContext(dispatcherProvider.io()) {
-          val carePlanId = listCarePlanList[i].logicalId
+          val carePlanId = it.logicalId
           var tasks =
             fhirEngine.search<Task> { filter(Task.FOCUS) { value = "CarePlan/$carePlanId" } }
           if (!tasks.isNullOrEmpty()) {
