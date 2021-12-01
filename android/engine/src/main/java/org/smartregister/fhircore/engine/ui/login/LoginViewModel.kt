@@ -29,6 +29,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
+import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
@@ -204,5 +205,11 @@ constructor(
   fun forgotPassword() {
     // TODO load supervisor contact e.g.
     _launchDialPad.value = "tel:0123456789"
+  }
+
+  @TestOnly
+  fun navigateToHome(navigateHome: Boolean = true) {
+    _navigateToHome.value = navigateHome
+    _navigateToHome.postValue(navigateHome)
   }
 }

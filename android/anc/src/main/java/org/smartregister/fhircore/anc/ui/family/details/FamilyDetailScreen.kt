@@ -57,7 +57,7 @@ import androidx.compose.ui.unit.sp
 import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
-import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
 @Composable
 fun FamilyDetailScreen(familyDetailViewModel: FamilyDetailViewModel) {
