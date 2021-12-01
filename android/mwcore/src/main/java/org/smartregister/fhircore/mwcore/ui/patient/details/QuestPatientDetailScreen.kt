@@ -291,7 +291,7 @@ fun dummyQuestPatientDetailDataProvider(): QuestPatientDetailDataProvider {
 
     override fun getAllForms(): LiveData<List<QuestionnaireConfig>> {
       return MutableLiveData(
-        listOf(QuestionnaireConfig("sample-test-result", "+ Sample Test Result", "12345"))
+        listOf(QuestionnaireConfig("sample-test-result", "+ Sample Test Result", "12345", "sample-identifier"))
       )
     }
 

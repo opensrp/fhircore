@@ -1,0 +1,24 @@
+[
+  {
+    "appId": "mw-core",
+    "classification": "patient_register",
+    "appTitle": "Clients",
+    "filterText": "Show overdue",
+    "searchBarHint": "Search for ID or client name",
+    "newClientButtonText": "Register new client",
+    "newClientButtonStyle": "rounded_corner",
+    "showSearchBar": true,
+    "showFilter": false,
+    "switchLanguages": true,
+    "showScanQRCode": false,
+    "showNewClientButton": true,
+    "showSideMenu": false,
+    "showBottomMenu": true,
+    "registrationForm": "client-questionnaire",
+    "primaryFilter": {
+      "key": "_tag",
+      "system": "http://fhir.ona.io",
+      "code": "000003"
+    }
+  }
+]

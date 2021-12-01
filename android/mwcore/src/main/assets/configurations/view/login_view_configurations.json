@@ -1,0 +1,10 @@
+[
+  {
+    "appId": "mw-core",
+    "classification": "login",
+    "applicationName": "MW Core",
+    "applicationVersion": "0.0.2",
+    "darkMode": false,
+    "showLogo": true
+  }
+]

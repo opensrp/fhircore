@@ -22,28 +22,19 @@ import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJob
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
-import org.smartregister.fhircore.engine.configuration.app.loadApplicationConfiguration
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.extension.initializeWorkerContext
+import org.smartregister.fhircore.engine.util.extension.join
 import org.smartregister.fhircore.engine.util.extension.runPeriodicSync
 import timber.log.Timber
 
 class MwCoreApplication : Application(), ConfigurableApplication {
-
-  private val defaultDispatcherProvider = DefaultDispatcherProvider
-
-  override lateinit var workerContextProvider: SimpleWorkerContext
 
   override val syncJob: SyncJob
     get() = Sync.basicSyncJob(getContext())
@@ -53,7 +44,7 @@ class MwCoreApplication : Application(), ConfigurableApplication {
   override val authenticationService: AuthenticationService
     get() = QuestAuthenticationService(applicationContext)
 
-  override val fhirEngine: FhirEngine by lazy { constructFhirEngine() }
+  override val fhirEngine: FhirEngine by lazy { FhirEngineProvider.getInstance(this) }
 
   override val secureSharedPreference: SecureSharedPreference
     get() = SecureSharedPreference(applicationContext)
@@ -61,41 +52,30 @@ class MwCoreApplication : Application(), ConfigurableApplication {
   override val resourceSyncParams: Map<ResourceType, Map<String, String>>
     get() {
       return mapOf(
-        ResourceType.Binary to mapOf("_id" to CONFIG_RESOURCE_IDS),
         ResourceType.CarePlan to mapOf(),
         ResourceType.Patient to mapOf(),
-        ResourceType.Questionnaire to buildQuestionnaireFilterMap(),
+        ResourceType.Questionnaire to mapOf(),
         ResourceType.QuestionnaireResponse to mapOf(),
         ResourceType.Binary to mapOf()
       )
     }
 
-  private fun buildQuestionnaireFilterMap(): MutableMap<String, String> {
+  private fun buildPublisherFilterMap(): MutableMap<String, String> {
     val questionnaireFilterMap: MutableMap<String, String> = HashMap()
-    val publisher =
-      SharedPreferencesHelper.read(USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY, null)
+    val publisher = getPublisher()
     if (publisher != null) questionnaireFilterMap[Questionnaire.SP_PUBLISHER] = publisher
     return questionnaireFilterMap
   }
 
-  private fun constructFhirEngine(): FhirEngine {
-    return FhirEngineProvider.getInstance(this)
-  }
-
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
     this.applicationConfiguration = applicationConfiguration
+    this.applicationConfiguration.apply {
+      fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL
+      oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL
+      clientId = BuildConfig.OAUTH_CIENT_ID
+      clientSecret = BuildConfig.OAUTH_CLIENT_SECRET
+    }
     SharedPreferencesHelper.write(SharedPreferencesHelper.THEME, applicationConfiguration.theme)
-  }
-
-  fun applyApplicationConfiguration() {
-    configureApplication(
-      loadApplicationConfiguration(CONFIG_APP).apply {
-        fhirServerBaseUrl = BuildConfig.FHIR_BASE_URL
-        oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL
-        clientId = BuildConfig.OAUTH_CIENT_ID
-        clientSecret = BuildConfig.OAUTH_CLIENT_SECRET
-      }
-    )
   }
 
   override fun schedulePeriodicSync() {
@@ -105,36 +85,23 @@ class MwCoreApplication : Application(), ConfigurableApplication {
   override fun onCreate() {
     super.onCreate()
     SharedPreferencesHelper.init(this)
-    questApplication = this
+    mwCoreApplication = this
 
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
-
-    applyApplicationConfiguration()
-
-    initializeWorkerContextProvider()
-
-    schedulePeriodicSync()
-  }
-
-  fun initializeWorkerContextProvider() {
-    CoroutineScope(defaultDispatcherProvider.io()).launch {
-      workerContextProvider = this@MwCoreApplication.initializeWorkerContext()!!
-    }
-
-    schedulePeriodicSync()
-
     DataCaptureConfig.attachmentResolver = ReferenceAttachmentResolver(this)
   }
 
   companion object {
-    private lateinit var questApplication: MwCoreApplication
-    const val CONFIG_APP = "mwcore-app"
-    private const val CONFIG_PATIENT_REGISTER = "mwcore-app-patient-register"
+    private lateinit var mwCoreApplication: MwCoreApplication
+    private const val CONFIG_PROFILE = "quest-app-profile"
 
-    private const val CONFIG_RESOURCE_IDS = "$CONFIG_APP,$CONFIG_PATIENT_REGISTER"
+    fun getProfileConfigId() = CONFIG_PROFILE.join(getPublisher()?.lowercase()?.let { "-$it" }, "")
 
-    fun getContext() = questApplication
+    fun getContext() = mwCoreApplication
+
+    fun getPublisher() =
+      SharedPreferencesHelper.read(USER_QUESTIONNAIRE_PUBLISHER_SHARED_PREFERENCE_KEY, null)
   }
 }

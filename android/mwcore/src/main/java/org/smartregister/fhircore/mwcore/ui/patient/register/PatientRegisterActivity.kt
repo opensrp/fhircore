@@ -21,20 +21,25 @@ import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
-import org.smartregister.fhircore.engine.configuration.view.loadRegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.mwcore.R
+import org.smartregister.fhircore.mwcore.util.MwCoreConfigClassification
 
 class PatientRegisterActivity : BaseRegisterActivity() {
-  private lateinit var registerViewConfiguration: RegisterViewConfiguration
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    registerViewConfiguration = loadRegisterViewConfiguration("mwcore-app-patient-register")
+    val registerViewConfiguration =
+      configurableApplication()
+        .configurationRegistry
+        .retrieveConfiguration<RegisterViewConfiguration>(
+          context = this,
+          configClassification = MwCoreConfigClassification.PATIENT_REGISTER
+        )
+
     configureViews(registerViewConfiguration)
   }
 
