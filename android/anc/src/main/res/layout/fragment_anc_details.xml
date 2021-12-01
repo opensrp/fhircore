@@ -99,7 +99,7 @@
                             tools:listitem="@layout/item_careplan" />-->
 
                         <TextView
-                            android:id="@+id/carePlanListView"
+                            android:id="@+id/txtView_carePlan"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_margin="14dp"
@@ -108,6 +108,7 @@
                             android:textColor="@color/grayText"
                             android:textSize="18sp"
                             android:visibility="visible"
+                            android:layout_gravity="center"
                             app:layout_constraintLeft_toLeftOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 

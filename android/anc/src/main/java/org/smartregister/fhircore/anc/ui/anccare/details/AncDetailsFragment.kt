@@ -157,13 +157,13 @@ class AncDetailsFragment : Fragment() {
         binding.txtViewNoCarePlan.visibility = View.VISIBLE
         binding.txtViewCarePlanSeeAllHeading.visibility = View.GONE
         binding.imageViewSeeAllArrow.visibility = View.GONE
-        binding.carePlanListView.visibility = View.GONE
+        binding.txtViewCarePlan.visibility = View.GONE
       }
       else -> {
         binding.txtViewNoCarePlan.visibility = View.GONE
         binding.txtViewCarePlanSeeAllHeading.visibility = View.VISIBLE
         binding.imageViewSeeAllArrow.visibility = View.VISIBLE
-        binding.carePlanListView.visibility = View.VISIBLE
+        binding.txtViewCarePlan.visibility = View.VISIBLE
         populateImmunizationList(immunizations)
       }
     }
@@ -173,11 +173,11 @@ class AncDetailsFragment : Fragment() {
     val countOverdue = listCarePlan.filter { it.overdue }.size
     val countDue = listCarePlan.filter { it.due }.size
     if (countOverdue > 0) {
-      binding.carePlanListView.text = "+ANC Visit $countOverdue Overdue"
-      binding.carePlanListView.setTextColor(resources.getColor(R.color.status_red))
+      binding.txtViewCarePlan.text = "+ANC Visit $countOverdue Overdue"
+      binding.txtViewCarePlan.setTextColor(resources.getColor(R.color.status_red))
     } else if (countDue > 0) {
-      binding.carePlanListView.text = "+ANC Visit "
-      binding.carePlanListView.setTextColor(resources.getColor(R.color.colorPrimaryLight))
+      binding.txtViewCarePlan.text = "+ANC Visit "
+      binding.txtViewCarePlan.setTextColor(resources.getColor(R.color.colorPrimaryLight))
     }
   }
 
