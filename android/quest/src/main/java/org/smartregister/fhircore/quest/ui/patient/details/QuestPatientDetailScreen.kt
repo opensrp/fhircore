@@ -217,8 +217,8 @@ fun QuestPatientDetailScreen(dataProvider: QuestPatientDetailDataProvider) {
           Column(modifier = Modifier.padding(16.dp)) {
 
             // fetch forms
-            val forms = dataProvider.getAllForms().observeAsState()
-            forms.value?.let { allForms ->
+            val forms = remember { mutableStateOf(dataProvider.getAllForms()) }
+            forms.value.value?.let { allForms ->
               allForms.forEachIndexed { index, it ->
                 FormItem(it, dataProvider)
                 if (index < allForms.size.minus(1)) {

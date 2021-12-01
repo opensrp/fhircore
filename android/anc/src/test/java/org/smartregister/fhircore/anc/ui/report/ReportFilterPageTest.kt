@@ -43,7 +43,14 @@ class ReportFilterPageTest : RobolectricTest() {
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
   private val patientSelectionType = MutableLiveData("")
   private val testMeasureReportItem = MutableLiveData(ReportItem(title = "Test Report Title"))
-  private val selectionPatient = MutableLiveData(PatientItem(name = "Test Patient Name"))
+  private val selectionPatient =
+    MutableLiveData(
+      PatientItem(
+        name = "Test Patient Name",
+        patientIdentifier = "1209875",
+        familyName = "Test patient name"
+      )
+    )
   private val listenerObjectSpy =
     spyk(
       object {

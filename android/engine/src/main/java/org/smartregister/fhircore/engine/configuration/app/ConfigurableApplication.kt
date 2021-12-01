@@ -20,8 +20,10 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.SyncJob
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
@@ -53,7 +55,11 @@ interface ConfigurableApplication {
 
   val authenticationService: AuthenticationService
 
+  val authenticatedUserInfo: UserInfo?
+
   val fhirEngine: FhirEngine
+
+  val fhirPathEngine: FHIRPathEngine
 
   val secureSharedPreference: SecureSharedPreference
 
