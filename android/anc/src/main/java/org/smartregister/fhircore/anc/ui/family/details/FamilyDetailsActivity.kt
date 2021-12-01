@@ -24,6 +24,7 @@ import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants.FAMILY_HOUSE_HOLD
 import org.smartregister.fhircore.anc.util.startFamilyMemberRegistration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
@@ -60,6 +61,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
     startActivity(
       Intent(this, PatientDetailsActivity::class.java).apply {
         putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, item.id)
+        putExtra(FAMILY_HOUSE_HOLD, item.houseHoldHead)
       }
     )
   }
