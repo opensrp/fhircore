@@ -27,9 +27,11 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
@@ -42,6 +44,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Ignore
@@ -53,6 +56,9 @@ import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.shadow.TestUtils
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 03-07-2021. */
 class QuestionnaireViewModelTest : RobolectricTest() {
@@ -72,6 +78,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun setUp() {
     context = ApplicationProvider.getApplicationContext()
 
+    mockkObject(SharedPreferencesHelper)
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val qJson =
       context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
@@ -98,6 +105,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel = spyk(QuestionnaireViewModel(EirApplication.getContext()))
     ReflectionHelpers.setField(questionnaireViewModel, "defaultRepository", defaultRepo)
+  }
+
+  @After
+  fun cleanup() {
+    unmockkObject(SharedPreferencesHelper)
   }
 
   @Test
@@ -213,6 +225,48 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       "0993ldsfkaljlsnldm",
       questionnaireResponseSlot.captured.subject.reference.replace("Patient/", "")
     )
+  }
+
+  @Test
+  fun `saveExtractedResources() should call saveBundleResources with Bundle of Patient with organization`() {
+    coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns
+      samplePatientRegisterQuestionnaire
+
+    val questionnaire = Questionnaire()
+    questionnaire.extension.add(
+      Extension(
+        "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+        Expression().apply {
+          language = "application/x-fhir-query"
+          expression = "Patient"
+        }
+      )
+    )
+    questionnaire.addSubjectType("Patient")
+    val questionnaireResponse = QuestionnaireResponse()
+    val bundleSlot = slot<Bundle>()
+
+    every { questionnaireViewModel.saveBundleResources(any()) } just runs
+    coEvery { questionnaireViewModel.performExtraction(any(), any(), any()) } returns
+      Bundle().apply { addEntry().resource = Patient() }
+    every { SharedPreferencesHelper.read(any(), any()) } returns
+      UserInfo("ONA-Systems", "105", "Nairobi").encodeJson()
+
+    ReflectionHelpers.setField(context, "workerContextProvider", mockk<SimpleWorkerContext>())
+
+    questionnaireViewModel.extractAndSaveResources(
+      null,
+      ApplicationProvider.getApplicationContext(),
+      questionnaire,
+      questionnaireResponse
+    )
+
+    coVerify(exactly = 1, timeout = 2000) {
+      questionnaireViewModel.saveBundleResources(capture(bundleSlot))
+    }
+
+    val patient = bundleSlot.captured.entry[0].resource as Patient
+    Assert.assertEquals("105", patient.managingOrganization.reference.replace("Organization/", ""))
   }
 
   @Test
