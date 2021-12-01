@@ -37,7 +37,7 @@ jobs:
         working-directory: android
          
       - name: Run Engine unit tests with Gradle
-        run: ./gradlew clean && ./gradlew :engine:clean && ./gradlew :engine:jacocoTestReport -x testReleaseUnitTest --stacktrace --rerun-tasks
+        run: ./gradlew :engine:jacocoTestReport -x testReleaseUnitTest --stacktrace --rerun-tasks
         working-directory: android
 
       - name: Upload Engine Test Report to codecov
