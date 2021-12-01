@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.data.patient
 
+import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
@@ -56,6 +57,8 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -63,7 +66,7 @@ import org.junit.Test
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
@@ -77,18 +80,14 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
+  val context = ApplicationProvider.getApplicationContext<Application>()
+
   @Before
   fun setUp() {
     fhirEngine = spyk()
+
     repository =
-      spyk(
-        PatientRepository(
-          ApplicationProvider.getApplicationContext(),
-          fhirEngine,
-          AncPatientItemMapper,
-          dispatcherProvider
-        )
-      )
+      spyk(PatientRepository(context, fhirEngine, AncItemMapper(context), dispatcherProvider))
   }
 
   @Test
@@ -123,9 +122,16 @@ class PatientRepositoryTest : RobolectricTest() {
   fun fetchUpcomingServiceItemTest() {
     val patientId = "1111"
     val carePlan = listOf(buildCarePlanWithActive(patientId))
-    val listUpcomingServiceItem = repository.fetchUpcomingServiceItem(carePlan = carePlan)
+    val task = getTask()
+    coEvery { fhirEngine.search<Task>(any()) } returns listOf(task)
+    val listUpcomingServiceItem = runBlocking {
+      repository.fetchUpcomingServiceItem(carePlan = carePlan)
+    }
     Assert.assertEquals("ABC", listUpcomingServiceItem[0].title)
-    Assert.assertEquals(Date().makeItReadable(), listUpcomingServiceItem[0].date)
+    Assert.assertEquals(
+      task.executionPeriod.start.makeItReadable(),
+      listUpcomingServiceItem[0].date
+    )
   }
 
   private fun buildCarePlanWithActive(subject: String): CarePlan {
@@ -216,7 +222,7 @@ class PatientRepositoryTest : RobolectricTest() {
       Assert.assertEquals("Jane Mc", name)
       Assert.assertEquals("Male", gender)
       Assert.assertEquals("0d", age)
-      Assert.assertEquals("", demographics)
+      Assert.assertEquals("Nairobi Kenya", demographics)
       Assert.assertEquals("", atRisk)
     }
   }
@@ -396,6 +402,28 @@ class PatientRepositoryTest : RobolectricTest() {
       system = "123"
       code = "123"
       display = "ABC"
+    }
+  }
+
+  private fun getTask(): Task {
+    return Task().apply {
+      id = "1"
+      code = getCodeableConcept()
+      executionPeriod = Period().setStart(Date())
+    }
+  }
+
+  private fun buildPatient(id: String, family: String, given: String): Patient {
+    return Patient().apply {
+      this.id = id
+      this.addName().apply {
+        this.family = family
+        this.given.add(StringType(given))
+      }
+      this.addAddress().apply {
+        district = "Dist 1"
+        city = "City 1"
+      }
     }
   }
 

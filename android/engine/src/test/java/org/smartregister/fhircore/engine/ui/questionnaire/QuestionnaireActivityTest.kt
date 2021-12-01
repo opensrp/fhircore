@@ -70,7 +70,16 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @BindValue
   val questionnaireViewModel: QuestionnaireViewModel =
-    spyk(QuestionnaireViewModel(mockk(), mockk(), mockk(), mockk(), mockk()))
+    spyk(
+      QuestionnaireViewModel(
+        fhirEngine = mockk(),
+        defaultRepository = mockk(),
+        configurationRegistry = mockk(),
+        transformSupportServices = mockk(),
+        dispatcherProvider = mockk(),
+        sharedPreferencesHelper = mockk()
+      )
+    )
 
   @Before
   fun setUp() {

@@ -27,7 +27,7 @@ import org.robolectric.Shadows
 abstract class ActivityRobolectricTest : RobolectricTest() {
 
   @After
-  fun testDown() {
+  fun tearDown() {
     Shadows.shadowOf(Looper.getMainLooper()).idle()
     getActivity().finish()
   }

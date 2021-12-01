@@ -36,6 +36,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
@@ -70,6 +71,7 @@ import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.format
 import org.smartregister.fhircore.engine.util.extension.isPregnant
 import org.smartregister.fhircore.engine.util.extension.loadResourceTemplate
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.overdue
 import org.smartregister.fhircore.engine.util.extension.plusMonthsAsString
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
@@ -172,7 +174,9 @@ constructor(
             gender = patient.extractGender(context) ?: "",
             isPregnant = patient.isPregnant(),
             age = patient.extractAge(),
-            familyName = patient.extractFamilyName()
+            familyName = patient.extractFamilyName(),
+            demographics = patient.extractAddress(),
+            isHouseHoldHead = patient.link.isEmpty()
           )
         ancPatientDetailItem = PatientDetailItem(ancPatientItem, ancPatientItemHead)
       }
@@ -311,13 +315,28 @@ constructor(
     )
   }
 
-  fun fetchUpcomingServiceItem(carePlan: List<CarePlan>): List<UpcomingServiceItem> {
+  suspend fun fetchUpcomingServiceItem(carePlan: List<CarePlan>): List<UpcomingServiceItem> {
     val listCarePlan = arrayListOf<UpcomingServiceItem>()
     val listCarePlanList = arrayListOf<CarePlan>()
     if (carePlan.isNotEmpty()) {
       listCarePlanList.addAll(carePlan.filter { it.due() })
-      for (i in listCarePlanList.indices) {
-        listCarePlan.add(CarePlanItemMapper.mapToUpcomingServiceItem(listCarePlanList[i]))
+      listCarePlanList.forEach {
+        var task: Task
+        withContext(dispatcherProvider.io()) {
+          val carePlanId = it.logicalId
+          var tasks =
+            fhirEngine.search<Task> { filter(Task.FOCUS) { value = "CarePlan/$carePlanId" } }
+          if (!tasks.isNullOrEmpty()) {
+            task = tasks[0]
+            listCarePlan.add(
+              UpcomingServiceItem(
+                task.logicalId,
+                task.code.text,
+                task.executionPeriod?.start.makeItReadable()
+              )
+            )
+          }
+        }
       }
     }
     return listCarePlan
@@ -331,20 +350,6 @@ constructor(
       }
     }
     return listCarePlan
-  }
-
-  companion object {
-    object Template {
-      const val PREGNANCY_CONDITION = "pregnancy_condition_template.json"
-      const val PREGNANCY_EPISODE_OF_CARE = "pregnancy_episode_of_care_template.json"
-      const val PREGNANCY_FIRST_ENCOUNTER = "pregnancy_first_encounter_template.json"
-      const val PREGNANCY_GOAL = "pregnancy_goal_template.json"
-      const val PREGNANCY_CARE_PLAN = "pregnancy_careplan_template.json"
-      const val BMI_ENCOUNTER = "bmi_patient_encounter_template.json"
-      const val BMI_PATIENT_WEIGHT = "bmi_patient_weight_observation_template.json"
-      const val BMI_PATIENT_HEIGHT = "bmi_patient_height_observation_template.json"
-      const val BMI_PATIENT_BMI = "bmi_patient_computed_bmi_observation_template.json"
-    }
   }
 
   suspend fun recordComputedBmi(
@@ -447,5 +452,19 @@ constructor(
       "#RefIdObservationBodyHeight" to refObsHeightFormId,
       "#RefIdObservationBodyWeight" to refObsWeightFormId,
     )
+  }
+
+  companion object {
+    object Template {
+      const val PREGNANCY_CONDITION = "pregnancy_condition_template.json"
+      const val PREGNANCY_EPISODE_OF_CARE = "pregnancy_episode_of_care_template.json"
+      const val PREGNANCY_FIRST_ENCOUNTER = "pregnancy_first_encounter_template.json"
+      const val PREGNANCY_GOAL = "pregnancy_goal_template.json"
+      const val PREGNANCY_CARE_PLAN = "pregnancy_careplan_template.json"
+      const val BMI_ENCOUNTER = "bmi_patient_encounter_template.json"
+      const val BMI_PATIENT_WEIGHT = "bmi_patient_weight_observation_template.json"
+      const val BMI_PATIENT_HEIGHT = "bmi_patient_height_observation_template.json"
+      const val BMI_PATIENT_BMI = "bmi_patient_computed_bmi_observation_template.json"
+    }
   }
 }

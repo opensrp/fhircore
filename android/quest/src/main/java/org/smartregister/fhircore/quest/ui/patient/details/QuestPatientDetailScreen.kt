@@ -229,7 +229,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
           elevation = 4.dp,
           modifier = Modifier.fillMaxWidth().padding(top = 12.dp).testTag(RESULT_CONTAINER_ITEM)
         ) {
-          Column() {
+          Column {
             val totalResultsCount = testResults?.count() ?: 0
             testResults?.forEachIndexed { index, item ->
               Row(

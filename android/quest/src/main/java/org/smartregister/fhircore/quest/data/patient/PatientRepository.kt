@@ -16,18 +16,14 @@
 
 package org.smartregister.fhircore.quest.data.patient
 
-import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
-import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
-import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -36,6 +32,7 @@ import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 
@@ -47,19 +44,6 @@ constructor(
   val dispatcherProvider: DispatcherProvider
 ) : RegisterRepository<Patient, PatientItem> {
 
-  // TODO obtain correct filter param for the logged in user
-  val searchFilter = SearchFilter(key = "_tag", code = "http://fhir.ona.io", system = "000003")
-
-  private fun applyPrimaryFilter(search: Search, filter: SearchFilter) {
-    search.filter(
-      TokenClientParam(filter.key),
-      Coding().apply {
-        code = filter.code
-        system = filter.system
-      }
-    )
-  }
-
   override suspend fun loadData(
     query: String,
     pageNumber: Int,
@@ -68,8 +52,7 @@ constructor(
     return withContext(dispatcherProvider.io()) {
       val patients =
         fhirEngine.search<Patient> {
-          applyPrimaryFilter(search = this, filter = searchFilter)
-
+          filter(Patient.ACTIVE, true)
           if (query.isNotBlank()) {
             filter(Patient.NAME) {
               modifier = StringFilterModifier.CONTAINS
@@ -86,9 +69,7 @@ constructor(
   }
 
   override suspend fun countAll(): Long =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.count<Patient> { applyPrimaryFilter(search = this, filter = searchFilter) }
-    }
+    withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
 
   suspend fun fetchDemographics(patientId: String): Patient =
     withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, patientId) }

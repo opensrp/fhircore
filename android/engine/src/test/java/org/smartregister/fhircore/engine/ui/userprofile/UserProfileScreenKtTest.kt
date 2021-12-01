@@ -19,26 +19,19 @@ package org.smartregister.fhircore.engine.ui.userprofile
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Before
-import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.shadow.FakeKeyStore
 
-@HiltAndroidTest
 class UserProfileScreenKtTest : RobolectricTest() {
 
   private val userProfileViewModel = mockk<UserProfileViewModel>()
 
-  @get:Rule val composeRule = createComposeRule()
-
-  @get:Rule var hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 1) val composeRule = createComposeRule()
 
   @Before
   fun setUp() {
@@ -60,13 +53,5 @@ class UserProfileScreenKtTest : RobolectricTest() {
     composeRule.onNodeWithText("Sync").performClick()
 
     verify { userProfileViewModel.runSync() }
-  }
-
-  companion object {
-    @JvmStatic
-    @BeforeClass
-    fun setupMocks() {
-      FakeKeyStore.setup
-    }
   }
 }

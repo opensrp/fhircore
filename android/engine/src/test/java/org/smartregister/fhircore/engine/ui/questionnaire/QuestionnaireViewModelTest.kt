@@ -25,7 +25,8 @@ import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.logicalId
-import io.mockk.clearAllMocks
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -38,6 +39,7 @@ import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.Date
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
@@ -65,39 +67,46 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 
+@HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
 
-  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
-  @get:Rule var coroutineRule = CoroutineTestRule()
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
-  private lateinit var fhirEngine: FhirEngine
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  @get:Rule(order = 2) var coroutineRule = CoroutineTestRule()
+
+  private val fhirEngine: FhirEngine = mockk()
+
+  private val context: Application = ApplicationProvider.getApplicationContext()
+
   private lateinit var questionnaireViewModel: QuestionnaireViewModel
-  private lateinit var context: Application
 
   private lateinit var defaultRepo: DefaultRepository
+
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
 
   @Before
   fun setUp() {
-    clearAllMocks()
-
-    context = ApplicationProvider.getApplicationContext()
-
-    fhirEngine = mockk()
+    hiltRule.inject()
     defaultRepo = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
     val configurationRegistry = mockk<ConfigurationRegistry>()
     every { configurationRegistry.appId } returns "appId"
     questionnaireViewModel =
       spyk(
         QuestionnaireViewModel(
-          fhirEngine,
-          defaultRepo,
-          configurationRegistry,
-          mockk(),
-          defaultRepo.dispatcherProvider
+          fhirEngine = fhirEngine,
+          defaultRepository = defaultRepo,
+          configurationRegistry = configurationRegistry,
+          transformSupportServices = mockk(),
+          dispatcherProvider = defaultRepo.dispatcherProvider,
+          sharedPreferencesHelper = sharedPreferencesHelper
         )
       )
     coEvery { fhirEngine.save(any()) } answers {}
@@ -158,13 +167,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           )
       }
     coEvery { fhirEngine.load(Questionnaire::class.java, "12345") } returns questionnaire
-    //    questionnaireViewModel = spyk(QuestionnaireViewModel(context))
+
     ReflectionHelpers.setField(questionnaireViewModel, "defaultRepository", defaultRepo)
 
     val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345", true) }
 
     Assert.assertTrue(result!!.item[0].item[0].readOnly)
-    Assert.assertEquals("q1-name", result!!.item[0].item[0].linkId)
+    Assert.assertEquals("q1-name", result.item[0].item[0].linkId)
     Assert.assertTrue(result.item[1].readOnly)
     Assert.assertEquals("q2-gender", result.item[1].linkId)
     Assert.assertTrue(result.item[2].readOnly)
@@ -306,25 +315,25 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val result = runBlocking { questionnaireViewModel.loadQuestionnaire("12345", editMode = true) }
 
     Assert.assertEquals("12345", result!!.logicalId)
-    Assert.assertFalse(result!!.item[0].readOnly)
-    Assert.assertEquals("patient-first-name", result!!.item[0].linkId)
+    Assert.assertFalse(result.item[0].readOnly)
+    Assert.assertEquals("patient-first-name", result.item[0].linkId)
     Assert.assertEquals(
       "QuestionnaireResponse.item.where(linkId = 'patient-first-name').answer.value",
-      (result!!.item[0].extension[0].value as Expression).expression
+      (result.item[0].extension[0].value as Expression).expression
     )
-    Assert.assertEquals("patient-last-name", result!!.item[0].item[0].linkId)
+    Assert.assertEquals("patient-last-name", result.item[0].item[0].linkId)
     Assert.assertEquals(
       "QuestionnaireResponse.item.where(linkId = 'patient-first-name').answer.item.where(linkId = 'patient-last-name').answer.value",
-      (result!!.item[0].item[0].extension[0].value as Expression).expression
+      (result.item[0].item[0].extension[0].value as Expression).expression
     )
-    Assert.assertFalse(result!!.item[1].readOnly)
+    Assert.assertFalse(result.item[1].readOnly)
     Assert.assertEquals(
       "QuestionnaireResponse.item.where(linkId = 'patient-age').answer.value",
-      (result!!.item[1].extension[0].value as Expression).expression
+      (result.item[1].extension[0].value as Expression).expression
     )
-    Assert.assertFalse(result!!.item[2].readOnly)
-    Assert.assertEquals(0, result!!.item[2].extension.size)
-    Assert.assertFalse(result!!.item[2].item[0].readOnly)
+    Assert.assertFalse(result.item[2].readOnly)
+    Assert.assertEquals(0, result.item[2].extension.size)
+    Assert.assertFalse(result.item[2].item[0].readOnly)
     Assert.assertEquals(
       "QuestionnaireResponse.item.where(linkId = 'patient-contact').item.where(linkId = 'patient-dob').answer.value",
       (result!!.item[2].item[0].extension[0].value as Expression).expression
@@ -373,8 +382,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.extractAndSaveResources("12345", questionnaire, questionnaireResponse)
 
-    coVerify { defaultRepo.addOrUpdate(questionnaireResponse) }
     coVerify { defaultRepo.addOrUpdate(patient) }
+    coVerify { defaultRepo.addOrUpdate(questionnaireResponse) }
     coVerify(timeout = 2000) { ResourceMapper.extract(any(), any(), any(), any()) }
 
     unmockkObject(ResourceMapper)
@@ -727,7 +736,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
     questionnaire.addSubjectType("Patient")
     val questionnaireResponse = QuestionnaireResponse()
-    val questionnaireResponseSlot = slot<QuestionnaireResponse>()
 
     every { questionnaireViewModel.saveBundleResources(any()) } just runs
     coEvery { questionnaireViewModel.performExtraction(any(), any()) } returns

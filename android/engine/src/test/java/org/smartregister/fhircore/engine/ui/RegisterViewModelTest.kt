@@ -16,50 +16,47 @@
 
 package org.smartregister.fhircore.engine.ui
 
-import android.os.Looper
-import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.spyk
-import io.mockk.unmockkStatic
-import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertTrue
+import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
+import org.junit.Rule
 import org.junit.Test
-import org.robolectric.Shadows.shadowOf
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.register.RegisterViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.runOneTimeSync
 
+@HiltAndroidTest
 class RegisterViewModelTest : RobolectricTest() {
 
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
   private lateinit var viewModel: RegisterViewModel
-  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Before
   fun setUp() {
-    val configurationRegistry =
-      spyk(ConfigurationRegistry(ApplicationProvider.getApplicationContext()))
-    configurationRegistry.appId = "appId"
-    every { configurationRegistry.workflowPointName(any()) } returns "sample-app"
-    every { configurationRegistry.configurationsMap } returns mutableMapOf()
-
-    sharedPreferencesHelper = SharedPreferencesHelper(ApplicationProvider.getApplicationContext())
+    hiltRule.inject()
+    configurationRegistry.loadAppConfigurations("appId", accountAuthenticator) {}
     viewModel =
       RegisterViewModel(
-        mockk(),
-        mockk(),
-        mockk(),
-        configurationRegistry,
-        mockk(),
-        sharedPreferencesHelper
+        fhirEngine = mockk(),
+        syncJob = mockk(),
+        fhirResourceDataSource = mockk(),
+        configurationRegistry = configurationRegistry,
+        dispatcher = mockk(),
+        sharedPreferencesHelper = sharedPreferencesHelper
       )
   }
 
@@ -72,47 +69,34 @@ class RegisterViewModelTest : RobolectricTest() {
       }
     )
 
-    assertEquals("appId", viewModel.registerViewConfiguration.value?.appId)
-    assertEquals("Covax", viewModel.registerViewConfiguration.value?.appTitle)
+    Assert.assertEquals("appId", viewModel.registerViewConfiguration.value?.appId)
+    Assert.assertEquals("Covax", viewModel.registerViewConfiguration.value?.appTitle)
   }
 
   @Test
   fun testLoadLanguagesShouldLoadEnglishLocaleOnly() {
     viewModel.loadLanguages()
-
     Assert.assertEquals(2, viewModel.languages.size)
     Assert.assertEquals("English", viewModel.languages[0].displayName)
-  }
-
-  @Test
-  @Ignore
-  fun testRunSyncShouldRunOnlyOnce() {
-
-    mockkStatic(FhirEngine::runOneTimeSync)
-
-    // TODO runSync
-    shadowOf(Looper.getMainLooper()).idle()
-
-    unmockkStatic(FhirEngine::runOneTimeSync)
   }
 
   @Test
   fun testUpdateFilterValueShouldUpdateGlobalFilter() {
     viewModel.updateFilterValue(RegisterFilterType.OVERDUE_FILTER, true)
 
-    assertEquals(RegisterFilterType.OVERDUE_FILTER, viewModel.filterValue.value?.first)
-    assertTrue(viewModel.filterValue.value?.second as Boolean)
+    Assert.assertEquals(RegisterFilterType.OVERDUE_FILTER, viewModel.filterValue.value?.first)
+    Assert.assertTrue(viewModel.filterValue.value?.second as Boolean)
   }
 
   @Test
   fun testSetRefreshRegisterDataShouldUpdateGlobalRegisterDate() {
     viewModel.setRefreshRegisterData(true)
-    assertTrue(viewModel.refreshRegisterData.value!!)
+    Assert.assertTrue(viewModel.refreshRegisterData.value!!)
   }
 
   @Test
   fun testSetLastSyncTimestampShouldUpdateGlobalSyncTimestamp() {
     viewModel.setLastSyncTimestamp("12345")
-    assertEquals("12345", viewModel.lastSyncTimestamp.value)
+    Assert.assertEquals("12345", viewModel.lastSyncTimestamp.value)
   }
 }

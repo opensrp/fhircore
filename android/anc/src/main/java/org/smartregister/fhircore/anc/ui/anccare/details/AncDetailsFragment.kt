@@ -46,8 +46,6 @@ class AncDetailsFragment : Fragment() {
 
   val ancDetailsViewModel by viewModels<AncDetailsViewModel>()
 
-  private var carePlanAdapter = CarePlanAdapter()
-
   private val upcomingServicesAdapter = UpcomingServicesAdapter()
 
   private val lastSeen = EncounterAdapter()
@@ -80,7 +78,6 @@ class AncDetailsFragment : Fragment() {
       fetchCarePlan().observe(viewLifecycleOwner, detailsFragment::handleCarePlan)
       fetchObservation().observe(viewLifecycleOwner, detailsFragment::handleObservation)
       fetchUpcomingServices().observe(viewLifecycleOwner, detailsFragment::handleUpcomingServices)
-      fetchCarePlan().observe(viewLifecycleOwner, detailsFragment::handleCarePlan)
       fetchLastSeen().observe(viewLifecycleOwner, detailsFragment::handleLastSeen)
     }
   }
@@ -131,10 +128,6 @@ class AncDetailsFragment : Fragment() {
   }
 
   private fun setupViews() {
-    binding.carePlanListView.apply {
-      adapter = carePlanAdapter
-      layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-    }
 
     binding.upcomingServicesListView.apply {
       adapter = upcomingServicesAdapter
@@ -154,7 +147,7 @@ class AncDetailsFragment : Fragment() {
           txtViewNoCarePlan.show()
           txtViewCarePlanSeeAllHeading.hide()
           imageViewSeeAllArrow.hide()
-          carePlanListView.hide()
+          txtViewCarePlan.hide()
         }
       }
       else -> {
@@ -162,10 +155,26 @@ class AncDetailsFragment : Fragment() {
           txtViewNoCarePlan.hide()
           txtViewCarePlanSeeAllHeading.show()
           imageViewSeeAllArrow.show()
-          carePlanListView.show()
+          txtViewCarePlan.show()
         }
-        carePlanAdapter.submitList(immunizations)
+
+        populateImmunizationList(immunizations)
       }
+    }
+  }
+
+  private fun populateImmunizationList(listCarePlan: List<CarePlanItem>) {
+    val countOverdue = listCarePlan.filter { it.overdue }.size
+    val countDue = listCarePlan.filter { it.due }.size
+    if (countOverdue > 0) {
+      binding.txtViewCarePlan.text =
+        this.getString(R.string.anc_record_visit_button_title) +
+          " $countOverdue " +
+          this.getString(R.string.overdue)
+      binding.txtViewCarePlan.setTextColor(resources.getColor(R.color.status_red))
+    } else if (countDue > 0) {
+      binding.txtViewCarePlan.text = this.getString(R.string.anc_record_visit_button_title)
+      binding.txtViewCarePlan.setTextColor(resources.getColor(R.color.colorPrimaryLight))
     }
   }
 

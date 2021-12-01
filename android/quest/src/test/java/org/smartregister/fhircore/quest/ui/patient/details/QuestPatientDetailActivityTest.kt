@@ -114,7 +114,9 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnTestResultItemClickListenerWithNullResponseShouldDisplayToast() {
-    questPatientDetailActivity.patientViewModel.onFormTestResultClicked.value = null
+    questPatientDetailActivity.patientViewModel.onTestResultItemClickListener(
+      QuestionnaireResponse().apply { questionnaire = null }
+    )
     val latestToast = ShadowToast.getLatestToast()
     Assert.assertEquals(Toast.LENGTH_LONG, latestToast.duration)
   }
