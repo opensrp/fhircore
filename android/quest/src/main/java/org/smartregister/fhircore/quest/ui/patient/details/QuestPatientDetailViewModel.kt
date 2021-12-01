@@ -24,18 +24,21 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
+import org.smartregister.fhircore.quest.data.patient.model.PatientItem
+import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 
 @HiltViewModel
-class QuestPatientDetailViewModel @Inject constructor(val patientRepository: PatientRepository) :
+class QuestPatientDetailViewModel
+@Inject
+constructor(val patientRepository: PatientRepository, val patientItemMapper: PatientItemMapper) :
   ViewModel() {
 
-  val patient = MutableLiveData<Patient>()
+  val patientItem = MutableLiveData<PatientItem>()
   val questionnaireConfigs = MutableLiveData<List<QuestionnaireConfig>>()
   val testResults = MutableLiveData<List<QuestionnaireResponse>>()
   val onBackPressClicked = MutableLiveData(false)
@@ -44,7 +47,11 @@ class QuestPatientDetailViewModel @Inject constructor(val patientRepository: Pat
   val onFormTestResultClicked = MutableLiveData<QuestionnaireResponse>(null)
 
   fun getDemographics(patientId: String) {
-    viewModelScope.launch { patient.postValue(patientRepository.fetchDemographics(patientId)) }
+    viewModelScope.launch {
+      patientItem.postValue(
+        patientItemMapper.mapToDomainModel(patientRepository.fetchDemographics(patientId))
+      )
+    }
   }
 
   fun getAllForms(context: Context) {

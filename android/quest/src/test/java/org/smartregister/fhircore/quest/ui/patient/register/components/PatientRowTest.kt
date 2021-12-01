@@ -19,19 +19,24 @@ package org.smartregister.fhircore.quest.ui.patient.register.components
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
-import org.junit.Assert
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.patient.register.OpenPatientProfile
 
+@HiltAndroidTest
 class PatientRowTest : RobolectricTest() {
 
-  @get:Rule val composeRule = createComposeRule()
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Test
-  fun testPatientRowComponents() {
+  @get:Rule(order = 1) val composeRule = createComposeRule()
+
+  @Before
+  fun setUp() {
+    hiltRule.inject()
     val patientItem =
       PatientItem(
         id = "my-test-id",
@@ -42,35 +47,13 @@ class PatientRowTest : RobolectricTest() {
         address = "Nairobi"
       )
     composeRule.setContent { PatientRow(patientItem = patientItem, { _, _ -> }) }
+  }
 
+  @Test
+  fun testPatientRowComponents() {
     composeRule.onNodeWithText("Male").assertExists()
     composeRule.onNodeWithText("Male").assertIsDisplayed()
     composeRule.onNodeWithText("John Doe, 27").assertExists()
     composeRule.onNodeWithText("John Doe, 27").assertIsDisplayed()
-  }
-
-  @Test
-  fun testPatientRegisterListItemShouldCallItemClickListener() {
-
-    composeRule.runOnIdle {
-      composeRule.setContent {
-        val patientItem =
-          PatientItem(
-            id = "my-test-id",
-            identifier = "10001",
-            name = "John Doe",
-            gender = "Male",
-            age = "27",
-            address = "Nairobi"
-          )
-        PatientRow(
-          patientItem = patientItem,
-          clickListener = { i, p ->
-            // click intent should be open profile
-            Assert.assertEquals(OpenPatientProfile, i)
-          }
-        )
-      }
-    }
   }
 }

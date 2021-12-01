@@ -21,33 +21,46 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.view.size
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
 
+@HiltAndroidTest
 class PatientRegisterActivityTest : ActivityRobolectricTest() {
+
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
   private lateinit var patientRegisterActivity: PatientRegisterActivity
 
   @Before
   fun setUp() {
+    hiltRule.inject()
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     patientRegisterActivity =
       Robolectric.buildActivity(PatientRegisterActivity::class.java).create().resume().get()
   }
 
   @Test
   fun testSideMenuOptionsShouldReturnZeroOptions() {
-    val menu = patientRegisterActivity.sideMenuOptions()
-
-    Assert.assertEquals(0, menu.size)
+    Assert.assertTrue(patientRegisterActivity.sideMenuOptions().isEmpty())
   }
 
   @Test

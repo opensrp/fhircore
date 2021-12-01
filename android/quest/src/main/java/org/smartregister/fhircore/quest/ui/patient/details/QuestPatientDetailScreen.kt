@@ -51,7 +51,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -63,9 +62,6 @@ import androidx.compose.ui.unit.sp
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
-import org.smartregister.fhircore.engine.util.extension.extractAge
-import org.smartregister.fhircore.engine.util.extension.extractGender
-import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.quest.R
 
 const val TOOLBAR_TITLE = "toolbarTitle"
@@ -171,7 +167,7 @@ fun FormItem(
 
 @Composable
 fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailViewModel) {
-  val patient by questPatientDetailViewModel.patient.observeAsState(null)
+  val patientItem by questPatientDetailViewModel.patientItem.observeAsState(null)
   val forms by questPatientDetailViewModel.questionnaireConfigs.observeAsState(null)
   val testResults by questPatientDetailViewModel.testResults.observeAsState(null)
 
@@ -186,7 +182,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
       ) {
         Text(
           text =
-            "${patient?.extractName() ?: ""}, ${patient?.extractGender(LocalContext.current)?.first() ?: ""}, ${patient?.extractAge() ?: ""}",
+            "${patientItem?.name ?: ""}, ${patientItem?.gender ?: ""}, ${patientItem?.age ?: ""}",
           color = colorResource(id = R.color.white),
           fontSize = 18.sp,
           fontWeight = FontWeight.Bold,
