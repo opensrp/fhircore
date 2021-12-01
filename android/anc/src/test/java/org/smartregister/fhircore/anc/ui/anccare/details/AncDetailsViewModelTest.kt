@@ -18,6 +18,8 @@ package org.smartregister.fhircore.anc.ui.anccare.details
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every
@@ -38,11 +40,13 @@ import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
 @ExperimentalCoroutinesApi
-internal class AncDetailsViewModelTest {
+@HiltAndroidTest
+internal class AncDetailsViewModelTest: RobolectricTest() {
   private lateinit var fhirEngine: FhirEngine
 
   private lateinit var ancDetailsViewModel: AncDetailsViewModel
@@ -51,12 +55,13 @@ internal class AncDetailsViewModelTest {
 
   private val patientId = "samplePatientId"
 
-  @get:Rule var coroutinesTestRule = CoroutineTestRule()
-
-  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
 
   @Before
   fun setUp() {
+    hiltRule.inject()
     MockKAnnotations.init(this, relaxUnitFun = true)
 
     fhirEngine = mockk(relaxed = true)
