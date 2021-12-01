@@ -84,20 +84,6 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical">
 
-
-                       <!-- <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/carePlanListView"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:layout_marginLeft="14dp"
-                            android:layout_marginTop="14dp"
-                            android:layout_marginRight="14dp"
-                            android:layout_marginBottom="14dp"
-                            android:visibility="visible"
-                            tools:itemCount="3"
-                            tools:listitem="@layout/item_careplan" />-->
-
                         <TextView
                             android:id="@+id/txtView_carePlan"
                             android:layout_width="wrap_content"

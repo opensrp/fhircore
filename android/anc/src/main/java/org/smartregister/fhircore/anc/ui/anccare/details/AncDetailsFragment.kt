@@ -129,12 +129,6 @@ class AncDetailsFragment : Fragment() {
   }
 
   private fun setupViews() {
-    /*
-        binding.carePlanListView.apply {
-          adapter = carePlanAdapter
-          layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-        }
-    */
 
     binding.upcomingServicesListView.apply {
       adapter = upcomingServicesAdapter
