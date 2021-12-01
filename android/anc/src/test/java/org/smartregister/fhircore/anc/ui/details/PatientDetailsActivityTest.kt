@@ -83,8 +83,10 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
 
     patientDetailsViewModel =
       spyk(
-        AncDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider, patientId)
+        AncDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider)
       )
+
+    patientDetailsViewModel.patientId = patientId
 
     patientDetailsActivity =
       Robolectric.buildActivity(PatientDetailsActivity::class.java, null).create().get()

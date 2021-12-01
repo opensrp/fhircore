@@ -45,7 +45,7 @@ class ReportRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     fhirEngine = mockk()
-    repository = ReportRepository(fhirEngine, "", ApplicationProvider.getApplicationContext())
+    repository = ReportRepository(fhirEngine, ApplicationProvider.getApplicationContext())
   }
 
   @Test

@@ -35,12 +35,12 @@ class EncounterListActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
 
-    mockkObject(EncounterListViewModel.Companion)
+   /* mockkObject(EncounterListViewModel.Companion)
 
     val viewModel = mockk<EncounterListViewModel>()
 
     every { EncounterListViewModel.get(any(), any(), any()) } returns viewModel
-    with(viewModel) { every { setAppBackClickListener(any()) } returns Unit }
+    with(viewModel) { every { setAppBackClickListener(any()) } returns Unit }*/
 
     activity = Robolectric.buildActivity(EncounterListActivity::class.java).create().get()
   }

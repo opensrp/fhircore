@@ -21,11 +21,13 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import io.mockk.mockk
 import java.text.SimpleDateFormat
 import org.hl7.fhir.r4.model.Encounter
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.anc.data.EncounterRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 class EncounterListScreenTest : RobolectricTest() {
@@ -35,7 +37,7 @@ class EncounterListScreenTest : RobolectricTest() {
   @Ignore("Fix tracked on https://github.com/opensrp/fhircore/issues/760")
   @Test
   fun testEncounterListScreen() {
-    composeRule.setContent { EncounterListScreen(dummyData()) }
+    composeRule.setContent { EncounterListScreen(EncounterListViewModel(mockk())) }
 
     // verify top bar is displayed
     composeRule.onNodeWithText("Past encounters").assertExists()

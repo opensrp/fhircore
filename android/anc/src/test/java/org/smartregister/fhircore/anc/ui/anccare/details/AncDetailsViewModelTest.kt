@@ -71,8 +71,9 @@ internal class AncDetailsViewModelTest {
 
     ancDetailsViewModel =
       spyk(
-        AncDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider, patientId)
+        AncDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider)
       )
+    ancDetailsViewModel.patientId = patientId
   }
 
   @Test

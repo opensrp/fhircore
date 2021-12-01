@@ -94,8 +94,7 @@ internal class VitalSignsDetailsFragmentTest : FragmentRobolectricTest() {
       spyk(
         VitalSignsDetailsViewModel(
           patientRepository,
-          coroutinesTestRule.testDispatcherProvider,
-          patientId
+          coroutinesTestRule.testDispatcherProvider
         )
       )
 
@@ -108,7 +107,7 @@ internal class VitalSignsDetailsFragmentTest : FragmentRobolectricTest() {
             override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
               val fragment = spyk(VitalSignsDetailsFragment.newInstance())
               every { fragment.activity } returns patientDetailsActivity
-              fragment.ancDetailsViewModel = patientDetailsViewModel
+              //fragment.ancDetailsViewModel = patientDetailsViewModel
               return fragment
             }
           }

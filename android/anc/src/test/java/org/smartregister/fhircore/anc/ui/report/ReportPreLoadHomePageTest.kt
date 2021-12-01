@@ -52,17 +52,17 @@ class ReportPreLoadHomePageTest : RobolectricTest() {
     fhirEngine = mockk()
     repository =
       spyk(
-        ReportRepository(fhirEngine, "testPatientID", ApplicationProvider.getApplicationContext())
+        ReportRepository(fhirEngine, ApplicationProvider.getApplicationContext())
       )
     ancPatientRepository =
-      spyk(PatientRepository(fhirEngine, AncItemMapper, coroutinesTestRule.testDispatcherProvider))
+      spyk(PatientRepository(app, fhirEngine, AncItemMapper(app), coroutinesTestRule.testDispatcherProvider))
     viewModel =
       spyk(
         objToCopy =
           ReportViewModel(
             repository,
-            ancPatientRepository,
-            coroutinesTestRule.testDispatcherProvider
+            coroutinesTestRule.testDispatcherProvider,
+            ancPatientRepository
           )
       )
   }

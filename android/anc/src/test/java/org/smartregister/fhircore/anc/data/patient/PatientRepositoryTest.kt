@@ -56,6 +56,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -64,6 +65,7 @@ import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -85,7 +87,7 @@ class PatientRepositoryTest : RobolectricTest() {
         PatientRepository(
           ApplicationProvider.getApplicationContext(),
           fhirEngine,
-          AncPatientItemMapper,
+          AncItemMapper(ApplicationProvider.getApplicationContext()),
           dispatcherProvider
         )
       )
@@ -396,6 +398,20 @@ class PatientRepositoryTest : RobolectricTest() {
       system = "123"
       code = "123"
       display = "ABC"
+    }
+  }
+
+  private fun buildPatient(id: String, family: String, given: String): Patient {
+    return Patient().apply {
+      this.id = id
+      this.addName().apply {
+        this.family = family
+        this.given.add(StringType(given))
+      }
+      this.addAddress().apply {
+        district = "Dist 1"
+        city = "City 1"
+      }
     }
   }
 

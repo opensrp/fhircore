@@ -49,8 +49,7 @@ internal class VitalSignsDetailsViewModelTest {
       spyk(
         VitalSignsDetailsViewModel(
           patientRepository,
-          coroutinesTestRule.testDispatcherProvider,
-          patientId
+          coroutinesTestRule.testDispatcherProvider
         )
       )
   }

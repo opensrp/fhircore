@@ -98,10 +98,11 @@ internal class CarePlanDetailsFragmentTest : FragmentRobolectricTest() {
       spyk(
         CarePlanDetailsViewModel(
           patientRepository,
-          coroutinesTestRule.testDispatcherProvider,
-          patientId
+          coroutinesTestRule.testDispatcherProvider
         )
       )
+
+    patientDetailsViewModel.patientId = patientId
 
     patientDetailsActivity =
       Robolectric.buildActivity(PatientDetailsActivity::class.java).create().get()
@@ -112,7 +113,7 @@ internal class CarePlanDetailsFragmentTest : FragmentRobolectricTest() {
             override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
               val fragment = spyk(CarePlanDetailsFragment.newInstance())
               every { fragment.activity } returns patientDetailsActivity
-              fragment.ancDetailsViewModel = patientDetailsViewModel
+              //fragment.ancDetailsViewModel = patientDetailsViewModel
               return fragment
             }
           }

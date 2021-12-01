@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc.robolectric
 import android.os.Build
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import dagger.hilt.android.testing.HiltTestApplication
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.junit.runner.RunWith
@@ -28,7 +29,7 @@ import org.smartregister.fhircore.anc.shadow.SecureSharedPreferenceShadow
 @RunWith(FhircoreTestRunner::class)
 @Config(
   sdk = [Build.VERSION_CODES.O_MR1],
-  application = AncTestApplication::class,
+  application = HiltTestApplication::class,
   shadows = [SecureSharedPreferenceShadow::class]
 )
 abstract class RobolectricTest {

@@ -45,7 +45,7 @@ class EncounterRepositoryTest : RobolectricTest() {
   fun setUp() {
     fhirEngine = mockk()
 
-    repository = EncounterRepository(fhirEngine, "")
+    repository = EncounterRepository(fhirEngine)
   }
 
   @Test

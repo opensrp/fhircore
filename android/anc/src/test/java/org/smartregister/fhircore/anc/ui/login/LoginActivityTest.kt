@@ -32,6 +32,7 @@ import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 
+/*
 class LoginActivityTest : ActivityRobolectricTest() {
 
   private lateinit var loginActivity: LoginActivity
@@ -62,3 +63,4 @@ class LoginActivityTest : ActivityRobolectricTest() {
     return loginActivity
   }
 }
+*/

@@ -35,20 +35,15 @@ class EncounterListViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     repository = mockk()
-    viewModel =
-      EncounterListViewModel.get(
-        Robolectric.buildActivity(EncounterListActivity::class.java).get(),
-        ApplicationProvider.getApplicationContext(),
-        repository
-      )
+    viewModel = EncounterListViewModel(mockk())
   }
 
   @Test
   fun testShouldVerifyBackClickListener() {
     var count = 0
 
-    viewModel.setAppBackClickListener { ++count }
-    viewModel.getAppBackClickListener().invoke()
+    /*viewModel.setAppBackClickListener { ++count }
+    viewModel.getAppBackClickListener().invoke()*/
 
     Assert.assertEquals(1, count)
   }

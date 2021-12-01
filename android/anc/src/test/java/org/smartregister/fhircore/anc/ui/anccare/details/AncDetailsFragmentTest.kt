@@ -25,6 +25,9 @@ import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every
@@ -37,6 +40,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
@@ -50,6 +54,7 @@ import org.smartregister.fhircore.anc.robolectric.FragmentRobolectricTest
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 
 @ExperimentalCoroutinesApi
+@HiltAndroidTest
 internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
 
   private lateinit var fhirEngine: FhirEngine
@@ -62,14 +67,16 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
   private lateinit var upcomingServicesAdapter: UpcomingServicesAdapter
   private lateinit var lastSeen: EncounterAdapter
 
-  @get:Rule var coroutinesTestRule = CoroutineTestRule()
-  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
 
   private val patientId = "samplePatientId"
   var ancPatientDetailItem = spyk<PatientDetailItem>()
 
   @Before
   fun setUp() {
+    hiltRule.inject()
 
     MockKAnnotations.init(this, relaxUnitFun = true)
 
@@ -89,8 +96,9 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
 
     patientDetailsViewModel =
       spyk(
-        AncDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider, patientId)
+        AncDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider)
       )
+    patientDetailsViewModel.patientId = patientId
 
     patientDetailsActivity =
       Robolectric.buildActivity(PatientDetailsActivity::class.java).create().get()
@@ -101,7 +109,7 @@ internal class AncDetailsFragmentTest : FragmentRobolectricTest() {
             override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
               val fragment = spyk(AncDetailsFragment.newInstance())
               every { fragment.activity } returns patientDetailsActivity
-              fragment.ancDetailsViewModel = patientDetailsViewModel
+              //fragment.ancDetailsViewModel = patientDetailsViewModel
 
               return fragment
             }

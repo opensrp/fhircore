@@ -42,7 +42,7 @@ class FamilyDetailsActivityTest : ActivityRobolectricTest() {
 
   @Before
   fun setUp() {
-    mockkObject(FamilyDetailViewModel.Companion)
+/*    mockkObject(FamilyDetailViewModel.Companion)
 
     val viewModel = mockk<FamilyDetailViewModel>()
 
@@ -63,7 +63,7 @@ class FamilyDetailsActivityTest : ActivityRobolectricTest() {
       viewModel.setAddMemberItemClickListener(any())
       viewModel.setSeeAllEncounterClickListener(any())
       viewModel.setEncounterItemClickListener(any())
-    }
+    }*/
   }
 
   @Test

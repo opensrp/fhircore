@@ -15,7 +15,7 @@
  */
 
 package org.smartregister.fhircore.anc.robolectric
-
+/*
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
@@ -39,6 +39,7 @@ import org.smartregister.fhircore.engine.auth.AuthenticationService
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.applicationConfigurationOf
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+
 
 class AncTestApplication : AncApplication() {
 
@@ -141,3 +142,4 @@ class AncTestApplication : AncApplication() {
     override fun getApplicationConfigurations(): ApplicationConfiguration = applicationConfiguration
   }
 }
+*/

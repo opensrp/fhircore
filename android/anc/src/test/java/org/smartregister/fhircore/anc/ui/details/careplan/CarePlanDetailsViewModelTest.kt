@@ -49,9 +49,10 @@ internal class CarePlanDetailsViewModelTest {
       spyk(
         CarePlanDetailsViewModel(
           patientRepository,
-          coroutinesTestRule.testDispatcherProvider,
-          patientId
+          coroutinesTestRule.testDispatcherProvider
         )
       )
+
+    patientDetailsViewModel.patientId = patientId
   }
 }
