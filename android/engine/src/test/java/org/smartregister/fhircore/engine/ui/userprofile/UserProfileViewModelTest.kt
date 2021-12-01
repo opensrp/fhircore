@@ -16,17 +16,22 @@
 
 package org.smartregister.fhircore.engine.ui.userprofile
 
+import android.os.Looper
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import javax.inject.Inject
+import org.junit.Assert
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.Shadows
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncInitiator
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
 @HiltAndroidTest
 class UserProfileViewModelTest : RobolectricTest() {
@@ -34,8 +39,18 @@ class UserProfileViewModelTest : RobolectricTest() {
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
   lateinit var userProfileViewModel: UserProfileViewModel
+  lateinit var accountAuthenticator: AccountAuthenticator
+  lateinit var secureSharedPreference: SecureSharedPreference
 
-  @Inject lateinit var syncBroadcaster: SyncBroadcaster
+  val syncBroadcaster = SyncBroadcaster
+
+  @Before
+  fun setUp() {
+    accountAuthenticator = mockk()
+    secureSharedPreference = mockk()
+    userProfileViewModel =
+      UserProfileViewModel(syncBroadcaster, accountAuthenticator, secureSharedPreference)
+  }
 
   @Test
   fun testRunSync() {
@@ -46,7 +61,22 @@ class UserProfileViewModelTest : RobolectricTest() {
     verify { mockSyncInitiator.runSync() }
   }
 
-  @Test fun testRetrieveUsernameShouldReturnDemo() {}
+  @Test
+  fun testRetrieveUsernameShouldReturnDemo() {
+    every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
 
-  @Test fun testLogoutUserShouldCallAuthLogoutService() {}
+    Assert.assertEquals("demo", userProfileViewModel.retrieveUsername())
+    verify { secureSharedPreference.retrieveSessionUsername() }
+  }
+
+  @Test
+  fun testLogoutUserShouldCallAuthLogoutService() {
+    every { accountAuthenticator.logout() } returns Unit
+
+    userProfileViewModel.logoutUser()
+
+    verify(exactly = 1) { accountAuthenticator.logout() }
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
+    Assert.assertTrue(userProfileViewModel.onLogout.value!!)
+  }
 }

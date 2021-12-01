@@ -5,9 +5,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, dependency-injection ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, dependency-injection ]
 
 env:
  FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
@@ -37,7 +37,7 @@ jobs:
         working-directory: android
          
       - name: Run Engine unit tests with Gradle
-        run: ./gradlew :engine:jacocoTestReport -x testReleaseUnitTest --stacktrace
+        run: ./gradlew :engine:jacocoTestReport -x testReleaseUnitTest --stacktrace --rerun-tasks
         working-directory: android
 
       - name: Upload Engine Test Report to codecov

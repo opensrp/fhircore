@@ -55,8 +55,8 @@ import java.util.Date
 import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.EncounterItem
-import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
 @Composable
 fun EncounterListScreen(encounterListViewModel: EncounterListViewModel) {
