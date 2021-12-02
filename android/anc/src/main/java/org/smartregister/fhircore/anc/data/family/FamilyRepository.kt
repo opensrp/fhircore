@@ -116,6 +116,31 @@ class FamilyRepository(
     return postProcessFamilyMember(questionnaire, questionnaireResponse, null)
   }
 
+  suspend fun updateProcessFamilyHead(
+    patientId: String,
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse
+  ): String {
+    return updateProcessFamilyMember(patientId, questionnaire, questionnaireResponse, null)
+  }
+
+  suspend fun updateProcessFamilyMember(
+    patientId: String,
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    relatedTo: String?
+  ): String {
+    resourceMapperExtended.saveParsedResource(
+      questionnaireResponse,
+      questionnaire,
+      patientId,
+      relatedTo,
+      editForm = true
+    )
+
+    return patientId
+  }
+
   suspend fun enrollIntoAnc(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,

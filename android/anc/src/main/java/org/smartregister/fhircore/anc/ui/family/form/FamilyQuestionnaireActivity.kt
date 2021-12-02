@@ -67,35 +67,65 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
       saveBtn.hide(false)
-
-      when (questionnaireConfig.form) {
-        FamilyFormConstants.ANC_ENROLLMENT_FORM -> {
-          val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!
-          familyRepository.enrollIntoAnc(questionnaire!!, questionnaireResponse, patientId)
-          endActivity()
-        }
-        FamilyFormConstants.FAMILY_REGISTER_FORM -> {
-          val patientId =
-            familyRepository.postProcessFamilyHead(questionnaire!!, questionnaireResponse)
-          handlePregnancy(
-            patientId,
-            questionnaireResponse,
-            FamilyFormConstants.FAMILY_REGISTER_FORM
-          )
-        }
-        FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM -> {
-          val relatedTo = intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)
-          val patientId =
-            familyRepository.postProcessFamilyMember(
+      if (isEditFamily) {
+        when (questionnaireConfig.form) {
+          FamilyFormConstants.FAMILY_REGISTER_FORM -> {
+            familyRepository.updateProcessFamilyHead(
+              intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!,
+              questionnaire!!,
+              questionnaireResponse
+            )
+            handlePregnancy(
+              intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!,
+              questionnaireResponse,
+              FamilyFormConstants.FAMILY_REGISTER_FORM
+            )
+          }
+          FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM -> {
+            val relatedTo = intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)
+            familyRepository.updateProcessFamilyMember(
+              intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!,
               questionnaire!!,
               questionnaireResponse,
               relatedTo
             )
-          handlePregnancy(
-            patientId,
-            questionnaireResponse,
-            FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
-          )
+            handlePregnancy(
+              intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!,
+              questionnaireResponse,
+              FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
+            )
+          }
+        }
+      } else {
+        when (questionnaireConfig.form) {
+          FamilyFormConstants.ANC_ENROLLMENT_FORM -> {
+            val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!
+            familyRepository.enrollIntoAnc(questionnaire!!, questionnaireResponse, patientId)
+            endActivity()
+          }
+          FamilyFormConstants.FAMILY_REGISTER_FORM -> {
+            val patientId =
+              familyRepository.postProcessFamilyHead(questionnaire!!, questionnaireResponse)
+            handlePregnancy(
+              patientId,
+              questionnaireResponse,
+              FamilyFormConstants.FAMILY_REGISTER_FORM
+            )
+          }
+          FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM -> {
+            val relatedTo = intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)
+            val patientId =
+              familyRepository.postProcessFamilyMember(
+                questionnaire!!,
+                questionnaireResponse,
+                relatedTo
+              )
+            handlePregnancy(
+              patientId,
+              questionnaireResponse,
+              FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
+            )
+          }
         }
       }
     }
@@ -107,17 +137,21 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
       .setCancelable(false)
       .setNegativeButton(R.string.unsaved_changes_neg) { dialogInterface, _ ->
         dialogInterface.dismiss()
-        if (questionnaireConfig.form == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
-          startActivity(
-            Intent(this, FamilyDetailsActivity::class.java).apply {
-              putExtra(
-                QUESTIONNAIRE_ARG_PATIENT_KEY,
-                intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!
-              )
-            }
-          )
+        if (isEditFamily) {
+          finish()
+        } else {
+          if (questionnaireConfig.form == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
+            startActivity(
+              Intent(this, FamilyDetailsActivity::class.java).apply {
+                putExtra(
+                  QUESTIONNAIRE_ARG_PATIENT_KEY,
+                  intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!
+                )
+              }
+            )
+          }
+          finish()
         }
-        finish()
       }
       .setPositiveButton(R.string.unsaved_changes_pos) { dialogInterface, _ ->
         dialogInterface.dismiss()

@@ -21,6 +21,7 @@ import com.google.android.fhir.logicalId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.spyk
 import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.BooleanType
@@ -43,10 +44,10 @@ class ResourceMapperExtendedTest : RobolectricTest() {
     val questionnaireResponse = getQuestionnaireResponse()
 
     val fhirEngine = mockk<FhirEngine>()
-    val defaultRepository = mockk<DefaultRepository>()
+    val defaultRepository = spyk(DefaultRepository(fhirEngine))
     coEvery { fhirEngine.load(Patient::class.java, "patient_id_1") } returns patient
     coEvery { fhirEngine.load(Patient::class.java, "related_patient_id_2") } returns relatedPatient
-    coEvery { fhirEngine.save(any()) } returns Unit
+    coEvery { defaultRepository.addOrUpdate(any()) } returns Unit
 
     val resourceMapperExtended = ResourceMapperExtended(defaultRepository)
     resourceMapperExtended.saveParsedResource(

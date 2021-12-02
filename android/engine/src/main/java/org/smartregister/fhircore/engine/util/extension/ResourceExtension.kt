@@ -20,26 +20,48 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.logicalId
 import java.util.Date
-import java.util.UUID
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.json.JSONException
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import timber.log.Timber
 
 fun Resource.toJson(parser: IParser = FhirContext.forR4().newJsonParser()): String =
   parser.encodeResourceToString(this)
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
+  Timber.e("Resource that going to be updated")
+  Timber.e(FhirContext.forR4().newJsonParser().encodeResourceToString(this))
+  Timber.e("Resource that being updated")
+  Timber.e(FhirContext.forR4().newJsonParser().encodeResourceToString(updatedResource))
+
   val jsonParser = FhirContext.forR4().newJsonParser()
   val stringJson = toJson(jsonParser)
   val originalResourceJson = JSONObject(stringJson)
 
+  Timber.e("Updated resource")
   originalResourceJson.updateFrom(JSONObject(updatedResource.toJson(jsonParser)))
-  return jsonParser.parseResource(this::class.java, originalResourceJson.toString())
+  Timber.e(originalResourceJson.toString())
+  return jsonParser.parseResource(this::class.java, originalResourceJson.toString()).apply {
+    if (this.meta == null || this.meta.isEmpty) {
+      this.meta = this@updateFrom.meta
+      this.meta.tag = this@updateFrom.meta.tag
+    } else {
+      val setOfTags: Set<Coding> = setOf()
+      setOfTags.plus(this.meta.tag)
+      setOfTags.plus(this@updateFrom.meta.tag)
+      this.meta.tag = setOfTags.distinct()
+    }
+    if (this is Patient && this@updateFrom is Patient) {
+      this.extension = this@updateFrom.extension
+    }
+  }
 }
 
 @Throws(JSONException::class)
@@ -94,10 +116,6 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrE
 /** Delete resources in [QuestionnaireResponse.contained] from the database */
 suspend fun QuestionnaireResponse.deleteRelatedResources(defaultRepository: DefaultRepository) {
   contained.forEach { defaultRepository.delete(it) }
-}
-
-fun Resource.generateMissingId() {
-  if (logicalId.isBlank()) id = UUID.randomUUID().toString()
 }
 
 fun QuestionnaireResponse.retainMetadata(questionnaireResponse: QuestionnaireResponse) {

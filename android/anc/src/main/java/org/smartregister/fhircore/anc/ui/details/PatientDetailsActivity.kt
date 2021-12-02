@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import timber.log.Timber
 
 class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
@@ -140,6 +141,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
         true
       }
       R.id.edit_info -> {
+        Timber.e("Old patient id: $patientId")
         startActivity(
           Intent(this, FamilyQuestionnaireActivity::class.java)
             .putExtras(
