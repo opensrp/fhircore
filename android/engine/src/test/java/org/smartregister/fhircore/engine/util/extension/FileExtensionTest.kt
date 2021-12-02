@@ -16,11 +16,10 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.verify
 import java.io.File
-import org.junit.Assert.assertEquals
+import java.io.FileOutputStream
 import org.junit.Test
 
 class FileExtensionTest {
@@ -29,12 +28,14 @@ class FileExtensionTest {
   fun testFileShouldReturnBase64Encoded() {
     mockkStatic(File::encodeToBase64)
 
-    val filePath = javaClass.getResource("/sample/file.txt").path
-    every { File(filePath).encodeToBase64() } returns "Zmls"
+    val file = File.createTempFile("sample_file", ".txt")
+    val writer = FileOutputStream(file)
+    writer.write("file".toByteArray())
 
-    val base64 = File(filePath).encodeToBase64()
-    assertEquals("Zmls", base64)
+    file.encodeToBase64()
 
-    verify { File(filePath).encodeToBase64() }
+    verify { file.encodeToBase64() }
+
+    file.delete()
   }
 }

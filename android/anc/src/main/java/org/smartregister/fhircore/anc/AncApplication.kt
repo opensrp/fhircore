@@ -64,6 +64,7 @@ open class AncApplication : Application(), ConfigurableApplication {
         ResourceType.Encounter to mapOf(),
         ResourceType.CarePlan to mapOf(),
         ResourceType.Condition to mapOf(),
+        ResourceType.Task to mapOf(),
       )
 
   override fun configureApplication(applicationConfiguration: ApplicationConfiguration) {
