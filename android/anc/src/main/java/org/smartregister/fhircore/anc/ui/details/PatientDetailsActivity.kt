@@ -77,7 +77,6 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
     fhirEngine = AncApplication.getContext().fhirEngine
 
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-    isHouseHold = intent.extras?.getBoolean(FamilyFormConstants.FAMILY_HOUSE_HOLD) ?: false
 
     patientRepository = PatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
 
@@ -109,14 +108,9 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
   override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
     val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
     val ancEnrollment = menu!!.findItem(R.id.anc_enrollment)
-    val editInfo = menu!!.findItem(R.id.edit_info)
     val pregnancyOutcome = menu!!.findItem(R.id.pregnancy_outcome)
     if (isMale) pregnancyOutcome.isVisible = false
     ancEnrollment.isVisible = if (isMale) false else !isPregnant
-    if (isHouseHold) editInfo.isVisible = true
-    else {
-      if (isMale) editInfo.isVisible = true else editInfo.isVisible = !isPregnant
-    }
     val title = removeThisPerson.title.toString()
     val s = SpannableString(title)
     with(s) {
@@ -195,6 +189,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       activityAncDetailsBinding.txtViewPatientId.text = patientIdText
       isMale = this.patientDetails.gender == getString(R.string.male)
       isPregnant = this.patientDetails.isPregnant
+      isHouseHold = this.patientDetails.isHouseHoldHead
 
       if (isMale) {
         adapter =
