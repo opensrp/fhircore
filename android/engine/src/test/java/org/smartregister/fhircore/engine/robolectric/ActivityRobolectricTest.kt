@@ -29,7 +29,9 @@ abstract class ActivityRobolectricTest : RobolectricTest() {
   @After
   fun tearDown() {
     Shadows.shadowOf(Looper.getMainLooper()).idle()
-    getActivity().finish()
+    if (!getActivity().isFinishing && !getActivity().isDestroyed) {
+      getActivity().finish()
+    }
   }
 
   abstract fun getActivity(): Activity
