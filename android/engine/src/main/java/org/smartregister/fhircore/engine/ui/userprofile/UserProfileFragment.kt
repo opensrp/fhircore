@@ -29,7 +29,7 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 @AndroidEntryPoint
 class UserProfileFragment : Fragment() {
 
-  private val userProfileViewModel: UserProfileViewModel by viewModels()
+  val userProfileViewModel: UserProfileViewModel by viewModels()
 
   override fun onCreateView(
     inflater: LayoutInflater,
