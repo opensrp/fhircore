@@ -20,6 +20,7 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.logicalId
 import java.util.Date
+import java.util.UUID
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Questionnaire
@@ -93,6 +94,10 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrE
 /** Delete resources in [QuestionnaireResponse.contained] from the database */
 suspend fun QuestionnaireResponse.deleteRelatedResources(defaultRepository: DefaultRepository) {
   contained.forEach { defaultRepository.delete(it) }
+}
+
+fun Resource.generateMissingId() {
+  if (logicalId.isBlank()) id = UUID.randomUUID().toString()
 }
 
 fun QuestionnaireResponse.retainMetadata(questionnaireResponse: QuestionnaireResponse) {

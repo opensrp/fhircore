@@ -37,17 +37,28 @@ import org.smartregister.fhircore.engine.util.extension.hide
 class FamilyQuestionnaireActivity : QuestionnaireActivity() {
   internal lateinit var familyRepository: FamilyRepository
   private lateinit var saveBtn: Button
+  private var isEditFamily: Boolean = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
+    isEditFamily = intent.extras?.getBoolean(FamilyFormConstants.FAMILY_EDIT_INFO) ?: false
 
-    when (intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!) {
-      FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_ANC_client)
-      FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM ->
-        saveBtn.setText(R.string.family_member_save_label)
-      FamilyFormConstants.FAMILY_REGISTER_FORM -> saveBtn.setText(R.string.family_save_label)
+    saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
+    if (isEditFamily) {
+      when (intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!) {
+        FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_ANC_client)
+        FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM ->
+          saveBtn.setText(R.string.family_member_update_label)
+        FamilyFormConstants.FAMILY_REGISTER_FORM -> saveBtn.setText(R.string.family_update_label)
+      }
+    } else {
+      when (intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!) {
+        FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_ANC_client)
+        FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM ->
+          saveBtn.setText(R.string.family_member_save_label)
+        FamilyFormConstants.FAMILY_REGISTER_FORM -> saveBtn.setText(R.string.family_save_label)
+      }
     }
 
     familyRepository = FamilyRepository(AncApplication.getContext().fhirEngine, FamilyItemMapper)
@@ -124,17 +135,21 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     if (pregnancy == true) {
       this.startAncEnrollment(patientId)
     } else {
-      if (ancEnrollmentForm == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
-        startActivity(
-          Intent(this, FamilyDetailsActivity::class.java).apply {
-            putExtra(
-              QUESTIONNAIRE_ARG_PATIENT_KEY,
-              intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!
-            )
-          }
-        )
-        endActivity()
-      } else endActivity()
+      if (isEditFamily) {
+        finish()
+      } else {
+        if (ancEnrollmentForm == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
+          startActivity(
+            Intent(this, FamilyDetailsActivity::class.java).apply {
+              putExtra(
+                QUESTIONNAIRE_ARG_PATIENT_KEY,
+                intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!
+              )
+            }
+          )
+          endActivity()
+        } else endActivity()
+      }
     }
   }
 

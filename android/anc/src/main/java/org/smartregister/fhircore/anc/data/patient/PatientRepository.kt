@@ -56,6 +56,7 @@ import org.smartregister.fhircore.anc.util.loadRegisterConfigAnc
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.due
@@ -84,7 +85,9 @@ class PatientRepository(
   private val ancOverviewConfig =
     AncApplication.getContext().loadRegisterConfigAnc(AncOverviewType.ANC_OVERVIEW_ID)
 
-  val resourceMapperExtended = ResourceMapperExtended(fhirEngine)
+  private val detailRepository = DefaultRepository(fhirEngine, dispatcherProvider)
+
+  val resourceMapperExtended = ResourceMapperExtended(detailRepository)
 
   override suspend fun loadData(
     query: String,
