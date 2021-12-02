@@ -53,6 +53,6 @@ class CarePlanAdapter :
       oldItem.title == newItem.title
 
     override fun areContentsTheSame(oldItem: CarePlanItem, newItem: CarePlanItem) =
-      oldItem.equals(newItem)
+      oldItem == newItem
   }
 }

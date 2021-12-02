@@ -33,8 +33,8 @@ import org.smartregister.fhircore.engine.util.ListenerIntent
  * @param dataDiffCallback Subclass of [DataDiffCallback] that is used to compare list row [Data]
  */
 abstract class BaseRecyclerListViewAdapter<Data : Any>(
-  private val onItemClicked: (ListenerIntent, Data) -> Unit,
-  dataDiffCallback: DataDiffCallback<Data>
+  val onItemClicked: (ListenerIntent, Data) -> Unit,
+  val dataDiffCallback: DataDiffCallback<Data>
 ) : ListAdapter<Data, BaseRecyclerViewHolder<Data>>(dataDiffCallback) {
 
   abstract override fun onCreateViewHolder(
