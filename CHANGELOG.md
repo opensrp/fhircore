@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - ANC | Added individual measure reporting results to the ResultHome page
+- ANC | Update Individual Profile view
+- ANC | Added individual measure reporting results to the ResultHome page
 - ANC | Update Family Profile view
 - ANC | Migrated loading of measure report libraries to the report module from anc details page. Also did some optimizations.
 - ANC | Report Measures List Items, Filter Selection, Patient Selection, Compose UI unit tests
@@ -26,9 +28,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
 
 ### Fixed
+- ANC | Resolved a bug in the Patient details : App crash when computing BMI
 - EIR | Resolved a bug in the vaccination flow : App crush when saving vaccine
 - EIR | Ability for a complete immunixation flow from Record 1st Vaccine to Full Immunization
-- Quest | fixed test result sorting issues
+- Quest | Fixed test result sorting issues
+- Quest | Fixed forms loading smoothly
 
 
 ### Changed
