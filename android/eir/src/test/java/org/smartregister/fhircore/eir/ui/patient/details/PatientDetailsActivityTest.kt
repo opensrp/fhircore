@@ -19,6 +19,8 @@ package org.smartregister.fhircore.eir.ui.patient.details
 import android.app.Activity
 import android.view.MenuInflater
 import android.view.MenuItem
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.just
@@ -27,21 +29,27 @@ import io.mockk.runs
 import io.mockk.spyk
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.jupiter.api.DisplayName
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 
+@HiltAndroidTest
 internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
 
   private lateinit var patientDetailsActivity: PatientDetailsActivity
 
   private lateinit var patientDetailsActivitySpy: PatientDetailsActivity
 
+  @get:Rule val hiltRule = HiltAndroidRule(this)
+
   @Before
   fun setUp() {
     clearAllMocks()
+    hiltRule.inject()
+
     patientDetailsActivity =
       Robolectric.buildActivity(PatientDetailsActivity::class.java, null).create().get()
     patientDetailsActivitySpy = spyk(objToCopy = patientDetailsActivity)

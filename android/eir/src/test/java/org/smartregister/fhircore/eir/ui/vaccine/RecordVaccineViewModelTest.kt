@@ -18,7 +18,7 @@ package org.smartregister.fhircore.eir.ui.vaccine
 
 import android.content.Intent
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -42,21 +42,24 @@ import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
 @ExperimentalCoroutinesApi
 internal class RecordVaccineViewModelTest : RobolectricTest() {
 
   private lateinit var recordVaccineViewModel: RecordVaccineViewModel
-
   private lateinit var patientRepository: PatientRepository
-
+  private lateinit var defaultRepository: DefaultRepository
+  private lateinit var fhirEngine: FhirEngine
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
-
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   @Before
   fun setUp() {
     patientRepository = mockk()
+    fhirEngine = mockk()
+    defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
+
     val immunization =
       Immunization().apply {
         addProtocolApplied().doseNumber = PositiveIntType(1)
@@ -65,7 +68,17 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
       }
     coEvery { patientRepository.getPatientImmunizations(any()) } returns listOf(immunization)
     recordVaccineViewModel =
-      spyk(RecordVaccineViewModel(ApplicationProvider.getApplicationContext(), patientRepository))
+      spyk(
+        RecordVaccineViewModel(
+          fhirEngine,
+          defaultRepository,
+          mockk(),
+          mockk(),
+          patientRepository,
+          DefaultDispatcherProvider(),
+          mockk()
+        )
+      )
   }
 
   @Test
@@ -94,13 +107,14 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
     val intent = Intent()
     intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
 
-    coEvery { recordVaccineViewModel.loadPatient(patientId) } returns patient
+    // coEvery { recordVaccineViewModel.loadPatient(patientId) } returns patient
+    coEvery { fhirEngine.load(Patient::class.java, patientId) } returns patient
     coEvery { recordVaccineViewModel.loadPatientImmunization(patientId) } returns immunization
 
     val resources: Array<Resource>
     runBlocking { resources = recordVaccineViewModel.getPopulationResources(intent) }
 
-    coVerify { recordVaccineViewModel.loadPatient(patientId) }
+    coVerify { fhirEngine.load(Patient::class.java, patientId) }
     coVerify { recordVaccineViewModel.loadPatientImmunization(patientId) }
     Assert.assertEquals(patient, resources[0])
     Assert.assertEquals(immunization, resources[1])

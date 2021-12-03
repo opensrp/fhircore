@@ -61,8 +61,7 @@ import org.smartregister.fhircore.engine.util.extension.show
 import org.smartregister.fhircore.engine.util.extension.toggleVisibility
 
 @AndroidEntryPoint
-class PatientDetailsFragment private constructor() :
-  Fragment(), ConfigurableView<ImmunizationProfileViewConfiguration> {
+class PatientDetailsFragment : Fragment(), ConfigurableView<ImmunizationProfileViewConfiguration> {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 

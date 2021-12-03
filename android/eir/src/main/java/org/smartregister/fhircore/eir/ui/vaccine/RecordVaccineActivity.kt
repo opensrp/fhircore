@@ -41,7 +41,7 @@ class RecordVaccineActivity : QuestionnaireActivity() {
 
   @Inject lateinit var fhirParser: IParser
 
-  val recordVaccineViewModel: RecordVaccineViewModel by viewModels()
+  override val questionnaireViewModel: RecordVaccineViewModel by viewModels()
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
@@ -51,7 +51,7 @@ class RecordVaccineActivity : QuestionnaireActivity() {
         savedImmunization =
           bundle.entry.first { it.resource is Immunization }.resource as Immunization
 
-        val lastVaccine = recordVaccineViewModel.loadLatestVaccine(clientIdentifier!!)
+        val lastVaccine = questionnaireViewModel.loadLatestVaccine(clientIdentifier!!)
 
         if (handleValidation(lastVaccine, savedImmunization)) {
           sanitizeExtractedData(savedImmunization, lastVaccine)
