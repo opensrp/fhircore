@@ -87,6 +87,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
 
     questionnaireViewModel = spyk(QuestionnaireViewModel(context))
+    every { questionnaireViewModel.getAgeInput(any()) } returns 1
     ReflectionHelpers.setField(questionnaireViewModel, "defaultRepository", defaultRepo)
   }
 
@@ -644,5 +645,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     currentDate.set(Calendar.YEAR, 2021)
     val resultBirthDate = questionnaireViewModel.calculateDobFromAge(ageInput)
     Assert.assertEquals(expectedBirthDate, resultBirthDate)
+  }
+
+  @Test
+  fun testGetAgeInputFromQuestionnaire() {
+    val expectedAge = 1
+    Assert.assertEquals(expectedAge, questionnaireViewModel.getAgeInput(QuestionnaireResponse()))
   }
 }

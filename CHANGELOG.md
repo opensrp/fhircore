@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Added workflow configurations
 - Quest | Add photo capture questionnaire widget
 - Quest | Add ability to edit questionnaire responses
-- Quest | Patient registration birthDate from age 
+- Quest | Patient registration birthDate from age
 
 - EIR | Added workflow configurations
 - EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map

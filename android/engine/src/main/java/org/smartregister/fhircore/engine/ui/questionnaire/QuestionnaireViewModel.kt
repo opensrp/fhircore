@@ -57,8 +57,6 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 open class QuestionnaireViewModel(application: Application) : AndroidViewModel(application) {
 
-  val app = application
-
   val extractionProgress = MutableLiveData<Boolean>()
   var editQuestionnaireResponse: QuestionnaireResponse? = null
 
