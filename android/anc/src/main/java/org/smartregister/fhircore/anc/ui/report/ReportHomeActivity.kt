@@ -227,6 +227,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       AppTheme {
         Surface(color = colorResource(id = R.color.white)) {
           Column {
+            reportViewModel.reportState.currentScreen = ReportScreen.PREHOMElOADING
             ReportView(reportViewModel)
             loadMeasureEvaluateLibrary()
           }
