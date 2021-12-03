@@ -55,6 +55,7 @@ import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -111,9 +112,16 @@ class PatientRepositoryTest : RobolectricTest() {
   fun fetchUpcomingServiceItemTest() {
     val patientId = "1111"
     val carePlan = listOf(buildCarePlanWithActive(patientId))
-    val listUpcomingServiceItem = repository.fetchUpcomingServiceItem(carePlan = carePlan)
+    val task = getTask()
+    coEvery { fhirEngine.search<Task>(any()) } returns listOf(task)
+    val listUpcomingServiceItem = runBlocking {
+      repository.fetchUpcomingServiceItem(carePlan = carePlan)
+    }
     Assert.assertEquals("ABC", listUpcomingServiceItem[0].title)
-    Assert.assertEquals(Date().makeItReadable(), listUpcomingServiceItem[0].date)
+    Assert.assertEquals(
+      task.executionPeriod.start.makeItReadable(),
+      listUpcomingServiceItem[0].date
+    )
   }
 
   private fun buildCarePlanWithActive(subject: String): CarePlan {
@@ -204,7 +212,7 @@ class PatientRepositoryTest : RobolectricTest() {
       Assert.assertEquals("Jane Mc", name)
       Assert.assertEquals("Male", gender)
       Assert.assertEquals("0d", age)
-      Assert.assertEquals("", demographics)
+      Assert.assertEquals("Nairobi Kenya", demographics)
       Assert.assertEquals("", atRisk)
     }
   }
@@ -399,6 +407,14 @@ class PatientRepositoryTest : RobolectricTest() {
       system = "123"
       code = "123"
       display = "ABC"
+    }
+  }
+
+  private fun getTask(): Task {
+    return Task().apply {
+      id = "1"
+      code = getCodeableConcept()
+      executionPeriod = Period().setStart(Date())
     }
   }
 

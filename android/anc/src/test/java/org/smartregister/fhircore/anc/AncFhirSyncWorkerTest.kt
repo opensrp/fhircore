@@ -48,8 +48,14 @@ class AncFhirSyncWorkerTest : RobolectricTest() {
   @Test
   fun testGetSyncDataReturnMapOfConfiguredSyncItems() {
     val data = ancFhirSyncWorker.getSyncData()
-    Assert.assertEquals(6, data.size)
+    Assert.assertEquals(7, data.size)
     Assert.assertTrue(data.containsKey(ResourceType.Patient))
+    Assert.assertTrue(data.containsKey(ResourceType.Questionnaire))
+    Assert.assertTrue(data.containsKey(ResourceType.Observation))
+    Assert.assertTrue(data.containsKey(ResourceType.Encounter))
+    Assert.assertTrue(data.containsKey(ResourceType.CarePlan))
+    Assert.assertTrue(data.containsKey(ResourceType.Condition))
+    Assert.assertTrue(data.containsKey(ResourceType.Task))
   }
 
   @Test
