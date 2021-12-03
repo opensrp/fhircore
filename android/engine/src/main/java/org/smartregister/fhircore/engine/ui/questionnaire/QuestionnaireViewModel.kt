@@ -26,6 +26,7 @@ import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.targetStructureMap
 import com.google.android.fhir.logicalId
+import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
@@ -48,12 +49,15 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FormConfigUtil
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
+import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 open class QuestionnaireViewModel(application: Application) : AndroidViewModel(application) {
+
+  val app = application
 
   val extractionProgress = MutableLiveData<Boolean>()
   var editQuestionnaireResponse: QuestionnaireResponse? = null
@@ -124,8 +128,18 @@ open class QuestionnaireViewModel(application: Application) : AndroidViewModel(a
               val organizationRef = Reference().apply { reference = "Organization/$org" }
               val resource = bun.resource
 
-              if (resource is Patient) resource.managingOrganization = organizationRef
-              else if (resource is Group) resource.managingEntity = organizationRef
+              if (resource is Patient) {
+                resource.managingOrganization = organizationRef
+                // TODO: calculate birthDate from AgeInput as calculation isn't supported by sdk
+                // https://github.com/google/android-fhir/issues/803
+                getAgeInput(questionnaireResponse)?.let {
+                  resource.birthDate = calculateDobFromAge(it)
+                }
+              } else if (resource is Group) {
+                resource.managingEntity = organizationRef
+              } else {
+                // Do nothing
+              }
             }
           }
 
@@ -265,5 +279,19 @@ open class QuestionnaireViewModel(application: Application) : AndroidViewModel(a
     intent: Intent
   ): QuestionnaireResponse {
     return ResourceMapper.populate(questionnaire, *getPopulationResources(intent))
+  }
+
+  fun getAgeInput(questionnaireResponse: QuestionnaireResponse): Int? {
+    val age = questionnaireResponse.find(QuestionnaireActivity.QUESTIONNAIRE_AGE)
+    return age?.answer?.firstOrNull()?.valueDecimalType?.value?.toInt()
+  }
+
+  fun calculateDobFromAge(age: Int): Date {
+    val cal: Calendar = Calendar.getInstance()
+    // Subtract #age years from the calendar
+    cal.add(Calendar.YEAR, -age)
+    cal.set(Calendar.DAY_OF_YEAR, 1)
+    cal.set(Calendar.MONTH, 1)
+    return cal.time
   }
 }

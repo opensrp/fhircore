@@ -1,0 +1,266 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "3435",
+  "language": "en",
+  "status": "active",
+  "publisher": "ONA",
+  "subjectType": [
+    "Patient"
+  ],
+  "useContext": {
+    "code": [
+      {
+        "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
+        "code": "focus"
+      }
+    ],
+    "valueCodeableConcept": {
+      "coding": {
+        "system": "http://fhir.ona.io",
+        "code": "000003",
+        "display": "G6PD Patient"
+      }
+    }
+  },
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+      "valueExpression": {
+        "language": "application/x-fhir-query",
+        "expression": "Patient",
+        "name": "patient"
+      }
+    }
+  ],
+  "name": "Add Patient",
+  "title": "Add Patient",
+  "item": [
+    {
+      "linkId": "bio",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "PR-name",
+          "type": "group",
+          "text": "Demographic Information",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name",
+          "item": [
+            {
+              "linkId": "PR-name-family",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.family",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  "valueExpression": {
+                    "language": "text/fhirpath",
+                    "expression": "Patient.name.family"
+                  }
+                }
+              ],
+              "type": "string",
+              "required": true,
+              "text": "Surname"
+            },
+            {
+              "linkId": "PR-name-text",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.given",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  "valueExpression": {
+                    "language": "text/fhirpath",
+                    "expression": "Patient.name.given"
+                  }
+                }
+              ],
+              "type": "string",
+              "required": true,
+              "text": "First Name"
+            }
+          ]
+        },
+        {
+          "linkId": "PR-identifier-info",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier",
+          "type": "group",
+          "item": [
+            {
+              "linkId": "PR-identifier-nid",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  "valueExpression": {
+                    "language": "text/fhirpath",
+                    "expression": "Patient.identifier.value"
+                  }
+                }
+              ],
+              "type": "string",
+              "required": true,
+              "text": "National ID Number"
+            }
+          ]
+        },
+        {
+          "linkId": "PR-gender",
+          "type": "choice",
+          "required": true,
+          "text": "Sex",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.gender"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            }
+          ],
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "female",
+                "display": "Female"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "male",
+                "display": "Male"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "birth_date_selection",
+          "type": "choice",
+          "required": true,
+          "text": "Date of Birth",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            }
+          ],
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "date",
+                "display": "Date"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "age",
+                "display": "Age"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "PR-age",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.age",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.age",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.age"
+              }
+            }
+          ],
+          "text": "Age (years)",
+          "required": true,
+          "type": "decimal",
+          "enableWhen": [
+            {
+              "question": "birth_date_selection",
+              "operator": "=",
+              "answerCoding": {
+                "code": "age"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "PR-birth-date",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.birthDate"
+              }
+            }
+          ],
+          "type": "date",
+          "required": true,
+          "text": "Date of Birth",
+          "enableWhen": [
+            {
+              "question": "birth_date_selection",
+              "operator": "=",
+              "answerCoding": {
+                "code": "date"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "is_pregnant",
+          "type": "boolean",
+          "text": "Is Pregnant?",
+          "code": [
+            {
+              "system": "https://www.snomed.org",
+              "code": "146799005",
+              "display": "Possible pregnancy"
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+              "valueBoolean": true
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "PR-gender",
+              "operator": "=",
+              "answerCoding": {
+                "code": "female"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "PR-active",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.active",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.active"
+              }
+            }
+          ],
+          "text": "Is Active?",
+          "type": "boolean",
+          "hidden": true,
+          "initial": [
+            {
+              "valueBoolean": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

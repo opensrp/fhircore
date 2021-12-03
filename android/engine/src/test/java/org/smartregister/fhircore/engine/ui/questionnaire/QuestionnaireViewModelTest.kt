@@ -33,6 +33,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
+import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
@@ -629,5 +630,19 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals(patient, questionnaireResponse.contained[0])
 
     unmockkObject(ResourceMapper)
+  }
+
+  @Test
+  fun testCalculateDobFromAge() {
+    val calObjBirthDate = Calendar.getInstance()
+    calObjBirthDate.set(Calendar.YEAR, 2010)
+    calObjBirthDate.set(Calendar.MONTH, 1)
+    calObjBirthDate.set(Calendar.DAY_OF_YEAR, 1)
+    val expectedBirthDate = calObjBirthDate.time
+    val ageInput = 11
+    val currentDate: Calendar = Calendar.getInstance()
+    currentDate.set(Calendar.YEAR, 2021)
+    val resultBirthDate = questionnaireViewModel.calculateDobFromAge(ageInput)
+    Assert.assertEquals(expectedBirthDate, resultBirthDate)
   }
 }
