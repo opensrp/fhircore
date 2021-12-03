@@ -635,16 +635,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testCalculateDobFromAge() {
-    val calObjBirthDate = Calendar.getInstance()
-    calObjBirthDate.set(Calendar.YEAR, 2010)
-    calObjBirthDate.set(Calendar.MONTH, 1)
-    calObjBirthDate.set(Calendar.DAY_OF_YEAR, 1)
-    val expectedBirthDate = calObjBirthDate.time
-    val ageInput = 11
-    val currentDate: Calendar = Calendar.getInstance()
-    currentDate.set(Calendar.YEAR, 2021)
-    val resultBirthDate = questionnaireViewModel.calculateDobFromAge(ageInput)
-    Assert.assertEquals(expectedBirthDate, resultBirthDate)
+    val expectedBirthDate = Calendar.getInstance()
+    val ageInput = expectedBirthDate.get(Calendar.YEAR) - 2010
+    expectedBirthDate.set(Calendar.YEAR, 2010)
+    expectedBirthDate.set(Calendar.MONTH, 1)
+    expectedBirthDate.set(Calendar.DAY_OF_YEAR, 1)
+    val resultBirthDate = Calendar.getInstance()
+    resultBirthDate.time = questionnaireViewModel.calculateDobFromAge(ageInput)
+    Assert.assertEquals(expectedBirthDate.get(Calendar.YEAR), resultBirthDate.get(Calendar.YEAR))
   }
 
   @Test
