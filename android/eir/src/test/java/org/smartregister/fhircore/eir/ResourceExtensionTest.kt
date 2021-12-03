@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore
+package org.smartregister.fhircore.eir
 
 import io.mockk.coEvery
 import io.mockk.coVerify
