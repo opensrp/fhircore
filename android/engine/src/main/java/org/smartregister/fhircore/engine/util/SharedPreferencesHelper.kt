@@ -50,4 +50,8 @@ object SharedPreferencesHelper {
       commit()
     }
   }
+
+  fun remove(key: String) {
+    prefs.edit().remove(key).apply()
+  }
 }

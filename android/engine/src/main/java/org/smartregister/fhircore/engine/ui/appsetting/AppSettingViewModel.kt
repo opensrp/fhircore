@@ -20,6 +20,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 class AppSettingViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -45,6 +47,9 @@ class AppSettingViewModel(application: Application) : AndroidViewModel(applicati
     if (!this.appId.value.isNullOrEmpty()) {
       (getApplication<Application>() as ConfigurableApplication).configurationRegistry
         .loadAppConfigurations(this.appId.value!!, getApplication()) { successful ->
+          if (rememberApp.value!!) {
+            SharedPreferencesHelper.write(APP_ID_CONFIG, this.appId.value)
+          }
           configsLoaded.postValue(successful)
         }
     }

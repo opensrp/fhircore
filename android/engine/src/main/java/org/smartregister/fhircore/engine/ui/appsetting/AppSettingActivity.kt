@@ -47,6 +47,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -68,7 +70,12 @@ class AppSettingActivity : AppCompatActivity() {
           showToast(getString(R.string.application_not_supported, appSettingViewModel.appId.value))
       }
     )
-    setContent { AppTheme { AppScreenLayout(appSettingViewModel) } }
+
+    SharedPreferencesHelper.read(APP_ID_CONFIG, null)?.let {
+      appSettingViewModel.onApplicationIdChanged(it)
+      appSettingViewModel.loadConfigurations()
+    }
+      ?: run { setContent { AppTheme { AppScreenLayout(appSettingViewModel) } } }
   }
 }
 
