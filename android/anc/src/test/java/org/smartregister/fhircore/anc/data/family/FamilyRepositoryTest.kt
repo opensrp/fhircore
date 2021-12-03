@@ -45,6 +45,7 @@ import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.util.RegisterConfiguration
 import org.smartregister.fhircore.anc.util.SearchFilter
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 
 class FamilyRepositoryTest : RobolectricTest() {
 
@@ -111,6 +112,35 @@ class FamilyRepositoryTest : RobolectricTest() {
     repository.postProcessFamilyHead(Questionnaire(), QuestionnaireResponse())
 
     coVerify { resourceMapperExtended.saveParsedResource(any(), any(), any(), null) }
+  }
+
+  @Test
+  fun updateProcessFamilyMemberShouldExtractEntities() = runBlockingTest {
+    val defaultRepository = spyk(DefaultRepository(fhirEngine))
+
+    val resourceMapperExtended = spyk(ResourceMapperExtended(defaultRepository))
+
+    coEvery { resourceMapperExtended.saveParsedResource(any(), any(), any(), "1111") } just runs
+
+    ReflectionHelpers.setField(repository, "resourceMapperExtended", resourceMapperExtended)
+
+    repository.updateProcessFamilyMember("1111", Questionnaire(), QuestionnaireResponse(), "1111")
+
+    coVerify { resourceMapperExtended.saveParsedResource(any(), any(), any(), "1111", eq(true)) }
+  }
+
+  @Test
+  fun updateProcessFamilyHeadShouldExtractEntities() = runBlockingTest {
+    val defaultRepository = spyk(DefaultRepository(fhirEngine))
+    val resourceMapperExtended = spyk(ResourceMapperExtended(defaultRepository))
+
+    coEvery { resourceMapperExtended.saveParsedResource(any(), any(), any(), null) } just runs
+
+    ReflectionHelpers.setField(repository, "resourceMapperExtended", resourceMapperExtended)
+
+    repository.updateProcessFamilyHead("1111", Questionnaire(), QuestionnaireResponse())
+
+    coVerify { resourceMapperExtended.saveParsedResource(any(), any(), any(), null, eq(true)) }
   }
 
   @Test
