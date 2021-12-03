@@ -35,6 +35,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -46,8 +47,12 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
@@ -62,8 +67,13 @@ constructor(
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry,
   val transformSupportServices: TransformSupportServices,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
+  val sharedPreferencesHelper: SharedPreferencesHelper
 ) : ViewModel() {
+
+  private val authenticatedUserInfo by lazy {
+    sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
+  }
 
   val extractionProgress = MutableLiveData<Boolean>()
 
@@ -124,6 +134,15 @@ constructor(
           ) {
             questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
               it.valueCodeableConcept.coding.forEach { bun.resource.meta.addTag(it) }
+            }
+
+            // add managing organization of logged in user to record
+            authenticatedUserInfo?.organization?.let { org ->
+              val organizationRef = Reference().apply { reference = "Organization/$org" }
+              val resource = bun.resource
+
+              if (resource is Patient) resource.managingOrganization = organizationRef
+              else if (resource is Group) resource.managingEntity = organizationRef
             }
           }
 

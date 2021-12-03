@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.eir.shadow
 
+import androidx.security.crypto.MasterKey
+import io.mockk.mockk
 import org.robolectric.Shadows
 import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
@@ -27,5 +29,10 @@ class SecureSharedPreferenceShadow : Shadows() {
   @Implementation
   fun retrieveSessionUsername(): String {
     return "demo"
+  }
+
+  @Implementation
+  fun getMasterKey(): MasterKey {
+    return mockk<MasterKey>()
   }
 }

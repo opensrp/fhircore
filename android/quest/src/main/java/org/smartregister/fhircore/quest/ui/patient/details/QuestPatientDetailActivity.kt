@@ -86,28 +86,34 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
   }
 
   private fun onTestResultItemClickListener(questionnaireResponse: QuestionnaireResponse?) {
-    if (questionnaireResponse != null && questionnaireResponse.questionnaire != null) {
-      val questionnaireId = questionnaireResponse.questionnaire.split("/")[1]
-      val populationResources = ArrayList<Resource>().apply { add(questionnaireResponse) }
-      startActivity(
-        Intent(this, QuestionnaireActivity::class.java)
-          .putExtras(
-            QuestionnaireActivity.intentArgs(
-              clientIdentifier = patientId,
-              formName = questionnaireId,
-              readOnly = true,
-              populationResources = populationResources
+    if (questionnaireResponse != null) {
+      if (questionnaireResponse.questionnaire != null) {
+        val questionnaireId = questionnaireResponse.questionnaire.split("/")[1]
+        val populationResources = ArrayList<Resource>().apply { add(questionnaireResponse) }
+        startActivity(
+          Intent(this, QuestionnaireActivity::class.java)
+            .putExtras(
+              QuestionnaireActivity.intentArgs(
+                clientIdentifier = patientId,
+                formName = questionnaireId,
+                readOnly = true,
+                populationResources = populationResources
+              )
             )
-          )
-      )
-    } else {
-      Toast.makeText(this, getString(R.string.cannot_find_parent_questionnaire), Toast.LENGTH_LONG)
-        .show()
-      Timber.e(
-        Exception(
-          "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
         )
-      )
+      } else {
+        Toast.makeText(
+            this,
+            getString(R.string.cannot_find_parent_questionnaire),
+            Toast.LENGTH_LONG
+          )
+          .show()
+        Timber.e(
+          Exception(
+            "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
+          )
+        )
+      }
     }
   }
 }

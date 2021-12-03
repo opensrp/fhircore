@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.data.patient
 
+import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
@@ -31,12 +32,14 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import java.text.SimpleDateFormat
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.DateTimeType
@@ -50,8 +53,11 @@ import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -63,8 +69,8 @@ import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
-import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
 @HiltAndroidTest
@@ -81,6 +87,8 @@ class PatientRepositoryTest : RobolectricTest() {
   private lateinit var repository: PatientRepository
 
   private val fhirEngine: FhirEngine = spyk()
+
+  val context = ApplicationProvider.getApplicationContext<Application>()
 
   @Before
   fun setUp() {
@@ -126,9 +134,16 @@ class PatientRepositoryTest : RobolectricTest() {
   fun fetchUpcomingServiceItemTest() {
     val patientId = "1111"
     val carePlan = listOf(buildCarePlanWithActive(patientId))
-    val listUpcomingServiceItem = repository.fetchUpcomingServiceItem(carePlan = carePlan)
+    val task = getTask()
+    coEvery { fhirEngine.search<Task>(any()) } returns listOf(task)
+    val listUpcomingServiceItem = runBlocking {
+      repository.fetchUpcomingServiceItem(carePlan = carePlan)
+    }
     Assert.assertEquals("ABC", listUpcomingServiceItem[0].title)
-    Assert.assertEquals(Date().makeItReadable(), listUpcomingServiceItem[0].date)
+    Assert.assertEquals(
+      task.executionPeriod.start.makeItReadable(),
+      listUpcomingServiceItem[0].date
+    )
   }
 
   private fun buildCarePlanWithActive(subject: String): CarePlan {
@@ -219,7 +234,7 @@ class PatientRepositoryTest : RobolectricTest() {
       Assert.assertEquals("Jane Mc", name)
       Assert.assertEquals("Male", gender)
       Assert.assertEquals("0d", age)
-      Assert.assertEquals("", demographics)
+      Assert.assertEquals("Nairobi Kenya", demographics)
       Assert.assertEquals("", atRisk)
     }
   }
@@ -345,6 +360,66 @@ class PatientRepositoryTest : RobolectricTest() {
 
       coVerify(exactly = 4) { fhirEngine.save(any()) }
       Assert.assertTrue(result)
+    }
+  }
+
+  private fun buildCarePlan(subject: String): CarePlan {
+    return CarePlan().apply {
+      this.subject = Reference().apply { reference = "Patient/$subject" }
+      this.addActivity().detail.apply {
+        this.scheduledPeriod.start = Date()
+        this.status = CarePlan.CarePlanActivityStatus.SCHEDULED
+      }
+    }
+  }
+
+  private fun getEncounter(patientId: String): Encounter {
+    return Encounter().apply {
+      id = "1"
+      type = listOf(getCodeableConcept())
+      subject = Reference().apply { reference = "Patient/$patientId" }
+      status = Encounter.EncounterStatus.FINISHED
+      class_ = Coding("", "", "ABC")
+      period = Period().apply { start = SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01") }
+    }
+  }
+
+  private fun getCodeableConcept(): CodeableConcept {
+    return CodeableConcept().apply {
+      id = "1"
+      coding = listOf(getCodingList())
+      text = "ABC"
+    }
+  }
+
+  private fun getCodingList(): Coding {
+    return Coding().apply {
+      id = "1"
+      system = "123"
+      code = "123"
+      display = "ABC"
+    }
+  }
+
+  private fun getTask(): Task {
+    return Task().apply {
+      id = "1"
+      code = getCodeableConcept()
+      executionPeriod = Period().setStart(Date())
+    }
+  }
+
+  private fun buildPatient(id: String, family: String, given: String): Patient {
+    return Patient().apply {
+      this.id = id
+      this.addName().apply {
+        this.family = family
+        this.given.add(StringType(given))
+      }
+      this.addAddress().apply {
+        district = "Dist 1"
+        city = "City 1"
+      }
     }
   }
 

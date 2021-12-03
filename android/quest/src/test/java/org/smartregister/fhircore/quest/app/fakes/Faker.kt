@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.app.fakes
 
 import io.mockk.coEvery
-import io.mockk.mockk
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -60,8 +59,7 @@ object Faker {
     }
   }
 
-  val patientRepository by lazy {
-    val patientRepository = mockk<PatientRepository>()
+  fun initPatientRepositoryMocks(patientRepository: PatientRepository) {
     coEvery { patientRepository.fetchDemographics(any()) } returns
       Patient().apply {
         name =
@@ -99,6 +97,7 @@ object Faker {
           identifier = "67890"
         )
       )
+
     coEvery { patientRepository.fetchTestResults(any()) } returns
       listOf(
         QuestionnaireResponse().apply {
@@ -110,6 +109,5 @@ object Faker {
           authored = Date()
         }
       )
-    patientRepository
   }
 }

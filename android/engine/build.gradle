@@ -20,6 +20,10 @@ android {
                     includeNoLocationClasses = true
                     excludes = ['jdk.internal.*']
                 }
+
+                beforeTest { testDescriptor ->
+                    println "${testDescriptor.className} > ${testDescriptor.name} STARTED"
+                }
             }
         }
     }
@@ -127,7 +131,7 @@ dependencies {
     api 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1'
 
     //Configure Jetpack Compose
-    def composeVersion = "1.0.1"
+    def composeVersion = "1.0.5"
     api("androidx.compose.ui:ui:$composeVersion")
     api("androidx.compose.ui:ui-tooling:$composeVersion")
     api("androidx.compose.foundation:foundation:$composeVersion")

@@ -20,7 +20,6 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import okhttp3.Interceptor
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.auth.TokenManagerService
 import timber.log.Timber
 
@@ -28,7 +27,6 @@ class OAuthInterceptor
 @Inject
 constructor(
   @ApplicationContext val context: Context,
-  var accountAuthenticator: AccountAuthenticator,
   val tokenManagerService: TokenManagerService
 ) : Interceptor {
 
@@ -36,13 +34,10 @@ constructor(
     var request = chain.request()
     val segments = mutableListOf("protocol", "openid-connect", "token")
     if (!request.url.pathSegments.containsAll(segments)) {
-      accountAuthenticator
-        .runCatching { tokenManagerService.getBlockingActiveAuthToken() }
-        .getOrNull()
-        ?.let { token ->
-          Timber.d("Passing auth token for %s", request.url.toString())
-          request = request.newBuilder().addHeader("Authorization", "Bearer $token").build()
-        }
+      tokenManagerService.runCatching { getBlockingActiveAuthToken() }.getOrNull()?.let { token ->
+        Timber.d("Passing auth token for %s", request.url.toString())
+        request = request.newBuilder().addHeader("Authorization", "Bearer $token").build()
+      }
     }
     return chain.proceed(request)
   }

@@ -49,7 +49,8 @@ class QuestLoginServiceTest : RobolectricTest() {
   }
 
   @After
-  fun tearDown() {
+  override fun tearDown() {
+    super.tearDown()
     loginActivity.finish()
   }
 

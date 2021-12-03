@@ -19,58 +19,39 @@ package org.smartregister.fhircore.engine.ui.userprofile
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import javax.inject.Inject
 import org.junit.Before
-import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.shadow.FakeKeyStore
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.sync.SyncInitiator
 
-@HiltAndroidTest
 class UserProfileScreenKtTest : RobolectricTest() {
 
-  lateinit var userProfileViewModel: UserProfileViewModel
+  private val userProfileViewModel = mockk<UserProfileViewModel>()
 
-  @Inject lateinit var syncBroadcaster: SyncBroadcaster
-
-  @get:Rule val composeRule = createComposeRule()
-
-  @get:Rule var hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 1) val composeRule = createComposeRule()
 
   @Before
   fun setUp() {
+    every { userProfileViewModel.retrieveUsername() } returns "johndoe"
     composeRule.setContent { UserProfileScreen(userProfileViewModel = userProfileViewModel) }
   }
 
   @Test
   fun testUserProfileShouldDisplayCorrectContent() {
-    composeRule.onNodeWithText("Demo").assertExists()
+    composeRule.onNodeWithText("Johndoe").assertExists()
     composeRule.onNodeWithText("Sync").assertExists()
     composeRule.onNodeWithText("Log out").assertExists()
   }
 
   @Test
   fun testSyncRowClickShouldInitiateSync() {
-    val mockSyncInitiator = mockk<SyncInitiator> { every { runSync() } returns Unit }
-    syncBroadcaster.unRegisterSyncInitiator()
-    syncBroadcaster.registerSyncInitiator(mockSyncInitiator)
-    composeRule.onNodeWithText("Sync").performClick()
-    verify { mockSyncInitiator.runSync() }
-  }
+    every { userProfileViewModel.runSync() } returns Unit
 
-  companion object {
-    @JvmStatic
-    @BeforeClass
-    fun setupMocks() {
-      FakeKeyStore.setup
-    }
+    composeRule.onNodeWithText("Sync").performClick()
+
+    verify { userProfileViewModel.runSync() }
   }
 }

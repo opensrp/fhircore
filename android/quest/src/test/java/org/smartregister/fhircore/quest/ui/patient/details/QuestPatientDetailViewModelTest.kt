@@ -16,12 +16,12 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
@@ -31,15 +31,16 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 
 @HiltAndroidTest
 class QuestPatientDetailViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
+  @Inject lateinit var patientItemMapper: PatientItemMapper
 
-  @BindValue val patientRepository: PatientRepository = Faker.patientRepository
+  @BindValue val patientRepository: PatientRepository = mockk()
 
   private val patientId = "5583145"
 
@@ -48,13 +49,18 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    questPatientDetailViewModel = QuestPatientDetailViewModel(patientRepository)
+    Faker.initPatientRepositoryMocks(patientRepository)
+    questPatientDetailViewModel =
+      QuestPatientDetailViewModel(
+        patientRepository = patientRepository,
+        patientItemMapper = patientItemMapper
+      )
   }
 
   @Test
   fun testGetDemographicsShouldFetchPatient() {
     questPatientDetailViewModel.getDemographics(patientId)
-    val patient = questPatientDetailViewModel.patient.value
+    val patient = questPatientDetailViewModel.patientItem.value
     Assert.assertNotNull(patient)
     Assert.assertEquals(patientId, patient!!.id)
   }

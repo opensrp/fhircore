@@ -182,7 +182,7 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
 
     val patientDetailItem =
       PatientDetailItem(
-        PatientItem(patientId, "Mandela Nelson", "Male", "26"),
+        PatientItem(patientId, "Mandela Nelson", "Male", "26", isHouseHoldHead = true),
         PatientItem(patientId, "Mandela Nelson", "Male", "26")
       )
 
@@ -199,9 +199,15 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
         ", " +
         patientDetailItem.patientDetails.age
     val patientId =
-      patientDetailItem.patientDetailsHead.demographics +
+      patientDetailItem.patientDetails.address +
+        " " +
+        getString(R.string.bullet_character) +
         " ID: " +
-        patientDetailItem.patientDetails.patientIdentifier
+        patientDetailItem.patientDetails.patientIdentifier +
+        " " +
+        getString(R.string.bullet_character) +
+        " " +
+        getString(R.string.head_of_household)
 
     val txtViewPatientDetails =
       patientDetailsActivity.findViewById<TextView>(R.id.txtView_patientDetails)

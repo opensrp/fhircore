@@ -16,16 +16,19 @@
 
 package org.smartregister.fhircore.eir.robolectric
 
+import android.os.Looper
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.lifecycle.Lifecycle
 import org.junit.After
+import org.robolectric.Shadows
 
 abstract class FragmentRobolectricTest : RobolectricTest() {
 
   @After
   fun tearDown() {
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
     getFragmentScenario().moveToState(Lifecycle.State.DESTROYED)
   }
 

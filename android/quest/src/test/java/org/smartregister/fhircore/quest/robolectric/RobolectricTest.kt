@@ -17,21 +17,32 @@
 package org.smartregister.fhircore.quest.robolectric
 
 import android.os.Build
+import android.os.Looper
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.clearAllMocks
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import org.junit.After
 import org.junit.AfterClass
 import org.junit.BeforeClass
+import org.junit.Rule
 import org.junit.runner.RunWith
+import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.quest.app.fakes.FakeKeyStore
+import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 
 @RunWith(FhircoreTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
 abstract class RobolectricTest {
+
+  @get:Rule(order = 10) val coroutineTestRule = CoroutineTestRule()
+
+  @get:Rule(order = 20) val instantTaskExecutorRule = InstantTaskExecutorRule()
+
   /** Get the liveData value by observing but wait for 3 seconds if not ready then stop observing */
   @Throws(InterruptedException::class)
   fun <T> getLiveDataValue(liveData: LiveData<T>): T? {
@@ -48,6 +59,11 @@ abstract class RobolectricTest {
     liveData.observeForever(observer)
     latch.await(3, TimeUnit.SECONDS)
     return data[0] as T?
+  }
+
+  @After
+  open fun tearDown() {
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
   }
 
   companion object {

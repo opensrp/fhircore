@@ -16,13 +16,15 @@
 
 package org.smartregister.fhircore.quest.data
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import java.time.LocalDate
+import java.time.ZoneId
+import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Coding
@@ -37,7 +39,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.quest.app.fakes.Faker.buildPatient
-import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.genderFull
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -47,10 +48,6 @@ import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 class PatientRepositoryTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
-  @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
-
-  @get:Rule(order = 2) val coroutinesTestRule = CoroutineTestRule()
 
   @Inject lateinit var patientItemMapper: PatientItemMapper
 
@@ -62,12 +59,12 @@ class PatientRepositoryTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     repository =
-      PatientRepository(fhirEngine, patientItemMapper, coroutinesTestRule.testDispatcherProvider)
+      PatientRepository(fhirEngine, patientItemMapper, coroutineTestRule.testDispatcherProvider)
   }
 
   @Test
   fun testFetchDemographicsShouldReturnTestPatient() =
-    coroutinesTestRule.runBlockingTest {
+    coroutineTestRule.runBlockingTest {
       coEvery { fhirEngine.load(Patient::class.java, "1") } returns
         buildPatient("1", "doe", "john", 0)
 
@@ -101,21 +98,35 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @Test
   fun testFetchTestResultsShouldReturnListOfTestReports() =
-    coroutinesTestRule.runBlockingTest {
+    coroutineTestRule.runBlockingTest {
+      val today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
+      val yesterday =
+        Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
+
       coEvery { fhirEngine.search<QuestionnaireResponse>(any()) } returns
         listOf(
           QuestionnaireResponse().apply {
+            meta = Meta().apply { tag = listOf(Coding().apply { display = "Cell Count" }) }
+            authored = today
+          },
+          QuestionnaireResponse().apply {
             meta = Meta().apply { tag = listOf(Coding().apply { display = "Blood Count" }) }
+            authored = yesterday
           }
         )
 
       val results = repository.fetchTestResults("1")
-      Assert.assertEquals("Blood Count", results.first().meta?.tagFirstRep?.display)
+
+      Assert.assertEquals("Cell Count", results.first().meta?.tagFirstRep?.display)
+      Assert.assertEquals(today.time, results.first().authored?.time)
+
+      Assert.assertEquals("Blood Count", results.last().meta?.tagFirstRep?.display)
+      Assert.assertEquals(yesterday.time, results.last().authored?.time)
     }
 
   @Test
   fun testFetchTestFormShouldReturnListOfQuestionnaireConfig() =
-    coroutinesTestRule.runBlockingTest {
+    coroutineTestRule.runBlockingTest {
       coEvery { fhirEngine.search<Questionnaire>(any()) } returns
         listOf(
           Questionnaire().apply {

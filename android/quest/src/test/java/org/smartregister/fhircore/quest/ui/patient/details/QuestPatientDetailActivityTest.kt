@@ -18,12 +18,12 @@ package org.smartregister.fhircore.quest.ui.patient.details
 
 import android.content.Intent
 import android.widget.Toast
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import io.mockk.mockk
 import io.mockk.spyk
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.After
@@ -33,6 +33,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.android.controller.ActivityController
 import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
@@ -47,27 +48,28 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
-
-  @BindValue val patientRepository: PatientRepository = Faker.patientRepository
+  @BindValue val patientRepository: PatientRepository = mockk()
 
   private val hiltTestApplication = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
   private lateinit var questPatientDetailActivity: QuestPatientDetailActivity
 
+  private lateinit var questPatientDetailActivityController:
+    ActivityController<QuestPatientDetailActivity>
+
   @Before
   fun setUp() {
     hiltRule.inject()
-
-    questPatientDetailActivity =
-      spyk(
-        Robolectric.buildActivity(QuestPatientDetailActivity::class.java).create().resume().get()
-      )
+    Faker.initPatientRepositoryMocks(patientRepository)
+    questPatientDetailActivityController =
+      Robolectric.buildActivity(QuestPatientDetailActivity::class.java)
+    questPatientDetailActivity = spyk(questPatientDetailActivityController.create().resume().get())
   }
 
   @After
-  fun tearDown() {
-    questPatientDetailActivity.finish()
+  override fun tearDown() {
+    super.tearDown()
+    questPatientDetailActivityController.pause().stop().destroy()
   }
 
   @Test
@@ -112,7 +114,9 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnTestResultItemClickListenerWithNullResponseShouldDisplayToast() {
-    questPatientDetailActivity.patientViewModel.onFormTestResultClicked.value = null
+    questPatientDetailActivity.patientViewModel.onTestResultItemClickListener(
+      QuestionnaireResponse().apply { questionnaire = null }
+    )
     val latestToast = ShadowToast.getLatestToast()
     Assert.assertEquals(Toast.LENGTH_LONG, latestToast.duration)
   }

@@ -69,7 +69,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  val questionnaireViewModel: QuestionnaireViewModel by viewModels()
+  open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
   lateinit var questionnaireConfig: QuestionnaireConfig
 

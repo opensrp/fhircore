@@ -23,6 +23,7 @@ import javax.inject.Singleton
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 
 /**
@@ -33,9 +34,13 @@ import org.smartregister.fhircore.engine.util.extension.decodeJson
  * defaults are used.
  */
 @Singleton
-class ConfigurationRegistry @Inject constructor(@ApplicationContext val context: Context) {
-
-  @Inject lateinit var configService: ConfigService
+class ConfigurationRegistry
+@Inject
+constructor(
+  @ApplicationContext val context: Context,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val configService: ConfigService
+) {
 
   val configurationsMap = mutableMapOf<String, Configuration>()
 
@@ -144,5 +149,8 @@ class ConfigurationRegistry @Inject constructor(@ApplicationContext val context:
   companion object {
     private const val APP_WORKFLOW_CONFIG_FILE = "configurations/app/application_workflow.json"
     const val APP_CONFIG_FILE = "configurations/app/application_configurations.json"
+    const val APP_SYNC_CONFIG = "configurations/app/sync_config.json"
+    const val ORGANIZATION = "organization"
+    const val PUBLISHER = "publisher"
   }
 }

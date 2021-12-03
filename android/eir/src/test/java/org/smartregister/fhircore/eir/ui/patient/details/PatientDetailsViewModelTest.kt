@@ -46,8 +46,7 @@ internal class PatientDetailsViewModelTest {
   @Before
   fun setUp() {
     patientRepository = mockk(relaxed = true)
-    patientDetailsViewModel =
-      spyk(PatientDetailsViewModel(patientRepository = patientRepository, patientId = patientId))
+    patientDetailsViewModel = spyk(PatientDetailsViewModel(patientRepository = patientRepository))
   }
 
   @Test
@@ -55,7 +54,7 @@ internal class PatientDetailsViewModelTest {
     coroutinesTestRule.runBlockingTest {
       val patient = spyk<Patient>().apply { idElement.id = patientId }
       coEvery { patientRepository.fetchDemographics(patientId) } returns patient
-      patientDetailsViewModel.fetchDemographics()
+      patientDetailsViewModel.fetchDemographics(patientId)
       Assert.assertNotNull(patientDetailsViewModel.patientDemographics.value)
       Assert.assertNotNull(patientDetailsViewModel.patientDemographics.value!!.idElement)
       Assert.assertEquals(
@@ -72,7 +71,7 @@ internal class PatientDetailsViewModelTest {
 
       coEvery { patientRepository.getPatientImmunizations(patientId) } returns immunizations
 
-      patientDetailsViewModel.fetchImmunizations()
+      patientDetailsViewModel.fetchImmunizations(patientId)
       Assert.assertNotNull(patientDetailsViewModel.patientImmunizations.value)
       Assert.assertEquals(patientDetailsViewModel.patientImmunizations.value?.size, 1)
     }

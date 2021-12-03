@@ -17,28 +17,71 @@
 package org.smartregister.fhircore.quest
 
 import android.content.Context
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.SearchParameter
+import org.json.JSONArray
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.APP_SYNC_CONFIG
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.ORGANIZATION
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.PUBLISHER
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.decodeJson
 
 class QuestConfigService
 @Inject
 constructor(
   @ApplicationContext val context: Context,
+  val sharedPreferencesHelper: SharedPreferencesHelper
 ) : ConfigService {
+  private val authenticatedUserInfo by lazy {
+    sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
+  }
+  override val resourceSyncParams: Map<ResourceType, Map<String, String>> by lazy {
+    val searchParams = loadSearchParams(context)
+    val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
+    for (i in searchParams.indices) {
+      // TODO: expressionValue supports for Organization and Publisher, extend it using
+      // Composition resource
+      val expressionValue =
+        searchParams[i].expression?.let {
+          when {
+            it.contains(ORGANIZATION) -> authenticatedUserInfo?.organization
+            it.contains(PUBLISHER) -> authenticatedUserInfo?.questionnairePublisher
+            else -> null
+          }
+        }
 
-  override val resourceSyncParams: Map<ResourceType, Map<String, String>>
-    get() {
-      return mapOf(
-        ResourceType.CarePlan to mapOf(),
-        ResourceType.Patient to mapOf(),
-        ResourceType.Questionnaire to mapOf(),
-        ResourceType.QuestionnaireResponse to mapOf(),
-        ResourceType.Binary to mapOf()
+      pairs.add(
+        Pair(
+          ResourceType.fromCode(searchParams[i].base[0].code),
+          expressionValue?.let { mapOf(searchParams[i].expression to it) } ?: mapOf()
+        )
       )
     }
+
+    mapOf(*pairs.toTypedArray())
+  }
+
+  private fun loadSearchParams(context: Context): List<SearchParameter> {
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val json = context.assets.open(APP_SYNC_CONFIG).bufferedReader().use { it.readText() }
+    val searchParameters = mutableListOf<SearchParameter>()
+
+    val jsonArrayEntry = JSONArray(json)
+    (0 until jsonArrayEntry.length()).forEach {
+      searchParameters.add(
+        iParser.parseResource(jsonArrayEntry.getJSONObject(it).toString()) as SearchParameter
+      )
+    }
+    return searchParameters
+  }
 
   override fun provideAuthConfiguration() =
     AuthConfiguration(

@@ -30,7 +30,7 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
     get() =
       mapOf(
         ResourceType.Patient to emptyMap(),
-        ResourceType.Immunization to emptyMap(),
+        ResourceType.Binary to emptyMap(),
         ResourceType.Questionnaire to emptyMap(),
       )
 

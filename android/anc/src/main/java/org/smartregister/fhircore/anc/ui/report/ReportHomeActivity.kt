@@ -36,10 +36,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
+import java.text.SimpleDateFormat
 import java.util.Date
 import javax.inject.Inject
-import kotlin.collections.ArrayList
-import kotlin.collections.List
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.instance.model.api.IBaseBundle
@@ -48,6 +47,7 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.anc.ui.report.ReportViewModel.ReportScreen
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
@@ -88,6 +88,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   var cqlMeasureReportEndDate = ""
   var cqlMeasureReportReportType = ""
   var cqlMeasureReportLibInitialString = ""
+  var cqlMeasureReportSubject = ""
   var cqlHelperURL = ""
   var valueSetURL = ""
   var patientURL = ""
@@ -103,7 +104,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   val fileNameMeasureLibraryCql = "measure_library_cql"
   var patientResourcesIBase = ArrayList<IBaseResource>()
   lateinit var patientDataIBase: IBaseBundle
-  lateinit var patientDetailsData: String
   lateinit var patientId: String
   val reportViewModel by viewModels<ReportViewModel>()
 
@@ -223,7 +223,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         Surface(color = colorResource(id = R.color.white)) {
           Column {
             ReportView(reportViewModel)
-            loadCQLLibraryData()
             loadMeasureEvaluateLibrary()
           }
         }
@@ -359,17 +358,21 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     )
   }
 
-  fun handleMeasureEvaluate(): String {
-    return measureEvaluator.runMeasureEvaluate(
-      patientResourcesIBase,
-      libraryMeasure,
-      fhirContext,
-      cqlMeasureReportURL,
-      cqlMeasureReportStartDate,
-      cqlMeasureReportEndDate,
-      cqlMeasureReportReportType,
-      patientDetailsData.substring(0, patientDetailsData.indexOf(","))
-    )
+  fun handleMeasureEvaluate() {
+    val parameters =
+      measureEvaluator.runMeasureEvaluate(
+        patientResourcesIBase,
+        libraryMeasure,
+        fhirContext,
+        cqlMeasureReportURL,
+        cqlMeasureReportStartDate,
+        cqlMeasureReportEndDate,
+        cqlMeasureReportReportType,
+        cqlMeasureReportSubject
+      )
+    var resultItem = ResultItem("True", true, "", "100", "100")
+    reportViewModel.resultForIndividual.value = resultItem
+    reportViewModel.reportState.currentScreen = ReportScreen.RESULT
   }
 
   fun handleMeasureEvaluateLibrary(auxMeasureEvaluateLibData: String) {
@@ -395,7 +398,32 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   }
 
   fun handleCQLMeasureLoadPatient(auxPatientData: String) {
-    patientDetailsData = auxPatientData
+    val testData = libraryEvaluator.processCQLPatientBundle(auxPatientData)
+    val patientDataStream: InputStream = ByteArrayInputStream(testData!!.toByteArray())
+    patientDataIBase = parser.parseResource(patientDataStream) as IBaseBundle
+    patientResourcesIBase.add(patientDataIBase)
+
+    handleMeasureEvaluate()
+  }
+
+  fun generateMeasureReport(
+    startDate: String,
+    endDate: String,
+    reportType: String,
+    patientId: String,
+    subject: String,
+  ) {
+    val pattern = "yyyy-MM-dd"
+    val simpleDateFormat = SimpleDateFormat(pattern)
+
+    cqlMeasureReportStartDate = simpleDateFormat.format(Date(startDate))
+    cqlMeasureReportEndDate = simpleDateFormat.format(Date(endDate))
+    this.patientId = patientId
+    cqlMeasureReportSubject = subject
+    cqlMeasureReportReportType = reportType
+
+    reportViewModel.reportState.currentScreen = ReportScreen.PREHOMElOADING
+    loadCQLMeasurePatientData()
   }
 
   private fun performFilter(

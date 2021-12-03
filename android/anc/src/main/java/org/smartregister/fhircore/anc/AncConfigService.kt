@@ -35,6 +35,7 @@ class AncConfigService @Inject constructor(@ApplicationContext val context: Cont
         ResourceType.Encounter to mapOf(),
         ResourceType.CarePlan to mapOf(),
         ResourceType.Condition to mapOf(),
+        ResourceType.Task to mapOf()
       )
 
   override fun provideAuthConfiguration() =

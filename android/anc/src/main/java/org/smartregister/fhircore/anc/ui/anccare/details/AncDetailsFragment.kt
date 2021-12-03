@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -131,11 +132,6 @@ class AncDetailsFragment : Fragment() {
   }
 
   private fun setupViews() {
-    viewBinding.carePlanListView.apply {
-      adapter = carePlanAdapter
-      layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-    }
-
     viewBinding.upcomingServicesListView.apply {
       adapter = upcomingServicesAdapter
       layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
@@ -154,7 +150,7 @@ class AncDetailsFragment : Fragment() {
           txtViewNoCarePlan.show()
           txtViewCarePlanSeeAllHeading.hide()
           imageViewSeeAllArrow.hide()
-          carePlanListView.hide()
+          txtViewCarePlan.hide()
         }
       }
       else -> {
@@ -162,9 +158,28 @@ class AncDetailsFragment : Fragment() {
           txtViewNoCarePlan.hide()
           txtViewCarePlanSeeAllHeading.show()
           imageViewSeeAllArrow.show()
-          carePlanListView.show()
+          txtViewCarePlan.show()
         }
-        carePlanAdapter.submitList(immunizations)
+
+        populateImmunizationList(immunizations)
+      }
+    }
+  }
+
+  private fun populateImmunizationList(listCarePlan: List<CarePlanItem>) {
+    val countOverdue = listCarePlan.filter { it.overdue }.size
+    val countDue = listCarePlan.filter { it.due }.size
+    if (countOverdue > 0) {
+      viewBinding.apply {
+        txtViewCarePlan.text = getString(R.string.anc_record_visit_with_overdue, countOverdue)
+        txtViewCarePlan.setTextColor(ContextCompat.getColor(requireContext(), R.color.status_red))
+      }
+    } else if (countDue > 0) {
+      viewBinding.apply {
+        txtViewCarePlan.text = getString(R.string.anc_record_visit)
+        txtViewCarePlan.setTextColor(
+          ContextCompat.getColor(requireContext(), R.color.colorPrimaryLight)
+        )
       }
     }
   }
