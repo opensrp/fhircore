@@ -43,6 +43,7 @@ import org.smartregister.fhircore.engine.data.remote.model.response.OAuthRespons
 import org.smartregister.fhircore.engine.robolectric.FhircoreTestRunner
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.toSha1
 import retrofit2.Call
 import retrofit2.Response
@@ -82,6 +83,7 @@ class AuthenticationServiceTest : RobolectricTest() {
     )
 
     captor = slot()
+    SharedPreferencesHelper.init(ApplicationProvider.getApplicationContext())
   }
 
   @Test
