@@ -18,6 +18,8 @@ package org.smartregister.fhircore.eir
 
 import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 03-12-2021. */
+@ExcludeFromJacocoGeneratedReport
 @AndroidEntryPoint class HiltAndroidActivity : AppCompatActivity()

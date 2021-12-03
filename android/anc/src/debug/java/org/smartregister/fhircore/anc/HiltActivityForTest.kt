@@ -18,5 +18,8 @@ package org.smartregister.fhircore.anc
 
 import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-@AndroidEntryPoint class HiltActivityForTest : AppCompatActivity()
+@ExcludeFromJacocoGeneratedReport
+@AndroidEntryPoint
+class HiltActivityForTest : AppCompatActivity()
