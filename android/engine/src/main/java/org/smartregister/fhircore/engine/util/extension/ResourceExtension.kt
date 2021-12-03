@@ -30,24 +30,16 @@ import org.hl7.fhir.r4.model.Resource
 import org.json.JSONException
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import timber.log.Timber
 
 fun Resource.toJson(parser: IParser = FhirContext.forR4().newJsonParser()): String =
   parser.encodeResourceToString(this)
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
-  Timber.e("Resource that going to be updated")
-  Timber.e(FhirContext.forR4().newJsonParser().encodeResourceToString(this))
-  Timber.e("Resource that being updated")
-  Timber.e(FhirContext.forR4().newJsonParser().encodeResourceToString(updatedResource))
-
   val jsonParser = FhirContext.forR4().newJsonParser()
   val stringJson = toJson(jsonParser)
   val originalResourceJson = JSONObject(stringJson)
 
-  Timber.e("Updated resource")
   originalResourceJson.updateFrom(JSONObject(updatedResource.toJson(jsonParser)))
-  Timber.e(originalResourceJson.toString())
   return jsonParser.parseResource(this::class.java, originalResourceJson.toString()).apply {
     if (this.meta == null || this.meta.isEmpty) {
       this.meta = this@updateFrom.meta

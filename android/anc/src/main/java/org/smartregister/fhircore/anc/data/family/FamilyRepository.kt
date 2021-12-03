@@ -120,8 +120,8 @@ class FamilyRepository(
     patientId: String,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
-  ): String {
-    return updateProcessFamilyMember(patientId, questionnaire, questionnaireResponse, null)
+  ) {
+    updateProcessFamilyMember(patientId, questionnaire, questionnaireResponse, null)
   }
 
   suspend fun updateProcessFamilyMember(
@@ -129,7 +129,7 @@ class FamilyRepository(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     relatedTo: String?
-  ): String {
+  ) {
     resourceMapperExtended.saveParsedResource(
       questionnaireResponse,
       questionnaire,
@@ -137,8 +137,6 @@ class FamilyRepository(
       relatedTo,
       editForm = true
     )
-
-    return patientId
   }
 
   suspend fun enrollIntoAnc(

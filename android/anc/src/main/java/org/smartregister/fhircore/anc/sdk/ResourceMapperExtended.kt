@@ -16,14 +16,12 @@
 
 package org.smartregister.fhircore.anc.sdk
 
-import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import timber.log.Timber
 
 class ResourceMapperExtended(private val defaultRepository: DefaultRepository) {
 
@@ -45,9 +43,6 @@ class ResourceMapperExtended(private val defaultRepository: DefaultRepository) {
         defaultRepository.loadResource(patientId)
           ?: ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as
             Patient
-
-    Timber.e("Patient id: $patientId")
-    Timber.e(FhirContext.forR4().newJsonParser().encodeResourceToString(patient))
 
     patient.id = patientId
 
