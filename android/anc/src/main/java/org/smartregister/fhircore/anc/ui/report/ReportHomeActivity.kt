@@ -39,8 +39,6 @@ import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import javax.inject.Inject
-import kotlin.collections.ArrayList
-import kotlin.collections.List
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.instance.model.api.IBaseBundle
@@ -50,7 +48,7 @@ import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.model.ResultItem
-import org.smartregister.fhircore.anc.ui.anccare.register.Anc
+import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.anc.ui.report.ReportViewModel.ReportScreen
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.cql.MeasureEvaluator
@@ -68,7 +66,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var fhirResourceDataSource: FhirResourceDataSource
 
-  @Inject lateinit var ancPatientRepository: PatientRepository
+  @Inject lateinit var patientRepository: PatientRepository
 
   lateinit var parser: IParser
   lateinit var fhirContext: FhirContext
@@ -120,7 +118,8 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
     reportViewModel.apply {
       this.patientId = patientId
-      registerDataViewModel = initializeRegisterDataViewModel(ancPatientRepository)
+      registerDataViewModel =
+        initializeRegisterDataViewModel(this@ReportHomeActivity.patientRepository)
     }
 
     reportViewModel.registerDataViewModel.currentPage.observe(
@@ -446,16 +445,17 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   }
 
   fun showDatePicker() {
-    val builder = MaterialDatePicker.Builder.datePicker()
-    builder.setSelection(reportViewModel.getSelectionDate())
-    val startDateMillis = reportViewModel.startDateTimeMillis.value ?: Date().time
-    val endDateMillis = reportViewModel.endDateTimeMillis.value ?: Date().time
-    val forStartOnly = if (reportViewModel.isChangingStartDate.value != false) 1L else 0L
-    builder.setCalendarConstraints(limitRange(forStartOnly, startDateMillis, endDateMillis).build())
-    val picker = builder.build()
-    picker.show(supportFragmentManager, picker.toString())
-    val funOnDatePicked = reportViewModel::onDatePicked
-    picker.addOnPositiveButtonClickListener { funOnDatePicked(it) }
+    MaterialDatePicker.Builder.datePicker().apply {
+      setSelection(reportViewModel.getSelectionDate())
+      val startDateMillis = reportViewModel.startDateTimeMillis.value ?: Date().time
+      val endDateMillis = reportViewModel.endDateTimeMillis.value ?: Date().time
+      val forStartOnly = if (reportViewModel.isChangingStartDate.value != false) 1L else 0L
+      setCalendarConstraints(limitRange(forStartOnly, startDateMillis, endDateMillis).build())
+      with(this.build()) {
+        show(supportFragmentManager, this.toString())
+        addOnPositiveButtonClickListener(reportViewModel::onDatePicked)
+      }
+    }
   }
 
   /*  Limit selectable range to start and end Date provided */

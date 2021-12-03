@@ -21,21 +21,34 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import java.text.SimpleDateFormat
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Encounter
-import org.junit.Ignore
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.anc.data.EncounterRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
+@HiltAndroidTest
 class EncounterListScreenTest : RobolectricTest() {
 
-  @get:Rule val composeRule = createComposeRule()
+  @Inject lateinit var encounterRepository: EncounterRepository
 
-  @Ignore("Fix tracked on https://github.com/opensrp/fhircore/issues/760")
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 1) val composeRule = createComposeRule()
+
+  @Before
+  fun setUp() {
+    hiltRule.inject()
+  }
+
   @Test
   fun testEncounterListScreen() {
-    composeRule.setContent { EncounterListScreen(dummyData()) }
+    composeRule.setContent { EncounterListScreen(EncounterListViewModel(encounterRepository)) }
 
     // verify top bar is displayed
     composeRule.onNodeWithText("Past encounters").assertExists()

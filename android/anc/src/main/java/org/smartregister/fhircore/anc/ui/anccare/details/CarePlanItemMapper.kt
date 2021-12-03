@@ -24,8 +24,6 @@ import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.overdue
 
-// upcoming services
-
 object CarePlanItemMapper : DomainMapper<CarePlan, CarePlanItem> {
 
   override fun mapToDomainModel(dto: CarePlan): CarePlanItem {

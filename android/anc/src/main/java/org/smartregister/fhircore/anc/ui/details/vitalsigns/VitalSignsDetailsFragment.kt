@@ -29,25 +29,26 @@ import javax.inject.Inject
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.databinding.FragmentVitalDetailsBinding
-import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.anc.ui.details.adapter.AllergiesAdapter
 import org.smartregister.fhircore.anc.ui.details.adapter.ConditionsAdapter
 import org.smartregister.fhircore.anc.ui.details.adapter.EncounterAdapter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.hide
+import org.smartregister.fhircore.engine.util.extension.show
 
 @AndroidEntryPoint
 class VitalSignsDetailsFragment : Fragment() {
 
-  val ancDetailsViewModel by viewModels<VitalSignsDetailsViewModel>()
-  private val allergiesAdapter = AllergiesAdapter()
-  private val conditionsAdapter = ConditionsAdapter()
-  private val encounterAdapter = EncounterAdapter()
+  @Inject lateinit var allergiesAdapter: AllergiesAdapter
 
-  @Inject lateinit var ancPatientItemMapper: AncPatientItemMapper
-  @Inject lateinit var dispatcherProvider: DispatcherProvider
+  @Inject lateinit var conditionsAdapter: ConditionsAdapter
+
+  @Inject lateinit var encounterAdapter: EncounterAdapter
 
   lateinit var binding: FragmentVitalDetailsBinding
+
+  val ancDetailsViewModel by viewModels<VitalSignsDetailsViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -55,16 +56,18 @@ class VitalSignsDetailsFragment : Fragment() {
     savedInstanceState: Bundle?
   ): View {
     binding = DataBindingUtil.inflate(inflater, R.layout.fragment_vital_details, container, false)
-
     return binding.root
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    var patientId = arguments?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
+    val patientId = arguments?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
     setupViews()
-    ancDetailsViewModel.ancPatientRepository.domainMapperInUse = ancPatientItemMapper
+
+    ancDetailsViewModel.patientRepository.setAncItemMapperType(
+      AncItemMapper.AncItemMapperType.DETAILS
+    )
     ancDetailsViewModel
       .fetchEncounters(patientId)
       .observe(viewLifecycleOwner, this::handleEncounters)
@@ -87,13 +90,17 @@ class VitalSignsDetailsFragment : Fragment() {
     binding.swipeContainer.isRefreshing = false
     when {
       listEncounters.isEmpty() -> {
-        binding.txtViewNoEncounter.visibility = View.VISIBLE
-        binding.encounterListView.visibility = View.GONE
+        binding.apply {
+          txtViewNoEncounter.show()
+          encounterListView.hide()
+        }
       }
       else -> {
-        binding.txtViewNoEncounter.visibility = View.GONE
-        binding.encounterListView.visibility = View.VISIBLE
-        populateEncounterList(listEncounters)
+        binding.apply {
+          txtViewNoEncounter.hide()
+          encounterListView.show()
+        }
+        encounterAdapter.submitList(listEncounters)
       }
     }
   }
@@ -113,11 +120,9 @@ class VitalSignsDetailsFragment : Fragment() {
     }
   }
 
-  private fun populateEncounterList(listEncounters: List<EncounterItem>) {
-    encounterAdapter.submitList(arrayListOf())
-  }
-
   companion object {
+    const val TAG = "VitalSignsDetailsFragment"
+
     fun newInstance(bundle: Bundle = Bundle()) =
       VitalSignsDetailsFragment().apply { arguments = bundle }
   }

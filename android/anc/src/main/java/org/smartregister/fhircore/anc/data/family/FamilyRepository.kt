@@ -50,12 +50,11 @@ constructor(
   @ApplicationContext val context: Context,
   override val fhirEngine: FhirEngine,
   override val domainMapper: FamilyItemMapper,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
+  val ancPatientRepository: PatientRepository
 ) : RegisterRepository<Family, FamilyItem> {
 
   private val registerConfig = context.loadRegisterConfig(RegisterType.FAMILY_REGISTER_ID)
-
-  @Inject lateinit var ancPatientRepository: PatientRepository
 
   private val resourceMapperExtended = ResourceMapperExtended(fhirEngine)
 

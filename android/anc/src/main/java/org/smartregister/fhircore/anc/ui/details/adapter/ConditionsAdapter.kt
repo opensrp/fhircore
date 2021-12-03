@@ -20,12 +20,15 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
+import dagger.hilt.android.scopes.FragmentScoped
+import javax.inject.Inject
 import org.smartregister.fhircore.anc.data.model.ConditionItem
 import org.smartregister.fhircore.anc.databinding.ItemPlanTextBinding
 import org.smartregister.fhircore.engine.ui.base.BaseSimpleRecyclerViewHolder
 
 /** Subclass of [ListAdapter] used to display conditions for the non ANC client */
-class ConditionsAdapter :
+@FragmentScoped
+class ConditionsAdapter @Inject constructor() :
   ListAdapter<ConditionItem, ConditionsAdapter.PatientConditionViewHolder>(
     ConditionItemDiffCallback
   ) {
@@ -52,6 +55,6 @@ class ConditionsAdapter :
       oldItem.title == newItem.title
 
     override fun areContentsTheSame(oldItem: ConditionItem, newItem: ConditionItem) =
-      oldItem.equals(newItem)
+      oldItem == newItem
   }
 }

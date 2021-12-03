@@ -16,39 +16,29 @@
 
 package org.smartregister.fhircore.anc
 
+import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import androidx.work.WorkerParameters
-import androidx.work.impl.utils.taskexecutor.WorkManagerTaskExecutor
-import io.mockk.every
-import io.mockk.mockk
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
-class AncFhirSyncWorkerTest : RobolectricTest() {
+class AncConfigServiceTest : RobolectricTest() {
 
-  private lateinit var ancFhirSyncWorker: AncFhirSyncWorker
+  private lateinit var eirConfigService: AncConfigService
+
+  private val context = ApplicationProvider.getApplicationContext<Context>()
 
   @Before
   fun setUp() {
-
-    val workerParam = mockk<WorkerParameters>()
-    every { workerParam.taskExecutor } returns WorkManagerTaskExecutor(mockk())
-
-    ancFhirSyncWorker = AncFhirSyncWorker(ApplicationProvider.getApplicationContext(), workerParam)
+    eirConfigService = AncConfigService(context)
   }
 
   @Test
-  fun testGetFhirEngineShouldReturnNonNullFhirEngine() {
-    Assert.assertNotNull(ancFhirSyncWorker.getFhirEngine())
-  }
-
-  @Test
-  fun testGetSyncDataReturnMapOfConfiguredSyncItems() {
-    val data = ancFhirSyncWorker.getSyncData()
-    Assert.assertEquals(7, data.size)
+  fun testResourceSyncParamsVariable() {
+    val data = eirConfigService.resourceSyncParams
+    Assert.assertEquals(data.size, 7)
     Assert.assertTrue(data.containsKey(ResourceType.Patient))
     Assert.assertTrue(data.containsKey(ResourceType.Questionnaire))
     Assert.assertTrue(data.containsKey(ResourceType.Observation))
@@ -59,7 +49,16 @@ class AncFhirSyncWorkerTest : RobolectricTest() {
   }
 
   @Test
-  fun testGetDataSourceReturnsDataSource() {
-    Assert.assertNotNull(ancFhirSyncWorker.getDataSource())
+  fun testProvideAuthConfiguration() {
+    val authConfiguration = eirConfigService.provideAuthConfiguration()
+
+    Assert.assertEquals(BuildConfig.FHIR_BASE_URL, authConfiguration.fhirServerBaseUrl)
+    Assert.assertEquals(BuildConfig.OAUTH_BASE_URL, authConfiguration.oauthServerBaseUrl)
+    Assert.assertEquals(BuildConfig.OAUTH_CIENT_ID, authConfiguration.clientId)
+    Assert.assertEquals(BuildConfig.OAUTH_CLIENT_SECRET, authConfiguration.clientSecret)
+    Assert.assertEquals(
+      context.getString(R.string.authenticator_account_type),
+      authConfiguration.accountType
+    )
   }
 }

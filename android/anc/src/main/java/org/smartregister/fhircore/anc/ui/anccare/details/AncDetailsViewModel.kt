@@ -38,9 +38,7 @@ class AncDetailsViewModel
 constructor(val patientRepository: PatientRepository, var dispatcher: DispatcherProvider) :
   ViewModel() {
 
-  lateinit var patientId: String
-
-  fun fetchDemographics(): LiveData<PatientDetailItem> {
+  fun fetchDemographics(patientId: String): LiveData<PatientDetailItem> {
     val patientDemographics = MutableLiveData<PatientDetailItem>()
     viewModelScope.launch(dispatcher.io()) {
       val ancPatientDetailItem = patientRepository.fetchDemographics(patientId = patientId)
@@ -49,7 +47,7 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
     return patientDemographics
   }
 
-  fun fetchCarePlan(): LiveData<List<CarePlanItem>> {
+  fun fetchCarePlan(patientId: String): LiveData<List<CarePlanItem>> {
     val patientCarePlan = MutableLiveData<List<CarePlanItem>>()
     viewModelScope.launch(dispatcher.io()) {
       val listCarePlan = patientRepository.searchCarePlan(id = patientId)
@@ -59,7 +57,7 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
     return patientCarePlan
   }
 
-  fun fetchObservation(): LiveData<AncOverviewItem> {
+  fun fetchObservation(patientId: String): LiveData<AncOverviewItem> {
     val patientAncOverviewItem = MutableLiveData<AncOverviewItem>()
     val ancOverviewItem = AncOverviewItem()
     viewModelScope.launch(dispatcher.io()) {
@@ -91,7 +89,7 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
     return patientAncOverviewItem
   }
 
-  fun fetchUpcomingServices(): LiveData<List<UpcomingServiceItem>> {
+  fun fetchUpcomingServices(patientId: String): LiveData<List<UpcomingServiceItem>> {
     val patientEncounters = MutableLiveData<List<UpcomingServiceItem>>()
     viewModelScope.launch(dispatcher.io()) {
       val listEncounters = patientRepository.fetchCarePlan(patientId = patientId)
@@ -101,7 +99,7 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
     return patientEncounters
   }
 
-  fun fetchLastSeen(): LiveData<List<EncounterItem>> {
+  fun fetchLastSeen(patientId: String): LiveData<List<EncounterItem>> {
     val patientEncounters = MutableLiveData<List<EncounterItem>>()
     viewModelScope.launch(dispatcher.io()) {
       val listEncounters = patientRepository.fetchEncounters(patientId = patientId)

@@ -91,7 +91,7 @@ fun FamilyDetailScreen(familyDetailViewModel: FamilyDetailViewModel) {
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
-          text = patient.value?.address?.firstOrNull()?.city.toString() ?: "",
+          text = patient.value?.address?.firstOrNull()?.city.toString(),
           color = colorResource(id = R.color.white),
           fontSize = 25.sp
         )

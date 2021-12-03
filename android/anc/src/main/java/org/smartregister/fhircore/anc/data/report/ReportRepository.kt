@@ -30,8 +30,6 @@ class ReportRepository
 constructor(val fhirEngine: FhirEngine, @ApplicationContext val context: Context) :
   PagingSource<Int, ReportItem>() {
 
-  val SAMPLE_REPORT_MEASURES_FILE = "sample_data_report_measures.json"
-
   override fun getRefreshKey(state: PagingState<Int, ReportItem>): Int? {
     return state.anchorPosition
   }
@@ -50,5 +48,9 @@ constructor(val fhirEngine: FhirEngine, @ApplicationContext val context: Context
     val json =
       context.assets.open(SAMPLE_REPORT_MEASURES_FILE).bufferedReader().use { it.readText() }
     return json.decodeJson()
+  }
+
+  companion object {
+    const val SAMPLE_REPORT_MEASURES_FILE = "sample_data_report_measures.json"
   }
 }

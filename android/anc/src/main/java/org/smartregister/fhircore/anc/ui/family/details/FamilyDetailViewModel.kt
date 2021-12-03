@@ -75,7 +75,9 @@ constructor(
     backClicked.value = true
   }
 
-  fun onAddMemberItemClicked() {}
+  fun onAddMemberItemClicked() {
+    addNewMember.value = true
+  }
 
   fun onSeeAllEncountersListener() {}
 

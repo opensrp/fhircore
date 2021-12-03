@@ -43,9 +43,9 @@ import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
-import org.smartregister.fhircore.anc.ui.anccare.register.Anc
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
+import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel

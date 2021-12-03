@@ -156,6 +156,10 @@ dependencies {
     releaseImplementation deps.fragment_testing
     testImplementation deps.mockk
 
+    // Hilt test dependencies
+    testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
+    kaptTest("com.google.dagger:hilt-android-compiler:$hiltVersion")
+
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
 
