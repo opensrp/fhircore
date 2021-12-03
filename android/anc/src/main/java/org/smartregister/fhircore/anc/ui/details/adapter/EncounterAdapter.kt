@@ -20,13 +20,16 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
+import dagger.hilt.android.scopes.FragmentScoped
+import javax.inject.Inject
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.databinding.ItemEncountersBinding
 import org.smartregister.fhircore.engine.ui.base.BaseSimpleRecyclerViewHolder
 import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 
 /** Subclass of [ListAdapter] used to display encounter for the non ANC client */
-class EncounterAdapter :
+@FragmentScoped
+class EncounterAdapter @Inject constructor() :
   ListAdapter<EncounterItem, EncounterAdapter.PatientEncounterViewHolder>(
     EncounterItemDiffCallback
   ) {
@@ -56,6 +59,6 @@ class EncounterAdapter :
       oldItem.display == newItem.display
 
     override fun areContentsTheSame(oldItem: EncounterItem, newItem: EncounterItem) =
-      oldItem.equals(newItem)
+      oldItem == newItem
   }
 }

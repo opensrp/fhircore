@@ -20,7 +20,6 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -46,7 +45,14 @@ import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
-internal class AncDetailsViewModelTest: RobolectricTest() {
+internal class AncDetailsViewModelTest : RobolectricTest() {
+
+  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
+
   private lateinit var fhirEngine: FhirEngine
 
   private lateinit var ancDetailsViewModel: AncDetailsViewModel
@@ -55,15 +61,9 @@ internal class AncDetailsViewModelTest: RobolectricTest() {
 
   private val patientId = "samplePatientId"
 
-  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
-  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
-  @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
-
   @Before
   fun setUp() {
     hiltRule.inject()
-    MockKAnnotations.init(this, relaxUnitFun = true)
-
     fhirEngine = mockk(relaxed = true)
     patientRepository = mockk()
 
@@ -75,10 +75,7 @@ internal class AncDetailsViewModelTest: RobolectricTest() {
     coEvery { patientRepository.fetchDemographics(patientId) } returns ancPatientDetailItem
 
     ancDetailsViewModel =
-      spyk(
-        AncDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider)
-      )
-    ancDetailsViewModel.patientId = patientId
+      spyk(AncDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider))
   }
 
   @Test
@@ -86,7 +83,8 @@ internal class AncDetailsViewModelTest: RobolectricTest() {
     coroutinesTestRule.runBlockingTest {
       val patient = spyk<Patient>().apply { idElement.id = patientId }
       coEvery { fhirEngine.load(Patient::class.java, patientId) } returns patient
-      val patientDetailItem: PatientDetailItem = ancDetailsViewModel.fetchDemographics().value!!
+      val patientDetailItem: PatientDetailItem =
+        ancDetailsViewModel.fetchDemographics(patientId).value!!
       Assert.assertNotNull(patientDetailItem)
       Assert.assertEquals(patientDetailItem.patientDetails.patientIdentifier, patientId)
       val patientDetails =
@@ -113,7 +111,7 @@ internal class AncDetailsViewModelTest: RobolectricTest() {
     coEvery { patientRepository.fetchCarePlan(any()) } returns
       listOf(buildCarePlanWithActive("1111"))
 
-    val carePlanList = ancDetailsViewModel.fetchCarePlan().value
+    val carePlanList = ancDetailsViewModel.fetchCarePlan(patientId).value
 
     if (carePlanList != null && carePlanList.isNotEmpty()) {
       Assert.assertEquals(1, carePlanList.size)

@@ -17,26 +17,32 @@
 package org.smartregister.fhircore.anc.ui.bmicompute
 
 import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
-import io.mockk.mockk
+import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireViewModel
 
+@HiltAndroidTest
 class BmiQuestionnaireViewModelTest : RobolectricTest() {
 
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @Inject lateinit var patientRepository: PatientRepository
+
   private lateinit var viewModel: BmiQuestionnaireViewModel
-  private lateinit var repository: PatientRepository
   private val app = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
   @Before
   fun setUp() {
-    repository = mockk()
-    viewModel = BmiQuestionnaireViewModel(repository, AncPatientItemMapper(app))
+    hiltRule.inject()
+    viewModel = BmiQuestionnaireViewModel(patientRepository)
   }
 
   @Test

@@ -27,7 +27,7 @@ import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
-import org.smartregister.fhircore.quest.shadow.FakeKeyStore
+import org.smartregister.fhircore.quest.app.fakes.FakeKeyStore
 
 @RunWith(FhircoreTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)

@@ -36,6 +36,7 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity.Companion.BARCODE_RESULT_KEY
 

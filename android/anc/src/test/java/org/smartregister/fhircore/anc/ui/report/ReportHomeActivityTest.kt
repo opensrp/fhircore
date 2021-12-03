@@ -22,6 +22,9 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every
@@ -31,6 +34,7 @@ import io.mockk.spyk
 import io.mockk.unmockkObject
 import java.io.ByteArrayInputStream
 import java.io.InputStream
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.junit.After
@@ -39,21 +43,29 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.data.report.ReportRepository
+import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FileUtil
 
 @ExperimentalCoroutinesApi
+@HiltAndroidTest
 class ReportHomeActivityTest : ActivityRobolectricTest() {
 
-  private lateinit var reportHomeActivity: ReportHomeActivity
-  private lateinit var reportHomeActivitySpy: ReportHomeActivity
-
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 1) val coroutinesTestRule = CoroutineTestRule()
+  @Inject lateinit var reportRepository: ReportRepository
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+  @Inject lateinit var patientRepository: PatientRepository
   @MockK lateinit var fhirEngine: FhirEngine
-  @get:Rule var coroutinesTestRule = CoroutineTestRule()
   @MockK lateinit var parser: IParser
   @MockK lateinit var fhirResourceDataSource: FhirResourceDataSource
+  @BindValue lateinit var reportViewModel: ReportViewModel
+  private lateinit var reportHomeActivity: ReportHomeActivity
+  private lateinit var reportHomeActivitySpy: ReportHomeActivity
   var libraryData = FileUtil.readJsonFile("test/resources/cql/library.json")
   var valueSetData = FileUtil.readJsonFile("test/resources/cql/valueSet.json")
   val valueSetDataStream: InputStream = ByteArrayInputStream(valueSetData.toByteArray())
@@ -61,12 +73,20 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   val patientDataStream: InputStream = ByteArrayInputStream(patientData.toByteArray())
   var helperData = FileUtil.readJsonFile("test/resources/cql/helper.json")
   val parameters = "{\"parameters\":\"parameters\"}"
-  @MockK lateinit var reportViewModel: ReportViewModel
 
   @Before
   fun setUp() {
+    hiltRule.inject()
     MockKAnnotations.init(this, relaxUnitFun = true)
     mockkObject(FileUtil)
+    reportViewModel =
+      spyk(
+        ReportViewModel(
+          repository = reportRepository,
+          dispatcher = dispatcherProvider,
+          patientRepository = patientRepository
+        )
+      )
     reportHomeActivity = Robolectric.buildActivity(ReportHomeActivity::class.java).create().get()
     reportHomeActivitySpy = spyk(objToCopy = reportHomeActivity)
     reportHomeActivitySpy.libraryResources = ArrayList()
@@ -144,13 +164,13 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
 
     every {
       reportHomeActivitySpy.libraryEvaluator.runCql(
-        reportHomeActivitySpy.libraryResources,
-        reportHomeActivitySpy.valueSetBundle,
-        reportHomeActivitySpy.patientDataIBase,
-        any(),
-        any(),
-        any(),
-        any()
+        resources = reportHomeActivitySpy.libraryResources,
+        valueSetData = reportHomeActivitySpy.valueSetBundle,
+        testData = reportHomeActivitySpy.patientDataIBase,
+        fhirContext = any(),
+        evaluatorId = any(),
+        context = any(),
+        contextLabel = any()
       )
     } returns parameters
     reportHomeActivitySpy.handleCQL()
@@ -162,14 +182,14 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
     reportHomeActivitySpy.patientDetailsData = "Every,Woman Pregnant"
     every {
       reportHomeActivitySpy.measureEvaluator.runMeasureEvaluate(
-        any(),
-        reportHomeActivitySpy.libraryMeasure,
-        any(),
-        any(),
-        any(),
-        any(),
-        any(),
-        any()
+        patientResources = any(),
+        library = reportHomeActivitySpy.libraryMeasure,
+        fhirContext = any(),
+        url = any(),
+        periodStartDate = any(),
+        periodEndDate = any(),
+        reportType = any(),
+        subject = any()
       )
     } returns parameters
     reportHomeActivitySpy.handleMeasureEvaluate()
@@ -290,7 +310,8 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   }
 
   @After
-  fun tearDown() {
+  override fun tearDown() {
+    super.tearDown()
     unmockkObject(FileUtil)
   }
 

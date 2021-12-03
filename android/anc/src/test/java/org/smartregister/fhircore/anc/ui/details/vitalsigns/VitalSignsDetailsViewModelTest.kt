@@ -46,11 +46,6 @@ internal class VitalSignsDetailsViewModelTest {
     patientRepository = mockk()
 
     patientDetailsViewModel =
-      spyk(
-        VitalSignsDetailsViewModel(
-          patientRepository,
-          coroutinesTestRule.testDispatcherProvider
-        )
-      )
+      spyk(VitalSignsDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider))
   }
 }

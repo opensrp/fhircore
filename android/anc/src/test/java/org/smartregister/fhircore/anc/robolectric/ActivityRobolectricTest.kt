@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.activity
+package org.smartregister.fhircore.anc.robolectric
 
 import android.app.Activity
+import android.os.Looper
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.annotation.StringRes
 import org.junit.After
-import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.robolectric.Shadows
 
 abstract class ActivityRobolectricTest : RobolectricTest() {
 
   @After
-  fun testDown() {
+  open fun tearDown() {
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
     getActivity().finish()
   }
 

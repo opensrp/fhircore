@@ -25,20 +25,23 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @HiltViewModel
 class VitalSignsDetailsViewModel
 @Inject
-constructor(val ancPatientRepository: PatientRepository, var dispatcher: DispatcherProvider) :
+constructor(val patientRepository: PatientRepository, var dispatcher: DispatcherProvider) :
   ViewModel() {
 
   fun fetchEncounters(patientId: String): LiveData<List<EncounterItem>> {
     val patientEncounters = MutableLiveData<List<EncounterItem>>()
     viewModelScope.launch(dispatcher.io()) {
-      val listEncounters = ancPatientRepository.fetchEncounters(patientId = patientId)
-      val listEncountersItem = arrayListOf<EncounterItem>()
-      patientEncounters.postValue(listEncountersItem)
+      val listEncounters =
+        patientRepository.fetchEncounters(patientId = patientId).map {
+          EncounterItemMapper.mapToDomainModel(it)
+        }
+      patientEncounters.postValue(listEncounters)
     }
     return patientEncounters
   }

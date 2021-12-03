@@ -14,18 +14,9 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.shadow
+package org.smartregister.fhircore.anc
 
-import android.content.Context
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.parser.IParser
-import org.hl7.fhir.r4.model.CarePlan
+import androidx.appcompat.app.AppCompatActivity
+import dagger.hilt.android.AndroidEntryPoint
 
-object TestUtils {
-  private val iParser: IParser = FhirContext.forR4().newJsonParser()
-
-  fun loadCarePlan(context: Context, carePLan: String): CarePlan {
-    val cJson = context.assets.open(carePLan).bufferedReader().use { it.readText() }
-    return iParser.parseResource(cJson) as CarePlan
-  }
-}
+@AndroidEntryPoint class HiltActivityForTest : AppCompatActivity()

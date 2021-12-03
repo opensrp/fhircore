@@ -32,7 +32,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 class CarePlanDetailsViewModel
 @Inject
 constructor(
-  val ancPatientRepository: PatientRepository,
+  val patientRepository: PatientRepository,
   var dispatcher: DispatcherProvider,
 ) : ViewModel() {
 
@@ -41,8 +41,8 @@ constructor(
   fun fetchCarePlan(): LiveData<List<CarePlanItem>> {
     val patientCarePlan = MutableLiveData<List<CarePlanItem>>()
     viewModelScope.launch(dispatcher.io()) {
-      val listCarePlan = ancPatientRepository.fetchCarePlan(patientId = patientId)
-      val listCarePlanItem = ancPatientRepository.fetchCarePlanItem(listCarePlan)
+      val listCarePlan = patientRepository.fetchCarePlan(patientId = patientId)
+      val listCarePlanItem = patientRepository.fetchCarePlanItem(listCarePlan)
       patientCarePlan.postValue(listCarePlanItem)
     }
     return patientCarePlan
@@ -51,8 +51,8 @@ constructor(
   fun fetchEncounters(): LiveData<List<UpcomingServiceItem>> {
     val patientEncounters = MutableLiveData<List<UpcomingServiceItem>>()
     viewModelScope.launch(dispatcher.io()) {
-      val listEncounters = ancPatientRepository.fetchCarePlan(patientId = patientId)
-      val listEncountersItem = ancPatientRepository.fetchUpcomingServiceItem(listEncounters)
+      val listEncounters = patientRepository.fetchCarePlan(patientId = patientId)
+      val listEncountersItem = patientRepository.fetchUpcomingServiceItem(listEncounters)
       patientEncounters.postValue(listEncountersItem)
     }
     return patientEncounters

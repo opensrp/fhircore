@@ -16,35 +16,29 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.encounters
 
-import androidx.test.core.app.ApplicationProvider
 import io.mockk.mockk
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
-import org.robolectric.Robolectric
 import org.smartregister.fhircore.anc.data.EncounterRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
-@Ignore("Passing on local but failing CI")
 class EncounterListViewModelTest : RobolectricTest() {
 
-  private lateinit var repository: EncounterRepository
-  private lateinit var viewModel: EncounterListViewModel
+  private lateinit var encounterRepository: EncounterRepository
+
+  private lateinit var encounterListViewModel: EncounterListViewModel
 
   @Before
   fun setUp() {
-    repository = mockk()
-    viewModel = EncounterListViewModel(mockk())
+    encounterRepository = EncounterRepository(mockk())
+    encounterListViewModel = EncounterListViewModel(encounterRepository)
   }
 
   @Test
   fun testShouldVerifyBackClickListener() {
-    var count = 0
-
-    /*viewModel.setAppBackClickListener { ++count }
-    viewModel.getAppBackClickListener().invoke()*/
-
-    Assert.assertEquals(1, count)
+    encounterListViewModel.onAppBackClick()
+    Assert.assertNotNull(encounterListViewModel.onBackClick)
+    Assert.assertEquals(true, encounterListViewModel.onBackClick.value!!)
   }
 }

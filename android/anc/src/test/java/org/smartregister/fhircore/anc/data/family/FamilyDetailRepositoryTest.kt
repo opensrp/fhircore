@@ -34,13 +34,13 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 
 class FamilyDetailRepositoryTest : RobolectricTest() {
 
   private lateinit var repository: FamilyDetailRepository
+
   private lateinit var fhirEngine: FhirEngine
 
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
@@ -48,7 +48,13 @@ class FamilyDetailRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     fhirEngine = mockk()
-    repository = FamilyDetailRepository(fhirEngine, FamilyItemMapper(ApplicationProvider.getApplicationContext()), CoroutineTestRule().testDispatcherProvider, mockk())
+    repository =
+      FamilyDetailRepository(
+        fhirEngine = fhirEngine,
+        familyItemMapper = FamilyItemMapper(ApplicationProvider.getApplicationContext()),
+        dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
+        ancPatientRepository = mockk()
+      )
   }
 
   @Test
@@ -148,7 +154,7 @@ class FamilyDetailRepositoryTest : RobolectricTest() {
 
     val items = runBlocking { repository.fetchEncounters("") }
 
-    Assert.assertEquals(1, items?.size)
-    Assert.assertEquals("first encounter", items?.get(0)?.class_?.display)
+    Assert.assertEquals(1, items.size)
+    Assert.assertEquals("first encounter", items[0].class_?.display)
   }
 }

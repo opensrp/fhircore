@@ -20,12 +20,15 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
+import dagger.hilt.android.scopes.FragmentScoped
+import javax.inject.Inject
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.databinding.ItemCareplanBinding
 import org.smartregister.fhircore.engine.ui.base.BaseSimpleRecyclerViewHolder
 
 /** Subclass of [ListAdapter] used to display careplan for the ANC client */
-class CarePlanAdapter :
+@FragmentScoped
+class CarePlanAdapter @Inject constructor() :
   ListAdapter<CarePlanItem, CarePlanAdapter.PatientCarePlanViewHolder>(CarePlanItemDiffCallback) {
 
   inner class PatientCarePlanViewHolder(private val containerView: ItemCareplanBinding) :

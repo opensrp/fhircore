@@ -47,8 +47,8 @@ import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
 import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.anccare.details.CarePlanItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
-import org.smartregister.fhircore.anc.ui.anccare.register.Anc
-import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
+import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.anc.util.AncOverviewType
 import org.smartregister.fhircore.anc.util.RegisterType
 import org.smartregister.fhircore.anc.util.SearchFilter
@@ -56,7 +56,6 @@ import org.smartregister.fhircore.anc.util.filterBy
 import org.smartregister.fhircore.anc.util.filterByPatient
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.anc.util.loadRegisterConfigAnc
-import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -89,11 +88,6 @@ constructor(
 
   val resourceMapperExtended = ResourceMapperExtended(fhirEngine)
 
-  // PatientRepository is used with either AncItemMapper or AncPatientItemMapper
-  // This allows the specific class to change this from the default AncItemMapper
-  // TODO: Find a better way to do this eg. Hilt Module
-  var domainMapperInUse: DomainMapper<Anc, PatientItem> = domainMapper
-
   override suspend fun loadData(
     query: String,
     pageNumber: Int,
@@ -125,7 +119,7 @@ constructor(
             .getOrNull()
 
         val carePlans = searchCarePlan(it.logicalId)
-        domainMapperInUse.mapToDomainModel(Anc(it, head, carePlans))
+        domainMapper.mapToDomainModel(Anc(it, head, carePlans))
       }
     }
   }
@@ -179,18 +173,8 @@ constructor(
     return ancPatientDetailItem
   }
 
-  fun fetchCarePlanItem(carePlan: List<CarePlan>): List<CarePlanItem> {
-    val listCarePlan = arrayListOf<CarePlanItem>()
-    val listCarePlanList = arrayListOf<CarePlan>()
-    if (carePlan.isNotEmpty()) {
-      listCarePlanList.addAll(carePlan.filter { it.due() })
-      listCarePlanList.addAll(carePlan.filter { it.overdue() })
-      for (i in listCarePlanList.indices) {
-        listCarePlan.add(CarePlanItemMapper.mapToDomainModel(listCarePlanList[i]))
-      }
-    }
-    return listCarePlan
-  }
+  fun fetchCarePlanItem(carePlan: List<CarePlan>): List<CarePlanItem> =
+    carePlan.filter { it.due() || it.overdue() }.map { CarePlanItemMapper.mapToDomainModel(it) }
 
   suspend fun fetchCarePlan(patientId: String): List<CarePlan> =
     withContext(dispatcherProvider.io()) {
@@ -447,5 +431,9 @@ constructor(
       "#RefIdObservationBodyHeight" to refObsHeightFormId,
       "#RefIdObservationBodyWeight" to refObsWeightFormId,
     )
+  }
+
+  fun setAncItemMapperType(ancItemMapperType: AncItemMapper.AncItemMapperType) {
+    domainMapper.setAncItemMapperType(ancItemMapperType)
   }
 }

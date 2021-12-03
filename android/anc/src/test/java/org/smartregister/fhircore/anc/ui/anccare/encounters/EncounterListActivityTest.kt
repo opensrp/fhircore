@@ -17,46 +17,37 @@
 package org.smartregister.fhircore.anc.ui.anccare.encounters
 
 import android.app.Activity
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkObject
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.spyk
-import io.mockk.verify
+import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
+import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 
+@HiltAndroidTest
 class EncounterListActivityTest : ActivityRobolectricTest() {
 
-  private lateinit var activity: EncounterListActivity
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  private lateinit var encounterListActivity: EncounterListActivity
 
   @Before
   fun setUp() {
-
-   /* mockkObject(EncounterListViewModel.Companion)
-
-    val viewModel = mockk<EncounterListViewModel>()
-
-    every { EncounterListViewModel.get(any(), any(), any()) } returns viewModel
-    with(viewModel) { every { setAppBackClickListener(any()) } returns Unit }*/
-
-    activity = Robolectric.buildActivity(EncounterListActivity::class.java).create().get()
+    hiltRule.inject()
+    encounterListActivity =
+      spyk(Robolectric.buildActivity(EncounterListActivity::class.java).create().resume().get())
   }
 
   @Test
   fun testHandleBackClickedShouldCallFinishMethod() {
-    val spyActivity = spyk(activity)
-
-    every { spyActivity.finish() } returns Unit
-
-    ReflectionHelpers.callInstanceMethod<Any>(spyActivity, "handleBackClicked")
-
-    verify(exactly = 1) { spyActivity.finish() }
+    encounterListActivity.encounterListViewModel.onAppBackClick()
+    Assert.assertTrue(encounterListActivity.isFinishing)
   }
 
   override fun getActivity(): Activity {
-    return activity
+    return encounterListActivity
   }
 }

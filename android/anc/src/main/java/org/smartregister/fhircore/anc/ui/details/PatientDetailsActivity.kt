@@ -62,7 +62,6 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
-    ancDetailsViewModel.patientId = patientId
     activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
   }
 
@@ -70,7 +69,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
     super.onResume()
     activityAncDetailsBinding.txtViewPatientId.text = patientId
     ancDetailsViewModel
-      .fetchDemographics()
+      .fetchDemographics(patientId)
       .observe(this@PatientDetailsActivity, this::handlePatientDemographics)
   }
 
@@ -81,8 +80,8 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
   override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
     val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
-    val ancEnrollment = menu!!.findItem(R.id.anc_enrollment)
-    val pregnancyOutcome = menu!!.findItem(R.id.pregnancy_outcome)
+    val ancEnrollment = menu.findItem(R.id.anc_enrollment)
+    val pregnancyOutcome = menu.findItem(R.id.pregnancy_outcome)
     if (isMale) pregnancyOutcome.isVisible = false
     ancEnrollment.isVisible = if (isMale) false else !isPregnant
     val title = removeThisPerson.title.toString()
@@ -149,10 +148,11 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       if (isMale) {
         adapter =
           ViewPagerAdapter(
-            supportFragmentManager,
-            lifecycle,
-            false,
-            bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
+            fragmentManager = supportFragmentManager,
+            lifecycle = lifecycle,
+            isPregnant = false,
+            bundleOf =
+              bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
           )
         activityAncDetailsBinding.pager.adapter = adapter
         TabLayoutMediator(activityAncDetailsBinding.tablayout, activityAncDetailsBinding.pager) {
@@ -164,10 +164,11 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       } else {
         adapter =
           ViewPagerAdapter(
-            supportFragmentManager,
-            lifecycle,
+            fragmentManager = supportFragmentManager,
+            lifecycle = lifecycle,
             isPregnant = isPregnant,
-            bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
+            bundleOf =
+              bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
           )
         activityAncDetailsBinding.pager.adapter = adapter
         TabLayoutMediator(activityAncDetailsBinding.tablayout, activityAncDetailsBinding.pager) {

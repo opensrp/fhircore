@@ -28,21 +28,17 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
 import org.smartregister.fhircore.anc.util.computeBMIViaStandardUnits
 import org.smartregister.fhircore.engine.util.extension.find
 
 @HiltViewModel
-class BmiQuestionnaireViewModel
-@Inject
-constructor(
-  val bmiPatientRepository: PatientRepository,
-  ancPatientItemMapper: AncPatientItemMapper
-) : ViewModel() {
+class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: PatientRepository) :
+  ViewModel() {
 
   init {
-    bmiPatientRepository.domainMapperInUse = ancPatientItemMapper
+    patientRepository.setAncItemMapperType(AncItemMapper.AncItemMapperType.DETAILS)
   }
 
   companion object {
@@ -191,7 +187,7 @@ constructor(
     weight: Double,
     computedBMI: Double
   ): Boolean {
-    return bmiPatientRepository.recordComputedBmi(
+    return patientRepository.recordComputedBmi(
       questionnaire,
       questionnaireResponse,
       patientId,

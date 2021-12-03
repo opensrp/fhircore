@@ -35,7 +35,7 @@ import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 
 @ExperimentalCoroutinesApi
 class ReportHomePageTest : RobolectricTest() {
@@ -51,13 +51,17 @@ class ReportHomePageTest : RobolectricTest() {
   @Before
   fun setUp() {
     fhirEngine = mockk()
-    repository =
-      spyk(
-        ReportRepository(fhirEngine, ApplicationProvider.getApplicationContext())
-      )
+    repository = spyk(ReportRepository(fhirEngine, ApplicationProvider.getApplicationContext()))
 
     ancPatientRepository =
-      spyk(PatientRepository(app ,fhirEngine, AncItemMapper(app), coroutinesTestRule.testDispatcherProvider))
+      spyk(
+        PatientRepository(
+          app,
+          fhirEngine,
+          AncItemMapper(app),
+          coroutinesTestRule.testDispatcherProvider
+        )
+      )
     viewModel =
       spyk(
         objToCopy =

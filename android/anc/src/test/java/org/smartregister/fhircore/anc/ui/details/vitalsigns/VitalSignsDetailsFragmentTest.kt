@@ -19,27 +19,28 @@ package org.smartregister.fhircore.anc.ui.details.vitalsigns
 import android.view.View
 import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentFactory
-import androidx.fragment.app.testing.FragmentScenario
-import androidx.fragment.app.testing.launchFragmentInContainer
-import androidx.lifecycle.Lifecycle
+import androidx.core.os.bundleOf
+import androidx.fragment.app.commitNow
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
-import io.mockk.verify
 import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Encounter
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.android.controller.ActivityController
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
@@ -47,100 +48,79 @@ import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.anc.robolectric.FragmentRobolectricTest
+import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
-import org.smartregister.fhircore.anc.ui.details.adapter.EncounterAdapter
 
 @ExperimentalCoroutinesApi
-internal class VitalSignsDetailsFragmentTest : FragmentRobolectricTest() {
+@HiltAndroidTest
+internal class VitalSignsDetailsFragmentTest : RobolectricTest() {
 
-  private lateinit var fhirEngine: FhirEngine
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  private lateinit var patientDetailsViewModel: VitalSignsDetailsViewModel
+  @get:Rule(order = 1) val coroutinesTestRule = CoroutineTestRule()
 
-  private lateinit var patientDetailsActivity: PatientDetailsActivity
+  @get:Rule(order = 2) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  private lateinit var patientRepository: PatientRepository
+  @BindValue val patientRepository: PatientRepository = mockk(relaxUnitFun = true)
 
-  private lateinit var fragmentScenario: FragmentScenario<VitalSignsDetailsFragment>
+  private lateinit var patientDetailsActivityController: ActivityController<PatientDetailsActivity>
 
-  private lateinit var patientDetailsFragment: VitalSignsDetailsFragment
-
-  private lateinit var encounterAdapter: EncounterAdapter
-
-  @get:Rule var coroutinesTestRule = CoroutineTestRule()
-
-  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
+  private lateinit var vitalSignsDetailsFragment: VitalSignsDetailsFragment
 
   private val patientId = "samplePatientId"
-  var ancPatientDetailItem = spyk<PatientDetailItem>()
+
+  private var ancPatientDetailItem = spyk<PatientDetailItem>()
+
   @Before
   fun setUp() {
-
-    fhirEngine = mockk(relaxed = true)
-
-    patientRepository = mockk()
-
-    encounterAdapter = mockk()
-
-    every { encounterAdapter.submitList(any()) } returns Unit
-
+    hiltRule.inject()
+    every { patientRepository.setAncItemMapperType(AncItemMapper.AncItemMapperType.DETAILS) } just
+      runs
+    patientRepository.setAncItemMapperType(AncItemMapper.AncItemMapperType.DETAILS)
     every { ancPatientDetailItem.patientDetails } returns
-      PatientItem(patientId, "Mandela Nelson", "M", "26")
+      PatientItem(patientIdentifier = patientId, name = "Mandela Nelson", gender = "M", age = "26")
     every { ancPatientDetailItem.patientDetailsHead } returns PatientItem()
     coEvery { patientRepository.fetchDemographics(patientId) } returns ancPatientDetailItem
 
-    patientDetailsViewModel =
-      spyk(
-        VitalSignsDetailsViewModel(
-          patientRepository,
-          coroutinesTestRule.testDispatcherProvider
-        )
-      )
+    patientDetailsActivityController = Robolectric.buildActivity(PatientDetailsActivity::class.java)
 
-    patientDetailsActivity =
-      Robolectric.buildActivity(PatientDetailsActivity::class.java).create().get()
-    fragmentScenario =
-      launchFragmentInContainer(
-        factory =
-          object : FragmentFactory() {
-            override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
-              val fragment = spyk(VitalSignsDetailsFragment.newInstance())
-              every { fragment.activity } returns patientDetailsActivity
-              //fragment.ancDetailsViewModel = patientDetailsViewModel
-              return fragment
-            }
-          }
-      )
+    val patientDetailsActivity = patientDetailsActivityController.create().resume().get()
 
-    fragmentScenario.onFragment {
-      patientDetailsFragment = it
-      ReflectionHelpers.setField(patientDetailsFragment, "encounterAdapter", encounterAdapter)
+    vitalSignsDetailsFragment = VitalSignsDetailsFragment.newInstance(bundleOf())
+
+    patientDetailsActivity.supportFragmentManager.commitNow {
+      add(vitalSignsDetailsFragment, VitalSignsDetailsFragment.TAG)
     }
+  }
+
+  @After
+  fun tearDown() {
+    patientDetailsActivityController.destroy()
   }
 
   @Test
   fun testHandleEncounterShouldVerifyExpectedCalls() {
 
     ReflectionHelpers.callInstanceMethod<Any>(
-      patientDetailsFragment,
+      vitalSignsDetailsFragment,
       "handleEncounters",
       ReflectionHelpers.ClassParameter(List::class.java, listOf<EncounterItem>())
     )
 
     // No CarePlan available text displayed
     val noVaccinesTextView =
-      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noEncounter)
+      vitalSignsDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noEncounter)
 
     // CarePlan list is not displayed
     val immunizationsListView =
-      patientDetailsFragment.view?.findViewById<RecyclerView>(R.id.encounterListView)
+      vitalSignsDetailsFragment.view?.findViewById<RecyclerView>(R.id.encounterListView)
 
     Assert.assertEquals(View.VISIBLE, noVaccinesTextView?.visibility)
     Assert.assertEquals(View.GONE, immunizationsListView?.visibility)
 
     ReflectionHelpers.callInstanceMethod<Any>(
-      patientDetailsFragment,
+      vitalSignsDetailsFragment,
       "handleEncounters",
       ReflectionHelpers.ClassParameter(
         List::class.java,
@@ -150,71 +130,53 @@ internal class VitalSignsDetailsFragmentTest : FragmentRobolectricTest() {
 
     Assert.assertEquals(View.GONE, noVaccinesTextView?.visibility)
     Assert.assertEquals(View.VISIBLE, immunizationsListView?.visibility)
-
-    verify(exactly = 1) { encounterAdapter.submitList(any()) }
   }
 
   @Test
   fun testThatEncounterViewsAreSetupCorrectly() {
-    fragmentScenario.moveToState(Lifecycle.State.RESUMED)
-    Assert.assertNotNull(patientDetailsFragment.view)
+    Assert.assertNotNull(vitalSignsDetailsFragment.view)
 
     // None text displayed
     val noVaccinesTextView =
-      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noEncounter)
+      vitalSignsDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noEncounter)
     Assert.assertEquals(View.VISIBLE, noVaccinesTextView?.visibility)
     Assert.assertEquals("None", noVaccinesTextView?.text.toString())
 
     // Encounter list is not displayed
     val immunizationsListView =
-      patientDetailsFragment.view?.findViewById<RecyclerView>(R.id.encounterListView)
+      vitalSignsDetailsFragment.view?.findViewById<RecyclerView>(R.id.encounterListView)
     Assert.assertEquals(View.GONE, immunizationsListView?.visibility)
   }
 
   @Test
   fun testThatAllergiesViewsAreSetupCorrectly() {
-    fragmentScenario.moveToState(Lifecycle.State.RESUMED)
-    Assert.assertNotNull(patientDetailsFragment.view)
+    Assert.assertNotNull(vitalSignsDetailsFragment.view)
 
     // None text displayed
     val noVaccinesTextView =
-      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noAllergies)
+      vitalSignsDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noAllergies)
     Assert.assertEquals(View.VISIBLE, noVaccinesTextView?.visibility)
     Assert.assertEquals("None", noVaccinesTextView?.text.toString())
 
     // Allergies list is not displayed
     val immunizationsListView =
-      patientDetailsFragment.view?.findViewById<RecyclerView>(R.id.allergiesListView)
+      vitalSignsDetailsFragment.view?.findViewById<RecyclerView>(R.id.allergiesListView)
     Assert.assertEquals(View.GONE, immunizationsListView?.visibility)
   }
 
   @Test
   fun testThatConditionsViewsAreSetupCorrectly() {
-    fragmentScenario.moveToState(Lifecycle.State.RESUMED)
-    Assert.assertNotNull(patientDetailsFragment.view)
+    Assert.assertNotNull(vitalSignsDetailsFragment.view)
 
     // None text displayed
     val noVaccinesTextView =
-      patientDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noConditions)
+      vitalSignsDetailsFragment.view?.findViewById<TextView>(R.id.txtView_noConditions)
     Assert.assertEquals(View.VISIBLE, noVaccinesTextView?.visibility)
     Assert.assertEquals("None", noVaccinesTextView?.text.toString())
 
     // Conditions list is not displayed
     val immunizationsListView =
-      patientDetailsFragment.view?.findViewById<RecyclerView>(R.id.conditionsListView)
+      vitalSignsDetailsFragment.view?.findViewById<RecyclerView>(R.id.conditionsListView)
     Assert.assertEquals(View.GONE, immunizationsListView?.visibility)
-  }
-
-  override fun getFragmentScenario(): FragmentScenario<out Fragment> {
-    return fragmentScenario
-  }
-
-  override fun getFragment(): Fragment {
-    return patientDetailsFragment
-  }
-
-  @Test
-  fun testThatEncountersViewAreUpdated() {
-    coroutinesTestRule.runBlockingTest { fragmentScenario.moveToState(Lifecycle.State.RESUMED) }
   }
 }
