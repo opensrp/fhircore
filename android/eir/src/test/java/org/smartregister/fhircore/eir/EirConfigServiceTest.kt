@@ -17,46 +17,40 @@
 package org.smartregister.fhircore.eir
 
 import androidx.test.core.app.ApplicationProvider
-import androidx.work.WorkerParameters
-import androidx.work.impl.utils.taskexecutor.WorkManagerTaskExecutor
-import io.mockk.every
-import io.mockk.mockk
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 
-class EirFhirSyncWorkerTest : RobolectricTest() {
+class EirConfigServiceTest : RobolectricTest() {
 
-  private lateinit var eirFhirSyncWorker: EirFhirSyncWorker
+  private lateinit var eirConfigService: EirConfigService
 
   @Before
   fun setUp() {
-
-    val workerParam = mockk<WorkerParameters>()
-    every { workerParam.taskExecutor } returns WorkManagerTaskExecutor(mockk())
-
-    eirFhirSyncWorker = EirFhirSyncWorker(ApplicationProvider.getApplicationContext(), workerParam)
+    eirConfigService = EirConfigService(ApplicationProvider.getApplicationContext())
   }
 
   @Test
-  fun testGetFhirEngineShouldReturnNonNullFhirEngine() {
-    Assert.assertNotNull(eirFhirSyncWorker.getFhirEngine())
-  }
-
-  @Test
-  fun testGetSyncDataReturnMapOfConfiguredSyncItems() {
-    val data = eirFhirSyncWorker.getSyncData()
+  fun testResourceSyncParamsVariable() {
+    val data = eirConfigService.resourceSyncParams
     Assert.assertEquals(data.size, 5)
     Assert.assertTrue(data.containsKey(ResourceType.Patient))
     Assert.assertTrue(data.containsKey(ResourceType.Immunization))
+    Assert.assertTrue(data.containsKey(ResourceType.Questionnaire))
     Assert.assertTrue(data.containsKey(ResourceType.StructureMap))
     Assert.assertTrue(data.containsKey(ResourceType.RelatedPerson))
   }
 
   @Test
-  fun testGetDataSourceReturnsDataSource() {
-    Assert.assertNotNull(eirFhirSyncWorker.getDataSource())
+  fun testProvideAuthConfiguration() {
+    val authConfiguration = eirConfigService.provideAuthConfiguration()
+
+    Assert.assertEquals(BuildConfig.FHIR_BASE_URL, authConfiguration.fhirServerBaseUrl)
+    Assert.assertEquals(BuildConfig.OAUTH_BASE_URL, authConfiguration.oauthServerBaseUrl)
+    Assert.assertEquals(BuildConfig.OAUTH_CIENT_ID, authConfiguration.clientId)
+    Assert.assertEquals(BuildConfig.OAUTH_CLIENT_SECRET, authConfiguration.clientSecret)
+    Assert.assertEquals("org.smartregister.fhircore.eir", authConfiguration.accountType)
   }
 }

@@ -38,10 +38,9 @@ class ConfigurationRegistry
 @Inject
 constructor(
   @ApplicationContext val context: Context,
-  val sharedPreferencesHelper: SharedPreferencesHelper
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val configService: ConfigService
 ) {
-
-  @Inject lateinit var configService: ConfigService
 
   val configurationsMap = mutableMapOf<String, Configuration>()
 

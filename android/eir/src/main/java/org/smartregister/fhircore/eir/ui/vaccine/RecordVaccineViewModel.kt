@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.eir.ui.vaccine
 
 import android.content.Intent
-import androidx.lifecycle.ViewModel
+import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Immunization
@@ -25,18 +25,34 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @HiltViewModel
 class RecordVaccineViewModel
 @Inject
 constructor(
-  val defaultRepository: DefaultRepository,
+  fhirEngine: FhirEngine,
+  defaultRepository: DefaultRepository,
+  configurationRegistry: ConfigurationRegistry,
+  transformSupportServices: TransformSupportServices,
   val patientRepository: PatientRepository,
-  val dispatcherProvider: DispatcherProvider
-) : ViewModel() {
+  dispatcherProvider: DispatcherProvider,
+  sharedPreferencesHelper: SharedPreferencesHelper
+) :
+  QuestionnaireViewModel(
+    fhirEngine,
+    defaultRepository,
+    configurationRegistry,
+    transformSupportServices,
+    dispatcherProvider,
+    sharedPreferencesHelper
+  ) {
 
   suspend fun loadLatestVaccine(patientId: String): PatientVaccineSummary? {
     val lastImmunization =
@@ -53,7 +69,7 @@ constructor(
     )
   }
 
-  suspend fun getPopulationResources(intent: Intent): Array<Resource> {
+  override suspend fun getPopulationResources(intent: Intent): Array<Resource> {
     val resourcesList = mutableListOf<Resource>()
 
     intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let { patientId ->

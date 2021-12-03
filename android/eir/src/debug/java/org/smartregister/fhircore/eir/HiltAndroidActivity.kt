@@ -14,25 +14,10 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.eir.shadow
+package org.smartregister.fhircore.eir
 
-import androidx.security.crypto.MasterKey
-import io.mockk.mockk
-import org.robolectric.Shadows
-import org.robolectric.annotation.Implementation
-import org.robolectric.annotation.Implements
-import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import androidx.appcompat.app.AppCompatActivity
+import dagger.hilt.android.AndroidEntryPoint
 
-@Implements(SecureSharedPreference::class)
-class SecureSharedPreferenceShadow : Shadows() {
-
-  @Implementation
-  fun retrieveSessionUsername(): String {
-    return "demo"
-  }
-
-  @Implementation
-  fun getMasterKey(): MasterKey {
-    return mockk<MasterKey>()
-  }
-}
+/** Created by Ephraim Kigamba - nek.eam@gmail.com on 03-12-2021. */
+@AndroidEntryPoint class HiltAndroidActivity : AppCompatActivity()

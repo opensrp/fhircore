@@ -16,23 +16,28 @@
 
 package org.smartregister.fhircore.eir.shadow
 
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import io.mockk.mockk
-import org.robolectric.Shadows
-import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
-import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
-@Implements(SecureSharedPreference::class)
-class SecureSharedPreferenceShadow : Shadows() {
+/** Created by Ephraim Kigamba - nek.eam@gmail.com on 03-12-2021. */
+@Implements(EncryptedSharedPreferences::class)
+class EncryptedSharedPreferencesShadow {
 
-  @Implementation
-  fun retrieveSessionUsername(): String {
-    return "demo"
-  }
+  companion object {
 
-  @Implementation
-  fun getMasterKey(): MasterKey {
-    return mockk<MasterKey>()
+    @JvmStatic
+    fun create(
+      context: Context,
+      fileName: String,
+      masterKey: MasterKey,
+      prefKeyEncryptionScheme: EncryptedSharedPreferences.PrefKeyEncryptionScheme,
+      prefValueEncryptionScheme: EncryptedSharedPreferences.PrefValueEncryptionScheme
+    ): SharedPreferences {
+      return mockk<SharedPreferences>()
+    }
   }
 }

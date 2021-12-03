@@ -55,8 +55,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
     hiltRule.inject()
     configurationRegistry =
       spyk(
-        ConfigurationRegistry(context = context, sharedPreferencesHelper = sharedPreferencesHelper)
-          .apply { this.configService = testConfigService }
+        ConfigurationRegistry(
+          context = context,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          configService = testConfigService
+        )
       )
   }
 
