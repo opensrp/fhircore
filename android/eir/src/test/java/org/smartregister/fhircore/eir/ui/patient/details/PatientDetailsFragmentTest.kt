@@ -21,17 +21,14 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.fragment.app.commitNow
-import androidx.fragment.app.testing.FragmentScenario
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.clearAllMocks
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import java.util.Date
@@ -67,7 +64,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 internal class PatientDetailsFragmentTest : RobolectricTest() {
 
   private lateinit var patientDetailsActivity: HiltAndroidActivity
-  //private lateinit var fragmentScenario: FragmentScenario<PatientDetailsFragment>
+  // private lateinit var fragmentScenario: FragmentScenario<PatientDetailsFragment>
   private lateinit var patientDetailsFragment: PatientDetailsFragment
   private val patientId = "samplePatientId"
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
