@@ -284,6 +284,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   }
 
   fun loadMeasureEvaluateLibrary() {
+    reportViewModel.reportState.currentScreen = ReportScreen.PREHOMElOADING
     dir = File(this.filesDir, "$dirCQLDirRoot/$fileNameMeasureLibraryCql")
     if (dir.exists()) {
       measureEvaluateLibraryData =

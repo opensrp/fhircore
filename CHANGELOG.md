@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2021-xx-xx
 
 ### Added
+- ANC | Added individual measure reporting results to the ResultHome page
 - ANC | Update Individual Profile view
 - ANC | Added individual measure reporting results to the ResultHome page
 - ANC | Update Family Profile view
