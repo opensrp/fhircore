@@ -117,7 +117,13 @@ android {
         unitTests.all {
             jacoco {
                 includeNoLocationClasses = true
-                excludes = ['jdk.internal.*']
+                excludes = [
+                        'jdk.internal.*',
+                        '**/*_Provide*/**',
+                        '**/*_Factory*/**',
+                        '**/*_MembersInjector.class',
+                        '**/*Dagger*'
+                ]
             }
         }
     }
