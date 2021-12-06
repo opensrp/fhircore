@@ -20,68 +20,60 @@ import android.app.Activity
 import android.app.Application
 import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
-import io.mockk.every
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.mockk
-import io.mockk.mockkObject
-import io.mockk.spyk
-import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
-import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
+import org.smartregister.fhircore.anc.app.fakes.FakeModel
+import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
+import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 
+@HiltAndroidTest
 class FamilyDetailsActivityTest : ActivityRobolectricTest() {
 
-  private lateinit var activity: FamilyDetailsActivity
+  @BindValue val familyDetailRepository = mockk<FamilyDetailRepository>()
+
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  private val application = ApplicationProvider.getApplicationContext<Application>()
+
+  private lateinit var familyDetailsActivity: FamilyDetailsActivity
 
   @Before
   fun setUp() {
-    mockkObject(FamilyDetailViewModel.Companion)
-
-    val viewModel = mockk<FamilyDetailViewModel>()
-
-    every { FamilyDetailViewModel.get(any(), any(), any()) } returns viewModel
-    with(viewModel) {
-      every { setAppBackClickListener(any()) } returns Unit
-      every { setMemberItemClickListener(any()) } returns Unit
-      every { setAddMemberItemClickListener(any()) } returns Unit
-      every { setSeeAllEncounterClickListener(any()) } returns Unit
-      every { setEncounterItemClickListener(any()) } returns Unit
-    }
-
-    activity = Robolectric.buildActivity(FamilyDetailsActivity::class.java).create().get()
-
-    verify(exactly = 1) {
-      viewModel.setAppBackClickListener(any())
-      viewModel.setMemberItemClickListener(any())
-      viewModel.setAddMemberItemClickListener(any())
-      viewModel.setSeeAllEncounterClickListener(any())
-      viewModel.setEncounterItemClickListener(any())
-    }
+    hiltRule.inject()
+    coEvery { familyDetailRepository.fetchDemographics(any()) } returns
+      FakeModel.buildPatient(id = "1", family = "Mandela", given = "Nelson")
+    coEvery { familyDetailRepository.fetchFamilyMembers(any()) } returns listOf()
+    coEvery { familyDetailRepository.fetchFamilyCarePlans(any()) } returns
+      listOf(FakeModel.buildCarePlan("edd"))
+    coEvery { familyDetailRepository.fetchEncounters(any()) } returns
+      listOf(FakeModel.getEncounter("1"))
+    familyDetailsActivity =
+      Robolectric.buildActivity(FamilyDetailsActivity::class.java).create().resume().get()
   }
 
   @Test
   fun testOnBackIconClickedShouldCallFinish() {
-    val spyActivity = spyk(activity)
-    every { spyActivity.finish() } returns Unit
-
-    ReflectionHelpers.callInstanceMethod<Any>(spyActivity, "onBackIconClicked")
-    verify(exactly = 1) { spyActivity.finish() }
+    familyDetailsActivity.familyDetailViewModel.onAppBackClick()
+    Assert.assertTrue(familyDetailsActivity.isFinishing)
   }
 
   @Test
   fun testOnAddNewMemberButtonClickedShouldStartFamilyQuestionnaireActivity() {
-    ReflectionHelpers.callInstanceMethod<Any>(activity, "onAddNewMemberButtonClicked")
-
-    val expectedIntent = Intent(activity, FamilyQuestionnaireActivity::class.java)
-    val actualIntent =
-      shadowOf(ApplicationProvider.getApplicationContext<Application>()).nextStartedActivity
+    familyDetailsActivity.familyDetailViewModel.onAddMemberItemClicked()
+    val expectedIntent = Intent(familyDetailsActivity, FamilyQuestionnaireActivity::class.java)
+    val actualIntent = shadowOf(application).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
@@ -90,20 +82,15 @@ class FamilyDetailsActivityTest : ActivityRobolectricTest() {
   fun testOnFamilyMemberItemClickedShouldStartAncDetailsActivity() {
     val familyMemberItem = FamilyMemberItem("fmname", "fm1", "21", "F", true, false)
 
-    ReflectionHelpers.callInstanceMethod<Any>(
-      activity,
-      "onFamilyMemberItemClicked",
-      ReflectionHelpers.ClassParameter.from(FamilyMemberItem::class.java, familyMemberItem)
-    )
+    familyDetailsActivity.familyDetailViewModel.onMemberItemClick(familyMemberItem)
 
-    val expectedIntent = Intent(activity, PatientDetailsActivity::class.java)
-    val actualIntent =
-      shadowOf(ApplicationProvider.getApplicationContext<Application>()).nextStartedActivity
+    val expectedIntent = Intent(familyDetailsActivity, PatientDetailsActivity::class.java)
+    val actualIntent = shadowOf(application).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   override fun getActivity(): Activity {
-    return activity
+    return familyDetailsActivity
   }
 }

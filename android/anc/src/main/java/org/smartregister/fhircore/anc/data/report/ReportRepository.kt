@@ -20,16 +20,15 @@ import android.content.Context
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 
-class ReportRepository(
-  val fhirEngine: FhirEngine,
-  private val patientId: String,
-  private val mContext: Context
-) : PagingSource<Int, ReportItem>() {
-
-  val SAMPLE_REPORT_MEASURES_FILE = "sample_data_report_measures.json"
+class ReportRepository
+@Inject
+constructor(val fhirEngine: FhirEngine, @ApplicationContext val context: Context) :
+  PagingSource<Int, ReportItem>() {
 
   override fun getRefreshKey(state: PagingState<Int, ReportItem>): Int? {
     return state.anchorPosition
@@ -37,7 +36,7 @@ class ReportRepository(
 
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ReportItem> {
     return try {
-      val data = createTestData(mContext)
+      val data = createTestData(context)
       LoadResult.Page(data = data, prevKey = null, nextKey = null)
     } catch (e: Exception) {
       LoadResult.Error(e)
@@ -45,10 +44,13 @@ class ReportRepository(
   }
 
   /** Load report-measures from asset directory */
-  suspend fun createTestData(context: Context): List<ReportItem> {
+  fun createTestData(context: Context): List<ReportItem> {
     val json =
       context.assets.open(SAMPLE_REPORT_MEASURES_FILE).bufferedReader().use { it.readText() }
-    val dataList: List<ReportItem> = json.decodeJson()
-    return dataList
+    return json.decodeJson()
+  }
+
+  companion object {
+    const val SAMPLE_REPORT_MEASURES_FILE = "sample_data_report_measures.json"
   }
 }

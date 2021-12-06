@@ -23,6 +23,7 @@ import kotlinx.serialization.json.Json
 val json = Json {
   encodeDefaults = true
   ignoreUnknownKeys = true
+  isLenient = true
 }
 
 /** Decode string to an entity of type [T] */

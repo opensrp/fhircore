@@ -21,6 +21,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import java.text.SimpleDateFormat
@@ -59,10 +60,10 @@ class FamilyDetailScreenTest : RobolectricTest() {
       }
     )
 
-  @Ignore("Fix tracked on https://github.com/opensrp/fhircore/issues/760")
   @Test
+  @Ignore("Fix")
   fun testSurfaceComponent() {
-    composeRule.setContent { FamilyDetailScreen(getDummyDataProvider()) }
+    composeRule.setContent { FamilyDetailScreen(FamilyDetailViewModel(mockk())) }
 
     // Top bar is displayed
     composeRule.onNodeWithText("All Families").assertExists()

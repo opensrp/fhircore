@@ -21,30 +21,31 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.eir.util.EirConfigClassification
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 
+@AndroidEntryPoint
 class PatientRegisterActivity : BaseRegisterActivity() {
 
-  lateinit var patientRepository: PatientRepository
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  @Inject lateinit var patientRepository: PatientRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     val registerViewConfiguration =
-      configurableApplication()
-        .configurationRegistry
-        .retrieveConfiguration<RegisterViewConfiguration>(
-          context = this,
-          configClassification = EirConfigClassification.PATIENT_REGISTER
-        )
-    patientRepository = PatientRepository(fhirEngine, PatientItemMapper)
+      configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
+        configClassification = EirConfigClassification.PATIENT_REGISTER
+      )
     configureViews(registerViewConfiguration)
   }
 
@@ -69,7 +70,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     isPatientExists(barcode)
       .observe(
         this,
-        Observer {
+        {
           if (it.isSuccess) {
             navigateToDetails(barcode)
           } else {

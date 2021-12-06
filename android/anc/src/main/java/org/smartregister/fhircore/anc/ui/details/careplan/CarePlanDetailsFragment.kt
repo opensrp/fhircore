@@ -22,109 +22,90 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.fhir.FhirEngine
-import org.smartregister.fhircore.anc.AncApplication
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
-import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.databinding.FragmentNonAncDetailsBinding
-import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.details.adapter.CarePlanAdapter
 import org.smartregister.fhircore.anc.ui.details.adapter.UpcomingServicesAdapter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.extension.createFactory
 
+@AndroidEntryPoint
 class CarePlanDetailsFragment : Fragment() {
 
+  @Inject lateinit var carePlanAdapter: CarePlanAdapter
+
+  @Inject lateinit var upcomingServicesAdapter: UpcomingServicesAdapter
+
+  val ancDetailsViewModel by viewModels<CarePlanDetailsViewModel>()
+
   private lateinit var patientId: String
-  private lateinit var fhirEngine: FhirEngine
 
-  lateinit var ancDetailsViewModel: CarePlanDetailsViewModel
-
-  private lateinit var ancPatientRepository: PatientRepository
-
-  private val carePlanAdapter = CarePlanAdapter()
-  private val upcomingServicesAdapter = UpcomingServicesAdapter()
-
-  lateinit var binding: FragmentNonAncDetailsBinding
+  lateinit var viewBinding: FragmentNonAncDetailsBinding
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    binding = DataBindingUtil.inflate(inflater, R.layout.fragment_non_anc_details, container, false)
-    return binding.root
+    viewBinding =
+      DataBindingUtil.inflate(inflater, R.layout.fragment_non_anc_details, container, false)
+    return viewBinding.root
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     patientId = arguments?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
-    fhirEngine = AncApplication.getContext().fhirEngine
-
     setupViews()
 
-    ancPatientRepository =
-      PatientRepository((requireActivity().application as AncApplication).fhirEngine, AncItemMapper)
-
-    ancDetailsViewModel =
-      ViewModelProvider(
-        viewModelStore,
-        CarePlanDetailsViewModel(ancPatientRepository, patientId = patientId).createFactory()
-      )[CarePlanDetailsViewModel::class.java]
-
+    ancDetailsViewModel.patientId = patientId
     ancDetailsViewModel.fetchCarePlan().observe(viewLifecycleOwner, this::handleCarePlan)
-
     ancDetailsViewModel.fetchEncounters().observe(viewLifecycleOwner, this::handleEncounters)
   }
 
   private fun handleEncounters(listEncounters: List<UpcomingServiceItem>) {
     when {
       listEncounters.isEmpty() -> {
-        binding.txtViewNoUpcomingServices.visibility = View.VISIBLE
-        binding.upcomingServicesListView.visibility = View.GONE
-        binding.txtViewUpcomingServicesSeeAllHeading.visibility = View.GONE
-        binding.imageViewUpcomingServicesSeeAllArrow.visibility = View.GONE
+        viewBinding.txtViewNoUpcomingServices.visibility = View.VISIBLE
+        viewBinding.upcomingServicesListView.visibility = View.GONE
+        viewBinding.txtViewUpcomingServicesSeeAllHeading.visibility = View.GONE
+        viewBinding.imageViewUpcomingServicesSeeAllArrow.visibility = View.GONE
       }
       else -> {
-        binding.txtViewNoUpcomingServices.visibility = View.GONE
-        binding.upcomingServicesListView.visibility = View.VISIBLE
-        binding.txtViewUpcomingServicesSeeAllHeading.visibility = View.VISIBLE
-        binding.txtViewUpcomingServicesSeeAllHeading.visibility = View.VISIBLE
+        viewBinding.txtViewNoUpcomingServices.visibility = View.GONE
+        viewBinding.upcomingServicesListView.visibility = View.VISIBLE
+        viewBinding.txtViewUpcomingServicesSeeAllHeading.visibility = View.VISIBLE
+        viewBinding.txtViewUpcomingServicesSeeAllHeading.visibility = View.VISIBLE
         populateUpcomingServicesList(listEncounters)
       }
     }
   }
 
   private fun setupViews() {
-    binding.carePlanListView.apply {
+    viewBinding.carePlanListView.apply {
       adapter = carePlanAdapter
       layoutManager = LinearLayoutManager(requireContext())
     }
   }
 
-  companion object {
-    fun newInstance(bundle: Bundle = Bundle()) =
-      CarePlanDetailsFragment().apply { arguments = bundle }
-  }
-
   private fun handleCarePlan(immunizations: List<CarePlanItem>) {
     when {
       immunizations.isEmpty() -> {
-        binding.txtViewNoCarePlan.visibility = View.VISIBLE
-        binding.txtViewCarePlanSeeAllHeading.visibility = View.GONE
-        binding.imageViewSeeAllArrow.visibility = View.GONE
-        binding.carePlanListView.visibility = View.GONE
+        viewBinding.txtViewNoCarePlan.visibility = View.VISIBLE
+        viewBinding.txtViewCarePlanSeeAllHeading.visibility = View.GONE
+        viewBinding.imageViewSeeAllArrow.visibility = View.GONE
+        viewBinding.carePlanListView.visibility = View.GONE
       }
       else -> {
-        binding.txtViewNoCarePlan.visibility = View.GONE
-        binding.txtViewCarePlanSeeAllHeading.visibility = View.VISIBLE
-        binding.imageViewSeeAllArrow.visibility = View.VISIBLE
-        binding.carePlanListView.visibility = View.VISIBLE
+        viewBinding.txtViewNoCarePlan.visibility = View.GONE
+        viewBinding.txtViewCarePlanSeeAllHeading.visibility = View.VISIBLE
+        viewBinding.imageViewSeeAllArrow.visibility = View.VISIBLE
+        viewBinding.carePlanListView.visibility = View.VISIBLE
         populateCarePlanList(immunizations)
       }
     }
@@ -136,5 +117,11 @@ class CarePlanDetailsFragment : Fragment() {
 
   private fun populateUpcomingServicesList(upcomingServiceItem: List<UpcomingServiceItem>) {
     upcomingServicesAdapter.submitList(upcomingServiceItem)
+  }
+
+  companion object {
+    fun newInstance(bundle: Bundle = Bundle()) =
+      CarePlanDetailsFragment().apply { arguments = bundle }
+    const val TAG = "CarePlanDetailsFragment"
   }
 }

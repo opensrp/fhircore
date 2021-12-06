@@ -16,20 +16,24 @@
 
 package org.smartregister.fhircore.engine.ui.register
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJob
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.configuration.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -41,14 +45,25 @@ import timber.log.Timber
  * providing [registerViewConfiguration] variable which is a [MutableLiveData] that can be observed
  * on when UI configuration changes.
  */
-class RegisterViewModel(
-  application: Application,
-  registerViewConfiguration: RegisterViewConfiguration,
-  val dispatcher: DispatcherProvider = DefaultDispatcherProvider
-) : AndroidViewModel(application) {
+@HiltViewModel
+class RegisterViewModel
+@Inject
+constructor(
+  val fhirEngine: FhirEngine,
+  val syncJob: SyncJob,
+  val fhirResourceDataSource: FhirResourceDataSource,
+  val configurationRegistry: ConfigurationRegistry,
+  val dispatcher: DispatcherProvider,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+) : ViewModel() {
+
+  private val applicationConfiguration =
+    configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+      AppConfigClassification.APPLICATION
+    )
 
   private val _lastSyncTimestamp =
-    MutableLiveData(SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, ""))
+    MutableLiveData(sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, ""))
   val lastSyncTimestamp
     get() = _lastSyncTimestamp
 
@@ -60,20 +75,17 @@ class RegisterViewModel(
   val filterValue
     get() = _filterValue
 
-  private val applicationConfiguration =
-    (getApplication<Application>() as ConfigurableApplication).applicationConfiguration
-
   lateinit var languages: List<Language>
 
   val sharedSyncStatus = MutableSharedFlow<State>()
 
   var selectedLanguage =
     MutableLiveData(
-      SharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
+      sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
         ?: Locale.ENGLISH.toLanguageTag()
     )
 
-  val registerViewConfiguration = MutableLiveData(registerViewConfiguration)
+  val registerViewConfiguration: MutableLiveData<RegisterViewConfiguration> = MutableLiveData()
 
   fun updateViewConfigurations(registerViewConfiguration: RegisterViewConfiguration) {
     this.registerViewConfiguration.value = registerViewConfiguration
@@ -87,9 +99,14 @@ class RegisterViewModel(
   fun runSync() =
     viewModelScope.launch(dispatcher.io()) {
       try {
-        getApplication<Application>().runOneTimeSync(sharedSyncStatus)
+        fhirEngine.runOneTimeSync(
+          sharedSyncStatus = sharedSyncStatus,
+          syncJob = syncJob,
+          resourceSyncParams = configurationRegistry.configService.resourceSyncParams,
+          fhirResourceDataSource = fhirResourceDataSource
+        )
       } catch (exception: Exception) {
-        Timber.e("Error syncing data", exception)
+        Timber.e("Error syncing data", exception.stackTraceToString())
       }
     }
 
@@ -111,7 +128,7 @@ class RegisterViewModel(
 
   fun setLastSyncTimestamp(lastSyncTimestamp: String) {
     if (lastSyncTimestamp.isNotEmpty()) {
-      SharedPreferencesHelper.write(LAST_SYNC_TIMESTAMP, lastSyncTimestamp)
+      sharedPreferencesHelper.write(LAST_SYNC_TIMESTAMP, lastSyncTimestamp)
     }
     _lastSyncTimestamp.value = lastSyncTimestamp
   }

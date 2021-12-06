@@ -17,16 +17,21 @@
 package org.smartregister.fhircore.engine.robolectric
 
 import android.app.Activity
+import android.os.Looper
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.annotation.StringRes
 import org.junit.After
+import org.robolectric.Shadows
 
 abstract class ActivityRobolectricTest : RobolectricTest() {
 
   @After
-  fun testDown() {
-    getActivity().finish()
+  fun tearDown() {
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
+    if (!getActivity().isFinishing && !getActivity().isDestroyed) {
+      getActivity().finish()
+    }
   }
 
   abstract fun getActivity(): Activity
