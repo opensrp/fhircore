@@ -31,7 +31,7 @@ class TransformSupportServicesTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    transformSupportServices = TransformSupportServices(mutableListOf(), mockk())
+    transformSupportServices = TransformSupportServices(mockk())
   }
 
   @Test

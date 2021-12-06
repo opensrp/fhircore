@@ -17,23 +17,32 @@
 package org.smartregister.fhircore.anc.ui.bmicompute
 
 import androidx.test.core.app.ApplicationProvider
-import io.mockk.mockk
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
+import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireViewModel
 
+@HiltAndroidTest
 class BmiQuestionnaireViewModelTest : RobolectricTest() {
 
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @Inject lateinit var patientRepository: PatientRepository
+
   private lateinit var viewModel: BmiQuestionnaireViewModel
-  private lateinit var repository: PatientRepository
+  private val app = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
   @Before
   fun setUp() {
-    repository = mockk()
-    viewModel = BmiQuestionnaireViewModel(ApplicationProvider.getApplicationContext(), repository)
+    hiltRule.inject()
+    viewModel = BmiQuestionnaireViewModel(patientRepository)
   }
 
   @Test
@@ -107,22 +116,22 @@ class BmiQuestionnaireViewModelTest : RobolectricTest() {
   fun testBmiResultStringIndexInCategories() {
     val expectedIndex = 48
     val resultIndex =
-      viewModel.getStartingIndexInCategories(BmiQuestionnaireViewModel.BmiCategory.NORMAL)
+      viewModel.getStartingIndexInCategories(BmiQuestionnaireViewModel.BmiCategory.NORMAL, app)
     Assert.assertEquals(expectedIndex, resultIndex)
 
     val expectedIndex2 = 75
     val resultIndex2 =
-      viewModel.getEndingIndexInCategories(BmiQuestionnaireViewModel.BmiCategory.NORMAL)
+      viewModel.getEndingIndexInCategories(BmiQuestionnaireViewModel.BmiCategory.NORMAL, app)
     Assert.assertEquals(expectedIndex2, resultIndex2)
 
     val expectedIndex3 = 99
     val resultIndex3 =
-      viewModel.getStartingIndexInCategories(BmiQuestionnaireViewModel.BmiCategory.OBESITY)
+      viewModel.getStartingIndexInCategories(BmiQuestionnaireViewModel.BmiCategory.OBESITY, app)
     Assert.assertEquals(expectedIndex3, resultIndex3)
 
     val expectedIndex4 = 129
     val resultIndex4 =
-      viewModel.getEndingIndexInCategories(BmiQuestionnaireViewModel.BmiCategory.OBESITY)
+      viewModel.getEndingIndexInCategories(BmiQuestionnaireViewModel.BmiCategory.OBESITY, app)
     Assert.assertEquals(expectedIndex4, resultIndex4)
   }
 }

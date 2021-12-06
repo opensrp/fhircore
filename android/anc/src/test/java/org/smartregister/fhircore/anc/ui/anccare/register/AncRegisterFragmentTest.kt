@@ -19,13 +19,13 @@ package org.smartregister.fhircore.anc.ui.anccare.register
 import android.content.Intent
 import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.sync.Sync
-import io.mockk.mockkObject
-import io.mockk.unmockkObject
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.junit.BeforeClass
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
@@ -33,33 +33,46 @@ import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.shadow.FakeKeyStore
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 
+@HiltAndroidTest
 class AncRegisterFragmentTest : RobolectricTest() {
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  private val activityController = Robolectric.buildActivity(FamilyRegisterActivity::class.java)
 
   private lateinit var registerFragment: AncRegisterFragment
 
   @Before
   fun setUp() {
-
-    mockkObject(Sync)
-    val registerActivity =
-      Robolectric.buildActivity(FamilyRegisterActivity::class.java).create().resume().get()
-    registerFragment = AncRegisterFragment()
-    registerActivity.supportFragmentManager.commitNow { add(registerFragment, "") }
+    hiltRule.inject()
+    configurationRegistry.loadAppConfigurations(
+      appId = "anc",
+      accountAuthenticator = accountAuthenticator
+    ) {}
+    val familyRegisterActivity = activityController.create().resume().get()
+    familyRegisterActivity.supportFragmentManager.commitNow {
+      registerFragment = AncRegisterFragment()
+      add(registerFragment, AncRegisterFragment.TAG)
+    }
   }
 
   @After
   fun cleanup() {
-    unmockkObject(Sync)
+    activityController.destroy()
   }
 
   @Test
   fun testNavigateToDetailsShouldGotoToAncDetailsActivity() {
-
     val patientItem = PatientItem(patientIdentifier = "test_patient")
     registerFragment.onItemClicked(OpenPatientProfile, patientItem)
 
@@ -78,9 +91,9 @@ class AncRegisterFragmentTest : RobolectricTest() {
     )
     Assert.assertTrue(
       registerFragment.performFilter(
-        RegisterFilterType.SEARCH_FILTER,
-        PatientItem(patientIdentifier = "12345"),
-        "12345"
+        registerFilterType = RegisterFilterType.SEARCH_FILTER,
+        data = PatientItem(patientIdentifier = "12345"),
+        value = "12345"
       )
     )
   }
@@ -89,18 +102,10 @@ class AncRegisterFragmentTest : RobolectricTest() {
   fun testPerformOverdueFilterShouldReturnTrue() {
     val result =
       registerFragment.performFilter(
-        RegisterFilterType.OVERDUE_FILTER,
-        PatientItem(patientIdentifier = "12345", visitStatus = VisitStatus.OVERDUE),
-        "12345"
+        registerFilterType = RegisterFilterType.OVERDUE_FILTER,
+        data = PatientItem(patientIdentifier = "12345", visitStatus = VisitStatus.OVERDUE),
+        value = "12345"
       )
     Assert.assertTrue(result)
-  }
-
-  companion object {
-    @JvmStatic
-    @BeforeClass
-    fun beforeClass() {
-      FakeKeyStore.setup
-    }
   }
 }

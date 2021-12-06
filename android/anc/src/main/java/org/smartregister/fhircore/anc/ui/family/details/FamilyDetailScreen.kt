@@ -52,49 +52,36 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import java.text.SimpleDateFormat
-import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
-import org.hl7.fhir.r4.model.HumanName
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Period
-import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
-import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
 @Composable
-fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
+fun FamilyDetailScreen(familyDetailViewModel: FamilyDetailViewModel) {
+  val hasFamilyCarePlan =
+    !familyDetailViewModel.familyCarePlans.observeAsState().value.isNullOrEmpty()
+  val patient = familyDetailViewModel.demographics.observeAsState()
 
   Surface(color = colorResource(id = R.color.white_smoke)) {
     Column {
-
-      // top bar
       TopAppBar(
         title = { Text(text = stringResource(id = R.string.all_families)) },
         navigationIcon = {
-          IconButton(onClick = { dataProvider.getAppBackClickListener().invoke() }) {
+          IconButton(onClick = familyDetailViewModel::onAppBackClick) {
             Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")
           }
         }
       )
 
-      // family name
       Column(
         modifier =
           Modifier.fillMaxWidth()
             .background(color = colorResource(id = R.color.colorPrimary))
             .padding(12.dp)
       ) {
-        val patient = dataProvider.getDemographics().observeAsState()
         val familyName = patient.value?.name?.firstOrNull()?.family ?: ""
         val firstName = patient.value?.name?.firstOrNull()?.given?.firstOrNull()?.value ?: ""
         Text(
@@ -104,7 +91,7 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
-          text = patient.value?.address?.firstOrNull()?.city.toString() ?: "",
+          text = patient.value?.address?.firstOrNull()?.city.toString(),
           color = colorResource(id = R.color.white),
           fontSize = 25.sp
         )
@@ -116,43 +103,26 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
             .padding(start = 12.dp, end = 12.dp)
             .verticalScroll(rememberScrollState()),
       ) {
-        if (hasFamilyCarePlans(dataProvider)) {
-          // spacer for padding
+        if (hasFamilyCarePlan) {
           Spacer(Modifier.height(12.dp))
-
-          // Household tasks heading
           HouseHoldTaskHeading()
-
-          // spacer for padding
           Spacer(Modifier.height(12.dp))
-
-          // Monthly Visit heading
           MonthlyVisitHeading()
         }
 
-        // spacer for padding
         Spacer(Modifier.height(12.dp))
 
-        // members heading
-        MemberHeading(dataProvider.getAddMemberItemClickListener())
-
-        // members list
-        dataProvider.getFamilyMembers().observeAsState().value?.run {
-          MembersList(this, dataProvider.getMemberItemClickListener())
+        MemberHeading(familyDetailViewModel::onAddMemberItemClicked)
+        familyDetailViewModel.familyMembers.observeAsState().value?.run {
+          MembersList(this, familyDetailViewModel::onMemberItemClick)
         }
 
-        if (hasFamilyCarePlans(dataProvider)) { // upcoming services heading and see all button
-          UpcomingServiceHeader(dataProvider.getSeeAllUpcomingServiceClickListener())
-
-          // encounter heading and see all button
-          EncounterHeader(dataProvider.getSeeAllEncounterClickListener())
-
-          // encounter list
-          dataProvider.getEncounters().observeAsState().value?.run {
-            EncounterList(this, dataProvider.getEncounterItemClickListener())
+        if (hasFamilyCarePlan) {
+          UpcomingServiceHeader(familyDetailViewModel::onSeeUpcomingServicesListener)
+          EncounterHeader(familyDetailViewModel::onSeeAllEncountersListener)
+          familyDetailViewModel.encounters.observeAsState().value?.run {
+            EncounterList(this, familyDetailViewModel::onEncounterItemClicked)
           }
-
-          // spacer for padding
           Spacer(Modifier.height(12.dp))
         }
       }
@@ -161,13 +131,12 @@ fun FamilyDetailScreen(dataProvider: FamilyDetailDataProvider) {
 }
 
 @Composable
-fun MemberHeading(addMemberItemClickListener: () -> Unit) {
+fun MemberHeading(onAddMemberItemClicked: () -> Unit) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween,
     modifier = Modifier.fillMaxWidth().padding(top = 18.dp)
   ) {
-    // Members header
     Text(
       text = stringResource(id = R.string.members).uppercase(),
       color = colorResource(id = R.color.status_gray),
@@ -175,9 +144,7 @@ fun MemberHeading(addMemberItemClickListener: () -> Unit) {
       textAlign = TextAlign.Start,
       fontSize = 16.sp,
     )
-
-    // Add button
-    TextButton(contentPadding = PaddingValues(0.dp), onClick = { addMemberItemClickListener() }) {
+    TextButton(contentPadding = PaddingValues(0.dp), onClick = { onAddMemberItemClicked() }) {
       Text(
         text = stringResource(id = R.string.add).uppercase() + "+",
         color = colorResource(id = R.color.colorPrimaryLight),
@@ -192,7 +159,7 @@ fun MemberHeading(addMemberItemClickListener: () -> Unit) {
 @Composable
 fun MembersList(
   members: List<FamilyMemberItem>,
-  memberItemClickListener: (item: FamilyMemberItem) -> Unit
+  onMemberItemClick: (familyMemberItem: FamilyMemberItem) -> Unit
 ) {
 
   Card(
@@ -205,7 +172,7 @@ fun MembersList(
       val totalMemberCount = members.count()
       members.forEachIndexed { index, item ->
         Column(
-          modifier = Modifier.fillMaxWidth().clickable { memberItemClickListener(item) },
+          modifier = Modifier.fillMaxWidth().clickable { onMemberItemClick(item) },
         ) {
           Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -274,15 +241,13 @@ fun MembersList(
 }
 
 @Composable
-fun EncounterHeader(seeAllEncounterClickListener: () -> Unit) {
+fun EncounterHeader(onSeeAllEncountersListener: () -> Unit) {
 
   Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween,
     modifier = Modifier.fillMaxWidth().padding(top = 18.dp)
   ) {
-
-    // encounter heading
     Text(
       text = stringResource(id = R.string.encounters).uppercase(),
       color = colorResource(id = R.color.status_gray),
@@ -290,9 +255,7 @@ fun EncounterHeader(seeAllEncounterClickListener: () -> Unit) {
       textAlign = TextAlign.Start,
       fontSize = 16.sp
     )
-
-    // button see all encounters
-    TextButton(contentPadding = PaddingValues(0.dp), onClick = { seeAllEncounterClickListener() }) {
+    TextButton(contentPadding = PaddingValues(0.dp), onClick = { onSeeAllEncountersListener() }) {
       Text(
         text = stringResource(id = R.string.see_all).uppercase(),
         color = colorResource(id = R.color.colorPrimaryLight),
@@ -307,7 +270,7 @@ fun EncounterHeader(seeAllEncounterClickListener: () -> Unit) {
 }
 
 @Composable
-fun EncounterList(members: List<Encounter>, encounterItemClickListener: (item: Encounter) -> Unit) {
+fun EncounterList(members: List<Encounter>, onEncounterItemClicked: (item: Encounter) -> Unit) {
 
   Card(
     elevation = 4.dp,
@@ -322,7 +285,7 @@ fun EncounterList(members: List<Encounter>, encounterItemClickListener: (item: E
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.SpaceBetween,
           modifier =
-            Modifier.fillMaxWidth().padding(12.dp).clickable { encounterItemClickListener(item) }
+            Modifier.fillMaxWidth().padding(12.dp).clickable { onEncounterItemClicked(item) }
         ) {
           Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Filled.TaskAlt, null, Modifier.width(20.dp).height(20.dp))
@@ -364,7 +327,6 @@ fun HouseHoldTaskHeading() {
     horizontalArrangement = Arrangement.SpaceBetween,
     modifier = Modifier.fillMaxWidth().padding(top = 18.dp)
   ) {
-    // HouseHold Task header
     Text(
       text = stringResource(id = R.string.household_tasks).uppercase(),
       color = colorResource(id = R.color.status_gray),
@@ -390,15 +352,13 @@ fun MonthlyVisitHeading() {
 }
 
 @Composable
-fun UpcomingServiceHeader(seeAllUpcomingServiceClickListener: () -> Unit) {
+fun UpcomingServiceHeader(onSeeUpcomingServicesListener: () -> Unit) {
 
   Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween,
     modifier = Modifier.fillMaxWidth().padding(top = 18.dp)
   ) {
-
-    // upcoming service heading
     Text(
       text = stringResource(id = R.string.upcoming_services).uppercase(),
       color = colorResource(id = R.color.status_gray),
@@ -406,11 +366,9 @@ fun UpcomingServiceHeader(seeAllUpcomingServiceClickListener: () -> Unit) {
       textAlign = TextAlign.Start,
       fontSize = 16.sp
     )
-
-    // button see all upcoming services
     TextButton(
       contentPadding = PaddingValues(0.dp),
-      onClick = { seeAllUpcomingServiceClickListener() }
+      onClick = { onSeeUpcomingServicesListener() }
     ) {
       Text(
         text = stringResource(id = R.string.see_all).uppercase(),
@@ -419,78 +377,7 @@ fun UpcomingServiceHeader(seeAllUpcomingServiceClickListener: () -> Unit) {
         fontWeight = FontWeight.Bold,
         textAlign = TextAlign.Start
       )
-
       Icon(painterResource(id = R.drawable.ic_forward_arrow), "", Modifier.padding(start = 4.dp))
     }
   }
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun PreviewFamilyDetailScreen() {
-  AppTheme { FamilyDetailScreen(getDummyDataProvider()) }
-}
-
-fun getDummyDataProvider(): FamilyDetailDataProvider {
-  return object : FamilyDetailDataProvider {
-    override fun getDemographics(): LiveData<Patient> {
-      return MutableLiveData(
-        Patient().apply {
-          name =
-            listOf(
-              HumanName().apply {
-                given = listOf(StringType("John"))
-                family = "Doe"
-              }
-            )
-        }
-      )
-    }
-
-    override fun getFamilyMembers(): LiveData<List<FamilyMemberItem>> {
-      return MutableLiveData(
-        listOf(
-          dummyFamilyMemberItem("Kevin", false, true),
-          dummyFamilyMemberItem("Julie"),
-          dummyFamilyMemberItem("Salina", true)
-        )
-      )
-    }
-
-    override fun getEncounters(): LiveData<List<Encounter>> {
-      return MutableLiveData(
-        listOf(
-          dummyEncounter("Encounter 1", "2020-05-22"),
-          dummyEncounter("Encounter 2", "2020-11-15"),
-          dummyEncounter("Encounter 3", "2021-02-08"),
-          dummyEncounter("Encounter 4", "2021-07-18")
-        )
-      )
-    }
-
-    override fun getFamilyCarePlans(): LiveData<List<CarePlan>> {
-      TODO("Not yet implemented")
-    }
-  }
-}
-
-private fun dummyFamilyMemberItem(
-  name: String,
-  isPregnant: Boolean = false,
-  isHouseHoldHead: Boolean = false
-): FamilyMemberItem {
-  return FamilyMemberItem(name, "1", "18", "Male", isPregnant, isHouseHoldHead)
-}
-
-private fun dummyEncounter(text: String, periodStartDate: String): Encounter {
-  return Encounter().apply {
-    class_ = Coding("", "", text)
-    period = Period().apply { start = SimpleDateFormat("yyyy-MM-dd").parse(periodStartDate) }
-  }
-}
-
-@Composable
-private fun hasFamilyCarePlans(dataProvider: FamilyDetailDataProvider): Boolean {
-  return !dataProvider.getFamilyCarePlans().observeAsState().value.isNullOrEmpty()
 }

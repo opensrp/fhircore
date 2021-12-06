@@ -23,36 +23,57 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import javax.inject.Inject
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.fakes.RoboMenuItem
+import org.smartregister.fhircore.eir.EirConfigService
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.shadow.FakeKeyStore
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 
-@Ignore("Fix tests failing when run with others")
+@HiltAndroidTest
 class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
+  @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
+
   private lateinit var patientRegisterActivity: PatientRegisterActivity
+
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
+
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+
+  @BindValue
+  val configService: ConfigService = EirConfigService(ApplicationProvider.getApplicationContext())
+  @BindValue
+  val configurationRegistry: ConfigurationRegistry =
+    spyk(ConfigurationRegistry(ApplicationProvider.getApplicationContext(), mockk(), configService))
 
   @Before
   fun setUp() {
+    hiltAndroidRule.inject()
+    configurationRegistry.appId = "covax"
+    configurationRegistry.loadAppConfigurations("covax", accountAuthenticator) {}
     patientRegisterActivity =
       Robolectric.buildActivity(PatientRegisterActivity::class.java).create().resume().get()
   }

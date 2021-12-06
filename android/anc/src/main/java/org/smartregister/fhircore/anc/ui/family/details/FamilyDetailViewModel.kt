@@ -16,126 +16,74 @@
 
 package org.smartregister.fhircore.anc.ui.family.details
 
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
-import org.smartregister.fhircore.engine.util.extension.createFactory
 
-class FamilyDetailViewModel(
-  application: AncApplication,
-  private val repository: FamilyDetailRepository,
-) : AndroidViewModel(application), FamilyDetailDataProvider {
+@HiltViewModel
+class FamilyDetailViewModel
+@Inject
+constructor(
+  val repository: FamilyDetailRepository,
+) : ViewModel() {
 
-  private val mDemographics: LiveData<Patient> by lazy { repository.fetchDemographics() }
+  val addNewMember = MutableLiveData(false)
 
-  private val mFamilyMembers: LiveData<List<FamilyMemberItem>> by lazy {
-    repository.fetchFamilyMembers()
+  val backClicked = MutableLiveData(false)
+
+  val memberItemClicked = MutableLiveData<FamilyMemberItem>(null)
+
+  val encounterItemClicked = MutableLiveData<Encounter>(null)
+
+  val demographics = MutableLiveData<Patient>()
+
+  val familyMembers = MutableLiveData<List<FamilyMemberItem>>()
+
+  val encounters = MutableLiveData<List<Encounter>>()
+
+  val familyCarePlans = MutableLiveData<List<CarePlan>>()
+
+  fun fetchDemographics(familyId: String) {
+    viewModelScope.launch { demographics.postValue(repository.fetchDemographics(familyId)) }
   }
 
-  private val mEncounters: LiveData<List<Encounter>> by lazy { repository.fetchEncounters() }
-
-  private val mFamilyCarePlans: LiveData<List<CarePlan>> by lazy {
-    repository.fetchFamilyCarePlans()
+  fun fetchFamilyMembers(familyId: String) {
+    viewModelScope.launch { familyMembers.postValue(repository.fetchFamilyMembers(familyId)) }
   }
 
-  private var mAppBackClickListener: () -> Unit = {}
-  private var mAddMemberItemClickListener: () -> Unit = {}
-  private var mMemberItemClickListener: (item: FamilyMemberItem) -> Unit = {}
-  private var mSeeAllEncounterClickListener: () -> Unit = {}
-  private var mEncounterItemClickListener: (item: Encounter) -> Unit = {}
-  private var mSeeAllUpcomingServiceClickListener: () -> Unit = {}
-  private var mUpcomingServiceItemClickListener: (item: Task) -> Unit = {}
-
-  override fun getDemographics(): LiveData<Patient> {
-    return mDemographics
+  fun fetchCarePlans(familyId: String) {
+    viewModelScope.launch { familyCarePlans.postValue(repository.fetchFamilyCarePlans(familyId)) }
   }
 
-  override fun getFamilyMembers(): LiveData<List<FamilyMemberItem>> {
-    return mFamilyMembers
+  fun fetchEncounters(familyId: String) {
+    viewModelScope.launch { encounters.postValue(repository.fetchEncounters(familyId)) }
   }
 
-  override fun getEncounters(): LiveData<List<Encounter>> {
-    return mEncounters
+  fun onMemberItemClick(familyMemberItem: FamilyMemberItem) {
+    memberItemClicked.value = familyMemberItem
   }
 
-  override fun getFamilyCarePlans(): LiveData<List<CarePlan>> {
-    return mFamilyCarePlans
+  fun onAppBackClick() {
+    backClicked.value = true
   }
 
-  override fun getAppBackClickListener(): () -> Unit {
-    return mAppBackClickListener
+  fun onAddMemberItemClicked() {
+    addNewMember.value = true
   }
 
-  override fun getMemberItemClickListener(): (item: FamilyMemberItem) -> Unit {
-    return mMemberItemClickListener
-  }
+  fun onSeeAllEncountersListener() {}
 
-  override fun getAddMemberItemClickListener(): () -> Unit {
-    return mAddMemberItemClickListener
-  }
+  fun onSeeUpcomingServicesListener() {}
 
-  override fun getSeeAllEncounterClickListener(): () -> Unit {
-    return mSeeAllEncounterClickListener
-  }
-
-  override fun getEncounterItemClickListener(): (item: Encounter) -> Unit {
-    return mEncounterItemClickListener
-  }
-
-  override fun getSeeAllUpcomingServiceClickListener(): () -> Unit {
-    return mSeeAllUpcomingServiceClickListener
-  }
-
-  override fun getUpcomingServiceItemClickListener(): (item: Task) -> Unit {
-    return mUpcomingServiceItemClickListener
-  }
-
-  fun setAppBackClickListener(listener: () -> Unit) {
-    mAppBackClickListener = listener
-  }
-
-  fun setMemberItemClickListener(listener: (item: FamilyMemberItem) -> Unit) {
-    mMemberItemClickListener = listener
-  }
-
-  fun setAddMemberItemClickListener(listener: () -> Unit) {
-    mAddMemberItemClickListener = listener
-  }
-
-  fun setSeeAllEncounterClickListener(listener: () -> Unit) {
-    mSeeAllEncounterClickListener = listener
-  }
-
-  fun setEncounterItemClickListener(listener: (item: Encounter) -> Unit) {
-    mEncounterItemClickListener = listener
-  }
-
-  fun setSeeAllUpcomingServiceClickListener(listener: () -> Unit) {
-    mSeeAllUpcomingServiceClickListener = listener
-  }
-
-  fun setUpcomingServiceItemClickListener(listener: (item: Task) -> Unit) {
-    mUpcomingServiceItemClickListener = listener
-  }
-
-  companion object {
-    fun get(
-      owner: ViewModelStoreOwner,
-      application: AncApplication,
-      repository: FamilyDetailRepository
-    ): FamilyDetailViewModel {
-      return ViewModelProvider(
-        owner,
-        FamilyDetailViewModel(application, repository).createFactory()
-      )[FamilyDetailViewModel::class.java]
-    }
+  fun onEncounterItemClicked(encounter: Encounter) {
+    // TODO handle click listener for encounter
   }
 }

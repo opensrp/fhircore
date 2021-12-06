@@ -16,20 +16,13 @@
 
 package org.smartregister.fhircore.engine.data.remote.fhir.resource
 
-import android.app.Application
-import ca.uhn.fhir.parser.IParser
-import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
-import okhttp3.logging.HttpLoggingInterceptor
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.OperationOutcome
 import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
-import org.smartregister.fhircore.engine.data.remote.shared.interceptor.OAuthInterceptor
 import retrofit2.Call
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -58,27 +51,4 @@ interface FhirResourceService {
   suspend fun deleteResource(@Path("type") type: String, @Path("id") id: String): OperationOutcome
 
   @GET fun fetchImage(@Url url: String): Call<ResponseBody?>
-
-  companion object {
-
-    fun create(parser: IParser, application: Application): FhirResourceService {
-      val logger = HttpLoggingInterceptor()
-      logger.level = HttpLoggingInterceptor.Level.BODY
-
-      val oauthInterceptor = OAuthInterceptor(application)
-
-      val client =
-        OkHttpClient.Builder().addInterceptor(oauthInterceptor).addInterceptor(logger).build()
-
-      val applicationConfiguration =
-        (application as ConfigurableApplication).applicationConfiguration
-      return Retrofit.Builder()
-        .baseUrl(applicationConfiguration.fhirServerBaseUrl)
-        .client(client)
-        .addConverterFactory(FhirConverterFactory(parser))
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-        .create(FhirResourceService::class.java)
-    }
-  }
 }

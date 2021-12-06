@@ -16,142 +16,100 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
-import io.mockk.coEvery
-import io.mockk.every
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
-import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.HumanName
-import org.hl7.fhir.r4.model.Meta
-import org.hl7.fhir.r4.model.Patient
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
-import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 
+@HiltAndroidTest
 class QuestPatientDetailViewModelTest : RobolectricTest() {
 
-  private lateinit var viewModel: QuestPatientDetailViewModel
-  private lateinit var repository: PatientRepository
-  private val patientId = "0"
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @Inject lateinit var patientItemMapper: PatientItemMapper
+
+  @BindValue val patientRepository: PatientRepository = mockk()
+
+  private val patientId = "5583145"
+
+  private lateinit var questPatientDetailViewModel: QuestPatientDetailViewModel
 
   @Before
   fun setUp() {
-    repository = mockk()
-    viewModel =
-      QuestPatientDetailViewModel.get(
-        Robolectric.buildActivity(QuestPatientDetailActivity::class.java).get(),
-        ApplicationProvider.getApplicationContext(),
-        repository,
-        patientId
+    hiltRule.inject()
+    Faker.initPatientRepositoryMocks(patientRepository)
+    questPatientDetailViewModel =
+      QuestPatientDetailViewModel(
+        patientRepository = patientRepository,
+        patientItemMapper = patientItemMapper
       )
   }
 
   @Test
-  fun testVerifyBackPressListener() {
-    var count = 0
-
-    viewModel.setOnBackPressListener { ++count }
-
-    viewModel.onBackPressListener().invoke()
-    Assert.assertEquals(1, count)
+  fun testGetDemographicsShouldFetchPatient() {
+    questPatientDetailViewModel.getDemographics(patientId)
+    val patient = questPatientDetailViewModel.patientItem.value
+    Assert.assertNotNull(patient)
+    Assert.assertEquals(patientId, patient!!.id)
   }
 
   @Test
-  fun testVerifyMenuItemClickListener() {
-
-    viewModel.setOnMenuItemClickListener { Assert.assertEquals("ONE", it) }
-    viewModel.onMenuItemClickListener().invoke("ONE")
+  fun testOnMenuItemClickListener() {
+    questPatientDetailViewModel.onMenuItemClickListener(true)
+    Assert.assertNotNull(questPatientDetailViewModel.onMenuItemClicked.value)
+    Assert.assertTrue(questPatientDetailViewModel.onMenuItemClicked.value!!)
   }
 
   @Test
-  fun testGetDemographicsShouldReturnDummyPatient() {
-
-    every { repository.fetchDemographics(patientId) } returns
-      MutableLiveData(
-        Patient().apply {
-          name =
-            listOf(
-              HumanName().apply {
-                given = listOf(StringType("john"))
-                family = "doe"
-              }
-            )
-        }
-      )
-
-    val patient = viewModel.getDemographics().value
-
-    Assert.assertEquals("john", patient?.name?.first()?.given?.first()?.value)
-    Assert.assertEquals("doe", patient?.name?.first()?.family)
+  fun testOnBackPressed() {
+    questPatientDetailViewModel.onBackPressed(true)
+    Assert.assertNotNull(questPatientDetailViewModel.onBackPressClicked.value)
+    Assert.assertTrue(questPatientDetailViewModel.onBackPressClicked.value!!)
   }
 
   @Test
-  fun testGetAllFormsShouldReturnListOfQuestionnaireConfig() {
-
-    coEvery { repository.fetchTestForms(any()) } returns
-      MutableLiveData(
-        listOf(QuestionnaireConfig("quest", "g6pd-test-result", "G6PD Test Result", "3440"))
-      )
-
-    val forms = viewModel.getAllForms().value
-
-    with(forms!!.first()) {
-      Assert.assertEquals("3440", identifier)
-      Assert.assertEquals("g6pd-test-result", form)
-      Assert.assertEquals("G6PD Test Result", title)
-    }
+  fun testOnFormItemClickListener() {
+    val questionnaireConfig = mockk<QuestionnaireConfig>()
+    questPatientDetailViewModel.onFormItemClickListener(questionnaireConfig)
+    Assert.assertNotNull(questPatientDetailViewModel.onFormItemClicked.value)
+    Assert.assertEquals(questionnaireConfig, questPatientDetailViewModel.onFormItemClicked.value!!)
   }
 
   @Test
-  fun testGetAllResultsShouldReturnListOfTestReports() {
-
-    coEvery { repository.fetchTestResults(patientId) } returns
-      MutableLiveData(
-        listOf(
-          QuestionnaireResponse().apply {
-            meta = Meta().apply { tag = listOf(Coding().apply { display = "Blood Count" }) }
-          }
-        )
-      )
-
-    val results = viewModel.getAllResults().value
-
-    with(results!!.first()) { Assert.assertEquals("Blood Count", meta?.tagFirstRep?.display) }
+  fun testOnTestResultItemClickListener() {
+    val questionnaireResponse = mockk<QuestionnaireResponse>()
+    questPatientDetailViewModel.onTestResultItemClickListener(questionnaireResponse)
+    Assert.assertNotNull(questPatientDetailViewModel.onFormTestResultClicked.value)
+    Assert.assertEquals(
+      questionnaireResponse,
+      questPatientDetailViewModel.onFormTestResultClicked.value!!
+    )
   }
 
   @Test
-  fun testVerifyFormItemClickListener() {
-
-    viewModel.setOnFormItemClickListener {
-      Assert.assertEquals("quest", it.appId)
-      Assert.assertEquals("test", it.form)
-      Assert.assertEquals("Test", it.title)
-      Assert.assertEquals("0", it.identifier)
-    }
-
-    viewModel.onFormItemClickListener().invoke(QuestionnaireConfig("quest", "test", "Test", "0"))
-  }
-
-  @Test
-  fun testVerifyTestResultItemClickListener() {
-
-    viewModel.setOnTestResultItemClickListener {
-      Assert.assertEquals("Blood Count", it.meta?.tagFirstRep?.display)
-    }
-
-    viewModel
-      .onTestResultItemClickListener()
-      .invoke(
-        QuestionnaireResponse().apply {
-          meta = Meta().apply { tag = listOf(Coding().apply { display = "Blood Count" }) }
-        }
-      )
+  fun testGetAllForms() {
+    questPatientDetailViewModel.getAllForms(ApplicationProvider.getApplicationContext())
+    Assert.assertNotNull(questPatientDetailViewModel.questionnaireConfigs.value)
+    Assert.assertEquals(2, questPatientDetailViewModel.questionnaireConfigs.value!!.size)
+    Assert.assertEquals(
+      "12345",
+      questPatientDetailViewModel.questionnaireConfigs.value!!.first().identifier
+    )
+    Assert.assertEquals(
+      "67890",
+      questPatientDetailViewModel.questionnaireConfigs.value!!.last().identifier
+    )
   }
 }
