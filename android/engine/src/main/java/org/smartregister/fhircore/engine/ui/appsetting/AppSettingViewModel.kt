@@ -20,9 +20,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
-import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltViewModel
 class AppSettingViewModel @Inject constructor() : ViewModel() {
@@ -45,15 +42,7 @@ class AppSettingViewModel @Inject constructor() : ViewModel() {
     _rememberApp.value = rememberApp
   }
 
-  fun loadConfigurations() {
-    if (!this.appId.value.isNullOrEmpty()) {
-      (getApplication<Application>() as ConfigurableApplication).configurationRegistry
-        .loadAppConfigurations(this.appId.value!!, getApplication()) { successful ->
-          if (rememberApp.value!!) {
-            SharedPreferencesHelper.write(APP_ID_CONFIG, this.appId.value)
-          }
-          configsLoaded.postValue(successful)
-        }
-    }
+  fun loadConfigurations(loadConfigs: Boolean) {
+    this.loadConfigs.postValue(loadConfigs)
   }
 }
