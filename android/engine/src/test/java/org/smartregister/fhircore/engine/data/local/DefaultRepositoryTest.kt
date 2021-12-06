@@ -24,6 +24,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
+import io.mockk.spyk
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
@@ -35,10 +36,13 @@ import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 
 class DefaultRepositoryTest : RobolectricTest() {
+
+  private val dispatcherProvider = spyk(DefaultDispatcherProvider())
 
   @Test
   fun `addOrUpdate() should call fhirEngine#update when resource exists`() {
@@ -72,7 +76,8 @@ class DefaultRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.load(Patient::class.java, patient.idElement.idPart) } returns patient
     coEvery { fhirEngine.update(any()) } just runs
 
-    val defaultRepository = DefaultRepository(fhirEngine)
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     // Call the function under test
     runBlocking { defaultRepository.addOrUpdate(patient) }
@@ -105,7 +110,8 @@ class DefaultRepositoryTest : RobolectricTest() {
     val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.loadRelatedPersons(patientId) } returns listOf()
 
-    val defaultRepository = DefaultRepository(fhirEngine)
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     runBlocking { defaultRepository.loadRelatedPersons(patientId) }
 
@@ -118,7 +124,8 @@ class DefaultRepositoryTest : RobolectricTest() {
     val fhirEngine: FhirEngine = mockk()
     coEvery { fhirEngine.loadPatientImmunizations(patientId) } returns listOf()
 
-    val defaultRepository = DefaultRepository(fhirEngine)
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
 
     runBlocking { defaultRepository.loadPatientImmunizations(patientId) }
 

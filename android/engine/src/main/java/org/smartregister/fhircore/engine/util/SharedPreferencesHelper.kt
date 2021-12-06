@@ -18,19 +18,15 @@ package org.smartregister.fhircore.engine.util
 
 import android.content.Context
 import android.content.SharedPreferences
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-object SharedPreferencesHelper {
+@Singleton
+class SharedPreferencesHelper @Inject constructor(@ApplicationContext val context: Context) {
 
-  private lateinit var prefs: SharedPreferences
-
-  const val LANG = "shared_pref_lang"
-  const val THEME = "shared_pref_theme"
-  const val PREFS_NAME = "params"
-
-  fun init(context: Context): SharedPreferencesHelper {
-    prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    return this
-  }
+  private var prefs: SharedPreferences =
+    context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
   /** @see [SharedPreferences.getString] */
   fun read(key: String, defaultValue: String?) = prefs.getString(key, defaultValue)
@@ -49,5 +45,11 @@ object SharedPreferencesHelper {
       putLong(key, value)
       commit()
     }
+  }
+
+  companion object {
+    const val LANG = "shared_pref_lang"
+    const val THEME = "shared_pref_theme"
+    const val PREFS_NAME = "params"
   }
 }

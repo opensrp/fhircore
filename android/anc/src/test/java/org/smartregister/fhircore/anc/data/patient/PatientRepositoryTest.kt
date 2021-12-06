@@ -16,23 +16,25 @@
 
 package org.smartregister.fhircore.anc.data.patient
 
+import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.parser.IParser
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.search
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
-import io.mockk.unmockkStatic
 import java.text.SimpleDateFormat
 import java.util.Date
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
@@ -60,29 +62,50 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.anc.app.fakes.FakeModel.buildCarePlan
+import org.smartregister.fhircore.anc.app.fakes.FakeModel.buildPatient
+import org.smartregister.fhircore.anc.app.fakes.FakeModel.getEncounter
 import org.smartregister.fhircore.anc.data.model.PatientItem
-import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.ui.anccare.details.AncPatientItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
-import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
+@HiltAndroidTest
 class PatientRepositoryTest : RobolectricTest() {
-  private lateinit var repository: PatientRepository
-  private lateinit var fhirEngine: FhirEngine
 
-  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var ancItemMapper: AncItemMapper
+
+  private lateinit var repository: PatientRepository
+
+  private val fhirEngine: FhirEngine = spyk()
+
+  val context = ApplicationProvider.getApplicationContext<Application>()
 
   @Before
   fun setUp() {
-    fhirEngine = spyk()
-    repository = spyk(PatientRepository(fhirEngine, AncPatientItemMapper))
+    hiltRule.inject()
+    repository =
+      spyk(
+        PatientRepository(
+          context = ApplicationProvider.getApplicationContext(),
+          fhirEngine = fhirEngine,
+          domainMapper = ancItemMapper,
+          dispatcherProvider = dispatcherProvider
+        )
+      )
   }
 
   @Test
   fun testFetchDemographicsShouldReturnMergedPatient() {
-
     coEvery { fhirEngine.load(any<Class<Resource>>(), any()) } answers
       {
         when (secondArg<String>()) {
@@ -93,7 +116,6 @@ class PatientRepositoryTest : RobolectricTest() {
       }
 
     val demographics = runBlocking { repository.fetchDemographics(PATIENT_ID_1) }
-
     verifyPatient(demographics.patientDetails)
     verifyHeadPatient(demographics.patientDetailsHead)
   }
@@ -233,9 +255,9 @@ class PatientRepositoryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Condition>(any()) } returns listOf(buildCondition("1111"))
     coEvery { repository.searchCarePlan(any()) } returns listOf(buildCarePlan("1111"))
     coEvery { fhirEngine.load(Patient::class.java, "1111") } returns
-      buildPatient("1111", "Test", "Abc")
+      buildPatient(id = "1111", family = "Test", given = "Abc")
     coEvery { fhirEngine.load(Patient::class.java, "1110") } returns
-      buildPatient("1110", "Test0", "Abc0")
+      buildPatient(id = "1110", family = "Test0", given = "Abc0")
     coEvery { fhirEngine.count(any()) } returns 10
 
     runBlocking {
@@ -243,8 +265,6 @@ class PatientRepositoryTest : RobolectricTest() {
 
       Assert.assertEquals("Abc Test", ancList[0].name)
       Assert.assertEquals("1111", ancList[0].patientIdentifier)
-
-      Assert.assertEquals(VisitStatus.PLANNED, ancList[0].visitStatus)
     }
   }
 
@@ -281,43 +301,14 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @Test
   fun testFetchCarePlanShouldReturnExpectedCarePlan() {
-    mockkStatic(FhirContext::class)
-
-    val fhirContext = mockk<FhirContext>()
-    val parser = mockk<IParser>()
-
-    val cpTitle = "First Care Plan"
-    val cpPeriodStartDate = SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01")
-
-    every { FhirContext.forR4() } returns fhirContext
-    every { fhirContext.newJsonParser() } returns parser
-    every { parser.parseResource(any<String>()) } returns
-      CarePlan().apply {
-        title = cpTitle
-        period = Period().apply { start = cpPeriodStartDate }
-      }
+    coEvery {
+      fhirEngine.search<CarePlan> { filter(CarePlan.SUBJECT) { value = "Patient/$PATIENT_ID_1" } }
+    } returns listOf(buildCarePlanWithActive(PATIENT_ID_1))
 
     val carePlans = runBlocking { repository.fetchCarePlan(PATIENT_ID_1) }
-    if (carePlans != null && carePlans.isNotEmpty()) {
+    if (carePlans.isNotEmpty()) {
       Assert.assertEquals(1, carePlans.size)
-      with(carePlans.first()) { Assert.assertEquals(cpTitle, title) }
-    }
-
-    unmockkStatic(FhirContext::class)
-  }
-
-  private fun buildPatient(id: String, family: String, given: String): Patient {
-    return Patient().apply {
-      this.id = id
-      this.addName().apply {
-        this.family = family
-        this.given.add(StringType(given))
-      }
-      this.addAddress().apply {
-        district = "Dist 1"
-        city = "City 1"
-      }
-      this.addLink().apply { this.other = Reference().apply { reference = "Patient/1110" } }
+      with(carePlans.first()) { Assert.assertEquals("11190", id) }
     }
   }
 
@@ -358,13 +349,13 @@ class PatientRepositoryTest : RobolectricTest() {
     runBlocking {
       val result =
         repository.recordComputedBmi(
-          mockk(),
-          mockk(),
-          "patient_1",
-          "encounter_1",
-          1.6764,
-          50.0,
-          9.8
+          questionnaire = mockk(),
+          questionnaireResponse = mockk(),
+          patientId = "patient_1",
+          encounterID = "encounter_1",
+          height = 1.6764,
+          weight = 50.0,
+          computedBmi = 9.8
         )
 
       coVerify(exactly = 4) { fhirEngine.save(any()) }
@@ -415,6 +406,20 @@ class PatientRepositoryTest : RobolectricTest() {
       id = "1"
       code = getCodeableConcept()
       executionPeriod = Period().setStart(Date())
+    }
+  }
+
+  private fun buildPatient(id: String, family: String, given: String): Patient {
+    return Patient().apply {
+      this.id = id
+      this.addName().apply {
+        this.family = family
+        this.given.add(StringType(given))
+      }
+      this.addAddress().apply {
+        district = "Dist 1"
+        city = "City 1"
+      }
     }
   }
 

@@ -16,22 +16,14 @@
 
 package org.smartregister.fhircore.engine.data.remote.auth
 
-import android.content.Context
-import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
-import okhttp3.logging.HttpLoggingInterceptor
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
-import org.smartregister.fhircore.engine.data.remote.shared.interceptor.OAuthInterceptor
 import retrofit2.Call
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Field
 import retrofit2.http.FieldMap
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.POST
-import timber.log.Timber
 
 interface OAuthService {
 
@@ -48,26 +40,4 @@ interface OAuthService {
     @Field("client_secret") clientSecret: String,
     @Field("refresh_token") refreshToken: String
   ): Call<ResponseBody>
-
-  companion object {
-    fun create(context: Context, applicationConfiguration: ApplicationConfiguration): OAuthService {
-      val logger = HttpLoggingInterceptor()
-      logger.level = HttpLoggingInterceptor.Level.BODY
-
-      Timber.i(applicationConfiguration.oauthServerBaseUrl)
-
-      val client =
-        OkHttpClient.Builder()
-          .addInterceptor(OAuthInterceptor(context))
-          .addInterceptor(logger)
-          .build()
-
-      return Retrofit.Builder()
-        .baseUrl(applicationConfiguration.oauthServerBaseUrl)
-        .client(client)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-        .create(OAuthService::class.java)
-    }
-  }
 }

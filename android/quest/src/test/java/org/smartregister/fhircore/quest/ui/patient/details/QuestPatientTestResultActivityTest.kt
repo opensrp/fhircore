@@ -16,36 +16,54 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import android.app.Activity
-import io.mockk.every
-import io.mockk.spyk
-import io.mockk.verify
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.mockk
+import javax.inject.Inject
+import org.junit.After
+import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.quest.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.data.patient.PatientRepository
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
-class QuestPatientTestResultActivityTest : ActivityRobolectricTest() {
+@HiltAndroidTest
+class QuestPatientTestResultActivityTest : RobolectricTest() {
 
-  private lateinit var activity: QuestPatientTestResultActivity
+  private lateinit var questPatientTestResultActivity: QuestPatientTestResultActivity
+
+  @BindValue val patientRepository: PatientRepository = mockk()
+
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
   @Before
   fun setUp() {
-    activity = Robolectric.buildActivity(QuestPatientTestResultActivity::class.java).create().get()
+    hiltRule.inject()
+    configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
+    Faker.initPatientRepositoryMocks(patientRepository)
+    questPatientTestResultActivity =
+      Robolectric.buildActivity(QuestPatientTestResultActivity::class.java).create().resume().get()
+  }
+
+  @After
+  override fun tearDown() {
+    super.tearDown()
+    questPatientTestResultActivity.finish()
   }
 
   @Test
   fun testOnBackPressListenerShouldCallFinishActivity() {
-    val spyActivity = spyk(activity)
-    every { spyActivity.finish() } returns Unit
-
-    ReflectionHelpers.callInstanceMethod<Any>(spyActivity, "onBackPressListener")
-
-    verify(exactly = 1) { spyActivity.finish() }
-  }
-
-  override fun getActivity(): Activity {
-    return activity
+    questPatientTestResultActivity.patientViewModel.onBackPressed(true)
+    Assert.assertTrue(questPatientTestResultActivity.isFinishing)
   }
 }
