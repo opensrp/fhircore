@@ -20,11 +20,9 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
-import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.due
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.overdue
-
-// upcoming services
 
 object CarePlanItemMapper : DomainMapper<CarePlan, CarePlanItem> {
 

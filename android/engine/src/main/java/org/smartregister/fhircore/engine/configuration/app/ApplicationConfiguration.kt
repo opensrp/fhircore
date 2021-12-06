@@ -24,11 +24,6 @@ data class ApplicationConfiguration(
   override val appId: String = "",
   override val classification: String,
   var theme: String = "",
-  var oauthServerBaseUrl: String = "",
-  var fhirServerBaseUrl: String = "",
-  var clientId: String = "",
-  var clientSecret: String = "",
-  var scope: String = "openid",
   var languages: List<String> = listOf("en"),
   var syncInterval: Long = 30
 ) : Configuration
@@ -36,14 +31,8 @@ data class ApplicationConfiguration(
 /**
  * A function providing a DSL for configuring [ApplicationConfiguration] used in a FHIR application
  *
- * @param oauthServerBaseUrl Sets the base URL for the authentication server. Usually the keycloak
- * base URL plus the realm. e.g https://keycloak.domain.org/auth/realms/<<real>>/
- * @param fhirServerBaseUrl Sets the base FHIR server URL for the application
- * @param clientId Sets the client identifier issued to the client during the registration process
- * on keycloak
- * @param clientSecret Sets the client secret issued to the client during the registration process
- * on keycloak
- * @param scope Sets the scope of the access request. It may have multiple space delimited values
+ * @param appId Set unique identifier for the app
+ * @param classification Set the
  * @param languages Sets the languages for the app
  * @param syncInterval Sets the periodic sync interval in seconds. Default 30.
  */
@@ -51,11 +40,6 @@ fun applicationConfigurationOf(
   appId: String = "",
   classification: String = "",
   theme: String = "",
-  oauthServerBaseUrl: String = "",
-  fhirServerBaseUrl: String = "",
-  clientId: String = "",
-  clientSecret: String = "",
-  scope: String = "openid",
   languages: List<String> = listOf("en"),
   syncInterval: Long = 30
 ): ApplicationConfiguration =
@@ -63,11 +47,6 @@ fun applicationConfigurationOf(
     appId = appId,
     classification = classification,
     theme = theme,
-    oauthServerBaseUrl = oauthServerBaseUrl,
-    fhirServerBaseUrl = fhirServerBaseUrl,
-    clientId = clientId,
-    clientSecret = clientSecret,
-    scope = scope,
     languages = languages,
     syncInterval = syncInterval
   )

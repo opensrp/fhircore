@@ -20,8 +20,11 @@ import android.app.Activity
 import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.Sync
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -41,6 +44,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.jupiter.api.DisplayName
 import org.robolectric.Robolectric
@@ -53,6 +57,7 @@ import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
 import org.smartregister.fhircore.eir.ui.patient.details.ImmunizationAdverseEventItem
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
 
+@HiltAndroidTest
 internal class AdverseEventActivityTest : ActivityRobolectricTest() {
 
   private lateinit var fhirEngine: FhirEngine
@@ -63,10 +68,12 @@ internal class AdverseEventActivityTest : ActivityRobolectricTest() {
 
   private lateinit var patientRepository: PatientRepository
 
+  @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
+
   @Before
   fun setUp() {
-
     mockkObject(Sync)
+    hiltAndroidRule.inject()
 
     adverseEventAdapter = mockk()
 
@@ -74,7 +81,7 @@ internal class AdverseEventActivityTest : ActivityRobolectricTest() {
 
     patientRepository = mockk()
 
-    val ancPatientDetailItem = spyk<PatientItemMapper>()
+    val ancPatientDetailItem = spyk(PatientItemMapper(ApplicationProvider.getApplicationContext()))
 
     adverseEventActivity =
       Robolectric.buildActivity(AdverseEventActivity::class.java, null).create().get()

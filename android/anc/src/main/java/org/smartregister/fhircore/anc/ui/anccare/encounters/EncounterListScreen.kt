@@ -49,25 +49,17 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.paging.PagingSource
-import androidx.paging.PagingState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemsIndexed
 import java.util.Date
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.EncounterItem
-import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
 @Composable
-fun EncounterListScreen(dataProvider: EncounterDataProvider) {
+fun EncounterListScreen(encounterListViewModel: EncounterListViewModel) {
   Surface(color = colorResource(id = R.color.white)) {
     Column {
 
@@ -75,17 +67,17 @@ fun EncounterListScreen(dataProvider: EncounterDataProvider) {
       TopAppBar(
         title = { Text(text = stringResource(id = R.string.past_encounters)) },
         navigationIcon = {
-          IconButton(onClick = { dataProvider.getAppBackClickListener().invoke() }) {
+          IconButton(onClick = encounterListViewModel::onAppBackClick) {
             Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")
           }
         }
       )
 
-      val lazyEncounterItems = dataProvider.getEncounterList().collectAsLazyPagingItems()
+      val lazyEncounterItems = encounterListViewModel.getEncounterList().collectAsLazyPagingItems()
 
       LazyColumn(modifier = Modifier.background(Color.White).fillMaxSize()) {
         itemsIndexed(lazyEncounterItems) { index, item ->
-          EncounterItem(item!!, index == lazyEncounterItems.itemCount.minus(1))
+          EncounterItemRow(item!!, index == lazyEncounterItems.itemCount.minus(1))
         }
 
         lazyEncounterItems.apply {
@@ -106,7 +98,7 @@ fun EncounterListScreen(dataProvider: EncounterDataProvider) {
 @Preview
 @Composable
 @ExcludeFromJacocoGeneratedReport
-fun EncounterItem(
+fun EncounterItemRow(
   @PreviewParameter(DummyItem::class) item: EncounterItem,
   isLastItem: Boolean = false
 ) {
@@ -172,46 +164,16 @@ fun LoadingItem() {
 @Composable
 @ExcludeFromJacocoGeneratedReport
 fun EncounterListScreenPreview() {
-  AppTheme { EncounterListScreen(dummyData()) }
+  EncounterItemRow(
+    item =
+      EncounterItem(
+        id = "id",
+        status = Encounter.EncounterStatus.ARRIVED,
+        display = "display",
+        periodStartDate = Date()
+      )
+  )
 }
-
-fun dummyData() =
-  object : EncounterDataProvider {
-    override fun getEncounterList(): Flow<PagingData<EncounterItem>> {
-      return Pager(PagingConfig(pageSize = 20)) {
-          object : PagingSource<Int, EncounterItem>() {
-            override fun getRefreshKey(state: PagingState<Int, EncounterItem>): Int? {
-              return state.anchorPosition
-            }
-
-            override suspend fun load(params: LoadParams<Int>): LoadResult<Int, EncounterItem> {
-              delay(3000)
-              var nextPage: Int? = params.key ?: 0
-
-              val data = mutableListOf<EncounterItem>()
-              (0..20).forEach {
-                data.add(
-                  EncounterItem("$it", Encounter.EncounterStatus.FINISHED, "Encounter $it", Date())
-                )
-              }
-
-              val dataMap =
-                mapOf(Pair(0, data), Pair(1, data), Pair(2, data), Pair(3, data), Pair(4, data))
-
-              val result = dataMap[nextPage] ?: listOf()
-
-              nextPage = if (nextPage!! >= 4) null else nextPage.plus(1)
-              return LoadResult.Page(result, null, nextPage)
-            }
-          }
-        }
-        .flow
-    }
-
-    override fun getAppBackClickListener(): () -> Unit {
-      return {}
-    }
-  }
 
 class DummyItem : PreviewParameterProvider<EncounterItem> {
   override val values: Sequence<EncounterItem>

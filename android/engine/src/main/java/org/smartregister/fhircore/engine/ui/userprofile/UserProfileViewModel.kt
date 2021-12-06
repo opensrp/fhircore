@@ -16,26 +16,33 @@
 
 package org.smartregister.fhircore.engine.ui.userprofile
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
-class UserProfileViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class UserProfileViewModel
+@Inject
+constructor(
+  val syncBroadcaster: SyncBroadcaster,
+  val accountAuthenticator: AccountAuthenticator,
+  val secureSharedPreference: SecureSharedPreference
+) : ViewModel() {
 
   val onLogout = MutableLiveData<Boolean?>(null)
 
-  val configurableApplication = getApplication<Application>() as ConfigurableApplication
-
   fun runSync() {
-    configurableApplication.syncBroadcaster.syncInitiator?.runSync()
+    syncBroadcaster.syncInitiator?.runSync()
   }
 
   fun logoutUser() {
-    configurableApplication.authenticationService.logout()
+    accountAuthenticator.logout()
     onLogout.postValue(true)
   }
 
-  fun retrieveUsername(): String? =
-    configurableApplication.secureSharedPreference.retrieveSessionUsername()
+  fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 }

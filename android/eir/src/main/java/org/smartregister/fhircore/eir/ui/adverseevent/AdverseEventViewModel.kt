@@ -16,26 +16,30 @@
 
 package org.smartregister.fhircore.eir.ui.adverseevent
 
-import android.app.Application
 import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-class AdverseEventViewModel(
-  application: Application,
-  private val patientRepository: PatientRepository,
-  private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
-) : QuestionnaireViewModel(application) {
+@HiltViewModel
+class AdverseEventViewModel
+@Inject
+constructor(
+  val defaultRepository: DefaultRepository,
+  val patientRepository: PatientRepository,
+  val dispatcherProvider: DispatcherProvider
+) : ViewModel() {
 
   fun getPatientImmunizations(patientId: String): LiveData<List<Immunization>> {
     val mutableLiveData: MutableLiveData<List<Immunization>> = MutableLiveData()
@@ -66,7 +70,7 @@ class AdverseEventViewModel(
     return mutableLiveData
   }
 
-  override suspend fun getPopulationResources(intent: Intent): Array<Resource> {
+  suspend fun getPopulationResources(intent: Intent): Array<Resource> {
     val resourcesList = mutableListOf<Resource>()
 
     intent.getStringExtra(QuestionnaireActivity.ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY)?.let {

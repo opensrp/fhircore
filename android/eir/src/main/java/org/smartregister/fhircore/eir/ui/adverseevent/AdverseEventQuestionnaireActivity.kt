@@ -17,8 +17,7 @@
 package org.smartregister.fhircore.eir.ui.adverseevent
 
 import android.app.AlertDialog
-import android.app.Application
-import androidx.lifecycle.ViewModelProvider
+import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
 import kotlinx.coroutines.Dispatchers
@@ -26,36 +25,18 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.data.PatientRepository
-import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
-import org.smartregister.fhircore.engine.util.extension.createFactory
 import timber.log.Timber
 
 class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
 
-  override fun createViewModel(application: Application): QuestionnaireViewModel {
-    return ViewModelProvider(
-        this@AdverseEventQuestionnaireActivity,
-        AdverseEventViewModel(
-            application,
-            PatientRepository(
-              (application as ConfigurableApplication).fhirEngine,
-              PatientItemMapper
-            )
-          )
-          .createFactory()
-      )
-      .get(AdverseEventViewModel::class.java)
-  }
+  val adverseEventViewModel: AdverseEventViewModel by viewModels()
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
       immunizationId?.let { immunizationId ->
-        (questionnaireViewModel as AdverseEventViewModel).loadImmunization(immunizationId).observe(
+        adverseEventViewModel.loadImmunization(immunizationId).observe(
             this@AdverseEventQuestionnaireActivity
           ) { oldImmunization ->
           if (oldImmunization != null) {
@@ -78,26 +59,21 @@ class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
                   }
                 )
 
-                questionnaireViewModel.performExtraction(
-                    questionnaire,
-                    questionnaireResponse,
-                    this@AdverseEventQuestionnaireActivity
-                  )
-                  .run {
-                    val immunizationEntry = entry.firstOrNull { it.resource is Immunization }
-                    if (immunizationEntry == null) {
-                      val fhirJsonParser = FhirContext.forR4().newJsonParser()
-                      Timber.e(
-                        "Immunization extraction failed for ${fhirJsonParser.encodeResourceToString(questionnaireResponse)} producing ${fhirJsonParser.encodeResourceToString(this)}"
-                      )
-                      lifecycleScope.launch(Dispatchers.Main) { handleExtractionError() }
-                    } else {
-                      (immunizationEntry.resource as Immunization).reaction.addAll(
-                        oldImmunization.reaction
-                      )
-                      questionnaireViewModel.saveBundleResources(this)
-                    }
+                questionnaireViewModel.performExtraction(questionnaire, questionnaireResponse).run {
+                  val immunizationEntry = entry.firstOrNull { it.resource is Immunization }
+                  if (immunizationEntry == null) {
+                    val fhirJsonParser = FhirContext.forR4().newJsonParser()
+                    Timber.e(
+                      "Immunization extraction failed for ${fhirJsonParser.encodeResourceToString(questionnaireResponse)} producing ${fhirJsonParser.encodeResourceToString(this)}"
+                    )
+                    lifecycleScope.launch(Dispatchers.Main) { handleExtractionError() }
+                  } else {
+                    (immunizationEntry.resource as Immunization).reaction.addAll(
+                      oldImmunization.reaction
+                    )
+                    questionnaireViewModel.saveBundleResources(this)
                   }
+                }
               }
             }
           }

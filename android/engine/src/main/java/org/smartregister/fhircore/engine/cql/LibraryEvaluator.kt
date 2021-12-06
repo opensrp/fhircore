@@ -70,8 +70,8 @@ class LibraryEvaluator {
     testData: IBaseBundle,
     fhirContext: FhirContext
   ) {
-    var fhirTypeConverter = FhirTypeConverterFactory().create(fhirContext.version.version)
-    var cqlFhirParametersConverter =
+    val fhirTypeConverter = FhirTypeConverterFactory().create(fhirContext.version.version)
+    val cqlFhirParametersConverter =
       CqlFhirParametersConverter(fhirContext, adapterFactory, fhirTypeConverter)
 
     val bundleFactory = fhirContext.newBundleFactory()!!
@@ -136,8 +136,6 @@ class LibraryEvaluator {
 
   /**
    * This method is used to run a CQL Evaluation
-   * @param libraryData Fhir resource type Library
-   * @param helperData Fhir resource type LibraryHelper
    * @param valueSetData Fhir resource type ValueSet
    * @param testData Fhir resource to evaluate e.g Patient
    * @param evaluatorId Outcome Id of evaluation e.g ANCRecommendationA2
@@ -171,11 +169,11 @@ class LibraryEvaluator {
    * @param patientData
    */
   fun processCQLPatientBundle(patientData: String): String {
-    var auxPatientDataObj = JSONObject(patientData)
-    var oldJSONArrayEntry = auxPatientDataObj.getJSONArray("entry")
-    var newJSONArrayEntry = JSONArray()
+    val auxPatientDataObj = JSONObject(patientData)
+    val oldJSONArrayEntry = auxPatientDataObj.getJSONArray("entry")
+    val newJSONArrayEntry = JSONArray()
     for (i in 0 until oldJSONArrayEntry.length() - 1) {
-      var resourceType =
+      val resourceType =
         oldJSONArrayEntry.getJSONObject(i).getJSONObject("resource").getString("resourceType")
       if (i != 0 && !resourceType.equals("Patient")) {
         newJSONArrayEntry.put(oldJSONArrayEntry.getJSONObject(i))

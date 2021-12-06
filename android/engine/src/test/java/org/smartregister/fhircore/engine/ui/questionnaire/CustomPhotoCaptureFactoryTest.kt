@@ -62,7 +62,7 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
     callback.captured.onActivityResult(result)
 
     verify { photoCaptureFactory.loadThumbnail(fragment, bitmap) }
-    verify { photoCaptureFactory.populateCameraResponse(fragment, bitmap) }
+    verify { photoCaptureFactory.populateCameraResponse(fragment, bitmap, any()) }
   }
 
   @Test

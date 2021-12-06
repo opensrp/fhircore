@@ -33,6 +33,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.annotation.IdRes
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
@@ -44,7 +45,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.contrib.views.barcode.mlkit.md.LiveBarcodeScanningFragment
@@ -55,17 +55,18 @@ import com.google.android.material.navigation.NavigationView
 import java.text.ParseException
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
-import org.smartregister.fhircore.engine.configuration.view.registerViewConfigurationOf
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
 import org.smartregister.fhircore.engine.sync.OnSyncListener
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncInitiator
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.navigation.NavigationBottomSheet
@@ -77,12 +78,11 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.util.DateUtils
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.DrawablePosition
 import org.smartregister.fhircore.engine.util.extension.addOnDrawableClickListener
 import org.smartregister.fhircore.engine.util.extension.asString
-import org.smartregister.fhircore.engine.util.extension.assertIsConfigurable
-import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.engine.util.extension.getDrawable
 import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.engine.util.extension.refresh
@@ -100,9 +100,17 @@ abstract class BaseRegisterActivity :
   OnSyncListener,
   SyncInitiator {
 
-  private lateinit var drawerMenuHeaderBinding: DrawerMenuHeaderBinding
+  @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
-  lateinit var registerViewModel: RegisterViewModel
+  @Inject lateinit var fhirEngine: FhirEngine
+
+  @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+
+  val registerViewModel: RegisterViewModel by viewModels()
+
+  private lateinit var drawerMenuHeaderBinding: DrawerMenuHeaderBinding
 
   private lateinit var registerActivityBinding: BaseRegisterActivityBinding
 
@@ -112,8 +120,6 @@ abstract class BaseRegisterActivity :
 
   private lateinit var sideMenuOptionMap: Map<Int, SideMenuOption>
 
-  lateinit var fhirEngine: FhirEngine
-
   val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
 
   protected lateinit var navigationBottomSheet: NavigationBottomSheet
@@ -122,21 +128,10 @@ abstract class BaseRegisterActivity :
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    application.assertIsConfigurable()
-    val syncBroadcaster = (application as ConfigurableApplication).syncBroadcaster
+
     syncBroadcaster.registerSyncListener(this)
 
     supportedFragments = supportedFragments()
-
-    registerViewModel =
-      ViewModelProvider(
-        this,
-        RegisterViewModel(
-            application = application,
-            registerViewConfiguration = registerViewConfigurationOf(),
-          )
-          .createFactory()
-      )[RegisterViewModel::class.java]
 
     // Initiate sync after registerViewModel is initialized
     syncBroadcaster.registerSyncInitiator(this)
@@ -164,8 +159,6 @@ abstract class BaseRegisterActivity :
     registerActivityBinding = DataBindingUtil.setContentView(this, R.layout.base_register_activity)
     registerActivityBinding.lifecycleOwner = this
 
-    fhirEngine = (application as ConfigurableApplication).fhirEngine
-
     navigationBottomSheet = NavigationBottomSheet(this::onSelectRegister)
     setupBarcodeButtonView()
   }
@@ -176,7 +169,7 @@ abstract class BaseRegisterActivity :
   }
 
   override fun onDestroy() {
-    configurableApplication().syncBroadcaster.run {
+    syncBroadcaster.run {
       unRegisterSyncListener(this@BaseRegisterActivity)
       unRegisterSyncInitiator()
     }
@@ -197,7 +190,7 @@ abstract class BaseRegisterActivity :
       is State.Glitch -> {
         progressSync.hide()
         val lastSyncTimestamp =
-          SharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, getString(R.string.syncing_retry))
+          sharedPreferencesHelper.read(LAST_SYNC_TIMESTAMP, getString(R.string.syncing_retry))
         tvLastSyncTimestamp.text = lastSyncTimestamp?.formatSyncDate() ?: ""
         containerProgressSync.apply {
           background = this.getDrawable(R.drawable.ic_sync)
@@ -362,10 +355,7 @@ abstract class BaseRegisterActivity :
     registerActivityBinding.navView.apply {
       setNavigationItemSelectedListener(this@BaseRegisterActivity)
       menu.findItem(R.id.menu_item_logout)?.title =
-        getString(
-          R.string.logout_user,
-          configurableApplication().secureSharedPreference.retrieveSessionUsername()
-        )
+        getString(R.string.logout_user, secureSharedPreference.retrieveSessionUsername())
     }
   }
 
@@ -491,7 +481,7 @@ abstract class BaseRegisterActivity :
       R.id.menu_item_language -> renderSelectLanguageDialog(this)
       R.id.menu_item_logout -> {
         finish()
-        configurableApplication().authenticationService.logout()
+        accountAuthenticator.logout()
         manipulateDrawer(open = false)
       }
       else -> {
@@ -537,7 +527,7 @@ abstract class BaseRegisterActivity :
   private fun refreshSelectedLanguage(language: Language, context: Activity) {
     updateLanguage(language)
     context.setAppLocale(language.tag)
-    SharedPreferencesHelper.write(SharedPreferencesHelper.LANG, language.tag)
+    sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, language.tag)
     context.refresh()
   }
 
@@ -609,22 +599,16 @@ abstract class BaseRegisterActivity :
   }
 
   /** List of [SideMenuOption] representing individual menu items listed in the DrawerLayout */
-  open fun sideMenuOptions(): List<SideMenuOption> {
-    return emptyList()
-  }
+  open fun sideMenuOptions(): List<SideMenuOption> = emptyList()
 
   /** List of [SideMenuOption] representing individual menu items listed in the DrawerLayout */
-  open fun bottomNavigationMenuOptions(): List<NavigationMenuOption> {
-    return emptyList()
-  }
+  open fun bottomNavigationMenuOptions(): List<NavigationMenuOption> = emptyList()
 
   /**
    * Override this method to provide a pair of register fragment tag plus their title This MUST be
    * implemented when bottom navigation is used.
    */
-  open fun registersList(): List<RegisterItem> {
-    return emptyList()
-  }
+  open fun registersList(): List<RegisterItem> = emptyList()
 
   /**
    * Abstract method to be implemented by the subclass to provide actions for the menu [item]
@@ -650,7 +634,7 @@ abstract class BaseRegisterActivity :
    * exception when you attempt to use [BaseRegisterActivity] without at least one subclass of
    * [BaseRegisterFragment]
    */
-  abstract fun supportedFragments(): Map<String, Fragment>
+  open fun supportedFragments(): Map<String, Fragment> = emptyMap()
 
   /** Open the fragment identified with [fragmentTag from the map of [supportedFragments] */
   open fun onSelectRegister(fragmentTag: String) {
@@ -663,10 +647,6 @@ abstract class BaseRegisterActivity :
    * [BaseRegisterFragment]
    */
   abstract fun mainFragmentTag(): String
-
-  override fun configurableApplication(): ConfigurableApplication {
-    return application as ConfigurableApplication
-  }
 
   fun updateCount(sideMenuOption: SideMenuOption) {
     lifecycleScope.launch(registerViewModel.dispatcher.main()) {

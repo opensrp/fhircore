@@ -9,6 +9,7 @@ buildscript {
     dependencies {
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.21'
         classpath "org.jetbrains.kotlin:kotlin-serialization:1.5.21"
+        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.38.1'
         classpath deps.spotless
         classpath deps.kotlin_coveralls_plugin
         classpath deps.junit5_plugin
@@ -31,6 +32,8 @@ allprojects {
 
     subprojects {
         apply plugin: 'com.diffplug.spotless'
+        apply plugin: 'kotlin-kapt'
+
         spotless {
             kotlin {
                 target '**/*.kt'
