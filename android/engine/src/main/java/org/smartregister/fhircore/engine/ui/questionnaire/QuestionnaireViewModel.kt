@@ -143,17 +143,14 @@ constructor(
               val organizationRef = Reference().apply { reference = "Organization/$org" }
               val resource = bun.resource
 
+              if (resource is Patient) resource.managingOrganization = organizationRef
+              else if (resource is Group) resource.managingEntity = organizationRef
+              // TODO: calculate birthDate from AgeInput as calculation isn't supported by sdk
+              // https://github.com/google/android-fhir/issues/803
               if (resource is Patient) {
-                resource.managingOrganization = organizationRef
-                // TODO: calculate birthDate from AgeInput as calculation isn't supported by sdk
-                // https://github.com/google/android-fhir/issues/803
                 getAgeInput(questionnaireResponse)?.let {
                   resource.birthDate = calculateDobFromAge(it)
                 }
-              } else if (resource is Group) {
-                resource.managingEntity = organizationRef
-              } else {
-                // Do nothing
               }
             }
           }
@@ -291,8 +288,13 @@ constructor(
   }
 
   fun getAgeInput(questionnaireResponse: QuestionnaireResponse): Int? {
-    val age = questionnaireResponse.find(QuestionnaireActivity.QUESTIONNAIRE_AGE)
-    return age?.answer?.firstOrNull()?.valueDecimalType?.value?.toInt()
+    return questionnaireResponse
+      .find(QuestionnaireActivity.QUESTIONNAIRE_AGE)
+      ?.answer
+      ?.firstOrNull()
+      ?.valueDecimalType
+      ?.value
+      ?.toInt()
   }
 
   fun calculateDobFromAge(age: Int): Date {
