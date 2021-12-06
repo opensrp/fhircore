@@ -62,7 +62,6 @@ class ReportScreensTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("passes at local, failed in PR")
   fun testReportMeasureItem() {
     composeRule.setContent { ReportRow(reportItem = ReportItem("test")) }
     composeRule.onNodeWithTag(REPORT_MEASURE_ITEM).assertExists()
@@ -155,10 +154,6 @@ class ReportScreensTest : RobolectricTest() {
     }
     composeRule.onNodeWithTag(REPORT_PATIENT_ITEM).assertExists()
     composeRule.onNodeWithTag(REPORT_CANCEL_PATIENT).assertExists()
-    // composeRule.onNodeWithTag(REPORT_CANCEL_PATIENT).performClick()
-    // verify { listenerObjectSpy.onCancelSelectedPatient() }
     composeRule.onNodeWithTag(REPORT_CHANGE_PATIENT).assertExists()
-    // composeRule.onNodeWithTag(REPORT_CHANGE_PATIENT).performClick()
-    // verify { listenerObjectSpy.onPatientChangeClick() }
   }
 }

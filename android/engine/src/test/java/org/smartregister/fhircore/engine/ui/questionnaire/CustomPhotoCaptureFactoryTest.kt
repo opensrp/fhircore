@@ -31,9 +31,9 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import org.hl7.fhir.r4.model.Attachment
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -62,21 +62,40 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
     callback.captured.onActivityResult(result)
 
     verify { photoCaptureFactory.loadThumbnail(fragment, bitmap) }
-    verify { photoCaptureFactory.populateCameraResponse(fragment, bitmap) }
+    verify { photoCaptureFactory.populateCameraResponse(fragment, bitmap, any()) }
   }
 
   @Test
-  fun testQuestionnaireResponseShouldReturnStringTypeValue() {
+  fun testPopulateQuestionnaireResponseShouldMatch() {
+    val fragment = spyk<FhirCoreQuestionnaireFragment>()
+    val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
+    val base64 = "file".toByteArray()
+
+    photoCaptureFactory.populateQuestionnaireResponse(base64)
+
+    assertEquals(photoCaptureFactory.questionnaireResponse.valueAttachment.data, base64)
+
+    verify { photoCaptureFactory.populateQuestionnaireResponse(any()) }
+  }
+
+  @Test
+  fun testQuestionnaireResponseShouldReturnAttachmentTypeValue() {
     val fragment = FhirCoreQuestionnaireFragment()
     val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
+    val file = "file".toByteArray()
 
     every { photoCaptureFactory.questionnaireResponse } returns
       QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
-        value = StringType("file")
+        value =
+          Attachment().apply {
+            contentType = "image/jpg"
+            data = file
+          }
       }
 
     val response = photoCaptureFactory.questionnaireResponse
-    assertEquals("file", response.valueStringType.value)
+    assertEquals("image/jpg", response.valueAttachment.contentType)
+    assertEquals(file, response.valueAttachment.data)
   }
 
   @Test

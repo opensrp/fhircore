@@ -25,9 +25,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.login.LoginActivity" />
+        <activity android:name="org.smartregister.fhircore.engine.ui.login.LoginActivity" />
         <activity android:name=".ui.family.register.FamilyRegisterActivity" />
         <activity android:name=".ui.report.ReportHomeActivity" />
+        <activity
+            android:name=".ui.details.bmicompute.BmiQuestionnaireActivity"
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".ui.family.form.FamilyQuestionnaireActivity"
             android:noHistory="true"
@@ -39,7 +42,7 @@
         <activity android:name=".ui.anccare.encounters.EncounterListActivity" />
         <activity android:name=".ui.family.details.FamilyDetailsActivity" />
 
-        <service android:name=".AncAuthAndroidService">
+        <service android:name="org.smartregister.fhircore.engine.auth.AuthAndroidService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>

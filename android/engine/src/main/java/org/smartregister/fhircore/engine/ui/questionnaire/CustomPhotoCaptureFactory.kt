@@ -40,8 +40,8 @@ import id.zelory.compressor.saveBitmap
 import java.io.File
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Attachment
 import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent
-import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -85,7 +85,7 @@ class CustomPhotoCaptureFactory(fragment: Fragment) :
   internal fun populateCameraResponse(
     fragment: Fragment,
     imageBitmap: Bitmap,
-    dispatcher: DispatcherProvider = DefaultDispatcherProvider
+    dispatcher: DispatcherProvider = DefaultDispatcherProvider()
   ) {
     fragment.lifecycleScope.launch(dispatcher.io()) {
       val imageFile =
@@ -96,8 +96,17 @@ class CustomPhotoCaptureFactory(fragment: Fragment) :
         }
       val imageFileCompressed =
         compress(fragment.requireContext(), imageFile) { size(MAX_COMPRESSION_SIZE) }
-      questionnaireResponse.value = StringType(imageFileCompressed.encodeToBase64())
+      val base64 = imageFileCompressed.encodeToBase64()
+      populateQuestionnaireResponse(base64)
     }
+  }
+
+  fun populateQuestionnaireResponse(base64: ByteArray) {
+    questionnaireResponse.value =
+      Attachment().apply {
+        contentType = CONTENT_TYPE
+        data = base64
+      }
   }
 
   override fun getQuestionnaireItemViewHolderDelegate(): QuestionnaireItemViewHolderDelegate =
@@ -140,5 +149,6 @@ class CustomPhotoCaptureFactory(fragment: Fragment) :
     private const val EXTRA_IMAGE = "data"
     private const val MAX_COMPRESSION_SIZE: Long = 64_000 // 64 KB
     private const val PREFIX_BITMAP = "BITMAP_"
+    private const val CONTENT_TYPE = "image/jpg"
   }
 }

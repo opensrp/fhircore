@@ -41,7 +41,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 class RegisterDataViewModel<I : Any, O : Any>(
   application: Application,
   val registerRepository: RegisterRepository<I, O>,
-  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
 ) : AndroidViewModel(application) {
 
   private val _showLoader = MutableLiveData(false)

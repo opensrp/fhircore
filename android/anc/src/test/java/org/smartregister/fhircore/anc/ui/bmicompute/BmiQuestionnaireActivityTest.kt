@@ -19,6 +19,8 @@ package org.smartregister.fhircore.anc.ui.bmicompute
 import android.app.Activity
 import android.content.Intent
 import com.google.android.fhir.sync.Sync
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.spyk
@@ -28,15 +30,17 @@ import kotlinx.coroutines.flow.flowOf
 import org.junit.After
 import org.junit.Assert.assertNotNull
 import org.junit.Before
-import org.junit.BeforeClass
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
-import org.smartregister.fhircore.anc.shadow.FakeKeyStore
+import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
 
+@HiltAndroidTest
 internal class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
+
+  @get:Rule val hiltRule = HiltAndroidRule(this)
 
   private lateinit var bmiQuestionnaireActivity: BmiQuestionnaireActivity
 
@@ -44,6 +48,7 @@ internal class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Before
   fun setUp() {
+    hiltRule.inject()
     mockkObject(Sync)
     every { Sync.basicSyncJob(any()).stateFlow() } returns flowOf()
     every { Sync.basicSyncJob(any()).lastSyncTimestamp() } returns OffsetDateTime.now()
@@ -67,13 +72,5 @@ internal class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
 
   override fun getActivity(): Activity {
     return bmiQuestionnaireActivity
-  }
-
-  companion object {
-    @JvmStatic
-    @BeforeClass
-    fun beforeClass() {
-      FakeKeyStore.setup
-    }
   }
 }

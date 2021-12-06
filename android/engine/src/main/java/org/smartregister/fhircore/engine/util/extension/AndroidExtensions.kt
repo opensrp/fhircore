@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Activity
-import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -30,7 +29,6 @@ import androidx.annotation.StyleRes
 import androidx.core.content.ContextCompat
 import java.util.Locale
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import timber.log.Timber
 
 fun Context.showToast(message: String, toastLength: Int = Toast.LENGTH_LONG) =
@@ -70,12 +68,6 @@ fun Context.getTheme(name: String): Int {
   var resourceId = this.resources.getIdentifier(name, "style", packageName)
   if (resourceId == 0) resourceId = R.style.AppTheme_NoActionBar
   return resourceId
-}
-
-fun Application.assertIsConfigurable() {
-  if (this !is ConfigurableApplication)
-    throw (IllegalStateException("Application MUST implement ConfigurableApplication interface"))
-  else return
 }
 
 fun <T : Enum<T>> Enum<T>.isIn(vararg values: Enum<T>): Boolean {

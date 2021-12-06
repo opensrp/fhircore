@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.anccare.register
 
+import androidx.test.core.app.ApplicationProvider
 import java.util.Date
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.ContactPoint
@@ -23,23 +24,21 @@ import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
+import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 
 class AncItemMapperTest : RobolectricTest() {
 
-  private lateinit var patient: Patient
+  private val ancItemMapper = AncItemMapper(ApplicationProvider.getApplicationContext())
 
-  @Before
-  fun setUp() {
-    patient = getPatient()
-  }
+  private val patient: Patient = getPatient()
 
   @Test
   fun testMapToDomainModel() {
-    val patientItem = AncItemMapper.mapToDomainModel(dto = Anc(patient, null, listOf()))
+    val patientItem = ancItemMapper.mapToDomainModel(dto = Anc(patient, null, listOf()))
     with(patientItem) {
       Assert.assertEquals("test_patient_id_1", patientIdentifier)
       Assert.assertEquals("Jane Mc", name)
