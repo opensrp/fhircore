@@ -222,7 +222,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       AppTheme {
         Surface(color = colorResource(id = R.color.white)) {
           Column {
-            reportViewModel.reportState.currentScreen = ReportScreen.PREHOMElOADING
             ReportView(reportViewModel)
             loadMeasureEvaluateLibrary()
           }
@@ -285,6 +284,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   }
 
   fun loadMeasureEvaluateLibrary() {
+    reportViewModel.reportState.currentScreen = ReportScreen.PREHOMElOADING
     dir = File(this.filesDir, "$dirCQLDirRoot/$fileNameMeasureLibraryCql")
     if (dir.exists()) {
       measureEvaluateLibraryData =
