@@ -27,7 +27,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_patient_details.immuneStatusImageView
@@ -43,7 +42,6 @@ import kotlinx.android.synthetic.main.fragment_patient_details.showQRCodeButton
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.ui.adverseevent.AdverseEventQuestionnaireActivity
 import org.smartregister.fhircore.eir.ui.vaccine.RecordVaccineActivity
 import org.smartregister.fhircore.eir.util.ADVERSE_EVENT_FORM
@@ -65,13 +63,9 @@ class PatientDetailsFragment : Fragment(), ConfigurableView<ImmunizationProfileV
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
-  @Inject lateinit var fhirEngine: FhirEngine
-
-  @Inject lateinit var patientRepository: PatientRepository
+  val patientDetailsViewModel: PatientDetailsViewModel by viewModels()
 
   private lateinit var patientId: String
-
-  private val patientDetailsViewModel: PatientDetailsViewModel by viewModels()
 
   private val patientImmunizationsAdapter = PatientImmunizationsAdapter()
 
@@ -244,6 +238,8 @@ class PatientDetailsFragment : Fragment(), ConfigurableView<ImmunizationProfileV
   }
 
   companion object {
+    const val TAG = "PatientDetailsFragment"
+
     fun newInstance(bundle: Bundle = Bundle()) =
       PatientDetailsFragment().apply { arguments = bundle }
   }
