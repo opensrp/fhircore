@@ -128,7 +128,7 @@ class PatientRepository(
           )
         }
 
-      data.postValue(result.map { QuestionnaireConfig(it.name, it.title, it.logicalId) })
+      data.postValue(result.map { QuestionnaireConfig(it.name, it.title, it.logicalId, it.id) })
     }
     return data
   }

@@ -1,0 +1,20 @@
+[
+  {
+    "appId": "mw-core",
+    "title": "Quest app workflow",
+    "mapping": [
+      {
+        "workflowPoint": "registration",
+        "resource": "RegisterViewConfiguration",
+        "classification": "patient_register",
+        "description": "Configurations for patient register"
+      },
+      {
+        "workflowPoint": "login",
+        "resource": "LoginViewConfiguration",
+        "classification": "login",
+        "description": "Configurations for login"
+      }
+    ]
+  }
+]
