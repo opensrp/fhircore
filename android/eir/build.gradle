@@ -111,6 +111,10 @@ android {
                 includeNoLocationClasses = true
                 excludes = ['jdk.internal.*']
             }
+
+            beforeTest { testDescriptor ->
+                println "${testDescriptor.className} > ${testDescriptor.name} STARTED"
+            }
         }
     }
     buildFeatures {
