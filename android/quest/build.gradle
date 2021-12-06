@@ -110,11 +110,29 @@ android {
                 jacoco {
                     includeNoLocationClasses = true
                     excludes = [
+                            // Android
                             'jdk.internal.*',
+                            '**/BuildConfig.*',
+                            '**/*BR*.*',
+                            '**/Manifest*.*',
+                            '**/R.class',
+                            '**/R$*.class',
+                            // kotlin
+                            '**/*$Lambda$*.*',
+                            // Dagger and Hilt
                             '**/*_Provide*/**',
                             '**/*_Factory*/**',
+                            '**/*Module*.*',
+                            '**/*_Factory*.*',
                             '**/*_MembersInjector.class',
-                            '**/*Dagger*'
+                            '**/*Dagger*',
+                            '**/di/*',
+                            '**/*Hilt*.*',
+                            // Data Binding
+                            'android/databinding/**/*.class',
+                            '**/android/databinding/*Binding.class',
+                            '**/android/databinding/*',
+                            '**/androidx/databinding/*',
                     ]
                 }
             }
