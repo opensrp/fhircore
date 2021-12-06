@@ -19,22 +19,24 @@ package org.smartregister.fhircore.engine.ui.login
 import android.accounts.AccountManager
 import android.accounts.AccountManagerCallback
 import android.accounts.AccountManagerFuture
-import android.app.Application
 import android.os.Bundle
 import androidx.core.os.bundleOf
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
-import org.smartregister.fhircore.engine.auth.AuthenticationService
+import org.jetbrains.annotations.TestOnly
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
+import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
@@ -44,19 +46,18 @@ import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
 
-class LoginViewModel(
-  application: Application,
-  val authenticationService: AuthenticationService,
-  loginViewConfiguration: LoginViewConfiguration,
-  private val dispatcher: DispatcherProvider = DefaultDispatcherProvider
-) : AndroidViewModel(application), AccountManagerCallback<Bundle> {
+@HiltViewModel
+class LoginViewModel
+@Inject
+constructor(
+  val accountAuthenticator: AccountAuthenticator,
+  val dispatcher: DispatcherProvider,
+  val sharedPreferences: SharedPreferencesHelper
+) : ViewModel(), AccountManagerCallback<Bundle> {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
   val launchDialPad
     get() = _launchDialPad
-
-  val sharedPreferences =
-    SharedPreferencesHelper.init(getApplication<Application>().applicationContext)
 
   val responseBodyHandler =
     object : ResponseHandler<ResponseBody> {
@@ -92,18 +93,20 @@ class LoginViewModel(
         if (!response.isSuccessful) {
           val errorResponse = response.errorBody()?.string()
           _loginError.postValue(errorResponse?.decodeJson<LoginError>()?.errorDescription)
+          _showProgressBar.postValue(false)
           Timber.e("Error fetching access token %s", errorResponse)
+          return
+        } else {
           if (attemptLocalLogin()) _navigateToHome.value = true
           _showProgressBar.postValue(false)
-          return
-        }
-        with(authenticationService) {
-          addAuthenticatedAccount(
-            response,
-            username.value!!.trim(),
-            password.value?.trim()?.toCharArray()!!
-          )
-          getUserInfo().enqueue(userInfoResponseCallback)
+          with(accountAuthenticator) {
+            addAuthenticatedAccount(
+              response,
+              username.value!!.trim(),
+              password.value?.trim()?.toCharArray()!!
+            )
+            getUserInfo().enqueue(userInfoResponseCallback)
+          }
         }
       }
 
@@ -118,8 +121,8 @@ class LoginViewModel(
       }
     }
 
-  private fun attemptLocalLogin(): Boolean {
-    return authenticationService.validLocalCredentials(
+  fun attemptLocalLogin(): Boolean {
+    return accountAuthenticator.validLocalCredentials(
       username.value!!.trim(),
       password.value!!.trim().toCharArray()
     )
@@ -149,17 +152,17 @@ class LoginViewModel(
   val showProgressBar
     get() = _showProgressBar
 
-  private val _loginViewConfiguration = MutableLiveData(loginViewConfiguration)
+  private val _loginViewConfiguration = MutableLiveData(loginViewConfigurationOf())
   val loginViewConfiguration: LiveData<LoginViewConfiguration>
     get() = _loginViewConfiguration
 
   fun loginUser() {
     viewModelScope.launch(dispatcher.io()) {
-      if (authenticationService.skipLogin() || authenticationService.hasActiveSession()) {
+      if (accountAuthenticator.hasActiveSession()) {
         Timber.v("Login not needed .. navigating to home directly")
         _navigateToHome.postValue(true)
       } else {
-        authenticationService.loadActiveAccount(this@LoginViewModel)
+        accountAuthenticator.loadActiveAccount(this@LoginViewModel)
       }
     }
   }
@@ -181,7 +184,7 @@ class LoginViewModel(
   override fun run(future: AccountManagerFuture<Bundle>?) {
     val bundle = future?.result ?: bundleOf()
     bundle.getString(AccountManager.KEY_AUTHTOKEN)?.run {
-      if (this.isNotEmpty() && authenticationService.isTokenActive(this)) {
+      if (this.isNotEmpty() && accountAuthenticator.tokenManagerService.isTokenActive(this)) {
         _navigateToHome.value = true
       }
     }
@@ -191,7 +194,7 @@ class LoginViewModel(
     if (!username.value.isNullOrBlank() && !password.value.isNullOrBlank()) {
       _loginError.postValue("")
       _showProgressBar.postValue(true)
-      authenticationService
+      accountAuthenticator
         .fetchToken(username.value!!.trim(), password.value!!.trim().toCharArray())
         .enqueue(oauthResponseCallback)
     }
@@ -200,5 +203,11 @@ class LoginViewModel(
   fun forgotPassword() {
     // TODO load supervisor contact e.g.
     _launchDialPad.value = "tel:0123456789"
+  }
+
+  @TestOnly
+  fun navigateToHome(navigateHome: Boolean = true) {
+    _navigateToHome.value = navigateHome
+    _navigateToHome.postValue(navigateHome)
   }
 }

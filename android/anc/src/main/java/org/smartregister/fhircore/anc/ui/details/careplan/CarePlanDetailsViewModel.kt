@@ -20,24 +20,29 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-class CarePlanDetailsViewModel(
-  val ancPatientRepository: PatientRepository,
-  var dispatcher: DispatcherProvider = DefaultDispatcherProvider,
-  val patientId: String
+@HiltViewModel
+class CarePlanDetailsViewModel
+@Inject
+constructor(
+  val patientRepository: PatientRepository,
+  var dispatcher: DispatcherProvider,
 ) : ViewModel() {
+
+  lateinit var patientId: String
 
   fun fetchCarePlan(): LiveData<List<CarePlanItem>> {
     val patientCarePlan = MutableLiveData<List<CarePlanItem>>()
     viewModelScope.launch(dispatcher.io()) {
-      val listCarePlan = ancPatientRepository.fetchCarePlan(patientId = patientId)
-      val listCarePlanItem = ancPatientRepository.fetchCarePlanItem(listCarePlan)
+      val listCarePlan = patientRepository.fetchCarePlan(patientId = patientId)
+      val listCarePlanItem = patientRepository.fetchCarePlanItem(listCarePlan)
       patientCarePlan.postValue(listCarePlanItem)
     }
     return patientCarePlan
@@ -46,8 +51,8 @@ class CarePlanDetailsViewModel(
   fun fetchEncounters(): LiveData<List<UpcomingServiceItem>> {
     val patientEncounters = MutableLiveData<List<UpcomingServiceItem>>()
     viewModelScope.launch(dispatcher.io()) {
-      val listEncounters = ancPatientRepository.fetchCarePlan(patientId = patientId)
-      val listEncountersItem = ancPatientRepository.fetchUpcomingServiceItem(listEncounters)
+      val listEncounters = patientRepository.fetchCarePlan(patientId = patientId)
+      val listEncountersItem = patientRepository.fetchUpcomingServiceItem(listEncounters)
       patientEncounters.postValue(listEncountersItem)
     }
     return patientEncounters

@@ -20,59 +20,47 @@ import android.app.Activity
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
-import com.google.android.fhir.sync.Sync
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkObject
-import io.mockk.unmockkObject
-import java.time.OffsetDateTime
-import kotlinx.coroutines.flow.flowOf
-import org.junit.After
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.BeforeClass
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.fakes.RoboMenuItem
-import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.activity.BaseRegisterActivityTest
-import org.smartregister.fhircore.anc.data.family.FamilyRepository
-import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.anc.shadow.FakeKeyStore
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 
+@HiltAndroidTest
 internal class FamilyRegisterActivityTest : BaseRegisterActivityTest() {
 
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
   private lateinit var familyRegisterActivity: FamilyRegisterActivity
-  private lateinit var patientRepository: PatientRepository
-  private lateinit var familyRepository: FamilyRepository
 
   @Before
   fun setUp() {
-    mockkObject(Sync)
-    every { Sync.basicSyncJob(any()).stateFlow() } returns flowOf()
-    every { Sync.basicSyncJob(any()).lastSyncTimestamp() } returns OffsetDateTime.now()
-
-    patientRepository = mockk()
-    familyRepository = mockk()
-
+    hiltRule.inject()
+    configurationRegistry.loadAppConfigurations(
+      appId = "anc",
+      accountAuthenticator = accountAuthenticator
+    ) {}
     familyRegisterActivity =
-      Robolectric.buildActivity(FamilyRegisterActivity::class.java, null).create().get()
-
-    ReflectionHelpers.setField(familyRegisterActivity, "patientRepository", patientRepository)
-    ReflectionHelpers.setField(familyRegisterActivity, "familyRepository", familyRepository)
-  }
-
-  @After
-  fun cleanup() {
-    unmockkObject(Sync)
+      Robolectric.buildActivity(FamilyRegisterActivity::class.java).create().get()
   }
 
   @Test
@@ -83,7 +71,6 @@ internal class FamilyRegisterActivityTest : BaseRegisterActivityTest() {
   @Test
   fun testSupportedFragmentsShouldReturnAncRegisterFragment() {
     val fragments = familyRegisterActivity.supportedFragments()
-
     assertEquals(3, fragments.size)
     assertTrue(fragments.containsKey(FamilyRegisterFragment.TAG))
     assertTrue(fragments.containsKey(AncRegisterFragment.TAG))
@@ -151,13 +138,5 @@ internal class FamilyRegisterActivityTest : BaseRegisterActivityTest() {
 
   override fun getActivity(): Activity {
     return familyRegisterActivity
-  }
-
-  companion object {
-    @JvmStatic
-    @BeforeClass
-    fun beforeClass() {
-      FakeKeyStore.setup
-    }
   }
 }

@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.LazyPagingItems
+import dagger.hilt.android.AndroidEntryPoint
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.data.model.PatientItem
@@ -36,6 +37,7 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
+@AndroidEntryPoint
 class PatientRegisterFragment :
   ComposeRegisterFragment<Pair<Patient, List<Immunization>>, PatientItem>() {
 

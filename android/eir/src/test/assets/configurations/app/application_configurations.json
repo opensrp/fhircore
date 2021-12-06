@@ -1,0 +1,14 @@
+[
+  {
+    "appId": "covax",
+    "classification": "application",
+    "theme": "AppTheme",
+    "languages": ["en", "sw"]
+  },
+  {
+    "appId": "jnj",
+    "classification": "application",
+    "theme": "AppTheme",
+    "languages": ["en", "sw"]
+  }
+]
