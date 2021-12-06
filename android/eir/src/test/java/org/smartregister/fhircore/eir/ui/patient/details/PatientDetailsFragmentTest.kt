@@ -51,9 +51,9 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.smartregister.fhircore.eir.EirConfigService
-import org.smartregister.fhircore.eir.HiltAndroidActivity
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -63,7 +63,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 @Ignore
 internal class PatientDetailsFragmentTest : RobolectricTest() {
 
-  private lateinit var patientDetailsActivity: HiltAndroidActivity
+  private lateinit var patientDetailsActivity: HiltActivityForTest
   // private lateinit var fragmentScenario: FragmentScenario<PatientDetailsFragment>
   private lateinit var patientDetailsFragment: PatientDetailsFragment
   private val patientId = "samplePatientId"
@@ -86,7 +86,7 @@ internal class PatientDetailsFragmentTest : RobolectricTest() {
     clearAllMocks()
 
     patientDetailsActivity =
-      Robolectric.buildActivity(HiltAndroidActivity::class.java).create().resume().get()
+      Robolectric.buildActivity(HiltActivityForTest::class.java).create().resume().get()
 
     patientDetailsFragment = spyk(PatientDetailsFragment.newInstance())
 

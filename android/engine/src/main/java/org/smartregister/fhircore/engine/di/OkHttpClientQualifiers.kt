@@ -17,7 +17,14 @@
 package org.smartregister.fhircore.engine.di
 
 import javax.inject.Qualifier
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-@Qualifier @Retention(AnnotationRetention.BINARY) annotation class AuthOkHttpClientQualifier
+@ExcludeFromJacocoGeneratedReport
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class AuthOkHttpClientQualifier
 
-@Qualifier @Retention(AnnotationRetention.BINARY) annotation class OkHttpClientQualifier
+@ExcludeFromJacocoGeneratedReport
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class OkHttpClientQualifier

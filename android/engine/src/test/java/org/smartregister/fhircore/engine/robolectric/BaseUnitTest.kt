@@ -19,7 +19,7 @@ package org.smartregister.fhircore.engine.robolectric
 import io.mockk.clearAllMocks
 import org.junit.AfterClass
 import org.junit.BeforeClass
-import org.smartregister.fhircore.engine.shadow.FakeKeyStore
+import org.smartregister.fhircore.engine.app.fakes.FakeKeyStore
 
 abstract class BaseUnitTest {
 

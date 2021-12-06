@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.shadow
+package org.smartregister.fhircore.engine.app.fakes
 
 import java.io.InputStream
 import java.io.OutputStream
