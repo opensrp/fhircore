@@ -60,7 +60,6 @@ import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
-@Ignore("Failing on CI with a MockKException")
 class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   private lateinit var recordVaccineActivity: RecordVaccineActivity
