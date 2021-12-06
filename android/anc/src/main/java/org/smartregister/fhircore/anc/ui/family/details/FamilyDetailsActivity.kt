@@ -33,6 +33,7 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
   private lateinit var familyId: String
+  private lateinit var viewModel: FamilyDetailViewModel
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -40,7 +41,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
     familyId = intent.extras?.getString(QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
     val fhirEngine = (AncApplication.getContext() as ConfigurableApplication).fhirEngine
     val familyDetailRepository = FamilyDetailRepository(familyId, fhirEngine)
-    val viewModel =
+    viewModel =
       FamilyDetailViewModel.get(this, application as AncApplication, familyDetailRepository)
 
     viewModel.setAppBackClickListener(this::onBackIconClicked)
@@ -50,6 +51,11 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
     viewModel.setEncounterItemClickListener(this::onFamilyEncounterItemClicked)
 
     setContent { AppTheme { FamilyDetailScreen(viewModel) } }
+  }
+
+  override fun onResume() {
+    super.onResume()
+    viewModel.reloadData()
   }
 
   private fun onBackIconClicked() {

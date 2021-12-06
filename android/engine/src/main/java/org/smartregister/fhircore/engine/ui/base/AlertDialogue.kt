@@ -18,13 +18,25 @@ package org.smartregister.fhircore.engine.ui.base
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.content.DialogInterface
+import android.content.res.Resources
+import android.os.Build
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.widget.DatePicker
+import android.widget.EditText
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
+import androidx.core.view.get
+import androidx.core.view.setPadding
+import org.checkerframework.checker.units.qual.m
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.engine.util.extension.show
+import java.util.Calendar
+import java.util.Date
 
 enum class AlertIntent {
   PROGRESS,
@@ -34,6 +46,10 @@ enum class AlertIntent {
 }
 
 object AlertDialogue {
+  fun AlertDialog.getSingleChoiceSelectedText() =
+    if(this.listView.checkedItemCount != 1) null
+    else (this.listView[this.listView.checkedItemPosition] as TextView).text
+
   fun showAlert(
     context: Activity,
     alertIntent: AlertIntent,
@@ -43,6 +59,7 @@ object AlertDialogue {
     @StringRes confirmButtonText: Int = R.string.questionnaire_alert_confirm_button_title,
     neutralButtonListener: ((d: DialogInterface) -> Unit)? = null,
     @StringRes neutralButtonText: Int = R.string.questionnaire_alert_neutral_button_title,
+    options: List<CharSequence>? = null
   ): AlertDialog {
     val dialog =
       AlertDialog.Builder(context)
@@ -57,6 +74,9 @@ object AlertDialogue {
           }
           confirmButtonListener?.let {
             setPositiveButton(confirmButtonText) { d, _ -> confirmButtonListener.invoke(d) }
+          }
+          options?.run {
+            setSingleChoiceItems(options.toTypedArray(), -1, null)
           }
         }
         .show()
@@ -121,7 +141,8 @@ object AlertDialogue {
     @StringRes message: Int,
     @StringRes title: Int? = null,
     confirmButtonListener: ((d: DialogInterface) -> Unit),
-    @StringRes confirmButtonText: Int
+    @StringRes confirmButtonText: Int,
+    options: List<String>? = null
   ): AlertDialog {
     return showAlert(
       context = context,
@@ -131,7 +152,53 @@ object AlertDialogue {
       confirmButtonListener = confirmButtonListener,
       confirmButtonText = confirmButtonText,
       neutralButtonListener = { d -> d.dismiss() },
-      neutralButtonText = R.string.questionnaire_alert_neutral_button_title
+      neutralButtonText = R.string.questionnaire_alert_neutral_button_title,
+      options = options
     )
+  }
+
+  @RequiresApi(Build.VERSION_CODES.N)
+  fun showDatePrompt(context: Activity,
+                     confirmButtonListener: ((d: Date) -> Unit),
+                     confirmButtonText: String,
+                     max: Date?,
+                     title: String?,
+                     dangerActionColor: Boolean = true
+                     ): DatePickerDialog {
+    val dateDialog = DatePickerDialog(context).apply {
+      max?.let {
+        this.datePicker.maxDate = it.time
+      }
+      val id = Resources.getSystem().getIdentifier("date_picker_header_date", "id", "android");
+      if (id != 0) {
+        this.datePicker.findViewById<TextView>(id).textSize = 14f
+      }
+
+      title?.let {
+        this.setCustomTitle(TextView(context).apply {
+          this.text = it
+          this.setPadding(20)
+        })
+      }
+
+      this.setButton(DialogInterface.BUTTON_POSITIVE, confirmButtonText){d, _ ->
+        val date = Calendar.getInstance().apply {
+          (d as DatePickerDialog).datePicker.let {
+            this.set(it.year, it.month, it.dayOfMonth)
+          }
+        }
+        confirmButtonListener.invoke (date.time)
+      }
+    }
+
+    dateDialog.create()
+
+    if (dangerActionColor)
+      dateDialog.getButton(DialogInterface.BUTTON_POSITIVE)
+        .setTextColor(context.resources.getColor(R.color.colorError))
+
+    dateDialog.show()
+
+    return dateDialog
   }
 }

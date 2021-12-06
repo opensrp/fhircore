@@ -35,7 +35,16 @@
     <string name="bmi_category_overweight">Overweight = 25 – 29.9</string>
     <string name="bmi_category_obesity">Obesity = BMI of 30 or greater</string>
     <string name="view_past_encounters">View past encounters</string>
+    <string name="log_death">Mark as Deceased</string>
+    <string name="log_death_confirm_message">Confirm you want to log death of this person. This action is irreversible.</string>
+    <string name="log_death_button_title">Confirm</string>
     <string name="remove_this_person">Remove this person</string>
+    <string name="remove_this_person_button_title">Remove</string>
+    <string name="remove_this_person_confirm_title">Reason for removal</string>
+    <string name="remove_this_person_confirm_message">Confirm you want to remove person from family</string>
+    <string name="remove_this_person_reason_death">Death</string>
+    <string name="remove_this_person_reason_error_entry">Entry in error</string>
+    <string name="remove_this_person_reason_moved_out">Moved out</string>
     <string name="care_plan">Care plan</string>
     <string name="see_all">See All</string>
     <string name="anc_overview">ANC Overview</string>

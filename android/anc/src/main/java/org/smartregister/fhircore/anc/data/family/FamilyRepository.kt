@@ -27,15 +27,17 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
+import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
+import org.smartregister.fhircore.anc.data.patient.DeletionReason
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
 import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.Family
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
+import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper.toFamilyMemberItem
 import org.smartregister.fhircore.anc.util.RegisterType
 import org.smartregister.fhircore.anc.util.filterBy
-import org.smartregister.fhircore.anc.util.filterByPatient
 import org.smartregister.fhircore.anc.util.filterByPatientName
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
@@ -43,6 +45,7 @@ import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.extractFamilyTag
 import org.smartregister.fhircore.engine.util.extension.find
 
 class FamilyRepository(
@@ -54,7 +57,7 @@ class FamilyRepository(
   private val registerConfig =
     AncApplication.getContext().loadRegisterConfig(RegisterType.FAMILY_REGISTER_ID)
 
-  private val ancPatientRepository = PatientRepository(fhirEngine, AncItemMapper)
+  private val patientRepository = PatientRepository(fhirEngine, AncItemMapper)
 
   private val resourceMapperExtended = ResourceMapperExtended(fhirEngine)
 
@@ -67,7 +70,7 @@ class FamilyRepository(
       val patients =
         fhirEngine.search<Patient> {
           filterBy(registerConfig.primaryFilter!!)
-
+          filter(Patient.ACTIVE, true)
           filterByPatientName(query)
 
           sort(Patient.NAME, Order.ASCENDING)
@@ -76,10 +79,10 @@ class FamilyRepository(
         }
 
       patients.map { p ->
-        val carePlans = ancPatientRepository.searchCarePlan(p.logicalId).toMutableList()
-        val members = fhirEngine.search<Patient> { filterByPatient(Patient.LINK, p.logicalId) }
+        val carePlans = patientRepository.searchCarePlan(p.logicalId).toMutableList()
+        val members = patientRepository.searchPatientByLink(p.logicalId)
 
-        members.forEach { carePlans.addAll(ancPatientRepository.searchCarePlan(it.logicalId)) }
+        members.forEach { carePlans.addAll(patientRepository.searchCarePlan(it.logicalId)) }
 
         FamilyItemMapper.mapToDomainModel(Family(p, members, carePlans))
       }
@@ -88,6 +91,23 @@ class FamilyRepository(
 
   override suspend fun countAll(): Long {
     return fhirEngine.count<Patient> { filterBy(registerConfig.primaryFilter!!) }
+  }
+
+  suspend fun loadHeadAsMember(headId: String): FamilyMemberItem {
+    return toFamilyMemberItem(fhirEngine.load(Patient::class.java, headId), headId)
+  }
+
+  suspend fun searchFamilyMembers(
+    familyHeadId: String,
+    includeHead: Boolean = false
+  ): List<FamilyMemberItem> {
+    val members =
+      patientRepository.searchPatientByLink(familyHeadId).map {
+        toFamilyMemberItem(it, familyHeadId)
+      }
+
+    return if (includeHead) mutableListOf(loadHeadAsMember(familyHeadId), *members.toTypedArray())
+    else members
   }
 
   suspend fun postProcessFamilyMember(
@@ -113,6 +133,13 @@ class FamilyRepository(
     return postProcessFamilyMember(questionnaire, questionnaireResponse, null)
   }
 
+  suspend fun deleteHead(headId: String, newHeadId: String, reason: DeletionReason){
+    val currentHead = fhirEngine.load(Patient::class.java, headId)
+    val newHead = fhirEngine.load(Patient::class.java, newHeadId)
+
+    newHead.meta.addTag(currentHead.extractFamilyTag()!!)
+  }
+
   suspend fun enrollIntoAnc(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
@@ -122,7 +149,7 @@ class FamilyRepository(
 
     val lmpItem = questionnaireResponse.find(LMP_KEY)
     val lmp = lmpItem?.answer?.firstOrNull()?.valueDateType!!
-    ancPatientRepository.enrollIntoAnc(patientId, lmp)
+    patientRepository.enrollIntoAnc(patientId, lmp)
   }
 
   companion object {

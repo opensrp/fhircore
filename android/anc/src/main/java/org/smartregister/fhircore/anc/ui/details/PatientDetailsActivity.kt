@@ -17,20 +17,34 @@
 package org.smartregister.fhircore.anc.ui.details
 
 import android.app.AlertDialog
+import android.app.DatePickerDialog
+import android.content.DialogInterface
 import android.content.Intent
+import android.content.res.Resources
+import android.os.Build
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.core.os.bundleOf
+import androidx.core.view.get
+import androidx.core.view.setPadding
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.FhirEngine
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.android.synthetic.main.item_services.view.imageView_calender
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
+import org.smartregister.fhircore.anc.data.patient.DeletionReason
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.databinding.ActivityNonAncDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
@@ -40,10 +54,16 @@ import org.smartregister.fhircore.anc.ui.details.adapter.ViewPagerAdapter
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig
 import org.smartregister.fhircore.anc.util.startAncEnrollment
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.getSingleChoiceSelectedText
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import org.smartregister.fhircore.engine.util.extension.hide
+import timber.log.Timber
+import java.util.Date
 
 class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
@@ -101,15 +121,21 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
   }
 
   override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-    menu.findItem(R.id.anc_enrollment).run {
-      this.isVisible = !isMale && !isPregnant
-    }
-    menu.findItem(R.id.pregnancy_outcome).run {
-      this.isVisible = !isMale
-    }
+    menu.findItem(R.id.anc_enrollment).run { this.isVisible = !isMale && !isPregnant }
+    menu.findItem(R.id.pregnancy_outcome).run { this.isVisible = !isMale }
 
     menu.findItem(R.id.remove_this_person).run {
-      val span = SpannableString(this.title).apply {
+      highlightItem(this)
+    }
+    menu.findItem(R.id.log_death).run {
+      highlightItem(this)
+    }
+    return super.onPrepareOptionsMenu(menu)
+  }
+
+  private fun highlightItem(menuItem: MenuItem){
+    val span =
+      SpannableString(menuItem.title).apply {
         setSpan(
           ForegroundColorSpan(android.graphics.Color.parseColor("#DD0000")),
           0,
@@ -117,11 +143,10 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
           android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE
         )
       }
-      this.title = span
-    }
-    return super.onPrepareOptionsMenu(menu)
+    menuItem.title = span
   }
 
+  @RequiresApi(Build.VERSION_CODES.N)
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     return when (item.itemId) {
       R.id.add_vitals -> {
@@ -152,8 +177,43 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
         )
         true
       }
+      R.id.log_death -> {
+        AlertDialogue.showDatePrompt(
+          context = this,
+          max = Date(),
+          title = getString(R.string.log_death_confirm_message),
+          dangerActionColor = true,
+          confirmButtonText = getString(R.string.log_death_button_title),
+          confirmButtonListener = {
+            lifecycleScope.launch {
+              patientRepository.markDeceased(patientId, it)
+              finish()
+            }
+          }
+        )
+        true
+      }
       R.id.remove_this_person -> {
-
+        AlertDialogue.showConfirmAlert(
+          this,
+          R.string.remove_this_person_confirm_message,
+          R.string.remove_this_person_confirm_title,
+          {
+            val selection = (it as AlertDialog).getSingleChoiceSelectedText()
+            if (selection?.isNotBlank() == true)
+              lifecycleScope.launch {
+                patientRepository.deletePatient(
+                  patientId,
+                  DeletionReason.values().single { getString(it.label) == selection }
+                )
+                it.dismiss()
+                finish()
+              }
+          },
+          R.string.remove_this_person_button_title,
+          DeletionReason.values().map { getString(it.label) }
+        )
+        return true
       }
       else -> return super.onOptionsItemSelected(item)
     }

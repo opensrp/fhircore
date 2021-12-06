@@ -37,56 +37,26 @@ class FamilyDetailRepository(
   private val fhirEngine: FhirEngine,
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) {
+  private val familyRepository = FamilyRepository(fhirEngine, FamilyItemMapper)
   private val ancPatientRepository = PatientRepository(fhirEngine, AncItemMapper)
-  fun fetchDemographics(): LiveData<Patient> {
-    val data = MutableLiveData<Patient>()
-    CoroutineScope(dispatcherProvider.io()).launch {
-      data.postValue(fhirEngine.load(Patient::class.java, familyId))
-    }
-    return data
+
+  suspend fun fetchDemographics(): Patient {
+    return fhirEngine.load(Patient::class.java, familyId)
   }
 
-  fun fetchFamilyMembers(): LiveData<List<FamilyMemberItem>> {
-    val data = MutableLiveData<List<FamilyMemberItem>>()
-    CoroutineScope(dispatcherProvider.io()).launch {
-      val members =
-        fhirEngine
-          .search<Patient> { filter(Patient.LINK) { this.value = "Patient/$familyId" } }
-          .map { FamilyItemMapper.toFamilyMemberItem(it, familyId) }
-
-      val householdHead =
-        FamilyItemMapper.toFamilyMemberItem(
-          fhirEngine.load(Patient::class.java, familyId),
-          familyId
-        )
-      val familyMembers = ArrayList<FamilyMemberItem>()
-      familyMembers.add(householdHead)
-      familyMembers.addAll(members)
-      data.postValue(familyMembers)
-    }
-    return data
+  suspend fun fetchFamilyMembers(): List<FamilyMemberItem> {
+    return familyRepository.searchFamilyMembers(familyId, true)
   }
 
-  fun fetchEncounters(): LiveData<List<Encounter>> {
-    val data = MutableLiveData<List<Encounter>>()
-    CoroutineScope(dispatcherProvider.io()).launch {
-      val encounters =
-        fhirEngine.search<Encounter> {
+  suspend fun fetchEncounters(): List<Encounter> {
+    return fhirEngine.search {
           filter(Encounter.SUBJECT) { value = "Patient/$familyId" }
           from = 0
           count = 3
         }
-      data.postValue(encounters)
-    }
-    return data
   }
 
-  fun fetchFamilyCarePlans(): LiveData<List<CarePlan>> {
-    val data = MutableLiveData<List<CarePlan>>()
-    CoroutineScope(dispatcherProvider.io()).launch {
-      val carePlans = ancPatientRepository.searchCarePlan(familyId)
-      data.postValue(carePlans)
-    }
-    return data
+  suspend fun fetchFamilyCarePlans(): List<CarePlan> {
+    return ancPatientRepository.searchCarePlan(familyId)
   }
 }

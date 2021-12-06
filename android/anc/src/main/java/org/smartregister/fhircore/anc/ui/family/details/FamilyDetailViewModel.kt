@@ -18,8 +18,15 @@ package org.smartregister.fhircore.anc.ui.family.details
 
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
@@ -27,6 +34,7 @@ import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
 class FamilyDetailViewModel(
@@ -34,16 +42,29 @@ class FamilyDetailViewModel(
   private val repository: FamilyDetailRepository,
 ) : AndroidViewModel(application), FamilyDetailDataProvider {
 
-  private val mDemographics: LiveData<Patient> by lazy { repository.fetchDemographics() }
+  private val demographics by lazy { wrapped { repository.fetchDemographics() } }
 
-  private val mFamilyMembers: LiveData<List<FamilyMemberItem>> by lazy {
-    repository.fetchFamilyMembers()
+  private val familyMembers by lazy { wrapped { repository.fetchFamilyMembers() } }
+
+  private val encounters by lazy { wrapped { repository.fetchEncounters() } }
+
+  private val familyCarePlans by lazy { wrapped { repository.fetchFamilyCarePlans() } }
+
+  private fun <T> wrapped(block: suspend () -> T): MutableLiveData<T> {
+    val result = MutableLiveData<T>()
+    viewModelScope.launch {
+      result.postValue(block())
+    }
+    return result
   }
 
-  private val mEncounters: LiveData<List<Encounter>> by lazy { repository.fetchEncounters() }
-
-  private val mFamilyCarePlans: LiveData<List<CarePlan>> by lazy {
-    repository.fetchFamilyCarePlans()
+  fun reloadData() {
+    viewModelScope.launch{
+      demographics.postValue(repository.fetchDemographics())
+      familyMembers.postValue(repository.fetchFamilyMembers())
+      encounters.postValue(repository.fetchEncounters())
+      familyCarePlans.postValue(repository.fetchFamilyCarePlans())
+    }
   }
 
   private var mAppBackClickListener: () -> Unit = {}
@@ -55,19 +76,19 @@ class FamilyDetailViewModel(
   private var mUpcomingServiceItemClickListener: (item: Task) -> Unit = {}
 
   override fun getDemographics(): LiveData<Patient> {
-    return mDemographics
+    return demographics
   }
 
   override fun getFamilyMembers(): LiveData<List<FamilyMemberItem>> {
-    return mFamilyMembers
+    return familyMembers
   }
 
   override fun getEncounters(): LiveData<List<Encounter>> {
-    return mEncounters
+    return encounters
   }
 
   override fun getFamilyCarePlans(): LiveData<List<CarePlan>> {
-    return mFamilyCarePlans
+    return familyCarePlans
   }
 
   override fun getAppBackClickListener(): () -> Unit {

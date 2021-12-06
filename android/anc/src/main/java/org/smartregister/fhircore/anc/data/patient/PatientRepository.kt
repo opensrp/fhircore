@@ -16,14 +16,17 @@
 
 package org.smartregister.fhircore.anc.data.patient
 
+import androidx.annotation.StringRes
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import java.util.Date
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.EpisodeOfCare
@@ -34,6 +37,7 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.anc.AncApplication
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
@@ -66,11 +70,19 @@ import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.format
+import org.smartregister.fhircore.engine.util.extension.isFamilyHead
+import org.smartregister.fhircore.engine.util.extension.isHead
 import org.smartregister.fhircore.engine.util.extension.isPregnant
 import org.smartregister.fhircore.engine.util.extension.loadResourceTemplate
 import org.smartregister.fhircore.engine.util.extension.overdue
 import org.smartregister.fhircore.engine.util.extension.plusMonthsAsString
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
+import java.lang.IllegalStateException
+
+enum class DeletionReason(@StringRes val label: Int) {
+  ENTRY_IN_ERROR(R.string.remove_this_person_reason_error_entry),
+  MOVED_OUT(R.string.remove_this_person_reason_moved_out)
+}
 
 class PatientRepository(
   override val fhirEngine: FhirEngine,
@@ -97,6 +109,7 @@ class PatientRepository(
           .search<Condition> {
             filterBy(registerConfig.primaryFilter!!)
             registerConfig.secondaryFilter?.let { filterBy(it) }
+            filter(Patient.ACTIVE, true)
 
             count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
             from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
@@ -122,8 +135,26 @@ class PatientRepository(
     }
   }
 
+  suspend fun searchPatientByLink(linkId: String): List<Patient> {
+    return fhirEngine.search {
+      filterByPatient(Patient.LINK, linkId)
+      filter(Patient.ACTIVE, true)
+    }
+  }
+
   suspend fun searchCarePlan(id: String): List<CarePlan> {
     return fhirEngine.search { filterByPatient(CarePlan.SUBJECT, id) }
+  }
+
+  suspend fun revokeCarePlans(patientId: String){
+    // revoke all incomplete careplans
+    searchCarePlan(patientId).forEach {
+      if (it.status != CarePlan.CarePlanStatus.COMPLETED) {
+        it.status = CarePlan.CarePlanStatus.REVOKED
+
+        fhirEngine.save(it)
+      }
+    }
   }
 
   override suspend fun countAll(): Long =
@@ -218,6 +249,43 @@ class PatientRepository(
     withContext(dispatcherProvider.io()) {
       fhirEngine.search { filter(Encounter.SUBJECT) { value = "Patient/$patientId" } }
     }
+
+  suspend fun markDeceased(patientId: String, deathDate: Date) {
+    withContext(dispatcherProvider.io()) {
+      val patient = fhirEngine.load(Patient::class.java, patientId)
+
+      if(!patient.active) return@withContext
+
+      patient.active = false
+      patient.deceased = DateTimeType(deathDate)
+
+      revokeCarePlans(patientId)
+
+      fhirEngine.save(patient)
+    }
+  }
+
+  suspend fun deletePatient(patientId: String, reason: DeletionReason) {
+    withContext(dispatcherProvider.io()) {
+      val patient = fhirEngine.load(Patient::class.java, patientId)
+
+      if(!patient.active) return@withContext
+
+      if (patient.isFamilyHead())
+        throw IllegalStateException("A patient representing family can not be deleted")
+
+      when(reason) {
+        DeletionReason.MOVED_OUT -> {
+          patient.link.clear()
+        }
+        DeletionReason.ENTRY_IN_ERROR -> {
+          patient.link.clear()
+        }
+      }
+
+      fhirEngine.save(patient)
+    }
+  }
 
   suspend fun enrollIntoAnc(patientId: String, lmp: DateType) {
     val conditionData = buildConfigData(patientId = patientId, lmp = lmp)

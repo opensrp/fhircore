@@ -20,6 +20,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.test.runBlockingTest
 import java.util.Date
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
@@ -48,7 +49,7 @@ class FamilyDetailRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun testFetchDemographicsShouldReturnDummyPatient() {
+  fun testFetchDemographicsShouldReturnDummyPatient() = runBlockingTest{
 
     coEvery {
       hint(Patient::class)
@@ -66,14 +67,14 @@ class FamilyDetailRepositoryTest : RobolectricTest() {
         }
       }
 
-    val patient = repository.fetchDemographics().value
+    val patient = repository.fetchDemographics()
 
-    Assert.assertEquals("john", patient?.name?.first()?.given?.first()?.value)
-    Assert.assertEquals("doe", patient?.name?.first()?.family)
+    Assert.assertEquals("john", patient.name?.first()?.given?.first()?.value)
+    Assert.assertEquals("doe", patient.name?.first()?.family)
   }
 
   @Test
-  fun testGetFamilyMembersShouldReturnDummyList() {
+  fun testGetFamilyMembersShouldReturnDummyList() = runBlockingTest {
 
     coEvery {
       hint(Patient::class)
@@ -115,36 +116,36 @@ class FamilyDetailRepositoryTest : RobolectricTest() {
         }
       }
 
-    val items = repository.fetchFamilyMembers().value
+    val items = repository.fetchFamilyMembers()
 
-    Assert.assertEquals(2, items?.count())
+    Assert.assertEquals(2, items.count())
 
     // Family head
-    Assert.assertEquals("Jane Family", items?.get(0)?.name)
-    Assert.assertEquals("2", items?.get(0)?.id)
-    Assert.assertEquals("0d", items?.get(0)?.age)
-    Assert.assertEquals("F", items?.get(0)?.gender)
-    Assert.assertFalse(items?.get(0)?.pregnant!!)
+    Assert.assertEquals("Jane Family", items[0]?.name)
+    Assert.assertEquals("2", items[0]?.id)
+    Assert.assertEquals("0d", items[0]?.age)
+    Assert.assertEquals("F", items[0]?.gender)
+    Assert.assertFalse(items.get(0).pregnant!!)
 
     // Family member
-    Assert.assertEquals("John Doe", items?.get(1)?.name)
-    Assert.assertEquals("1", items?.get(1)?.id)
-    Assert.assertEquals("0d", items?.get(1)?.age)
-    Assert.assertEquals("F", items?.get(1)?.gender)
-    Assert.assertFalse(items?.get(1)?.pregnant!!)
+    Assert.assertEquals("John Doe", items[1]?.name)
+    Assert.assertEquals("1", items[1]?.id)
+    Assert.assertEquals("0d", items[1]?.age)
+    Assert.assertEquals("F", items[1]?.gender)
+    Assert.assertFalse(items[1]?.pregnant!!)
   }
 
   @Test
-  fun testGetEncountersShouldReturnSingleEncounterList() {
+  fun testGetEncountersShouldReturnSingleEncounterList() = runBlockingTest {
 
     coEvery {
       hint(Encounter::class)
       fhirEngine.search<Encounter>(any())
     } answers { listOf(Encounter().apply { class_ = Coding("", "", "first encounter") }) }
 
-    val items = repository.fetchEncounters().value
+    val items = repository.fetchEncounters()
 
-    Assert.assertEquals(1, items?.size)
-    Assert.assertEquals("first encounter", items?.get(0)?.class_?.display)
+    Assert.assertEquals(1, items.size)
+    Assert.assertEquals("first encounter", items[0]?.class_?.display)
   }
 }

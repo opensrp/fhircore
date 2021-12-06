@@ -39,6 +39,11 @@
         android:orderInCategory="300"
         android:title="@string/bmi_widget" />
     <item
+        android:id="@+id/log_death"
+        android:orderInCategory="300"
+        android:title="@string/log_death" />
+
+    <item
         android:id="@+id/remove_this_person"
         android:orderInCategory="300"
         android:title="@string/remove_this_person" />
