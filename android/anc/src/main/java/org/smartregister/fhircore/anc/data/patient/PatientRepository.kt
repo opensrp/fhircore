@@ -34,10 +34,10 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.anc.AncApplication
-import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
+import org.smartregister.fhircore.anc.data.model.PatientDetailItem
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asPatientReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
@@ -61,10 +61,12 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.format
+import org.smartregister.fhircore.engine.util.extension.isPregnant
 import org.smartregister.fhircore.engine.util.extension.loadResourceTemplate
 import org.smartregister.fhircore.engine.util.extension.overdue
 import org.smartregister.fhircore.engine.util.extension.plusMonthsAsString
@@ -72,9 +74,9 @@ import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
 class PatientRepository(
   override val fhirEngine: FhirEngine,
-  override val domainMapper: DomainMapper<Anc, AncPatientItem>,
+  override val domainMapper: DomainMapper<Anc, PatientItem>,
   private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
-) : RegisterRepository<Anc, AncPatientItem> {
+) : RegisterRepository<Anc, PatientItem> {
 
   private val registerConfig =
     AncApplication.getContext().loadRegisterConfig(RegisterType.ANC_REGISTER_ID)
@@ -82,13 +84,13 @@ class PatientRepository(
   private val ancOverviewConfig =
     AncApplication.getContext().loadRegisterConfigAnc(AncOverviewType.ANC_OVERVIEW_ID)
 
-  private val resourceMapperExtended = ResourceMapperExtended(fhirEngine)
+  val resourceMapperExtended = ResourceMapperExtended(fhirEngine)
 
   override suspend fun loadData(
     query: String,
     pageNumber: Int,
     loadAll: Boolean
-  ): List<AncPatientItem> {
+  ): List<PatientItem> {
     return withContext(dispatcherProvider.io()) {
       val pregnancies =
         fhirEngine
@@ -132,12 +134,12 @@ class PatientRepository(
       }
     }
 
-  suspend fun fetchDemographics(patientId: String): AncPatientDetailItem {
-    var ancPatientDetailItem = AncPatientDetailItem()
+  suspend fun fetchDemographics(patientId: String): PatientDetailItem {
+    var ancPatientDetailItem = PatientDetailItem()
     if (patientId.isNotEmpty())
       withContext(dispatcherProvider.io()) {
         val patient = fhirEngine.load(Patient::class.java, patientId)
-        var ancPatientItemHead = AncPatientItem()
+        var ancPatientItemHead = PatientItem()
         if (patient.link.isNotEmpty()) {
           val patientHead =
             fhirEngine.load(
@@ -146,7 +148,7 @@ class PatientRepository(
             )
 
           ancPatientItemHead =
-            AncPatientItem(
+            PatientItem(
               patientIdentifier = patient.logicalId,
               name = patientHead.extractName(),
               gender = patientHead.extractGender(AncApplication.getContext()) ?: "",
@@ -156,13 +158,15 @@ class PatientRepository(
         }
 
         val ancPatientItem =
-          AncPatientItem(
+          PatientItem(
             patientIdentifier = patient.logicalId,
             name = patient.extractName(),
             gender = patient.extractGender(AncApplication.getContext()) ?: "",
-            age = patient.extractAge()
+            isPregnant = patient.isPregnant(),
+            age = patient.extractAge(),
+            familyName = patient.extractFamilyName()
           )
-        ancPatientDetailItem = AncPatientDetailItem(ancPatientItem, ancPatientItemHead)
+        ancPatientDetailItem = PatientDetailItem(ancPatientItem, ancPatientItemHead)
       }
     return ancPatientDetailItem
   }

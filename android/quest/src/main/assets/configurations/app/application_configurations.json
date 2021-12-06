@@ -1,0 +1,8 @@
+[
+  {
+    "appId": "quest",
+    "classification": "application",
+    "theme": "QuestDefault",
+    "languages": ["en", "sw"]
+  }
+]

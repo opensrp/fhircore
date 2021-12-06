@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
@@ -42,11 +43,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
 import org.smartregister.fhircore.anc.ui.anccare.register.RecordAncVisit
+import org.smartregister.fhircore.anc.ui.report.ANC_PATIENT_ITEM
+import org.smartregister.fhircore.anc.ui.report.PATIENT_ANC_VISIT
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DueLightColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
@@ -56,61 +59,80 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 
 @Composable
 fun AncRow(
-  ancPatientItem: AncPatientItem,
-  clickListener: (AncRowClickListenerIntent, AncPatientItem) -> Unit,
+  patientItem: PatientItem,
+  clickListener: (AncRowClickListenerIntent, PatientItem) -> Unit,
+  showAncVisitButton: Boolean = true,
+  displaySelectContentOnly: Boolean = false,
   modifier: Modifier = Modifier,
 ) {
+  val titleText =
+    if (!displaySelectContentOnly) {
+      patientItem.demographics
+    } else {
+      patientItem.name
+    }
+  val subTitleText =
+    if (!displaySelectContentOnly) {
+      patientItem.address.capitalize(Locale.current)
+    } else {
+      patientItem.familyName
+    }
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
     modifier =
       modifier.fillMaxWidth().height(IntrinsicSize.Min).clickable {
-        clickListener(OpenPatientProfile, ancPatientItem)
+        clickListener(OpenPatientProfile, patientItem)
       }
   ) {
     Column(
       modifier =
-        modifier.wrapContentWidth(Alignment.Start).padding(horizontal = 16.dp, vertical = 16.dp)
+        modifier
+          .wrapContentWidth(Alignment.Start)
+          .padding(horizontal = 16.dp, vertical = 16.dp)
+          .testTag(ANC_PATIENT_ITEM)
     ) {
-      Text(
-        text = ancPatientItem.demographics,
-        fontSize = 18.sp,
-        modifier = modifier.wrapContentWidth()
-      )
+      Text(text = titleText, fontSize = 18.sp, modifier = modifier.wrapContentWidth())
       Spacer(modifier = modifier.height(8.dp))
       Row {
         Text(
           color = SubtitleTextColor,
-          text = ancPatientItem.address.capitalize(Locale.current),
+          text = subTitleText,
           fontSize = 14.sp,
           modifier = modifier.wrapContentWidth()
         )
       }
     }
-    AncVisitButton(
-      modifier = modifier.wrapContentWidth(Alignment.End).padding(horizontal = 16.dp),
-      ancPatientItem = ancPatientItem,
-      clickListener = clickListener
-    )
+    if (showAncVisitButton) {
+      AncVisitButton(
+        modifier =
+          modifier
+            .wrapContentWidth(Alignment.End)
+            .padding(horizontal = 16.dp)
+            .testTag(PATIENT_ANC_VISIT),
+        patientItem = patientItem,
+        clickListener = clickListener
+      )
+    }
   }
 }
 
 @Composable
 fun AncVisitButton(
-  ancPatientItem: AncPatientItem,
-  clickListener: (AncRowClickListenerIntent, AncPatientItem) -> Unit,
+  patientItem: PatientItem,
+  clickListener: (AncRowClickListenerIntent, PatientItem) -> Unit,
   modifier: Modifier = Modifier
 ) {
 
   val textColor =
-    when (ancPatientItem.visitStatus) {
+    when (patientItem.visitStatus) {
       VisitStatus.DUE -> BlueTextColor
       VisitStatus.OVERDUE -> OverdueDarkRedColor
       VisitStatus.PLANNED -> Color.Transparent
     }
 
   val bgColor =
-    when (ancPatientItem.visitStatus) {
+    when (patientItem.visitStatus) {
       VisitStatus.DUE -> DueLightColor
       VisitStatus.OVERDUE -> OverdueLightColor
       VisitStatus.PLANNED -> Color.Transparent
@@ -127,7 +149,7 @@ fun AncVisitButton(
         .wrapContentWidth()
         .background(color = bgColor)
         .padding(4.8.dp)
-        .clickable { clickListener(RecordAncVisit, ancPatientItem) },
+        .clickable { clickListener(RecordAncVisit, patientItem) },
   )
 }
 
@@ -136,8 +158,8 @@ fun AncVisitButton(
 @ExcludeFromJacocoGeneratedReport
 fun PreviewAncItemDue() {
   AncRow(
-    ancPatientItem =
-      AncPatientItem(
+    patientItem =
+      PatientItem(
         patientIdentifier = "1213231",
         gender = "F",
         age = "27y",
@@ -156,8 +178,8 @@ fun PreviewAncItemDue() {
 @ExcludeFromJacocoGeneratedReport
 fun PreviewAncItemOverDue() {
   AncRow(
-    ancPatientItem =
-      AncPatientItem(
+    patientItem =
+      PatientItem(
         patientIdentifier = "1213231",
         gender = "F",
         age = "27y",

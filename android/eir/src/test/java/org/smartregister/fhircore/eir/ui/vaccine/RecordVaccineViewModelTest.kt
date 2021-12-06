@@ -21,13 +21,13 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
@@ -36,18 +36,14 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.data.PatientRepository
-import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
-import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 @ExperimentalCoroutinesApi
-@Config(shadows = [EirApplicationShadow::class])
 internal class RecordVaccineViewModelTest : RobolectricTest() {
 
   private lateinit var recordVaccineViewModel: RecordVaccineViewModel
@@ -61,27 +57,34 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     patientRepository = mockk()
-    val immunization = spyk<Immunization>()
-    every { immunization.protocolApplied } returns
-      listOf(Immunization.ImmunizationProtocolAppliedComponent(PositiveIntType(1)))
-    every { immunization.vaccineCode.coding } returns listOf(Coding("sys", "code", "disp"))
+    val immunization =
+      Immunization().apply {
+        addProtocolApplied().doseNumber = PositiveIntType(1)
+        vaccineCode.addCoding(Coding("sys", "code", "disp"))
+        occurrence = DateTimeType.now()
+      }
     coEvery { patientRepository.getPatientImmunizations(any()) } returns listOf(immunization)
     recordVaccineViewModel =
       spyk(RecordVaccineViewModel(ApplicationProvider.getApplicationContext(), patientRepository))
   }
 
   @Test
-  fun testGetVaccineSummary() =
-    coroutinesTestRule.runBlockingTest {
-      val vaccineSummary = recordVaccineViewModel.getVaccineSummary("1")
-      Assert.assertNotNull(vaccineSummary)
+  fun testGetVaccineSummaryShouldReturnValidData() = runBlockingTest {
+    val patientVaccineSummary = recordVaccineViewModel.loadLatestVaccine("1")
 
-      val patientVaccineSummary = getLiveDataValue(vaccineSummary)
-      Assert.assertNotNull(patientVaccineSummary)
-      Assert.assertTrue(patientVaccineSummary is PatientVaccineSummary)
-      Assert.assertEquals(1, patientVaccineSummary?.doseNumber)
-      Assert.assertEquals("code", patientVaccineSummary?.initialDose)
-    }
+    Assert.assertNotNull(patientVaccineSummary)
+    Assert.assertEquals(1, patientVaccineSummary?.doseNumber)
+    Assert.assertEquals("code", patientVaccineSummary?.initialDose)
+  }
+
+  @Test
+  fun testGetVaccineSummaryShouldReturnNullWithMissingOccurence() = runBlockingTest {
+    coEvery { patientRepository.getPatientImmunizations(any()) } returns listOf(Immunization())
+
+    val patientVaccineSummary = recordVaccineViewModel.loadLatestVaccine("1")
+
+    Assert.assertNull(patientVaccineSummary)
+  }
 
   @Test
   fun `getPopulationResources() should call loadPatient() and loadPatientImmunization()`() {

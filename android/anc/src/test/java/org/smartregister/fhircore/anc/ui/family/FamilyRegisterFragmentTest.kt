@@ -17,6 +17,10 @@
 package org.smartregister.fhircore.anc.ui.family
 
 import androidx.fragment.app.commitNow
+import com.google.android.fhir.sync.Sync
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.BeforeClass
@@ -28,28 +32,29 @@ import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.shadow.FakeKeyStore
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
-@Config(
-  shadows =
-    [AncApplicationShadow::class, FamilyRegisterFragmentTest.SecureSharedPreferenceShadow::class]
-)
+@Config(shadows = [FamilyRegisterFragmentTest.SecureSharedPreferenceShadow::class])
 class FamilyRegisterFragmentTest : RobolectricTest() {
 
   private lateinit var registerFragment: FamilyRegisterFragment
 
   @Before
   fun setUp() {
-
+    mockkObject(Sync)
     val registerActivity =
       Robolectric.buildActivity(FamilyRegisterActivity::class.java).create().resume().get()
     registerFragment = FamilyRegisterFragment()
     registerActivity.supportFragmentManager.commitNow { add(registerFragment, "") }
+  }
+
+  @After
+  fun cleanup() {
+    unmockkObject(Sync)
   }
 
   @Test

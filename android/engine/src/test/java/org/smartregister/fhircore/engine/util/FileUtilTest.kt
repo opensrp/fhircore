@@ -27,12 +27,11 @@ import java.io.InputStream
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.smartregister.fhircore.engine.util.FileUtil.Companion.ASSET_BASE_PATH_RESOURCES
+import org.smartregister.fhircore.engine.util.FileUtil.ASSET_BASE_PATH_RESOURCES
 
 class FileUtilTest {
 
   var libraryData = ""
-  var fileUtil = FileUtil()
 
   @MockK lateinit var context: Context
 
@@ -43,40 +42,97 @@ class FileUtilTest {
   @Before
   fun setUp() {
     MockKAnnotations.init(this, relaxUnitFun = true)
-    fileUtil = FileUtil()
   }
 
   @Test
   fun getPropertyTest() {
-    var fileName = ASSET_BASE_PATH_RESOURCES + "test/resources/fileutil/cql_configs.properties"
+    val fileName = ASSET_BASE_PATH_RESOURCES + "test/resources/fileutil/cql_configs.properties"
     val file = File(fileName)
     inputStream = FileInputStream(file)
-    every { context.getAssets() } returns assetManager
+    every { context.assets } returns assetManager
     every { assetManager.open(any()) } returns inputStream
-    var smartRegisterBaseUrl =
-      fileUtil.getProperty("smart_register_base_url", context, "cql_configs.properties")
+    val smartRegisterBaseUrl =
+      FileUtil.getProperty("smart_register_base_url", context, "cql_configs.properties")
     Assert.assertEquals("https://fhir.labs.smartregister.org/fhir/", smartRegisterBaseUrl)
   }
 
   @Test
   fun readJsonFileTest() {
-    libraryData = fileUtil.readJsonFile("test/resources/cql/libraryevaluator/library.json")
+    libraryData = FileUtil.readJsonFile("test/resources/cql/libraryevaluator/library.json")
     Assert.assertNotNull(libraryData)
   }
 
   @Test
   fun recurseFoldersTest() {
-    var baseTestPathMeasureAssets =
+    val baseTestPathMeasureAssets =
       System.getProperty("user.dir") +
         File.separator +
         "src" +
         File.separator +
         File.separator +
         "test/resources/cql/measureevaluator/"
-    var patientAssetsDir = baseTestPathMeasureAssets + "first-contact"
-    var filePatientAssetDir = File(patientAssetsDir)
-    var fileUtil = FileUtil()
-    var fileListString = fileUtil.recurseFolders(filePatientAssetDir)
+    val patientAssetsDir = baseTestPathMeasureAssets + "first-contact"
+    val filePatientAssetDir = File(patientAssetsDir)
+    val fileListString = FileUtil.recurseFolders(filePatientAssetDir)
+    Assert.assertNotNull(fileListString)
+  }
+
+  @Test
+  fun testWriteFileOnInternalStorage() {
+    val exampleFileName = "example.json"
+    val baseDir =
+      System.getProperty("user.dir") +
+        File.separator +
+        "src" +
+        File.separator +
+        File.separator +
+        "test/resources/cql/libraryevaluator/"
+
+    val completeFile = baseDir + File.separator + exampleFileName
+
+    every { context.filesDir } returns File(baseDir)
+
+    FileUtil.writeFileOnInternalStorage(context, exampleFileName, "hello", "")
+
+    val f1 = File(completeFile)
+    Assert.assertNotNull(f1)
+    f1.delete()
+
+    val baseDir2 =
+      System.getProperty("user.dir") +
+        File.separator +
+        "src" +
+        File.separator +
+        File.separator +
+        "test/resources/cql/example/"
+
+    val fileBaseDir2 = File(baseDir2)
+    val completeFile2 = baseDir2 + File.separator + exampleFileName
+
+    every { context.filesDir } returns fileBaseDir2
+
+    FileUtil.writeFileOnInternalStorage(context, exampleFileName, "hello", "")
+
+    val file = File(completeFile2)
+    Assert.assertNotNull(file)
+    file.delete()
+    fileBaseDir2.delete()
+  }
+
+  @Test
+  fun testReadFileFromInternalStorage() {
+    every { context.filesDir } returns
+      File(
+        System.getProperty("user.dir") +
+          File.separator +
+          "src" +
+          File.separator +
+          File.separator +
+          "test/resources/cql/libraryevaluator/"
+      )
+
+    val fileListString = FileUtil.readFileFromInternalStorage(context, "library.json", "")
+
     Assert.assertNotNull(fileListString)
   }
 }

@@ -25,12 +25,9 @@ import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
-import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 
-@Config(shadows = [AncApplicationShadow::class])
 class EncounterListActivityTest : ActivityRobolectricTest() {
 
   private lateinit var activity: EncounterListActivity

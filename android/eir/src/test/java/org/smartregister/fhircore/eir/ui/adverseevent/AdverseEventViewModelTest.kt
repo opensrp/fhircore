@@ -22,6 +22,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import io.mockk.MockKAnnotations
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -42,19 +43,16 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
-import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @ExperimentalCoroutinesApi
-@Config(shadows = [EirApplicationShadow::class])
 internal class AdverseEventViewModelTest : RobolectricTest() {
   private lateinit var fhirEngine: FhirEngine
 
@@ -72,8 +70,8 @@ internal class AdverseEventViewModelTest : RobolectricTest() {
 
   @Before
   fun setUp() {
+    clearAllMocks()
     MockKAnnotations.init(this, relaxUnitFun = true)
-
     fhirEngine = mockk(relaxed = true)
     patientRepository = mockk()
 

@@ -17,8 +17,11 @@
 package org.smartregister.fhircore.anc.ui.details
 
 import android.app.Activity
+import android.content.Intent
 import android.view.MenuInflater
+import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.every
@@ -31,17 +34,22 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.jupiter.api.DisplayName
 import org.robolectric.Robolectric
-import org.robolectric.annotation.Config
+import org.robolectric.Shadows
+import org.robolectric.fakes.RoboMenuItem
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.anc.AncApplication
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.model.AncPatientDetailItem
-import org.smartregister.fhircore.anc.data.model.AncPatientItem
+import org.smartregister.fhircore.anc.data.model.PatientDetailItem
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
+import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
+import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 
 @ExperimentalCoroutinesApi
-@Config(shadows = [AncApplicationShadow::class])
 internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
 
   private lateinit var patientDetailsActivity: PatientDetailsActivity
@@ -59,7 +67,7 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   private val patientId = "samplePatientId"
-  var ancPatientDetailItem = spyk<AncPatientDetailItem>()
+  var ancPatientDetailItem = spyk<PatientDetailItem>()
 
   @Before
   fun setUp() {
@@ -69,8 +77,8 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     patientRepository = mockk()
 
     every { ancPatientDetailItem.patientDetails } returns
-      AncPatientItem(patientId, "Mandela Nelson", "M", "26")
-    every { ancPatientDetailItem.patientDetailsHead } returns AncPatientItem()
+      PatientItem(patientId, "Mandela Nelson", "Female", "26")
+    every { ancPatientDetailItem.patientDetailsHead } returns PatientItem()
     coEvery { patientRepository.fetchDemographics(patientId) } returns ancPatientDetailItem
 
     patientDetailsViewModel =
@@ -99,6 +107,103 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     every { menuInflater.inflate(any(), any()) } returns Unit
 
     Assert.assertTrue(patientDetailsActivitySpy.onCreateOptionsMenu(null))
+  }
+
+  @Test
+  @DisplayName("Should start Encounter List Activity")
+  fun testOnClickedPastViewEncounterItemShouldStartEncounterListActivity() {
+
+    val menuItem = RoboMenuItem(R.id.view_past_encounters)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+
+    val expectedIntent = Intent(patientDetailsActivity, EncounterListActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<AncApplication>())
+        .nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
+  }
+
+  @Test
+  fun testMakeAncPatientVisibilityActivity() {
+    val menuItem = RoboMenuItem(R.id.anc_enrollment)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+    Assert.assertTrue(menuItem.isVisible)
+  }
+
+  @Test
+  fun testOnClickedAncEnrollmentItemShouldStartQuestionnaireActivity() {
+
+    val menuItem = RoboMenuItem(R.id.anc_enrollment)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+
+    val expectedIntent = Intent(patientDetailsActivity, FamilyQuestionnaireActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<AncApplication>())
+        .nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
+  }
+
+  @Test
+  fun testOnClickedAncEnrollmentItemShouldStartBMIQuestionnaire() {
+
+    val menuItem = RoboMenuItem(R.id.bmi_widget)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+
+    val expectedIntent = Intent(patientDetailsActivity, BmiQuestionnaireActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<AncApplication>())
+        .nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
+  }
+
+  @Test
+  fun testOnClickedVitalSignsShouldShowADialog() {
+
+    val menuItem = RoboMenuItem(R.id.add_vitals)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+
+    Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
+  }
+
+  @Test
+  fun testHandlePatientDemographics() {
+
+    val patientDetailItem =
+      PatientDetailItem(
+        PatientItem(patientId, "Mandela Nelson", "Male", "26"),
+        PatientItem(patientId, "Mandela Nelson", "Male", "26")
+      )
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientDetailsActivity,
+      "handlePatientDemographics",
+      ReflectionHelpers.ClassParameter(PatientDetailItem::class.java, patientDetailItem)
+    )
+
+    val patientDetails =
+      patientDetailItem.patientDetails.name +
+        ", " +
+        patientDetailItem.patientDetails.gender +
+        ", " +
+        patientDetailItem.patientDetails.age
+    val patientId =
+      patientDetailItem.patientDetailsHead.demographics +
+        " ID: " +
+        patientDetailItem.patientDetails.patientIdentifier
+
+    val txtViewPatientDetails =
+      patientDetailsActivity.findViewById<TextView>(R.id.txtView_patientDetails)
+
+    val txtViewPatientId = patientDetailsActivity.findViewById<TextView>(R.id.txtView_patientId)
+
+    Assert.assertEquals(patientDetails, txtViewPatientDetails.text.toString())
+    Assert.assertEquals(patientId, txtViewPatientId.text.toString())
   }
 
   override fun getActivity(): Activity {

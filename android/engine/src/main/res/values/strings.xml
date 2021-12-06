@@ -29,6 +29,7 @@
     <string name="status_overdue">Overdue</string>
     <string name="status_received_vaccine">Vaccine %1$d \n%2$s</string>
     <string name="fully_vaccinated">"Fully vaccinated"</string>
+    <string name="already_fully_vaccinated">"Can not receive another dose. Already fully vaccinated"</string>
     <string name="record_vaccine_nl">Record\nVaccine</string>
     <string name="date_last_seen">Last seen %1$s</string>
     <string name="str_save">Save</string>
@@ -78,5 +79,16 @@
     <string name="tick">Tick</string>
     <string name="clients">Clients</string>
     <string name="logout">Log out</string>
+    <string name="application_id">Application ID</string>
+    <string name="enter_app_id">Enter Application ID</string>
+    <string name="app_id_sample" translatable="false">E.g. covax, jnj, quest, g6pd</string>
+    <string name="load_configurations">LOAD CONFIGURATIONS</string>
+    <string name="fhir_core_app">FHIR Core App</string>
+    <string name="remember_app">Remember application</string>
     <string name="done">Done</string>
+    <string name="replace_photo">Replace photo</string>
+    <string name="take_photo">Take photo</string>
+    <string name="edit">Edit</string>
+    <string name="application_not_supported">Application %1$s is not supported</string>
+    <string name="eCBIS_app_name">eCBIS</string>
 </resources>

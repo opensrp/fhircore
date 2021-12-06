@@ -38,13 +38,10 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.eir.data.model.VaccineStatus
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
-import org.smartregister.fhircore.eir.shadow.EirApplicationShadow
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
 
-@Config(shadows = [EirApplicationShadow::class])
 class PatientRepositoryTest : RobolectricTest() {
 
   private lateinit var patientRepository: PatientRepository
@@ -82,9 +79,9 @@ class PatientRepositoryTest : RobolectricTest() {
         Assert.assertEquals("M", gender)
         Assert.assertEquals("0d", age)
         Assert.assertEquals("Jane Mc, M, 0d", demographics)
-        Assert.assertEquals(SimpleDateFormat("yyyy-MM-dd").format(Date()), lastSeen)
+        Assert.assertEquals(SimpleDateFormat("dd-MMM-yyyy").format(Date()), lastSeen)
         Assert.assertEquals(VaccineStatus.PARTIAL, vaccineStatus.status)
-        Assert.assertEquals(SimpleDateFormat("dd-MM-yy").format(Date()), vaccineStatus.date)
+        Assert.assertEquals(SimpleDateFormat("dd-MMM-yyyy").format(Date()), vaccineStatus.date)
         Assert.assertEquals("", atRisk)
       }
     }

@@ -22,13 +22,12 @@ import androidx.work.WorkManager
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
-import org.robolectric.annotation.Config
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.shadow.AncApplicationShadow
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 
-@Config(shadows = [AncApplicationShadow::class])
 class AncApplicationTest : RobolectricTest() {
+
+  private val app by lazy { ApplicationProvider.getApplicationContext<AncApplication>() }
 
   @Test
   fun testConstructFhirEngineShouldReturnNonNull() {
@@ -49,5 +48,18 @@ class AncApplicationTest : RobolectricTest() {
     Assert.assertTrue(syncParams.containsKey(ResourceType.Questionnaire))
     Assert.assertTrue(syncParams.containsKey(ResourceType.CarePlan))
     Assert.assertTrue(syncParams.containsKey(ResourceType.Condition))
+    Assert.assertTrue(syncParams.containsKey(ResourceType.Observation))
+    Assert.assertTrue(syncParams.containsKey(ResourceType.Encounter))
+  }
+
+  @Test
+  fun testApplyConfigurationShouldLoadConfiguration() {
+
+    val config = app.applicationConfiguration
+
+    Assert.assertEquals(BuildConfig.FHIR_BASE_URL, config.fhirServerBaseUrl)
+    Assert.assertEquals(BuildConfig.OAUTH_BASE_URL, config.oauthServerBaseUrl)
+    Assert.assertEquals(BuildConfig.OAUTH_CIENT_ID, config.clientId)
+    Assert.assertEquals(BuildConfig.OAUTH_CLIENT_SECRET, config.clientSecret)
   }
 }

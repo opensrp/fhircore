@@ -35,6 +35,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
@@ -112,7 +113,7 @@ class PatientRepository(
     return data
   }
 
-  fun fetchTestForms(code: String, system: String): LiveData<List<QuestionnaireConfig>> {
+  fun fetchTestForms(filter: SearchFilter): LiveData<List<QuestionnaireConfig>> {
     val data = MutableLiveData<List<QuestionnaireConfig>>()
     CoroutineScope(dispatcherProvider.io()).launch {
       val result =
@@ -121,14 +122,24 @@ class PatientRepository(
             Questionnaire.CONTEXT,
             CodeableConcept().apply {
               addCoding().apply {
-                this.code = code
-                this.system = system
+                this.code = filter.code
+                this.system = filter.system
               }
             }
           )
         }
 
-      data.postValue(result.map { QuestionnaireConfig(it.name, it.title, it.logicalId) })
+      // TODO Remove hardcoded appId
+      data.postValue(
+        result.map {
+          QuestionnaireConfig(
+            appId = "quest",
+            form = it.name,
+            title = it.title,
+            identifier = it.logicalId
+          )
+        }
+      )
     }
     return data
   }
