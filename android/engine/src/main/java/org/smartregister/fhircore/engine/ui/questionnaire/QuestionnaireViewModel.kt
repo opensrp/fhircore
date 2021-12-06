@@ -26,8 +26,8 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.targetStructureMap
 import com.google.android.fhir.logicalId
-import java.util.Calendar
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
