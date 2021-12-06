@@ -29,7 +29,7 @@ interface FamilyDetailDataProvider {
   fun getFamilyMembers(): LiveData<List<FamilyMemberItem>>
   fun getEncounters(): LiveData<List<Encounter>>
   fun getFamilyCarePlans(): LiveData<List<CarePlan>>
-
+  fun onMenuItemClickListener(): (menuItem: String) -> Unit = {}
   fun getAppBackClickListener(): () -> Unit = {}
   fun getMemberItemClickListener(): (item: FamilyMemberItem) -> Unit = {}
   fun getAddMemberItemClickListener(): () -> Unit = {}

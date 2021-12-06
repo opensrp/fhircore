@@ -31,9 +31,9 @@ import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 
-class DefaultRepository(
-  val fhirEngine: FhirEngine,
-  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+open class DefaultRepository(
+  open val fhirEngine: FhirEngine,
+  open val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
 ) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {

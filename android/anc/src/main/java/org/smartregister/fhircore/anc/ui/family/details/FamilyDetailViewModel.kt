@@ -18,11 +18,16 @@ package org.smartregister.fhircore.anc.ui.family.details
 
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
@@ -33,6 +38,8 @@ class FamilyDetailViewModel(
   application: AncApplication,
   private val repository: FamilyDetailRepository,
 ) : AndroidViewModel(application), FamilyDetailDataProvider {
+
+  var isRemoveFamily = MutableLiveData(false)
 
   private val mDemographics: LiveData<Patient> by lazy { repository.fetchDemographics() }
 
@@ -53,6 +60,7 @@ class FamilyDetailViewModel(
   private var mEncounterItemClickListener: (item: Encounter) -> Unit = {}
   private var mSeeAllUpcomingServiceClickListener: () -> Unit = {}
   private var mUpcomingServiceItemClickListener: (item: Task) -> Unit = {}
+  private var menuItemClickListener: (item: String) -> Unit = {}
 
   override fun getDemographics(): LiveData<Patient> {
     return mDemographics
@@ -69,7 +77,26 @@ class FamilyDetailViewModel(
   override fun getFamilyCarePlans(): LiveData<List<CarePlan>> {
     return mFamilyCarePlans
   }
+  override fun onMenuItemClickListener(): (String) -> Unit {
+    return menuItemClickListener
+  }
 
+  fun setMenuItemClickListener(listener: (item: String) -> Unit) {
+    menuItemClickListener = listener
+  }
+
+  fun removeFamily(familyId: String) {
+
+    viewModelScope.launch {
+      val family: Resource? =
+        repository.loadResource(familyId)
+          ?: throw ResourceNotFoundException("Family resource for that ID NOT Found")
+
+      family?.let { repository.delete(it) }
+
+      isRemoveFamily.postValue(true)
+    }
+  }
   override fun getAppBackClickListener(): () -> Unit {
     return mAppBackClickListener
   }

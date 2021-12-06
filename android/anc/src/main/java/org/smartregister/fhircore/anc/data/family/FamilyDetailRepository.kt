@@ -29,14 +29,15 @@ import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class FamilyDetailRepository(
   private val familyId: String,
-  private val fhirEngine: FhirEngine,
-  private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
-) {
+  override val fhirEngine: FhirEngine,
+  override val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+) : DefaultRepository(fhirEngine, dispatcherProvider) {
   private val ancPatientRepository = PatientRepository(fhirEngine, AncItemMapper)
   fun fetchDemographics(): LiveData<Patient> {
     val data = MutableLiveData<Patient>()

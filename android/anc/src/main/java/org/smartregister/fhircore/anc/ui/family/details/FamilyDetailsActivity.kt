@@ -21,11 +21,13 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.AncApplication
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.util.startFamilyMemberRegistration
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -33,14 +35,14 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 class FamilyDetailsActivity : BaseMultiLanguageActivity() {
 
   private lateinit var familyId: String
-
+  private lateinit var viewModel: FamilyDetailViewModel
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     familyId = intent.extras?.getString(QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
     val fhirEngine = (AncApplication.getContext() as ConfigurableApplication).fhirEngine
     val familyDetailRepository = FamilyDetailRepository(familyId, fhirEngine)
-    val viewModel =
+    viewModel =
       FamilyDetailViewModel.get(this, application as AncApplication, familyDetailRepository)
 
     viewModel.setAppBackClickListener(this::onBackIconClicked)
@@ -48,6 +50,20 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
     viewModel.setAddMemberItemClickListener(this::onAddNewMemberButtonClicked)
     viewModel.setSeeAllEncounterClickListener(this::onSeeAllEncounterClicked)
     viewModel.setEncounterItemClickListener(this::onFamilyEncounterItemClicked)
+    viewModel.setMenuItemClickListener(this::onMenuItemClicked)
+
+    viewModel.apply {
+      val familyDetailsActivity = this@FamilyDetailsActivity
+      isRemoveFamily.observe(
+        familyDetailsActivity,
+        {
+          if (it) {
+
+            finish()
+          }
+        }
+      )
+    }
 
     setContent { AppTheme { FamilyDetailScreen(viewModel) } }
   }
@@ -72,4 +88,14 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
   private fun onSeeAllEncounterClicked() {}
 
   private fun onFamilyEncounterItemClicked(item: Encounter) {}
+
+  private fun onMenuItemClicked(item: String) {
+    AlertDialogue.showConfirmAlert(
+      this,
+      R.string.confirm_remove_family_message,
+      R.string.confirm_remove_family_title,
+      { viewModel.removeFamily(familyId) },
+      R.string.family_register_ok_title
+    )
+  }
 }
