@@ -5,9 +5,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, dependency-injection ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, dependency-injection ]
 
 env:
  FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
@@ -37,7 +37,7 @@ jobs:
         working-directory: android
          
       - name: Run Engine unit tests with Gradle
-        run: ./gradlew :engine:jacocoTestReport -x testReleaseUnitTest --stacktrace
+        run: ./gradlew :engine:clean && ./gradlew :engine:jacocoTestReport -x testReleaseUnitTest --stacktrace
         working-directory: android
 
       - name: Upload Engine Test Report to codecov
@@ -67,7 +67,7 @@ jobs:
         working-directory: android
          
       - name: Run EIR unit tests with Gradle
-        run: ./gradlew :eir:jacocoTestReport -x testReleaseUnitTest --stacktrace
+        run: ./gradlew :eir:clean && ./gradlew :eir:jacocoTestReport -x testReleaseUnitTest --stacktrace
         working-directory: android
 
       - name: Upload EIR Test Report to codecov
@@ -97,7 +97,7 @@ jobs:
         working-directory: android
 
       - name: Run ANC unit tests with Gradle
-        run: ./gradlew :anc:jacocoTestReport -x testReleaseUnitTest --stacktrace
+        run: ./gradlew :anc:clean && ./gradlew :anc:jacocoTestReport -x testReleaseUnitTest --stacktrace
         working-directory: android
 
       - name: Upload ANC Test Report to codecov
@@ -127,7 +127,7 @@ jobs:
         working-directory: android
 
       - name: Run Quest unit tests with Gradle
-        run: ./gradlew :quest:jacocoTestReport -x testReleaseUnitTest --stacktrace
+        run: ./gradlew :quest:clean && ./gradlew :quest:jacocoTestReport -x testReleaseUnitTest --stacktrace
         working-directory: android
 
       - name: Upload Quest Test Report to codecov

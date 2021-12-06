@@ -25,7 +25,8 @@ import org.junit.After
 abstract class ActivityRobolectricTest : RobolectricTest() {
 
   @After
-  fun testDown() {
+  override fun tearDown() {
+    super.tearDown()
     getActivity().finish()
   }
 

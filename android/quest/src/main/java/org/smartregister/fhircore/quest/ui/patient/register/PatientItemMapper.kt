@@ -16,21 +16,24 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register
 
+import android.content.Context
 import com.google.android.fhir.logicalId
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
-import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 
-object PatientItemMapper : DomainMapper<Patient, PatientItem> {
+class PatientItemMapper @Inject constructor(@ApplicationContext val context: Context) :
+  DomainMapper<Patient, PatientItem> {
 
   override fun mapToDomainModel(dto: Patient): PatientItem {
     val name = dto.extractName()
-    val gender = dto.extractGender(QuestApplication.getContext())?.first() ?: ""
+    val gender = dto.extractGender(context)?.first() ?: ""
     val age = dto.extractAge()
     return PatientItem(
       id = dto.logicalId,

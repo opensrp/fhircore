@@ -18,7 +18,8 @@ package org.smartregister.fhircore.anc.ui.anccare.details
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
-import io.mockk.MockKAnnotations
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -38,11 +39,20 @@ import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
 @ExperimentalCoroutinesApi
-internal class AncDetailsViewModelTest {
+@HiltAndroidTest
+internal class AncDetailsViewModelTest : RobolectricTest() {
+
+  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
+
   private lateinit var fhirEngine: FhirEngine
 
   private lateinit var ancDetailsViewModel: AncDetailsViewModel
@@ -51,14 +61,9 @@ internal class AncDetailsViewModelTest {
 
   private val patientId = "samplePatientId"
 
-  @get:Rule var coroutinesTestRule = CoroutineTestRule()
-
-  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
-
   @Before
   fun setUp() {
-    MockKAnnotations.init(this, relaxUnitFun = true)
-
+    hiltRule.inject()
     fhirEngine = mockk(relaxed = true)
     patientRepository = mockk()
 
@@ -70,9 +75,7 @@ internal class AncDetailsViewModelTest {
     coEvery { patientRepository.fetchDemographics(patientId) } returns ancPatientDetailItem
 
     ancDetailsViewModel =
-      spyk(
-        AncDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider, patientId)
-      )
+      spyk(AncDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider))
   }
 
   @Test
@@ -80,7 +83,8 @@ internal class AncDetailsViewModelTest {
     coroutinesTestRule.runBlockingTest {
       val patient = spyk<Patient>().apply { idElement.id = patientId }
       coEvery { fhirEngine.load(Patient::class.java, patientId) } returns patient
-      val patientDetailItem: PatientDetailItem = ancDetailsViewModel.fetchDemographics().value!!
+      val patientDetailItem: PatientDetailItem =
+        ancDetailsViewModel.fetchDemographics(patientId).value!!
       Assert.assertNotNull(patientDetailItem)
       Assert.assertEquals(patientDetailItem.patientDetails.patientIdentifier, patientId)
       val patientDetails =
@@ -107,7 +111,7 @@ internal class AncDetailsViewModelTest {
     coEvery { patientRepository.fetchCarePlan(any()) } returns
       listOf(buildCarePlanWithActive("1111"))
 
-    val carePlanList = ancDetailsViewModel.fetchCarePlan().value
+    val carePlanList = ancDetailsViewModel.fetchCarePlan(patientId).value
 
     if (carePlanList != null && carePlanList.isNotEmpty()) {
       Assert.assertEquals(1, carePlanList.size)

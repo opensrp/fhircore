@@ -16,16 +16,18 @@
 
 package org.smartregister.fhircore.engine.ui.appsetting
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
-class AppSettingViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class AppSettingViewModel @Inject constructor() : ViewModel() {
 
-  val configsLoaded: MutableLiveData<Boolean?> = MutableLiveData(null)
+  val loadConfigs: MutableLiveData<Boolean?> = MutableLiveData(null)
 
   private val _appId = MutableLiveData("")
   val appId

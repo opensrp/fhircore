@@ -1,0 +1,110 @@
+/*
+ * Copyright 2021 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.smartregister.fhircore.engine.auth
+
+import android.accounts.Account
+import android.accounts.AccountManager
+import androidx.core.os.bundleOf
+import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
+import io.jsonwebtoken.UnsupportedJwtException
+import io.mockk.every
+import io.mockk.spyk
+import javax.inject.Inject
+import org.junit.After
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.FakeModel.authCredentials
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
+
+@HiltAndroidTest
+class TokenManagerServiceTest : RobolectricTest() {
+
+  @get:Rule val hiltRule = HiltAndroidRule(this)
+
+  @Inject lateinit var accountManager: AccountManager
+
+  @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  private lateinit var tokenManagerService: TokenManagerService
+
+  private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
+
+  @Before
+  fun setUp() {
+    hiltRule.inject()
+    tokenManagerService =
+      spyk(
+        TokenManagerService(
+          context = context,
+          accountManager = accountManager,
+          configurationRegistry = configurationRegistry,
+          secureSharedPreference = secureSharedPreference
+        )
+      )
+  }
+
+  @After
+  fun tearDown() {
+    secureSharedPreference.deleteCredentials()
+  }
+
+  @Test
+  fun testLocalSessionTokenWithInactiveToken() {
+    Assert.assertNull(tokenManagerService.getLocalSessionToken())
+  }
+
+  @Test
+  fun testLocalSessionTokenWithActiveToken() {
+    every { tokenManagerService.isTokenActive(authCredentials.sessionToken) } returns true
+    secureSharedPreference.saveCredentials(authCredentials)
+    Assert.assertEquals(authCredentials.sessionToken, tokenManagerService.getLocalSessionToken())
+  }
+
+  @Test
+  fun testIsTokenActiveWithNullToken() {
+    Assert.assertFalse(tokenManagerService.isTokenActive(null))
+  }
+
+  @Test
+  @Throws(UnsupportedJwtException::class)
+  fun testIsTokenActiveWithMalformedJwtToken() {
+    Assert.assertFalse(tokenManagerService.isTokenActive("gibberish-token"))
+  }
+
+  @Test
+  fun testGetActiveAccount() {
+    secureSharedPreference.saveCredentials(authCredentials)
+    accountManager.addAccountExplicitly(
+      Account(authCredentials.username, configurationRegistry.authConfiguration.accountType),
+      authCredentials.password,
+      bundleOf()
+    )
+    val activeAccount = tokenManagerService.getActiveAccount()
+    Assert.assertNotNull(activeAccount)
+    Assert.assertEquals(authCredentials.username, activeAccount!!.name)
+    Assert.assertEquals(configurationRegistry.authConfiguration.accountType, activeAccount.type)
+  }
+}

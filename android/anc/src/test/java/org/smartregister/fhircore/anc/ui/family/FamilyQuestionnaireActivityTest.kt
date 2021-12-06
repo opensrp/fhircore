@@ -23,6 +23,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.Sync
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -42,16 +44,15 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
-import org.junit.BeforeClass
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
-import org.smartregister.fhircore.anc.shadow.FakeKeyStore
+import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity.Companion.QUESTIONNAIRE_CALLING_ACTIVITY
@@ -60,7 +61,10 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 
+@HiltAndroidTest
 internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
+
+  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
   private lateinit var familyQuestionnaireActivity: FamilyQuestionnaireActivity
 
@@ -68,6 +72,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Before
   fun setUp() {
+    hiltRule.inject()
     mockkObject(Sync)
     every { Sync.basicSyncJob(any()).stateFlow() } returns flowOf()
     every { Sync.basicSyncJob(any()).lastSyncTimestamp() } returns OffsetDateTime.now()
@@ -242,13 +247,5 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
 
   override fun getActivity(): Activity {
     return familyQuestionnaireActivity
-  }
-
-  companion object {
-    @JvmStatic
-    @BeforeClass
-    fun beforeClass() {
-      FakeKeyStore.setup
-    }
   }
 }
