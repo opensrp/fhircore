@@ -24,7 +24,6 @@ import java.io.InputStream
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.junit.Assert
-import org.junit.Ignore
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.FileUtil
 
