@@ -23,6 +23,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.spyk
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
@@ -62,6 +63,8 @@ class PatientImmunizationsAdapterTest : RobolectricTest() {
     every { viewHolder.bindTo(any()) } answers {}
     adapter.bindViewHolder(viewHolder, 0)
     verify(exactly = 1) { viewHolder.bindTo(any()) }
+
+    unmockkStatic(LayoutInflater::from)
   }
 
   @Test

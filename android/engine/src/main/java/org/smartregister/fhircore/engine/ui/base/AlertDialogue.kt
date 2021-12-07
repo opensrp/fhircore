@@ -22,6 +22,7 @@ import android.app.DatePickerDialog
 import android.content.DialogInterface
 import android.content.res.Resources
 import android.os.Build
+import android.view.ContextThemeWrapper
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.DatePicker
@@ -31,6 +32,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.core.view.get
 import androidx.core.view.setPadding
+import kotlinx.serialization.Serializable
 import org.checkerframework.checker.units.qual.m
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.util.extension.hide
@@ -45,10 +47,23 @@ enum class AlertIntent {
   INFO
 }
 
+data class AlertDialogListItem(val key: String, val value: String)
+
 object AlertDialogue {
-  fun AlertDialog.getSingleChoiceSelectedText() =
+  private val ITEMS_LIST_KEY = "alert_dialog_items_list"
+
+  fun AlertDialog.getSingleChoiceSelectedValue() =
+    getSingleChoiceSelectedItem()?.value
+
+  fun AlertDialog.getSingleChoiceSelectedKey() =
+    getSingleChoiceSelectedItem()?.key
+
+  fun AlertDialog.getSingleChoiceSelectedItem() =
     if(this.listView.checkedItemCount != 1) null
-    else (this.listView[this.listView.checkedItemPosition] as TextView).text
+    else getListItems()!![this.listView.checkedItemPosition]
+
+  fun AlertDialog.getListItems() =
+    this.ownerActivity?.intent?.getSerializableExtra(ITEMS_LIST_KEY) as Array<AlertDialogListItem>?
 
   fun showAlert(
     context: Activity,
@@ -59,7 +74,7 @@ object AlertDialogue {
     @StringRes confirmButtonText: Int = R.string.questionnaire_alert_confirm_button_title,
     neutralButtonListener: ((d: DialogInterface) -> Unit)? = null,
     @StringRes neutralButtonText: Int = R.string.questionnaire_alert_neutral_button_title,
-    options: List<CharSequence>? = null
+    options: Array<AlertDialogListItem>? = null
   ): AlertDialog {
     val dialog =
       AlertDialog.Builder(context)
@@ -76,7 +91,7 @@ object AlertDialogue {
             setPositiveButton(confirmButtonText) { d, _ -> confirmButtonListener.invoke(d) }
           }
           options?.run {
-            setSingleChoiceItems(options.toTypedArray(), -1, null)
+            setSingleChoiceItems(options.map { it.value }.toTypedArray(), -1, null)
           }
         }
         .show()
@@ -88,6 +103,11 @@ object AlertDialogue {
     }
 
     dialog.findViewById<TextView>(R.id.tv_alert_message)?.apply { this.text = message }
+
+    options?.let {
+      context.intent.putExtra(ITEMS_LIST_KEY, it)
+      dialog.setOwnerActivity(context)
+    }
 
     return dialog
   }
@@ -142,7 +162,7 @@ object AlertDialogue {
     @StringRes title: Int? = null,
     confirmButtonListener: ((d: DialogInterface) -> Unit),
     @StringRes confirmButtonText: Int,
-    options: List<String>? = null
+    options: Array<AlertDialogListItem>? = null
   ): AlertDialog {
     return showAlert(
       context = context,

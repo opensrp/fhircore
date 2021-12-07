@@ -17,7 +17,9 @@
     <string name="family_register_ok_title">Yes</string>
     <string name="family_register_cancel_title">No</string>
 
-    <string name="anc_record_visit_button_title">+ ANC Visit</string>
+    <string name="anc_record_visit_with_overdue">+ ANC Visit %1$d Overdue</string>
+
+    <string name="anc_record_visit">+ ANC Visit</string>
 
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.anc</string>
     <string name="back_to_anc_clients">Back to ANC Clients</string>
@@ -45,6 +47,10 @@
     <string name="remove_this_person_reason_death">Death</string>
     <string name="remove_this_person_reason_error_entry">Entry in error</string>
     <string name="remove_this_person_reason_moved_out">Moved out</string>
+    <string name="change_head_button_title">Change</string>
+    <string name="change_head_confirm_title">Select New Family Head</string>
+    <string name="change_head_confirm_message"></string>
+    <string name="invalid_selection">Invalid Selection</string>
     <string name="care_plan">Care plan</string>
     <string name="see_all">See All</string>
     <string name="anc_overview">ANC Overview</string>
@@ -81,6 +87,7 @@
 
     <string name="all_families">All Families</string>
     <string name="add_member">Add Member</string>
+    <string name="change_head">Change Head</string>
     <string name="encounters">Encounters</string>
     <string name="members">Members</string>
 
@@ -115,4 +122,6 @@
     <string name="forward_arrow">Forward arrow</string>
     <string name="select_patient">SELECT PATIENT</string>
     <string name="search_patient_hint">Search for a patient name</string>
+    <string name="bullet_character">\u00b7</string>
+    <string name="overdue">Overdue</string>
 </resources>

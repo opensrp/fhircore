@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.data.family.model
 
 import androidx.compose.runtime.Stable
+import java.util.Date
 
 @Stable
 data class FamilyMemberItem(
@@ -25,5 +26,6 @@ data class FamilyMemberItem(
   val age: String,
   val gender: String,
   val pregnant: Boolean,
-  val houseHoldHead: Boolean
+  val houseHoldHead: Boolean,
+  val deathDate: Date?
 )

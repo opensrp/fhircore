@@ -17,89 +17,60 @@
 package org.smartregister.fhircore.anc.ui.details
 
 import android.app.AlertDialog
-import android.app.DatePickerDialog
-import android.content.DialogInterface
 import android.content.Intent
-import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.core.os.bundleOf
-import androidx.core.view.get
-import androidx.core.view.setPadding
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.google.android.fhir.FhirEngine
 import com.google.android.material.tabs.TabLayoutMediator
-import kotlinx.android.synthetic.main.item_services.view.imageView_calender
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.patient.DeletionReason
-import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.databinding.ActivityNonAncDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
 import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
-import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.details.adapter.ViewPagerAdapter
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig
 import org.smartregister.fhircore.anc.util.startAncEnrollment
+import org.smartregister.fhircore.engine.ui.base.AlertDialogListItem
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
-import org.smartregister.fhircore.engine.ui.base.AlertDialogue.getSingleChoiceSelectedText
-import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.getSingleChoiceSelectedValue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.createFactory
-import org.smartregister.fhircore.engine.util.extension.hide
-import timber.log.Timber
 import java.util.Date
 
+@AndroidEntryPoint
 class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
   private lateinit var adapter: ViewPagerAdapter
   private lateinit var patientId: String
   private var isPregnant: Boolean = false
   private var isMale: Boolean = false
-  private lateinit var loadProgress: AlertDialog
-  private lateinit var fhirEngine: FhirEngine
+  private var isFamilyHead: Boolean = false
 
-  lateinit var ancDetailsViewModel: AncDetailsViewModel
-
-  private lateinit var patientRepository: PatientRepository
-
+  val ancDetailsViewModel by viewModels<AncDetailsViewModel>()
   private lateinit var activityAncDetailsBinding: ActivityNonAncDetailsBinding
 
   val details = arrayOf("CARE PLAN", "DETAILS")
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    // TODO add progress dialog when loading content
     activityAncDetailsBinding =
       DataBindingUtil.setContentView(this, R.layout.activity_non_anc_details)
     setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
-    loadProgress = showProgressAlert(this@PatientDetailsActivity, R.string.loading)
-
-    fhirEngine = AncApplication.getContext().fhirEngine
 
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-
-    patientRepository = PatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
-
-    ancDetailsViewModel =
-      ViewModelProvider(
-        this,
-        AncDetailsViewModel(patientRepository, patientId = patientId).createFactory()
-      )[AncDetailsViewModel::class.java]
 
     activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
   }
@@ -107,11 +78,8 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
   override fun onResume() {
     super.onResume()
     activityAncDetailsBinding.txtViewPatientId.text = patientId
-
-    loadProgress.show()
-
     ancDetailsViewModel
-      .fetchDemographics()
+      .fetchDemographics(patientId)
       .observe(this@PatientDetailsActivity, this::handlePatientDemographics)
   }
 
@@ -126,6 +94,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
     menu.findItem(R.id.remove_this_person).run {
       highlightItem(this)
+      this.isVisible = !isFamilyHead
     }
     menu.findItem(R.id.log_death).run {
       highlightItem(this)
@@ -186,8 +155,14 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
           confirmButtonText = getString(R.string.log_death_button_title),
           confirmButtonListener = {
             lifecycleScope.launch {
-              patientRepository.markDeceased(patientId, it)
-              finish()
+              ancDetailsViewModel.markDeceased(patientId, it).observe(
+                this@PatientDetailsActivity,
+                {
+                  if (it) {
+                    finish()
+                  }
+                }
+              )
             }
           }
         )
@@ -199,10 +174,10 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
           R.string.remove_this_person_confirm_message,
           R.string.remove_this_person_confirm_title,
           {
-            val selection = (it as AlertDialog).getSingleChoiceSelectedText()
+            val selection = (it as AlertDialog).getSingleChoiceSelectedValue()
             if (selection?.isNotBlank() == true)
               lifecycleScope.launch {
-                patientRepository.deletePatient(
+                ancDetailsViewModel.deletePatient(
                   patientId,
                   DeletionReason.values().single { getString(it.label) == selection }
                 )
@@ -211,7 +186,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
               }
           },
           R.string.remove_this_person_button_title,
-          DeletionReason.values().map { getString(it.label) }
+          DeletionReason.values().map { AlertDialogListItem(it.name, it.name) }.toTypedArray()
         )
         return true
       }
@@ -224,24 +199,30 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       val patientDetails =
         listOf(this.patientDetails.name, this.patientDetails.gender, this.patientDetails.age)
           .joinToString(separator = ", ")
-      val patientId =
-        listOf(this.patientDetailsHead.demographics, this.patientDetails.patientIdentifier)
-          .joinToString(separator = " ID: ")
+      val patientAddress =
+        if (this.patientDetailsHead.demographics.isNotBlank()) this.patientDetailsHead.demographics
+        else this.patientDetails.demographics
+      val houseHoldHeadText =
+        if (this.patientDetails.isHouseHoldHead) getString(R.string.head_of_household) else ""
+      val patientIdText =
+        listOf(patientAddress, "ID: ${this.patientDetails.patientIdentifier}", houseHoldHeadText)
+          .joinToString(separator = " " + getString(R.string.bullet_character) + " ")
       activityAncDetailsBinding.txtViewPatientDetails.text = patientDetails
-      activityAncDetailsBinding.txtViewPatientId.text = patientId
+      activityAncDetailsBinding.txtViewPatientId.text = patientIdText
       isMale = this.patientDetails.gender == getString(R.string.male)
       isPregnant = this.patientDetails.isPregnant
+      isFamilyHead = this.patientDetails.isHouseHoldHead
 
       if (isMale) {
         adapter =
           ViewPagerAdapter(
-            supportFragmentManager,
-            lifecycle,
-            false,
-            bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
+            fragmentManager = supportFragmentManager,
+            lifecycle = lifecycle,
+            isPregnant = false,
+            bundleOf =
+              bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
           )
         activityAncDetailsBinding.pager.adapter = adapter
-        loadProgress.hide()
         TabLayoutMediator(activityAncDetailsBinding.tablayout, activityAncDetailsBinding.pager) {
             tab,
             position ->
@@ -251,13 +232,13 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       } else {
         adapter =
           ViewPagerAdapter(
-            supportFragmentManager,
-            lifecycle,
+            fragmentManager = supportFragmentManager,
+            lifecycle = lifecycle,
             isPregnant = isPregnant,
-            bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
+            bundleOf =
+              bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
           )
         activityAncDetailsBinding.pager.adapter = adapter
-        loadProgress.hide()
         TabLayoutMediator(activityAncDetailsBinding.tablayout, activityAncDetailsBinding.pager) {
             tab,
             position ->

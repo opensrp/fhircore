@@ -16,16 +16,19 @@
 
 package org.smartregister.fhircore.anc.ui.family.register
 
+import android.content.Context
 import com.google.android.fhir.logicalId
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractDeathDate
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.isPregnant
@@ -33,7 +36,11 @@ import org.smartregister.fhircore.engine.util.extension.overdue
 
 data class Family(val head: Patient, val members: List<Patient>, val servicesDue: List<CarePlan>)
 
-object FamilyItemMapper : DomainMapper<Family, FamilyItem> {
+class FamilyItemMapper
+@Inject
+constructor(
+  @ApplicationContext val context: Context,
+) : DomainMapper<Family, FamilyItem> {
 
   override fun mapToDomainModel(dto: Family): FamilyItem {
     val head = dto.head
@@ -44,8 +51,9 @@ object FamilyItemMapper : DomainMapper<Family, FamilyItem> {
       id = head.logicalId,
       identifier = head.identifierFirstRep.value,
       name = head.extractName(),
-      gender = (head.extractGender(AncApplication.getContext())?.firstOrNull() ?: "").toString(),
+      gender = (head.extractGender(context)?.firstOrNull() ?: "").toString(),
       age = head.extractAge(),
+      deathDate = head.extractDeathDate(),
       address = head.extractAddress(),
       isPregnant = head.isPregnant(),
       members = members.map { toFamilyMemberItem(it, head.logicalId) },
@@ -59,9 +67,10 @@ object FamilyItemMapper : DomainMapper<Family, FamilyItem> {
       name = member.extractName(),
       id = member.logicalId,
       age = member.extractAge(),
-      gender = (member.extractGender(AncApplication.getContext())?.firstOrNull() ?: "").toString(),
+      gender = (member.extractGender(context)?.firstOrNull() ?: "").toString(),
       pregnant = member.isPregnant(),
-      houseHoldHead = familyId == member.logicalId
+      houseHoldHead = familyId == member.logicalId,
+      deathDate = member.extractDeathDate()
     )
   }
 }

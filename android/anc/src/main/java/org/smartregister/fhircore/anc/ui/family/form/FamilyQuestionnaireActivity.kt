@@ -21,21 +21,24 @@ import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
-import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.hide
 
+@AndroidEntryPoint
 class FamilyQuestionnaireActivity : QuestionnaireActivity() {
-  internal lateinit var familyRepository: FamilyRepository
+
+  @Inject lateinit var familyRepository: FamilyRepository
+
   private lateinit var saveBtn: Button
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,8 +52,6 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
         saveBtn.setText(R.string.family_member_save_label)
       FamilyFormConstants.FAMILY_REGISTER_FORM -> saveBtn.setText(R.string.family_save_label)
     }
-
-    familyRepository = FamilyRepository(AncApplication.getContext().fhirEngine, FamilyItemMapper)
   }
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
@@ -60,30 +61,30 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
       when (questionnaireConfig.form) {
         FamilyFormConstants.ANC_ENROLLMENT_FORM -> {
           val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!
-          familyRepository.enrollIntoAnc(questionnaire!!, questionnaireResponse, patientId)
+          familyRepository.enrollIntoAnc(questionnaire, questionnaireResponse, patientId)
           endActivity()
         }
         FamilyFormConstants.FAMILY_REGISTER_FORM -> {
           val patientId =
-            familyRepository.postProcessFamilyHead(questionnaire!!, questionnaireResponse)
+            familyRepository.postProcessFamilyHead(questionnaire, questionnaireResponse)
           handlePregnancy(
-            patientId,
-            questionnaireResponse,
-            FamilyFormConstants.FAMILY_REGISTER_FORM
+            patientId = patientId,
+            questionnaireResponse = questionnaireResponse,
+            ancEnrollmentForm = FamilyFormConstants.FAMILY_REGISTER_FORM
           )
         }
         FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM -> {
           val relatedTo = intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)
           val patientId =
             familyRepository.postProcessFamilyMember(
-              questionnaire!!,
-              questionnaireResponse,
-              relatedTo
+              questionnaire = questionnaire,
+              questionnaireResponse = questionnaireResponse,
+              relatedTo = relatedTo
             )
           handlePregnancy(
-            patientId,
-            questionnaireResponse,
-            FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
+            patientId = patientId,
+            questionnaireResponse = questionnaireResponse,
+            ancEnrollmentForm = FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
           )
         }
       }
@@ -140,13 +141,10 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
 
   private fun endActivity() {
     when (intent.getStringExtra(QUESTIONNAIRE_CALLING_ACTIVITY) ?: "") {
-      FamilyRegisterActivity::class.java.name -> reloadList()
+      FamilyRegisterActivity::class.java.name ->
+        startActivity(Intent(this, FamilyRegisterActivity::class.java))
     }
     finish()
-  }
-
-  fun reloadList() {
-    startActivity(Intent(this, FamilyRegisterActivity::class.java))
   }
 
   companion object {

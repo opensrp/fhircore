@@ -39,19 +39,24 @@ import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 class EncounterRepositoryTest : RobolectricTest() {
 
   private lateinit var repository: EncounterRepository
+
   private lateinit var fhirEngine: FhirEngine
 
   @Before
   fun setUp() {
     fhirEngine = mockk()
-
-    repository = EncounterRepository(fhirEngine, "")
+    repository = EncounterRepository(fhirEngine).apply { patientId = "1" }
   }
 
   @Test
   fun testGetRefreshKeyShouldReturnValidAnchorPosition() {
-    val pagingState = PagingState<Int, EncounterItem>(listOf(), 0, PagingConfig(1), 10)
-
+    val pagingState =
+      PagingState<Int, EncounterItem>(
+        pages = listOf(),
+        anchorPosition = 0,
+        config = PagingConfig(1),
+        leadingPlaceholderCount = 10
+      )
     val anchorPosition = repository.getRefreshKey(pagingState)
     Assert.assertEquals(0, anchorPosition)
   }
@@ -69,10 +74,10 @@ class EncounterRepositoryTest : RobolectricTest() {
       PagingSource.LoadResult.Page(
         listOf(
           EncounterItem(
-            encounter.id,
-            encounter.status,
-            encounter.class_.display,
-            encounter.period.start
+            id = encounter.id,
+            status = encounter.status,
+            display = encounter.class_.display,
+            periodStartDate = encounter.period.start
           )
         ),
         null,

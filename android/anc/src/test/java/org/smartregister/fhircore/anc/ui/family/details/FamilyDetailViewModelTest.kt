@@ -17,12 +17,8 @@
 package org.smartregister.fhircore.anc.ui.family.details
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.MutableLiveData
-import androidx.test.core.app.ApplicationProvider
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.test.runBlockingTest
 import java.text.SimpleDateFormat
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
@@ -35,28 +31,28 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 class FamilyDetailViewModelTest : RobolectricTest() {
 
-  private lateinit var viewModel: FamilyDetailViewModel
-  private lateinit var repository: FamilyDetailRepository
+  @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  @get:Rule
-  var instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule(order = 2) val coroutineTestRule = CoroutineTestRule()
+
+  private val familyDetailRepository: FamilyDetailRepository = mockk()
+
+  private lateinit var familyDetailViewModel: FamilyDetailViewModel
 
   @Before
   fun setUp() {
-
-    repository = mockk()
-    viewModel = FamilyDetailViewModel(ApplicationProvider.getApplicationContext(), repository)
+    familyDetailViewModel = FamilyDetailViewModel(familyDetailRepository)
   }
 
   @Test
-  fun testGetDemographicsShouldReturnTestPatient() = runBlockingTest{
-
+  fun testGetDemographicsShouldReturnTestPatient() {
     val patient =
       Patient().apply {
         name =
@@ -68,25 +64,39 @@ class FamilyDetailViewModelTest : RobolectricTest() {
           )
       }
 
-    coEvery { repository.fetchDemographics() } returns patient
-
-    val demographic = viewModel.getDemographics().value
+    coEvery { familyDetailRepository.fetchDemographics("1") } returns patient
+    familyDetailViewModel.fetchDemographics("1")
+    val demographic = familyDetailViewModel.demographics.value
     Assert.assertEquals("john", demographic?.name?.first()?.given?.first()?.value)
     Assert.assertEquals("doe", demographic?.name?.first()?.family)
   }
 
   @Test
-  fun testGetFamilyMembersShouldReturnDummyList() = runBlockingTest{
-
+  fun testGetFamilyMembersShouldReturnDummyList() {
     val itemList =
       listOf(
-        FamilyMemberItem("salina", "1", "20", "F", true, false),
-        FamilyMemberItem("kevin", "2", "25", "F", false, false)
+        FamilyMemberItem(
+          name = "salina",
+          id = "1",
+          age = "20",
+          gender = "F",
+          pregnant = true,
+          houseHoldHead = false
+        ),
+        FamilyMemberItem(
+          name = "kevin",
+          id = "2",
+          age = "25",
+          gender = "F",
+          pregnant = false,
+          houseHoldHead = false
+        )
       )
 
-    coEvery { repository.fetchFamilyMembers() } returns itemList
+    coEvery { familyDetailRepository.fetchFamilyMembers("1") } returns itemList
+    familyDetailViewModel.fetchFamilyMembers("1")
 
-    val items = viewModel.getFamilyMembers().value
+    val items = familyDetailViewModel.familyMembers.value
 
     Assert.assertEquals(2, items?.count())
 
@@ -100,45 +110,20 @@ class FamilyDetailViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testGetEncountersShouldReturnSingleEncounterList() = runBlockingTest{
-
+  fun testGetEncountersShouldReturnSingleEncounterList() {
     val encounter = Encounter().apply { class_ = Coding("", "", "first encounter") }
 
-    coEvery { repository.fetchEncounters() } returns listOf(encounter)
+    coEvery { familyDetailRepository.fetchEncounters("1") } returns listOf(encounter)
+    familyDetailViewModel.fetchEncounters("1")
 
-    val items = viewModel.getEncounters().value
+    val items = familyDetailViewModel.encounters.value
 
     Assert.assertEquals(1, items?.size)
     Assert.assertEquals("first encounter", items?.get(0)?.class_?.display)
   }
 
   @Test
-  fun testShouldVerifyAllClickListener() = runBlockingTest{
-
-    var count = 0
-
-    viewModel.setAppBackClickListener { ++count }
-    viewModel.setMemberItemClickListener { ++count }
-    viewModel.setAddMemberItemClickListener { ++count }
-    viewModel.setSeeAllEncounterClickListener { ++count }
-    viewModel.setEncounterItemClickListener { ++count }
-    viewModel.setSeeAllUpcomingServiceClickListener { ++count }
-    viewModel.setUpcomingServiceItemClickListener {
-      ++count
-      Assert.assertEquals(7, count)
-    }
-
-    viewModel.getAppBackClickListener().invoke()
-    viewModel.getMemberItemClickListener().invoke(mockk())
-    viewModel.getAddMemberItemClickListener().invoke()
-    viewModel.getSeeAllEncounterClickListener().invoke()
-    viewModel.getEncounterItemClickListener().invoke(mockk())
-    viewModel.getSeeAllUpcomingServiceClickListener().invoke()
-    viewModel.getUpcomingServiceItemClickListener().invoke(mockk())
-  }
-
-  @Test
-  fun testGetFamilyCarePlansShouldReturnTestCarePlan() = runBlockingTest{
+  fun testGetFamilyCarePlansShouldReturnTestCarePlan() {
 
     val cpTitle = "First Care Plan"
     val cpPeriodStartDate = SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01")
@@ -148,9 +133,10 @@ class FamilyDetailViewModelTest : RobolectricTest() {
         period = Period().apply { start = cpPeriodStartDate }
       }
 
-    coEvery { repository.fetchFamilyCarePlans() } returns listOf(carePlan)
+    coEvery { familyDetailRepository.fetchFamilyCarePlans("1") } returns listOf(carePlan)
+    familyDetailViewModel.fetchCarePlans("1")
 
-    val items = viewModel.getFamilyCarePlans().value
+    val items = familyDetailViewModel.familyCarePlans.value
 
     Assert.assertEquals(1, items?.size)
     Assert.assertEquals(cpTitle, carePlan.title)

@@ -27,8 +27,7 @@ import okhttp3.Request
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
-import org.robolectric.util.ReflectionHelpers
-import org.smartregister.fhircore.engine.auth.AuthenticationService
+import org.smartregister.fhircore.engine.auth.TokenManagerService
 import org.smartregister.fhircore.engine.data.remote.shared.interceptor.OAuthInterceptor
 import org.smartregister.fhircore.engine.robolectric.FhircoreTestRunner
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -41,10 +40,9 @@ class OAuthInterceptorTest : RobolectricTest() {
   fun testInterceptShouldAddTokenHeader() {
     val context = ApplicationProvider.getApplicationContext<Application>()
 
-    val interceptor = OAuthInterceptor(context)
-    val authService = mockk<AuthenticationService>()
-    ReflectionHelpers.setField(interceptor, "authenticationService\$delegate", lazy { authService })
-    every { authService.getBlockingActiveAuthToken() } returns "my-access-token"
+    val tokenManagerService = mockk<TokenManagerService>()
+    val interceptor = OAuthInterceptor(context, tokenManagerService)
+    every { tokenManagerService.getBlockingActiveAuthToken() } returns "my-access-token"
 
     val requestBuilder = spyk(Request.Builder())
     val request = spyk(Request.Builder().url("http://test-url.com").build())
@@ -55,7 +53,6 @@ class OAuthInterceptorTest : RobolectricTest() {
 
     interceptor.intercept(chain)
 
-    verify { authService.getBlockingActiveAuthToken() }
     verify { requestBuilder.addHeader("Authorization", "Bearer my-access-token") }
   }
 }

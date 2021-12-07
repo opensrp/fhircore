@@ -20,12 +20,15 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
+import dagger.hilt.android.scopes.FragmentScoped
+import javax.inject.Inject
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.databinding.ItemServicesBinding
 import org.smartregister.fhircore.engine.ui.base.BaseSimpleRecyclerViewHolder
 
 /** Subclass of [ListAdapter] used to display upcoming services for the non ANC client */
-class UpcomingServicesAdapter :
+@FragmentScoped
+class UpcomingServicesAdapter @Inject constructor() :
   ListAdapter<UpcomingServiceItem, UpcomingServicesAdapter.PatientUpcomingServiceViewHolder>(
     UpcomingServiceItemDiffCallback
   ) {
@@ -58,6 +61,6 @@ class UpcomingServicesAdapter :
       oldItem.title == newItem.title
 
     override fun areContentsTheSame(oldItem: UpcomingServiceItem, newItem: UpcomingServiceItem) =
-      oldItem.equals(newItem)
+      oldItem == newItem
   }
 }

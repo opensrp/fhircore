@@ -30,7 +30,7 @@ class CarePlanExtensionTest {
     val startDate = DateTimeType(Date())
     startDate.add(Calendar.DATE, -3)
 
-    var carePlan = buildCarePlan(startDate = startDate)
+    val carePlan = buildCarePlan(startDate = startDate)
 
     val result = carePlan.activityFirstRep.detail.started()
 
@@ -42,7 +42,7 @@ class CarePlanExtensionTest {
     val endDate = DateTimeType(Date())
     endDate.add(Calendar.DATE, 3)
 
-    var carePlan = buildCarePlan(endDate = endDate)
+    val carePlan = buildCarePlan(endDate = endDate)
 
     val result = carePlan.activityFirstRep.detail.ended()
 
@@ -77,7 +77,7 @@ class CarePlanExtensionTest {
     val endDate = DateTimeType(Date())
     endDate.add(Calendar.DATE, -3)
 
-    var carePlan =
+    val carePlan =
       buildCarePlan(
         startDate = startDate,
         endDate = endDate,

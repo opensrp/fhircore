@@ -18,7 +18,6 @@ package org.smartregister.fhircore.eir.ui.adverseevent
 
 import android.content.Intent
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import io.mockk.MockKAnnotations
@@ -43,7 +42,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
@@ -81,18 +79,10 @@ internal class AdverseEventViewModelTest : RobolectricTest() {
     every { immunization.vaccineCode.coding } returns listOf(Coding("sys", "code", "disp"))
     coEvery { patientRepository.getPatientImmunizations(any()) } returns listOf(immunization)
     val dispatcher = mockk<DispatcherProvider>()
-    every { dispatcher.io() } returns DefaultDispatcherProvider.main()
-    adverseEventViewModel =
-      spyk(
-        AdverseEventViewModel(
-          ApplicationProvider.getApplicationContext(),
-          patientRepository,
-          dispatcher
-        )
-      )
+    every { dispatcher.io() } returns DefaultDispatcherProvider().main()
 
-    defaultRepo = spyk(DefaultRepository(fhirEngine))
-    ReflectionHelpers.setField(adverseEventViewModel, "defaultRepository", defaultRepo)
+    defaultRepo = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
+    adverseEventViewModel = spyk(AdverseEventViewModel(defaultRepo, patientRepository, dispatcher))
   }
 
   @Test

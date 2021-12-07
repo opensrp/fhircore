@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.eir.ui.patient.register
 
+import androidx.test.core.app.ApplicationProvider
 import io.mockk.spyk
 import java.util.Date
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -45,7 +46,8 @@ class PatientMapperTest : RobolectricTest() {
   @Test
   fun testMapToDomainModel() {
     val dto: Pair<Patient, List<Immunization>> = Pair(patient, immunizations)
-    val patientItem = PatientItemMapper.mapToDomainModel(dto = dto)
+    val patientItem =
+      PatientItemMapper(ApplicationProvider.getApplicationContext()).mapToDomainModel(dto = dto)
     with(patientItem) {
       Assert.assertEquals(this.age, "0d")
       Assert.assertEquals(this.name, "Nelson Mandela")
