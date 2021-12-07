@@ -47,6 +47,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DecimalType
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
@@ -117,7 +118,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
 
     //    questionnaireViewModel = spyk(QuestionnaireViewModel(context))
-    every { questionnaireViewModel.getAgeInput(any()) } returns 1
     ReflectionHelpers.setField(questionnaireViewModel, "defaultRepository", defaultRepo)
 
     // Setup sample resources
@@ -664,8 +664,30 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testGetAgeInputFromQuestionnaire() {
-    val expectedAge = 1
-    Assert.assertEquals(expectedAge, questionnaireViewModel.getAgeInput(QuestionnaireResponse()))
+    val expectedAge = 25
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        id = "12345"
+        item =
+          listOf(
+            QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+              linkId = "q1-grp"
+              item =
+                listOf(
+                  QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+                    linkId = QuestionnaireActivity.QUESTIONNAIRE_AGE
+                    answer =
+                      listOf(
+                        QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                          value = DecimalType(25)
+                        }
+                      )
+                  }
+                )
+            }
+          )
+      }
+    Assert.assertEquals(expectedAge, questionnaireViewModel.getAgeInput(questionnaireResponse))
   }
 
   @Test
