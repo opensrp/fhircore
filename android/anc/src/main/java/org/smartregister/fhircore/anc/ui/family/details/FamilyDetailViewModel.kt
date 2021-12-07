@@ -26,7 +26,6 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import timber.log.Timber
@@ -81,10 +80,9 @@ constructor(
           repository.loadResource(familyId)
             ?: throw ResourceNotFoundException("Family resource for that ID NOT Found")
 
-         repository.delete(family)
+        repository.delete(family)
         isRemoveFamily.postValue(true)
-
-      }catch(e:Exception){
+      } catch (e: Exception) {
         Timber.e(e)
       }
     }

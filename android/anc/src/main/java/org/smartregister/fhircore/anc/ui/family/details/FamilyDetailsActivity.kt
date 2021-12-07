@@ -60,13 +60,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
       )
 
       familyDetailViewModel.apply {
-        isRemoveFamily.observe(
-          familyDetailsActivity,
-          {
-            if (it) finish()
-
-          }
-        )
+        isRemoveFamily.observe(familyDetailsActivity, { if (it) finish() })
       }
 
       familyDetailViewModel.apply {
