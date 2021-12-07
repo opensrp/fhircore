@@ -41,7 +41,6 @@ class MeasureEvaluatorTest {
   var libraryFilePath = "test/resources/cql/measureevaluator/library/ANCIND01-bundle.json"
 
   @Test
-  @Ignore("Fails with 'java.lang.OutOfMemoryError: Java heap space' on local and CI as well")
   fun runMeasureEvaluate() {
     val fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
     val parser = fhirContext.newJsonParser()!!
