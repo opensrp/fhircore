@@ -6,6 +6,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'de.mannodermaus.android-junit5'
     id 'jacoco'
+    id 'dagger.hilt.android.plugin'
 }
 
 android {
@@ -18,6 +19,10 @@ android {
                 jacoco {
                     includeNoLocationClasses = true
                     excludes = ['jdk.internal.*']
+                }
+
+                beforeTest { testDescriptor ->
+                    println "${testDescriptor.className} > ${testDescriptor.name} STARTED"
                 }
             }
         }
@@ -96,8 +101,6 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.3.1'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1'
     implementation 'androidx.fragment:fragment-ktx:1.3.6'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
     implementation 'androidx.security:security-crypto:1.1.0-alpha03'
@@ -120,9 +123,15 @@ dependencies {
     implementation 'org.opencds.cqf.cql:evaluator.builder:1.2.1-SNAPSHOT'
     implementation 'org.opencds.cqf.cql:evaluator.dagger:1.2.1-SNAPSHOT'
 
+    //Hilt - Dependency Injection
+    implementation "com.google.dagger:hilt-android:$hiltVersion"
+    kapt "com.google.dagger:hilt-compiler:$hiltVersion"
+
+    api 'androidx.lifecycle:lifecycle-livedata-ktx:2.3.1'
+    api 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1'
 
     //Configure Jetpack Compose
-    def composeVersion = "1.0.1"
+    def composeVersion = "1.0.5"
     api("androidx.compose.ui:ui:$composeVersion")
     api("androidx.compose.ui:ui-tooling:$composeVersion")
     api("androidx.compose.foundation:foundation:$composeVersion")
@@ -181,6 +190,10 @@ dependencies {
     def okhttpVersion = '4.9.1'
     api "com.squareup.okhttp3:okhttp:$okhttpVersion"
     api "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
+
+    // Hilt test dependencies
+    testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
+    kaptTest("com.google.dagger:hilt-android-compiler:$hiltVersion")
 
     testImplementation deps.junit5_api
     testRuntimeOnly deps.junit5_engine

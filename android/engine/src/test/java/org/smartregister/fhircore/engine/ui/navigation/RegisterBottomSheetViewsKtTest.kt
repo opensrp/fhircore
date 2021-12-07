@@ -29,7 +29,9 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 
 class RegisterBottomSheetViewsKtTest : RobolectricTest() {
+
   private val mockListener: (String) -> Unit = spyk({})
+
   @get:Rule val composeRule = createComposeRule()
 
   private val registerItems =

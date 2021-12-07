@@ -16,13 +16,10 @@
 
 package org.smartregister.fhircore.engine.util
 
-import java.util.Date
 import org.junit.Assert
-import org.junit.Ignore
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
-import org.smartregister.fhircore.engine.util.DateUtils.makeItReadable
-import org.smartregister.fhircore.engine.util.DateUtils.toHumanDisplay
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
 class DateUtilsTest {
 
@@ -41,16 +38,8 @@ class DateUtilsTest {
     Assert.assertEquals("3-22-2020", finalDate)
   }
 
-  @Ignore("Tests passing locally but failing assertion on ci")
   @Test
-  fun `toHumanDisplay() should return Date in the correct format`() {
-    val date = Date("Fri, 1 Oct 2021 13:30:00 GMT+5")
-    val formattedDate = date.toHumanDisplay()
-    Assert.assertEquals("Oct 1, 2021 1:30:00 PM", formattedDate)
-  }
-
-  @Test
-  fun testDateToStringFunction() {
+  fun `String#getDate() should return correct date when given string format expected`() {
     Assert.assertEquals("2020-03-10".getDate("yyyy-MM-dd").makeItReadable(), "10-Mar-2020")
   }
 }

@@ -21,7 +21,7 @@
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.patient.details.PatientDetailsActivity"/>
+                android:value=".ui.patient.details.PatientDetailsActivity" />
         </activity>
         <activity
             android:name=".ui.patient.details.PatientDetailsActivity"
@@ -48,14 +48,14 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name=".ui.login.LoginActivity"
+            android:name="org.smartregister.fhircore.engine.ui.login.LoginActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize" />
 
         <activity android:name="org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity" />
         <activity android:name=".ui.adverseevent.AdverseEventQuestionnaireActivity" />
 
-        <service android:name=".EirAuthAndroidService">
+        <service android:name="org.smartregister.fhircore.engine.auth.AuthAndroidService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>

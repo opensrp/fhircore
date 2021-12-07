@@ -19,58 +19,39 @@ package org.smartregister.fhircore.engine.ui.userprofile
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.spyk
 import io.mockk.verify
 import org.junit.Before
-import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.shadow.FakeKeyStore
-import org.smartregister.fhircore.engine.sync.SyncInitiator
 
 class UserProfileScreenKtTest : RobolectricTest() {
 
-  private lateinit var userProfileViewModel: UserProfileViewModel
+  private val userProfileViewModel = mockk<UserProfileViewModel>()
 
-  @get:Rule val composeRule = createComposeRule()
+  @get:Rule(order = 1) val composeRule = createComposeRule()
 
   @Before
   fun setUp() {
-    userProfileViewModel =
-      spyk(objToCopy = UserProfileViewModel(ApplicationProvider.getApplicationContext()))
+    every { userProfileViewModel.retrieveUsername() } returns "johndoe"
     composeRule.setContent { UserProfileScreen(userProfileViewModel = userProfileViewModel) }
   }
 
   @Test
   fun testUserProfileShouldDisplayCorrectContent() {
-    composeRule.onNodeWithText("Demo").assertExists()
+    composeRule.onNodeWithText("Johndoe").assertExists()
     composeRule.onNodeWithText("Sync").assertExists()
     composeRule.onNodeWithText("Log out").assertExists()
   }
 
   @Test
   fun testSyncRowClickShouldInitiateSync() {
-    val mockSyncInitiator = mockk<SyncInitiator> { every { runSync() } returns Unit }
-
-    every { userProfileViewModel.configurableApplication } returns
-      mockk {
-        every { syncBroadcaster } returns
-          mockk { every { syncInitiator } returns mockSyncInitiator }
-      }
+    every { userProfileViewModel.runSync() } returns Unit
 
     composeRule.onNodeWithText("Sync").performClick()
-    verify { mockSyncInitiator.runSync() }
-  }
 
-  companion object {
-    @JvmStatic
-    @BeforeClass
-    fun setupMocks() {
-      FakeKeyStore.setup
-    }
+    verify { userProfileViewModel.runSync() }
   }
 }

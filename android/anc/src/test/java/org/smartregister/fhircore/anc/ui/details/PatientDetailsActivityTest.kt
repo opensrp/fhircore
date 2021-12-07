@@ -23,6 +23,8 @@ import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -39,18 +41,25 @@ import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
 import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 
 @ExperimentalCoroutinesApi
+@HiltAndroidTest
 internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
+
+  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
 
   private lateinit var patientDetailsActivity: PatientDetailsActivity
 
@@ -62,15 +71,14 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
 
   private lateinit var patientRepository: PatientRepository
 
-  @get:Rule var coroutinesTestRule = CoroutineTestRule()
-
-  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
-
   private val patientId = "samplePatientId"
+
   var ancPatientDetailItem = spyk<PatientDetailItem>()
 
   @Before
   fun setUp() {
+
+    hiltRule.inject()
 
     fhirEngine = mockk(relaxed = true)
 
@@ -82,9 +90,7 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     coEvery { patientRepository.fetchDemographics(patientId) } returns ancPatientDetailItem
 
     patientDetailsViewModel =
-      spyk(
-        AncDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider, patientId)
-      )
+      spyk(AncDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider))
 
     patientDetailsActivity =
       Robolectric.buildActivity(PatientDetailsActivity::class.java, null).create().get()

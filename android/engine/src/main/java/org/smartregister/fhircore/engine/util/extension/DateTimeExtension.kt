@@ -18,14 +18,15 @@ package org.smartregister.fhircore.engine.util.extension
 
 import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 
 val SDF_DD_MMM_YYYY = SimpleDateFormat("dd-MMM-yyyy")
+val SDF_YYYY_MM_DD = SimpleDateFormat("yyyy-MM-dd")
 
 fun OffsetDateTime.asString(): String {
   return this.format(DateTimeFormatter.RFC_1123_DATE_TIME)
@@ -33,6 +34,16 @@ fun OffsetDateTime.asString(): String {
 
 fun Date.asDdMmmYyyy(): String {
   return SDF_DD_MMM_YYYY.format(this)
+}
+
+fun Date.toHumanDisplay(): String =
+  SimpleDateFormat("MMM d, yyyy h:mm:ss a", Locale.getDefault()).format(this)
+
+fun Date?.makeItReadable(): String {
+  return if (this == null) "N/A"
+  else {
+    SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault()).run { format(this@makeItReadable) }
+  }
 }
 
 fun DateType.plusWeeksAsString(weeks: Int): String {
@@ -47,10 +58,7 @@ fun DateType.plusMonthsAsString(months: Int): String {
   return clone.format()
 }
 
-fun DateType.format(): String =
-  DateTimeFormatter.ISO_LOCAL_DATE.format(
-    this.dateTimeValue().value.toInstant().atOffset(ZoneOffset.UTC)
-  )
+fun DateType.format(): String = SDF_YYYY_MM_DD.format(value)
 
 fun DateTimeType.plusDaysAsString(days: Int): String {
   val clone = this.copy()

@@ -16,11 +16,14 @@
 
 package org.smartregister.fhircore.anc.data.patient
 
+import android.content.Context
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
+import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
@@ -34,7 +37,6 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
@@ -46,7 +48,8 @@ import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
 import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.anccare.details.CarePlanItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
-import org.smartregister.fhircore.anc.ui.anccare.register.Anc
+import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
+import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.anc.util.AncOverviewType
 import org.smartregister.fhircore.anc.util.RegisterType
 import org.smartregister.fhircore.anc.util.SearchFilter
@@ -54,7 +57,6 @@ import org.smartregister.fhircore.anc.util.filterBy
 import org.smartregister.fhircore.anc.util.filterByPatient
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.anc.util.loadRegisterConfigAnc
-import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -71,21 +73,23 @@ import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.format
 import org.smartregister.fhircore.engine.util.extension.isPregnant
 import org.smartregister.fhircore.engine.util.extension.loadResourceTemplate
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.overdue
 import org.smartregister.fhircore.engine.util.extension.plusMonthsAsString
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
-class PatientRepository(
+class PatientRepository
+@Inject
+constructor(
+  @ApplicationContext val context: Context,
   override val fhirEngine: FhirEngine,
-  override val domainMapper: DomainMapper<Anc, PatientItem>,
-  private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+  override val domainMapper: AncItemMapper,
+  val dispatcherProvider: DispatcherProvider
 ) : RegisterRepository<Anc, PatientItem> {
 
-  private val registerConfig =
-    AncApplication.getContext().loadRegisterConfig(RegisterType.ANC_REGISTER_ID)
+  private val registerConfig = context.loadRegisterConfig(RegisterType.ANC_REGISTER_ID)
 
-  private val ancOverviewConfig =
-    AncApplication.getContext().loadRegisterConfigAnc(AncOverviewType.ANC_OVERVIEW_ID)
+  private val ancOverviewConfig = context.loadRegisterConfigAnc(AncOverviewType.ANC_OVERVIEW_ID)
 
   private val detailRepository = DefaultRepository(fhirEngine, dispatcherProvider)
 
@@ -156,7 +160,7 @@ class PatientRepository(
             PatientItem(
               patientIdentifier = patient.logicalId,
               name = patientHead.extractName(),
-              gender = patientHead.extractGender(AncApplication.getContext()) ?: "",
+              gender = patientHead.extractGender(context) ?: "",
               age = patientHead.extractAge(),
               demographics = patientHead.extractAddress()
             )
@@ -166,7 +170,7 @@ class PatientRepository(
           PatientItem(
             patientIdentifier = patient.logicalId,
             name = patient.extractName(),
-            gender = patient.extractGender(AncApplication.getContext()) ?: "",
+            gender = patient.extractGender(context) ?: "",
             isPregnant = patient.isPregnant(),
             age = patient.extractAge(),
             familyName = patient.extractFamilyName(),
@@ -178,18 +182,8 @@ class PatientRepository(
     return ancPatientDetailItem
   }
 
-  fun fetchCarePlanItem(carePlan: List<CarePlan>): List<CarePlanItem> {
-    val listCarePlan = arrayListOf<CarePlanItem>()
-    val listCarePlanList = arrayListOf<CarePlan>()
-    if (carePlan.isNotEmpty()) {
-      listCarePlanList.addAll(carePlan.filter { it.due() })
-      listCarePlanList.addAll(carePlan.filter { it.overdue() })
-      for (i in listCarePlanList.indices) {
-        listCarePlan.add(CarePlanItemMapper.mapToDomainModel(listCarePlanList[i]))
-      }
-    }
-    return listCarePlan
-  }
+  fun fetchCarePlanItem(carePlan: List<CarePlan>): List<CarePlanItem> =
+    carePlan.filter { it.due() || it.overdue() }.map { CarePlanItemMapper.mapToDomainModel(it) }
 
   suspend fun fetchCarePlan(patientId: String): List<CarePlan> =
     withContext(dispatcherProvider.io()) {
@@ -273,7 +267,7 @@ class PatientRepository(
     clazz: Class<T>,
     data: Map<String, String?> = emptyMap()
   ): T {
-    return AncApplication.getContext().loadResourceTemplate(id, clazz, data)
+    return context.loadResourceTemplate(id, clazz, data)
   }
 
   private fun buildConfigData(
@@ -345,20 +339,6 @@ class PatientRepository(
       }
     }
     return listCarePlan
-  }
-
-  companion object {
-    object Template {
-      const val PREGNANCY_CONDITION = "pregnancy_condition_template.json"
-      const val PREGNANCY_EPISODE_OF_CARE = "pregnancy_episode_of_care_template.json"
-      const val PREGNANCY_FIRST_ENCOUNTER = "pregnancy_first_encounter_template.json"
-      const val PREGNANCY_GOAL = "pregnancy_goal_template.json"
-      const val PREGNANCY_CARE_PLAN = "pregnancy_careplan_template.json"
-      const val BMI_ENCOUNTER = "bmi_patient_encounter_template.json"
-      const val BMI_PATIENT_WEIGHT = "bmi_patient_weight_observation_template.json"
-      const val BMI_PATIENT_HEIGHT = "bmi_patient_height_observation_template.json"
-      const val BMI_PATIENT_BMI = "bmi_patient_computed_bmi_observation_template.json"
-    }
   }
 
   suspend fun recordComputedBmi(
@@ -461,5 +441,23 @@ class PatientRepository(
       "#RefIdObservationBodyHeight" to refObsHeightFormId,
       "#RefIdObservationBodyWeight" to refObsWeightFormId,
     )
+  }
+
+  fun setAncItemMapperType(ancItemMapperType: AncItemMapper.AncItemMapperType) {
+    domainMapper.setAncItemMapperType(ancItemMapperType)
+  }
+
+  companion object {
+    object Template {
+      const val PREGNANCY_CONDITION = "pregnancy_condition_template.json"
+      const val PREGNANCY_EPISODE_OF_CARE = "pregnancy_episode_of_care_template.json"
+      const val PREGNANCY_FIRST_ENCOUNTER = "pregnancy_first_encounter_template.json"
+      const val PREGNANCY_GOAL = "pregnancy_goal_template.json"
+      const val PREGNANCY_CARE_PLAN = "pregnancy_careplan_template.json"
+      const val BMI_ENCOUNTER = "bmi_patient_encounter_template.json"
+      const val BMI_PATIENT_WEIGHT = "bmi_patient_weight_observation_template.json"
+      const val BMI_PATIENT_HEIGHT = "bmi_patient_height_observation_template.json"
+      const val BMI_PATIENT_BMI = "bmi_patient_computed_bmi_observation_template.json"
+    }
   }
 }

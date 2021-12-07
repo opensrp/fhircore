@@ -28,11 +28,13 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import ca.uhn.fhir.parser.IParser
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.data.model.PatientItem
@@ -41,9 +43,9 @@ import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
-import org.smartregister.fhircore.anc.ui.anccare.register.Anc
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
+import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
@@ -51,11 +53,16 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.ListenerIntent
 
-class ReportViewModel(
-  private val repository: ReportRepository,
+@HiltViewModel
+class ReportViewModel
+@Inject
+constructor(
+  val repository: ReportRepository,
+  val dispatcher: DispatcherProvider,
   val patientRepository: PatientRepository,
-  var dispatcher: DispatcherProvider
 ) : ViewModel() {
+
+  lateinit var patientId: String
 
   lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
 
@@ -133,9 +140,7 @@ class ReportViewModel(
 
   private fun setDefaultDates() {
     val endDate = Date()
-    val cal: Calendar = Calendar.getInstance()
-    // Subtract 30 days from the calendar
-    cal.add(Calendar.DATE, -30)
+    val cal: Calendar = Calendar.getInstance().apply { add(Calendar.DATE, -30) }
     val startDate = cal.time
 
     val formattedStartDate =
