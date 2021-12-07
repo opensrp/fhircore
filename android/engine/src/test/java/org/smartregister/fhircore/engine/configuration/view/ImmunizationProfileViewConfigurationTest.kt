@@ -25,12 +25,12 @@ class ImmunizationProfileViewConfigurationTest {
   fun testImmunizationProfileViewConfiguration() {
     val immunizationProfileViewConfiguration = ImmunizationProfileViewConfiguration("anc", "app")
 
-    Assert.assertEquals("anc",immunizationProfileViewConfiguration.appId)
+    Assert.assertEquals("anc", immunizationProfileViewConfiguration.appId)
   }
 
   @Test
   fun testImmunizationProfileViewConfigurationsOf() {
     val immunizationProfileViewConfigurationsOf = immunizationProfileViewConfigurationsOf("anc")
-    Assert.assertNotNull("anc",immunizationProfileViewConfigurationsOf.appId)
+    Assert.assertNotNull("anc", immunizationProfileViewConfigurationsOf.appId)
   }
 }

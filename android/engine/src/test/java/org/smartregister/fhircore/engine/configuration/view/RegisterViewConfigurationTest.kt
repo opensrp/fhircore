@@ -33,13 +33,12 @@ class RegisterViewConfigurationTest {
         "newClientButtonText",
         "newClientButtonStyle"
       )
-    Assert.assertEquals("anc",registerViewConfiguration.appId)
-
+    Assert.assertEquals("anc", registerViewConfiguration.appId)
   }
 
   @Test
   fun testSearchFilter() {
     val searchFilter = SearchFilter("key", "code", "system")
-    Assert.assertEquals("key",searchFilter.key)
+    Assert.assertEquals("key", searchFilter.key)
   }
 }
