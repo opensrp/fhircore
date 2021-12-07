@@ -23,6 +23,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.anc.data.model.AncOverviewItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
@@ -44,5 +45,32 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
       patientEncounters.postValue(listEncounters)
     }
     return patientEncounters
+  }
+
+  fun fetchObservation(patientId: String): LiveData<AncOverviewItem> {
+    val patientAncOverviewItem = MutableLiveData<AncOverviewItem>()
+    val ancOverviewItem = AncOverviewItem()
+    viewModelScope.launch(dispatcher.io()) {
+      val listObservationHeight =
+        patientRepository.fetchObservations(patientId = patientId, "height")
+      val listObservationWeight =
+        patientRepository.fetchObservations(patientId = patientId, "weight")
+      val listObservationBmi = patientRepository.fetchObservations(patientId = patientId, "bmi")
+      if (listObservationWeight.valueIntegerType != null &&
+          listObservationWeight.valueIntegerType.valueAsString != null
+      )
+        ancOverviewItem.weight = listObservationWeight.valueIntegerType.valueAsString
+      if (listObservationHeight.valueIntegerType != null &&
+          listObservationHeight.valueIntegerType.valueAsString != null
+      )
+        ancOverviewItem.height = listObservationHeight.valueIntegerType.valueAsString
+      if (listObservationBmi.valueIntegerType != null &&
+          listObservationBmi.valueIntegerType.valueAsString != null
+      )
+        ancOverviewItem.bmi = listObservationBmi.valueIntegerType.valueAsString
+
+      patientAncOverviewItem.postValue(ancOverviewItem)
+    }
+    return patientAncOverviewItem
   }
 }

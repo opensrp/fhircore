@@ -25,6 +25,11 @@
         "system": "http://loinc.org",
         "code": "8302-2",
         "display": "Body height"
+      },
+      {
+        "system": "http://acme.org/devices/clinical-codes",
+        "code": "body-height",
+        "display": "Body Height"
       }
     ],
     "text": "Body height"

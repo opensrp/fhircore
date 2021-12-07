@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.data.model.AncOverviewItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.databinding.FragmentVitalDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
@@ -71,6 +72,9 @@ class VitalSignsDetailsFragment : Fragment() {
     ancDetailsViewModel
       .fetchEncounters(patientId)
       .observe(viewLifecycleOwner, this::handleEncounters)
+    ancDetailsViewModel
+      .fetchObservation(patientId)
+      .observe(viewLifecycleOwner, this::handleObservation)
 
     binding.swipeContainer.setOnRefreshListener {
       ancDetailsViewModel
@@ -101,6 +105,16 @@ class VitalSignsDetailsFragment : Fragment() {
           encounterListView.show()
         }
         encounterAdapter.submitList(listEncounters)
+      }
+    }
+  }
+
+  private fun handleObservation(ancOverviewItem: AncOverviewItem) {
+    binding.swipeContainer.isRefreshing = false
+    ancOverviewItem.apply {
+      binding.apply {
+        txtViewHeightValue.text = ancOverviewItem.height
+        txtViewWeightValue.text = ancOverviewItem.weight
       }
     }
   }

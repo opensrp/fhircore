@@ -36,6 +36,33 @@
         "system": "",
         "code": "risk"
       }
+    },
+    "heightFilter": {
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "",
+        "code": "body-height"
+      }
+    },
+    "weightFilter": {
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "",
+        "code": "body-weight"
+      }
+    },
+    "bmiFilter": {
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "",
+        "code": "body-mass-index"
+      }
     }
   }
 ]

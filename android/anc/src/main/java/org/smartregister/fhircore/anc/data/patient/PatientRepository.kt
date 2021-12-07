@@ -192,6 +192,9 @@ constructor(
         "risk" -> ancOverviewConfig.riskFilter!!
         "fetuses" -> ancOverviewConfig.fetusesFilter!!
         "ga" -> ancOverviewConfig.gaFilter!!
+        "height" -> ancOverviewConfig.heightFilter!!
+        "weight" -> ancOverviewConfig.weightFilter!!
+        "bmi" -> ancOverviewConfig.bmiFilter!!
         else ->
           throw UnsupportedOperationException("Given filter $searchFilterString not supported")
       }
