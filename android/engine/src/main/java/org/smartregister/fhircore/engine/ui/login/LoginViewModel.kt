@@ -45,6 +45,7 @@ import org.smartregister.fhircore.engine.util.extension.encodeJson
 import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
+import java.lang.RuntimeException
 
 @HiltViewModel
 class LoginViewModel
@@ -59,13 +60,21 @@ constructor(
   val launchDialPad
     get() = _launchDialPad
 
+  // -> user-resp (failure)
+  //    -> show-error
+  // -> user-resp (success)
+  //    -> store user info
+  //    -> goto home
   val responseBodyHandler =
     object : ResponseHandler<ResponseBody> {
       override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-        response.body()?.run {
+        if (response.isSuccessful) response.body()!!.run {
           storeUserPreferences(this)
-          _navigateToHome.value = true
           _showProgressBar.postValue(false)
+          _navigateToHome.value = true
+        }
+        else {
+          handleFailure(call, RuntimeException("Network call failed with $response"))
         }
       }
 
@@ -87,18 +96,23 @@ constructor(
     object : ResponseCallback<ResponseBody>(responseBodyHandler) {}
   }
 
+  // auth-resp (failure)
+  //   -> show error
+  //   -> attempt local login (true) -> goto home
+  // auth-resp (success)
+  //   -> fetch userinfo #LoginViewModel.responseBodyHandler
+  //   -> user-resp (failure)
+  //      -> show-error
+  //   -> user-resp (success)
+  //      -> store user info
+  //      -> goto home
   val oauthResponseHandler =
     object : ResponseHandler<OAuthResponse> {
       override fun handleResponse(call: Call<OAuthResponse>, response: Response<OAuthResponse>) {
         if (!response.isSuccessful) {
-          val errorResponse = response.errorBody()?.string()
-          _loginError.postValue(errorResponse?.decodeJson<LoginError>()?.errorDescription)
-          _showProgressBar.postValue(false)
-          Timber.e("Error fetching access token %s", errorResponse)
-          return
-        } else {
-          if (attemptLocalLogin()) _navigateToHome.value = true
-          _showProgressBar.postValue(false)
+          handleFailure(call, RuntimeException("Network call failed with $response"))
+        }
+        else {
           with(accountAuthenticator) {
             addAuthenticatedAccount(
               response,
