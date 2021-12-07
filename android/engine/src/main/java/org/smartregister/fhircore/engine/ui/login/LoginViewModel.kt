@@ -26,6 +26,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.lang.RuntimeException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
@@ -45,7 +46,6 @@ import org.smartregister.fhircore.engine.util.extension.encodeJson
 import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
-import java.lang.RuntimeException
 
 @HiltViewModel
 class LoginViewModel
@@ -68,11 +68,12 @@ constructor(
   val responseBodyHandler =
     object : ResponseHandler<ResponseBody> {
       override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-        if (response.isSuccessful) response.body()!!.run {
-          storeUserPreferences(this)
-          _showProgressBar.postValue(false)
-          _navigateToHome.value = true
-        }
+        if (response.isSuccessful)
+          response.body()!!.run {
+            storeUserPreferences(this)
+            _showProgressBar.postValue(false)
+            _navigateToHome.value = true
+          }
         else {
           handleFailure(call, RuntimeException("Network call failed with $response"))
         }
@@ -111,8 +112,7 @@ constructor(
       override fun handleResponse(call: Call<OAuthResponse>, response: Response<OAuthResponse>) {
         if (!response.isSuccessful) {
           handleFailure(call, RuntimeException("Network call failed with $response"))
-        }
-        else {
+        } else {
           with(accountAuthenticator) {
             addAuthenticatedAccount(
               response,
