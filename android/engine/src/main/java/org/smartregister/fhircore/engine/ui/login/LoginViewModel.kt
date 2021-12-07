@@ -26,7 +26,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.lang.RuntimeException
+import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
@@ -60,11 +60,11 @@ constructor(
   val launchDialPad
     get() = _launchDialPad
 
-  // -> user-resp (failure)
-  //    -> show-error
-  // -> user-resp (success)
-  //    -> store user info
-  //    -> goto home
+  /**
+   * the handler fetches the user info after verifying credentials with flow
+   * - user-resp (failure) -> show-error
+   * - user-resp (success) -> store user info -> goto home
+   */
   val responseBodyHandler =
     object : ResponseHandler<ResponseBody> {
       override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
@@ -75,7 +75,7 @@ constructor(
             _navigateToHome.value = true
           }
         else {
-          handleFailure(call, RuntimeException("Network call failed with $response"))
+          handleFailure(call, IOException("Network call failed with $response"))
         }
       }
 
@@ -97,21 +97,28 @@ constructor(
     object : ResponseCallback<ResponseBody>(responseBodyHandler) {}
   }
 
-  // auth-resp (failure)
-  //   -> show error
-  //   -> attempt local login (true) -> goto home
-  // auth-resp (success)
-  //   -> fetch userinfo #LoginViewModel.responseBodyHandler
-  //   -> user-resp (failure)
-  //      -> show-error
-  //   -> user-resp (success)
-  //      -> store user info
-  //      -> goto home
+  /**
+   * the handler is called after remote login and subsequently fetches userinfo the handler handles
+   * network failures incase previous successful attempt exists
+   *
+   * - auth-resp (failure)
+   * ```
+   *    - show error
+   *    - attempt local login (true)
+   *    - goto home
+   * ```
+   * - auth-resp (success)
+   * ```
+   *    - fetch userinfo #LoginViewModel.responseBodyHandler
+   *       - user-resp (failure) -> show-error
+   *       - user-resp (success) -> store user info -> goto home
+   * ```
+   */
   val oauthResponseHandler =
     object : ResponseHandler<OAuthResponse> {
       override fun handleResponse(call: Call<OAuthResponse>, response: Response<OAuthResponse>) {
         if (!response.isSuccessful) {
-          handleFailure(call, RuntimeException("Network call failed with $response"))
+          handleFailure(call, IOException("Network call failed with $response"))
         } else {
           with(accountAuthenticator) {
             addAuthenticatedAccount(
