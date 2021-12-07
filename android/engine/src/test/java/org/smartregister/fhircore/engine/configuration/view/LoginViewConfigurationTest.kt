@@ -24,12 +24,12 @@ class LoginViewConfigurationTest {
   @Test
   fun testLoginViewConfiguration() {
     val loginViewConfiguration = LoginViewConfiguration("anc", "app")
-    Assert.assertNotNull(loginViewConfiguration)
+    Assert.assertEquals("anc",loginViewConfiguration.appId)
   }
 
   @Test
   fun testLoginViewConfigurationOf() {
-    val loginViewConfigurationOf = loginViewConfigurationOf()
-    Assert.assertNotNull(loginViewConfigurationOf)
+    val loginViewConfigurationOf = loginViewConfigurationOf("anc")
+    Assert.assertEquals("anc",loginViewConfigurationOf.appId)
   }
 }
