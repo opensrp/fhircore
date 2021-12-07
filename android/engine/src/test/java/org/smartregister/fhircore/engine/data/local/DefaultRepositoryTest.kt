@@ -22,9 +22,12 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.unmockkStatic
+import io.mockk.verify
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Address
@@ -32,11 +35,13 @@ import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 
@@ -130,5 +135,43 @@ class DefaultRepositoryTest : RobolectricTest() {
     runBlocking { defaultRepository.loadPatientImmunizations(patientId) }
 
     coVerify { fhirEngine.loadPatientImmunizations(patientId) }
+  }
+
+  @Test
+  fun `save() should call Resource#generateMissingId()`() {
+    mockkStatic(Resource::generateMissingId)
+    val resource = spyk(Patient())
+
+    val fhirEngine: FhirEngine = mockk()
+    coEvery { fhirEngine.load(Patient::class.java, any()) } throws
+      ResourceNotFoundException("Exce", "Exce")
+    coEvery { fhirEngine.save(any()) } just runs
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+
+    runBlocking { defaultRepository.save(resource) }
+
+    verify { resource.generateMissingId() }
+
+    unmockkStatic(Resource::generateMissingId)
+  }
+
+  @Test
+  fun `addOrUpdate() should call Resource#generateMissingId() when ResourceId is null`() {
+    mockkStatic(Resource::generateMissingId)
+    val resource = Patient()
+
+    val fhirEngine: FhirEngine = mockk()
+    coEvery { fhirEngine.load(Patient::class.java, any()) } throws
+      ResourceNotFoundException("Exce", "Exce")
+    coEvery { fhirEngine.save(any()) } just runs
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+
+    runBlocking { defaultRepository.addOrUpdate(resource) }
+
+    verify { resource.generateMissingId() }
+
+    unmockkStatic(Resource::generateMissingId)
   }
 }
