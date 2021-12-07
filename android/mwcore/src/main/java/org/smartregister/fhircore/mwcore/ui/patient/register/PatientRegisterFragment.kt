@@ -21,6 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.LazyPagingItems
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
@@ -28,13 +30,15 @@ import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
-import org.smartregister.fhircore.mwcore.MwCoreApplication
 import org.smartregister.fhircore.mwcore.data.patient.PatientRepository
 import org.smartregister.fhircore.mwcore.data.patient.model.PatientItem
 import org.smartregister.fhircore.mwcore.ui.patient.details.QuestPatientDetailActivity
 import org.smartregister.fhircore.mwcore.ui.patient.register.components.PatientRegisterList
 
+@AndroidEntryPoint
 class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() {
+
+  @Inject lateinit var patientRepository: PatientRepository
 
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
@@ -55,6 +59,7 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
   override fun onItemClicked(listenerIntent: ListenerIntent, data: PatientItem) {
     when (listenerIntent) {
       OpenPatientProfile -> navigateToDetails(data.id)
+      else -> throw UnsupportedOperationException("Given ListenerIntent is not supported")
     }
   }
 
@@ -68,8 +73,8 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
         if (value is String && value.isEmpty()) return true
         else
           data.name.contains(value.toString(), ignoreCase = true) ||
-            data.identifier.contentEquals(value.toString()) ||
-            data.id == value.toString()
+                  data.identifier.contentEquals(value.toString()) ||
+                  data.id == value.toString()
       }
       else -> false
     }
@@ -77,20 +82,15 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
 
   @Suppress("UNCHECKED_CAST")
   override fun initializeRegisterDataViewModel(): RegisterDataViewModel<Patient, PatientItem> {
-    val patientRepository =
-      PatientRepository(
-        (requireActivity().application as MwCoreApplication).fhirEngine,
-        PatientItemMapper,
-        registerViewModel.registerViewConfiguration
-      )
     return ViewModelProvider(
       viewModelStore,
       RegisterDataViewModel(
-          application = requireActivity().application,
-          registerRepository = patientRepository
-        ).createFactory()
+        application = requireActivity().application,
+        registerRepository = patientRepository
+      )
+        .createFactory()
     )[RegisterDataViewModel::class.java] as
-      RegisterDataViewModel<Patient, PatientItem>
+            RegisterDataViewModel<Patient, PatientItem>
   }
 
   companion object {

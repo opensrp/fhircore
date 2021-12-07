@@ -14,22 +14,17 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.mwcore
+package org.smartregister.fhircore.mwcore.di.config
 
-import android.app.Service
-import android.content.Intent
-import android.os.IBinder
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import dagger.Binds
+import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.mwcore.MwCoreConfigService
 
-class QuestAuthAndroidService : Service() {
-
-  private lateinit var authenticator: AccountAuthenticator
-
-  override fun onCreate() {
-    authenticator = AccountAuthenticator(this, QuestAuthenticationService(this))
-  }
-
-  override fun onBind(intent: Intent?): IBinder {
-    return authenticator.iBinder
-  }
+@InstallIn(SingletonComponent::class)
+@Module
+abstract class ConfigServiceModule {
+  @Binds abstract fun provideConfigService(mwConfigService: MwCoreConfigService): ConfigService
 }
