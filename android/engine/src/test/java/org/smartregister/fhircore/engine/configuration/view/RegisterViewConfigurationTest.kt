@@ -19,18 +19,26 @@ package org.smartregister.fhircore.engine.configuration.view
 import org.junit.Assert
 import org.junit.Test
 
-class ImmunizationProfileViewConfigurationTest {
+class RegisterViewConfigurationTest {
 
   @Test
-  fun testImmunizationProfileViewConfiguration() {
-    val immunizationProfileViewConfiguration = ImmunizationProfileViewConfiguration("anc", "app")
-
-    Assert.assertNotNull(immunizationProfileViewConfiguration)
+  fun testRegisterViewConfiguration() {
+    val registerViewConfiguration =
+      RegisterViewConfiguration(
+        "appId",
+        "clasification",
+        "appTitle",
+        "filterText",
+        "searchBarHint",
+        "newClientButtonText",
+        "newClientButtonStyle"
+      )
+    Assert.assertNotNull(registerViewConfiguration)
   }
 
   @Test
-  fun testImmunizationProfileViewConfigurationsOf() {
-    val immunizationProfileViewConfigurationsOf = immunizationProfileViewConfigurationsOf()
-    Assert.assertNotNull(immunizationProfileViewConfigurationsOf)
+  fun testSearchFilter() {
+    val searchFilter = SearchFilter("key", "code", "system")
+    Assert.assertNotNull(searchFilter)
   }
 }
