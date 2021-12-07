@@ -167,7 +167,7 @@ class FamilyDetailRepositoryTest : RobolectricTest() {
     coEvery { ancPatientRepository.searchCarePlan(any()) } returns
       listOf(CarePlan().apply { id = "cp1" })
 
-    val carePlans = runBlocking { ancPatientRepository.searchCarePlan("") }
+    val carePlans = runBlocking { repository.fetchFamilyCarePlans("") }
 
     Assert.assertEquals(1, carePlans.size)
     Assert.assertEquals("cp1", carePlans[0].id)
