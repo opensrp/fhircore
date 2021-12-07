@@ -18,17 +18,19 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.app.Application
 import android.content.Intent
 import android.widget.Button
 import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.fragment.app.commitNow
-import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.every
-import io.mockk.mockkObject
+import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
@@ -47,52 +49,59 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
-import org.smartregister.fhircore.engine.impl.FhirApplication
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_FRAGMENT_TAG
-import org.smartregister.fhircore.engine.util.FormConfigUtil
+import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
+@HiltAndroidTest
 class QuestionnaireActivityTest : ActivityRobolectricTest() {
-  private lateinit var context: Application
+
   private lateinit var questionnaireActivity: QuestionnaireActivity
-  private lateinit var questionnaireViewModel: QuestionnaireViewModel
+
   private lateinit var intent: Intent
 
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  @get:Rule var hiltRule = HiltAndroidRule(this)
+
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
+
+  @BindValue
+  val questionnaireViewModel: QuestionnaireViewModel =
+    spyk(
+      QuestionnaireViewModel(
+        fhirEngine = mockk(),
+        defaultRepository = mockk(),
+        configurationRegistry = mockk(),
+        transformSupportServices = mockk(),
+        dispatcherProvider = mockk(),
+        sharedPreferencesHelper = mockk()
+      )
+    )
 
   @Before
   fun setUp() {
-    mockkObject(SharedPreferencesHelper)
-    every { SharedPreferencesHelper.read(any(), any()) } returns ""
-
-    mockkObject(FormConfigUtil)
-    every { FormConfigUtil.loadConfig(any(), any()) } returns
-      listOf(
-        QuestionnaireConfig("appId", "patient-registration", "Patient registration", "1234567")
-      )
-
-    context = ApplicationProvider.getApplicationContext()
-    questionnaireViewModel = spyk(QuestionnaireViewModel(context))
-
-    ((context as ConfigurableApplication).fhirEngine as FhirApplication.FhirEngineImpl)
-      .mockedResourcesStore.add(Questionnaire().apply { id = "1234567" })
-
+    // TODO Proper set up
     intent =
       Intent().apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, "patient-registration")
       }
 
+    hiltRule.inject()
+
+    val questionnaireConfig = QuestionnaireConfig("appId", "form", "title", "form-id")
+    coEvery { questionnaireViewModel.getQuestionnaireConfig(any(), any()) } returns
+      questionnaireConfig
+    coEvery { questionnaireViewModel.loadQuestionnaire(any()) } returns mockk()
+
     val questionnaireFragment = spyk<QuestionnaireFragment>()
     every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
 
     val controller = Robolectric.buildActivity(QuestionnaireActivity::class.java, intent)
     questionnaireActivity = controller.create().resume().get()
-    questionnaireActivity.questionnaireViewModel = questionnaireViewModel
     questionnaireActivity.supportFragmentManager.executePendingTransactions()
     questionnaireActivity.supportFragmentManager.commitNow {
       add(questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
@@ -102,7 +111,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @After
   fun cleanup() {
     unmockkObject(SharedPreferencesHelper)
-    unmockkObject(FormConfigUtil)
+    unmockkObject(AssetUtil)
   }
 
   @Test

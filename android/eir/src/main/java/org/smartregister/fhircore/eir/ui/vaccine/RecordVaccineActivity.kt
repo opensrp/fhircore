@@ -17,10 +17,10 @@
 package org.smartregister.fhircore.eir.ui.vaccine
 
 import android.app.AlertDialog
-import android.app.Application
-import androidx.lifecycle.ViewModelProvider
+import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
-import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Immunization
@@ -28,56 +28,30 @@ import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
 import org.smartregister.fhircore.eir.ui.patient.details.nextDueDateFmt
 import org.smartregister.fhircore.eir.ui.patient.details.ordinalOf
-import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
-import org.smartregister.fhircore.engine.util.extension.createFactory
 import timber.log.Timber
 
 class RecordVaccineActivity : QuestionnaireActivity() {
 
   private lateinit var savedImmunization: Immunization
-  private val fhirParser = FhirContext.forR4Cached().newJsonParser()
 
-  override fun createViewModel(application: Application): QuestionnaireViewModel {
-    return ViewModelProvider(
-        this@RecordVaccineActivity,
-        RecordVaccineViewModel(
-            application,
-            PatientRepository(
-              (application as ConfigurableApplication).fhirEngine,
-              PatientItemMapper
-            )
-          )
-          .createFactory()
-      )
-      .get(RecordVaccineViewModel::class.java)
-  }
+  @Inject lateinit var fhirParser: IParser
 
-  private fun getViewModel(): RecordVaccineViewModel {
-    return questionnaireViewModel as RecordVaccineViewModel
-  }
+  override val questionnaireViewModel: RecordVaccineViewModel by viewModels()
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
-      val bundle =
-        questionnaireViewModel.performExtraction(
-          questionnaire,
-          questionnaireResponse,
-          this@RecordVaccineActivity
-        )
+      val bundle = questionnaireViewModel.performExtraction(questionnaire, questionnaireResponse)
 
       if (bundle.entryFirstRep.resource is Immunization) {
         savedImmunization =
           bundle.entry.first { it.resource is Immunization }.resource as Immunization
 
-        val lastVaccine = getViewModel().loadLatestVaccine(clientIdentifier!!)
+        val lastVaccine = questionnaireViewModel.loadLatestVaccine(clientIdentifier!!)
 
         if (handleValidation(lastVaccine, savedImmunization)) {
           sanitizeExtractedData(savedImmunization, lastVaccine)
@@ -91,12 +65,13 @@ class RecordVaccineActivity : QuestionnaireActivity() {
 
   fun sanitizeExtractedData(immunization: Immunization, lastVaccine: PatientVaccineSummary?) {
     // get from previous vaccine plus one OR as first dose
-    var currentDose = lastVaccine?.doseNumber?.plus(1) ?: 1
-
-    immunization.protocolAppliedFirstRep.doseNumber = PositiveIntType(currentDose)
-    immunization.occurrence = DateTimeType.now()
-    immunization.patient = Reference().apply { reference = "Patient/$clientIdentifier" }
-    immunization.status = Immunization.ImmunizationStatus.COMPLETED
+    val currentDose = lastVaccine?.doseNumber?.plus(1) ?: 1
+    immunization.apply {
+      protocolAppliedFirstRep.doseNumber = PositiveIntType(currentDose)
+      occurrence = DateTimeType.now()
+      patient = Reference().apply { reference = "Patient/$clientIdentifier" }
+      status = Immunization.ImmunizationStatus.COMPLETED
+    }
   }
 
   override fun postSaveSuccessful() {

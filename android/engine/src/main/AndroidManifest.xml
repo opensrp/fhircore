@@ -17,4 +17,7 @@
 
     <uses-permission android:name="android.permission.CALL_PHONE" />
 
+    <application>
+        <activity android:name=".HiltActivityForTest" android:theme="@style/AppTheme" />
+    </application>
 </manifest>

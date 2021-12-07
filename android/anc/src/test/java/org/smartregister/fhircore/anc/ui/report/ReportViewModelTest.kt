@@ -77,8 +77,8 @@ internal class ReportViewModelTest {
       spyk(
         ReportViewModel(
           reportRepository,
-          ancPatientRepository,
-          coroutinesTestRule.testDispatcherProvider
+          coroutinesTestRule.testDispatcherProvider,
+          ancPatientRepository
         )
       )
     every { reportViewModel.patientSelectionType } returns

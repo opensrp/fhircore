@@ -23,63 +23,44 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
-import com.google.android.fhir.FhirEngine
 import com.google.android.material.tabs.TabLayoutMediator
-import org.smartregister.fhircore.anc.AncApplication
+import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
-import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.databinding.ActivityNonAncDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
 import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
-import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.details.adapter.ViewPagerAdapter
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig
 import org.smartregister.fhircore.anc.util.startAncEnrollment
-import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.extension.createFactory
 
+@AndroidEntryPoint
 class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
   private lateinit var adapter: ViewPagerAdapter
   private lateinit var patientId: String
   private var isPregnant: Boolean = false
   private var isMale: Boolean = false
-  private lateinit var loadProgress: AlertDialog
-  private lateinit var fhirEngine: FhirEngine
 
-  lateinit var ancDetailsViewModel: AncDetailsViewModel
-
-  private lateinit var patientRepository: PatientRepository
-
+  val ancDetailsViewModel by viewModels<AncDetailsViewModel>()
   private lateinit var activityAncDetailsBinding: ActivityNonAncDetailsBinding
 
   val details = arrayOf("CARE PLAN", "DETAILS")
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    // TODO add progress dialog when loading content
     activityAncDetailsBinding =
       DataBindingUtil.setContentView(this, R.layout.activity_non_anc_details)
     setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
-    loadProgress = showProgressAlert(this@PatientDetailsActivity, R.string.loading)
-
-    fhirEngine = AncApplication.getContext().fhirEngine
 
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-
-    patientRepository = PatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
-
-    ancDetailsViewModel =
-      ViewModelProvider(
-        this,
-        AncDetailsViewModel(patientRepository, patientId = patientId).createFactory()
-      )[AncDetailsViewModel::class.java]
 
     activityAncDetailsBinding.patientDetailsToolbar.setNavigationOnClickListener { onBackPressed() }
   }
@@ -87,11 +68,8 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
   override fun onResume() {
     super.onResume()
     activityAncDetailsBinding.txtViewPatientId.text = patientId
-
-    loadProgress.show()
-
     ancDetailsViewModel
-      .fetchDemographics()
+      .fetchDemographics(patientId)
       .observe(this@PatientDetailsActivity, this::handlePatientDemographics)
   }
 
@@ -102,13 +80,13 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
   override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
     val removeThisPerson = menu!!.findItem(R.id.remove_this_person)
-    val ancEnrollment = menu!!.findItem(R.id.anc_enrollment)
-    val pregnancyOutcome = menu!!.findItem(R.id.pregnancy_outcome)
+    val ancEnrollment = menu.findItem(R.id.anc_enrollment)
+    val pregnancyOutcome = menu.findItem(R.id.pregnancy_outcome)
     if (isMale) pregnancyOutcome.isVisible = false
     ancEnrollment.isVisible = if (isMale) false else !isPregnant
     val title = removeThisPerson.title.toString()
-    val s = SpannableString(title)
-    with(s) {
+    val spannableString = SpannableString(title)
+    with(spannableString) {
       setSpan(
         ForegroundColorSpan(android.graphics.Color.parseColor("#DD0000")),
         0,
@@ -116,7 +94,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
         android.text.Spannable.SPAN_INCLUSIVE_INCLUSIVE
       )
     } // provide whatever color you want here.
-    removeThisPerson.title = s
+    removeThisPerson.title = spannableString
     return super.onPrepareOptionsMenu(menu)
   }
 
@@ -159,24 +137,29 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       val patientDetails =
         listOf(this.patientDetails.name, this.patientDetails.gender, this.patientDetails.age)
           .joinToString(separator = ", ")
-      val patientId =
-        listOf(this.patientDetailsHead.demographics, this.patientDetails.patientIdentifier)
-          .joinToString(separator = " ID: ")
+      val patientAddress =
+        if (this.patientDetailsHead.demographics.isNotBlank()) this.patientDetailsHead.demographics
+        else this.patientDetails.demographics
+      val houseHoldHeadText =
+        if (this.patientDetails.isHouseHoldHead) getString(R.string.head_of_household) else ""
+      val patientIdText =
+        listOf(patientAddress, "ID: ${this.patientDetails.patientIdentifier}", houseHoldHeadText)
+          .joinToString(separator = " " + getString(R.string.bullet_character) + " ")
       activityAncDetailsBinding.txtViewPatientDetails.text = patientDetails
-      activityAncDetailsBinding.txtViewPatientId.text = patientId
+      activityAncDetailsBinding.txtViewPatientId.text = patientIdText
       isMale = this.patientDetails.gender == getString(R.string.male)
       isPregnant = this.patientDetails.isPregnant
 
       if (isMale) {
         adapter =
           ViewPagerAdapter(
-            supportFragmentManager,
-            lifecycle,
-            false,
-            bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
+            fragmentManager = supportFragmentManager,
+            lifecycle = lifecycle,
+            isPregnant = false,
+            bundleOf =
+              bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
           )
         activityAncDetailsBinding.pager.adapter = adapter
-        loadProgress.hide()
         TabLayoutMediator(activityAncDetailsBinding.tablayout, activityAncDetailsBinding.pager) {
             tab,
             position ->
@@ -186,13 +169,13 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       } else {
         adapter =
           ViewPagerAdapter(
-            supportFragmentManager,
-            lifecycle,
+            fragmentManager = supportFragmentManager,
+            lifecycle = lifecycle,
             isPregnant = isPregnant,
-            bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
+            bundleOf =
+              bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
           )
         activityAncDetailsBinding.pager.adapter = adapter
-        loadProgress.hide()
         TabLayoutMediator(activityAncDetailsBinding.tablayout, activityAncDetailsBinding.pager) {
             tab,
             position ->

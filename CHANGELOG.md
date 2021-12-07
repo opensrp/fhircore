@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - ANC | Added individual measure reporting results to the ResultHome page
+- ANC | Update Individual Profile view
+- ANC | Added individual measure reporting results to the ResultHome page
 - ANC | Update Family Profile view
 - ANC | Migrated loading of measure report libraries to the report module from anc details page. Also did some optimizations.
 - ANC | Report Measures List Items, Filter Selection, Patient Selection, Compose UI unit tests
@@ -16,17 +18,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Report Result Page Individual Patient Item UI update plus Unit Tests
 - ANC | Report Result Page For All Population compose UI update plus Unit Tests
 - ANC | Remove Family feature
+- ANC | Integrate Hilt Dependency Injection
 
 - Quest | Add the ability to search for patients by id
 - Quest | Add ability to view previous QuestionnaireResponse
 - Quest | Added workflow configurations
 - Quest | Add photo capture questionnaire widget
 - Quest | Add ability to edit questionnaire responses
+- Quest | Integrate Hilt Dependency Injection
 
 - EIR | Added workflow configurations
 - EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
+- EIR | Integrate Hilt Dependency Injection
+
+- Engine | Integrate Hilt Dependency Injection
 
 ### Fixed
+- ANC | Resolved a bug in the Patient details : App crash when computing BMI
 - EIR | Resolved a bug in the vaccination flow : App crush when saving vaccine
 - EIR | Ability for a complete immunixation flow from Record 1st Vaccine to Full Immunization
 - Quest | Fixed test result sorting issues
@@ -47,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Optimized memory use for measure reporting by using String builder and loading only once cql and measure reporting libraries
 - ANC | Added progress bar to cql and measure reporting in ANC patien details page
 - ANC | Added measure reporting to ANC application
-- Engine |Added class for Measure report evaluation which will be used in ANC application
+- Engine | Added class for Measure report evaluation which will be used in ANC application
 - ANC | Added Condition resource to sync params list
 - Moved Token to secure storage from AccountManager
 - Expose [custom user attribute](https://www.keycloak.org/docs/latest/server_admin/index.html#_user-attributes) `questionnaire_publisher` available in SharedPreferences with key `USER_QUESTIONNAIRE_PUBLISHER` (#607)

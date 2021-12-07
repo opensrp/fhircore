@@ -139,7 +139,7 @@ fun AncVisitButton(
     }
 
   Text(
-    text = stringResource(R.string.anc_record_visit_button_title),
+    text = stringResource(R.string.anc_record_visit),
     color = textColor,
     fontSize = 16.sp,
     fontWeight = FontWeight.Bold,

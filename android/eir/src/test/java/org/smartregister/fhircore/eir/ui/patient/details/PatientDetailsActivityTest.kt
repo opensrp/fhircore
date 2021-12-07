@@ -17,70 +17,79 @@
 package org.smartregister.fhircore.eir.ui.patient.details
 
 import android.app.Activity
-import android.view.MenuInflater
-import android.view.MenuItem
-import io.mockk.clearAllMocks
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
+import android.app.Application
+import android.content.Intent
+import androidx.core.os.bundleOf
+import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.spyk
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
-import org.junit.jupiter.api.DisplayName
 import org.robolectric.Robolectric
+import org.robolectric.Shadows
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
+import org.smartregister.fhircore.eir.ui.adverseevent.AdverseEventActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 
+@HiltAndroidTest
 internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
+
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  private val application = ApplicationProvider.getApplicationContext<Application>()
+
+  private val patientId = "samplePatientId"
 
   private lateinit var patientDetailsActivity: PatientDetailsActivity
 
-  private lateinit var patientDetailsActivitySpy: PatientDetailsActivity
-
   @Before
   fun setUp() {
-    clearAllMocks()
+    hiltRule.inject()
     patientDetailsActivity =
-      Robolectric.buildActivity(PatientDetailsActivity::class.java, null).create().get()
-    patientDetailsActivitySpy = spyk(objToCopy = patientDetailsActivity)
+      spyk(
+        Robolectric.buildActivity(
+            PatientDetailsActivity::class.java,
+            Intent().putExtras(bundleOf(Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)))
+          )
+          .create()
+          .get()
+      )
   }
 
   @Test
-  @DisplayName("Should start patient details activity")
-  fun testPatientActivityShouldNotNull() {
-    Assert.assertNotNull(patientDetailsActivity)
+  fun testPatientProfileMenuOptionClick() {
+    val activityShadow = Shadows.shadowOf(patientDetailsActivity)
+    activityShadow.clickMenuItem(R.id.patient_profile_edit)
+    val expectedIntent = Intent(patientDetailsActivity, QuestionnaireActivity::class.java)
+    val actualIntent = Shadows.shadowOf(application).nextStartedActivity
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test
-  @DisplayName("Should inflate menu and return true")
-  fun testThatMenuIsCreated() {
-
-    val menuInflater = mockk<MenuInflater>()
-
-    every { patientDetailsActivitySpy.menuInflater } returns menuInflater
-    every { menuInflater.inflate(any(), any()) } returns Unit
-
-    Assert.assertTrue(patientDetailsActivitySpy.onCreateOptionsMenu(null))
+  fun testShouldLaunchThePatientDetailsFragment() {
+    Assert.assertFalse(patientDetailsActivity.supportFragmentManager.fragments.isEmpty())
+    val patientDetailsFragment = patientDetailsActivity.supportFragmentManager.fragments.first()
+    Assert.assertTrue(patientDetailsFragment is PatientDetailsFragment)
+    Assert.assertNotNull(patientDetailsFragment.arguments)
+    Assert.assertTrue(patientDetailsFragment.arguments!!.containsKey(QUESTIONNAIRE_ARG_PATIENT_KEY))
+    Assert.assertEquals(
+      patientId,
+      patientDetailsFragment.arguments!!.get(QUESTIONNAIRE_ARG_PATIENT_KEY)
+    )
   }
 
   @Test
-  @DisplayName("Should start QuestionnaireActivity when menu edit is selected")
-  fun testThatMenuItemListenerWorks() {
-    val menuItem = mockk<MenuItem>(relaxed = true)
-    every { menuItem.itemId } returns R.id.patient_profile_edit
-    every { patientDetailsActivitySpy.startActivity(any()) } just runs
-    Assert.assertTrue(patientDetailsActivitySpy.onOptionsItemSelected(menuItem))
-  }
-
-  @Test
-  @DisplayName("Should start AdverseEventActivity when menu edit is selected")
-  fun testThatMenuItemListenerWorksForAdverseEventActivity() {
-    val menuItem = mockk<MenuItem>(relaxed = true)
-    every { menuItem.itemId } returns R.id.vaccine_adverse_events
-    every { patientDetailsActivitySpy.startActivity(any()) } just runs
-    Assert.assertTrue(patientDetailsActivitySpy.onOptionsItemSelected(menuItem))
+  fun testAdverseEventMenuOptionClick() {
+    val activityShadow = Shadows.shadowOf(patientDetailsActivity)
+    activityShadow.clickMenuItem(R.id.vaccine_adverse_events)
+    val expectedIntent = Intent(patientDetailsActivity, AdverseEventActivity::class.java)
+    val actualIntent = Shadows.shadowOf(application).nextStartedActivity
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   override fun getActivity(): Activity {

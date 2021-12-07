@@ -17,7 +17,9 @@
     <string name="family_register_ok_title">Yes</string>
     <string name="family_register_cancel_title">No</string>
 
-    <string name="anc_record_visit_button_title">+ ANC Visit</string>
+    <string name="anc_record_visit_with_overdue">+ ANC Visit %1$d Overdue</string>
+
+    <string name="anc_record_visit">+ ANC Visit</string>
 
     <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.anc</string>
     <string name="back_to_anc_clients">Back to ANC Clients</string>
@@ -109,4 +111,6 @@
     <string name="remove_family">Remove Family</string>
     <string name="confirm_remove_family_message">Are you sure you want to remove this Family</string>
     <string name="confirm_remove_family_title">Remove Family</string>
+    <string name="bullet_character">\u00b7</string>
+    <string name="overdue">Overdue</string>
 </resources>

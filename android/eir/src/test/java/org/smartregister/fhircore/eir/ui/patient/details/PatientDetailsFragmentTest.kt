@@ -21,17 +21,16 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentFactory
-import androidx.fragment.app.testing.FragmentScenario
-import androidx.fragment.app.testing.launchFragmentInContainer
+import androidx.core.os.bundleOf
+import androidx.fragment.app.commitNow
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
-import io.mockk.clearAllMocks
-import io.mockk.every
-import io.mockk.mockk
+import androidx.test.ext.junit.rules.ActivityScenarioRule
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.spyk
 import java.util.Date
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -42,58 +41,59 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.StringType
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.robolectric.Robolectric
 import org.smartregister.fhircore.eir.R
-import org.smartregister.fhircore.eir.robolectric.FragmentRobolectricTest
+import org.smartregister.fhircore.eir.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.HiltActivityForTest
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 @ExperimentalCoroutinesApi
-internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
+@HiltAndroidTest
+internal class PatientDetailsFragmentTest : RobolectricTest() {
 
-  private lateinit var patientDetailsViewModel: PatientDetailsViewModel
+  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
-  private lateinit var patientDetailsActivity: PatientDetailsActivity
+  @get:Rule(order = 1)
+  val activityScenarioRule = ActivityScenarioRule(HiltActivityForTest::class.java)
 
-  private lateinit var fragmentScenario: FragmentScenario<PatientDetailsFragment>
+  @get:Rule(order = 2) var instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
   private lateinit var patientDetailsFragment: PatientDetailsFragment
 
   private val patientId = "samplePatientId"
 
-  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
-
   @Before
   fun setUp() {
-    clearAllMocks()
-    patientDetailsViewModel =
-      spyk(
-        PatientDetailsViewModel(patientRepository = mockk(relaxed = true), patientId = patientId)
+    hiltRule.inject()
+    configurationRegistry.loadAppConfigurations("covax", accountAuthenticator) {}
+    patientDetailsFragment =
+      PatientDetailsFragment.newInstance(
+        bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
       )
+    activityScenarioRule.scenario.onActivity {
+      it.supportFragmentManager.commitNow {
+        add(patientDetailsFragment, PatientDetailsFragment.TAG)
+      }
+    }
+  }
 
-    patientDetailsActivity =
-      Robolectric.buildActivity(PatientDetailsActivity::class.java).create().get()
-    fragmentScenario =
-      launchFragmentInContainer(
-        factory =
-          object : FragmentFactory() {
-            override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
-              val fragment = spyk(PatientDetailsFragment.newInstance())
-              every { fragment.activity } returns patientDetailsActivity
-              fragment.patientDetailsViewModel = patientDetailsViewModel
-              return fragment
-            }
-          }
-      )
-
-    fragmentScenario.onFragment { patientDetailsFragment = it }
+  @After
+  fun tearDown() {
+    activityScenarioRule.scenario.moveToState(Lifecycle.State.DESTROYED)
   }
 
   @Test
   fun testThatViewsAreSetupCorrectly() {
-    fragmentScenario.moveToState(Lifecycle.State.RESUMED)
     Assert.assertNotNull(patientDetailsFragment.view)
     val recordVaccinesButton =
       patientDetailsFragment.view?.findViewById<Button>(R.id.recordVaccineButton)
@@ -137,8 +137,6 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
         birthDate = Date()
       }
 
-    fragmentScenario.moveToState(Lifecycle.State.RESUMED)
-
     patientDetailsFragment.patientDetailsViewModel.patientDemographics.value = patient
 
     val patientNameTextView =
@@ -156,8 +154,6 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
 
   @Test
   fun testImmunizationStatusWithCompleteImmunizationList() {
-    fragmentScenario.moveToState(Lifecycle.State.RESUMED)
-
     patientDetailsFragment.patientDetailsViewModel.patientImmunizations.value = getImmunizations()
     val noVaccinesTextView =
       patientDetailsFragment.view?.findViewById<TextView>(R.id.noVaccinesTextView)
@@ -188,7 +184,6 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
 
   @Test
   fun testImmunizationStatusWithEmptyImmunizationList() {
-    fragmentScenario.moveToState(Lifecycle.State.RESUMED)
 
     patientDetailsFragment.patientDetailsViewModel.patientImmunizations.value = emptyList()
     val noVaccinesTextView =
@@ -216,8 +211,6 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
 
   @Test
   fun testImmunizationStatusWithPartialImmunizationList() {
-    fragmentScenario.moveToState(Lifecycle.State.RESUMED)
-
     val immunizations = getImmunizations()
     patientDetailsFragment.patientDetailsViewModel.patientImmunizations.value =
       mutableListOf(immunizations.last())
@@ -276,13 +269,5 @@ internal class PatientDetailsFragmentTest : FragmentRobolectricTest() {
         occurrence = DateTimeType.now().setDay(16).setMonth(8).setYear(2021)
       }
     return listOf(immunization1, immunization2, immunization3)
-  }
-
-  override fun getFragmentScenario(): FragmentScenario<out Fragment> {
-    return fragmentScenario
-  }
-
-  override fun getFragment(): Fragment {
-    return patientDetailsFragment
   }
 }
