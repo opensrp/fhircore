@@ -20,8 +20,6 @@ import android.view.ViewGroup
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.spyk
-import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -43,15 +41,27 @@ class CarePlanAdapterTest : RobolectricTest() {
     val viewGroup = mockk<ViewGroup>()
     every { viewGroup.context } returns ApplicationProvider.getApplicationContext()
 
-    val list = listOf(mockk<CarePlanItem>())
+    val list = mutableListOf(CarePlanItem("1", "CP Title", due = false, overdue = true))
     adapter.submitList(list)
 
-    val viewHolder = spyk(adapter.createViewHolder(viewGroup, 0))
+    val viewHolder = adapter.createViewHolder(viewGroup, 0)
     Assert.assertNotNull(viewHolder)
 
-    every { viewHolder.bindTo(any()) } answers {}
     adapter.bindViewHolder(viewHolder, 0)
-    verify(exactly = 1) { viewHolder.bindTo(any()) }
+
+    with(viewHolder.containerView) {
+      Assert.assertTrue(carPlanDatePassed!!)
+      Assert.assertEquals("CP Title Overdue", carPlanTitle)
+    }
+
+    list.add(CarePlanItem("1", "New CP Title", due = false, overdue = false))
+
+    adapter.bindViewHolder(viewHolder, 1)
+
+    with(viewHolder.containerView) {
+      Assert.assertFalse(carPlanDatePassed!!)
+      Assert.assertEquals("New CP Title", carPlanTitle)
+    }
   }
 
   @Test

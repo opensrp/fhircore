@@ -20,8 +20,6 @@ import android.view.ViewGroup
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.spyk
-import io.mockk.verify
 import java.util.Date
 import org.hl7.fhir.r4.model.Encounter
 import org.junit.Assert
@@ -29,6 +27,7 @@ import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
 class EncounterAdapterTest : RobolectricTest() {
 
@@ -45,15 +44,15 @@ class EncounterAdapterTest : RobolectricTest() {
     val viewGroup = mockk<ViewGroup>()
     every { viewGroup.context } returns ApplicationProvider.getApplicationContext()
 
-    val list = listOf(mockk<EncounterItem>())
-    adapter.submitList(list)
+    val date = Date()
+    adapter.submitList(listOf(EncounterItem("id", Encounter.EncounterStatus.FINISHED, "", date)))
 
-    val viewHolder = spyk(adapter.createViewHolder(viewGroup, 0))
+    val viewHolder = adapter.createViewHolder(viewGroup, 0)
     Assert.assertNotNull(viewHolder)
 
-    every { viewHolder.bindTo(any()) } answers {}
     adapter.bindViewHolder(viewHolder, 0)
-    verify(exactly = 1) { viewHolder.bindTo(any()) }
+
+    Assert.assertEquals("${date.makeItReadable()} Encounter", viewHolder.containerView.date)
   }
 
   @Test

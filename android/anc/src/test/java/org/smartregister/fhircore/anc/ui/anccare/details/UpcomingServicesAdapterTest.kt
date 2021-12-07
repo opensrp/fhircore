@@ -20,8 +20,6 @@ import android.view.ViewGroup
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.spyk
-import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -43,15 +41,17 @@ class UpcomingServicesAdapterTest : RobolectricTest() {
     val viewGroup = mockk<ViewGroup>()
     every { viewGroup.context } returns ApplicationProvider.getApplicationContext()
 
-    val list = listOf(mockk<UpcomingServiceItem>())
-    adapter.submitList(list)
+    adapter.submitList(listOf(UpcomingServiceItem("1", "New Title", "2021-01-01")))
 
-    val viewHolder = spyk(adapter.createViewHolder(viewGroup, 0))
+    val viewHolder = adapter.createViewHolder(viewGroup, 0)
     Assert.assertNotNull(viewHolder)
 
-    every { viewHolder.bindTo(any()) } answers {}
     adapter.bindViewHolder(viewHolder, 0)
-    verify(exactly = 1) { viewHolder.bindTo(any()) }
+
+    with(viewHolder.containerView) {
+      Assert.assertEquals("New Title", title)
+      Assert.assertEquals("2021-01-01", date)
+    }
   }
 
   @Test

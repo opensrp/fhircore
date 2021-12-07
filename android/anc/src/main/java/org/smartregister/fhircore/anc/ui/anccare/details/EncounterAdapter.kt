@@ -34,7 +34,7 @@ class EncounterAdapter @Inject constructor() :
     EncounterItemDiffCallback
   ) {
 
-  inner class PatientEncounterViewHolder(private val containerView: ItemEncountersBinding) :
+  inner class PatientEncounterViewHolder(val containerView: ItemEncountersBinding) :
     BaseSimpleRecyclerViewHolder<EncounterItem>(containerView.root) {
     override fun bindTo(data: EncounterItem) {
       with(data) {

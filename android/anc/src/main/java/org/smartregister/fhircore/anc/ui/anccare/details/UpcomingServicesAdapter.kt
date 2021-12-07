@@ -33,7 +33,7 @@ class UpcomingServicesAdapter @Inject constructor() :
     UpcomingServiceItemDiffCallback
   ) {
 
-  inner class PatientUpcomingServiceViewHolder(private val containerView: ItemServicesBinding) :
+  inner class PatientUpcomingServiceViewHolder(val containerView: ItemServicesBinding) :
     BaseSimpleRecyclerViewHolder<UpcomingServiceItem>(containerView.root) {
     override fun bindTo(data: UpcomingServiceItem) {
       with(data) {
@@ -61,6 +61,6 @@ class UpcomingServicesAdapter @Inject constructor() :
       oldItem.title == newItem.title
 
     override fun areContentsTheSame(oldItem: UpcomingServiceItem, newItem: UpcomingServiceItem) =
-      oldItem.equals(newItem)
+      oldItem == newItem
   }
 }
