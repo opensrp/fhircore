@@ -20,12 +20,12 @@ import android.view.ViewGroup
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.spyk
-import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.data.model.ConditionItem
+import org.smartregister.fhircore.anc.databinding.ItemPlanTextBinding
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 class ConditionsAdapterTest : RobolectricTest() {
@@ -43,15 +43,16 @@ class ConditionsAdapterTest : RobolectricTest() {
     val viewGroup = mockk<ViewGroup>()
     every { viewGroup.context } returns ApplicationProvider.getApplicationContext()
 
-    val list = listOf(mockk<ConditionItem>())
+    val list = listOf(ConditionItem("1", "C-Title"))
     adapter.submitList(list)
 
-    val viewHolder = spyk(adapter.createViewHolder(viewGroup, 0))
+    val viewHolder = adapter.createViewHolder(viewGroup, 0)
     Assert.assertNotNull(viewHolder)
 
-    every { viewHolder.bindTo(any()) } answers {}
     adapter.bindViewHolder(viewHolder, 0)
-    verify(exactly = 1) { viewHolder.bindTo(any()) }
+
+    val containerView = ReflectionHelpers.getField<ItemPlanTextBinding>(viewHolder, "containerView")
+    Assert.assertEquals("C-Title", containerView.title)
   }
 
   @Test

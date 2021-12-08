@@ -16,12 +16,10 @@
 
 package org.smartregister.fhircore.anc.data.report.model
 
-import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
-@HiltAndroidTest
 class ResultItemTest : RobolectricTest() {
 
   @Test
