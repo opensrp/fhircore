@@ -18,10 +18,8 @@ package org.smartregister.fhircore.anc.ui.anccare.details
 
 import org.hl7.fhir.r4.model.CarePlan
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
-import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.extension.due
-import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.overdue
 
 object CarePlanItemMapper : DomainMapper<CarePlan, CarePlanItem> {
@@ -38,17 +36,5 @@ object CarePlanItemMapper : DomainMapper<CarePlan, CarePlanItem> {
       due = dto.due(),
       overdue = dto.overdue()
     )
-  }
-
-  fun mapToUpcomingServiceItem(dto: CarePlan): UpcomingServiceItem {
-    var typeString = ""
-    var dateString = ""
-    for (j in dto.activity.indices) {
-      if (dto.activity[j].hasDetail())
-        if (dto.activity[j].detail.hasDescription()) typeString = dto.activity[j].detail.description
-      if (dto.activity[j].detail.hasScheduledPeriod())
-        dateString = dto.activity[j].detail.scheduledPeriod.start.makeItReadable()
-    }
-    return UpcomingServiceItem(dto.id, typeString, dateString)
   }
 }
