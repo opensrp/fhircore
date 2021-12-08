@@ -106,7 +106,7 @@ class AncDetailsFragment : Fragment() {
           txtViewNoUpcomingServices.hide()
           upcomingServicesListView.show()
           txtViewUpcomingServicesSeeAllHeading.show()
-          txtViewUpcomingServicesSeeAllHeading.show()
+          imageViewUpcomingServicesSeeAllArrow.show()
         }
         upcomingServicesAdapter.submitList(listEncounters)
       }
