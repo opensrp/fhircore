@@ -7,7 +7,7 @@
     "searchBarHint": "Search name or ID",
     "newClientButtonText": "ADD FAMILY",
     "newClientButtonStyle": "",
-    "showSearchBar": false,
+    "showSearchBar": true,
     "showFilter": true,
     "switchLanguages": true,
     "showScanQRCode": false,
