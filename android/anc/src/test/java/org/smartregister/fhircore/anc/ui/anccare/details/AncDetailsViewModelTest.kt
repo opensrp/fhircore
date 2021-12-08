@@ -27,6 +27,7 @@ import io.mockk.spyk
 import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -43,6 +44,7 @@ import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -126,7 +128,9 @@ internal class AncDetailsViewModelTest : RobolectricTest() {
 
   @Test
   fun testFetchObservationShouldReturnExpectedAncOverviewItem() {
-    coEvery { patientRepository.fetchObservations(any(), "edd") } returns Observation()
+    val eddDate = DateTimeType(Date())
+    coEvery { patientRepository.fetchObservations(any(), "edd") } returns
+      Observation().apply { value = eddDate }
     coEvery { patientRepository.fetchObservations(any(), "risk") } returns
       FakeModel.getObservation(testValue = 1)
     coEvery { patientRepository.fetchObservations(any(), "fetuses") } returns
@@ -137,7 +141,7 @@ internal class AncDetailsViewModelTest : RobolectricTest() {
     val ancOverviewItem = ancDetailsViewModel.fetchObservation("").value
 
     with(ancOverviewItem) {
-      Assert.assertEquals("", this?.edd)
+      Assert.assertEquals(eddDate.value.makeItReadable(), this?.edd)
       Assert.assertEquals("25", this?.ga)
       Assert.assertEquals("2", this?.noOfFetuses)
       Assert.assertEquals("1", this?.risk)

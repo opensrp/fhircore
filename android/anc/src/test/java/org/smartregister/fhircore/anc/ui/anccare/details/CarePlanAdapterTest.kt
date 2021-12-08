@@ -23,7 +23,9 @@ import io.mockk.mockk
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
+import org.smartregister.fhircore.anc.databinding.ItemCareplanBinding
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 class CarePlanAdapterTest : RobolectricTest() {
@@ -49,7 +51,8 @@ class CarePlanAdapterTest : RobolectricTest() {
 
     adapter.bindViewHolder(viewHolder, 0)
 
-    with(viewHolder.containerView) {
+    val containerView = ReflectionHelpers.getField<ItemCareplanBinding>(viewHolder, "containerView")
+    with(containerView) {
       Assert.assertTrue(carPlanDatePassed!!)
       Assert.assertEquals("CP Title Overdue", carPlanTitle)
     }
@@ -58,7 +61,7 @@ class CarePlanAdapterTest : RobolectricTest() {
 
     adapter.bindViewHolder(viewHolder, 1)
 
-    with(viewHolder.containerView) {
+    with(containerView) {
       Assert.assertFalse(carPlanDatePassed!!)
       Assert.assertEquals("New CP Title", carPlanTitle)
     }

@@ -25,7 +25,9 @@ import org.hl7.fhir.r4.model.Encounter
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.data.model.EncounterItem
+import org.smartregister.fhircore.anc.databinding.ItemEncountersBinding
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
@@ -52,7 +54,9 @@ class EncounterAdapterTest : RobolectricTest() {
 
     adapter.bindViewHolder(viewHolder, 0)
 
-    Assert.assertEquals("${date.makeItReadable()} Encounter", viewHolder.containerView.date)
+    val containerView =
+      ReflectionHelpers.getField<ItemEncountersBinding>(viewHolder, "containerView")
+    Assert.assertEquals("${date.makeItReadable()} Encounter", containerView.date)
   }
 
   @Test

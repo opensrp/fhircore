@@ -33,7 +33,7 @@ class UpcomingServicesAdapter @Inject constructor() :
     UpcomingServiceItemDiffCallback
   ) {
 
-  inner class PatientUpcomingServiceViewHolder(val containerView: ItemServicesBinding) :
+  inner class PatientUpcomingServiceViewHolder(private val containerView: ItemServicesBinding) :
     BaseSimpleRecyclerViewHolder<UpcomingServiceItem>(containerView.root) {
     override fun bindTo(data: UpcomingServiceItem) {
       with(data) {

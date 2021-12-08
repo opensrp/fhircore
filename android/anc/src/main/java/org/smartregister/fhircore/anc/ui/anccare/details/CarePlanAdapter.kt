@@ -31,7 +31,7 @@ import org.smartregister.fhircore.engine.ui.base.BaseSimpleRecyclerViewHolder
 class CarePlanAdapter @Inject constructor() :
   ListAdapter<CarePlanItem, CarePlanAdapter.PatientCarePlanViewHolder>(CarePlanItemDiffCallback) {
 
-  inner class PatientCarePlanViewHolder(val containerView: ItemCareplanBinding) :
+  inner class PatientCarePlanViewHolder(private val containerView: ItemCareplanBinding) :
     BaseSimpleRecyclerViewHolder<CarePlanItem>(containerView.root) {
     override fun bindTo(data: CarePlanItem) {
       with(data) {
