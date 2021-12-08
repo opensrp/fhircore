@@ -32,6 +32,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.verify
 import java.text.SimpleDateFormat
 import java.util.Date
 import javax.inject.Inject
@@ -77,18 +78,14 @@ import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 class PatientRepositoryTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  @Inject lateinit var dispatcherProvider: DispatcherProvider
-
-  @Inject lateinit var ancItemMapper: AncItemMapper
-
   private lateinit var repository: PatientRepository
-
   private val fhirEngine: FhirEngine = spyk()
+  private val context = ApplicationProvider.getApplicationContext<Application>()
+  private val ancItemMapper = spyk(AncItemMapper(context))
 
-  val context = ApplicationProvider.getApplicationContext<Application>()
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Before
   fun setUp() {
@@ -361,6 +358,50 @@ class PatientRepositoryTest : RobolectricTest() {
       coVerify(exactly = 4) { fhirEngine.save(any()) }
       Assert.assertTrue(result)
     }
+  }
+
+  @Test
+  fun testSearchCarePlanShouldReturnListOfCarePlans() {
+
+    coEvery { fhirEngine.search<CarePlan>(any()) } returns listOf(buildCarePlan("99"))
+    val carePlans = runBlocking { repository.searchCarePlan("") }
+
+    Assert.assertEquals(1, carePlans.size)
+    Assert.assertEquals("Patient/99", carePlans[0].subject.reference)
+    Assert.assertEquals(
+      CarePlan.CarePlanActivityStatus.SCHEDULED,
+      carePlans[0].activityFirstRep.detail.status
+    )
+  }
+
+  @Test
+  fun testCountAllShouldReturnMoreThanOneCount() {
+
+    coEvery { fhirEngine.count(any()) } returns 5
+    val count = runBlocking { repository.countAll() }
+    Assert.assertEquals(5, count)
+  }
+
+  @Test
+  fun testFetchEncountersShouldReturnExpectedEncounterList() {
+
+    coEvery { fhirEngine.search<Encounter>(any()) } returns listOf(getEncounter("99"))
+    val encounterList = runBlocking { repository.fetchEncounters("") }
+
+    Assert.assertEquals(1, encounterList.size)
+    with(encounterList[0]) {
+      Assert.assertEquals("1", id)
+      Assert.assertEquals("Patient/99", subject.reference)
+      Assert.assertEquals(Encounter.EncounterStatus.FINISHED, status)
+    }
+  }
+
+  @Test
+  fun testSetAncItemMapperTypeShouldVerifyAncItemMapperType() {
+    every { ancItemMapper.setAncItemMapperType(any()) } returns Unit
+    repository.setAncItemMapperType(mockk())
+
+    verify(exactly = 1) { ancItemMapper.setAncItemMapperType(any()) }
   }
 
   private fun buildCarePlan(subject: String): CarePlan {
