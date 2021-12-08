@@ -17,13 +17,20 @@
 package org.smartregister.fhircore.anc.ui.details.vitalsigns
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.MutableLiveData
 import com.google.android.fhir.FhirEngine
+import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.Observation
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
+import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.model.AncOverviewItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 
 @ExperimentalCoroutinesApi
@@ -44,8 +51,36 @@ internal class VitalSignsDetailsViewModelTest {
   fun setUp() {
     fhirEngine = mockk(relaxed = true)
     patientRepository = mockk()
-
     patientDetailsViewModel =
       spyk(VitalSignsDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider))
+  }
+
+  @Test
+  fun testFetchObservations() {
+    coroutinesTestRule.runBlockingTest {
+      val testObservation = getTestObservation()
+      coEvery {
+        hint(Observation::class)
+        fhirEngine.search<Observation>(any())
+      } returns listOf(testObservation)
+      coEvery { patientDetailsViewModel.fetchObservation(any()) } returns
+        MutableLiveData(getTestAncOverviewItem())
+      coEvery { patientRepository.fetchObservations(any(), any()) } returns testObservation
+      val ancOverviewItem = patientDetailsViewModel.fetchObservation(patientId).value!!
+      Assert.assertNotNull(ancOverviewItem)
+      Assert.assertEquals(ancOverviewItem.height, getTestAncOverviewItem().height)
+      Assert.assertEquals(ancOverviewItem.weight, getTestAncOverviewItem().weight)
+    }
+  }
+
+  private fun getTestObservation(): Observation {
+    return Observation().apply { id = "2" }
+  }
+
+  private fun getTestAncOverviewItem(): AncOverviewItem {
+    return AncOverviewItem().apply {
+      height = "60 inches"
+      weight = "50 kg"
+    }
   }
 }

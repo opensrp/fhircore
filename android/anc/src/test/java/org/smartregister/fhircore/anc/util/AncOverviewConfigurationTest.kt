@@ -31,14 +31,29 @@ class AncOverviewConfigurationTest : RobolectricTest() {
     val gaFilter = mockk<SearchFilter> { every { key } returns "2" }
     val fetusesFilter = mockk<SearchFilter> { every { key } returns "3" }
     val riskFilter = mockk<SearchFilter> { every { key } returns "4" }
+    val heightFilter = mockk<SearchFilter> { every { key } returns "5" }
+    val weightFilter = mockk<SearchFilter> { every { key } returns "6" }
+    val bmiFilter = mockk<SearchFilter> { every { key } returns "7" }
 
     val ancOverviewConfiguration =
-      AncOverviewConfiguration(id, eddFilter, gaFilter, fetusesFilter, riskFilter)
+      AncOverviewConfiguration(
+        id,
+        eddFilter,
+        gaFilter,
+        fetusesFilter,
+        riskFilter,
+        heightFilter,
+        weightFilter,
+        bmiFilter
+      )
 
     assertEquals("0", ancOverviewConfiguration.id)
     assertEquals("1", ancOverviewConfiguration.eddFilter?.key)
     assertEquals("2", ancOverviewConfiguration.gaFilter?.key)
     assertEquals("3", ancOverviewConfiguration.fetusesFilter?.key)
     assertEquals("4", ancOverviewConfiguration.riskFilter?.key)
+    assertEquals("5", ancOverviewConfiguration.heightFilter?.key)
+    assertEquals("6", ancOverviewConfiguration.weightFilter?.key)
+    assertEquals("7", ancOverviewConfiguration.bmiFilter?.key)
   }
 }
