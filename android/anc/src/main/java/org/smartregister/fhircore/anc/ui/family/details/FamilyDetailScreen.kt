@@ -69,6 +69,7 @@ import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
 const val TOOLBAR_MENU = "toolbarMenuTag"
 const val TOOLBAR_MENU_BUTTON = "toolbarMenuButtonTag"
+const val TOOLBAR_TITLE = "toolbarTitle"
 
 @Composable
 fun FamilyDetailScreen(familyDetailViewModel: FamilyDetailViewModel) {
@@ -81,7 +82,9 @@ fun FamilyDetailScreen(familyDetailViewModel: FamilyDetailViewModel) {
   Surface(color = colorResource(id = R.color.white_smoke)) {
     Column {
       TopAppBar(
-        title = { Text(text = stringResource(id = R.string.all_families)) },
+        title = {
+          Text(text = stringResource(id = R.string.all_families), Modifier.testTag(TOOLBAR_TITLE))
+        },
         navigationIcon = {
           IconButton(onClick = familyDetailViewModel::onAppBackClick) {
             Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")
