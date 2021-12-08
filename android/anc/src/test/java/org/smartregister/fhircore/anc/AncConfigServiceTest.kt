@@ -38,7 +38,7 @@ class AncConfigServiceTest : RobolectricTest() {
   @Test
   fun testResourceSyncParamsVariable() {
     val data = eirConfigService.resourceSyncParams
-    Assert.assertEquals(data.size, 7)
+    Assert.assertEquals(data.size, 8)
     Assert.assertTrue(data.containsKey(ResourceType.Patient))
     Assert.assertTrue(data.containsKey(ResourceType.Questionnaire))
     Assert.assertTrue(data.containsKey(ResourceType.Observation))
@@ -46,6 +46,7 @@ class AncConfigServiceTest : RobolectricTest() {
     Assert.assertTrue(data.containsKey(ResourceType.CarePlan))
     Assert.assertTrue(data.containsKey(ResourceType.Condition))
     Assert.assertTrue(data.containsKey(ResourceType.Task))
+    Assert.assertTrue(data.containsKey(ResourceType.StructureMap))
   }
 
   @Test
