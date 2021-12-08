@@ -38,7 +38,7 @@ class AncItemMapperTest : RobolectricTest() {
 
   @Test
   fun testMapToDomainModel() {
-    val patientItem = ancItemMapper.mapToDomainModel(dto = Anc(patient, null, listOf()))
+    val patientItem = ancItemMapper.mapToDomainModel(dto = Anc(patient, null, listOf(), listOf()))
     with(patientItem) {
       Assert.assertEquals("test_patient_id_1", patientIdentifier)
       Assert.assertEquals("Jane Mc", name)

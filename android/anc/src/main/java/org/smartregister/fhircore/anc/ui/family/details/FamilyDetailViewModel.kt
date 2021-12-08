@@ -54,6 +54,9 @@ constructor(
 
   val familyCarePlans = MutableLiveData<List<CarePlan>>()
 
+  fun MutableLiveData<List<FamilyMemberItem>>.othersEligibleForHead() =
+    this.value?.filter { it.deathDate == null && !it.houseHoldHead }
+
   fun fetchDemographics(familyId: String) {
     viewModelScope.launch { demographics.postValue(repository.fetchDemographics(familyId)) }
   }
@@ -70,7 +73,7 @@ constructor(
     viewModelScope.launch { encounters.postValue(repository.fetchEncounters(familyId)) }
   }
 
-  fun changeFamilyHead(currentHead: String, newHead: String): LiveData<Boolean>{
+  fun changeFamilyHead(currentHead: String, newHead: String): LiveData<Boolean> {
     val changed = MutableLiveData(false)
     viewModelScope.launch {
       repository.familyRepository.changeFamilyHead(currentHead, newHead)

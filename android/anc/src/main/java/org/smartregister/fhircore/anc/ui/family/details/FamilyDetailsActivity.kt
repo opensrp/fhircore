@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.ui.family.details
 
 import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -68,35 +69,19 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
         familyDetailsActivity,
         { changeHead ->
           if (changeHead) {
-            AlertDialogue.showConfirmAlert(
-              this@FamilyDetailsActivity,
-              R.string.change_head_confirm_message,
-              R.string.change_head_confirm_title,
-              { d ->
-                val selection = (d as AlertDialog).getSingleChoiceSelectedKey()
-                if (selection?.isNotBlank() == true) {
-                  lifecycleScope.launch {
-                    familyDetailViewModel.changeFamilyHead(familyId, selection).observe(
-                      this@FamilyDetailsActivity,
-                      {
-                        if (it) {
-                          d.dismiss()
-                          finish()
-                        }
-                      }
-                    )
-                  }
-                }
-                else this@FamilyDetailsActivity.showToast(getString(R.string.invalid_selection))
-              },
-              R.string.change_head_button_title,
-              familyDetailViewModel
-                .familyMembers
-                .value
-                ?.filter { it.deathDate == null && familyId != it.id }
-                ?.map { AlertDialogListItem(it.id, it.name) }
-                ?.toTypedArray()
-            )
+            val eligibleMembers = familyDetailViewModel.familyMembers.othersEligibleForHead()
+
+            if (eligibleMembers.isNullOrEmpty())
+              this@FamilyDetailsActivity.showToast(getString(R.string.no_eligible_family_head))
+            else
+              AlertDialogue.showConfirmAlert(
+                context = this@FamilyDetailsActivity,
+                message = R.string.change_head_confirm_message,
+                title = R.string.change_head_confirm_title,
+                confirmButtonListener = familyDetailsActivity::onFamilyHeadChangeRequested,
+                confirmButtonText = R.string.change_head_button_title,
+                options = eligibleMembers.map { AlertDialogListItem(it.id, it.name) }
+              )
           }
         }
       )
@@ -107,7 +92,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
     setContent { AppTheme { FamilyDetailScreen(familyDetailViewModel) } }
   }
 
-  private fun loadData(){
+  private fun loadData() {
     familyDetailViewModel.run {
       fetchDemographics(familyId)
       fetchFamilyMembers(familyId)
@@ -120,6 +105,23 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
     super.onResume()
 
     loadData()
+  }
+
+  private fun onFamilyHeadChangeRequested(dialog: DialogInterface) {
+    val selection = (dialog as AlertDialog).getSingleChoiceSelectedKey()
+    if (selection?.isNotBlank() == true) {
+        familyDetailViewModel
+          .changeFamilyHead(familyId, selection)
+          .observe(
+            this@FamilyDetailsActivity,
+            {
+              if (it) {
+                dialog.dismiss()
+                finish()
+              }
+            }
+          )
+    } else this.showToast(getString(R.string.invalid_selection))
   }
 
   private fun onFamilyMemberItemClicked(familyMemberItem: FamilyMemberItem?) {

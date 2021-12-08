@@ -27,8 +27,10 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.report.ReportHomeActivity
 import org.smartregister.fhircore.anc.util.AncConfigClassification
+import org.smartregister.fhircore.anc.util.getFamilyQuestionnaireIntent
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
@@ -139,6 +141,11 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
   fun navigateToReports() {
     val intent = Intent(this, ReportHomeActivity::class.java)
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    startActivity(intent)
+  }
+
+  override fun registerClient(clientIdentifier: String?) {
+    val intent = getFamilyQuestionnaireIntent(clientIdentifier, FamilyFormConstants.FAMILY_REGISTER_FORM)
     startActivity(intent)
   }
 

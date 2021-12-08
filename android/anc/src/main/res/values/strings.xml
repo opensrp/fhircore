@@ -51,6 +51,7 @@
     <string name="change_head_confirm_title">Select New Family Head</string>
     <string name="change_head_confirm_message"></string>
     <string name="invalid_selection">Invalid Selection</string>
+    <string name="no_eligible_family_head">No eligible family members</string>
     <string name="care_plan">Care plan</string>
     <string name="see_all">See All</string>
     <string name="anc_overview">ANC Overview</string>

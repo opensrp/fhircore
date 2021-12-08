@@ -17,21 +17,19 @@
 package org.smartregister.fhircore.anc.ui.details
 
 import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.lifecycleScope
 import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
+import java.util.Date
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.patient.DeletionReason
@@ -44,10 +42,10 @@ import org.smartregister.fhircore.anc.ui.details.form.FormConfig
 import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.base.AlertDialogListItem
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
-import org.smartregister.fhircore.engine.ui.base.AlertDialogue.getSingleChoiceSelectedValue
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.getSingleChoiceSelectedKey
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import java.util.Date
+import org.smartregister.fhircore.engine.util.extension.showToast
 
 @AndroidEntryPoint
 class PatientDetailsActivity : BaseMultiLanguageActivity() {
@@ -96,13 +94,11 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       highlightItem(this)
       this.isVisible = !isFamilyHead
     }
-    menu.findItem(R.id.log_death).run {
-      highlightItem(this)
-    }
+    menu.findItem(R.id.log_death).run { highlightItem(this) }
     return super.onPrepareOptionsMenu(menu)
   }
 
-  private fun highlightItem(menuItem: MenuItem){
+  private fun highlightItem(menuItem: MenuItem) {
     val span =
       SpannableString(menuItem.title).apply {
         setSpan(
@@ -115,7 +111,6 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
     menuItem.title = span
   }
 
-  @RequiresApi(Build.VERSION_CODES.N)
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     return when (item.itemId) {
       R.id.add_vitals -> {
@@ -154,16 +149,16 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
           dangerActionColor = true,
           confirmButtonText = getString(R.string.log_death_button_title),
           confirmButtonListener = {
-            lifecycleScope.launch {
-              ancDetailsViewModel.markDeceased(patientId, it).observe(
-                this@PatientDetailsActivity,
+            ancDetailsViewModel
+              .markDeceased(patientId, it)
+              .observe(
+                this,
                 {
                   if (it) {
                     finish()
                   }
                 }
               )
-            }
           }
         )
         true
@@ -173,20 +168,9 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
           this,
           R.string.remove_this_person_confirm_message,
           R.string.remove_this_person_confirm_title,
-          {
-            val selection = (it as AlertDialog).getSingleChoiceSelectedValue()
-            if (selection?.isNotBlank() == true)
-              lifecycleScope.launch {
-                ancDetailsViewModel.deletePatient(
-                  patientId,
-                  DeletionReason.values().single { getString(it.label) == selection }
-                )
-                it.dismiss()
-                finish()
-              }
-          },
+          this::onDeleteFamilyMemberRequested,
           R.string.remove_this_person_button_title,
-          DeletionReason.values().map { AlertDialogListItem(it.name, it.name) }.toTypedArray()
+          DeletionReason.values().map { AlertDialogListItem(it.name, getString(it.label)) }
         )
         return true
       }
@@ -247,6 +231,22 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
           .attach()
       }
     }
+  }
+  private fun onDeleteFamilyMemberRequested(dialog: DialogInterface) {
+    val selection = (dialog as AlertDialog).getSingleChoiceSelectedKey()
+    if (selection?.isNotBlank() == true) {
+      ancDetailsViewModel
+        .deletePatient(patientId, DeletionReason.values().single { it.name == selection })
+        .observe(
+          this@PatientDetailsActivity,
+          {
+            if (it) {
+              dialog.dismiss()
+              finish()
+            }
+          }
+        )
+    } else this.showToast(getString(R.string.invalid_selection))
   }
 
   private fun showAlert() {

@@ -35,6 +35,7 @@ import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import java.util.Date
 
 class FamilyDetailViewModelTest : RobolectricTest() {
 
@@ -81,7 +82,10 @@ class FamilyDetailViewModelTest : RobolectricTest() {
           age = "20",
           gender = "F",
           pregnant = true,
-          houseHoldHead = false
+          houseHoldHead = false,
+          deathDate = Date(),
+          servicesDue = 2,
+          servicesOverdue = 3
         ),
         FamilyMemberItem(
           name = "kevin",
@@ -89,7 +93,10 @@ class FamilyDetailViewModelTest : RobolectricTest() {
           age = "25",
           gender = "F",
           pregnant = false,
-          houseHoldHead = false
+          houseHoldHead = false,
+          deathDate = null,
+          servicesDue = 2,
+          servicesOverdue = 3
         )
       )
 

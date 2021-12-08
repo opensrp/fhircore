@@ -23,6 +23,7 @@ import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Flag
@@ -47,7 +48,6 @@ import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractFamilyTag
 import org.smartregister.fhircore.engine.util.extension.find
-import java.util.Date
 
 class FamilyRepository
 @Inject
@@ -81,35 +81,30 @@ constructor(
         }
 
       patients.map { p ->
-        val carePlans = ancPatientRepository.searchCarePlan(p.logicalId).toMutableList()
-        val members = ancPatientRepository.searchPatientByLink(p.logicalId)
+        val members = searchFamilyMembers(p.logicalId)
 
-        members.forEach { carePlans.addAll(ancPatientRepository.searchCarePlan(it.logicalId)) }
-
-        domainMapper.mapToDomainModel(Family(p, members, carePlans))
+        val familyServices = ancPatientRepository.searchCarePlan(p.logicalId, p.extractFamilyTag())
+        domainMapper.mapToDomainModel(Family(p, members, familyServices))
       }
     }
   }
 
   override suspend fun countAll(): Long {
-    return fhirEngine.count<Patient> { filterBy(registerConfig.primaryFilter!!) }
+    return fhirEngine.count<Patient> {
+      filterBy(registerConfig.primaryFilter!!)
+      filter(Patient.ACTIVE, true)
+    }
   }
 
-  suspend fun loadHeadAsMember(headId: String): FamilyMemberItem {
-    return domainMapper.toFamilyMemberItem(fhirEngine.load(Patient::class.java, headId), headId)
-  }
-
-  suspend fun searchFamilyMembers(
-    familyHeadId: String,
-    includeHead: Boolean = false
-  ): List<FamilyMemberItem> {
-    val members =
-      ancPatientRepository.searchPatientByLink(familyHeadId).map {
-        domainMapper.toFamilyMemberItem(it, familyHeadId)
-      }
-
-    return if (includeHead) mutableListOf(loadHeadAsMember(familyHeadId), *members.toTypedArray())
-    else members
+  suspend fun searchFamilyMembers(familyHeadId: String): List<FamilyMemberItem> {
+    return ancPatientRepository
+        .searchPatientByLink(familyHeadId)
+        .plus(fhirEngine.load(Patient::class.java, familyHeadId))
+        .map {
+          val services = ancPatientRepository.searchCarePlan(it.logicalId)
+          val conditions = ancPatientRepository.searchCondition(it.logicalId)
+          domainMapper.toFamilyMemberItem(it, conditions, services)
+        }.sortedBy { !it.houseHoldHead }
   }
 
   suspend fun postProcessFamilyMember(
@@ -147,65 +142,67 @@ constructor(
    * - Mark old Flag as inactive
    */
   suspend fun changeFamilyHead(currentHeadId: String, newHeadId: String) =
-    withContext(dispatcherProvider.io()){
-    if (currentHeadId == newHeadId) throw IllegalStateException("Current and new Head ids are same")
+    withContext(dispatcherProvider.io()) {
+      if (currentHeadId == newHeadId)
+        throw IllegalStateException("Current and new Head ids are same")
 
-    val currentHead = fhirEngine.load(Patient::class.java, currentHeadId)
-    val newHead = fhirEngine.load(Patient::class.java, newHeadId)
+      val currentHead = fhirEngine.load(Patient::class.java, currentHeadId)
+      val newHead = fhirEngine.load(Patient::class.java, newHeadId)
 
-      if(!newHead.active || newHead.hasDeceased())
+      if (!newHead.active || newHead.hasDeceased())
         throw IllegalStateException("Inactive or deceased person can not be new head of family")
 
-    val familyTag = currentHead.extractFamilyTag()!!
-    val familyExt = currentHead.extension.singleOrNull { it.value.toString().contentEquals(familyTag.display) }
+      val familyTag = currentHead.extractFamilyTag()!!
+      val familyExt =
+        currentHead.extension.singleOrNull { it.value.toString().contentEquals(familyTag.display) }
 
-    newHead.meta.addTag(familyTag)
-    newHead.extension.add(familyExt)
-    newHead.address = currentHead.address
-    newHead.link.clear()
+      newHead.meta.addTag(familyTag)
+      newHead.extension.add(familyExt)
+      newHead.address = currentHead.address
+      newHead.link.clear()
 
-    val newHeadFlag = Flag()
-    newHeadFlag.id = getUniqueId()
-    newHeadFlag.status = Flag.FlagStatus.ACTIVE
-    newHeadFlag.subject = newHead.asReference()
-    newHeadFlag.code = familyTag.asCodeableConcept()
-    newHeadFlag.period.start = Date()
+      val newHeadFlag = Flag()
+      newHeadFlag.id = getUniqueId()
+      newHeadFlag.status = Flag.FlagStatus.ACTIVE
+      newHeadFlag.subject = newHead.asReference()
+      newHeadFlag.code = familyTag.asCodeableConcept()
+      newHeadFlag.period.start = Date()
 
-    fhirEngine.save(newHeadFlag)
-    fhirEngine.save(newHead)
+      fhirEngine.save(newHeadFlag)
+      fhirEngine.save(newHead)
 
-    ancPatientRepository.searchCarePlan(currentHeadId, familyTag).forEach {
-      // assign family care plan to new head
-      it.subject = newHead.asReference()
+      ancPatientRepository.searchCarePlan(currentHeadId, familyTag).forEach {
+        // assign family care plan to new head
+        it.subject = newHead.asReference()
 
-      fhirEngine.save(it)
-    }
+        fhirEngine.save(it)
+      }
 
-    currentHead.meta.tag.remove(familyTag)
-    currentHead.extension.remove(familyExt)
-    currentHead.addLink().apply {
-      this.other = newHead.asReference()
-      this.type = Patient.LinkType.REFER
-    }
+      currentHead.meta.tag.remove(familyTag)
+      currentHead.extension.remove(familyExt)
+      currentHead.addLink().apply {
+        this.other = newHead.asReference()
+        this.type = Patient.LinkType.REFER
+      }
 
-    ancPatientRepository.fetchActiveFlag(currentHeadId, familyTag)?.run {
-      this.status = Flag.FlagStatus.INACTIVE
-      this.period.end = Date()
+      ancPatientRepository.fetchActiveFlag(currentHeadId, familyTag)?.run {
+        this.status = Flag.FlagStatus.INACTIVE
+        this.period.end = Date()
 
-      fhirEngine.save(this)
-    }
+        fhirEngine.save(this)
+      }
 
-    fhirEngine.save(currentHead)
+      fhirEngine.save(currentHead)
 
-    searchFamilyMembers(currentHeadId, false).forEach {
-      val member = fhirEngine.load(Patient::class.java, it.id)
-      if (member.logicalId != currentHeadId && member.logicalId != newHeadId) {
-        member.linkFirstRep.other = newHead.asReference()
+      searchFamilyMembers(currentHeadId)
+        .filter { it.id != currentHeadId && it.id != newHeadId }
+        .forEach {
+          val member = fhirEngine.load(Patient::class.java, it.id)
+          member.linkFirstRep.other = newHead.asReference()
 
-        fhirEngine.save(member)
+          fhirEngine.save(member)
       }
     }
-  }
 
   suspend fun enrollIntoAnc(
     questionnaire: Questionnaire,

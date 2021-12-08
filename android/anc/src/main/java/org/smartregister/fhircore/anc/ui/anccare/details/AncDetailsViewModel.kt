@@ -111,8 +111,11 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
     return patientEncounters
   }
 
-  fun deletePatient(patientId: String, reason: DeletionReason) {
-    viewModelScope.launch(dispatcher.io()) { patientRepository.deletePatient(patientId, reason) }
+  fun deletePatient(patientId: String, reason: DeletionReason): LiveData<Boolean> {
+    val changed = MutableLiveData(false)
+    viewModelScope.launch(dispatcher.io()) { patientRepository.deletePatient(patientId, reason)
+    changed.postValue(true)}
+    return changed
   }
 
   fun markDeceased(patientId: String, deathDate: Date): LiveData<Boolean> {

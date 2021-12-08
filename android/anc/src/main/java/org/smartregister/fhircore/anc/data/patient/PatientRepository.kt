@@ -75,8 +75,8 @@ import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.format
+import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.isFamilyHead
-import org.smartregister.fhircore.engine.util.extension.isPregnant
 import org.smartregister.fhircore.engine.util.extension.loadResourceTemplate
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.overdue
@@ -136,7 +136,8 @@ constructor(
             .getOrNull()
 
         val carePlans = searchCarePlan(it.logicalId)
-        domainMapper.mapToDomainModel(Anc(it, head, carePlans))
+        val conditions = searchCondition(it.logicalId)
+        domainMapper.mapToDomainModel(Anc(it, head, conditions, carePlans))
       }
     }
   }
@@ -147,6 +148,13 @@ constructor(
       filter(Patient.ACTIVE, true)
     }
   }
+
+  suspend fun searchCondition(patientId: String): List<Condition> =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.search {
+        filterByPatient(Condition.SUBJECT, patientId)
+      }
+    }
 
   suspend fun searchCarePlan(patientId: String, tag: Coding? = null): List<CarePlan> =
     withContext(dispatcherProvider.io()) {
@@ -237,7 +245,7 @@ constructor(
             patientIdentifier = patient.logicalId,
             name = patient.extractName(),
             gender = patient.extractGender(context) ?: "",
-            isPregnant = patient.isPregnant(),
+            isPregnant = searchCondition(patient.logicalId).hasActivePregnancy(),
             age = patient.extractAge(),
             familyName = patient.extractFamilyName(),
             demographics = patient.extractAddress(),

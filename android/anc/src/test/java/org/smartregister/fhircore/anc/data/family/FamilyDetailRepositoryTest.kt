@@ -20,7 +20,10 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.spyk
+import io.mockk.verify
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Coding
@@ -34,6 +37,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 
@@ -84,65 +88,15 @@ class FamilyDetailRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun testGetFamilyMembersShouldReturnDummyList() {
+  fun testFetchFamilyMembersShouldCallSearchFamilyMembers() {
 
     coEvery {
-      hint(Patient::class)
-      fhirEngine.search<Patient>(any())
-    } answers
-      {
-        listOf(
-          Patient().apply {
-            id = "1"
-            name =
-              listOf(
-                HumanName().apply {
-                  given = listOf(StringType("john"))
-                  family = "doe"
-                }
-              )
-            gender = Enumerations.AdministrativeGender.FEMALE
-            birthDate = Date()
-          }
-        )
-      }
+      repository.familyRepository.searchFamilyMembers("1111")
+    } returns emptyList()
 
-    coEvery {
-      hint(Patient::class)
-      fhirEngine.load<Patient>(any(), any())
-    } answers
-      {
-        Patient().apply {
-          id = "2"
-          name =
-            listOf(
-              HumanName().apply {
-                given = listOf(StringType("jane"))
-                family = "family"
-              }
-            )
-          gender = Enumerations.AdministrativeGender.FEMALE
-          birthDate = Date()
-        }
-      }
+    runBlocking { repository.fetchFamilyMembers("1111") }
 
-    val items = runBlocking { repository.fetchFamilyMembers("") }
-
-    Assert.assertEquals(2, items?.count())
-
-    // Family head
-    Assert.assertEquals("Jane Family", items?.get(0)?.name)
-    Assert.assertEquals("2", items?.get(0)?.id)
-    Assert.assertEquals("0d", items?.get(0)?.age)
-    Assert.assertEquals("F", items?.get(0)?.gender)
-    Assert.assertFalse(items?.get(0)?.pregnant!!)
-
-    // Family member
-    Assert.assertEquals("John Doe", items?.get(1)?.name)
-    Assert.assertEquals("1", items?.get(1)?.id)
-    Assert.assertEquals("0d", items?.get(1)?.age)
-    Assert.assertEquals("F", items?.get(1)?.gender)
-    Assert.assertFalse(items?.get(1)?.pregnant!!)
+    coVerify { repository.familyRepository.searchFamilyMembers("1111") }
   }
 
   @Test

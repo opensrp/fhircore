@@ -21,6 +21,7 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
@@ -31,10 +32,10 @@ import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
-import org.smartregister.fhircore.engine.util.extension.isPregnant
+import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.overdue
 
-data class Anc(val patient: Patient, val head: Patient?, val carePlans: List<CarePlan>)
+data class Anc(val patient: Patient, val head: Patient?, val conditions: List<Condition>, val carePlans: List<CarePlan>)
 
 class AncItemMapper @Inject constructor(@ApplicationContext val context: Context) :
   DomainMapper<Anc, PatientItem> {
@@ -71,7 +72,7 @@ class AncItemMapper @Inject constructor(@ApplicationContext val context: Context
           name = name,
           gender = gender.toString(),
           age = age,
-          isPregnant = patient.isPregnant(),
+          isPregnant = dto.conditions.hasActivePregnancy(),
           demographics = "$name, $gender, $age",
           familyName = patient.extractFamilyName()
         )

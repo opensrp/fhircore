@@ -21,6 +21,7 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
@@ -31,10 +32,11 @@ import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractDeathDate
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
-import org.smartregister.fhircore.engine.util.extension.isPregnant
+import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
+import org.smartregister.fhircore.engine.util.extension.isFamilyHead
 import org.smartregister.fhircore.engine.util.extension.overdue
 
-data class Family(val head: Patient, val members: List<Patient>, val servicesDue: List<CarePlan>)
+data class Family(val family: Patient, val members: List<FamilyMemberItem>, val familyServicesDue: List<CarePlan>)
 
 class FamilyItemMapper
 @Inject
@@ -43,34 +45,35 @@ constructor(
 ) : DomainMapper<Family, FamilyItem> {
 
   override fun mapToDomainModel(dto: Family): FamilyItem {
-    val head = dto.head
+    val family = dto.family
     val members = dto.members
-    val servicesDue = dto.servicesDue
 
     return FamilyItem(
-      id = head.logicalId,
-      identifier = head.identifierFirstRep.value,
-      name = head.extractName(),
-      gender = (head.extractGender(context)?.firstOrNull() ?: "").toString(),
-      age = head.extractAge(),
-      deathDate = head.extractDeathDate(),
-      address = head.extractAddress(),
-      isPregnant = head.isPregnant(),
-      members = members.map { toFamilyMemberItem(it, head.logicalId) },
-      servicesDue = servicesDue.flatMap { it.activity }.filter { it.detail.due() }.size,
-      servicesOverdue = servicesDue.flatMap { it.activity }.filter { it.detail.overdue() }.size
+      id = family.logicalId,
+      identifier = family.identifierFirstRep.value,
+      name = family.extractName(),
+      address = family.extractAddress(),
+      head = members.first { it.houseHoldHead },
+      members = members,
+      // TODO for now head in members list contains family services as well
+      servicesDue = members.sumOf { it.servicesDue?:0 },
+      servicesOverdue = members.sumOf { it.servicesOverdue?:0 }
     )
   }
 
-  fun toFamilyMemberItem(member: Patient, familyId: String): FamilyMemberItem {
+  fun toFamilyMemberItem(member: Patient,
+                         conditions: List<Condition>? = null,
+                         servicesDue: List<CarePlan>? = null): FamilyMemberItem {
     return FamilyMemberItem(
       name = member.extractName(),
       id = member.logicalId,
       age = member.extractAge(),
       gender = (member.extractGender(context)?.firstOrNull() ?: "").toString(),
-      pregnant = member.isPregnant(),
-      houseHoldHead = familyId == member.logicalId,
-      deathDate = member.extractDeathDate()
+      pregnant = conditions?.hasActivePregnancy(),
+      houseHoldHead = member.isFamilyHead(),
+      deathDate = member.extractDeathDate(),
+      servicesDue = servicesDue?.filter { it.due() }?.flatMap { it.activity }?.filter { it.detail.due() }?.size,
+      servicesOverdue = servicesDue?.filter { it.due() }?.flatMap { it.activity }?.filter { it.detail.overdue() }?.size
     )
   }
 }

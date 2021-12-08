@@ -43,7 +43,7 @@ constructor(
 
   suspend fun fetchFamilyMembers(familyId: String): List<FamilyMemberItem> =
     withContext(dispatcherProvider.io()) {
-      familyRepository.searchFamilyMembers(familyId, true)
+      familyRepository.searchFamilyMembers(familyId)
     }
 
   suspend fun fetchEncounters(familyId: String): List<Encounter> =

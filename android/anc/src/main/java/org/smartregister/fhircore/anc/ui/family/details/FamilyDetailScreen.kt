@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.sp
 import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
+import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
 @Composable
@@ -91,9 +92,9 @@ fun FamilyDetailScreen(familyDetailViewModel: FamilyDetailViewModel) {
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
-          text = patient.value?.address?.firstOrNull()?.city.toString(),
+          text = patient.value?.extractAddress()?:"",
           color = colorResource(id = R.color.white),
-          fontSize = 25.sp
+          fontSize = 20.sp
         )
       }
 
@@ -236,7 +237,7 @@ fun MembersList(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
           ) {
-            if (item.pregnant) {
+            if (item.pregnant == true) {
               Image(
                 painter = painterResource(R.drawable.ic_pregnant),
                 contentDescription = stringResource(id = R.string.pregnant_woman),

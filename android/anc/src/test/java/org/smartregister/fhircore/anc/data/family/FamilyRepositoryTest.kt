@@ -83,10 +83,14 @@ class FamilyRepositoryTest : RobolectricTest() {
   @Test
   fun testLoadAllShouldReturnListOfFamilyItem() {
     val patients =
-      listOf(buildPatient("1111", "Family1", "Given1"), buildPatient("2222", "Family2", "Given2"))
+      listOf(buildPatient("1111", "Family1", "Given1", true), buildPatient("2222", "Family2", "Given2"))
 
-    coEvery { ancPatientRepository.searchCarePlan(any()) } returns emptyList()
     coEvery { fhirEngine.search<Patient>(any()) } returns patients
+    coEvery { ancPatientRepository.searchCarePlan(any(), any()) } returns emptyList()
+    coEvery { ancPatientRepository.searchCondition(any()) } returns emptyList()
+    coEvery { ancPatientRepository.searchPatientByLink(any()) } returns patients
+    coEvery { fhirEngine.load(Patient::class.java, "1111") } returns patients[0]
+    coEvery { fhirEngine.load(Patient::class.java, "2222") } returns patients[1]
     coEvery { fhirEngine.count(any()) } returns 10
 
     runBlocking {
@@ -175,7 +179,7 @@ class FamilyRepositoryTest : RobolectricTest() {
     Assert.assertEquals(expected.primaryFilter?.valueType, actual.primaryFilter?.valueType)
   }
 
-  private fun buildPatient(id: String, family: String, given: String): Patient {
+  private fun buildPatient(id: String, family: String, given: String, isHead: Boolean = false): Patient {
     return Patient().apply {
       this.id = id
       this.addName().apply {
@@ -186,6 +190,8 @@ class FamilyRepositoryTest : RobolectricTest() {
         district = "Dist 1"
         city = "City 1"
       }
+      if (isHead)
+        meta.addTag().display = "family"
     }
   }
 }

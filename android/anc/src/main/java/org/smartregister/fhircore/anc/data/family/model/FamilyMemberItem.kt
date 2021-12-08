@@ -25,7 +25,9 @@ data class FamilyMemberItem(
   val id: String,
   val age: String,
   val gender: String,
-  val pregnant: Boolean,
+  val pregnant: Boolean? = null,
   val houseHoldHead: Boolean,
-  val deathDate: Date?
+  val deathDate: Date? = null,
+  val servicesDue: Int? = null,
+  val servicesOverdue: Int? = null
 )

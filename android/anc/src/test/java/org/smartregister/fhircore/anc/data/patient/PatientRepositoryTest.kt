@@ -114,6 +114,7 @@ class PatientRepositoryTest : RobolectricTest() {
           else -> Patient()
         }
       }
+    coEvery { fhirEngine.search<Condition>(any()) } returns emptyList()
 
     val demographics = runBlocking { repository.fetchDemographics(PATIENT_ID_1) }
     verifyPatient(demographics.patientDetails)
@@ -420,6 +421,7 @@ class PatientRepositoryTest : RobolectricTest() {
         district = "Dist 1"
         city = "City 1"
       }
+      active = true
     }
   }
 

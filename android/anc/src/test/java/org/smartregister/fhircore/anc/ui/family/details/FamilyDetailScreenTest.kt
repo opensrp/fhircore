@@ -33,6 +33,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
+import java.util.Date
 
 class FamilyDetailScreenTest : RobolectricTest() {
 
@@ -80,14 +83,14 @@ class FamilyDetailScreenTest : RobolectricTest() {
 
   @Test
   fun testMemberHeadingComponent() {
-    composeRule.setContent { MemberHeading { listenerObjectSpy.onAddMemberItemClick() } }
+    composeRule.setContent { MemberHeading(listenerObjectSpy::onAddMemberItemClick, {}) }
     composeRule.onNodeWithText("Members".uppercase()).assertExists()
     composeRule.onNodeWithText("Members".uppercase()).assertIsDisplayed()
   }
 
   @Test
   fun testMembersList() {
-    val familyMember = FamilyMemberItem("James", "1", "18", "Male", false, false)
+    val familyMember = FamilyMemberItem("James", "1", "18", "Male", false, false, Date(), 2, 4)
     val familyMembers = listOf(familyMember)
 
     composeRule.setContent {
@@ -98,6 +101,8 @@ class FamilyDetailScreenTest : RobolectricTest() {
     composeRule.onNodeWithText("James").assertExists()
     composeRule.onNodeWithText("James").assertIsDisplayed()
 
+    composeRule.onNodeWithText("Deceased("+Date().makeItReadable()+")").assertIsDisplayed()
+
     // Forward arrow image is displayed
     composeRule.onNodeWithContentDescription("Forward arrow").assertExists()
     composeRule.onNodeWithContentDescription("Forward arrow").assertIsDisplayed()
@@ -105,7 +110,7 @@ class FamilyDetailScreenTest : RobolectricTest() {
 
   @Test
   fun testMembersListWithPregnantHeadOfHouseHold() {
-    val familyMember = FamilyMemberItem("Jane", "1", "18", "Female", true, true)
+    val familyMember = FamilyMemberItem("Jane", "1", "18", "Female", true, true, null, 1, 2)
     val familyMembers = listOf(familyMember)
 
     composeRule.setContent {

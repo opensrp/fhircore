@@ -93,16 +93,9 @@ fun FamilyRow(
         Dot(
           modifier = modifier,
           showDot =
-            familyItem.address.isNotEmpty() &&
-              (familyItem.isPregnant || familyItem.members.any { it.pregnant })
+            familyItem.address.isNotEmpty() && familyItem.members.any { it.pregnant == true }
         )
-        if (familyItem.isPregnant) {
-          Image(
-            painter = painterResource(R.drawable.ic_pregnant),
-            contentDescription = stringResource(id = R.string.pregnant_woman)
-          )
-        }
-        familyItem.members.filter { it.pregnant }.forEach { _ ->
+        familyItem.members.filter { it.pregnant == true }.forEach { _ ->
           Image(
             painter = painterResource(R.drawable.ic_pregnant),
             contentDescription = stringResource(id = R.string.pregnant_woman)
@@ -115,14 +108,14 @@ fun FamilyRow(
       horizontalArrangement = Arrangement.SpaceAround,
       verticalAlignment = Alignment.CenterVertically
     ) {
-      if (familyItem.servicesOverdue > 0) {
+      if (familyItem.servicesOverdue != null && familyItem.servicesOverdue > 0) {
         ServicesCard(
           modifier = modifier,
           text = familyItem.servicesOverdue.toString(),
           color = OverdueDarkRedColor
         )
       }
-      if (familyItem.servicesDue > 0) {
+      if (familyItem.servicesDue != null && familyItem.servicesDue > 0) {
         ServicesCard(
           modifier = modifier,
           text = familyItem.servicesDue.toString(),
@@ -146,9 +139,9 @@ fun ServicesCard(modifier: Modifier, text: String, color: Color) {
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun FamilyRowPreview() {
-  val fmi = FamilyMemberItem("fmname", "fm1", "21", "F", true, false, Date())
+  val fmi = FamilyMemberItem("fmname", "fm1", "21", "F", true, false, Date(), 2, 3)
 
   val familyItem =
-    FamilyItem("fid", "1111", "Name ", "M", "27", Date(), "Nairobi", true, listOf(fmi, fmi, fmi), 4, 5)
+    FamilyItem("fid", "1111", "Name ", "Nairobi", fmi, listOf(fmi, fmi, fmi), 4, 5)
   FamilyRow(familyItem = familyItem, { _, _ -> })
 }

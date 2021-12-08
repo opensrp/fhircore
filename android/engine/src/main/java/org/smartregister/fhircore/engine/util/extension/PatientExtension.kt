@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.content.Context
+import org.hl7.fhir.r4.model.Condition
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Date
@@ -142,8 +143,13 @@ fun Patient.extractDeathDate() = if (this.hasDeceasedDateTimeType()) deceasedDat
 fun String?.join(other: String?, separator: String) =
   this.orEmpty().plus(other?.plus(separator).orEmpty())
 
-fun Patient.isPregnant() = this.extension.any { it.value.toString().contains("pregnant", true) }
-
 fun Patient.extractFamilyTag() = this.meta.tag.singleOrNull { it.display.contentEquals("family", true) || it.display.contains("head", true) }
 
 fun Patient.isFamilyHead() = this.extractFamilyTag() != null
+
+fun List<Condition>.hasActivePregnancy() =
+  this.any {
+    it.clinicalStatus.coding.any { it.code == "active" }
+    it.code.text.contentEquals("pregnant", true)
+    it.code.coding.any { it.display.contentEquals("pregnant", true) }
+  }

@@ -22,13 +22,8 @@ import android.app.DatePickerDialog
 import android.content.DialogInterface
 import android.content.res.Resources
 import android.os.Build
-import android.view.ContextThemeWrapper
 import android.view.View
-import android.view.inputmethod.EditorInfo
-import android.widget.DatePicker
-import android.widget.EditText
 import android.widget.TextView
-import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.core.view.get
 import androidx.core.view.setPadding
@@ -39,6 +34,7 @@ import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.engine.util.extension.show
 import java.util.Calendar
 import java.util.Date
+import kotlin.reflect.KFunction1
 
 enum class AlertIntent {
   PROGRESS,
@@ -51,9 +47,6 @@ data class AlertDialogListItem(val key: String, val value: String)
 
 object AlertDialogue {
   private val ITEMS_LIST_KEY = "alert_dialog_items_list"
-
-  fun AlertDialog.getSingleChoiceSelectedValue() =
-    getSingleChoiceSelectedItem()?.value
 
   fun AlertDialog.getSingleChoiceSelectedKey() =
     getSingleChoiceSelectedItem()?.key
@@ -162,7 +155,7 @@ object AlertDialogue {
     @StringRes title: Int? = null,
     confirmButtonListener: ((d: DialogInterface) -> Unit),
     @StringRes confirmButtonText: Int,
-    options: Array<AlertDialogListItem>? = null
+    options: List<AlertDialogListItem>? = null
   ): AlertDialog {
     return showAlert(
       context = context,
@@ -173,19 +166,22 @@ object AlertDialogue {
       confirmButtonText = confirmButtonText,
       neutralButtonListener = { d -> d.dismiss() },
       neutralButtonText = R.string.questionnaire_alert_neutral_button_title,
-      options = options
+      options = options?.toTypedArray()
     )
   }
 
-  @RequiresApi(Build.VERSION_CODES.N)
   fun showDatePrompt(context: Activity,
                      confirmButtonListener: ((d: Date) -> Unit),
                      confirmButtonText: String,
                      max: Date?,
+                     default: Date = Date(),
                      title: String?,
-                     dangerActionColor: Boolean = true
+                     dangerActionColor: Boolean = true,
                      ): DatePickerDialog {
-    val dateDialog = DatePickerDialog(context).apply {
+    val dateDialog = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) DatePickerDialog(context)
+    else DatePickerDialog(context, null, default.year, default.month, default.date)
+
+    dateDialog.apply {
       max?.let {
         this.datePicker.maxDate = it.time
       }
