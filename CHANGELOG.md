@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EIR | Integrate Hilt Dependency Injection
 
 - Engine | Integrate Hilt Dependency Injection
+- ANC | Implement vital signs observation extraction from questionnaires
 
 ### Fixed
 - ANC | Resolved a bug in the Patient details : App crash when computing BMI
