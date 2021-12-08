@@ -19,7 +19,6 @@ package org.smartregister.fhircore.mwcore.util
 import org.smartregister.fhircore.engine.configuration.ConfigClassification
 
 enum class MwCoreConfigClassification : ConfigClassification {
-  PATIENT_REGISTER,
-  LOGIN;
+  PATIENT_REGISTER;
   override val classification: String = name.lowercase()
 }

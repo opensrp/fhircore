@@ -16,33 +16,27 @@
 
 package org.smartregister.fhircore.mwcore
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import androidx.annotation.VisibleForTesting
-import ca.uhn.fhir.context.FhirContext
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.AttachmentResolver
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Binary
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 
-class ReferenceAttachmentResolver(val context: Context) : AttachmentResolver {
+class ReferenceAttachmentResolver
+@Inject
+constructor(val fhirEngine: FhirEngine, val fhirResourceService: FhirResourceService) :
+  AttachmentResolver {
 
-  override suspend fun resolveBinaryResource(uri: String): Binary? {
+  override suspend fun resolveBinaryResource(uri: String): Binary {
     return uri.substringAfter("Binary/").substringBefore("/").run {
-      MwCoreApplication.getContext().fhirEngine.load(Binary::class.java, this)
+      fhirEngine.load(Binary::class.java, this)
     }
   }
 
-  @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-  fun getFhirService(): FhirResourceService {
-    return FhirResourceService.create(
-      FhirContext.forR4().newJsonParser(),
-      MwCoreApplication.getContext()
-    )
-  }
-
   override suspend fun resolveImageUrl(uri: String): Bitmap? {
-    return getFhirService().fetchImage(uri).execute().run {
+    return fhirResourceService.fetchImage(uri).execute().run {
       if (this.body() != null) {
         BitmapFactory.decodeStream(this.body()?.byteStream())
       } else {

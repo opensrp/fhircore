@@ -18,33 +18,24 @@ package org.smartregister.fhircore.mwcore.ui.patient.details
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
+import androidx.activity.viewModels
+import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.mwcore.MwCoreApplication
-import org.smartregister.fhircore.mwcore.data.patient.PatientRepository
-import org.smartregister.fhircore.mwcore.ui.patient.register.PatientItemMapper
 
+@AndroidEntryPoint
 class QuestPatientTestResultActivity : BaseMultiLanguageActivity() {
 
   private lateinit var patientId: String
 
+  val patientViewModel by viewModels<QuestPatientDetailViewModel>()
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: "1"
-    val fhirEngine = (MwCoreApplication.getContext() as ConfigurableApplication).fhirEngine
-    val repository = PatientRepository(fhirEngine, PatientItemMapper)
-    val viewModel =
-      QuestPatientDetailViewModel.get(this, application as MwCoreApplication, repository, patientId)
-
-    viewModel.setOnBackPressListener(this::onBackPressListener)
-
-    setContent { AppTheme { QuestPatientTestResultScreen(viewModel) } }
-  }
-
-  private fun onBackPressListener() {
-    finish()
+    patientViewModel.onBackPressClicked.observe(this, { finish() })
+    patientViewModel.getDemographics(patientId)
+    setContent { AppTheme { QuestPatientTestResultScreen(patientViewModel) } }
   }
 }

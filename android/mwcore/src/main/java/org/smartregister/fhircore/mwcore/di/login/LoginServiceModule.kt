@@ -14,24 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.mwcore
+package org.smartregister.fhircore.mwcore.di.login
 
-import android.app.Application
-import com.google.android.fhir.datacapture.DataCaptureConfig
-import dagger.hilt.android.HiltAndroidApp
-import timber.log.Timber
-import javax.inject.Inject
+import dagger.Binds
+import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ActivityComponent
+import org.smartregister.fhircore.engine.ui.login.LoginService
+import org.smartregister.fhircore.mwcore.ui.login.MwCoreLoginService
 
-@HiltAndroidApp
-class MwCoreApplication : Application() {
-  @Inject
-  lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
+@InstallIn(ActivityComponent::class)
+@Module
+abstract class LoginServiceModule {
 
-  override fun onCreate() {
-    super.onCreate()
-    if (BuildConfig.DEBUG) {
-      Timber.plant(Timber.DebugTree())
-    }
-    DataCaptureConfig.attachmentResolver = referenceAttachmentResolver
-  }
+  @Binds abstract fun bindLoginService(mwCoreLoginService: MwCoreLoginService): LoginService
 }

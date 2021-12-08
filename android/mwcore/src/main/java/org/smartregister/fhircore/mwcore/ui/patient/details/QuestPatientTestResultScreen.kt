@@ -35,86 +35,77 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-import org.smartregister.fhircore.engine.util.extension.extractAge
-import org.smartregister.fhircore.engine.util.extension.extractGender
-import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.mwcore.R
 
+const val PATIENT_BIO_INFO = "patientBioInfo"
+
 @Composable
-fun QuestPatientTestResultScreen(dataProvider: QuestPatientDetailDataProvider) {
+fun QuestPatientTestResultScreen(questPatientDetailViewModel: QuestPatientDetailViewModel) {
+  val patientItem by questPatientDetailViewModel.patientItem.observeAsState(null)
 
   Surface(color = colorResource(id = R.color.white_smoke)) {
     Column {
       TopAppBar(
-        title = { Text(text = stringResource(id = R.string.back_to_clients)) },
+        title = {
+          Text(
+            text = stringResource(id = R.string.back_to_clients),
+            Modifier.testTag(TOOLBAR_TITLE)
+          )
+        },
         navigationIcon = {
-          IconButton(onClick = { dataProvider.onBackPressListener().invoke() }) {
-            Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")
-          }
+          IconButton(
+            onClick = { questPatientDetailViewModel.onBackPressed(true) },
+            Modifier.testTag(TOOLBAR_BACK_ARROW)
+          ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
         }
       )
-
-      // full name with gender and age
-      val patient = dataProvider.getDemographics().observeAsState().value
-
       Column(
         modifier =
-          Modifier.fillMaxWidth()
-            .background(color = colorResource(id = R.color.colorPrimary))
-            .padding(12.dp)
+        Modifier.fillMaxWidth()
+          .background(color = colorResource(id = R.color.colorPrimary))
+          .padding(12.dp)
+          .testTag(PATIENT_BIO_INFO)
       ) {
         Text(
-          text = patient?.extractName() ?: "",
+          text = patientItem?.name ?: "",
           color = colorResource(id = R.color.white),
           fontSize = 18.sp,
           fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-          text = "${patient?.extractGender(LocalContext.current)} - ${patient?.extractAge() ?: ""}",
+          text = "${patientItem?.gender} - ${patientItem?.age ?: ""}",
           color = colorResource(id = R.color.cornflower_blue),
           fontSize = 16.sp
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-          text = "TEST RESULTS",
+          text = stringResource(R.string.patient_test_results),
           color = colorResource(id = R.color.cornflower_blue),
           fontSize = 16.sp
         )
       }
 
-      // forms
       Column(
         modifier =
-          Modifier.fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(start = 12.dp, end = 12.dp)
+        Modifier.fillMaxSize()
+          .verticalScroll(rememberScrollState())
+          .padding(start = 12.dp, end = 12.dp)
       ) {
         Spacer(Modifier.height(24.dp))
         Text(
-          text = "No test results found",
+          text = stringResource(R.string.no_test_results_found),
           color = colorResource(id = R.color.grayText),
           fontSize = 15.sp,
         )
       }
     }
   }
-}
-
-@Preview
-@Composable
-@ExcludeFromJacocoGeneratedReport
-fun PreviewQuestPatientTestResultScreen() {
-  AppTheme { QuestPatientTestResultScreen(dummyQuestPatientDetailDataProvider()) }
 }
