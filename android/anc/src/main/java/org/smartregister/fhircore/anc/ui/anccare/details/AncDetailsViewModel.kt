@@ -113,8 +113,10 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
 
   fun deletePatient(patientId: String, reason: DeletionReason): LiveData<Boolean> {
     val changed = MutableLiveData(false)
-    viewModelScope.launch(dispatcher.io()) { patientRepository.deletePatient(patientId, reason)
-    changed.postValue(true)}
+    viewModelScope.launch(dispatcher.io()) {
+      patientRepository.deletePatient(patientId, reason)
+      changed.postValue(true)
+    }
     return changed
   }
 

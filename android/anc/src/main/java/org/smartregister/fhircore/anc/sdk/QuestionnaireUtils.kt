@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.sdk
 
 import com.google.android.fhir.logicalId
+import java.util.Date
 import java.util.UUID
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -32,7 +33,6 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.util.extension.find
-import java.util.Date
 
 object QuestionnaireUtils {
   private const val flaggableKey = "flag-detail"

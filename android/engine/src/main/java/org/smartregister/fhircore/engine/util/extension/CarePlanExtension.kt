@@ -20,10 +20,10 @@ import java.util.Date
 import org.hl7.fhir.r4.model.CarePlan
 
 /** If no period.start specified plan is always available unless status suggests so */
-fun CarePlan.started() = period?.start?.before(Date())?:true
+fun CarePlan.started() = period?.start?.before(Date()) ?: true
 
 /** If no period.end specified plan never ends unless status suggests so */
-fun CarePlan.ended() = period?.end?.before(Date())?:false
+fun CarePlan.ended() = period?.end?.before(Date()) ?: false
 
 fun CarePlan.due() = status.equals(CarePlan.CarePlanStatus.ACTIVE) && started() && !ended()
 
@@ -31,11 +31,11 @@ fun CarePlan.overdue() = status.equals(CarePlan.CarePlanStatus.ACTIVE) && ended(
 
 /** If no scheduledPeriod.start specified activity detail is always available */
 fun CarePlan.CarePlanActivityDetailComponent.started(): Boolean =
-  scheduledPeriod?.start?.before(Date())?:true
+  scheduledPeriod?.start?.before(Date()) ?: true
 
 /** If no scheduledPeriod.end specified activity detail never ends */
 fun CarePlan.CarePlanActivityDetailComponent.ended(): Boolean =
-  scheduledPeriod?.end?.before(Date())?:false
+  scheduledPeriod?.end?.before(Date()) ?: false
 
 fun CarePlan.CarePlanActivityDetailComponent.due() =
   status.isIn(

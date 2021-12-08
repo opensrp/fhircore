@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.anc.data.family.model
 
 import androidx.compose.runtime.Stable
-import java.util.Date
 
 @Stable
 data class FamilyItem(

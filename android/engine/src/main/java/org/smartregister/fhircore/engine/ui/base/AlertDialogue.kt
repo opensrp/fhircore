@@ -27,14 +27,11 @@ import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.core.view.get
 import androidx.core.view.setPadding
-import kotlinx.serialization.Serializable
-import org.checkerframework.checker.units.qual.m
+import java.util.Calendar
+import java.util.Date
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.engine.util.extension.show
-import java.util.Calendar
-import java.util.Date
-import kotlin.reflect.KFunction1
 
 enum class AlertIntent {
   PROGRESS,
@@ -48,11 +45,10 @@ data class AlertDialogListItem(val key: String, val value: String)
 object AlertDialogue {
   private val ITEMS_LIST_KEY = "alert_dialog_items_list"
 
-  fun AlertDialog.getSingleChoiceSelectedKey() =
-    getSingleChoiceSelectedItem()?.key
+  fun AlertDialog.getSingleChoiceSelectedKey() = getSingleChoiceSelectedItem()?.key
 
   fun AlertDialog.getSingleChoiceSelectedItem() =
-    if(this.listView.checkedItemCount != 1) null
+    if (this.listView.checkedItemCount != 1) null
     else getListItems()!![this.listView.checkedItemPosition]
 
   fun AlertDialog.getListItems() =
@@ -83,9 +79,7 @@ object AlertDialogue {
           confirmButtonListener?.let {
             setPositiveButton(confirmButtonText) { d, _ -> confirmButtonListener.invoke(d) }
           }
-          options?.run {
-            setSingleChoiceItems(options.map { it.value }.toTypedArray(), -1, null)
-          }
+          options?.run { setSingleChoiceItems(options.map { it.value }.toTypedArray(), -1, null) }
         }
         .show()
 
@@ -170,47 +164,49 @@ object AlertDialogue {
     )
   }
 
-  fun showDatePrompt(context: Activity,
-                     confirmButtonListener: ((d: Date) -> Unit),
-                     confirmButtonText: String,
-                     max: Date?,
-                     default: Date = Date(),
-                     title: String?,
-                     dangerActionColor: Boolean = true,
-                     ): DatePickerDialog {
-    val dateDialog = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) DatePickerDialog(context)
-    else DatePickerDialog(context, null, default.year, default.month, default.date)
+  fun showDatePrompt(
+    context: Activity,
+    confirmButtonListener: ((d: Date) -> Unit),
+    confirmButtonText: String,
+    max: Date?,
+    default: Date = Date(),
+    title: String?,
+    dangerActionColor: Boolean = true,
+  ): DatePickerDialog {
+    val dateDialog =
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) DatePickerDialog(context)
+      else DatePickerDialog(context, null, default.year, default.month, default.date)
 
     dateDialog.apply {
-      max?.let {
-        this.datePicker.maxDate = it.time
-      }
-      val id = Resources.getSystem().getIdentifier("date_picker_header_date", "id", "android");
+      max?.let { this.datePicker.maxDate = it.time }
+      val id = Resources.getSystem().getIdentifier("date_picker_header_date", "id", "android")
       if (id != 0) {
         this.datePicker.findViewById<TextView>(id).textSize = 14f
       }
 
       title?.let {
-        this.setCustomTitle(TextView(context).apply {
-          this.text = it
-          this.setPadding(20)
-        })
+        this.setCustomTitle(
+          TextView(context).apply {
+            this.text = it
+            this.setPadding(20)
+          }
+        )
       }
 
-      this.setButton(DialogInterface.BUTTON_POSITIVE, confirmButtonText){d, _ ->
-        val date = Calendar.getInstance().apply {
-          (d as DatePickerDialog).datePicker.let {
-            this.set(it.year, it.month, it.dayOfMonth)
+      this.setButton(DialogInterface.BUTTON_POSITIVE, confirmButtonText) { d, _ ->
+        val date =
+          Calendar.getInstance().apply {
+            (d as DatePickerDialog).datePicker.let { this.set(it.year, it.month, it.dayOfMonth) }
           }
-        }
-        confirmButtonListener.invoke (date.time)
+        confirmButtonListener.invoke(date.time)
       }
     }
 
     dateDialog.create()
 
     if (dangerActionColor)
-      dateDialog.getButton(DialogInterface.BUTTON_POSITIVE)
+      dateDialog
+        .getButton(DialogInterface.BUTTON_POSITIVE)
         .setTextColor(context.resources.getColor(R.color.colorError))
 
     dateDialog.show()

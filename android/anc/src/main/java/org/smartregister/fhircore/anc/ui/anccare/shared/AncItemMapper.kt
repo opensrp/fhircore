@@ -35,7 +35,12 @@ import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.overdue
 
-data class Anc(val patient: Patient, val head: Patient?, val conditions: List<Condition>, val carePlans: List<CarePlan>)
+data class Anc(
+  val patient: Patient,
+  val head: Patient?,
+  val conditions: List<Condition>,
+  val carePlans: List<CarePlan>
+)
 
 class AncItemMapper @Inject constructor(@ApplicationContext val context: Context) :
   DomainMapper<Anc, PatientItem> {

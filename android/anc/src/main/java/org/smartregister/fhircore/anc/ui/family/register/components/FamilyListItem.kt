@@ -44,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.util.Date
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
@@ -54,7 +55,6 @@ import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-import java.util.Date
 
 @Composable
 fun FamilyRow(
@@ -141,7 +141,6 @@ fun ServicesCard(modifier: Modifier, text: String, color: Color) {
 fun FamilyRowPreview() {
   val fmi = FamilyMemberItem("fmname", "fm1", "21", "F", true, false, Date(), 2, 3)
 
-  val familyItem =
-    FamilyItem("fid", "1111", "Name ", "Nairobi", fmi, listOf(fmi, fmi, fmi), 4, 5)
+  val familyItem = FamilyItem("fid", "1111", "Name ", "Nairobi", fmi, listOf(fmi, fmi, fmi), 4, 5)
   FamilyRow(familyItem = familyItem, { _, _ -> })
 }

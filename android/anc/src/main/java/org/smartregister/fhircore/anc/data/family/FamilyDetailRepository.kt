@@ -42,9 +42,7 @@ constructor(
     withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, familyId) }
 
   suspend fun fetchFamilyMembers(familyId: String): List<FamilyMemberItem> =
-    withContext(dispatcherProvider.io()) {
-      familyRepository.searchFamilyMembers(familyId)
-    }
+    withContext(dispatcherProvider.io()) { familyRepository.searchFamilyMembers(familyId) }
 
   suspend fun fetchEncounters(familyId: String): List<Encounter> =
     withContext(dispatcherProvider.io()) {

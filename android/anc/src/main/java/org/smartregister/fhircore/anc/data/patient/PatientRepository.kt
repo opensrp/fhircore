@@ -121,11 +121,10 @@ constructor(
           .distinctBy { it.subject.extractId() }
 
       val patients =
-        pregnancies.map { fhirEngine.load(Patient::class.java, it.subject.extractId()) }
+        pregnancies
+          .map { fhirEngine.load(Patient::class.java, it.subject.extractId()) }
           .filter { it.active }
-          .sortedBy {
-          it.nameFirstRep.family
-        }
+          .sortedBy { it.nameFirstRep.family }
 
       patients.map {
         val head =
@@ -151,9 +150,7 @@ constructor(
 
   suspend fun searchCondition(patientId: String): List<Condition> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        filterByPatient(Condition.SUBJECT, patientId)
-      }
+      fhirEngine.search { filterByPatient(Condition.SUBJECT, patientId) }
     }
 
   suspend fun searchCarePlan(patientId: String, tag: Coding? = null): List<CarePlan> =
@@ -185,22 +182,20 @@ constructor(
     }
   }
 
-  suspend fun revokeActiveStatusData(patientId: String){
-    fhirEngine.search<Flag> {
-      filterByPatient(Flag.PATIENT, patientId)
-    }.filter {
-      it.status == Flag.FlagStatus.ACTIVE
-    }.forEach {
-      it.status = Flag.FlagStatus.INACTIVE
-      it.period.end = Date()
+  suspend fun revokeActiveStatusData(patientId: String) {
+    fhirEngine
+      .search<Flag> { filterByPatient(Flag.PATIENT, patientId) }
+      .filter { it.status == Flag.FlagStatus.ACTIVE }
+      .forEach {
+        it.status = Flag.FlagStatus.INACTIVE
+        it.period.end = Date()
 
-      fhirEngine.save(it)
-    }
+        fhirEngine.save(it)
+      }
 
-    fhirEngine.search<Condition> {
-      filterByPatient(Condition.PATIENT, patientId)
-    }
-      .filter { it.clinicalStatus.codingFirstRep.code == "active"}
+    fhirEngine
+      .search<Condition> { filterByPatient(Condition.PATIENT, patientId) }
+      .filter { it.clinicalStatus.codingFirstRep.code == "active" }
       .forEach {
         it.clinicalStatus.codingFirstRep.code = "inactive"
         it.abatement = DateTimeType()

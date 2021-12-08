@@ -98,13 +98,14 @@ constructor(
 
   suspend fun searchFamilyMembers(familyHeadId: String): List<FamilyMemberItem> {
     return ancPatientRepository
-        .searchPatientByLink(familyHeadId)
-        .plus(fhirEngine.load(Patient::class.java, familyHeadId))
-        .map {
-          val services = ancPatientRepository.searchCarePlan(it.logicalId)
-          val conditions = ancPatientRepository.searchCondition(it.logicalId)
-          domainMapper.toFamilyMemberItem(it, conditions, services)
-        }.sortedBy { !it.houseHoldHead }
+      .searchPatientByLink(familyHeadId)
+      .plus(fhirEngine.load(Patient::class.java, familyHeadId))
+      .map {
+        val services = ancPatientRepository.searchCarePlan(it.logicalId)
+        val conditions = ancPatientRepository.searchCondition(it.logicalId)
+        domainMapper.toFamilyMemberItem(it, conditions, services)
+      }
+      .sortedBy { !it.houseHoldHead }
   }
 
   suspend fun postProcessFamilyMember(
@@ -201,7 +202,7 @@ constructor(
           member.linkFirstRep.other = newHead.asReference()
 
           fhirEngine.save(member)
-      }
+        }
     }
 
   suspend fun enrollIntoAnc(

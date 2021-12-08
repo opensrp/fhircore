@@ -25,6 +25,7 @@ import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import java.text.SimpleDateFormat
+import java.util.Date
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Period
@@ -33,9 +34,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
-import java.util.Date
 
 class FamilyDetailScreenTest : RobolectricTest() {
 
@@ -101,7 +100,7 @@ class FamilyDetailScreenTest : RobolectricTest() {
     composeRule.onNodeWithText("James").assertExists()
     composeRule.onNodeWithText("James").assertIsDisplayed()
 
-    composeRule.onNodeWithText("Deceased("+Date().makeItReadable()+")").assertIsDisplayed()
+    composeRule.onNodeWithText("Deceased(" + Date().makeItReadable() + ")").assertIsDisplayed()
 
     // Forward arrow image is displayed
     composeRule.onNodeWithContentDescription("Forward arrow").assertExists()

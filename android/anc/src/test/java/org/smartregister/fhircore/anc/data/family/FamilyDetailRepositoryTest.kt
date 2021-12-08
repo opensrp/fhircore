@@ -22,13 +22,9 @@ import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.spyk
-import io.mockk.verify
-import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
-import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
@@ -37,7 +33,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 
@@ -90,9 +85,7 @@ class FamilyDetailRepositoryTest : RobolectricTest() {
   @Test
   fun testFetchFamilyMembersShouldCallSearchFamilyMembers() {
 
-    coEvery {
-      repository.familyRepository.searchFamilyMembers("1111")
-    } returns emptyList()
+    coEvery { repository.familyRepository.searchFamilyMembers("1111") } returns emptyList()
 
     runBlocking { repository.fetchFamilyMembers("1111") }
 

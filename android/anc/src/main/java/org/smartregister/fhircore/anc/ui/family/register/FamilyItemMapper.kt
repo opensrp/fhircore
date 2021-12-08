@@ -36,7 +36,11 @@ import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.isFamilyHead
 import org.smartregister.fhircore.engine.util.extension.overdue
 
-data class Family(val family: Patient, val members: List<FamilyMemberItem>, val familyServicesDue: List<CarePlan>)
+data class Family(
+  val family: Patient,
+  val members: List<FamilyMemberItem>,
+  val familyServicesDue: List<CarePlan>
+)
 
 class FamilyItemMapper
 @Inject
@@ -56,14 +60,16 @@ constructor(
       head = members.first { it.houseHoldHead },
       members = members,
       // TODO for now head in members list contains family services as well
-      servicesDue = members.sumOf { it.servicesDue?:0 },
-      servicesOverdue = members.sumOf { it.servicesOverdue?:0 }
+      servicesDue = members.sumOf { it.servicesDue ?: 0 },
+      servicesOverdue = members.sumOf { it.servicesOverdue ?: 0 }
     )
   }
 
-  fun toFamilyMemberItem(member: Patient,
-                         conditions: List<Condition>? = null,
-                         servicesDue: List<CarePlan>? = null): FamilyMemberItem {
+  fun toFamilyMemberItem(
+    member: Patient,
+    conditions: List<Condition>? = null,
+    servicesDue: List<CarePlan>? = null
+  ): FamilyMemberItem {
     return FamilyMemberItem(
       name = member.extractName(),
       id = member.logicalId,
@@ -72,8 +78,14 @@ constructor(
       pregnant = conditions?.hasActivePregnancy(),
       houseHoldHead = member.isFamilyHead(),
       deathDate = member.extractDeathDate(),
-      servicesDue = servicesDue?.filter { it.due() }?.flatMap { it.activity }?.filter { it.detail.due() }?.size,
-      servicesOverdue = servicesDue?.filter { it.due() }?.flatMap { it.activity }?.filter { it.detail.overdue() }?.size
+      servicesDue =
+        servicesDue?.filter { it.due() }?.flatMap { it.activity }?.filter { it.detail.due() }?.size,
+      servicesOverdue =
+        servicesDue
+          ?.filter { it.due() }
+          ?.flatMap { it.activity }
+          ?.filter { it.detail.overdue() }
+          ?.size
     )
   }
 }

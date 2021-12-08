@@ -22,9 +22,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
@@ -110,17 +108,17 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
   private fun onFamilyHeadChangeRequested(dialog: DialogInterface) {
     val selection = (dialog as AlertDialog).getSingleChoiceSelectedKey()
     if (selection?.isNotBlank() == true) {
-        familyDetailViewModel
-          .changeFamilyHead(familyId, selection)
-          .observe(
-            this@FamilyDetailsActivity,
-            {
-              if (it) {
-                dialog.dismiss()
-                finish()
-              }
+      familyDetailViewModel
+        .changeFamilyHead(familyId, selection)
+        .observe(
+          this@FamilyDetailsActivity,
+          {
+            if (it) {
+              dialog.dismiss()
+              finish()
             }
-          )
+          }
+        )
     } else this.showToast(getString(R.string.invalid_selection))
   }
 

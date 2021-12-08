@@ -145,7 +145,8 @@ class FamilyRegisterActivity : BaseRegisterActivity() {
   }
 
   override fun registerClient(clientIdentifier: String?) {
-    val intent = getFamilyQuestionnaireIntent(clientIdentifier, FamilyFormConstants.FAMILY_REGISTER_FORM)
+    val intent =
+      getFamilyQuestionnaireIntent(clientIdentifier, FamilyFormConstants.FAMILY_REGISTER_FORM)
     startActivity(intent)
   }
 
