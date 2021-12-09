@@ -23,6 +23,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.HumanName
@@ -33,26 +34,28 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 
 class FamilyDetailRepositoryTest : RobolectricTest() {
 
-  private lateinit var repository: FamilyDetailRepository
-
-  private lateinit var fhirEngine: FhirEngine
-
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  private lateinit var repository: FamilyDetailRepository
+  private lateinit var fhirEngine: FhirEngine
+  private lateinit var ancPatientRepository: PatientRepository
 
   @Before
   fun setUp() {
     fhirEngine = mockk()
+    ancPatientRepository = mockk()
     repository =
       FamilyDetailRepository(
         fhirEngine = fhirEngine,
         familyItemMapper = FamilyItemMapper(ApplicationProvider.getApplicationContext()),
         dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
-        ancPatientRepository = mockk(),
+        ancPatientRepository = ancPatientRepository,
         familyRepository = mockk()
       )
   }
@@ -104,5 +107,17 @@ class FamilyDetailRepositoryTest : RobolectricTest() {
 
     Assert.assertEquals(1, items.size)
     Assert.assertEquals("first encounter", items[0].class_?.display)
+  }
+
+  @Test
+  fun testFetchFamilyCarePlansShouldReturnCarePlanList() {
+
+    coEvery { ancPatientRepository.searchCarePlan(any()) } returns
+      listOf(CarePlan().apply { id = "cp1" })
+
+    val carePlans = runBlocking { repository.fetchFamilyCarePlans("") }
+
+    Assert.assertEquals(1, carePlans.size)
+    Assert.assertEquals("cp1", carePlans[0].id)
   }
 }

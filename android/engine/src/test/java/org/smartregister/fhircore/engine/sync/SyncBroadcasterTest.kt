@@ -60,7 +60,6 @@ internal class SyncBroadcasterTest {
   @Test
   @DisplayName("Should register sync listener")
   fun testListenerRegistration() {
-
     Assertions.assertEquals(1, syncBroadcaster.syncListeners.size)
     Assertions.assertNull(syncBroadcaster.syncInitiator)
   }
@@ -81,5 +80,19 @@ internal class SyncBroadcasterTest {
     Assertions.assertNotNull(syncBroadcaster.syncInitiator)
     verify { syncInitiatorSpy.runSync() }
     confirmVerified(syncInitiatorSpy)
+  }
+
+  @Test
+  @DisplayName("Should remove listener")
+  fun testUnRegisterSyncListener() {
+    syncBroadcaster.unRegisterSyncListener(syncListenerSpy)
+    Assertions.assertFalse(syncBroadcaster.syncListeners.isEmpty())
+  }
+
+  @Test
+  @DisplayName("Should do nothing as a sync initiator has already been registered")
+  fun testRegisterSyncInitiatorTwiceShouldDoNothing() {
+    syncBroadcaster.registerSyncInitiator(syncInitiatorSpy)
+    Assertions.assertNotNull(syncBroadcaster.syncInitiator)
   }
 }

@@ -182,6 +182,13 @@ class FamilyRepositoryTest : RobolectricTest() {
     Assert.assertEquals(expected.primaryFilter?.valueType, actual.primaryFilter?.valueType)
   }
 
+  @Test
+  fun testCountAllShouldReturnMoreThanOnePatientCount() {
+    coEvery { fhirEngine.count(any()) } returns 5
+    val count = runBlocking { repository.countAll() }
+    Assert.assertEquals(5, count)
+  }
+
   private fun buildPatient(
     id: String,
     family: String,

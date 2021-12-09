@@ -1,4 +1,3 @@
-
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
@@ -18,7 +17,31 @@ android {
             all {
                 jacoco {
                     includeNoLocationClasses = true
-                    excludes = ['jdk.internal.*']
+                    excludes = [
+                            // Android
+                            'jdk.internal.*',
+                            '**/BuildConfig.*',
+                            '**/*BR*.*',
+                            '**/Manifest*.*',
+                            '**/R.class',
+                            '**/R$*.class',
+                            // kotlin
+                            '**/*$Lambda$*.*',
+                            // Dagger and Hilt
+                            '**/*_Provide*/**',
+                            '**/*_Factory*/**',
+                            '**/*Module*.*',
+                            '**/*_Factory*.*',
+                            '**/*_MembersInjector.class',
+                            '**/*Dagger*',
+                            '**/di/*',
+                            '**/*Hilt*.*',
+                            // Data Binding
+                            'android/databinding/**/*.class',
+                            '**/android/databinding/*Binding.class',
+                            '**/android/databinding/*',
+                            '**/androidx/databinding/*',
+                    ]
                 }
 
                 beforeTest { testDescriptor ->
@@ -142,7 +165,7 @@ dependencies {
     api("androidx.paging:paging-compose:1.0.0-alpha12")
     api("androidx.activity:activity-compose:1.3.1")
     api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2'
-    api ("androidx.work:work-runtime-ktx:2.3.4")
+    api("androidx.work:work-runtime-ktx:2.3.4")
 
     def coroutineVersion = '1.5.1'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
@@ -213,7 +236,7 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     implementation deps.work.runtime
-    testImplementation  group: 'org.json', name: 'json', version: '20210307'
+    testImplementation group: 'org.json', name: 'json', version: '20210307'
 
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
