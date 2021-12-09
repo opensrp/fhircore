@@ -42,6 +42,7 @@ import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
@@ -380,15 +381,17 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       }
 
-    val questionnaireResponse = QuestionnaireResponse()
+    coroutineRule.runBlockingTest {
+      val questionnaireResponse = QuestionnaireResponse()
 
-    questionnaireViewModel.extractAndSaveResources("12345", questionnaire, questionnaireResponse)
+      questionnaireViewModel.extractAndSaveResources("12345", questionnaire, questionnaireResponse)
 
-    coVerify { defaultRepo.addOrUpdate(patient) }
-    coVerify { defaultRepo.addOrUpdate(questionnaireResponse) }
-    coVerify(timeout = 2000) { ResourceMapper.extract(any(), any(), any(), any()) }
+      coVerify { defaultRepo.addOrUpdate(patient) }
+      coVerify { defaultRepo.addOrUpdate(questionnaireResponse) }
+      coVerify(timeout = 10000) { ResourceMapper.extract(any(), any(), any(), any()) }
 
-    unmockkObject(ResourceMapper)
+      unmockkObject(ResourceMapper)
+    }
   }
 
   @Test
