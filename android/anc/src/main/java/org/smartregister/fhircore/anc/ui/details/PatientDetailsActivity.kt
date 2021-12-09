@@ -32,6 +32,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.util.Date
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
+import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.model.demographics
+import org.smartregister.fhircore.anc.data.model.eligibleWoman
+import org.smartregister.fhircore.anc.data.model.nonPregnantEligibleWoman
 import org.smartregister.fhircore.anc.data.patient.DeletionReason
 import org.smartregister.fhircore.anc.databinding.ActivityNonAncDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
@@ -52,9 +56,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
   private lateinit var adapter: ViewPagerAdapter
   private lateinit var patientId: String
-  private var isPregnant: Boolean = false
-  private var isMale: Boolean = false
-  private var isFamilyHead: Boolean = false
+  private var patient: PatientItem? = null
 
   val ancDetailsViewModel by viewModels<AncDetailsViewModel>()
   private lateinit var activityAncDetailsBinding: ActivityNonAncDetailsBinding
@@ -87,12 +89,14 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
   }
 
   override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-    menu.findItem(R.id.anc_enrollment).run { this.isVisible = !isMale && !isPregnant }
-    menu.findItem(R.id.pregnancy_outcome).run { this.isVisible = !isMale }
+    menu.findItem(R.id.anc_enrollment).run {
+      this.isVisible = patient?.nonPregnantEligibleWoman() == true
+    }
+    menu.findItem(R.id.pregnancy_outcome).run { this.isVisible = patient?.eligibleWoman() == true }
 
     menu.findItem(R.id.remove_this_person).run {
       highlightItem(this)
-      this.isVisible = !isFamilyHead
+      this.isVisible = patient?.isHouseHoldHead != true
     }
     menu.findItem(R.id.log_death).run { highlightItem(this) }
     return super.onPrepareOptionsMenu(menu)
@@ -178,58 +182,34 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
     }
   }
 
-  private fun handlePatientDemographics(patient: PatientDetailItem) {
-    with(patient) {
-      val patientDetails =
-        listOf(this.patientDetails.name, this.patientDetails.gender, this.patientDetails.age)
-          .joinToString(separator = ", ")
-      val patientAddress =
-        if (this.patientDetailsHead.demographics.isNotBlank()) this.patientDetailsHead.demographics
-        else this.patientDetails.demographics
-      val houseHoldHeadText =
-        if (this.patientDetails.isHouseHoldHead) getString(R.string.head_of_household) else ""
+  private fun handlePatientDemographics(patientDetailItem: PatientDetailItem) {
+    with(patientDetailItem) {
       val patientIdText =
-        listOf(patientAddress, "ID: ${this.patientDetails.patientIdentifier}", houseHoldHeadText)
+        listOf(
+            this.patientDetails.address,
+            "ID: ${this.patientDetails.patientIdentifier}",
+            if (this.patientDetails.isHouseHoldHead == true) getString(R.string.head_of_household)
+            else ""
+          )
           .joinToString(separator = " " + getString(R.string.bullet_character) + " ")
-      activityAncDetailsBinding.txtViewPatientDetails.text = patientDetails
+      activityAncDetailsBinding.txtViewPatientDetails.text = this.patientDetails.demographics()
       activityAncDetailsBinding.txtViewPatientId.text = patientIdText
-      isMale = this.patientDetails.gender == getString(R.string.male)
-      isPregnant = this.patientDetails.isPregnant
-      isFamilyHead = this.patientDetails.isHouseHoldHead
+      patient = this.patientDetails
 
-      if (isMale) {
-        adapter =
-          ViewPagerAdapter(
-            fragmentManager = supportFragmentManager,
-            lifecycle = lifecycle,
-            isPregnant = false,
-            bundleOf =
-              bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
-          )
-        activityAncDetailsBinding.pager.adapter = adapter
-        TabLayoutMediator(activityAncDetailsBinding.tablayout, activityAncDetailsBinding.pager) {
-            tab,
-            position ->
-            tab.text = details[position]
-          }
-          .attach()
-      } else {
-        adapter =
-          ViewPagerAdapter(
-            fragmentManager = supportFragmentManager,
-            lifecycle = lifecycle,
-            isPregnant = isPregnant,
-            bundleOf =
-              bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
-          )
-        activityAncDetailsBinding.pager.adapter = adapter
-        TabLayoutMediator(activityAncDetailsBinding.tablayout, activityAncDetailsBinding.pager) {
-            tab,
-            position ->
-            tab.text = details[position]
-          }
-          .attach()
-      }
+      adapter =
+        ViewPagerAdapter(
+          fragmentManager = supportFragmentManager,
+          lifecycle = lifecycle,
+          isPregnant = patient!!.isPregnant == true,
+          bundleOf = bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
+        )
+      activityAncDetailsBinding.pager.adapter = adapter
+      TabLayoutMediator(activityAncDetailsBinding.tablayout, activityAncDetailsBinding.pager) {
+          tab,
+          position ->
+          tab.text = details[position]
+        }
+        .attach()
     }
   }
   private fun onDeleteFamilyMemberRequested(dialog: DialogInterface) {

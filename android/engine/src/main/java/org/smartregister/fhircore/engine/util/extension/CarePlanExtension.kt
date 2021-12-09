@@ -29,6 +29,10 @@ fun CarePlan.due() = status.equals(CarePlan.CarePlanStatus.ACTIVE) && started() 
 
 fun CarePlan.overdue() = status.equals(CarePlan.CarePlanStatus.ACTIVE) && ended()
 
+fun CarePlan.milestonesDue() = this.activity.filter { it.due() }
+
+fun CarePlan.milestonesOverdue() = this.activity.filter { it.overdue() }
+
 /** If no scheduledPeriod.start specified activity detail is always available */
 fun CarePlan.CarePlanActivityDetailComponent.started(): Boolean =
   scheduledPeriod?.start?.before(Date()) ?: true
@@ -37,14 +41,18 @@ fun CarePlan.CarePlanActivityDetailComponent.started(): Boolean =
 fun CarePlan.CarePlanActivityDetailComponent.ended(): Boolean =
   scheduledPeriod?.end?.before(Date()) ?: false
 
-fun CarePlan.CarePlanActivityDetailComponent.due() =
-  status.isIn(
-    CarePlan.CarePlanActivityStatus.SCHEDULED,
-    CarePlan.CarePlanActivityStatus.NOTSTARTED
-  ) && started() && !ended()
+fun CarePlan.CarePlanActivityComponent.due() =
+  if (!hasDetail()) true
+  else
+    detail.status.isIn(
+      CarePlan.CarePlanActivityStatus.SCHEDULED,
+      CarePlan.CarePlanActivityStatus.NOTSTARTED
+    ) && detail.started() && !detail.ended()
 
-fun CarePlan.CarePlanActivityDetailComponent.overdue() =
-  status.isIn(
-    CarePlan.CarePlanActivityStatus.SCHEDULED,
-    CarePlan.CarePlanActivityStatus.NOTSTARTED
-  ) && ended()
+fun CarePlan.CarePlanActivityComponent.overdue() =
+  if (!hasDetail()) false
+  else
+    detail.status.isIn(
+      CarePlan.CarePlanActivityStatus.SCHEDULED,
+      CarePlan.CarePlanActivityStatus.NOTSTARTED
+    ) && detail.ended()

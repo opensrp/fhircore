@@ -52,6 +52,7 @@ import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.util.Date
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
@@ -60,13 +61,15 @@ import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.extension.plusYears
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun PreviewResultItemIndividual() {
   ResultItemIndividual(
-    selectedPatient = PatientItem(demographics = "Jacky Coughlin, F, 27"),
+    selectedPatient =
+      PatientItem(name = "Jacky Coughlin", gender = "F", birthDate = Date().plusYears(27)),
     isMatchedIndicator = true,
     indicatorStatus = "True",
     indicatorDescription = "Jacky Got her first ANC contact"
@@ -88,7 +91,7 @@ fun PreviewIndividualReportResult() {
     endDate = "29 Nov, 2021",
     isAllPatientSelection = false,
     selectedPatient =
-      PatientItem(name = "Test Selected Patient", demographics = "Test Select, F, 28"),
+      PatientItem(name = "Test Selected Patient", gender = "F", birthDate = Date().plusYears(28)),
     ResultItem(
       status = "True",
       isMatchedIndicator = true,
@@ -115,7 +118,7 @@ fun PreviewAllPatientReportResult() {
     endDate = "29 Nov, 2021",
     isAllPatientSelection = true,
     selectedPatient =
-      PatientItem(name = "Test Selected Patient", demographics = "Test Select, F, 28"),
+      PatientItem(name = "Test Selected Patient", gender = "F", birthDate = Date().plusYears(27)),
     resultForIndividual = ResultItem(),
     resultItemPopulation =
       listOf(
@@ -225,7 +228,7 @@ fun ResultItemIndividual(
     ) {
       Text(
         color = SubtitleTextColor,
-        text = selectedPatient.demographics,
+        text = selectedPatient.address,
         fontSize = 16.sp,
         modifier = Modifier.wrapContentWidth().testTag(REPORT_RESULT_PATIENT_DATA)
       )

@@ -69,8 +69,6 @@ import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
-import org.smartregister.fhircore.engine.util.extension.extractAge
-import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
@@ -230,8 +228,8 @@ constructor(
               patientIdentifier = patient.logicalId,
               name = patientHead.extractName(),
               gender = patientHead.extractGender(context) ?: "",
-              age = patientHead.extractAge(),
-              demographics = patientHead.extractAddress()
+              birthDate = patientHead.birthDate,
+              address = patientHead.extractAddress()
             )
         }
 
@@ -241,9 +239,8 @@ constructor(
             name = patient.extractName(),
             gender = patient.extractGender(context) ?: "",
             isPregnant = searchCondition(patient.logicalId).hasActivePregnancy(),
-            age = patient.extractAge(),
-            familyName = patient.extractFamilyName(),
-            demographics = patient.extractAddress(),
+            birthDate = patient.birthDate,
+            address = patient.extractAddress(),
             isHouseHoldHead = patient.link.isEmpty()
           )
         ancPatientDetailItem = PatientDetailItem(ancPatientItem, ancPatientItemHead)

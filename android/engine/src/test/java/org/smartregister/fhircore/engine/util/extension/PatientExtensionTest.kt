@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Patient
 import org.junit.Assert
 import org.junit.jupiter.api.Test
@@ -35,6 +36,58 @@ class PatientExtensionTest {
       }
 
     Assert.assertEquals("12 B, Gulshan, Karimabad Sindh", patient.extractAddress())
+  }
+
+  @Test
+  fun testIsFamilyHeadShouldReturnTrueWithTagFamily() {
+    val patient = Patient().apply { meta.addTag().display = "FamiLy" }
+
+    Assert.assertTrue(patient.isFamilyHead())
+  }
+
+  @Test
+  fun testIsFamilyHeadShouldReturnTrueWithNoTagAsFamily() {
+    val patient = Patient().apply { meta.addTag().display = "Pregnant" }
+
+    Assert.assertFalse(patient.isFamilyHead())
+  }
+
+  @Test
+  fun testHasActivePregnancyShouldReturnTrueWithActivePregnancyCondition() {
+    val conditions =
+      listOf(
+        Condition().apply {
+          this.clinicalStatus.addCoding().code = "L123"
+          this.clinicalStatus.addCoding().code = "active"
+          this.code.addCoding().display = "OCD"
+        },
+        Condition().apply {
+          this.clinicalStatus.addCoding().code = "L123"
+          this.clinicalStatus.addCoding().code = "active"
+          this.code.addCoding().display = "preGnant"
+        }
+      )
+
+    Assert.assertTrue(conditions.hasActivePregnancy())
+  }
+
+  @Test
+  fun testHasActivePregnancyShouldReturnFalseWithNoActivePregnancyCondition() {
+    val conditions =
+      listOf(
+        Condition().apply {
+          this.clinicalStatus.addCoding().code = "L123"
+          this.clinicalStatus.addCoding().code = "active"
+          this.code.addCoding().display = "OCD"
+        },
+        Condition().apply {
+          this.clinicalStatus.addCoding().code = "L123"
+          this.clinicalStatus.addCoding().code = "inactive"
+          this.code.addCoding().display = "preGnant"
+        }
+      )
+
+    Assert.assertFalse(conditions.hasActivePregnancy())
   }
 
   @Test

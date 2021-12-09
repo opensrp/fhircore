@@ -26,20 +26,19 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
-import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
-import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
-import org.smartregister.fhircore.engine.util.extension.overdue
+import org.smartregister.fhircore.engine.util.extension.milestonesDue
+import org.smartregister.fhircore.engine.util.extension.milestonesOverdue
 
 data class Anc(
   val patient: Patient,
   val head: Patient?,
-  val conditions: List<Condition>,
-  val carePlans: List<CarePlan>
+  val conditions: List<Condition>? = null,
+  val carePlans: List<CarePlan>? = null
 )
 
 class AncItemMapper @Inject constructor(@ApplicationContext val context: Context) :
@@ -49,39 +48,23 @@ class AncItemMapper @Inject constructor(@ApplicationContext val context: Context
 
   override fun mapToDomainModel(dto: Anc): PatientItem {
     val patient = dto.patient
-    val name = patient.extractName()
-    val gender = patient.extractGender(context)?.first() ?: ""
-    val age = patient.extractAge()
 
-    when (itemMapperType) {
-      AncItemMapperType.REGISTER -> {
-        var visitStatus = VisitStatus.PLANNED
-        if (dto.carePlans.flatMap { it.activity }.any { it.detail.overdue() })
-          visitStatus = VisitStatus.OVERDUE
-        else if (dto.carePlans.flatMap { it.activity }.any { it.detail.due() })
-          visitStatus = VisitStatus.DUE
-        return PatientItem(
-          patientIdentifier = patient.logicalId,
-          name = name,
-          gender = gender.toString(),
-          age = age,
-          demographics = "$name, $gender, $age",
-          address = if (dto.head == null) patient.extractAddress() else dto.head.extractAddress(),
-          visitStatus = visitStatus,
-          familyName = patient.extractFamilyName()
-        )
-      }
-      AncItemMapperType.DETAILS ->
-        return PatientItem(
-          patientIdentifier = patient.logicalId,
-          name = name,
-          gender = gender.toString(),
-          age = age,
-          isPregnant = dto.conditions.hasActivePregnancy(),
-          demographics = "$name, $gender, $age",
-          familyName = patient.extractFamilyName()
-        )
-    }
+    var visitStatus = VisitStatus.PLANNED
+    if (dto.carePlans?.any { it.milestonesOverdue().isNotEmpty() } == true)
+      visitStatus = VisitStatus.OVERDUE
+    else if (dto.carePlans?.any { it.milestonesDue().isNotEmpty() } == true)
+      visitStatus = VisitStatus.DUE
+
+    return PatientItem(
+      patientIdentifier = patient.logicalId,
+      name = patient.extractName(),
+      gender = patient.extractGender(context)?.first()?.toString() ?: "",
+      birthDate = patient.birthDate,
+      address = patient.extractAddress().ifEmpty { dto.head?.extractAddress() } ?: "",
+      isPregnant = dto.conditions?.hasActivePregnancy(),
+      visitStatus = visitStatus,
+      familyName = patient.extractFamilyName()
+    )
   }
 
   fun setAncItemMapperType(ancItemMapperType: AncItemMapperType) {

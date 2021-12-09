@@ -18,10 +18,8 @@ package org.smartregister.fhircore.engine.util.extension
 
 import android.content.Context
 import java.text.SimpleDateFormat
-import java.time.Instant
 import java.util.Date
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
@@ -69,8 +67,7 @@ fun Patient.extractGender(context: Context): String? =
 
 fun Patient.extractAge(): String {
   if (!hasBirthDate()) return ""
-  val ageDiffMilli = Instant.now().toEpochMilli() - this.birthDate.time
-  return getAgeStringFromDays(TimeUnit.DAYS.convert(ageDiffMilli, TimeUnit.MILLISECONDS))
+  return getAgeStringFromDays(birthDate.daysPassed())
 }
 
 fun getAgeStringFromDays(days: Long): String {
@@ -153,7 +150,12 @@ fun Patient.isFamilyHead() = this.extractFamilyTag() != null
 
 fun List<Condition>.hasActivePregnancy() =
   this.any {
-    it.clinicalStatus.coding.any { it.code == "active" }
-    it.code.text.contentEquals("pregnant", true)
-    it.code.coding.any { it.display.contentEquals("pregnant", true) }
+    // is active and any of the display / text into code is pregnant
+    val active = it.clinicalStatus.coding.any { it.code == "active" }
+    val pregnancy =
+      it.code.coding.map { it.display }.plus(it.code.text).any {
+        it.contentEquals("pregnant", true)
+      }
+
+    active && pregnancy
   }
