@@ -33,7 +33,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.fakes.RoboMenuItem
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.activity.BaseRegisterActivityTest
+import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
@@ -42,7 +42,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 
 @HiltAndroidTest
-internal class FamilyRegisterActivityTest : BaseRegisterActivityTest() {
+internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
