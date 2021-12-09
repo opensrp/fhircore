@@ -39,7 +39,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
 
   @Inject lateinit var familyRepository: FamilyRepository
 
-  private lateinit var saveBtn: Button
+  lateinit var saveBtn: Button
   private var isEditFamily: Boolean = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
