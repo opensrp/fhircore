@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.eir
+package org.smartregister.fhircore.engine.util.extension
 
+import com.google.android.fhir.logicalId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -36,11 +37,8 @@ import org.hl7.fhir.r4.model.UriType
 import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Test
-import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
-import org.smartregister.fhircore.engine.util.extension.retainMetadata
-import org.smartregister.fhircore.engine.util.extension.updateFrom
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 class ResourceExtensionTest : RobolectricTest() {
 
@@ -55,7 +53,7 @@ class ResourceExtensionTest : RobolectricTest() {
 
     val updatedObject = JSONObject()
     updatedObject.put("prop3", "ValueProp3")
-    updatedObject.put("prop4", null)
+    updatedObject.put("prop4", null as Any?)
     updatedObject.put("prop5", "ValueProp5")
 
     originalObject.updateFrom(updatedObject)
@@ -469,5 +467,15 @@ class ResourceExtensionTest : RobolectricTest() {
     Assert.assertEquals(authoredDate, oldQr.authored)
     Assert.assertEquals("6", oldQr.meta.versionId)
     Assert.assertNotNull(oldQr.meta.lastUpdated)
+  }
+
+  @Test
+  fun `Resource#generateMissingId() should generate Id if empty`() {
+    val resource = Patient()
+
+    Assert.assertTrue(resource.logicalId.isEmpty())
+    resource.generateMissingId()
+
+    Assert.assertFalse(resource.logicalId.isEmpty())
   }
 }

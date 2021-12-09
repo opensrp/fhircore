@@ -20,6 +20,7 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.logicalId
 import java.util.Date
+import java.util.UUID
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
@@ -142,4 +143,8 @@ fun QuestionnaireResponse.retainMetadata(questionnaireResponse: QuestionnaireRes
     lastUpdated = Date()
     setVersionId(versionId.toString())
   }
+}
+
+fun Resource.generateMissingId() {
+  if (logicalId.isBlank()) id = UUID.randomUUID().toString()
 }
