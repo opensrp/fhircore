@@ -35,23 +35,44 @@ fun Resource.toJson(parser: IParser = FhirContext.forR4().newJsonParser()): Stri
   parser.encodeResourceToString(this)
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
+  var extensionUpdateForm = listOf<Extension>()
+  if (updatedResource is Patient) {
+    extensionUpdateForm = updatedResource.extension
+  }
+  var extension = listOf<Extension>()
+  if (this is Patient) {
+    extension = this.extension
+  }
   val jsonParser = FhirContext.forR4().newJsonParser()
   val stringJson = toJson(jsonParser)
   val originalResourceJson = JSONObject(stringJson)
 
   originalResourceJson.updateFrom(JSONObject(updatedResource.toJson(jsonParser)))
   return jsonParser.parseResource(this::class.java, originalResourceJson.toString()).apply {
-    if (this.meta == null || this.meta.isEmpty) {
-      this.meta = this@updateFrom.meta
-      this.meta.tag = this@updateFrom.meta.tag
+    val meta = this.meta
+    val metaUpdateForm = this@updateFrom.meta
+    if ((meta == null || meta.isEmpty)) {
+      if (metaUpdateForm != null) {
+        this.meta = metaUpdateForm
+        this.meta.tag = metaUpdateForm.tag
+      }
     } else {
-      val setOfTags: Set<Coding> = setOf()
-      setOfTags.plus(this.meta.tag)
-      setOfTags.plus(this@updateFrom.meta.tag)
+      val setOfTags = mutableSetOf<Coding>()
+      setOfTags.addAll(meta.tag)
+      setOfTags.addAll(metaUpdateForm.tag)
       this.meta.tag = setOfTags.distinct()
     }
-    if (this is Patient && this@updateFrom is Patient) {
-      this.extension = this@updateFrom.extension
+    if (this is Patient && this@updateFrom is Patient && updatedResource is Patient) {
+      if (extension.isEmpty()) {
+        if (extensionUpdateForm.isNotEmpty()) {
+          this.extension = extensionUpdateForm
+        }
+      } else {
+        val setOfExtension = mutableSetOf<Extension>()
+        setOfExtension.addAll(extension)
+        setOfExtension.addAll(extensionUpdateForm)
+        this.extension = setOfExtension.distinct()
+      }
     }
   }
 }

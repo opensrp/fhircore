@@ -21,6 +21,7 @@ import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -33,6 +34,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.hide
 
+@AndroidEntryPoint
 class FamilyQuestionnaireActivity : QuestionnaireActivity() {
 
   @Inject lateinit var familyRepository: FamilyRepository
@@ -106,9 +108,9 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
             val patientId =
               familyRepository.postProcessFamilyHead(questionnaire, questionnaireResponse)
             handlePregnancy(
-              patientId= patientId,
-              questionnaireResponse =questionnaireResponse,
-              ancEnrollmentForm =FamilyFormConstants.FAMILY_REGISTER_FORM
+              patientId = patientId,
+              questionnaireResponse = questionnaireResponse,
+              ancEnrollmentForm = FamilyFormConstants.FAMILY_REGISTER_FORM
             )
           }
           FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM -> {
@@ -116,13 +118,13 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
             val patientId =
               familyRepository.postProcessFamilyMember(
                 questionnaire = questionnaire,
-                questionnaireResponse= questionnaireResponse,
-                relatedTo= relatedTo
+                questionnaireResponse = questionnaireResponse,
+                relatedTo = relatedTo
               )
             handlePregnancy(
-              patientId= patientId,
-              questionnaireResponse= questionnaireResponse,
-              ancEnrollmentForm =FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
+              patientId = patientId,
+              questionnaireResponse = questionnaireResponse,
+              ancEnrollmentForm = FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
             )
           }
         }

@@ -48,8 +48,9 @@ import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.util.RegisterConfiguration
 import org.smartregister.fhircore.anc.util.SearchFilter
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @HiltAndroidTest
 class FamilyRepositoryTest : RobolectricTest() {
@@ -128,8 +129,9 @@ class FamilyRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun updateProcessFamilyMemberShouldExtractEntities() = runBlockingTest {
-    val defaultRepository = spyk(DefaultRepository(fhirEngine))
+  fun updateProcessFamilyMemberShouldCallSaveParsedResourceWithEditBooleanAsTrue() =
+      runBlockingTest {
+    val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
 
     val resourceMapperExtended = spyk(ResourceMapperExtended(defaultRepository))
 
@@ -137,23 +139,54 @@ class FamilyRepositoryTest : RobolectricTest() {
 
     ReflectionHelpers.setField(repository, "resourceMapperExtended", resourceMapperExtended)
 
-    repository.updateProcessFamilyMember("1111", Questionnaire(), QuestionnaireResponse(), "1111")
+    val questionnaire = Questionnaire()
+    val questionnaireResponse = QuestionnaireResponse()
 
-    coVerify { resourceMapperExtended.saveParsedResource(any(), any(), any(), "1111", eq(true)) }
+    repository.updateProcessFamilyMember(
+      "1111",
+      questionnaire = questionnaire,
+      questionnaireResponse = questionnaireResponse,
+      "1111"
+    )
+
+    coVerify {
+      resourceMapperExtended.saveParsedResource(
+        questionnaireResponse = questionnaireResponse,
+        questionnaire = questionnaire,
+        any(),
+        "1111",
+        eq(true)
+      )
+    }
   }
 
   @Test
-  fun updateProcessFamilyHeadShouldExtractEntities() = runBlockingTest {
-    val defaultRepository = spyk(DefaultRepository(fhirEngine))
+  fun updateProcessFamilyHeadShouldCallSaveParsedResourceWithEditBooleanAsTrue() = runBlockingTest {
+    val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
     val resourceMapperExtended = spyk(ResourceMapperExtended(defaultRepository))
 
     coEvery { resourceMapperExtended.saveParsedResource(any(), any(), any(), null) } just runs
 
     ReflectionHelpers.setField(repository, "resourceMapperExtended", resourceMapperExtended)
 
-    repository.updateProcessFamilyHead("1111", Questionnaire(), QuestionnaireResponse())
+    val questionnaire = Questionnaire()
+    val questionnaireResponse = QuestionnaireResponse()
 
-    coVerify { resourceMapperExtended.saveParsedResource(any(), any(), any(), null, eq(true)) }
+    repository.updateProcessFamilyHead(
+      "1111",
+      questionnaire = questionnaire,
+      questionnaireResponse = questionnaireResponse
+    )
+
+    coVerify {
+      resourceMapperExtended.saveParsedResource(
+        questionnaireResponse = questionnaireResponse,
+        questionnaire = questionnaire,
+        any(),
+        null,
+        eq(true)
+      )
+    }
   }
 
   @Test

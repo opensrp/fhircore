@@ -33,6 +33,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.junit.Test
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
 class ResourceMapperExtendedTest : RobolectricTest() {
 
@@ -44,7 +45,7 @@ class ResourceMapperExtendedTest : RobolectricTest() {
     val questionnaireResponse = getQuestionnaireResponse()
 
     val fhirEngine = mockk<FhirEngine>()
-    val defaultRepository = spyk(DefaultRepository(fhirEngine))
+    val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
     coEvery { fhirEngine.load(Patient::class.java, "patient_id_1") } returns patient
     coEvery { fhirEngine.load(Patient::class.java, "related_patient_id_2") } returns relatedPatient
     coEvery { defaultRepository.addOrUpdate(any()) } returns Unit

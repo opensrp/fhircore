@@ -22,7 +22,9 @@ import io.mockk.mockk
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.BooleanType
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -30,6 +32,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.UriType
 import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Test
@@ -102,6 +105,327 @@ class ResourceExtensionTest : RobolectricTest() {
     )
     Assert.assertEquals("Kamau", patient.name[0].family)
     Assert.assertEquals("Andrew", patient.name[0].given[0].value)
+  }
+
+  @Test
+  fun `Resource#updateFrom() should preserve previous patient's meta tags`() {
+    var patient =
+      Patient().apply {
+        active = true
+        gender = Enumerations.AdministrativeGender.FEMALE
+        meta.tag.apply {
+          val codingList = arrayListOf<Coding>()
+          codingList.add(Coding("abc", "xyz", "hello"))
+          codingList.add(Coding("abc2", "xyz2", "hello2"))
+          addAll(codingList)
+        }
+        name.apply {
+          add(
+            HumanName().apply {
+              family = "Doe"
+              given = listOf(StringType("John"))
+            }
+          )
+        }
+      }
+
+    val updatedPatient =
+      Patient().apply {
+        deceased = BooleanType(true)
+        birthDate = Date()
+        gender = null
+        name.apply {
+          add(
+            HumanName().apply {
+              family = "Kamau"
+              given = listOf(StringType("Andrew"))
+            }
+          )
+        }
+      }
+
+    patient = patient.updateFrom(updatedPatient)
+
+    Assert.assertNotNull(patient.birthDate)
+    Assert.assertEquals(
+      BooleanType(true).booleanValue(),
+      (patient.deceased as BooleanType).booleanValue()
+    )
+    Assert.assertEquals("Kamau", patient.name[0].family)
+    Assert.assertEquals("Andrew", patient.name[0].given[0].value)
+    Assert.assertEquals("hello", patient.meta.tag[0].display)
+    Assert.assertEquals("hello2", patient.meta.tag[1].display)
+  }
+
+  @Test
+  fun `Resource#updateFrom() should preserve previous patient's extensions`() {
+
+    val extensionVal = Extension()
+    val extensionVal2 = Extension()
+    extensionVal.apply { this.urlElement = UriType("hello") }
+    extensionVal2.apply { this.urlElement = UriType("hello2") }
+
+    val extensionList = arrayListOf<Extension>()
+
+    extensionList.add(extensionVal)
+    extensionList.add(extensionVal2)
+
+    var patient =
+      Patient().apply {
+        active = true
+        gender = Enumerations.AdministrativeGender.FEMALE
+        extension.apply { addAll(extensionList) }
+        name.apply {
+          add(
+            HumanName().apply {
+              family = "Doe"
+              given = listOf(StringType("John"))
+            }
+          )
+        }
+      }
+
+    val updatedPatient =
+      Patient().apply {
+        deceased = BooleanType(true)
+        birthDate = Date()
+        gender = null
+        name.apply {
+          add(
+            HumanName().apply {
+              family = "Kamau"
+              given = listOf(StringType("Andrew"))
+            }
+          )
+        }
+      }
+
+    patient = patient.updateFrom(updatedPatient)
+
+    Assert.assertNotNull(patient.birthDate)
+    Assert.assertEquals(
+      BooleanType(true).booleanValue(),
+      (patient.deceased as BooleanType).booleanValue()
+    )
+    Assert.assertEquals("Kamau", patient.name[0].family)
+    Assert.assertEquals("Andrew", patient.name[0].given[0].value)
+    Assert.assertEquals(2, patient.extension.size)
+  }
+
+  @Test
+  fun `Resource#updateFrom() should preserve updated patient's extensions`() {
+
+    val extensionVal = Extension()
+    val extensionVal2 = Extension()
+    extensionVal.apply { this.urlElement = UriType("hello") }
+    extensionVal2.apply { this.urlElement = UriType("hello2") }
+
+    val extensionList = arrayListOf<Extension>()
+
+    extensionList.add(extensionVal)
+    extensionList.add(extensionVal2)
+
+    var patient =
+      Patient().apply {
+        active = true
+        gender = Enumerations.AdministrativeGender.FEMALE
+        name.apply {
+          add(
+            HumanName().apply {
+              family = "Doe"
+              given = listOf(StringType("John"))
+            }
+          )
+        }
+      }
+
+    val updatedPatient =
+      Patient().apply {
+        deceased = BooleanType(true)
+        birthDate = Date()
+        gender = null
+
+        extension.apply { addAll(extensionList) }
+        name.apply {
+          add(
+            HumanName().apply {
+              family = "Kamau"
+              given = listOf(StringType("Andrew"))
+            }
+          )
+        }
+      }
+
+    patient = patient.updateFrom(updatedPatient)
+
+    Assert.assertNotNull(patient.birthDate)
+    Assert.assertEquals(
+      BooleanType(true).booleanValue(),
+      (patient.deceased as BooleanType).booleanValue()
+    )
+    Assert.assertEquals("Kamau", patient.name[0].family)
+    Assert.assertEquals("Andrew", patient.name[0].given[0].value)
+    Assert.assertEquals(2, patient.extension.size)
+  }
+
+  @Test
+  fun `Resource#updateFrom() should preserve both resource's extensions`() {
+
+    val extensionVal = Extension()
+    val extensionVal2 = Extension()
+    extensionVal.apply { this.urlElement = UriType("hello") }
+    extensionVal2.apply { this.urlElement = UriType("hello2") }
+
+    val extensionList1 = arrayListOf<Extension>()
+    val extensionList2 = arrayListOf<Extension>()
+
+    extensionList1.add(extensionVal)
+    extensionList2.add(extensionVal2)
+    var patient =
+      Patient().apply {
+        active = true
+        gender = Enumerations.AdministrativeGender.FEMALE
+        extension.apply { addAll(extensionList1) }
+        name.apply {
+          add(
+            HumanName().apply {
+              family = "Doe"
+              given = listOf(StringType("John"))
+            }
+          )
+        }
+      }
+
+    val updatedPatient =
+      Patient().apply {
+        deceased = BooleanType(true)
+        birthDate = Date()
+        gender = null
+        extension.apply { addAll(extensionList2) }
+        name.apply {
+          add(
+            HumanName().apply {
+              family = "Kamau"
+              given = listOf(StringType("Andrew"))
+            }
+          )
+        }
+      }
+
+    patient = patient.updateFrom(updatedPatient)
+
+    Assert.assertNotNull(patient.birthDate)
+    Assert.assertEquals(
+      BooleanType(true).booleanValue(),
+      (patient.deceased as BooleanType).booleanValue()
+    )
+    Assert.assertEquals("Kamau", patient.name[0].family)
+    Assert.assertEquals("Andrew", patient.name[0].given[0].value)
+    Assert.assertEquals(2, patient.extension.size)
+  }
+
+  @Test
+  fun `Resource#updateFrom() should preserve updated resource's meta tags`() {
+    var patient =
+      Patient().apply {
+        active = true
+        gender = Enumerations.AdministrativeGender.FEMALE
+        name.apply {
+          add(
+            HumanName().apply {
+              family = "Doe"
+              given = listOf(StringType("John"))
+            }
+          )
+        }
+      }
+
+    val updatedPatient =
+      Patient().apply {
+        deceased = BooleanType(true)
+        birthDate = Date()
+        gender = Enumerations.AdministrativeGender.FEMALE
+        meta.tag.apply {
+          val codingList = arrayListOf<Coding>()
+          codingList.add(Coding("abc", "xyz", "hello"))
+          codingList.add(Coding("abc2", "xyz2", "hello2"))
+          addAll(codingList)
+        }
+        name.apply {
+          add(
+            HumanName().apply {
+              family = "Kamau"
+              given = listOf(StringType("Andrew"))
+            }
+          )
+        }
+      }
+
+    patient = patient.updateFrom(updatedPatient)
+
+    Assert.assertNotNull(patient.birthDate)
+    Assert.assertEquals(
+      BooleanType(true).booleanValue(),
+      (patient.deceased as BooleanType).booleanValue()
+    )
+    Assert.assertEquals("Kamau", patient.name[0].family)
+    Assert.assertEquals("Andrew", patient.name[0].given[0].value)
+    Assert.assertEquals("hello", patient.meta.tag[0].display)
+    Assert.assertEquals("hello2", patient.meta.tag[1].display)
+  }
+
+  @Test
+  fun `Resource#updateFrom() should preserve meta tags of both resources`() {
+    var patient =
+      Patient().apply {
+        active = true
+        gender = Enumerations.AdministrativeGender.FEMALE
+        meta.tag.apply {
+          val codingList = arrayListOf<Coding>()
+          codingList.add(Coding("abc3", "xyz3", "hello3"))
+          addAll(codingList)
+        }
+        name.apply {
+          add(
+            HumanName().apply {
+              family = "Doe"
+              given = listOf(StringType("John"))
+            }
+          )
+        }
+      }
+
+    val updatedPatient =
+      Patient().apply {
+        deceased = BooleanType(true)
+        birthDate = Date()
+        gender = Enumerations.AdministrativeGender.FEMALE
+        meta.tag.apply {
+          val codingList = arrayListOf<Coding>()
+          codingList.add(Coding("abc", "xyz", "hello"))
+          codingList.add(Coding("abc2", "xyz2", "hello2"))
+          addAll(codingList)
+        }
+        name.apply {
+          add(
+            HumanName().apply {
+              family = "Kamau"
+              given = listOf(StringType("Andrew"))
+            }
+          )
+        }
+      }
+
+    patient = patient.updateFrom(updatedPatient)
+
+    Assert.assertNotNull(patient.birthDate)
+    Assert.assertEquals(
+      BooleanType(true).booleanValue(),
+      (patient.deceased as BooleanType).booleanValue()
+    )
+    Assert.assertEquals("Kamau", patient.name[0].family)
+    Assert.assertEquals("Andrew", patient.name[0].given[0].value)
+    Assert.assertEquals(3, patient.meta.tag.size)
   }
 
   @Test

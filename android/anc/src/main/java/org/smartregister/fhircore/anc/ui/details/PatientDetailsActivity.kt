@@ -30,11 +30,9 @@ import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
-import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.databinding.ActivityNonAncDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
 import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivity
-import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.details.adapter.ViewPagerAdapter
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig
@@ -46,7 +44,6 @@ import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.util.extension.createFactory
 
 @AndroidEntryPoint
 class PatientDetailsActivity : BaseMultiLanguageActivity() {
@@ -57,7 +54,6 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
   private var isMale: Boolean = false
   private var isHouseHold: Boolean = false
   private lateinit var loadProgress: AlertDialog
-  private lateinit var fhirEngine: FhirEngine
 
   val ancDetailsViewModel by viewModels<AncDetailsViewModel>()
   private lateinit var activityAncDetailsBinding: ActivityNonAncDetailsBinding

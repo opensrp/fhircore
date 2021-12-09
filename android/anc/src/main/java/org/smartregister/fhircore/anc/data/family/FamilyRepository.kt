@@ -42,7 +42,6 @@ import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.find
 
