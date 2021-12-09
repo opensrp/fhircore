@@ -25,7 +25,6 @@ import android.os.Build
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.StringRes
-import androidx.core.view.get
 import androidx.core.view.setPadding
 import java.util.Calendar
 import java.util.Date

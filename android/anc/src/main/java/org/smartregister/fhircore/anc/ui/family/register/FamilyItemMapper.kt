@@ -79,13 +79,9 @@ constructor(
       houseHoldHead = member.isFamilyHead(),
       deathDate = member.extractDeathDate(),
       servicesDue =
-        servicesDue?.filter { it.due() }?.flatMap { it.activity }?.filter { it.detail.due() }?.size,
+        servicesDue?.filter { it.due() }?.flatMap { it.activity }?.filter { it.due() }?.size,
       servicesOverdue =
-        servicesDue
-          ?.filter { it.due() }
-          ?.flatMap { it.activity }
-          ?.filter { it.detail.overdue() }
-          ?.size
+        servicesDue?.filter { it.due() }?.flatMap { it.activity }?.filter { it.overdue() }?.size
     )
   }
 }
