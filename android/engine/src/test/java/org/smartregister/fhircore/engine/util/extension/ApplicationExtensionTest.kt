@@ -16,11 +16,15 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.rest.gclient.IParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.StringFilter
 import com.google.android.fhir.search.TokenFilter
 import com.google.android.fhir.sync.ResourceSyncParams
 import com.google.android.fhir.sync.State
@@ -32,21 +36,23 @@ import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkStatic
+import java.util.Calendar
+import java.util.UUID
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.junit.Assert
 import org.junit.Test
-import org.junit.jupiter.api.TestInstance
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-/** Created by Ephraim Kigamba - nek.eam@gmail.com on 07-12-2021. */
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ApplicationExtensionTest {
+class ApplicationExtensionTest : RobolectricTest() {
 
   @Test
   fun `FhirEngine#loadPatientImmunizations() should return null when immunizations not found and ResourceNotFoundException is thrown`() {
@@ -164,6 +170,23 @@ class ApplicationExtensionTest {
   }
 
   @Test
+  fun `FhirEngine#searchActivePatients() should call search and filter results by query when given query`() {
+    val fhirEngine = mockk<FhirEngine>()
+    val captureSlot = slot<Search>()
+    val expectedPatientList = listOf<Patient>()
+    coEvery { fhirEngine.search<Patient>(capture(captureSlot)) } returns expectedPatientList
+
+    runBlocking { fhirEngine.searchActivePatients("be", 0, false) }
+
+    coVerify { fhirEngine.search<Patient>(any()) }
+    val search = captureSlot.captured
+    val stringFilters =
+      ReflectionHelpers.getField<MutableList<StringFilter>>(search, "stringFilters")
+    Assert.assertEquals(Patient.NAME, stringFilters[0].parameter)
+    Assert.assertEquals("be", stringFilters[0].value)
+  }
+
+  @Test
   fun `FhirEngine#searchActivePatients() should call search and set correct count when page is 0`() {
     val fhirEngine = mockk<FhirEngine>()
     val captureSlot = slot<Search>()
@@ -240,5 +263,37 @@ class ApplicationExtensionTest {
     coVerify {
       syncJob.run(fhirEngine, fhirResourceDataSource, resourceSyncParams, sharedSyncStatus)
     }
+  }
+
+  @Test
+  fun `Context#loadResourceTemplate()`() {
+    val context = ApplicationProvider.getApplicationContext<Application>()
+    val dateOnset = DateType(Calendar.getInstance().time).format()
+    val conditionData =
+      mapOf(
+        "#Id" to UUID.randomUUID().toString(),
+        "#RefPatient" to "Patient/88a98d-234",
+        "#RefCondition" to "Condition/ref-condition-id",
+        "#RefEpisodeOfCare" to "EpisodeOfCare/ref-episode-of-case",
+        "#RefEncounter" to "Encounter/ref-encounter-id",
+        "#RefGoal" to "Goal/ref-goal-id",
+        "#RefCareTeam" to "CareTeam/325",
+        "#RefPractitioner" to "Practitioner/399",
+        "#RefDateOnset" to dateOnset
+      )
+
+    val condition =
+      context.loadResourceTemplate(
+        "pregnancy_condition_template.json",
+        Condition::class.java,
+        conditionData
+      )
+
+    Assert.assertEquals(conditionData["#Id"], condition.logicalId)
+    Assert.assertEquals(conditionData["#RefPatient"], condition.subject.reference)
+    Assert.assertEquals(
+      conditionData["#RefDateOnset"],
+      condition.onsetDateTimeType.toHumanDisplay()
+    )
   }
 }
