@@ -16,11 +16,11 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import java.util.Calendar
-import org.hl7.fhir.r4.model.Condition
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-=import org.hl7.fhir.r4.model.DateTimeType
+import java.util.Calendar
+import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
