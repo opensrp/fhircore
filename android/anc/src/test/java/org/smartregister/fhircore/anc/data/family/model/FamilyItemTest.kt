@@ -34,10 +34,8 @@ class FamilyItemTest : RobolectricTest() {
         id = "1",
         identifier = "1",
         name = "Eve",
-        gender = "F",
-        age = "20",
         address = "",
-        isPregnant = false,
+        head = FamilyMemberItem("Eve", "1", "27", "F", false, false),
         members = listOf(),
         servicesDue = 0,
         servicesOverdue = 0
@@ -47,7 +45,7 @@ class FamilyItemTest : RobolectricTest() {
   @Test
   fun testExtractDemographicsShouldReturnFlatDemographic() {
     Assert.assertEquals(
-      "${familyItem.name}, ${familyItem.gender}, ${familyItem.age}",
+      "${familyItem.name}, ${familyItem.head.gender}, ${familyItem.head.age}",
       familyItem.extractDemographics()
     )
   }

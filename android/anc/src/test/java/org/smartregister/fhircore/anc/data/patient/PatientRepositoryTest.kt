@@ -67,12 +67,15 @@ import org.smartregister.fhircore.anc.app.fakes.FakeModel.buildCarePlan
 import org.smartregister.fhircore.anc.app.fakes.FakeModel.buildPatient
 import org.smartregister.fhircore.anc.app.fakes.FakeModel.getEncounter
 import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.model.demographics
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
+import org.smartregister.fhircore.engine.util.extension.yearsPassed
 
 @HiltAndroidTest
 class PatientRepositoryTest : RobolectricTest() {
@@ -231,8 +234,8 @@ class PatientRepositoryTest : RobolectricTest() {
       Assert.assertEquals(PATIENT_ID_1, patientIdentifier)
       Assert.assertEquals("Jane Mc", name)
       Assert.assertEquals("Male", gender)
-      Assert.assertEquals("0d", age)
-      Assert.assertEquals("Nairobi Kenya", demographics)
+      Assert.assertEquals("0d", birthDate.toAgeDisplay())
+      Assert.assertEquals("Nairobi Kenya", address)
       Assert.assertEquals("", atRisk)
     }
   }
@@ -242,8 +245,8 @@ class PatientRepositoryTest : RobolectricTest() {
       Assert.assertEquals(PATIENT_ID_1, patientIdentifier)
       Assert.assertEquals("Salina Jetly", name)
       Assert.assertEquals("Female", gender)
-      Assert.assertEquals("0d", age)
-      Assert.assertEquals("12 B, Gulshan, Nairobi Kenya", demographics)
+      Assert.assertEquals("0d", birthDate.toAgeDisplay())
+      Assert.assertEquals("Salina Jetly, Female, 0d", demographics())
       Assert.assertEquals("", atRisk)
     }
   }

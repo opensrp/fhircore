@@ -53,6 +53,7 @@ import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.engine.HiltActivityForTest
+import org.smartregister.fhircore.engine.util.extension.plusYears
 
 @HiltAndroidTest
 class AncDetailsFragmentTest : RobolectricTest() {
@@ -88,9 +89,9 @@ class AncDetailsFragmentTest : RobolectricTest() {
     coEvery { patientRepository.fetchDemographics(any()) } returns
       PatientDetailItem(
         patientDetails =
-          PatientItem(gender = "Male", name = "Martha Mary", age = "27", isPregnant = true),
+          PatientItem(gender = "Male", name = "Martha Mary", birthDate = Date().plusYears(-27), isPregnant = true),
         patientDetailsHead =
-          PatientItem(gender = "Male", name = "John Jared", age = "26", isPregnant = false)
+          PatientItem(gender = "Male", name = "John Jared", birthDate = Date().plusYears(-26), isPregnant = false)
       )
   }
 

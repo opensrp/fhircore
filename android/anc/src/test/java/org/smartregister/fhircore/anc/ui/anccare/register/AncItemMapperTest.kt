@@ -26,9 +26,11 @@ import org.hl7.fhir.r4.model.Patient
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.model.VisitStatus
+import org.smartregister.fhircore.anc.data.model.demographics
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 class AncItemMapperTest : RobolectricTest() {
 
@@ -43,8 +45,8 @@ class AncItemMapperTest : RobolectricTest() {
       Assert.assertEquals("test_patient_id_1", patientIdentifier)
       Assert.assertEquals("Jane Mc", name)
       Assert.assertEquals("M", gender)
-      Assert.assertEquals("0d", age)
-      Assert.assertEquals("Jane Mc, M, 0d", demographics)
+      Assert.assertEquals("0d", birthDate.toAgeDisplay())
+      Assert.assertEquals("Jane Mc, M, 0d", demographics())
       Assert.assertEquals("", atRisk)
       Assert.assertEquals(VisitStatus.PLANNED, visitStatus)
     }
