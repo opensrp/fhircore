@@ -146,7 +146,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
         true
       }
       R.id.log_death -> {
-        AlertDialogue.showDatePrompt(
+        AlertDialogue.showDatePickerAlert(
           context = this,
           max = Date(),
           title = getString(R.string.log_death_confirm_message),

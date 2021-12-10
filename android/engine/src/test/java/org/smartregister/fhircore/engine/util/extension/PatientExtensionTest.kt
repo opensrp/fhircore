@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import java.util.Calendar
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Patient
 import org.junit.Assert
@@ -130,6 +131,14 @@ class PatientExtensionTest {
     val expectedAge12 = "0d"
     // if difference b/w current date and DOB is O from extractAge extension
     Assert.assertEquals(expectedAge12, getAgeStringFromDays(0))
+  }
+
+  @Test
+  fun testExtractAge() {
+    val patient =
+      Patient().apply { birthDate = Calendar.getInstance().apply { add(Calendar.YEAR, -19) }.time }
+
+    Assert.assertEquals("19y", patient.extractAge())
   }
 
   @Test

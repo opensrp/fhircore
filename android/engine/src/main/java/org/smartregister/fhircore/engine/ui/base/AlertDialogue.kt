@@ -163,7 +163,7 @@ object AlertDialogue {
     )
   }
 
-  fun showDatePrompt(
+  fun showDatePickerAlert(
     context: Activity,
     confirmButtonListener: ((d: Date) -> Unit),
     confirmButtonText: String,
