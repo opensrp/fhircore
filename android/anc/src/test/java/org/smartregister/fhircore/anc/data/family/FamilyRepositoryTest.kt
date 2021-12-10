@@ -33,6 +33,7 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -44,11 +45,14 @@ import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
 import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.util.RegisterConfiguration
 import org.smartregister.fhircore.anc.util.SearchFilter
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
+import java.util.Date
 
 @HiltAndroidTest
 class FamilyRepositoryTest : RobolectricTest() {
@@ -154,6 +158,58 @@ class FamilyRepositoryTest : RobolectricTest() {
     coVerify { resourceMapperExtended.saveParsedResource(any(), any(), "1111", null) }
 
     coVerify { ancPatientRepository.enrollIntoAnc("1111", any()) }
+  }
+
+  @Test
+  fun testChangeFamilyHeadShouldPerformNecessaryUpdates() {
+    val familyTag = Coding().apply { display = "family" }
+    val current = Patient().apply {
+      id = "current"
+      addressFirstRep.city = "Karachi"
+      meta.addTag(familyTag)
+      active = true
+    }
+    val next = Patient().apply {
+      id = "next"
+      addLink().other = current.asReference()
+      active = true
+    }
+
+    val member = Patient().apply {
+      id = "member"
+      addLink().other = current.asReference()
+    }
+    val currentFlag = Flag()
+
+    coEvery { fhirEngine.load(Patient::class.java, "current") } returns current
+    coEvery { fhirEngine.load(Patient::class.java, "next") } returns next
+    coEvery { fhirEngine.load(Patient::class.java, "member") } returns member
+    coEvery { repository.ancPatientRepository.searchPatientByLink("current") } returns listOf(member)
+    coEvery { repository.ancPatientRepository.searchCarePlan("current", familyTag) } returns listOf()
+    coEvery { repository.ancPatientRepository.searchCarePlan(any(), null) } returns listOf()
+    coEvery { repository.ancPatientRepository.searchCondition(any()) } returns listOf()
+    coEvery { repository.ancPatientRepository.fetchActiveFlag("current", familyTag) } returns currentFlag
+
+    runBlocking {repository.changeFamilyHead("current", "next")}
+
+    coVerify { fhirEngine.save(current) }
+    coVerify { fhirEngine.save(next) }
+    coVerify { fhirEngine.save(currentFlag) }
+    coVerify { repository.ancPatientRepository.searchPatientByLink("current") }
+    coVerify { repository.ancPatientRepository.searchCarePlan("current", familyTag) }
+    coVerify { repository.ancPatientRepository.fetchActiveFlag("current", familyTag) }
+
+    Assert.assertEquals(0, current.meta.tag.size)
+    Assert.assertEquals("family", next.meta.tagFirstRep.display)
+
+    Assert.assertEquals("Patient/next", current.linkFirstRep.other.reference)
+    Assert.assertEquals("Patient/next", member.linkFirstRep.other.reference)
+    Assert.assertEquals(0, next.link.size)
+
+    Assert.assertEquals("Karachi", next.addressFirstRep.city)
+
+    Assert.assertEquals(Flag.FlagStatus.INACTIVE, currentFlag.status)
+    Assert.assertEquals(Date().makeItReadable(), currentFlag.period.end.makeItReadable())
   }
 
   @Test
