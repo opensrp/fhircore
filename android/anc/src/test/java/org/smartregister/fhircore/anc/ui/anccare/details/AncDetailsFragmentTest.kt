@@ -89,9 +89,19 @@ class AncDetailsFragmentTest : RobolectricTest() {
     coEvery { patientRepository.fetchDemographics(any()) } returns
       PatientDetailItem(
         patientDetails =
-          PatientItem(gender = "Male", name = "Martha Mary", birthDate = Date().plusYears(-27), isPregnant = true),
+          PatientItem(
+            gender = "Male",
+            name = "Martha Mary",
+            birthDate = Date().plusYears(-27),
+            isPregnant = true
+          ),
         patientDetailsHead =
-          PatientItem(gender = "Male", name = "John Jared", birthDate = Date().plusYears(-26), isPregnant = false)
+          PatientItem(
+            gender = "Male",
+            name = "John Jared",
+            birthDate = Date().plusYears(-26),
+            isPregnant = false
+          )
       )
   }
 

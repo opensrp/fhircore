@@ -75,7 +75,6 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
-import org.smartregister.fhircore.engine.util.extension.yearsPassed
 
 @HiltAndroidTest
 class PatientRepositoryTest : RobolectricTest() {

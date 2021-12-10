@@ -55,7 +55,17 @@ class PatientModelsTest : RobolectricTest() {
         false
       )
     patientItemHead =
-      PatientItem("111", "anb", "fam", "M", Date().plusYears(-25), "none", "xyz", false, VisitStatus.PLANNED)
+      PatientItem(
+        "111",
+        "anb",
+        "fam",
+        "M",
+        Date().plusYears(-25),
+        "none",
+        "xyz",
+        false,
+        VisitStatus.PLANNED
+      )
     encounterItem = EncounterItem("111", status = Encounter.EncounterStatus.ARRIVED, "abc", Date())
     upcomingServiceItem = UpcomingServiceItem("111", "1bc", "2020-02-12")
     patientDetailItem = PatientDetailItem(patientItem, patientItemHead)
