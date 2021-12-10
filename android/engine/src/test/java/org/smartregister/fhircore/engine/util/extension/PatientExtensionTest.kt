@@ -344,15 +344,4 @@ class PatientExtensionTest : RobolectricTest() {
 
     Assert.assertEquals(DateTimeType(timeNow).toDisplay(), Patient().getLastSeen(immunizations))
   }
-
-  @Test
-  fun testIsPregnantShouldReturnFalseWhenPatientDoesNotHavePregnantExtension() {
-    Assert.assertFalse(Patient().isPregnant())
-  }
-
-  @Test
-  fun testIsPregnantShouldReturnTrueWhenPatientHasPregnantExtension() {
-    val patient = Patient().apply { addExtension("pregnant-extension", StringType("pregnant")) }
-    Assert.assertTrue(patient.isPregnant())
-  }
 }
