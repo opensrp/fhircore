@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
 class AccountAuthenticatorTest : RobolectricTest() {
@@ -56,6 +57,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
   @Inject lateinit var tokenManagerService: TokenManagerService
+
+  @Inject lateinit var sharedPreference: SharedPreferencesHelper
 
   private lateinit var accountAuthenticator: AccountAuthenticator
 
@@ -74,7 +77,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
           oAuthService = oAuthService,
           configurationRegistry = configurationRegistry,
           secureSharedPreference = secureSharedPreference,
-          tokenManagerService = tokenManagerService
+          tokenManagerService = tokenManagerService,
+          sharedPreference = sharedPreference
         )
       )
   }
