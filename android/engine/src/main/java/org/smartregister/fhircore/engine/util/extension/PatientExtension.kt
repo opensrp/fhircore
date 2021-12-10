@@ -35,10 +35,9 @@ fun Patient.extractName(): String {
   if (!hasName()) return ""
   val humanName = this.name.firstOrNull()
   return if (humanName != null) {
-    "${
-    humanName.given.joinToString(" ")
-    { it.toString().trim().toTitleCase() }
-    } ${humanName.family?.toTitleCase() ?: ""}"
+    (humanName.given + humanName.family).filterNotNull().joinToString(" ") {
+      it.toString().trim().toTitleCase()
+    }
   } else ""
 }
 
