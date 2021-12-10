@@ -18,6 +18,7 @@ package org.smartregister.fhircore.anc.ui.anccare.details
 
 import android.view.View
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.Lifecycle
 import androidx.test.ext.junit.rules.ActivityScenarioRule
@@ -29,16 +30,25 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
-import org.hl7.fhir.r4.model.Observation
+import io.mockk.spyk
+import io.mockk.verify
+import java.util.Date
+import org.hl7.fhir.r4.model.Encounter
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.app.fakes.FakeModel
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.model.AncOverviewItem
+import org.smartregister.fhircore.anc.data.model.CarePlanItem
+import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
@@ -57,6 +67,8 @@ class AncDetailsFragmentTest : RobolectricTest() {
   @get:Rule(order = 3) val coroutineTestRule = CoroutineTestRule()
 
   @BindValue val patientRepository: PatientRepository = mockk()
+  @BindValue val upcomingServiceAdapter = spyk(UpcomingServicesAdapter())
+  @BindValue val encounterAdapter = spyk(EncounterAdapter())
 
   private lateinit var ancDetailsFragment: AncDetailsFragment
 
@@ -97,23 +109,25 @@ class AncDetailsFragmentTest : RobolectricTest() {
 
   @Test
   fun testHandleObservation() {
-    coEvery { patientRepository.fetchObservations(any(), "edd") } returns Observation()
-    coEvery { patientRepository.fetchObservations(any(), "risk") } returns
-      FakeModel.getObservation(testValue = 1)
-    coEvery { patientRepository.fetchObservations(any(), "fetuses") } returns
-      FakeModel.getObservation(testValue = 2)
-    coEvery { patientRepository.fetchObservations(any(), "ga") } returns
-      FakeModel.getObservation(testValue = 25)
 
     launchAncDetailsFragment()
     Assert.assertNotNull(ancDetailsFragment)
-    ancDetailsFragment.ancDetailsViewModel.fetchObservation("1")
 
-    val viewBinding = ancDetailsFragment.viewBinding
-    Assert.assertEquals("", viewBinding.txtViewEDDDoseDate.text)
-    Assert.assertEquals("25", viewBinding.txtViewGAPeriod.text)
-    Assert.assertEquals("2", viewBinding.txtViewFetusesCount.text.toString())
-    Assert.assertEquals("1", viewBinding.txtViewRiskValue.text.toString())
+    ReflectionHelpers.callInstanceMethod<Any>(
+      ancDetailsFragment,
+      "handleObservation",
+      ReflectionHelpers.ClassParameter(
+        AncOverviewItem::class.java,
+        AncOverviewItem("", "25", "2", "1")
+      )
+    )
+
+    with(ancDetailsFragment.viewBinding) {
+      Assert.assertEquals("", txtViewEDDDoseDate.text)
+      Assert.assertEquals("25", txtViewGAPeriod.text)
+      Assert.assertEquals("2", txtViewFetusesCount.text.toString())
+      Assert.assertEquals("1", txtViewRiskValue.text.toString())
+    }
   }
 
   @Test
@@ -124,6 +138,165 @@ class AncDetailsFragmentTest : RobolectricTest() {
     Assert.assertEquals(View.VISIBLE, viewBinding.upcomingServicesListView.visibility)
     Assert.assertEquals(View.VISIBLE, viewBinding.txtViewUpcomingServicesSeeAllHeading.visibility)
     Assert.assertEquals(View.VISIBLE, viewBinding.imageViewUpcomingServicesSeeAllArrow.visibility)
+  }
+
+  @Test
+  fun testHandleUpcomingServices() {
+
+    launchAncDetailsFragment()
+    val viewBinding = ancDetailsFragment.viewBinding
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      ancDetailsFragment,
+      "handleUpcomingServices",
+      ReflectionHelpers.ClassParameter(List::class.java, listOf<UpcomingServiceItem>())
+    )
+
+    with(viewBinding) {
+      Assert.assertEquals(View.VISIBLE, txtViewNoUpcomingServices.visibility)
+      Assert.assertEquals(View.GONE, upcomingServicesListView.visibility)
+      Assert.assertEquals(View.GONE, txtViewUpcomingServicesSeeAllHeading.visibility)
+      Assert.assertEquals(View.GONE, imageViewUpcomingServicesSeeAllArrow.visibility)
+    }
+
+    every { upcomingServiceAdapter.submitList(any()) } returns Unit
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      ancDetailsFragment,
+      "handleUpcomingServices",
+      ReflectionHelpers.ClassParameter(
+        List::class.java,
+        listOf(UpcomingServiceItem("1", "Main Item", "2021-01-01"))
+      )
+    )
+
+    with(viewBinding) {
+      Assert.assertEquals(View.GONE, txtViewNoUpcomingServices.visibility)
+      Assert.assertEquals(View.VISIBLE, upcomingServicesListView.visibility)
+      Assert.assertEquals(View.VISIBLE, txtViewUpcomingServicesSeeAllHeading.visibility)
+      Assert.assertEquals(View.VISIBLE, imageViewUpcomingServicesSeeAllArrow.visibility)
+    }
+
+    verify(exactly = 1) { upcomingServiceAdapter.submitList(any()) }
+  }
+
+  @Test
+  fun testHandleLastSeen() {
+
+    launchAncDetailsFragment()
+    val viewBinding = ancDetailsFragment.viewBinding
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      ancDetailsFragment,
+      "handleLastSeen",
+      ReflectionHelpers.ClassParameter(List::class.java, listOf<EncounterItem>())
+    )
+
+    with(viewBinding) {
+      Assert.assertEquals(View.VISIBLE, txtViewNoLastSeenServices.visibility)
+      Assert.assertEquals(View.GONE, lastSeenListView.visibility)
+    }
+
+    every { encounterAdapter.submitList(any()) } returns Unit
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      ancDetailsFragment,
+      "handleLastSeen",
+      ReflectionHelpers.ClassParameter(
+        List::class.java,
+        listOf(EncounterItem("1", Encounter.EncounterStatus.FINISHED, "", Date()))
+      )
+    )
+
+    with(viewBinding) {
+      Assert.assertEquals(View.GONE, txtViewNoLastSeenServices.visibility)
+      Assert.assertEquals(View.VISIBLE, lastSeenListView.visibility)
+    }
+
+    verify(exactly = 1) { encounterAdapter.submitList(any()) }
+  }
+
+  @Test
+  fun testHandleCarePlan() {
+
+    launchAncDetailsFragment()
+    val viewBinding = ancDetailsFragment.viewBinding
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      ancDetailsFragment,
+      "handleCarePlan",
+      ReflectionHelpers.ClassParameter(List::class.java, listOf<CarePlanItem>())
+    )
+
+    with(viewBinding) {
+      Assert.assertEquals(View.VISIBLE, txtViewNoCarePlan.visibility)
+      Assert.assertEquals(View.GONE, txtViewCarePlanSeeAllHeading.visibility)
+      Assert.assertEquals(View.GONE, imageViewSeeAllArrow.visibility)
+      Assert.assertEquals(View.GONE, txtViewCarePlan.visibility)
+    }
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      ancDetailsFragment,
+      "handleCarePlan",
+      ReflectionHelpers.ClassParameter(
+        List::class.java,
+        listOf(CarePlanItem("1", "Main Title", due = false, overdue = false))
+      )
+    )
+
+    with(viewBinding) {
+      Assert.assertEquals(View.GONE, txtViewNoCarePlan.visibility)
+      Assert.assertEquals(View.VISIBLE, txtViewCarePlanSeeAllHeading.visibility)
+      Assert.assertEquals(View.VISIBLE, imageViewSeeAllArrow.visibility)
+      Assert.assertEquals(View.VISIBLE, txtViewCarePlan.visibility)
+    }
+  }
+
+  @Test
+  fun testPopulateImmunizationListShouldUpdateBasedOnProperty() {
+
+    launchAncDetailsFragment()
+    val viewBinding = ancDetailsFragment.viewBinding
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      ancDetailsFragment,
+      "populateImmunizationList",
+      ReflectionHelpers.ClassParameter(
+        List::class.java,
+        listOf(CarePlanItem("", "", due = false, overdue = true))
+      )
+    )
+
+    with(viewBinding) {
+      Assert.assertEquals(
+        ancDetailsFragment.getString(R.string.anc_record_visit_with_overdue, 1),
+        txtViewCarePlan.text
+      )
+      Assert.assertEquals(
+        ContextCompat.getColor(ancDetailsFragment.requireContext(), R.color.status_red),
+        txtViewCarePlan.currentTextColor
+      )
+    }
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      ancDetailsFragment,
+      "populateImmunizationList",
+      ReflectionHelpers.ClassParameter(
+        List::class.java,
+        listOf(CarePlanItem("", "", due = true, overdue = false))
+      )
+    )
+
+    with(viewBinding) {
+      Assert.assertEquals(
+        ancDetailsFragment.getString(R.string.anc_record_visit),
+        txtViewCarePlan.text
+      )
+      Assert.assertEquals(
+        ContextCompat.getColor(ancDetailsFragment.requireContext(), R.color.colorPrimaryLight),
+        txtViewCarePlan.currentTextColor
+      )
+    }
   }
 
   @After

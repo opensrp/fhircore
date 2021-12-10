@@ -61,6 +61,6 @@ class UpcomingServicesAdapter @Inject constructor() :
       oldItem.title == newItem.title
 
     override fun areContentsTheSame(oldItem: UpcomingServiceItem, newItem: UpcomingServiceItem) =
-      oldItem.equals(newItem)
+      oldItem == newItem
   }
 }
