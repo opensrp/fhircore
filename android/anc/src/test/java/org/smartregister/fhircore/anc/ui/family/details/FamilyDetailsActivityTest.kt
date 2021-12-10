@@ -25,6 +25,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
+import java.util.Date
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -37,6 +38,7 @@ import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.engine.util.extension.plusYears
 
 @HiltAndroidTest
 class FamilyDetailsActivityTest : ActivityRobolectricTest() {
@@ -80,7 +82,8 @@ class FamilyDetailsActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnFamilyMemberItemClickedShouldStartAncDetailsActivity() {
-    val familyMemberItem = FamilyMemberItem("fmname", "fm1", "21", "F", true, false)
+    val familyMemberItem =
+      FamilyMemberItem("fmname", "fm1", Date().plusYears(-21), "F", true, false)
 
     familyDetailsActivity.familyDetailViewModel.onMemberItemClick(familyMemberItem)
 

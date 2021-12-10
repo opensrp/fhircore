@@ -54,6 +54,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 class FamilyRepositoryTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   private lateinit var repository: FamilyRepository
 
@@ -64,8 +65,6 @@ class FamilyRepositoryTest : RobolectricTest() {
   @Inject lateinit var familyItemMapper: FamilyItemMapper
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
-
-  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   @Before
   fun setUp() {

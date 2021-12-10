@@ -17,10 +17,13 @@
 package org.smartregister.fhircore.anc.data.family.model
 
 import dagger.hilt.android.testing.HiltAndroidTest
+import java.util.Date
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.plusYears
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 @HiltAndroidTest
 class FamilyItemTest : RobolectricTest() {
@@ -35,7 +38,7 @@ class FamilyItemTest : RobolectricTest() {
         identifier = "1",
         name = "Eve",
         address = "",
-        head = FamilyMemberItem("Eve", "1", "27", "F", false, false),
+        head = FamilyMemberItem("Eve", "1", Date().plusYears(-27), "F", false, false),
         members = listOf(),
         servicesDue = 0,
         servicesOverdue = 0
@@ -45,7 +48,7 @@ class FamilyItemTest : RobolectricTest() {
   @Test
   fun testExtractDemographicsShouldReturnFlatDemographic() {
     Assert.assertEquals(
-      "${familyItem.name}, ${familyItem.head.gender}, ${familyItem.head.age}",
+      "${familyItem.name}, ${familyItem.head.gender}, ${familyItem.head.birthdate.toAgeDisplay()}",
       familyItem.extractDemographics()
     )
   }

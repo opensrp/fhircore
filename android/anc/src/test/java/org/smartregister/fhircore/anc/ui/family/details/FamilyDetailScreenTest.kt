@@ -35,6 +35,7 @@ import org.junit.Test
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
+import org.smartregister.fhircore.engine.util.extension.plusYears
 
 class FamilyDetailScreenTest : RobolectricTest() {
 
@@ -89,7 +90,8 @@ class FamilyDetailScreenTest : RobolectricTest() {
 
   @Test
   fun testMembersList() {
-    val familyMember = FamilyMemberItem("James", "1", "18", "Male", false, false, Date(), 2, 4)
+    val familyMember =
+      FamilyMemberItem("James", "1", Date().plusYears(-18), "Male", false, false, Date(), 2, 4)
     val familyMembers = listOf(familyMember)
 
     composeRule.setContent {
@@ -109,7 +111,8 @@ class FamilyDetailScreenTest : RobolectricTest() {
 
   @Test
   fun testMembersListWithPregnantHeadOfHouseHold() {
-    val familyMember = FamilyMemberItem("Jane", "1", "18", "Female", true, true, null, 1, 2)
+    val familyMember =
+      FamilyMemberItem("Jane", "1", Date().plusYears(-18), "Female", true, true, null, 1, 2)
     val familyMembers = listOf(familyMember)
 
     composeRule.setContent {

@@ -23,7 +23,7 @@ import java.util.Date
 data class FamilyMemberItem(
   val name: String,
   val id: String,
-  val age: String,
+  val birthdate: Date?,
   val gender: String,
   val pregnant: Boolean? = null,
   val houseHoldHead: Boolean,

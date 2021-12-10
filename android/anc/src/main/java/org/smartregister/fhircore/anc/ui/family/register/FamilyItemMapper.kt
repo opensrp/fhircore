@@ -28,7 +28,6 @@ import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
-import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractDeathDate
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractName
@@ -73,7 +72,7 @@ constructor(
     return FamilyMemberItem(
       name = member.extractName(),
       id = member.logicalId,
-      age = member.extractAge(),
+      birthdate = member.birthDate,
       gender = (member.extractGender(context)?.firstOrNull() ?: "").toString(),
       pregnant = conditions?.hasActivePregnancy(),
       houseHoldHead = member.isFamilyHead(),

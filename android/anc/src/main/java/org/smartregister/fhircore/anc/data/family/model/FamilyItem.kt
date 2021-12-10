@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.data.family.model
 
 import androidx.compose.runtime.Stable
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 @Stable
 data class FamilyItem(
@@ -30,6 +31,6 @@ data class FamilyItem(
   val servicesOverdue: Int? = null
 ) {
   fun extractDemographics(): String {
-    return "${head.name}, ${head.gender}, ${head.age}"
+    return "${head.name}, ${head.gender}, ${head.birthdate.toAgeDisplay()}"
   }
 }

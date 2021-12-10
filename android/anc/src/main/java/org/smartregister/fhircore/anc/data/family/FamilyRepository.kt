@@ -105,7 +105,12 @@ constructor(
         val conditions = ancPatientRepository.searchCondition(it.logicalId)
         domainMapper.toFamilyMemberItem(it, conditions, services)
       }
-      .sortedBy { !it.houseHoldHead }
+      .sortedBy {
+        var weight = 0
+        if (it.houseHoldHead) weight++ // 0 for HH
+        if (it.deathDate != null) weight++ // 0 for alive
+        weight
+      }
   }
 
   suspend fun postProcessFamilyMember(

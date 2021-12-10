@@ -174,6 +174,7 @@ constructor(
     searchCarePlan(patientId, tag).forEach {
       if (it.status != CarePlan.CarePlanStatus.COMPLETED) {
         it.status = CarePlan.CarePlanStatus.REVOKED
+        it.period.end = Date()
 
         fhirEngine.save(it)
       }
@@ -196,7 +197,7 @@ constructor(
       .filter { it.clinicalStatus.codingFirstRep.code == "active" }
       .forEach {
         it.clinicalStatus.codingFirstRep.code = "inactive"
-        it.abatement = DateTimeType()
+        it.abatement = DateTimeType(Date())
 
         fhirEngine.save(it)
       }

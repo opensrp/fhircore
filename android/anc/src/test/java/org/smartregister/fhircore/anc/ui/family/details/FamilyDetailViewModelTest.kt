@@ -36,6 +36,8 @@ import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.plusYears
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 class FamilyDetailViewModelTest : RobolectricTest() {
 
@@ -79,7 +81,7 @@ class FamilyDetailViewModelTest : RobolectricTest() {
         FamilyMemberItem(
           name = "salina",
           id = "1",
-          age = "20",
+          birthdate = Date().plusYears(-20),
           gender = "F",
           pregnant = true,
           houseHoldHead = false,
@@ -90,7 +92,7 @@ class FamilyDetailViewModelTest : RobolectricTest() {
         FamilyMemberItem(
           name = "kevin",
           id = "2",
-          age = "25",
+          birthdate = Date().plusYears(-25),
           gender = "F",
           pregnant = false,
           houseHoldHead = false,
@@ -110,7 +112,10 @@ class FamilyDetailViewModelTest : RobolectricTest() {
     (0..1).forEach {
       Assert.assertEquals(itemList[it].name, items?.get(it)?.name)
       Assert.assertEquals(itemList[it].id, items?.get(it)?.id)
-      Assert.assertEquals(itemList[it].age, items?.get(it)?.age)
+      Assert.assertEquals(
+        itemList[it].birthdate.toAgeDisplay(),
+        items?.get(it)?.birthdate.toAgeDisplay()
+      )
       Assert.assertEquals(itemList[it].gender, items?.get(it)?.gender)
       Assert.assertEquals(itemList[it].pregnant, items?.get(it)?.pregnant)
     }
