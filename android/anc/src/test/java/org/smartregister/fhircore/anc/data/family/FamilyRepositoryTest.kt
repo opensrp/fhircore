@@ -27,6 +27,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
@@ -52,7 +53,6 @@ import org.smartregister.fhircore.anc.util.RegisterConfiguration
 import org.smartregister.fhircore.anc.util.SearchFilter
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
-import java.util.Date
 
 @HiltAndroidTest
 class FamilyRepositoryTest : RobolectricTest() {
@@ -163,34 +163,40 @@ class FamilyRepositoryTest : RobolectricTest() {
   @Test
   fun testChangeFamilyHeadShouldPerformNecessaryUpdates() {
     val familyTag = Coding().apply { display = "family" }
-    val current = Patient().apply {
-      id = "current"
-      addressFirstRep.city = "Karachi"
-      meta.addTag(familyTag)
-      active = true
-    }
-    val next = Patient().apply {
-      id = "next"
-      addLink().other = current.asReference()
-      active = true
-    }
+    val current =
+      Patient().apply {
+        id = "current"
+        addressFirstRep.city = "Karachi"
+        meta.addTag(familyTag)
+        active = true
+      }
+    val next =
+      Patient().apply {
+        id = "next"
+        addLink().other = current.asReference()
+        active = true
+      }
 
-    val member = Patient().apply {
-      id = "member"
-      addLink().other = current.asReference()
-    }
+    val member =
+      Patient().apply {
+        id = "member"
+        addLink().other = current.asReference()
+      }
     val currentFlag = Flag()
 
     coEvery { fhirEngine.load(Patient::class.java, "current") } returns current
     coEvery { fhirEngine.load(Patient::class.java, "next") } returns next
     coEvery { fhirEngine.load(Patient::class.java, "member") } returns member
-    coEvery { repository.ancPatientRepository.searchPatientByLink("current") } returns listOf(member)
-    coEvery { repository.ancPatientRepository.searchCarePlan("current", familyTag) } returns listOf()
+    coEvery { repository.ancPatientRepository.searchPatientByLink("current") } returns
+      listOf(member)
+    coEvery { repository.ancPatientRepository.searchCarePlan("current", familyTag) } returns
+      listOf()
     coEvery { repository.ancPatientRepository.searchCarePlan(any(), null) } returns listOf()
     coEvery { repository.ancPatientRepository.searchCondition(any()) } returns listOf()
-    coEvery { repository.ancPatientRepository.fetchActiveFlag("current", familyTag) } returns currentFlag
+    coEvery { repository.ancPatientRepository.fetchActiveFlag("current", familyTag) } returns
+      currentFlag
 
-    runBlocking {repository.changeFamilyHead("current", "next")}
+    runBlocking { repository.changeFamilyHead("current", "next") }
 
     coVerify { fhirEngine.save(current) }
     coVerify { fhirEngine.save(next) }
