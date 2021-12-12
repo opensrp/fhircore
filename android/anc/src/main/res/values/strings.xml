@@ -66,6 +66,7 @@
     <string name="bg">BG</string>
     <string name="height">Height</string>
     <string name="weight">Weight</string>
+    <string name="bmi">BMI</string>
     <string name="sp02">Sp02</string>
     <string name="new_consultation">New Consultation</string>
     <string name="select_unit">Select unit</string>

@@ -115,6 +115,10 @@ class VitalSignsDetailsFragment : Fragment() {
       binding.apply {
         txtViewHeightValue.text = ancOverviewItem.height
         txtViewWeightValue.text = ancOverviewItem.weight
+        if (ancOverviewItem.bmi.isNotEmpty()) {
+          linearLayoutBmi.show()
+          txtViewBmiValue.text = ancOverviewItem.bmi
+        }
       }
     }
   }

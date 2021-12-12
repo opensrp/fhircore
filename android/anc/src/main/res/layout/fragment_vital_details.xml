@@ -543,6 +543,68 @@
 
                             </LinearLayout>
 
+                            <LinearLayout
+                                android:id="@+id/linearLayout_bmi"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="26dp"
+                                android:visibility="gone"
+                                android:layout_marginTop="6dp"
+                                android:orientation="vertical">
+
+                                <View
+                                    android:layout_width="18dp"
+                                    android:layout_height="1.5dp"
+                                    android:background="@color/colorPrimaryLight" />
+
+
+                                <TextView
+                                    android:id="@+id/txtView_bmiTitle"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:text="@string/bmi"
+                                    android:textColor="@color/black"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold"
+                                    app:layout_constraintRight_toRightOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent" />
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:id="@+id/txtView_bmiValue"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="4dp"
+                                        android:textAllCaps="true"
+                                        android:textColor="@color/black"
+                                        android:textSize="16sp"
+                                        android:textStyle="bold"
+                                        app:layout_constraintRight_toRightOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        android:text="-" />
+
+                                    <TextView
+                                        android:id="@+id/txtView_bmiUnit"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="bottom"
+                                        android:layout_marginLeft="4dp"
+                                        android:layout_marginBottom="1dp"
+                                        android:textColor="@color/colorPrimaryLight"
+                                        android:textSize="10sp"
+                                        app:layout_constraintRight_toRightOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        tools:text="kg/m2" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
                         </LinearLayout>
                     </LinearLayout>
 

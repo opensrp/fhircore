@@ -42,8 +42,8 @@
       "key": "code",
       "valueType": "CODEABLECONCEPT",
       "valueCoding": {
-        "system": "",
-        "code": "body-height"
+        "system": "http://loinc.org",
+        "code": "8302-2"
       }
     },
     "weightFilter": {
@@ -51,7 +51,7 @@
       "key": "code",
       "valueType": "CODEABLECONCEPT",
       "valueCoding": {
-        "system": "",
+        "system": "http://acme.org/devices/clinical-codes",
         "code": "body-weight"
       }
     },
@@ -60,8 +60,8 @@
       "key": "code",
       "valueType": "CODEABLECONCEPT",
       "valueCoding": {
-        "system": "",
-        "code": "body-mass-index"
+        "system": "http://loinc.org",
+        "code": "39156-5"
       }
     }
   }

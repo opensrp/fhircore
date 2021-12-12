@@ -21,12 +21,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.math.BigDecimal
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.data.model.AncOverviewItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
+import org.smartregister.fhircore.anc.util.computeBMIViaStandardUnits
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @HiltViewModel
@@ -52,22 +54,33 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
     val ancOverviewItem = AncOverviewItem()
     viewModelScope.launch(dispatcher.io()) {
       val listObservationHeight =
-        patientRepository.fetchObservations(patientId = patientId, "height")
+        patientRepository.fetchObservations(patientId = patientId, "body-height")
       val listObservationWeight =
-        patientRepository.fetchObservations(patientId = patientId, "weight")
-      val listObservationBmi = patientRepository.fetchObservations(patientId = patientId, "bmi")
-      if (listObservationWeight.valueIntegerType != null &&
-          listObservationWeight.valueIntegerType.valueAsString != null
-      )
-        ancOverviewItem.weight = listObservationWeight.valueIntegerType.valueAsString
-      if (listObservationHeight.valueIntegerType != null &&
-          listObservationHeight.valueIntegerType.valueAsString != null
-      )
-        ancOverviewItem.height = listObservationHeight.valueIntegerType.valueAsString
-      if (listObservationBmi.valueIntegerType != null &&
-          listObservationBmi.valueIntegerType.valueAsString != null
-      )
-        ancOverviewItem.bmi = listObservationBmi.valueIntegerType.valueAsString
+        patientRepository.fetchObservations(patientId = patientId, "body-weight")
+      listObservationWeight
+        .valueQuantity
+        ?.value
+        ?.setScale(2, BigDecimal.ROUND_HALF_EVEN)
+        ?.toPlainString()
+        ?.let { ancOverviewItem.weight = it }
+      listObservationHeight
+        .valueQuantity
+        ?.value
+        ?.setScale(2, BigDecimal.ROUND_HALF_EVEN)
+        ?.toPlainString()
+        ?.let { ancOverviewItem.height = it }
+      if (ancOverviewItem.height.isNotEmpty() && ancOverviewItem.weight.isNotEmpty()) {
+        try {
+          ancOverviewItem.bmi =
+            computeBMIViaStandardUnits(
+                ancOverviewItem.height.toDouble(),
+                ancOverviewItem.weight.toDouble()
+              )
+              .toString()
+        } catch (e: Exception) {
+          e.printStackTrace()
+        }
+      }
 
       patientAncOverviewItem.postValue(ancOverviewItem)
     }
