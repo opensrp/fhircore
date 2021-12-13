@@ -608,7 +608,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val authoredDate = Date()
     val versionId = "5"
     val author = Reference()
-    val patient = Patient().apply { Patient@ this.id = "123456" }
+    val patient =
+      Patient().apply {
+        Patient@ this.id = "123456"
+        this.birthDate = questionnaireViewModel.calculateDobFromAge(25)
+      }
 
     coEvery { fhirEngine.load(Patient::class.java, any()) } returns Patient()
     coEvery { fhirEngine.load(StructureMap::class.java, any()) } returns StructureMap()
@@ -649,6 +653,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     verify { questionnaireResponse.retainMetadata(oldQuestionnaireResponse) }
     coVerify { questionnaireResponse.deleteRelatedResources(defaultRepo) }
     Assert.assertEquals(patient, questionnaireResponse.contained[0])
+    Assert.assertEquals(
+      patient.birthDate,
+      (questionnaireResponse.contained[0] as Patient).birthDate
+    )
 
     unmockkObject(ResourceMapper)
   }
