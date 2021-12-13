@@ -14,8 +14,22 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util
+package org.smartregister.fhircore.engine.configuration.view
 
-const val LAST_SYNC_TIMESTAMP = "last_sync_timestamp"
-const val USER_INFO_SHARED_PREFERENCE_KEY = "USER_INFO"
-const val APP_ID_CONFIG = "app_id_config"
+import org.junit.Assert
+import org.junit.Test
+
+class LoginViewConfigurationTest {
+
+  @Test
+  fun testLoginViewConfiguration() {
+    val loginViewConfiguration = LoginViewConfiguration("anc", "app")
+    Assert.assertEquals("anc", loginViewConfiguration.appId)
+  }
+
+  @Test
+  fun testLoginViewConfigurationOf() {
+    val loginViewConfigurationOf = loginViewConfigurationOf("anc")
+    Assert.assertEquals("anc", loginViewConfigurationOf.appId)
+  }
+}

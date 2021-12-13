@@ -29,14 +29,12 @@ import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJob
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableSharedFlow
-import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import timber.log.Timber
 
 suspend fun FhirEngine.runOneTimeSync(
   sharedSyncStatus: MutableSharedFlow<State>,
@@ -63,15 +61,6 @@ fun <T> Context.loadResourceTemplate(id: String, clazz: Class<T>, data: Map<Stri
   return if (Resource::class.java.isAssignableFrom(clazz))
     FhirContext.forR4().newJsonParser().parseResource(json) as T
   else Gson().fromJson(json, clazz)
-}
-
-suspend inline fun <reified T> FhirEngine.loadBinaryResourceConfiguration(id: String): T? {
-  return runCatching {
-      val binaryConfig = this.load(Binary::class.java, id).content.decodeToString()
-      binaryConfig.decodeJson() as T
-    }
-    .onFailure { Timber.w(it) }
-    .getOrNull()
 }
 
 suspend fun FhirEngine.searchActivePatients(
