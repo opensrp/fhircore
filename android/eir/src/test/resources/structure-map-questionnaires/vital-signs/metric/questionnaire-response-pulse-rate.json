@@ -1,0 +1,24 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "item": [
+    {
+      "linkId": "select-vital-sign",
+      "answer": [
+        {
+          "valueCoding": {
+            "code": "pulse-rate",
+            "display": "Pulse Rate"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "vital-signs-pulse-rate-level",
+      "answer": [
+        {
+          "valueInteger": 55
+        }
+      ]
+    }
+  ]
+}
