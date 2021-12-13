@@ -24,6 +24,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
@@ -40,7 +41,7 @@ constructor(val patientRepository: PatientRepository, val patientItemMapper: Pat
 
   val patientItem = MutableLiveData<PatientItem>()
   val questionnaireConfigs = MutableLiveData<List<QuestionnaireConfig>>()
-  val testResults = MutableLiveData<List<QuestionnaireResponse>>()
+  val testResults = MutableLiveData<List<Pair<QuestionnaireResponse, Questionnaire>>>()
   val onBackPressClicked = MutableLiveData(false)
   val onMenuItemClicked = MutableLiveData(false)
   val onFormItemClicked = MutableLiveData<QuestionnaireConfig>(null)

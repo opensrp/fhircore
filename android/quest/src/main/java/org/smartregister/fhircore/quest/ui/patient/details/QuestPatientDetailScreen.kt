@@ -59,6 +59,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
@@ -111,7 +112,7 @@ fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
 
 @Composable
 fun ResultItem(
-  questionnaireResponse: QuestionnaireResponse,
+  testResult: Pair<QuestionnaireResponse, Questionnaire>,
   questPatientDetailViewModel: QuestPatientDetailViewModel
 ) {
   Row(
@@ -120,14 +121,19 @@ fun ResultItem(
     modifier =
       Modifier.fillMaxWidth()
         .padding(12.dp)
-        .clickable {
-          questPatientDetailViewModel.onTestResultItemClickListener(questionnaireResponse)
-        }
+        .clickable { questPatientDetailViewModel.onTestResultItemClickListener(testResult.first) }
         .testTag(RESULT_ITEM)
   ) {
+    val label =
+      if (testResult.second.name.isNotEmpty()) {
+        testResult.second.name
+      } else {
+        testResult.second.title
+      }
+
     Text(
-      text = (questionnaireResponse.meta?.tagFirstRep?.display
-          ?: "") + " (${questionnaireResponse.authored?.asDdMmmYyyy() ?: ""}) ",
+      text = (label
+          ?: "") + " (${testResult.first.authored?.asDdMmmYyyy() ?: ""}) ",
       color = colorResource(id = R.color.black),
       fontSize = 17.sp,
       textAlign = TextAlign.Start,
@@ -232,52 +238,15 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
           Column {
             val totalResultsCount = testResults?.count() ?: 0
             testResults?.forEachIndexed { index, item ->
-              Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier =
-                  Modifier.fillMaxWidth()
-                    .padding(12.dp)
-                    .clickable { questPatientDetailViewModel.onTestResultItemClickListener(item) }
-                    .testTag(RESULT_ITEM)
-              ) {
-                Text(
-                  text = (item.meta?.tagFirstRep?.display
-                      ?: "") + " (${item.authored?.asDdMmmYyyy() ?: ""}) ",
-                  color = colorResource(id = R.color.black),
-                  fontSize = 17.sp,
-                  textAlign = TextAlign.Start,
-                  modifier = Modifier.padding(end = 12.dp)
-                )
+              ResultItem(item, questPatientDetailViewModel)
 
-                Image(
-                  painter = painterResource(id = R.drawable.ic_forward_arrow),
-                  contentDescription = "",
-                  colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray))
-                )
-              }
-
-              if (index < totalResultsCount) {
+              if (index < totalResultsCount - 1) {
                 Divider(color = colorResource(id = R.color.white_smoke))
-                Column {
-                  testResults?.let {
-                    it.forEachIndexed { index, item ->
-                      ResultItem(item, questPatientDetailViewModel)
-                      if (index < it.size) {
-                        Divider(color = colorResource(id = R.color.white_smoke))
-                      }
-                    }
-                  }
-                    ?: Text(
-                      text = stringResource(id = R.string.loading_responses),
-                      modifier = Modifier.padding(16.dp)
-                    )
-                }
               }
-              Spacer(Modifier.height(24.dp))
             }
           }
         }
+        Spacer(Modifier.height(24.dp))
       }
     }
   }

@@ -117,11 +117,11 @@ class PatientRepositoryTest : RobolectricTest() {
 
       val results = repository.fetchTestResults("1")
 
-      Assert.assertEquals("Cell Count", results.first().meta?.tagFirstRep?.display)
-      Assert.assertEquals(today.time, results.first().authored?.time)
+      Assert.assertEquals("Cell Count", results.first().first.meta?.tagFirstRep?.display)
+      Assert.assertEquals(today.time, results.first().first.authored?.time)
 
-      Assert.assertEquals("Blood Count", results.last().meta?.tagFirstRep?.display)
-      Assert.assertEquals(yesterday.time, results.last().authored?.time)
+      Assert.assertEquals("Blood Count", results.last().first.meta?.tagFirstRep?.display)
+      Assert.assertEquals(yesterday.time, results.last().first.authored?.time)
     }
 
   @Test

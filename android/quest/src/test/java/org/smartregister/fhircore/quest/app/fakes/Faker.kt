@@ -28,6 +28,7 @@ import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
@@ -100,14 +101,26 @@ object Faker {
 
     coEvery { patientRepository.fetchTestResults(any()) } returns
       listOf(
-        QuestionnaireResponse().apply {
-          meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Order" }) }
-          authored = Date()
-        },
-        QuestionnaireResponse().apply {
-          meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Test" }) }
-          authored = Date()
-        }
+        Pair(
+          QuestionnaireResponse().apply {
+            meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Order" }) }
+            authored = Date()
+          },
+          Questionnaire().apply {
+            name = "Sample Questionnaire"
+            title = "Sample Questionnaire"
+          }
+        ),
+        Pair(
+          QuestionnaireResponse().apply {
+            meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Test" }) }
+            authored = Date()
+          },
+          Questionnaire().apply {
+            name = "Sample Questionnaire"
+            title = "Sample Questionnaire"
+          }
+        )
       )
   }
 }
