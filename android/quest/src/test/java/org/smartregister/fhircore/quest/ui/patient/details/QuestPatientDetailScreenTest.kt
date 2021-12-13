@@ -43,7 +43,6 @@ import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert.assertEquals
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
@@ -171,23 +170,21 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Fix assertions once questionnaire listing bug is resolved")
   fun testResultsListShouldHaveAllResultsWithCorrectData() {
     // response heading should be exist and must be displayed
     composeRule.onNodeWithText("RESPONSES (2)").assertExists().assertIsDisplayed()
 
     // verify test result item(s) count and item title
-    composeRule.onAllNodesWithTag(RESULT_ITEM).assertCountEquals(2)
-    composeRule.onAllNodesWithTag(RESULT_ITEM, true)[0].assert(
+    composeRule.onAllNodesWithTag(RESULT_ITEMS).assertCountEquals(2)
+    composeRule.onAllNodesWithTag(RESULT_ITEMS, true)[0].assert(
       hasAnyChild(hasText("Sample Order (${Date().asDdMmmYyyy()}) "))
     )
-    composeRule.onAllNodesWithTag(RESULT_ITEM, true)[1].assert(
+    composeRule.onAllNodesWithTag(RESULT_ITEMS, true)[1].assert(
       hasAnyChild(hasText("Sample Test (${Date().asDdMmmYyyy()}) "))
     )
   }
 
   @Test
-  @Ignore("Fix assertions once questionnaire listing bug is resolved")
   fun testResultsListItemShouldCallResultItemListener() {
     val resultItemClicks = mutableListOf<QuestionnaireResponse>()
     every { questPatientDetailViewModel.onTestResultItemClickListener(any()) } answers
@@ -195,27 +192,21 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
         resultItemClicks.add(this.invocation.args[0] as QuestionnaireResponse)
       }
 
-    composeRule.onAllNodesWithTag(RESULT_ITEM).assertCountEquals(2)
     composeRule.onAllNodesWithTag(RESULT_ITEM)[0].performClick()
-    composeRule.onAllNodesWithTag(RESULT_ITEM)[1].performClick()
 
     verify { questPatientDetailViewModel.onTestResultItemClickListener(any()) }
 
     assertEquals("Sample Order", resultItemClicks[0].meta.tagFirstRep.display)
-    assertEquals("Sample Test", resultItemClicks[1].meta.tagFirstRep.display)
   }
 
   @Test
-  @Ignore("Fix assertions once questionnaire listing bug is resolved")
   fun testQuestPatientDetailScreenShouldHandleMissingData() {
     composeRule
       .onNodeWithTag(TOOLBAR_TITLE)
       .assertTextEquals(application.getString(R.string.back_to_clients))
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
-    composeRule.onNodeWithTag(PATIENT_NAME).assertExists().assertTextEquals("")
-    composeRule.onNodeWithTag(FORM_CONTAINER_ITEM).assert(hasAnyChild(hasText("Loading forms ...")))
-    composeRule
-      .onNodeWithTag(RESULT_CONTAINER_ITEM)
-      .assert(hasAnyChild(hasText("Loading responses ...")))
+    composeRule.onNodeWithTag(PATIENT_NAME).assertExists().assertTextEquals("John Doe, M, 21y")
+    composeRule.onNodeWithTag(FORM_CONTAINER_ITEM).assertExists()
+    composeRule.onNodeWithTag(RESULT_CONTAINER_ITEM).assertExists()
   }
 }

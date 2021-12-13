@@ -71,6 +71,7 @@ const val TOOLBAR_MENU = "toolbarMenuTag"
 const val PATIENT_NAME = "patientNameTag"
 const val FORM_ITEM = "formItemTag"
 const val RESULT_ITEM = "resultItemTag"
+const val RESULT_ITEMS = "resultItemsTag"
 const val FORM_CONTAINER_ITEM = "formItemContainerTag"
 const val RESULT_CONTAINER_ITEM = "resultItemContainerTag"
 
@@ -239,7 +240,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
                   Modifier.fillMaxWidth()
                     .padding(12.dp)
                     .clickable { questPatientDetailViewModel.onTestResultItemClickListener(item) }
-                    .testTag(RESULT_ITEM)
+                    .testTag(RESULT_ITEMS)
               ) {
                 Text(
                   text = (item.meta?.tagFirstRep?.display
