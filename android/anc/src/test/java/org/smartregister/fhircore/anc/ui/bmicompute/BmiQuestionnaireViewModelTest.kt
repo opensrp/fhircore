@@ -47,24 +47,24 @@ class BmiQuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testInputHeightAsPerSiUnit() {
-    val expectedHeightInches = 70.0
-    val inputHeight = viewModel.getHeightAsPerSiUnit(70.0, false)
-    Assert.assertEquals(expectedHeightInches, inputHeight, 0.05)
-
-    val expectedHeightCm = 2755.90
-    val inputHeight2 = viewModel.getHeightAsPerSiUnit(70.0, true)
+    val expectedHeightCm = 170.0
+    val inputHeight2 = viewModel.getHeightAsPerMetricUnit(170.0, true)
     Assert.assertEquals(expectedHeightCm, inputHeight2, 0.05)
+
+    val expectedHeightMeter = 1.78
+    val inputHeight = viewModel.getHeightAsPerMetricUnit(70.0, false)
+    Assert.assertEquals(expectedHeightMeter, inputHeight, 0.05)
   }
 
   @Test
   fun testInputWeightAsPerSiUnit() {
-    val expectedWeightLb = 72.5
-    val inputWeight = viewModel.getWeightAsPerSiUnit(72.5, false)
-    Assert.assertEquals(expectedWeightLb, inputWeight, 0.5)
-
-    val expectedWeightKgs = 160.0
-    val inputWeight2 = viewModel.getWeightAsPerSiUnit(72.5, true)
+    val expectedWeightKgs = 72.50
+    val inputWeight2 = viewModel.getWeightAsPerMetricUnit(72.5, true)
     Assert.assertEquals(expectedWeightKgs, inputWeight2, 0.5)
+
+    val expectedWeightKgs2 = 72.5
+    val inputWeight = viewModel.getWeightAsPerMetricUnit(160.5, false)
+    Assert.assertEquals(expectedWeightKgs2, inputWeight, 0.5)
   }
 
   @Test

@@ -28,7 +28,7 @@ import org.smartregister.fhircore.anc.data.model.AncOverviewItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
-import org.smartregister.fhircore.anc.util.computeBMIViaStandardUnits
+import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @HiltViewModel
@@ -71,7 +71,7 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
 
       if (ancOverviewItem.height.isNotEmpty() && ancOverviewItem.weight.isNotEmpty()) {
         ancOverviewItem.bmi =
-          computeBMIViaStandardUnits(
+          computeBMIViaMetricUnits(
               ancOverviewItem.height.toDouble(),
               ancOverviewItem.weight.toDouble()
             )

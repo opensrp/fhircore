@@ -113,10 +113,17 @@ class VitalSignsDetailsFragment : Fragment() {
     binding.swipeContainer.isRefreshing = false
     ancOverviewItem.apply {
       binding.apply {
-        txtViewHeightValue.text = ancOverviewItem.height
-        txtViewWeightValue.text = ancOverviewItem.weight
+        if (ancOverviewItem.height.isNotEmpty()) {
+          txtViewHeightUnit.show()
+          txtViewHeightValue.text = ancOverviewItem.height
+        }
+        if (ancOverviewItem.weight.isNotEmpty()) {
+          txtViewWeightValue.text = ancOverviewItem.weight
+          txtViewWeightUnit.show()
+        }
         if (ancOverviewItem.bmi.isNotEmpty()) {
           linearLayoutBmi.show()
+          txtViewBmiUnit.show()
           txtViewBmiValue.text = ancOverviewItem.bmi
         }
       }

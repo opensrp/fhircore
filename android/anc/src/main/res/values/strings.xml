@@ -36,6 +36,9 @@
     <string name="bmi_category_normal">Normal weight = 18.5 – 24.9</string>
     <string name="bmi_category_overweight">Overweight = 25 – 29.9</string>
     <string name="bmi_category_obesity">Obesity = BMI of 30 or greater</string>
+    <string name="metric_unit_weight">kg</string>
+    <string name="metric_unit_height">m</string>
+    <string name="metric_unit_bmi">kg/m2</string>
     <string name="view_past_encounters">View past encounters</string>
     <string name="remove_this_person">Remove this person</string>
     <string name="care_plan">Care plan</string>

@@ -22,9 +22,9 @@ import org.junit.Test
 class CalculationUtilsTest {
 
   @Test
-  fun testBMI_viaStandardUnit() {
+  fun testBMI_viaUSCUnit() {
     val expectedBMI = 22.96
-    val computedBMI = computeBMIViaStandardUnits(70.0, 160.0)
+    val computedBMI = computeBMIViaUSCUnits(70.0, 160.0)
     assertEquals(expectedBMI, computedBMI, 0.1)
   }
 
