@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc.ui.family
 import android.app.Activity
 import android.app.Application
 import android.content.Intent
+import android.os.Looper
 import androidx.appcompat.app.AlertDialog
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
@@ -53,6 +54,7 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
+import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity.Companion.QUESTIONNAIRE_CALLING_ACTIVITY
@@ -78,7 +80,10 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     every { Sync.basicSyncJob(any()).lastSyncTimestamp() } returns OffsetDateTime.now()
 
     val intent =
-      Intent().apply { putExtra(QUESTIONNAIRE_ARG_FORM, FamilyFormConstants.FAMILY_REGISTER_FORM) }
+      Intent().apply {
+        putExtra(QUESTIONNAIRE_ARG_FORM, FamilyFormConstants.FAMILY_REGISTER_FORM)
+        putExtra(FamilyQuestionnaireActivity.QUESTIONNAIRE_RELATED_TO_KEY, "Patient/1")
+      }
 
     familyQuestionnaireActivity =
       Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent).create().get()
@@ -243,6 +248,18 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
       getString(R.string.unsaved_changes_pos),
       alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
     )
+
+    val config = QuestionnaireConfig("", FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM, "", "")
+    ReflectionHelpers.setField(familyQuestionnaireActivity, "questionnaireConfig", config)
+
+    alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).performClick()
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+    val expectedIntent = Intent(familyQuestionnaireActivity, FamilyDetailsActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<Application>()).nextStartedActivity
+
+    assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test
