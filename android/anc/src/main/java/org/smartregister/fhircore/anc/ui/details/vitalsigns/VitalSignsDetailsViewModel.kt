@@ -70,16 +70,12 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
         ?.toPlainString()
         ?.let { ancOverviewItem.height = it }
       if (ancOverviewItem.height.isNotEmpty() && ancOverviewItem.weight.isNotEmpty()) {
-        try {
-          ancOverviewItem.bmi =
-            computeBMIViaStandardUnits(
-                ancOverviewItem.height.toDouble(),
-                ancOverviewItem.weight.toDouble()
-              )
-              .toString()
-        } catch (e: Exception) {
-          e.printStackTrace()
-        }
+        ancOverviewItem.bmi =
+          computeBMIViaStandardUnits(
+              ancOverviewItem.height.toDouble(),
+              ancOverviewItem.weight.toDouble()
+            )
+            .toString()
       }
 
       patientAncOverviewItem.postValue(ancOverviewItem)
