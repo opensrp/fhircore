@@ -132,8 +132,7 @@ fun ResultItem(
       }
 
     Text(
-      text = (label
-          ?: "") + " (${testResult.first.authored?.asDdMmmYyyy() ?: ""}) ",
+      text = (label ?: "") + " (${testResult.first.authored?.asDdMmmYyyy() ?: ""}) ",
       color = colorResource(id = R.color.black),
       fontSize = 17.sp,
       textAlign = TextAlign.Start,

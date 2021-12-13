@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.data.patient
 
-import android.widget.Toast
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
@@ -34,7 +33,6 @@ import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import timber.log.Timber
@@ -77,9 +75,10 @@ constructor(
   suspend fun fetchDemographics(patientId: String): Patient =
     withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, patientId) }
 
-  suspend fun fetchTestResults(patientId: String): List<Pair<QuestionnaireResponse, Questionnaire>> {
+  suspend fun fetchTestResults(
+    patientId: String
+  ): List<Pair<QuestionnaireResponse, Questionnaire>> {
     return withContext(dispatcherProvider.io()) {
-
       val questionnaireResponses = searchQuestionnaireResponses(patientId)
 
       val testResults = mutableListOf<Pair<QuestionnaireResponse, Questionnaire>>()
@@ -91,8 +90,10 @@ constructor(
     }
   }
 
-  private suspend fun getQuestionnaire(questionnaireResponse: QuestionnaireResponse): Questionnaire {
-    return if(questionnaireResponse.questionnaire != null) {
+  private suspend fun getQuestionnaire(
+    questionnaireResponse: QuestionnaireResponse
+  ): Questionnaire {
+    return if (questionnaireResponse.questionnaire != null) {
       val questionnaireId = questionnaireResponse.questionnaire.split("/")[1]
       loadQuestionnaire(questionnaireId = questionnaireId)
     } else {
@@ -103,14 +104,15 @@ constructor(
       )
       Questionnaire()
     }
-
   }
 
-  private suspend fun loadQuestionnaire(questionnaireId: String): Questionnaire = withContext(dispatcherProvider.io()) { fhirEngine.load(Questionnaire::class.java, questionnaireId) }
+  private suspend fun loadQuestionnaire(questionnaireId: String): Questionnaire =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.load(Questionnaire::class.java, questionnaireId)
+    }
 
   private suspend fun searchQuestionnaireResponses(patientId: String): List<QuestionnaireResponse> =
     fhirEngine.search { filter(QuestionnaireResponse.SUBJECT) { value = "Patient/$patientId" } }
-
 
   suspend fun fetchTestForms(
     filter: SearchFilter,
