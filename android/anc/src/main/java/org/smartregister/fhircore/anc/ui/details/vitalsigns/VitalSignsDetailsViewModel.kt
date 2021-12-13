@@ -60,14 +60,14 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
       val listObservationsp02 = patientRepository.fetchVitalSigns(patientId = patientId, "sp02")
 
       if (listObservationWeight.valueQuantity!= null &&
-        listObservationWeight.valueQuantity.value.toPlainString() != null
+        listObservationWeight.valueQuantity.value.toPlainString() != null && listObservationWeight.valueQuantity.unit !=null
       )
-        patientVitalItem.weight = listObservationWeight.valueQuantity.value.toPlainString()
+        patientVitalItem.weight = listObservationWeight.valueQuantity.value.toPlainString() + " " + listObservationWeight.valueQuantity.unit
 
       if (listObservationHeight.valueQuantity!= null &&
-        listObservationHeight.valueQuantity.value.toPlainString() != null
+        listObservationHeight.valueQuantity.value.toPlainString() != null && listObservationHeight.valueQuantity.unit !=null
       )
-        patientVitalItem.height = listObservationHeight.valueQuantity.value.toPlainString()
+        patientVitalItem.height = listObservationHeight.valueQuantity.value.toPlainString() + " " + listObservationHeight.valueQuantity.unit
 
       if (listObservationBPS.valueIntegerType!= null &&
         listObservationBPS.valueIntegerType.valueAsString != null
