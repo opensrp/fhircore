@@ -39,7 +39,9 @@ import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.toSha1
 import retrofit2.Call
 import retrofit2.Callback
@@ -55,7 +57,8 @@ constructor(
   val oAuthService: OAuthService,
   val configurationRegistry: ConfigurationRegistry,
   val secureSharedPreference: SecureSharedPreference,
-  val tokenManagerService: TokenManagerService
+  val tokenManagerService: TokenManagerService,
+  val sharedPreference: SharedPreferencesHelper
 ) : AbstractAccountAuthenticator(context) {
 
   override fun addAccount(
@@ -292,6 +295,7 @@ constructor(
       secureSharedPreference.deleteCredentials()
       launchScreen(AppSettingActivity::class.java)
     }
+    sharedPreference.remove(APP_ID_CONFIG)
   }
 
   fun launchLoginScreen() {
