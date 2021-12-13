@@ -33,7 +33,6 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
 import org.hl7.fhir.utilities.npm.ToolsVersion
-import org.junit.Ignore
 import org.junit.Test
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
@@ -44,7 +43,6 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
  *
  * This should be removed at a later point once we have a more clear way of doing this
  */
-@Ignore
 class StructureMapTestUtilities : RobolectricTest() {
 
   @Test
