@@ -27,7 +27,16 @@ class AncModelsTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    ancOverviewItem = AncOverviewItem("2020-02-12", "2", "1", "1")
+    ancOverviewItem =
+      AncOverviewItem(
+        edd = "2020-02-12",
+        ga = "2",
+        noOfFetuses = "1",
+        risk = "1",
+        height = "180 cm",
+        weight = "73 kg",
+        bmi = "22.54 kg/m"
+      )
   }
 
   @Test
@@ -36,5 +45,8 @@ class AncModelsTest : RobolectricTest() {
     Assert.assertEquals("1", ancOverviewItem.risk)
     Assert.assertEquals("2", ancOverviewItem.ga)
     Assert.assertEquals("2020-02-12", ancOverviewItem.edd)
+    Assert.assertEquals("180 cm", ancOverviewItem.height)
+    Assert.assertEquals("73 kg", ancOverviewItem.weight)
+    Assert.assertEquals("22.54 kg/m", ancOverviewItem.bmi)
   }
 }

@@ -70,6 +70,7 @@ internal class VitalSignsDetailsViewModelTest {
       Assert.assertNotNull(ancOverviewItem)
       Assert.assertEquals(ancOverviewItem.height, getTestAncOverviewItem().height)
       Assert.assertEquals(ancOverviewItem.weight, getTestAncOverviewItem().weight)
+      Assert.assertEquals(ancOverviewItem.bmi, getTestAncOverviewItem().bmi)
     }
   }
 
@@ -79,8 +80,9 @@ internal class VitalSignsDetailsViewModelTest {
 
   private fun getTestAncOverviewItem(): AncOverviewItem {
     return AncOverviewItem().apply {
-      height = "60 inches"
-      weight = "50 kg"
+      height = "180 cm"
+      weight = "73 kg"
+      bmi = "22.54 kg/m"
     }
   }
 }

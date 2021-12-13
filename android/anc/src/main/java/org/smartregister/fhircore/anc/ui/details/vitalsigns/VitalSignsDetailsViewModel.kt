@@ -53,22 +53,22 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
     val patientAncOverviewItem = MutableLiveData<AncOverviewItem>()
     val ancOverviewItem = AncOverviewItem()
     viewModelScope.launch(dispatcher.io()) {
-      val listObservationHeight =
-        patientRepository.fetchObservations(patientId = patientId, "body-height")
-      val listObservationWeight =
-        patientRepository.fetchObservations(patientId = patientId, "body-weight")
-      listObservationWeight
-        .valueQuantity
-        ?.value
-        ?.setScale(2, BigDecimal.ROUND_HALF_EVEN)
-        ?.toPlainString()
-        ?.let { ancOverviewItem.weight = it }
-      listObservationHeight
+      patientRepository
+        .fetchObservations(patientId = patientId, "body-height")
         .valueQuantity
         ?.value
         ?.setScale(2, BigDecimal.ROUND_HALF_EVEN)
         ?.toPlainString()
         ?.let { ancOverviewItem.height = it }
+
+      patientRepository
+        .fetchObservations(patientId = patientId, "body-weight")
+        .valueQuantity
+        ?.value
+        ?.setScale(2, BigDecimal.ROUND_HALF_EVEN)
+        ?.toPlainString()
+        ?.let { ancOverviewItem.weight = it }
+
       if (ancOverviewItem.height.isNotEmpty() && ancOverviewItem.weight.isNotEmpty()) {
         ancOverviewItem.bmi =
           computeBMIViaStandardUnits(
@@ -77,7 +77,6 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
             )
             .toString()
       }
-
       patientAncOverviewItem.postValue(ancOverviewItem)
     }
     return patientAncOverviewItem
