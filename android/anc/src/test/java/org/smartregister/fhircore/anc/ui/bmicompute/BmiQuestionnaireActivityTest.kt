@@ -24,6 +24,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.sync.Sync
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -39,6 +40,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DecimalType
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -48,6 +50,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.shadows.ShadowAlertDialog
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
@@ -68,7 +71,7 @@ internal class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
   private lateinit var bmiQuestionnaireActivity: BmiQuestionnaireActivity
   private lateinit var bmiQuestionnaireActivitySpy: BmiQuestionnaireActivity
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
-  private lateinit var patientRepository: PatientRepository
+  @BindValue val patientRepository: PatientRepository = mockk()
 
   @Before
   fun setUp() {
@@ -78,11 +81,7 @@ internal class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
 
     every { Sync.basicSyncJob(any()).stateFlow() } returns flowOf()
     every { Sync.basicSyncJob(any()).lastSyncTimestamp() } returns OffsetDateTime.now()
-
-    patientRepository =
-      mockk {
-        coEvery { recordComputedBmi(any(), any(), any(), any(), any(), any(), any()) } returns true
-      }
+    every { patientRepository.setAncItemMapperType(any()) } returns Unit
 
     val intent =
       Intent().apply {
@@ -94,10 +93,7 @@ internal class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
       Robolectric.buildActivity(BmiQuestionnaireActivity::class.java, intent).create().get()
     bmiQuestionnaireActivitySpy = spyk(bmiQuestionnaireActivity, recordPrivateCalls = true)
 
-    every { bmiQuestionnaireActivitySpy.getString(R.string.try_again) } returns
-      context.getString(R.string.try_again)
-    every { bmiQuestionnaireActivitySpy.getString(R.string.error_saving_form) } returns
-      context.getString(R.string.error_saving_form)
+    every { bmiQuestionnaireActivitySpy.finish() } returns Unit
   }
 
   @After
@@ -153,7 +149,62 @@ internal class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
       dialog.findViewById<TextView>(R.id.alertTitle)?.text
     )
 
+    coEvery {
+      patientRepository.recordComputedBmi(any(), any(), any(), any(), any(), any(), any())
+    } returns true
     dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
+  }
+
+  @Test
+  fun testExitFormShouldCallFinishMethod() {
+    ReflectionHelpers.callInstanceMethod<Any>(bmiQuestionnaireActivitySpy, "exitForm")
+    verify(exactly = 1) { bmiQuestionnaireActivitySpy.finish() }
+  }
+
+  @Test
+  fun testProceedRecordBMIShouldSaveData() {
+    every { bmiQuestionnaireActivitySpy getProperty "questionnaire" } returns mockk<Questionnaire>()
+    coEvery {
+      patientRepository.recordComputedBmi(any(), any(), any(), any(), any(), any(), any())
+    } returns true
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      bmiQuestionnaireActivitySpy,
+      "proceedRecordBMI",
+      ReflectionHelpers.ClassParameter(
+        QuestionnaireResponse::class.java,
+        getQuestionnaireResponse()
+      ),
+      ReflectionHelpers.ClassParameter(String::class.java, "Patient/1"),
+      ReflectionHelpers.ClassParameter(Double::class.java, 5),
+      ReflectionHelpers.ClassParameter(Double::class.java, 5),
+      ReflectionHelpers.ClassParameter(Double::class.java, 19)
+    )
+
+    verify(exactly = 1) { bmiQuestionnaireActivitySpy.finish() }
+
+    coEvery {
+      patientRepository.recordComputedBmi(any(), any(), any(), any(), any(), any(), any())
+    } returns false
+    every { bmiQuestionnaireActivitySpy.getString(any()) } returns ""
+    every { bmiQuestionnaireActivitySpy["showErrorAlert"](any<String>(), any<String>()) }
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      bmiQuestionnaireActivitySpy,
+      "proceedRecordBMI",
+      ReflectionHelpers.ClassParameter(
+        QuestionnaireResponse::class.java,
+        getQuestionnaireResponse()
+      ),
+      ReflectionHelpers.ClassParameter(String::class.java, "Patient/1"),
+      ReflectionHelpers.ClassParameter(Double::class.java, 5),
+      ReflectionHelpers.ClassParameter(Double::class.java, 5),
+      ReflectionHelpers.ClassParameter(Double::class.java, 19)
+    )
+
+    verify(exactly = 1) {
+      bmiQuestionnaireActivitySpy["showErrorAlert"](any<String>(), any<String>())
+    }
   }
 
   private fun getQuestionnaireResponse(): QuestionnaireResponse {
