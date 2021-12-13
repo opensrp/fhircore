@@ -28,14 +28,16 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.showToast
 
 @AndroidEntryPoint
 class AppSettingActivity : AppCompatActivity() {
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
-
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   val appSettingViewModel: AppSettingViewModel by viewModels()
 
@@ -45,26 +47,37 @@ class AppSettingActivity : AppCompatActivity() {
       this,
       { loadConfigs ->
         if (loadConfigs != null && loadConfigs) {
+          val applicationId = appSettingViewModel.appId.value!!
           configurationRegistry.loadAppConfigurations(
-            appId = appSettingViewModel.appId.value!!,
+            appId = applicationId,
             accountAuthenticator = accountAuthenticator
-          ) { finish() }
+          ) {
+            sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
+            finish()
+          }
         } else if (loadConfigs != null && !loadConfigs)
           showToast(getString(R.string.application_not_supported, appSettingViewModel.appId.value))
       }
     )
-    setContent {
-      AppTheme {
-        val appId by appSettingViewModel.appId.observeAsState("")
-        val rememberApp by appSettingViewModel.rememberApp.observeAsState(false)
-        AppSettingScreen(
-          appId = appId,
-          rememberApp = rememberApp,
-          onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
-          onRememberAppChecked = appSettingViewModel::onRememberAppChecked,
-          onLoadConfigurations = appSettingViewModel::loadConfigurations
-        )
-      }
+
+    sharedPreferencesHelper.read(APP_ID_CONFIG, null)?.let {
+      appSettingViewModel.onApplicationIdChanged(it)
+      appSettingViewModel.loadConfigurations(true)
     }
+      ?: run {
+        setContent {
+          AppTheme {
+            val appId by appSettingViewModel.appId.observeAsState("")
+            val rememberApp by appSettingViewModel.rememberApp.observeAsState(false)
+            AppSettingScreen(
+              appId = appId,
+              rememberApp = rememberApp,
+              onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
+              onRememberAppChecked = appSettingViewModel::onRememberAppChecked,
+              onLoadConfigurations = appSettingViewModel::loadConfigurations
+            )
+          }
+        }
+      }
   }
 }
