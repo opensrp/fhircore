@@ -23,6 +23,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,6 +39,7 @@ import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 
 @ExperimentalCoroutinesApi
+@HiltAndroidTest
 class ReportHomePageTest : RobolectricTest() {
 
   private val app = ApplicationProvider.getApplicationContext<Application>()
@@ -44,11 +47,13 @@ class ReportHomePageTest : RobolectricTest() {
   private lateinit var repository: ReportRepository
   private lateinit var ancPatientRepository: PatientRepository
   private lateinit var viewModel: ReportViewModel
-  @get:Rule val composeRule = createComposeRule()
-  @get:Rule var coroutinesTestRule = CoroutineTestRule()
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 1) val composeRule = createComposeRule()
+  @get:Rule(order = 2) val coroutinesTestRule = CoroutineTestRule()
 
   @Before
   fun setUp() {
+    hiltRule.inject()
     fhirEngine = mockk()
     repository = spyk(ReportRepository(fhirEngine, ApplicationProvider.getApplicationContext()))
 
