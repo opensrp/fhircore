@@ -61,6 +61,26 @@
   },
   {
     "resourceType": "SearchParameter",
+    "name": "publisher",
+    "code": "publisher",
+    "base": [
+      "StructureMap"
+    ],
+    "type": "token",
+    "expression": "publisher"
+  },
+  {
+    "resourceType": "SearchParameter",
+    "name": "publisher",
+    "code": "publisher",
+    "base": [
+      "Library"
+    ],
+    "type": "token",
+    "expression": "publisher"
+  },
+  {
+    "resourceType": "SearchParameter",
     "name": "organization",
     "code": "organization",
     "base": [

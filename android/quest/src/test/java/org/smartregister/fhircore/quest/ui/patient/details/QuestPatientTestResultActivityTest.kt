@@ -16,11 +16,22 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
+import java.io.File
+import java.io.FileReader
 import javax.inject.Inject
+import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.hl7.fhir.r4.model.Base
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
+import org.hl7.fhir.utilities.npm.ToolsVersion
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -29,6 +40,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -65,5 +77,93 @@ class QuestPatientTestResultActivityTest : RobolectricTest() {
   fun testOnBackPressListenerShouldCallFinishActivity() {
     questPatientTestResultActivity.patientViewModel.onBackPressed(true)
     Assert.assertTrue(questPatientTestResultActivity.isFinishing)
+  }
+
+  @Test
+  fun testG6pdPatientRegistrationExtraction() {
+    val g6pdStructureMap = "patient-registration-questionnaire/structure-map.txt".readFile()
+    val g6pdResposne = "patient-registration-questionnaire/questionnaire-response.json".readFile()
+
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val outputs: MutableList<Base> = ArrayList()
+    val transformSupportServices = TransformSupportServices(contextR4)
+
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map = scu.parse(g6pdStructureMap, "PatientRegistration")
+
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+
+    val targetResource = Bundle()
+
+    val baseElement = iParser.parseResource(QuestionnaireResponse::class.java, g6pdResposne)
+
+    kotlin.runCatching { scu.transform(contextR4, baseElement, map, targetResource) }.onFailure {
+      System.out.println(it.stackTraceToString())
+    }
+
+    System.out.println(iParser.encodeResourceToString(targetResource))
+  }
+
+  @Test
+  fun testG6pdTestResultsExtraction() {
+    val g6pdStructureMap = "test-results-questionnaire/structure-map.txt".readFile()
+    val g6pdResposne = "test-results-questionnaire/questionnaire-response.json".readFile()
+
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val outputs: MutableList<Base> = ArrayList()
+    val transformSupportServices = TransformSupportServices(contextR4)
+
+    val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val map = scu.parse(g6pdStructureMap, "TestResults")
+
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val mapString = iParser.encodeResourceToString(map)
+
+    System.out.println(mapString)
+
+    val targetResource = Bundle()
+
+    val baseElement = iParser.parseResource(QuestionnaireResponse::class.java, g6pdResposne)
+
+    kotlin.runCatching { scu.transform(contextR4, baseElement, map, targetResource) }.onFailure {
+      System.out.println(it.stackTraceToString())
+    }
+
+    System.out.println(iParser.encodeResourceToString(targetResource))
+  }
+
+  fun String.readFile(): String {
+    val file = File("$ASSET_BASE_PATH/$this")
+    val charArray = CharArray(file.length().toInt()).apply { FileReader(file).read(this) }
+    return String(charArray)
+  }
+
+  companion object {
+    val ASSET_BASE_PATH =
+      (System.getProperty("user.dir") +
+        File.separator +
+        "src" +
+        File.separator +
+        "main" +
+        File.separator +
+        "resources" +
+        File.separator)
   }
 }

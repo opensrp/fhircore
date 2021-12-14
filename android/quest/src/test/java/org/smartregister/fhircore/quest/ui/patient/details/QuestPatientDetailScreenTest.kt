@@ -127,7 +127,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
   fun testToolbarTestResultsMenuItemShouldCallMenuItemClickListener() {
     composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
     composeRule.onNodeWithTag(TOOLBAR_MENU).onChildAt(0).performClick()
-    verify { questPatientDetailViewModel.onMenuItemClickListener(true) }
+    verify { questPatientDetailViewModel.onMenuItemClickListener(R.string.test_results) }
   }
 
   @Test

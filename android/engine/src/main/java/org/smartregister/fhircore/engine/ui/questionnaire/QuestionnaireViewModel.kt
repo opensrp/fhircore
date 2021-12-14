@@ -120,6 +120,8 @@ constructor(
     editMode: Boolean = false
   ) {
     viewModelScope.launch {
+      // important to set response subject so that structure map can handle subject for all entities
+      handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
 
       // if no structure-map and no extraction is configured return without further processing
       if (questionnaire.targetStructureMap != null ||
@@ -169,18 +171,27 @@ constructor(
     }
   }
 
+  fun handleQuestionnaireResponseSubject(
+    resourceId: String?,
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse
+  ) {
+    if (resourceId?.isNotBlank() == true) {
+      val subjectType = questionnaire.subjectType.firstOrNull()?.code ?: ResourceType.Patient.name
+      questionnaireResponse.subject = Reference().apply { reference = "$subjectType/$resourceId" }
+    }
+  }
+
   suspend fun saveQuestionnaireResponse(
     resourceId: String?,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ) {
-    val subjectType = questionnaire.subjectType.firstOrNull()?.code ?: ResourceType.Patient.name
 
     if (resourceId?.isNotBlank() == true) {
       // TODO revise this logic when syncing strategy has final decision
       // https://github.com/opensrp/fhircore/issues/726
       loadPatient(resourceId)?.meta?.tag?.forEach { questionnaireResponse.meta.addTag(it) }
-      questionnaireResponse.subject = Reference().apply { reference = "$subjectType/$resourceId" }
       questionnaireResponse.questionnaire =
         "${questionnaire.resourceType}/${questionnaire.logicalId}"
 

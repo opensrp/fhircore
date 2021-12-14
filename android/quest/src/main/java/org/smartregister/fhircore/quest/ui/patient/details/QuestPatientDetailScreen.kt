@@ -101,9 +101,15 @@ fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
         DropdownMenuItem(
           onClick = {
             showMenu = false
-            questPatientDetailViewModel.onMenuItemClickListener(true)
+            questPatientDetailViewModel.onMenuItemClickListener(R.string.test_results)
           }
         ) { Text(text = stringResource(id = R.string.test_results)) }
+        DropdownMenuItem(
+          onClick = {
+            showMenu = false
+            questPatientDetailViewModel.onMenuItemClickListener(R.string.run_cql)
+          }
+        ) { Text(text = stringResource(id = R.string.run_cql)) }
       }
     }
   )
@@ -230,52 +236,22 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
           modifier = Modifier.fillMaxWidth().padding(top = 12.dp).testTag(RESULT_CONTAINER_ITEM)
         ) {
           Column {
-            val totalResultsCount = testResults?.count() ?: 0
-            testResults?.forEachIndexed { index, item ->
-              Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier =
-                  Modifier.fillMaxWidth()
-                    .padding(12.dp)
-                    .clickable { questPatientDetailViewModel.onTestResultItemClickListener(item) }
-                    .testTag(RESULT_ITEM)
-              ) {
-                Text(
-                  text = (item.meta?.tagFirstRep?.display
-                      ?: "") + " (${item.authored?.asDdMmmYyyy() ?: ""}) ",
-                  color = colorResource(id = R.color.black),
-                  fontSize = 17.sp,
-                  textAlign = TextAlign.Start,
-                  modifier = Modifier.padding(end = 12.dp)
-                )
-
-                Image(
-                  painter = painterResource(id = R.drawable.ic_forward_arrow),
-                  contentDescription = "",
-                  colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray))
-                )
-              }
-
-              if (index < totalResultsCount) {
-                Divider(color = colorResource(id = R.color.white_smoke))
-                Column {
-                  testResults?.let {
-                    it.forEachIndexed { index, item ->
-                      ResultItem(item, questPatientDetailViewModel)
-                      if (index < it.size) {
-                        Divider(color = colorResource(id = R.color.white_smoke))
-                      }
-                    }
+            Divider(color = colorResource(id = R.color.white_smoke))
+            Column {
+              testResults?.let {
+                it.forEachIndexed { index, item ->
+                  ResultItem(item, questPatientDetailViewModel)
+                  if (index < it.size) {
+                    Divider(color = colorResource(id = R.color.white_smoke))
                   }
-                    ?: Text(
-                      text = stringResource(id = R.string.loading_responses),
-                      modifier = Modifier.padding(16.dp)
-                    )
                 }
               }
-              Spacer(Modifier.height(24.dp))
+                ?: Text(
+                  text = stringResource(id = R.string.loading_responses),
+                  modifier = Modifier.padding(16.dp)
+                )
             }
+            Spacer(Modifier.height(24.dp))
           }
         }
       }

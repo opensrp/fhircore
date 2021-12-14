@@ -21,9 +21,11 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.annotation.StringRes
 import dagger.hilt.android.AndroidEntryPoint
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
@@ -60,14 +62,33 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
     setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
   }
 
-  private fun launchTestResults(isClicked: Boolean) {
-    if (isClicked) {
+  private fun launchTestResults(@StringRes id: Int) {
+    if (id == R.string.test_results) {
       startActivity(
         Intent(this, QuestPatientTestResultActivity::class.java).apply {
           putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
         }
       )
+    } else if (id == R.string.run_cql) {
+      runCql()
     }
+  }
+
+  fun runCql() {
+    val progress = AlertDialogue.showProgressAlert(this, R.string.loading)
+
+    patientViewModel
+      .runCqlFor(patientId, this)
+      .observe(
+        this,
+        {
+          if (it.isNotBlank()) {
+            progress.dismiss()
+
+            AlertDialogue.showInfoAlert(this@QuestPatientDetailActivity, message = it)
+          }
+        }
+      )
   }
 
   private fun launchQuestionnaireForm(questionnaireConfig: QuestionnaireConfig?) {

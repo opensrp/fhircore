@@ -39,6 +39,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_READ_ONLY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -80,7 +81,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnMenuItemClickListenerShouldStartQuestPatientTestResultActivity() {
-    questPatientDetailActivity.patientViewModel.onMenuItemClickListener(true)
+    questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.test_results)
     val expectedIntent =
       Intent(questPatientDetailActivity, QuestPatientTestResultActivity::class.java)
     val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity

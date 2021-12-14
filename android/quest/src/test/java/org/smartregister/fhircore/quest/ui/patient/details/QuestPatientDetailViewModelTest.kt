@@ -28,6 +28,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -67,9 +68,8 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnMenuItemClickListener() {
-    questPatientDetailViewModel.onMenuItemClickListener(true)
+    questPatientDetailViewModel.onMenuItemClickListener(R.string.test_results)
     Assert.assertNotNull(questPatientDetailViewModel.onMenuItemClicked.value)
-    Assert.assertTrue(questPatientDetailViewModel.onMenuItemClicked.value!!)
   }
 
   @Test
