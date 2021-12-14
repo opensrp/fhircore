@@ -79,6 +79,9 @@ class VitalSignsDetailsFragment : Fragment() {
 
     binding.swipeContainer.setOnRefreshListener {
       ancDetailsViewModel
+        .fetchEncounters(patientId)
+        .observe(viewLifecycleOwner, this::handleEncounters)
+      ancDetailsViewModel
         .fetchVitalSigns(patientId)
         .observe(viewLifecycleOwner, this::handleVitalSigns)
     }
@@ -118,6 +121,9 @@ class VitalSignsDetailsFragment : Fragment() {
       txtViewSpValue.text = patientVitalItem.sp02
       txtViewPulseValue.text = patientVitalItem.pulse
       txtViewBpValue.text = patientVitalItem.BPS
+      txtViewHeightUnit.text = patientVitalItem.heightUnit
+      txtViewWeightUnit.text = patientVitalItem.weightUnit
+      txtViewBmiUnit.text = patientVitalItem.bmiUnit
     }
   }
 

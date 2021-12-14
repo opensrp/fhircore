@@ -216,6 +216,7 @@ constructor(
       when (searchFilterString) {
         "body-weight" -> vitalSignsConfig.weightFilter!!
         "body-height" -> vitalSignsConfig.heightFilter!!
+        "bmi" -> vitalSignsConfig.bmiFilter!!
         "bp-s" -> vitalSignsConfig.BPSFilter!!
         "bp-d" -> vitalSignsConfig.BPDSFilter!!
         "pulse-rate" -> vitalSignsConfig.pulseRateFilter!!
@@ -234,7 +235,7 @@ constructor(
         }
       }
     if (observations.isNotEmpty())
-      finalObservation = observations.sortedBy { it.effectiveDateTimeType.value }.first()
+      finalObservation = observations.sortedBy { it.effectiveDateTimeType.value }.last()
 
     return finalObservation
   }

@@ -36,6 +36,33 @@
         "system": "",
         "code": "risk"
       }
+    },
+    "heightFilter": {
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "8302-2"
+      }
+    },
+    "weightFilter": {
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "http://acme.org/devices/clinical-codes",
+        "code": "body-weight"
+      }
+    },
+    "bmiFilter": {
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "39156-5"
+      }
     }
   },
   {

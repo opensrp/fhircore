@@ -30,7 +30,7 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
-import org.smartregister.fhircore.anc.util.computeBMIViaStandardUnits
+import org.smartregister.fhircore.anc.util.computeBMIViaUSCUnits
 import org.smartregister.fhircore.engine.util.extension.find
 
 @HiltViewModel
@@ -105,19 +105,19 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
     }
   }
 
-  fun getHeightAsPerSiUnit(inputHeight: Double, unitModeMetric: Boolean): Double {
+  fun getHeightAsPerMetricUnit(inputHeight: Double, unitModeMetric: Boolean): Double {
     return if (unitModeMetric) {
-      inputHeight * HEIGHT_INCH_METER_MULTIPLIER
-    } else {
       inputHeight
+    } else {
+      inputHeight / HEIGHT_INCH_METER_MULTIPLIER
     }
   }
 
-  fun getWeightAsPerSiUnit(inputWeight: Double, unitModeMetric: Boolean): Double {
+  fun getWeightAsPerMetricUnit(inputWeight: Double, unitModeMetric: Boolean): Double {
     return if (unitModeMetric) {
-      inputWeight * WEIGHT_POUND_KG_MULTIPLIER
-    } else {
       inputWeight
+    } else {
+      inputWeight / WEIGHT_POUND_KG_MULTIPLIER
     }
   }
 
@@ -125,7 +125,7 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
     return if (height <= 0 || weight <= 0) -1.0
     else if (isUnitModeMetric)
       computeBMIViaMetricUnits(heightInMeters = height, weightInKgs = weight)
-    else computeBMIViaStandardUnits(heightInInches = height, weightInPounds = weight)
+    else computeBMIViaUSCUnits(heightInInches = height, weightInPounds = weight)
   }
 
   fun getBmiResult(computedBMI: Double, context: Context): SpannableString {

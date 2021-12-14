@@ -23,7 +23,7 @@ fun computeBMIViaMetricUnits(heightInMeters: Double, weightInKgs: Double): Doubl
   return roundOffDecimal(weightInKgs / (heightInMeters * heightInMeters))
 }
 
-fun computeBMIViaStandardUnits(heightInInches: Double, weightInPounds: Double): Double {
+fun computeBMIViaUSCUnits(heightInInches: Double, weightInPounds: Double): Double {
   return roundOffDecimal(703.00 * (weightInPounds / (heightInInches * heightInInches)))
 }
 

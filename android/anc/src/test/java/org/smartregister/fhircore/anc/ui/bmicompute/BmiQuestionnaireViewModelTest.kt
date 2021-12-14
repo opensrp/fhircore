@@ -20,7 +20,13 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
-import javax.inject.Inject
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DecimalType
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -34,7 +40,7 @@ class BmiQuestionnaireViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var patientRepository: PatientRepository
+  private lateinit var patientRepository: PatientRepository
 
   private lateinit var viewModel: BmiQuestionnaireViewModel
   private val app = ApplicationProvider.getApplicationContext<HiltTestApplication>()
@@ -42,29 +48,30 @@ class BmiQuestionnaireViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    patientRepository = mockk { every { setAncItemMapperType(any()) } returns Unit }
     viewModel = BmiQuestionnaireViewModel(patientRepository)
   }
 
   @Test
   fun testInputHeightAsPerSiUnit() {
-    val expectedHeightInches = 70.0
-    val inputHeight = viewModel.getHeightAsPerSiUnit(70.0, false)
-    Assert.assertEquals(expectedHeightInches, inputHeight, 0.05)
-
-    val expectedHeightCm = 2755.90
-    val inputHeight2 = viewModel.getHeightAsPerSiUnit(70.0, true)
+    val expectedHeightCm = 170.0
+    val inputHeight2 = viewModel.getHeightAsPerMetricUnit(170.0, true)
     Assert.assertEquals(expectedHeightCm, inputHeight2, 0.05)
+
+    val expectedHeightMeter = 1.78
+    val inputHeight = viewModel.getHeightAsPerMetricUnit(70.0, false)
+    Assert.assertEquals(expectedHeightMeter, inputHeight, 0.05)
   }
 
   @Test
   fun testInputWeightAsPerSiUnit() {
-    val expectedWeightLb = 72.5
-    val inputWeight = viewModel.getWeightAsPerSiUnit(72.5, false)
-    Assert.assertEquals(expectedWeightLb, inputWeight, 0.5)
-
-    val expectedWeightKgs = 160.0
-    val inputWeight2 = viewModel.getWeightAsPerSiUnit(72.5, true)
+    val expectedWeightKgs = 72.50
+    val inputWeight2 = viewModel.getWeightAsPerMetricUnit(72.5, true)
     Assert.assertEquals(expectedWeightKgs, inputWeight2, 0.5)
+
+    val expectedWeightKgs2 = 72.5
+    val inputWeight = viewModel.getWeightAsPerMetricUnit(160.5, false)
+    Assert.assertEquals(expectedWeightKgs2, inputWeight, 0.5)
   }
 
   @Test
@@ -78,6 +85,11 @@ class BmiQuestionnaireViewModelTest : RobolectricTest() {
     val expectedBmi2 = 22.90
     val computedBmi2 = viewModel.calculateBmi(1.78, 72.57, true)
     Assert.assertEquals(expectedBmi2, computedBmi2, 0.1)
+
+    // invalid input check
+    val expectedBmi3 = -1.0
+    val computedBmi3 = viewModel.calculateBmi(0.0, 0.0, true)
+    Assert.assertEquals(expectedBmi3, computedBmi3, 0.0)
   }
 
   @Test
@@ -133,5 +145,96 @@ class BmiQuestionnaireViewModelTest : RobolectricTest() {
     val resultIndex4 =
       viewModel.getEndingIndexInCategories(BmiQuestionnaireViewModel.BmiCategory.OBESITY, app)
     Assert.assertEquals(expectedIndex4, resultIndex4)
+  }
+
+  @Test
+  fun testIsUnitModeMetricShouldVerifyBothMetric() {
+    Assert.assertTrue(viewModel.isUnitModeMetric(getQuestionnaireResponse()))
+    Assert.assertFalse(viewModel.isUnitModeMetric(getInvalidQuestionnaireResponse()))
+  }
+
+  @Test
+  fun testFetInputHeightShouldReturnExpectedHeight() {
+    val heightInMeters = viewModel.getInputHeight(getQuestionnaireResponse(), true)
+    Assert.assertEquals(1.7, heightInMeters, 0.0)
+
+    val heightInFeet = viewModel.getInputHeight(getQuestionnaireResponse(), false)
+    Assert.assertEquals(120.0, heightInFeet, 0.0)
+  }
+
+  @Test
+  fun testGetInputWeightShouldReturnExpectedWeight() {
+    val weightInKG = viewModel.getInputWeight(getQuestionnaireResponse(), true)
+    Assert.assertEquals(55.0, weightInKG, 0.0)
+
+    val weightInLB = viewModel.getInputWeight(getQuestionnaireResponse(), false)
+    Assert.assertEquals(40.0, weightInLB, 0.0)
+  }
+
+  @Test
+  fun testSaveComputedBmiShouldReturnTrue() {
+    coEvery {
+      patientRepository.recordComputedBmi(any(), any(), any(), any(), any(), any(), any())
+    } returns true
+    val result = runBlocking { viewModel.saveComputedBmi(mockk(), mockk(), "", "", 0.0, 0.0, 0.0) }
+    Assert.assertTrue(result)
+  }
+
+  private fun getQuestionnaireResponse(): QuestionnaireResponse {
+    return QuestionnaireResponse().apply {
+
+      // add metric unit item and answer
+      addItem().apply {
+        linkId = BmiQuestionnaireViewModel.KEY_UNIT_SELECTION
+        addAnswer().apply { value = Coding().apply { code = "metric" } }
+      }
+
+      // add height item and answer
+      addItem().apply {
+        linkId = BmiQuestionnaireViewModel.KEY_HEIGHT_CM
+        addAnswer().apply { value = DecimalType(170) }
+      }
+
+      // add height item in feet
+      addItem().apply {
+        linkId = BmiQuestionnaireViewModel.KEY_HEIGHT_FT
+        addAnswer().apply { value = DecimalType(5) }
+      }
+
+      // add height item in feet
+      addItem().apply {
+        linkId = BmiQuestionnaireViewModel.KEY_HEIGHT_INCH
+        addAnswer().apply { value = DecimalType(60) }
+      }
+
+      // add weight item in KG
+      addItem().apply {
+        linkId = BmiQuestionnaireViewModel.KEY_WEIGHT_KG
+        addAnswer().apply { value = DecimalType(55) }
+      }
+
+      // add weight item in LB
+      addItem().apply {
+        linkId = BmiQuestionnaireViewModel.KEY_WEIGHT_LB
+        addAnswer().apply { value = DecimalType(40) }
+      }
+    }
+  }
+
+  private fun getInvalidQuestionnaireResponse(): QuestionnaireResponse {
+    return QuestionnaireResponse().apply {
+
+      // add metric unit item
+      addItem().apply {
+        linkId = BmiQuestionnaireViewModel.KEY_UNIT_SELECTION
+        addAnswer()
+      }
+
+      // add height item in centimeter
+      addItem().apply { linkId = BmiQuestionnaireViewModel.KEY_HEIGHT_CM }
+
+      // add weight item
+      addItem().apply { linkId = BmiQuestionnaireViewModel.KEY_WEIGHT_KG }
+    }
   }
 }

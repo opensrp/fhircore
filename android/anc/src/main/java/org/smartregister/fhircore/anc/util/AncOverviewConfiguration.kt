@@ -28,5 +28,6 @@ data class AncOverviewConfiguration(
   val BPSFilter: SearchFilter?,
   val BPDSFilter: SearchFilter?,
   val pulseRateFilter: SearchFilter?,
-  val bloodGlucoseFilter: SearchFilter?
+  val bloodGlucoseFilter: SearchFilter?,
+  val bmiFilter: SearchFilter?
 )

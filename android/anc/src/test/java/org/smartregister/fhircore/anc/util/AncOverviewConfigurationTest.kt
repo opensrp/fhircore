@@ -38,6 +38,7 @@ class AncOverviewConfigurationTest : RobolectricTest() {
     val BPDSFilter = mockk<SearchFilter> { every { key } returns "9" }
     val pulseRateFilter = mockk<SearchFilter> { every { key } returns "10" }
     val bloodGlucoseFilter = mockk<SearchFilter> { every { key } returns "11" }
+    val bmiFilter = mockk<SearchFilter> { every { key } returns "12" }
 
     val ancOverviewConfiguration =
       AncOverviewConfiguration(
@@ -52,7 +53,8 @@ class AncOverviewConfigurationTest : RobolectricTest() {
         BPSFilter,
         BPDSFilter,
         pulseRateFilter,
-        bloodGlucoseFilter
+        bloodGlucoseFilter,
+        bmiFilter
       )
 
     assertEquals("0", ancOverviewConfiguration.id)
@@ -67,5 +69,6 @@ class AncOverviewConfigurationTest : RobolectricTest() {
     assertEquals("9", ancOverviewConfiguration.BPDSFilter?.key)
     assertEquals("10", ancOverviewConfiguration.pulseRateFilter?.key)
     assertEquals("11", ancOverviewConfiguration.bloodGlucoseFilter?.key)
+    assertEquals("12", ancOverviewConfiguration.bmiFilter?.key)
   }
 }

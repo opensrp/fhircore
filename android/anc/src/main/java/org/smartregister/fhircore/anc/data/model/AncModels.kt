@@ -24,4 +24,8 @@ data class AncOverviewItem(
   var ga: String = "",
   var noOfFetuses: String = "",
   var risk: String = "None"
+//  ,
+//  var height: String = "",
+//  var weight: String = "",
+//  var bmi: String = ""
 )

@@ -21,12 +21,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.math.BigDecimal
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.PatientVitalItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
+import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @HiltViewModel
@@ -47,8 +49,18 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
     return patientEncounters
   }
 
+  //  fun fetchObservation(patientId: String): LiveData<AncOverviewItem> {
+  //    val patientAncOverviewItem = MutableLiveData<AncOverviewItem>()
+  //    val ancOverviewItem = AncOverviewItem()
+  //    viewModelScope.launch(dispatcher.io()) {
+  //
+  //      patientAncOverviewItem.postValue(ancOverviewItem)
+  //    }
+  //    return patientAncOverviewItem
+  //  }
+
   fun fetchVitalSigns(patientId: String): LiveData<PatientVitalItem> {
-    val patientAncOverviewItem = MutableLiveData<PatientVitalItem>()
+    val patientVitalOverviewItem = MutableLiveData<PatientVitalItem>()
     val patientVitalItem = PatientVitalItem()
     viewModelScope.launch(dispatcher.io()) {
       val listObservationWeight =
@@ -62,23 +74,56 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
       val listObservationBG = patientRepository.fetchVitalSigns(patientId = patientId, "bg")
       val listObservationsp02 = patientRepository.fetchVitalSigns(patientId = patientId, "sp02")
 
-      if (listObservationWeight.valueQuantity != null &&
-          listObservationWeight.valueQuantity.value.toPlainString() != null &&
-          listObservationWeight.valueQuantity.unit != null
-      )
-        patientVitalItem.weight =
-          listObservationWeight.valueQuantity.value.toPlainString() +
-            " " +
-            listObservationWeight.valueQuantity.unit
+      listObservationHeight
+        .valueQuantity
+        ?.value
+        ?.setScale(2, BigDecimal.ROUND_HALF_EVEN)
+        ?.toPlainString()
+        ?.let { patientVitalItem.height = it }
 
-      if (listObservationHeight.valueQuantity != null &&
-          listObservationHeight.valueQuantity.value.toPlainString() != null &&
-          listObservationHeight.valueQuantity.unit != null
-      )
-        patientVitalItem.height =
-          listObservationHeight.valueQuantity.value.toPlainString() +
-            " " +
-            listObservationHeight.valueQuantity.unit
+      listObservationWeight
+        .valueQuantity
+        ?.value
+        ?.setScale(2, BigDecimal.ROUND_HALF_EVEN)
+        ?.toPlainString()
+        ?.let { patientVitalItem.weight = it }
+
+      listObservationHeight.valueQuantity?.unit?.let { patientVitalItem.heightUnit = it }
+      listObservationWeight.valueQuantity?.unit?.let { patientVitalItem.weightUnit = it }
+      if (patientVitalItem.weightUnit.isNotEmpty()) {
+        if (patientVitalItem.weightUnit.equals("kg", true)) {
+          patientVitalItem.bmiUnit = "kg/m2"
+        } else {
+          patientVitalItem.bmiUnit = "lbs/in2"
+        }
+      }
+
+      if (patientVitalItem.height.isNotEmpty() && patientVitalItem.weight.isNotEmpty()) {
+        patientVitalItem.bmi =
+          computeBMIViaMetricUnits(
+              patientVitalItem.height.toDouble(),
+              patientVitalItem.weight.toDouble()
+            )
+            .toString()
+      }
+
+      //      if (listObservationWeight.valueQuantity != null &&
+      //          listObservationWeight.valueQuantity.value.toPlainString() != null &&
+      //          listObservationWeight.valueQuantity.unit != null
+      //      )
+      //        patientVitalItem.weight =
+      //          listObservationWeight.valueQuantity.value.toPlainString() +
+      //            " " +
+      //            listObservationWeight.valueQuantity.unit
+      //
+      //      if (listObservationHeight.valueQuantity != null &&
+      //          listObservationHeight.valueQuantity.value.toPlainString() != null &&
+      //          listObservationHeight.valueQuantity.unit != null
+      //      )
+      //        patientVitalItem.height =
+      //          listObservationHeight.valueQuantity.value.toPlainString() +
+      //            " " +
+      //            listObservationHeight.valueQuantity.unit
 
       if (listObservationBPS.valueIntegerType != null &&
           listObservationBPS.valueIntegerType.valueAsString != null
@@ -105,8 +150,8 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
       )
         patientVitalItem.sp02 = listObservationsp02.valueIntegerType.valueAsString
 
-      patientAncOverviewItem.postValue(patientVitalItem)
+      patientVitalOverviewItem.postValue(patientVitalItem)
     }
-    return patientAncOverviewItem
+    return patientVitalOverviewItem
   }
 }
