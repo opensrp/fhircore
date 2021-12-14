@@ -141,7 +141,7 @@ fun String?.join(other: String?, separator: String) =
   this.orEmpty().plus(other?.plus(separator).orEmpty())
 
 fun Patient.extractFamilyTag() =
-  this.meta.tag.singleOrNull {
+  this.meta.tag.firstOrNull {
     it.display.contentEquals("family", true) || it.display.contains("head", true)
   }
 
