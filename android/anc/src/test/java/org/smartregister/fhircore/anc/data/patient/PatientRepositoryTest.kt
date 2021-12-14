@@ -20,6 +20,8 @@ import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.getQuery
 import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -37,6 +39,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -67,18 +70,20 @@ import org.smartregister.fhircore.anc.app.fakes.FakeModel.buildCarePlan
 import org.smartregister.fhircore.anc.app.fakes.FakeModel.buildPatient
 import org.smartregister.fhircore.anc.app.fakes.FakeModel.getEncounter
 import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.model.demographics
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 @HiltAndroidTest
 class PatientRepositoryTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   private lateinit var repository: PatientRepository
   private val fhirEngine: FhirEngine = spyk()
@@ -111,10 +116,32 @@ class PatientRepositoryTest : RobolectricTest() {
           else -> Patient()
         }
       }
+    coEvery { fhirEngine.search<Condition>(any()) } returns emptyList()
 
     val demographics = runBlocking { repository.fetchDemographics(PATIENT_ID_1) }
     verifyPatient(demographics.patientDetails)
     verifyHeadPatient(demographics.patientDetailsHead)
+  }
+
+  @Test
+  fun fetchSearchPatientByLinkTest() = runBlockingTest {
+    coEvery { fhirEngine.search<Patient>(any()) } returns
+      listOf(buildPatient("1111", "Doe", "John"))
+
+    val patients = repository.searchPatientByLink("1111")
+
+    val searchSlot = slot<Search>()
+    coVerify { fhirEngine.search<Patient>(capture(searchSlot)) }
+
+    Assert.assertEquals("Doe", patients[0].nameFirstRep.family)
+    Assert.assertEquals("John", patients[0].nameFirstRep.givenAsSingleString)
+
+    val queryArgs = searchSlot.captured.getQuery().args
+
+    Assert.assertTrue(queryArgs.contains("link"))
+    Assert.assertTrue(queryArgs.contains("Patient/1111"))
+    Assert.assertTrue(queryArgs.contains("active"))
+    Assert.assertTrue(queryArgs.contains("true"))
   }
 
   @Test
@@ -230,8 +257,8 @@ class PatientRepositoryTest : RobolectricTest() {
       Assert.assertEquals(PATIENT_ID_1, patientIdentifier)
       Assert.assertEquals("Jane Mc", name)
       Assert.assertEquals("Male", gender)
-      Assert.assertEquals("0d", age)
-      Assert.assertEquals("Nairobi Kenya", demographics)
+      Assert.assertEquals("0d", birthDate.toAgeDisplay())
+      Assert.assertEquals("Nairobi Kenya", address)
       Assert.assertEquals("", atRisk)
     }
   }
@@ -241,8 +268,8 @@ class PatientRepositoryTest : RobolectricTest() {
       Assert.assertEquals(PATIENT_ID_1, patientIdentifier)
       Assert.assertEquals("Salina Jetly", name)
       Assert.assertEquals("Female", gender)
-      Assert.assertEquals("0d", age)
-      Assert.assertEquals("12 B, Gulshan, Nairobi Kenya", demographics)
+      Assert.assertEquals("0d", birthDate.toAgeDisplay())
+      Assert.assertEquals("Salina Jetly, Female, 0d", demographics())
       Assert.assertEquals("", atRisk)
     }
   }
@@ -362,7 +389,6 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @Test
   fun testSearchCarePlanShouldReturnListOfCarePlans() {
-
     coEvery { fhirEngine.search<CarePlan>(any()) } returns listOf(buildCarePlan("99"))
     val carePlans = runBlocking { repository.searchCarePlan("") }
 
@@ -372,6 +398,37 @@ class PatientRepositoryTest : RobolectricTest() {
       CarePlan.CarePlanActivityStatus.SCHEDULED,
       carePlans[0].activityFirstRep.detail.status
     )
+  }
+
+  @Test
+  fun testSearchCarePlanWithTagFilterShouldReturnListOfCarePlans() {
+    coEvery { fhirEngine.search<CarePlan>(any()) } returns listOf(buildCarePlan("99"))
+
+    val carePlans = runBlocking { repository.searchCarePlan("99", Coding("s", "c", "d")) }
+
+    Assert.assertEquals(1, carePlans.size)
+    Assert.assertEquals("Patient/99", carePlans[0].subject.reference)
+
+    val searchSlot = slot<Search>()
+
+    coVerify { fhirEngine.search<CarePlan>(capture(searchSlot)) }
+
+    Assert.assertTrue(searchSlot.captured.getQuery().args.contains("_tag"))
+  }
+
+  @Test
+  fun testRevokeCarePlansShouldUpdateCareplanStatus() {
+    coEvery { fhirEngine.search<CarePlan>(any()) } returns listOf(buildCarePlan("99"))
+    coEvery { fhirEngine.save(any()) } just runs
+
+    runBlocking { repository.revokeCarePlans("99") }
+
+    val saveSlot = slot<CarePlan>()
+
+    coVerify { fhirEngine.save(capture(saveSlot)) }
+
+    Assert.assertEquals(CarePlan.CarePlanStatus.REVOKED, saveSlot.captured.status)
+    Assert.assertEquals(Date().makeItReadable(), saveSlot.captured.period.end.makeItReadable())
   }
 
   @Test
@@ -461,6 +518,7 @@ class PatientRepositoryTest : RobolectricTest() {
         district = "Dist 1"
         city = "City 1"
       }
+      active = true
     }
   }
 

@@ -56,6 +56,7 @@ import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivit
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 @ExperimentalCoroutinesApi
@@ -212,7 +213,7 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
         ", " +
         patientDetailItem.patientDetails.gender +
         ", " +
-        patientDetailItem.patientDetails.age
+        patientDetailItem.patientDetails.birthDate.toAgeDisplay()
     val patientId =
       patientDetailItem.patientDetails.address +
         " " +

@@ -51,6 +51,7 @@ import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
+import org.smartregister.fhircore.engine.util.extension.plusYears
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -79,7 +80,12 @@ internal class VitalSignsDetailsFragmentTest : RobolectricTest() {
       runs
     patientRepository.setAncItemMapperType(AncItemMapper.AncItemMapperType.DETAILS)
     every { ancPatientDetailItem.patientDetails } returns
-      PatientItem(patientIdentifier = patientId, name = "Mandela Nelson", gender = "M", age = "26")
+      PatientItem(
+        patientIdentifier = patientId,
+        name = "Mandela Nelson",
+        gender = "M",
+        birthDate = Date().plusYears(-26)
+      )
     every { ancPatientDetailItem.patientDetailsHead } returns PatientItem()
     coEvery { patientRepository.fetchDemographics(patientId) } returns ancPatientDetailItem
 

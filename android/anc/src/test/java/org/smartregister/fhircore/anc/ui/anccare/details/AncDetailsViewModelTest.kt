@@ -45,6 +45,8 @@ import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
+import org.smartregister.fhircore.engine.util.extension.plusYears
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -73,7 +75,7 @@ internal class AncDetailsViewModelTest : RobolectricTest() {
     val ancPatientDetailItem = spyk<PatientDetailItem>()
 
     every { ancPatientDetailItem.patientDetails } returns
-      PatientItem(patientId, "Mandela Nelson", "M", "26")
+      PatientItem(patientId, "Mandela Nelson", "fam", "M", Date().plusYears(-26))
     every { ancPatientDetailItem.patientDetailsHead } returns PatientItem()
     coEvery { patientRepository.fetchDemographics(patientId) } returns ancPatientDetailItem
 
@@ -84,7 +86,11 @@ internal class AncDetailsViewModelTest : RobolectricTest() {
   @Test
   fun fetchDemographics() {
     coroutinesTestRule.runBlockingTest {
-      val patient = spyk<Patient>().apply { idElement.id = patientId }
+      val patient =
+        spyk<Patient>().apply {
+          idElement.id = patientId
+          birthDate = Date().plusYears(-26)
+        }
       coEvery { fhirEngine.load(Patient::class.java, patientId) } returns patient
       val patientDetailItem: PatientDetailItem =
         ancDetailsViewModel.fetchDemographics(patientId).value!!
@@ -95,13 +101,10 @@ internal class AncDetailsViewModelTest : RobolectricTest() {
           ", " +
           patientDetailItem.patientDetails.gender +
           ", " +
-          patientDetailItem.patientDetails.age
-      val patientId =
-        patientDetailItem.patientDetailsHead.demographics +
-          " ID: " +
-          patientDetailItem.patientDetails.patientIdentifier
+          patientDetailItem.patientDetails.birthDate.toAgeDisplay()
+      val patientId = " ID: " + patientDetailItem.patientDetails.patientIdentifier
 
-      Assert.assertEquals(patientDetails, "Mandela Nelson, M, 26")
+      Assert.assertEquals(patientDetails, "Mandela Nelson, M, 26y")
       Assert.assertEquals(patientId, " ID: samplePatientId")
     }
   }
