@@ -28,9 +28,7 @@ import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.PatientVitalItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
-import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireViewModel
 import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
-import org.smartregister.fhircore.anc.util.computeBMIViaUSCUnits
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @HiltViewModel
@@ -80,9 +78,9 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
       if (patientVitalItem.height.isNotEmpty() && patientVitalItem.weight.isNotEmpty()) {
         patientVitalItem.bmi =
           computeBMIViaMetricUnits(
-            patientVitalItem.height.toDouble(),
-            patientVitalItem.weight.toDouble()
-          )
+              patientVitalItem.height.toDouble(),
+              patientVitalItem.weight.toDouble()
+            )
             .toString()
         if (patientVitalItem.weightUnit.isNotEmpty()) {
           if (patientVitalItem.weightUnit.equals("kg", true)) {
