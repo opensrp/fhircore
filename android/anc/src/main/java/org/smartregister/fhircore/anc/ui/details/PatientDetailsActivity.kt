@@ -27,6 +27,7 @@ import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.MutableLiveData
 import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Date
@@ -61,7 +62,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
   private lateinit var adapter: ViewPagerAdapter
   private lateinit var patientId: String
-  private var patient: PatientItem? = null
+  private var patient = MutableLiveData<PatientItem>()
   private lateinit var loadProgress: AlertDialog
 
   val ancDetailsViewModel by viewModels<AncDetailsViewModel>()
@@ -99,16 +100,22 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
   }
 
   override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-    menu.findItem(R.id.anc_enrollment).run {
-      this.isVisible = patient?.nonPregnantEligibleWoman() == true
-    }
-    menu.findItem(R.id.pregnancy_outcome).run { this.isVisible = patient?.eligibleWoman() == true }
+    patient.observe(
+      this,
+      {
+        menu.findItem(R.id.anc_enrollment).run {
+          this.isVisible = patient.value?.nonPregnantEligibleWoman() == true
+        }
+        menu.findItem(R.id.pregnancy_outcome).run { this.isVisible = patient.value?.eligibleWoman() == true }
 
-    menu.findItem(R.id.remove_this_person).run {
-      highlightItem(this)
-      this.isVisible = patient?.isHouseHoldHead != true
-    }
-    menu.findItem(R.id.log_death).run { highlightItem(this) }
+        menu.findItem(R.id.remove_this_person).run {
+          highlightItem(this)
+          this.isVisible = patient.value?.isHouseHoldHead != true
+        }
+        menu.findItem(R.id.log_death).run { highlightItem(this) }
+      }
+    )
+
     return super.onPrepareOptionsMenu(menu)
   }
 
@@ -146,7 +153,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
               QuestionnaireActivity.intentArgs(
                 clientIdentifier = patientId,
                 formName =
-                  if (patient?.isHouseHoldHead == true) FAMILY_REGISTER_FORM
+                  if (patient.value?.isHouseHoldHead == true) FAMILY_REGISTER_FORM
                   else FAMILY_MEMBER_REGISTER_FORM
               )
             )
@@ -219,13 +226,13 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
           .joinToString(separator = " " + getString(R.string.bullet_character) + " ")
       activityAncDetailsBinding.txtViewPatientDetails.text = this.patientDetails.demographics()
       activityAncDetailsBinding.txtViewPatientId.text = patientIdText
-      patient = this.patientDetails
+      patient.postValue(this.patientDetails)
 
       adapter =
         ViewPagerAdapter(
           fragmentManager = supportFragmentManager,
           lifecycle = lifecycle,
-          isPregnant = patient!!.isPregnant == true,
+          isPregnant = patient.value?.isPregnant == true,
           bundleOf = bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
         )
       activityAncDetailsBinding.pager.adapter = adapter
@@ -235,6 +242,8 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
           tab.text = details[position]
         }
         .attach()
+
+      loadProgress.dismiss()
     }
   }
   private fun onDeleteFamilyMemberRequested(dialog: DialogInterface) {

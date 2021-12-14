@@ -44,10 +44,10 @@ data class PatientItem(
 
 fun PatientItem.demographics() = "$name, $gender, ${birthDate.toAgeDisplay()}"
 
-fun PatientItem.nonPregnantEligibleWoman() = this.isPregnant != true && this.gender == "F"
+fun PatientItem.nonPregnantEligibleWoman() = this.isPregnant != true && this.gender.startsWith("F")
 
 fun PatientItem.eligibleWoman() =
-  this.gender == "F" && this.birthDate?.let { it.yearsPassed() > 10 } ?: true
+  this.gender.startsWith("F") && this.birthDate?.let { it.yearsPassed() > 10 } ?: true
 
 @Stable
 data class PatientDetailItem(
