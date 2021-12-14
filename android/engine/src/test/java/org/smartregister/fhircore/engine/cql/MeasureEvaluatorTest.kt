@@ -24,6 +24,7 @@ import java.io.InputStream
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.FileUtil
 
@@ -40,6 +41,7 @@ class MeasureEvaluatorTest {
   var libraryFilePath = "test/resources/cql/measureevaluator/library/ANCIND01-bundle.json"
 
   @Test
+  @Ignore
   fun runMeasureEvaluate() {
     val fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
     val parser = fhirContext.newJsonParser()!!
