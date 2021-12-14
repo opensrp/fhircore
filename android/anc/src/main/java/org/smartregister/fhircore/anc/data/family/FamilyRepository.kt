@@ -110,7 +110,7 @@ constructor(
       }
       .sortedBy {
         var weight = 0
-        if (it.houseHoldHead) weight++ // 0 for HH
+        if (!it.houseHoldHead) weight++ // 0 for HH
         if (it.deathDate != null) weight++ // 0 for alive
         weight
       }

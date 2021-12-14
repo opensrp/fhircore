@@ -24,6 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
@@ -107,6 +108,12 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
           FamilyFormConstants.FAMILY_REGISTER_FORM -> {
             val patientId =
               familyRepository.postProcessFamilyHead(questionnaire, questionnaireResponse)
+            familyRepository.fhirEngine.load(Patient::class.java, patientId).run {
+              questionnaireViewModel.appendOrganizationInfo(this)
+
+              familyRepository.fhirEngine.save(this)
+            }
+            addOrganizationToPatient(patientId)
             handlePregnancy(
               patientId = patientId,
               questionnaireResponse = questionnaireResponse,
@@ -121,6 +128,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
                 questionnaireResponse = questionnaireResponse,
                 relatedTo = relatedTo
               )
+            addOrganizationToPatient(patientId)
             handlePregnancy(
               patientId = patientId,
               questionnaireResponse = questionnaireResponse,
@@ -129,6 +137,14 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
           }
         }
       }
+    }
+  }
+
+  suspend fun addOrganizationToPatient(patientId: String) {
+    familyRepository.fhirEngine.load(Patient::class.java, patientId).run {
+      questionnaireViewModel.appendOrganizationInfo(this)
+
+      familyRepository.fhirEngine.save(this)
     }
   }
 
