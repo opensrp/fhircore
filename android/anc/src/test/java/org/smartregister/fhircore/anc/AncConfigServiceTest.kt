@@ -16,49 +16,138 @@
 
 package org.smartregister.fhircore.anc
 
-import android.content.Context
+import android.app.Application
 import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import io.mockk.every
+import io.mockk.mockk
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 
 class AncConfigServiceTest : RobolectricTest() {
 
-  private lateinit var eirConfigService: AncConfigService
+  @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
 
-  private val context = ApplicationProvider.getApplicationContext<Context>()
+  @get:Rule val hiltRule = HiltAndroidRule(this)
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  private lateinit var configService: AncConfigService
 
   @Before
   fun setUp() {
-    eirConfigService = AncConfigService(context)
+    hiltRule.inject()
+    configService =
+      AncConfigService(
+        context = ApplicationProvider.getApplicationContext(),
+      )
   }
 
   @Test
-  fun testResourceSyncParamsVariable() {
-    val data = eirConfigService.resourceSyncParams
-    Assert.assertEquals(data.size, 8)
-    Assert.assertTrue(data.containsKey(ResourceType.Patient))
-    Assert.assertTrue(data.containsKey(ResourceType.Questionnaire))
-    Assert.assertTrue(data.containsKey(ResourceType.Observation))
-    Assert.assertTrue(data.containsKey(ResourceType.Encounter))
-    Assert.assertTrue(data.containsKey(ResourceType.CarePlan))
-    Assert.assertTrue(data.containsKey(ResourceType.Condition))
-    Assert.assertTrue(data.containsKey(ResourceType.Task))
-    Assert.assertTrue(data.containsKey(ResourceType.StructureMap))
+  fun testResourceSyncParam_shouldHaveResourceTypes() {
+    every { sharedPreferencesHelper.read(any(), any()) } returns
+      UserInfo("ONA-Systems", "105", "Nairobi").encodeJson()
+
+    val syncParam = configService.resourceSyncParams
+    Assert.assertTrue(syncParam.isNotEmpty())
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Binary))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.QuestionnaireResponse))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Questionnaire))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Patient))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Condition))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Observation))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Encounter))
+
+    Assert.assertTrue(syncParam[ResourceType.Binary]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.QuestionnaireResponse]!!.isNotEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Questionnaire]!!.isNotEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Condition]!!.isNotEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Observation]!!.isNotEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Encounter]!!.isNotEmpty())
+  }
+
+  @Test
+  fun testResourceSyncParam_organizationNull_shouldHaveEmptyMapForOrganizationBasedResources() {
+    every { sharedPreferencesHelper.read(any(), any()) } returns
+      UserInfo("ONA-Systems", null, "Nairobi").encodeJson()
+
+    val syncParam = configService.resourceSyncParams
+    Assert.assertTrue(syncParam.isNotEmpty())
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Binary))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.QuestionnaireResponse))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Questionnaire))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Patient))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Condition))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Observation))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Encounter))
+
+    Assert.assertTrue(syncParam[ResourceType.Binary]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.QuestionnaireResponse]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Questionnaire]!!.isNotEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Condition]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Observation]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Encounter]!!.isEmpty())
+  }
+
+  @Test
+  fun testResourceSyncParam_publisherNull_shouldHaveEmptyMapForQuestionnaire() {
+    every { sharedPreferencesHelper.read(any(), any()) } returns
+      UserInfo(null, "105", "Nairobi").encodeJson()
+
+    val syncParam = configService.resourceSyncParams
+    Assert.assertTrue(syncParam.isNotEmpty())
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Binary))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.QuestionnaireResponse))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Questionnaire))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Patient))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Condition))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Observation))
+    Assert.assertTrue(syncParam.containsKey(ResourceType.Encounter))
+
+    Assert.assertTrue(syncParam[ResourceType.Binary]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.QuestionnaireResponse]!!.isNotEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Questionnaire]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Condition]!!.isNotEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Observation]!!.isNotEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Encounter]!!.isNotEmpty())
+  }
+
+  @Test
+  fun testResourceSyncParam_WithNullExpressionValue_ShouldReturnEmptyMap() {
+    every { sharedPreferencesHelper.read(any(), any()) } returns
+      UserInfo(null, null, null).encodeJson()
+
+    val syncParam = configService.resourceSyncParams
+
+    Assert.assertTrue(syncParam[ResourceType.Binary]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.QuestionnaireResponse]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Questionnaire]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Condition]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Observation]!!.isEmpty())
+    Assert.assertTrue(syncParam[ResourceType.Encounter]!!.isEmpty())
   }
 
   @Test
   fun testProvideAuthConfiguration() {
-    val authConfiguration = eirConfigService.provideAuthConfiguration()
+    val authConfiguration = configService.provideAuthConfiguration()
 
     Assert.assertEquals(BuildConfig.FHIR_BASE_URL, authConfiguration.fhirServerBaseUrl)
     Assert.assertEquals(BuildConfig.OAUTH_BASE_URL, authConfiguration.oauthServerBaseUrl)
     Assert.assertEquals(BuildConfig.OAUTH_CIENT_ID, authConfiguration.clientId)
     Assert.assertEquals(BuildConfig.OAUTH_CLIENT_SECRET, authConfiguration.clientSecret)
     Assert.assertEquals(
-      context.getString(R.string.authenticator_account_type),
+      ApplicationProvider.getApplicationContext<Application>()
+        .getString(R.string.authenticator_account_type),
       authConfiguration.accountType
     )
   }

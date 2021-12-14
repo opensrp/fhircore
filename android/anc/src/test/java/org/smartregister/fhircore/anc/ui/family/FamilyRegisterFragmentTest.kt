@@ -34,12 +34,12 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.ui.family.register.Family
-import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.robolectric.Shadows
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
+import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
+import org.smartregister.fhircore.anc.ui.family.register.Family
+import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
 import org.smartregister.fhircore.anc.ui.family.register.OpenFamilyProfile

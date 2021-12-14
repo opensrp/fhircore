@@ -63,7 +63,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
           }
         }
       )
-      
+
       changeHead.observe(
         familyDetailsActivity,
         { changeHead ->

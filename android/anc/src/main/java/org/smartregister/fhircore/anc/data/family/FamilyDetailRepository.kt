@@ -34,10 +34,10 @@ class FamilyDetailRepository
 constructor(
   override val fhirEngine: FhirEngine,
   val familyItemMapper: FamilyItemMapper,
-  val dispatcherProvider: DispatcherProvider,
+  override val dispatcherProvider: DispatcherProvider,
   val ancPatientRepository: PatientRepository,
   val familyRepository: FamilyRepository
-) {
+) : DefaultRepository(fhirEngine, dispatcherProvider) {
   suspend fun fetchDemographics(familyId: String): Patient =
     withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, familyId) }
 

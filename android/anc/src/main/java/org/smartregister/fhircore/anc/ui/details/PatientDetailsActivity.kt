@@ -145,7 +145,9 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
             .putExtras(
               QuestionnaireActivity.intentArgs(
                 clientIdentifier = patientId,
-                formName = if (isHouseHold) FAMILY_REGISTER_FORM else FAMILY_MEMBER_REGISTER_FORM
+                formName =
+                  if (patient?.isHouseHoldHead == true) FAMILY_REGISTER_FORM
+                  else FAMILY_MEMBER_REGISTER_FORM
               )
             )
             .putExtra(FamilyFormConstants.FAMILY_EDIT_INFO, true)
