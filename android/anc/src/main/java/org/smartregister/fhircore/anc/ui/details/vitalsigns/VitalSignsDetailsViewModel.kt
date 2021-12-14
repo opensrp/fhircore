@@ -49,16 +49,6 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
     return patientEncounters
   }
 
-  //  fun fetchObservation(patientId: String): LiveData<AncOverviewItem> {
-  //    val patientAncOverviewItem = MutableLiveData<AncOverviewItem>()
-  //    val ancOverviewItem = AncOverviewItem()
-  //    viewModelScope.launch(dispatcher.io()) {
-  //
-  //      patientAncOverviewItem.postValue(ancOverviewItem)
-  //    }
-  //    return patientAncOverviewItem
-  //  }
-
   fun fetchVitalSigns(patientId: String): LiveData<PatientVitalItem> {
     val patientVitalOverviewItem = MutableLiveData<PatientVitalItem>()
     val patientVitalItem = PatientVitalItem()
@@ -125,30 +115,44 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
       //            " " +
       //            listObservationHeight.valueQuantity.unit
 
-      if (listObservationBPS.valueIntegerType != null &&
-          listObservationBPS.valueIntegerType.valueAsString != null
+      if (listObservationWeight.valueQuantity != null &&
+          listObservationWeight.valueQuantity.value != null
       )
-        patientVitalItem.BPS = listObservationBPS.valueIntegerType.valueAsString
+        patientVitalItem.weight = listObservationWeight.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.weightUnit = listObservationWeight.valueQuantity.unit ?: ""
 
-      if (listObservationBPDS.valueIntegerType != null &&
-          listObservationBPDS.valueIntegerType.valueAsString != null
+      if (listObservationHeight.valueQuantity != null &&
+          listObservationHeight.valueQuantity.value != null
       )
-        patientVitalItem.BPDS = listObservationBPDS.valueIntegerType.valueAsString
+        patientVitalItem.height = listObservationHeight.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.heightUnit = listObservationHeight.valueQuantity.unit ?: ""
 
-      if (listObservationPulseRate.valueIntegerType != null &&
-          listObservationPulseRate.valueIntegerType.valueAsString != null
+      if (listObservationBPS.valueQuantity != null && listObservationBPS.valueQuantity.value != null
       )
-        patientVitalItem.pulse = listObservationPulseRate.valueIntegerType.valueAsString
+        patientVitalItem.BPS = listObservationBPS.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.BPSUnit = listObservationBPS.valueQuantity.unit ?: ""
 
-      if (listObservationBG.valueIntegerType != null &&
-          listObservationBG.valueIntegerType.valueAsString != null
+      if (listObservationBPDS.valueQuantity != null &&
+          listObservationBPDS.valueQuantity.value != null
       )
-        patientVitalItem.BG = listObservationBG.valueIntegerType.valueAsString
+        patientVitalItem.BPDS = listObservationBPDS.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.BPDSUnit = listObservationBPDS.valueQuantity.unit ?: ""
 
-      if (listObservationsp02.valueIntegerType != null &&
-          listObservationsp02.valueIntegerType.valueAsString != null
+      if (listObservationPulseRate.valueQuantity != null &&
+          listObservationPulseRate.valueQuantity.value != null
       )
-        patientVitalItem.sp02 = listObservationsp02.valueIntegerType.valueAsString
+        patientVitalItem.pulse = listObservationPulseRate.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.pulseUnit = listObservationPulseRate.valueQuantity.unit ?: ""
+
+      if (listObservationBG.valueQuantity != null && listObservationBG.valueQuantity.value != null)
+        patientVitalItem.BG = listObservationBG.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.BGUnit = listObservationBG.valueQuantity.unit ?: ""
+
+      if (listObservationsp02.valueQuantity != null &&
+          listObservationsp02.valueQuantity.value != null
+      )
+        patientVitalItem.sp02 = listObservationsp02.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.sp02Unit = listObservationsp02.valueQuantity.unit ?: ""
 
       patientVitalOverviewItem.postValue(patientVitalItem)
     }
