@@ -47,6 +47,10 @@ class SharedPreferencesHelper @Inject constructor(@ApplicationContext val contex
     }
   }
 
+  fun remove(key: String) {
+    prefs.edit().remove(key).apply()
+  }
+
   companion object {
     const val LANG = "shared_pref_lang"
     const val THEME = "shared_pref_theme"
