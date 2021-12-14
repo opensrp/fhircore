@@ -189,9 +189,6 @@ constructor(
   ) {
 
     if (resourceId?.isNotBlank() == true) {
-      // TODO revise this logic when syncing strategy has final decision
-      // https://github.com/opensrp/fhircore/issues/726
-      loadPatient(resourceId)?.meta?.tag?.forEach { questionnaireResponse.meta.addTag(it) }
       questionnaireResponse.questionnaire =
         "${questionnaire.resourceType}/${questionnaire.logicalId}"
 

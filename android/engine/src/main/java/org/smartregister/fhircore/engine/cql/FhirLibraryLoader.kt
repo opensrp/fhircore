@@ -27,7 +27,6 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.Reader
-import javax.xml.bind.JAXBContext
 import org.cqframework.cql.cql2elm.CqlTranslatorOptions
 import org.cqframework.cql.cql2elm.ModelManager
 import org.cqframework.cql.elm.execution.Element
@@ -36,7 +35,6 @@ import org.cqframework.cql.elm.execution.Library
 import org.opencds.cqf.cql.engine.elm.execution.ElementMixin
 import org.opencds.cqf.cql.engine.elm.execution.ExpressionMixin
 import org.opencds.cqf.cql.engine.elm.execution.LibraryWrapper
-import org.opencds.cqf.cql.engine.execution.CqlLibraryReader
 import org.opencds.cqf.cql.evaluator.cql2elm.content.LibraryContentProvider
 import org.opencds.cqf.cql.evaluator.engine.execution.TranslatingLibraryLoader
 import timber.log.Timber
@@ -47,22 +45,11 @@ open class FhirLibraryLoader(
   translatorOptions: CqlTranslatorOptions = CqlTranslatorOptions.defaultOptions(),
 ) : TranslatingLibraryLoader(modelManager, libraryContentProviders, translatorOptions) {
 
-  val unmarshaller by lazy { jaxbContextV2.createUnmarshaller() }
-
-  val jaxbContextV2 by lazy { JAXBContext.newInstance(org.hl7.elm.r1.Library::class.java) }
-
-  override fun readXml(inputStream: InputStream): Library {
-    return kotlin
-      .runCatching { CqlLibraryReader.read(unmarshaller, inputStream) }
-      .onFailure { Timber.e(it) }
-      .getOrNull()!!
-  }
-
-  override fun translatorOptionsMatch(library: Library): Boolean {
+  public override fun translatorOptionsMatch(library: Library): Boolean {
     return true
   }
 
-  override fun readJxson(inputStream: InputStream): Library {
+  public override fun readJxson(inputStream: InputStream): Library {
     return kotlin
       .runCatching { read(InputStreamReader(inputStream)) }
       .onFailure { Timber.e(it) }

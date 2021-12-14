@@ -191,7 +191,7 @@ class LibraryEvaluator {
     return auxPatientDataObj.toString()
   }
 
-  fun runCql(
+  fun runCqlLibrary(
     library: org.hl7.fhir.r4.model.Library,
     helper: org.hl7.fhir.r4.model.Library,
     valueSet: Bundle,

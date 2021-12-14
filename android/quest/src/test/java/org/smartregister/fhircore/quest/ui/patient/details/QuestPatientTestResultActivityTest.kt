@@ -22,8 +22,6 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
-import java.io.File
-import java.io.FileReader
 import javax.inject.Inject
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
@@ -147,23 +145,5 @@ class QuestPatientTestResultActivityTest : RobolectricTest() {
     }
 
     System.out.println(iParser.encodeResourceToString(targetResource))
-  }
-
-  fun String.readFile(): String {
-    val file = File("$ASSET_BASE_PATH/$this")
-    val charArray = CharArray(file.length().toInt()).apply { FileReader(file).read(this) }
-    return String(charArray)
-  }
-
-  companion object {
-    val ASSET_BASE_PATH =
-      (System.getProperty("user.dir") +
-        File.separator +
-        "src" +
-        File.separator +
-        "main" +
-        File.separator +
-        "resources" +
-        File.separator)
   }
 }

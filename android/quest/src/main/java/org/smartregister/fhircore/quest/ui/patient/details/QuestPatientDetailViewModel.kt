@@ -113,7 +113,7 @@ constructor(val patientRepository: PatientRepository, val patientItemMapper: Pat
         kotlin
           .runCatching {
             libraryEvaluator
-              .runCql(
+              .runCqlLibrary(
                 library = fhirEngine.load(Library::class.java, config.cqlProfileLibraryFilter.code),
                 helper = fhirEngine.load(Library::class.java, config.cqlHelperLibraryFilter.code),
                 valueSet = Bundle(),
