@@ -44,8 +44,11 @@ import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 @HiltViewModel
 class QuestPatientDetailViewModel
 @Inject
-constructor(val patientRepository: PatientRepository, val patientItemMapper: PatientItemMapper) :
-  ViewModel() {
+constructor(
+  val patientRepository: PatientRepository,
+  val patientItemMapper: PatientItemMapper,
+  val libraryEvaluator: LibraryEvaluator
+) : ViewModel() {
 
   val patientItem = MutableLiveData<PatientItem>()
   val questionnaireConfigs = MutableLiveData<List<QuestionnaireConfig>>()
@@ -54,7 +57,6 @@ constructor(val patientRepository: PatientRepository, val patientItemMapper: Pat
   val onMenuItemClicked = MutableLiveData(-1)
   val onFormItemClicked = MutableLiveData<QuestionnaireConfig>(null)
   val onFormTestResultClicked = MutableLiveData<QuestionnaireResponse>(null)
-  val libraryEvaluator by lazy { LibraryEvaluator() }
 
   fun getDemographics(patientId: String) {
     viewModelScope.launch {

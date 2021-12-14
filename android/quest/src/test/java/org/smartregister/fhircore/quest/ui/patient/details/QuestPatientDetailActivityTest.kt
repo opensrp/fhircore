@@ -34,6 +34,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
+import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
@@ -86,6 +87,15 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
       Intent(questPatientDetailActivity, QuestPatientTestResultActivity::class.java)
     val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testOnMenuItemClickListenerShouldShowProgressAlert() {
+    Assert.assertNull(ShadowAlertDialog.getLatestAlertDialog())
+
+    questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.run_cql)
+
+    Assert.assertNotNull(ShadowAlertDialog.getLatestAlertDialog())
   }
 
   @Test

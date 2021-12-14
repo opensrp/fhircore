@@ -22,6 +22,7 @@ import ca.uhn.fhir.model.valueset.BundleTypeEnum
 import ca.uhn.fhir.rest.api.BundleLinks
 import com.google.android.fhir.logicalId
 import com.google.common.collect.Lists
+import javax.inject.Inject
 import org.apache.commons.lang3.tuple.Pair
 import org.cqframework.cql.cql2elm.CqlTranslatorOptions
 import org.cqframework.cql.cql2elm.ModelManager
@@ -54,7 +55,7 @@ import org.opencds.cqf.cql.evaluator.library.LibraryEvaluator
  * This class contains methods to run CQL evaluators given Fhir expressions It borrows code from
  * https://github.com/DBCG/CqlEvaluatorSampleApp See also https://www.hl7.org/fhir/
  */
-class LibraryEvaluator {
+class LibraryEvaluator @Inject constructor() {
   private val fhirContext = FhirContext.forR4Cached()
   private val parser = fhirContext.newJsonParser()
   private var adapterFactory = AdapterFactory()

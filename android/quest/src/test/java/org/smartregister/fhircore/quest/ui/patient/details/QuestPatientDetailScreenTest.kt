@@ -79,7 +79,8 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       spyk(
         QuestPatientDetailViewModel(
           patientRepository = patientRepository,
-          patientItemMapper = patientItemMapper
+          patientItemMapper = patientItemMapper,
+          mockk()
         )
       )
     // Simulate retrieval of data from repository

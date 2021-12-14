@@ -65,7 +65,8 @@ class QuestPatientTestResultScreenTest : RobolectricTest() {
       spyk(
         QuestPatientDetailViewModel(
           patientRepository = patientRepository,
-          patientItemMapper = patientItemMapper
+          patientItemMapper = patientItemMapper,
+          mockk()
         )
       )
     questPatientDetailViewModel.getDemographics(patientId)
