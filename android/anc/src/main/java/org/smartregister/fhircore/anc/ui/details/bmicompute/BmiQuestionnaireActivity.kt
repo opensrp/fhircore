@@ -62,9 +62,9 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
       else {
         val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!
         val height =
-          bmiQuestionnaireViewModel.getHeightAsPerMetricUnit(inputHeight, isUnitModeMetric)
+          BmiQuestionnaireViewModel.getHeightAsPerMetricUnit(inputHeight, isUnitModeMetric)
         val weight =
-          bmiQuestionnaireViewModel.getWeightAsPerMetricUnit(inputWeight, isUnitModeMetric)
+          BmiQuestionnaireViewModel.getWeightAsPerMetricUnit(inputWeight, isUnitModeMetric)
         Log.e("aw", "saving bmi = " + computedBMI + " - h=" + height + " -w=" + weight)
         showBmiDataAlert(questionnaireResponse, patientId, height, weight, computedBMI)
       }

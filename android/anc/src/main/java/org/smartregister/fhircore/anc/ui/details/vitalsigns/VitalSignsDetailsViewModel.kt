@@ -24,11 +24,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.math.BigDecimal
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import org.smartregister.fhircore.anc.data.model.AncOverviewItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
+import org.smartregister.fhircore.anc.data.model.PatientVitalItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
+import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireViewModel
 import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
+import org.smartregister.fhircore.anc.util.computeBMIViaUSCUnits
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @HiltViewModel
@@ -49,36 +51,49 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
     return patientEncounters
   }
 
-  fun fetchObservation(patientId: String): LiveData<AncOverviewItem> {
-    val patientAncOverviewItem = MutableLiveData<AncOverviewItem>()
-    val ancOverviewItem = AncOverviewItem()
+  fun fetchVitalSigns(patientId: String): LiveData<PatientVitalItem> {
+    val patientVitalOverviewItem = MutableLiveData<PatientVitalItem>()
+    val patientVitalItem = PatientVitalItem()
     viewModelScope.launch(dispatcher.io()) {
-      patientRepository
-        .fetchObservations(patientId = patientId, "body-height")
+      val listObservationWeight =
+        patientRepository.fetchVitalSigns(patientId = patientId, "body-weight")
+      val listObservationHeight =
+        patientRepository.fetchVitalSigns(patientId = patientId, "body-height")
+
+      listObservationHeight
         .valueQuantity
         ?.value
         ?.setScale(2, BigDecimal.ROUND_HALF_EVEN)
         ?.toPlainString()
-        ?.let { ancOverviewItem.height = it }
+        ?.let { patientVitalItem.height = it }
 
-      patientRepository
-        .fetchObservations(patientId = patientId, "body-weight")
+      listObservationWeight
         .valueQuantity
         ?.value
         ?.setScale(2, BigDecimal.ROUND_HALF_EVEN)
         ?.toPlainString()
-        ?.let { ancOverviewItem.weight = it }
+        ?.let { patientVitalItem.weight = it }
 
-      if (ancOverviewItem.height.isNotEmpty() && ancOverviewItem.weight.isNotEmpty()) {
-        ancOverviewItem.bmi =
+      listObservationHeight.valueQuantity?.unit?.let { patientVitalItem.heightUnit = it }
+      listObservationWeight.valueQuantity?.unit?.let { patientVitalItem.weightUnit = it }
+
+      if (patientVitalItem.height.isNotEmpty() && patientVitalItem.weight.isNotEmpty()) {
+        patientVitalItem.bmi =
           computeBMIViaMetricUnits(
-              ancOverviewItem.height.toDouble(),
-              ancOverviewItem.weight.toDouble()
-            )
+            patientVitalItem.height.toDouble(),
+            patientVitalItem.weight.toDouble()
+          )
             .toString()
+        if (patientVitalItem.weightUnit.isNotEmpty()) {
+          if (patientVitalItem.weightUnit.equals("kg", true)) {
+            patientVitalItem.bmiUnit = "kg/m2"
+          } else {
+            patientVitalItem.bmiUnit = "lbs/in2"
+          }
+        }
       }
-      patientAncOverviewItem.postValue(ancOverviewItem)
+      patientVitalOverviewItem.postValue(patientVitalItem)
     }
-    return patientAncOverviewItem
+    return patientVitalOverviewItem
   }
 }

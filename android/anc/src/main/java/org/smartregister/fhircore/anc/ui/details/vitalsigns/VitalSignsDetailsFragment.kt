@@ -27,8 +27,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.model.AncOverviewItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
+import org.smartregister.fhircore.anc.data.model.PatientVitalItem
 import org.smartregister.fhircore.anc.databinding.FragmentVitalDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.anc.ui.details.adapter.AllergiesAdapter
@@ -72,14 +72,18 @@ class VitalSignsDetailsFragment : Fragment() {
     ancDetailsViewModel
       .fetchEncounters(patientId)
       .observe(viewLifecycleOwner, this::handleEncounters)
+
     ancDetailsViewModel
-      .fetchObservation(patientId)
-      .observe(viewLifecycleOwner, this::handleObservation)
+      .fetchVitalSigns(patientId)
+      .observe(viewLifecycleOwner, this::handleVitalSigns)
 
     binding.swipeContainer.setOnRefreshListener {
       ancDetailsViewModel
         .fetchEncounters(patientId)
         .observe(viewLifecycleOwner, this::handleEncounters)
+      ancDetailsViewModel
+        .fetchVitalSigns(patientId)
+        .observe(viewLifecycleOwner, this::handleVitalSigns)
     }
 
     binding.swipeContainer.setColorSchemeResources(
@@ -91,7 +95,6 @@ class VitalSignsDetailsFragment : Fragment() {
   }
 
   private fun handleEncounters(listEncounters: List<EncounterItem>) {
-    binding.swipeContainer.isRefreshing = false
     when {
       listEncounters.isEmpty() -> {
         binding.apply {
@@ -109,23 +112,35 @@ class VitalSignsDetailsFragment : Fragment() {
     }
   }
 
-  private fun handleObservation(ancOverviewItem: AncOverviewItem) {
+  private fun handleVitalSigns(patientVitalItem: PatientVitalItem) {
     binding.swipeContainer.isRefreshing = false
-    ancOverviewItem.apply {
-      binding.apply {
-        if (ancOverviewItem.height.isNotEmpty()) {
-          txtViewHeightUnit.show()
-          txtViewHeightValue.text = ancOverviewItem.height
-        }
-        if (ancOverviewItem.weight.isNotEmpty()) {
-          txtViewWeightValue.text = ancOverviewItem.weight
-          txtViewWeightUnit.show()
-        }
-        if (ancOverviewItem.bmi.isNotEmpty()) {
-          linearLayoutBmi.show()
-          txtViewBmiUnit.show()
-          txtViewBmiValue.text = ancOverviewItem.bmi
-        }
+    binding.apply {
+      txtViewWeightValue.text =
+        if (patientVitalItem.weight.isEmpty()) "-" else patientVitalItem.weight
+      txtViewWeightUnit.text = patientVitalItem.weightUnit
+      txtViewHeightValue.text =
+        if (patientVitalItem.height.isEmpty()) "-" else patientVitalItem.height
+      txtViewHeightUnit.text = patientVitalItem.heightUnit
+      txtViewBgValue.text = if (patientVitalItem.BG.isEmpty()) "-" else patientVitalItem.BG
+      txtViewBgUnit.text = patientVitalItem.BGUnit
+      txtViewSpValue.text = if (patientVitalItem.sp02.isEmpty()) "-" else patientVitalItem.sp02
+      txtViewSpUnit.text = patientVitalItem.sp02Unit
+      txtViewPulseValue.text = if (patientVitalItem.pulse.isEmpty()) "-" else patientVitalItem.pulse
+      txtViewPulseUnit.text = patientVitalItem.pulseUnit
+      txtViewBpValue.text = if (patientVitalItem.BPS.isEmpty()) "-" else patientVitalItem.BPS
+      txtViewBpUnit.text = patientVitalItem.BPSUnit
+      txtViewWeightValue.text = patientVitalItem.weight
+      txtViewHeightValue.text = patientVitalItem.height
+      txtViewBgValue.text = patientVitalItem.BG
+      txtViewSpValue.text = patientVitalItem.sp02
+      txtViewPulseValue.text = patientVitalItem.pulse
+      txtViewBpValue.text = patientVitalItem.BPS
+      txtViewHeightUnit.text = patientVitalItem.heightUnit
+      txtViewWeightUnit.text = patientVitalItem.weightUnit
+      if (patientVitalItem.bmi.isNotEmpty()) {
+        linearLayoutBmi.show()
+        txtViewBmiValue.text = patientVitalItem.bmi
+        txtViewBmiUnit.text = patientVitalItem.bmiUnit
       }
     }
   }

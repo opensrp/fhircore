@@ -35,7 +35,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.model.AncOverviewItem
+import org.smartregister.fhircore.anc.data.model.PatientVitalItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
@@ -84,21 +84,25 @@ class VitalSignsDetailsViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testFetchObservations() {
+  fun testFetchVitalSignsForBMI() {
     coroutinesTestRule.runBlockingTest {
       val testObservation = getTestObservation()
       coEvery {
         hint(Observation::class)
         fhirEngine.search<Observation>(any())
       } returns listOf(testObservation)
-      coEvery { patientDetailsViewModel.fetchObservation(any()) } returns
-        MutableLiveData(getTestAncOverviewItem())
+      coEvery { patientDetailsViewModel.fetchVitalSigns(any()) } returns
+        MutableLiveData(getTestVitalOverviewItem())
       coEvery { patientRepository.fetchObservations(any(), any()) } returns testObservation
-      val ancOverviewItem = patientDetailsViewModel.fetchObservation("").value!!
-      Assert.assertNotNull(ancOverviewItem)
-      Assert.assertEquals(ancOverviewItem.height, getTestAncOverviewItem().height)
-      Assert.assertEquals(ancOverviewItem.weight, getTestAncOverviewItem().weight)
-      Assert.assertEquals(ancOverviewItem.bmi, getTestAncOverviewItem().bmi)
+      val vitalSignOverviewItem = patientDetailsViewModel.fetchVitalSigns("").value!!
+      val expectVitalSignItem = getTestVitalOverviewItem()
+      Assert.assertNotNull(vitalSignOverviewItem)
+      Assert.assertEquals(vitalSignOverviewItem.height, expectVitalSignItem.height)
+      Assert.assertEquals(vitalSignOverviewItem.weight, expectVitalSignItem.weight)
+      Assert.assertEquals(vitalSignOverviewItem.bmi, expectVitalSignItem.bmi)
+      Assert.assertEquals(vitalSignOverviewItem.heightUnit, expectVitalSignItem.heightUnit)
+      Assert.assertEquals(vitalSignOverviewItem.weightUnit, expectVitalSignItem.weightUnit)
+      Assert.assertEquals(vitalSignOverviewItem.bmiUnit, expectVitalSignItem.bmiUnit)
     }
   }
 
@@ -106,11 +110,14 @@ class VitalSignsDetailsViewModelTest : RobolectricTest() {
     return Observation().apply { id = "2" }
   }
 
-  private fun getTestAncOverviewItem(): AncOverviewItem {
-    return AncOverviewItem().apply {
-      height = "180 cm"
-      weight = "73 kg"
-      bmi = "22.54 kg/m"
+  private fun getTestVitalOverviewItem(): PatientVitalItem {
+    return PatientVitalItem().apply {
+      height = "1.5"
+      heightUnit = "m"
+      weight = "50"
+      weightUnit = "kg"
+      bmi = "22.54"
+      bmiUnit = "kg/m"
     }
   }
 }

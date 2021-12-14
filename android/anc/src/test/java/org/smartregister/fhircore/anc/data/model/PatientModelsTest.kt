@@ -37,6 +37,7 @@ class PatientModelsTest : RobolectricTest() {
   private lateinit var reportItem: ReportItem
   private lateinit var resulttItem: ResultItem
   private lateinit var resulttItemPopulation: ResultItemPopulation
+  private lateinit var patientVitalItem: PatientVitalItem
 
   @Before
   fun setUp() {
@@ -63,6 +64,15 @@ class PatientModelsTest : RobolectricTest() {
     resulttItem = ResultItem("True", true, "Test description")
     resulttItemPopulation =
       ResultItemPopulation(title = "testTitlePopulation", dataList = emptyList())
+    patientVitalItem =
+      PatientVitalItem(
+        height = "1.6",
+        weight = "60",
+        bmi = "22",
+        heightUnit = "m",
+        weightUnit = "kg",
+        bmiUnit = "kg/m2"
+      )
   }
 
   @Test
@@ -137,5 +147,15 @@ class PatientModelsTest : RobolectricTest() {
   fun testResultItemPopulation() {
     Assert.assertEquals("testTitlePopulation", resulttItemPopulation.title)
     Assert.assertNotNull(resulttItemPopulation.dataList)
+  }
+
+  @Test
+  fun testPatientVitalItem() {
+    Assert.assertEquals("1.6", patientVitalItem.height)
+    Assert.assertEquals("m", patientVitalItem.heightUnit)
+    Assert.assertEquals("60", patientVitalItem.weight)
+    Assert.assertEquals("kg", patientVitalItem.weightUnit)
+    Assert.assertEquals("22", patientVitalItem.bmi)
+    Assert.assertEquals("kg/m2", patientVitalItem.bmiUnit)
   }
 }

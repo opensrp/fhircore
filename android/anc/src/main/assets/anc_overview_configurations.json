@@ -36,6 +36,18 @@
         "system": "",
         "code": "risk"
       }
+    }
+  },
+  {
+    "id": "vital-signs",
+    "weightFilter": {
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "http://acme.org/devices/clinical-codes",
+        "code": "body-weight"
+      }
     },
     "heightFilter": {
       "filterType": "TOKEN",
@@ -46,15 +58,6 @@
         "code": "8302-2"
       }
     },
-    "weightFilter": {
-      "filterType": "TOKEN",
-      "key": "code",
-      "valueType": "CODEABLECONCEPT",
-      "valueCoding": {
-        "system": "http://acme.org/devices/clinical-codes",
-        "code": "body-weight"
-      }
-    },
     "bmiFilter": {
       "filterType": "TOKEN",
       "key": "code",
@@ -62,6 +65,51 @@
       "valueCoding": {
         "system": "http://loinc.org",
         "code": "39156-5"
+      }
+    },
+    "bloodOxygenLevelFilter": {
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "59408-5"
+      }
+    },
+    "BPSFilter": {
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "http://acme.org/devices/clinical-codes",
+        "code": "bp-s"
+      }
+    },
+    "BPDSFilter": {
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "8462-4"
+      }
+    },
+    "pulseRateFilter": {
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "8867-4"
+      }
+    },
+    "bloodGlucoseFilter": {
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "15074-8"
       }
     }
   }

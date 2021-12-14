@@ -22,7 +22,12 @@ data class AncOverviewConfiguration(
   val gaFilter: SearchFilter?,
   val fetusesFilter: SearchFilter?,
   val riskFilter: SearchFilter?,
-  val heightFilter: SearchFilter?,
   val weightFilter: SearchFilter?,
+  val heightFilter: SearchFilter?,
+  val bloodOxygenLevelFilter: SearchFilter?,
+  val BPSFilter: SearchFilter?,
+  val BPDSFilter: SearchFilter?,
+  val pulseRateFilter: SearchFilter?,
+  val bloodGlucoseFilter: SearchFilter?,
   val bmiFilter: SearchFilter?
 )

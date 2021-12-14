@@ -58,6 +58,22 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
     const val BMI_CATEGORY_UNDERWEIGHT_MAX_THRESHOLD = 18.5
     const val BMI_CATEGORY_NORMAL_MAX_THRESHOLD = 25
     const val BMI_CATEGORY_OVERWEIGHT_MAX_THRESHOLD = 30
+
+    fun getHeightAsPerMetricUnit(inputHeight: Double, unitModeMetric: Boolean): Double {
+      return if (unitModeMetric) {
+        inputHeight
+      } else {
+        inputHeight / HEIGHT_INCH_METER_MULTIPLIER
+      }
+    }
+
+    fun getWeightAsPerMetricUnit(inputWeight: Double, unitModeMetric: Boolean): Double {
+      return if (unitModeMetric) {
+        inputWeight
+      } else {
+        inputWeight / WEIGHT_POUND_KG_MULTIPLIER
+      }
+    }
   }
 
   enum class BmiCategory(val value: Int) {
@@ -102,22 +118,6 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
     } else {
       val weightPounds = questionnaireResponse.find(KEY_WEIGHT_LB)
       weightPounds?.answer?.firstOrNull()?.valueDecimalType?.value?.toDouble() ?: 0.0
-    }
-  }
-
-  fun getHeightAsPerMetricUnit(inputHeight: Double, unitModeMetric: Boolean): Double {
-    return if (unitModeMetric) {
-      inputHeight
-    } else {
-      inputHeight / HEIGHT_INCH_METER_MULTIPLIER
-    }
-  }
-
-  fun getWeightAsPerMetricUnit(inputWeight: Double, unitModeMetric: Boolean): Double {
-    return if (unitModeMetric) {
-      inputWeight
-    } else {
-      inputWeight / WEIGHT_POUND_KG_MULTIPLIER
     }
   }
 
