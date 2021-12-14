@@ -24,6 +24,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
 import kotlinx.coroutines.test.runBlockingTest
@@ -52,7 +53,7 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
   @Inject lateinit var patientItemMapper: PatientItemMapper
 
   @BindValue val patientRepository: PatientRepository = mockk()
-  @BindValue val libraryEvaluator: LibraryEvaluator = mockk()
+  @BindValue val libraryEvaluator: LibraryEvaluator = spyk()
 
   private val patientId = "5583145"
 
