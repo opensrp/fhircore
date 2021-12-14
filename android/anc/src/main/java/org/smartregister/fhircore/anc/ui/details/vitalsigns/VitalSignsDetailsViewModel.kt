@@ -63,47 +63,43 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
       val listObservationsp02 = patientRepository.fetchVitalSigns(patientId = patientId, "sp02")
 
       if (listObservationWeight.valueQuantity != null &&
-          listObservationWeight.valueQuantity.value.toPlainString() != null &&
-          listObservationWeight.valueQuantity.unit != null
+          listObservationWeight.valueQuantity.value != null
       )
-        patientVitalItem.weight =
-          listObservationWeight.valueQuantity.value.toPlainString() +
-            " " +
-            listObservationWeight.valueQuantity.unit
+        patientVitalItem.weight = listObservationWeight.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.weightUnit = listObservationWeight.valueQuantity.unit ?: ""
 
       if (listObservationHeight.valueQuantity != null &&
-          listObservationHeight.valueQuantity.value.toPlainString() != null &&
-          listObservationHeight.valueQuantity.unit != null
+          listObservationHeight.valueQuantity.value != null
       )
-        patientVitalItem.height =
-          listObservationHeight.valueQuantity.value.toPlainString() +
-            " " +
-            listObservationHeight.valueQuantity.unit
+        patientVitalItem.height = listObservationHeight.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.heightUnit = listObservationHeight.valueQuantity.unit ?: ""
 
-      if (listObservationBPS.valueIntegerType != null &&
-          listObservationBPS.valueIntegerType.valueAsString != null
+      if (listObservationBPS.valueQuantity != null && listObservationBPS.valueQuantity.value != null
       )
-        patientVitalItem.BPS = listObservationBPS.valueIntegerType.valueAsString
+        patientVitalItem.BPS = listObservationBPS.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.BPSUnit = listObservationBPS.valueQuantity.unit ?: ""
 
-      if (listObservationBPDS.valueIntegerType != null &&
-          listObservationBPDS.valueIntegerType.valueAsString != null
+      if (listObservationBPDS.valueQuantity != null &&
+          listObservationBPDS.valueQuantity.value != null
       )
-        patientVitalItem.BPDS = listObservationBPDS.valueIntegerType.valueAsString
+        patientVitalItem.BPDS = listObservationBPDS.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.BPDSUnit = listObservationBPDS.valueQuantity.unit ?: ""
 
-      if (listObservationPulseRate.valueIntegerType != null &&
-          listObservationPulseRate.valueIntegerType.valueAsString != null
+      if (listObservationPulseRate.valueQuantity != null &&
+          listObservationPulseRate.valueQuantity.value != null
       )
-        patientVitalItem.pulse = listObservationPulseRate.valueIntegerType.valueAsString
+        patientVitalItem.pulse = listObservationPulseRate.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.pulseUnit = listObservationPulseRate.valueQuantity.unit ?: ""
 
-      if (listObservationBG.valueIntegerType != null &&
-          listObservationBG.valueIntegerType.valueAsString != null
-      )
-        patientVitalItem.BG = listObservationBG.valueIntegerType.valueAsString
+      if (listObservationBG.valueQuantity != null && listObservationBG.valueQuantity.value != null)
+        patientVitalItem.BG = listObservationBG.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.BGUnit = listObservationBG.valueQuantity.unit ?: ""
 
-      if (listObservationsp02.valueIntegerType != null &&
-          listObservationsp02.valueIntegerType.valueAsString != null
+      if (listObservationsp02.valueQuantity != null &&
+          listObservationsp02.valueQuantity.value != null
       )
-        patientVitalItem.sp02 = listObservationsp02.valueIntegerType.valueAsString
+        patientVitalItem.sp02 = listObservationsp02.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.sp02Unit = listObservationsp02.valueQuantity.unit ?: ""
 
       patientAncOverviewItem.postValue(patientVitalItem)
     }

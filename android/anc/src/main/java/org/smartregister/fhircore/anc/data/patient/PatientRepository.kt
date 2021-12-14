@@ -234,7 +234,7 @@ constructor(
         }
       }
     if (observations.isNotEmpty())
-      finalObservation = observations.sortedBy { it.effectiveDateTimeType.value }.first()
+      finalObservation = observations.sortedBy { it.effectiveDateTimeType.value }.last()
 
     return finalObservation
   }
