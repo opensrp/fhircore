@@ -14,7 +14,7 @@ task jacocoTestReport(type: JacocoReport, dependsOn: [
             '**Constant*.*',
             '**/*$ViewBinder*.*',
             'android/**/*.*',
-            '**/Application*.*',
+            '**/*Application*.*',
             '**/*Test*.*',
             '**/*$ViewInjector*.*',
             '**/BuildConfig.*',
@@ -22,22 +22,28 @@ task jacocoTestReport(type: JacocoReport, dependsOn: [
             '**/Manifest*.*',
             '**/R.class',
             '**/R$*.class',
-            // kotlin
+            // kotlin (Sealed and Data classes)
             '**/*$Lambda$*.*',
-            // Dagger and Hilt
-            '**/*_Provide*/**',
-            '**/*_Factory*/**',
-            '**/*Module*.*',
-            '**/*_Factory*.*',
+            '**/*Companion*.*',
+            '**/*$Result.*',
+            '**/*$Result$*.*',
+            // DI (Dagger and Hilt)
             '**/*_MembersInjector.class',
-            '**/*Dagger*',
+            '**/Dagger*Component.class',
+            '**/Dagger*Component$Builder.class',
+            '**/Dagger*Subcomponent*.class',
+            '**/*Subcomponent$Builder.class',
+            '**/*Module_*Factory.class',
+            '**/*_Factory*.*',
+            '**/*Module*.*',
+            '**/*Dagger*.*',
+            '**/*Hilt*.*',
+            '**/dagger/hilt/internal/*',
+            '**/hilt_aggregated_deps/*',
             '**/di/*',
             '**/*Hilt*.*',
             // Data Binding
-            'android/databinding/**/*.class',
-            '**/android/databinding/*Binding.class',
-            '**/android/databinding/*',
-            '**/androidx/databinding/*',
+            '**/databinding/*'
     ]
 
     def javaDebugTree = fileTree(dir: "$project.buildDir/intermediates/javac/debug/classes/", excludes: excludes)
