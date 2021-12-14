@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.ui.family.details
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.Application
 import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
@@ -32,6 +33,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.shadows.ShadowAlertDialog
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.app.fakes.FakeModel
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
@@ -91,6 +95,25 @@ class FamilyDetailsActivityTest : ActivityRobolectricTest() {
     val actualIntent = shadowOf(application).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testRemoveShouldShowRemoveFamilyConfirmationDialogue() {
+
+    familyDetailsActivity.familyDetailViewModel.onRemoveFamilyMenuItemClicked()
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+
+    Assert.assertNotNull(alertDialog)
+    Assert.assertEquals(
+      getString(R.string.questionnaire_alert_neutral_button_title),
+      alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).text
+    )
+    Assert.assertEquals(
+      getString(R.string.family_register_ok_title),
+      alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
+    )
   }
 
   override fun getActivity(): Activity {

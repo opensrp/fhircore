@@ -39,53 +39,94 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
 
   @Inject lateinit var familyRepository: FamilyRepository
 
-  private lateinit var saveBtn: Button
+  lateinit var saveBtn: Button
+  private var isEditFamily: Boolean = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
+    isEditFamily = intent.extras?.getBoolean(FamilyFormConstants.FAMILY_EDIT_INFO) ?: false
 
-    when (intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!) {
-      FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_ANC_client)
-      FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM ->
-        saveBtn.setText(R.string.family_member_save_label)
-      FamilyFormConstants.FAMILY_REGISTER_FORM -> saveBtn.setText(R.string.family_save_label)
+    saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
+    if (isEditFamily) {
+      when (intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!) {
+        FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_ANC_client)
+        FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM ->
+          saveBtn.setText(R.string.family_member_update_label)
+        FamilyFormConstants.FAMILY_REGISTER_FORM -> saveBtn.setText(R.string.family_update_label)
+      }
+    } else {
+      when (intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!) {
+        FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_ANC_client)
+        FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM ->
+          saveBtn.setText(R.string.family_member_save_label)
+        FamilyFormConstants.FAMILY_REGISTER_FORM -> saveBtn.setText(R.string.family_save_label)
+      }
     }
   }
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
       saveBtn.hide(false)
-
-      when (questionnaireConfig.form) {
-        FamilyFormConstants.ANC_ENROLLMENT_FORM -> {
-          val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!
-          familyRepository.enrollIntoAnc(questionnaire, questionnaireResponse, patientId)
-          endActivity()
-        }
-        FamilyFormConstants.FAMILY_REGISTER_FORM -> {
-          val patientId =
-            familyRepository.postProcessFamilyHead(questionnaire, questionnaireResponse)
-          handlePregnancy(
-            patientId = patientId,
-            questionnaireResponse = questionnaireResponse,
-            ancEnrollmentForm = FamilyFormConstants.FAMILY_REGISTER_FORM
-          )
-        }
-        FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM -> {
-          val relatedTo = intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)
-          val patientId =
-            familyRepository.postProcessFamilyMember(
-              questionnaire = questionnaire,
-              questionnaireResponse = questionnaireResponse,
-              relatedTo = relatedTo
+      if (isEditFamily) {
+        when (questionnaireConfig.form) {
+          FamilyFormConstants.FAMILY_REGISTER_FORM -> {
+            familyRepository.updateProcessFamilyHead(
+              intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!,
+              questionnaire!!,
+              questionnaireResponse
             )
-          handlePregnancy(
-            patientId = patientId,
-            questionnaireResponse = questionnaireResponse,
-            ancEnrollmentForm = FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
-          )
+            handlePregnancy(
+              intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!,
+              questionnaireResponse,
+              FamilyFormConstants.FAMILY_REGISTER_FORM
+            )
+          }
+          FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM -> {
+            val relatedTo = intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)
+            familyRepository.updateProcessFamilyMember(
+              intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!,
+              questionnaire!!,
+              questionnaireResponse,
+              relatedTo
+            )
+            handlePregnancy(
+              intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!,
+              questionnaireResponse,
+              FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
+            )
+          }
+        }
+      } else {
+        when (questionnaireConfig.form) {
+          FamilyFormConstants.ANC_ENROLLMENT_FORM -> {
+            val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!
+            familyRepository.enrollIntoAnc(questionnaire, questionnaireResponse, patientId)
+            endActivity()
+          }
+          FamilyFormConstants.FAMILY_REGISTER_FORM -> {
+            val patientId =
+              familyRepository.postProcessFamilyHead(questionnaire, questionnaireResponse)
+            handlePregnancy(
+              patientId = patientId,
+              questionnaireResponse = questionnaireResponse,
+              ancEnrollmentForm = FamilyFormConstants.FAMILY_REGISTER_FORM
+            )
+          }
+          FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM -> {
+            val relatedTo = intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)
+            val patientId =
+              familyRepository.postProcessFamilyMember(
+                questionnaire = questionnaire,
+                questionnaireResponse = questionnaireResponse,
+                relatedTo = relatedTo
+              )
+            handlePregnancy(
+              patientId = patientId,
+              questionnaireResponse = questionnaireResponse,
+              ancEnrollmentForm = FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
+            )
+          }
         }
       }
     }
@@ -97,17 +138,21 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
       .setCancelable(false)
       .setNegativeButton(R.string.unsaved_changes_neg) { dialogInterface, _ ->
         dialogInterface.dismiss()
-        if (questionnaireConfig.form == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
-          startActivity(
-            Intent(this, FamilyDetailsActivity::class.java).apply {
-              putExtra(
-                QUESTIONNAIRE_ARG_PATIENT_KEY,
-                intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!
-              )
-            }
-          )
+        if (isEditFamily) {
+          finish()
+        } else {
+          if (questionnaireConfig.form == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
+            startActivity(
+              Intent(this, FamilyDetailsActivity::class.java).apply {
+                putExtra(
+                  QUESTIONNAIRE_ARG_PATIENT_KEY,
+                  intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!
+                )
+              }
+            )
+          }
+          finish()
         }
-        finish()
       }
       .setPositiveButton(R.string.unsaved_changes_pos) { dialogInterface, _ ->
         dialogInterface.dismiss()
@@ -125,17 +170,21 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     if (pregnancy == true) {
       this.startAncEnrollment(patientId)
     } else {
-      if (ancEnrollmentForm == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
-        startActivity(
-          Intent(this, FamilyDetailsActivity::class.java).apply {
-            putExtra(
-              QUESTIONNAIRE_ARG_PATIENT_KEY,
-              intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!
-            )
-          }
-        )
-        endActivity()
-      } else endActivity()
+      if (isEditFamily) {
+        finish()
+      } else {
+        if (ancEnrollmentForm == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
+          startActivity(
+            Intent(this, FamilyDetailsActivity::class.java).apply {
+              putExtra(
+                QUESTIONNAIRE_ARG_PATIENT_KEY,
+                intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!
+              )
+            }
+          )
+          endActivity()
+        } else endActivity()
+      }
     }
   }
 

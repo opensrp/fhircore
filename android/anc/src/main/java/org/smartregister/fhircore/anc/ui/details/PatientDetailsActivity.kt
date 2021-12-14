@@ -43,10 +43,15 @@ import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivit
 import org.smartregister.fhircore.anc.ui.details.adapter.ViewPagerAdapter
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants.FAMILY_REGISTER_FORM
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.base.AlertDialogListItem
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.getSingleChoiceSelectedKey
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -57,6 +62,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
   private lateinit var adapter: ViewPagerAdapter
   private lateinit var patientId: String
   private var patient: PatientItem? = null
+  private lateinit var loadProgress: AlertDialog
 
   val ancDetailsViewModel by viewModels<AncDetailsViewModel>()
   private lateinit var activityAncDetailsBinding: ActivityNonAncDetailsBinding
@@ -69,6 +75,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
     activityAncDetailsBinding =
       DataBindingUtil.setContentView(this, R.layout.activity_non_anc_details)
     setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
+    loadProgress = showProgressAlert(this@PatientDetailsActivity, R.string.loading)
 
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
@@ -78,6 +85,9 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
   override fun onResume() {
     super.onResume()
     activityAncDetailsBinding.txtViewPatientId.text = patientId
+
+    loadProgress.show()
+
     ancDetailsViewModel
       .fetchDemographics(patientId)
       .observe(this@PatientDetailsActivity, this::handlePatientDemographics)
@@ -126,6 +136,19 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
           Intent(this, EncounterListActivity::class.java).apply {
             putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
           }
+        )
+        true
+      }
+      R.id.edit_info -> {
+        startActivity(
+          Intent(this, FamilyQuestionnaireActivity::class.java)
+            .putExtras(
+              QuestionnaireActivity.intentArgs(
+                clientIdentifier = patientId,
+                formName = if (isHouseHold) FAMILY_REGISTER_FORM else FAMILY_MEMBER_REGISTER_FORM
+              )
+            )
+            .putExtra(FamilyFormConstants.FAMILY_EDIT_INFO, true)
         )
         true
       }

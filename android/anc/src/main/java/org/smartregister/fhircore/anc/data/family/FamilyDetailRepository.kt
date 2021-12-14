@@ -26,18 +26,18 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class FamilyDetailRepository
 @Inject
 constructor(
-  val fhirEngine: FhirEngine,
+  override val fhirEngine: FhirEngine,
   val familyItemMapper: FamilyItemMapper,
   val dispatcherProvider: DispatcherProvider,
   val ancPatientRepository: PatientRepository,
   val familyRepository: FamilyRepository
 ) {
-
   suspend fun fetchDemographics(familyId: String): Patient =
     withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, familyId) }
 

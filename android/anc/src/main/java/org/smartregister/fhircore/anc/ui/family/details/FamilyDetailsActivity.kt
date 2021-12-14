@@ -63,6 +63,7 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
           }
         }
       )
+      
       changeHead.observe(
         familyDetailsActivity,
         { changeHead ->
@@ -83,6 +84,21 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
           }
         }
       )
+
+      familyDetailViewModel.apply {
+        isRemoveFamily.observe(familyDetailsActivity, { if (it) finish() })
+      }
+
+      familyDetailViewModel.apply {
+        isRemoveFamilyMenuItemClicked.observe(
+          familyDetailsActivity,
+          {
+            if (it) {
+              removeFamilyMenuItemClicked(familyId = familyId)
+            }
+          }
+        )
+      }
     }
 
     loadData()
@@ -129,5 +145,15 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
           putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, familyMemberItem.id)
         }
       )
+  }
+
+  private fun removeFamilyMenuItemClicked(familyId: String) {
+    AlertDialogue.showConfirmAlert(
+      this,
+      R.string.confirm_remove_family_message,
+      R.string.confirm_remove_family_title,
+      { familyDetailViewModel.removeFamily(familyId = familyId) },
+      R.string.family_register_ok_title
+    )
   }
 }

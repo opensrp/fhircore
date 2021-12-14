@@ -16,11 +16,19 @@
 
 package org.smartregister.fhircore.anc.ui.family.details
 
+import android.app.Application
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onChildAt
+import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.test.core.app.ApplicationProvider
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
@@ -29,9 +37,11 @@ import java.util.Date
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Period
+import org.junit.Assert
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
@@ -205,6 +215,65 @@ class FamilyDetailScreenTest : RobolectricTest() {
     // 'listenerObjectSpy'
     composeRule.onNodeWithText("See All".uppercase()).performClick()
     verify { listenerObjectSpy.onSeeAllUpcomingServiceClick() }
+  }
+
+  @Test
+  fun testToolbarHasBackArrowActionButton() {
+    val application = ApplicationProvider.getApplicationContext<Application>()
+
+    composeRule.setContent { FamilyDetailScreen(FamilyDetailViewModel(mockk())) }
+    composeRule
+      .onNodeWithTag(TOOLBAR_TITLE)
+      .assertTextEquals(application.getString(R.string.all_families))
+    composeRule.onNodeWithContentDescription("Back arrow").assertHasClickAction()
+  }
+
+  @Test
+  fun testToolbarHasRemoveFamilyMenuItemInOverflowMenu() {
+    val application = ApplicationProvider.getApplicationContext<Application>()
+
+    composeRule.setContent { FamilyDetailScreen(FamilyDetailViewModel(mockk())) }
+    composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).assertHasClickAction().performClick()
+    composeRule.onNodeWithTag(TOOLBAR_MENU).assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(TOOLBAR_MENU)
+      .onChildAt(0)
+      .assertTextEquals(application.getString(R.string.remove_family))
+      .assertHasClickAction()
+  }
+
+  @Test
+  fun testToolbarMenuButtonShouldToggleMenuItemsList() {
+
+    composeRule.setContent { FamilyDetailScreen(FamilyDetailViewModel(mockk())) }
+
+    composeRule.onNodeWithTag(TOOLBAR_MENU).assertDoesNotExist()
+    composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
+
+    composeRule
+      .onNodeWithTag(TOOLBAR_MENU)
+      .assertExists()
+      .assertIsDisplayed()
+      .onChildren()
+      .assertCountEquals(1)
+
+    composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
+    composeRule.onNodeWithTag(TOOLBAR_MENU).assertDoesNotExist()
+  }
+
+  @Test
+  fun testToolbarRemoveFamilyMenuItemShouldCallRemoveFamilyMenuItemClickedListener() {
+
+    val familyDetailViewModel = FamilyDetailViewModel(mockk(relaxed = true))
+    Assert.assertFalse(familyDetailViewModel.isRemoveFamilyMenuItemClicked.value!!)
+
+    composeRule.setContent { FamilyDetailScreen(familyDetailViewModel) }
+
+    composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
+    composeRule.onNodeWithTag(TOOLBAR_MENU).onChildAt(0).performClick()
+
+    Assert.assertNotNull(familyDetailViewModel.isRemoveFamilyMenuItemClicked.value)
+    Assert.assertTrue(familyDetailViewModel.isRemoveFamilyMenuItemClicked.value!!)
   }
 
   private fun dummyEncounter(text: String, periodStartDate: String): Encounter {
