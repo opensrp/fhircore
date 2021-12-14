@@ -35,9 +35,9 @@
   "effectiveDateTime": "#EffectiveDate",
   "valueQuantity": {
     "value": "#ValueBmi",
-    "unit": "kg/m2",
+    "unit": "#ValueBmiUnit",
     "system": "http://unitsofmeasure.org",
-    "code": "kg/m2"
+    "code": "body-bmi-code"
   },
   "derivedFrom": [
     {

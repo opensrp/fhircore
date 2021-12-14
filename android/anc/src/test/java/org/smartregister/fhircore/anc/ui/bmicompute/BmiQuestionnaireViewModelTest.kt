@@ -55,22 +55,22 @@ class BmiQuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testInputHeightAsPerSiUnit() {
     val expectedHeightCm = 170.0
-    val inputHeight2 = viewModel.getHeightAsPerMetricUnit(170.0, true)
+    val inputHeight2 = BmiQuestionnaireViewModel.getHeightAsPerMetricUnit(170.0, true)
     Assert.assertEquals(expectedHeightCm, inputHeight2, 0.05)
 
     val expectedHeightMeter = 1.78
-    val inputHeight = viewModel.getHeightAsPerMetricUnit(70.0, false)
+    val inputHeight = BmiQuestionnaireViewModel.getHeightAsPerMetricUnit(70.0, false)
     Assert.assertEquals(expectedHeightMeter, inputHeight, 0.05)
   }
 
   @Test
   fun testInputWeightAsPerSiUnit() {
     val expectedWeightKgs = 72.50
-    val inputWeight2 = viewModel.getWeightAsPerMetricUnit(72.5, true)
+    val inputWeight2 = BmiQuestionnaireViewModel.getWeightAsPerMetricUnit(72.5, true)
     Assert.assertEquals(expectedWeightKgs, inputWeight2, 0.5)
 
     val expectedWeightKgs2 = 72.5
-    val inputWeight = viewModel.getWeightAsPerMetricUnit(160.5, false)
+    val inputWeight = BmiQuestionnaireViewModel.getWeightAsPerMetricUnit(160.5, false)
     Assert.assertEquals(expectedWeightKgs2, inputWeight, 0.5)
   }
 
@@ -174,9 +174,22 @@ class BmiQuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testSaveComputedBmiShouldReturnTrue() {
     coEvery {
-      patientRepository.recordComputedBmi(any(), any(), any(), any(), any(), any(), any())
+      patientRepository.recordComputedBmi(
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any()
+      )
     } returns true
-    val result = runBlocking { viewModel.saveComputedBmi(mockk(), mockk(), "", "", 0.0, 0.0, 0.0) }
+    val result = runBlocking {
+      viewModel.saveComputedBmi(mockk(), mockk(), "", "", 0.0, 0.0, 0.0, "", "", "")
+    }
     Assert.assertTrue(result)
   }
 

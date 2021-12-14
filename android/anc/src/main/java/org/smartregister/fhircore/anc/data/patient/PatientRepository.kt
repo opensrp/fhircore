@@ -373,10 +373,22 @@ constructor(
     encounterID: String,
     height: Double,
     weight: Double,
-    computedBmi: Double
+    computedBmi: Double,
+    heightUnit: String,
+    weightUnit: String,
+    bmiUnit: String
   ): Boolean {
     resourceMapperExtended.saveParsedResource(questionnaireResponse, questionnaire, patientId, null)
-    return recordBmi(patientId, encounterID, height, weight, computedBmi)
+    return recordBmi(
+      patientId,
+      encounterID,
+      height,
+      weight,
+      computedBmi,
+      heightUnit,
+      weightUnit,
+      bmiUnit
+    )
   }
 
   private suspend fun recordBmi(
@@ -384,7 +396,10 @@ constructor(
     formEncounterId: String,
     height: Double? = null,
     weight: Double? = null,
-    computedBMI: Double? = null
+    computedBMI: Double? = null,
+    heightUnit: String,
+    weightUnit: String,
+    bmiUnit: String
   ): Boolean {
     val bmiEncounterData =
       buildBmiConfigData(
@@ -405,7 +420,8 @@ constructor(
         bmiEncounter = bmiEncounter,
         height = height,
         weight = weight,
-        computedBmi = computedBMI
+        computedBmi = computedBMI,
+        weightUnit = weightUnit
       )
     val bmiWeightObservation =
       loadConfig(Template.BMI_PATIENT_WEIGHT, Observation::class.java, bmiWeightObservationData)
@@ -420,7 +436,7 @@ constructor(
         height = height,
         weight = weight,
         computedBmi = computedBMI,
-        refObsWeightFormId = bmiWeightObservationRecordId
+        heightUnit = heightUnit
       )
     val bmiHeightObservation =
       loadConfig(Template.BMI_PATIENT_HEIGHT, Observation::class.java, bmiHeightObservationData)
@@ -436,7 +452,8 @@ constructor(
         weight = weight,
         computedBmi = computedBMI,
         refObsWeightFormId = bmiWeightObservationRecordId,
-        refObsHeightFormId = bmiHeightObservationRecordId
+        refObsHeightFormId = bmiHeightObservationRecordId,
+        bmiUnit = bmiUnit
       )
     val bmiObservation =
       loadConfig(Template.BMI_PATIENT_BMI, Observation::class.java, bmiObservationData)
@@ -452,7 +469,10 @@ constructor(
     weight: Double? = null,
     computedBmi: Double? = null,
     refObsWeightFormId: String? = null,
-    refObsHeightFormId: String? = null
+    refObsHeightFormId: String? = null,
+    heightUnit: String? = null,
+    weightUnit: String? = null,
+    bmiUnit: String? = null
   ): Map<String, String?> {
     return mapOf(
       "#Id" to recordId,
@@ -465,6 +485,9 @@ constructor(
       "#ValueBmi" to computedBmi.toString(),
       "#RefIdObservationBodyHeight" to refObsHeightFormId,
       "#RefIdObservationBodyWeight" to refObsWeightFormId,
+      "#ValueWeightUnit" to weightUnit?.toString(),
+      "#ValueHeightUnit" to heightUnit?.toString(),
+      "#ValueBmiUnit" to bmiUnit?.toString()
     )
   }
 

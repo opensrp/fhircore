@@ -118,25 +118,11 @@ class VitalSignsDetailsFragment : Fragment() {
       txtViewWeightValue.text =
         if (patientVitalItem.weight.isEmpty()) "-" else patientVitalItem.weight
       txtViewWeightUnit.text = patientVitalItem.weightUnit
+
       txtViewHeightValue.text =
         if (patientVitalItem.height.isEmpty()) "-" else patientVitalItem.height
       txtViewHeightUnit.text = patientVitalItem.heightUnit
-      txtViewBgValue.text = if (patientVitalItem.BG.isEmpty()) "-" else patientVitalItem.BG
-      txtViewBgUnit.text = patientVitalItem.BGUnit
-      txtViewSpValue.text = if (patientVitalItem.sp02.isEmpty()) "-" else patientVitalItem.sp02
-      txtViewSpUnit.text = patientVitalItem.sp02Unit
-      txtViewPulseValue.text = if (patientVitalItem.pulse.isEmpty()) "-" else patientVitalItem.pulse
-      txtViewPulseUnit.text = patientVitalItem.pulseUnit
-      txtViewBpValue.text = if (patientVitalItem.BPS.isEmpty()) "-" else patientVitalItem.BPS
-      txtViewBpUnit.text = patientVitalItem.BPSUnit
-      txtViewWeightValue.text = patientVitalItem.weight
-      txtViewHeightValue.text = patientVitalItem.height
-      txtViewBgValue.text = patientVitalItem.BG
-      txtViewSpValue.text = patientVitalItem.sp02
-      txtViewPulseValue.text = patientVitalItem.pulse
-      txtViewBpValue.text = patientVitalItem.BPS
-      txtViewHeightUnit.text = patientVitalItem.heightUnit
-      txtViewWeightUnit.text = patientVitalItem.weightUnit
+
       if (patientVitalItem.bmi.isNotEmpty()) {
         linearLayoutBmi.show()
         txtViewBmiValue.text = patientVitalItem.bmi

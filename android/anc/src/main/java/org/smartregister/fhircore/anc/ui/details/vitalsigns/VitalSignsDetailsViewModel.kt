@@ -29,6 +29,7 @@ import org.smartregister.fhircore.anc.data.model.PatientVitalItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
 import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
+import org.smartregister.fhircore.anc.util.computeBMIViaUSCUnits
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @HiltViewModel
@@ -75,17 +76,27 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
       listObservationHeight.valueQuantity?.unit?.let { patientVitalItem.heightUnit = it }
       listObservationWeight.valueQuantity?.unit?.let { patientVitalItem.weightUnit = it }
 
-      if (patientVitalItem.height.isNotEmpty() && patientVitalItem.weight.isNotEmpty()) {
-        patientVitalItem.bmi =
-          computeBMIViaMetricUnits(
-              patientVitalItem.height.toDouble(),
-              patientVitalItem.weight.toDouble()
-            )
-            .toString()
+      if (patientVitalItem.height.isNotEmpty() &&
+          patientVitalItem.weight.isNotEmpty() &&
+          patientVitalItem.height.toDouble() > 0 &&
+          patientVitalItem.weight.toDouble() > 0
+      ) {
         if (patientVitalItem.weightUnit.isNotEmpty()) {
           if (patientVitalItem.weightUnit.equals("kg", true)) {
+            patientVitalItem.bmi =
+              computeBMIViaMetricUnits(
+                  patientVitalItem.height.toDouble(),
+                  patientVitalItem.weight.toDouble()
+                )
+                .toString()
             patientVitalItem.bmiUnit = "kg/m2"
           } else {
+            patientVitalItem.bmi =
+              computeBMIViaUSCUnits(
+                  patientVitalItem.height.toDouble(),
+                  patientVitalItem.weight.toDouble()
+                )
+                .toString()
             patientVitalItem.bmiUnit = "lbs/in2"
           }
         }

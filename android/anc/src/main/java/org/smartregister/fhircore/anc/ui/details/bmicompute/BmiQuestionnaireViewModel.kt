@@ -185,7 +185,10 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
     encounterID: String,
     height: Double,
     weight: Double,
-    computedBMI: Double
+    computedBMI: Double,
+    heightUnit: String,
+    weightUnit: String,
+    bmiUnit: String
   ): Boolean {
     return patientRepository.recordComputedBmi(
       questionnaire,
@@ -194,7 +197,10 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
       encounterID,
       height,
       weight,
-      computedBMI
+      computedBMI,
+      heightUnit,
+      weightUnit,
+      bmiUnit
     )
   }
 }

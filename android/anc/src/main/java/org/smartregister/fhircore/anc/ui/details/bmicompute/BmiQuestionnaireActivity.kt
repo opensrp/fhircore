@@ -61,12 +61,31 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
         showErrorAlert(getString(R.string.try_again), getString(R.string.error_saving_form))
       else {
         val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!
-        val height =
-          BmiQuestionnaireViewModel.getHeightAsPerMetricUnit(inputHeight, isUnitModeMetric)
-        val weight =
-          BmiQuestionnaireViewModel.getWeightAsPerMetricUnit(inputWeight, isUnitModeMetric)
-        Log.e("aw", "saving bmi = " + computedBMI + " - h=" + height + " -w=" + weight)
-        showBmiDataAlert(questionnaireResponse, patientId, height, weight, computedBMI)
+        //        val height =
+        //          BmiQuestionnaireViewModel.getHeightAsPerMetricUnit(inputHeight,
+        // isUnitModeMetric)
+        //        val weight =
+        //          BmiQuestionnaireViewModel.getWeightAsPerMetricUnit(inputWeight,
+        // isUnitModeMetric)
+        Log.e("aw", "saving bmi = " + computedBMI + " - h=" + inputHeight + " -w=" + inputWeight)
+        var weightUnit = "lb"
+        var heightUnit = "in"
+        var bmiUnit = "lb/in2"
+        if (isUnitModeMetric) {
+          weightUnit = "kg"
+          heightUnit = "m"
+          bmiUnit = "kg/m2"
+        }
+        showBmiDataAlert(
+          questionnaireResponse,
+          patientId,
+          inputHeight,
+          inputWeight,
+          computedBMI,
+          heightUnit,
+          weightUnit,
+          bmiUnit
+        )
       }
     }
   }
@@ -96,7 +115,10 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
     patientId: String,
     height: Double,
     weight: Double,
-    computedBMI: Double
+    computedBMI: Double,
+    heightUnit: String,
+    weightUnit: String,
+    bmiUnit: String
   ) {
     val message = bmiQuestionnaireViewModel.getBmiResult(computedBMI, this)
     AlertDialog.Builder(this)
@@ -109,7 +131,16 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
       }
       .setPositiveButton(R.string.str_save) { dialogInterface, _ ->
         dialogInterface.dismiss()
-        proceedRecordBMI(questionnaireResponse, patientId, height, weight, computedBMI)
+        proceedRecordBMI(
+          questionnaireResponse,
+          patientId,
+          height,
+          weight,
+          computedBMI,
+          heightUnit,
+          weightUnit,
+          bmiUnit
+        )
       }
       .show()
   }
@@ -119,7 +150,10 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
     patientId: String,
     height: Double,
     weight: Double,
-    computedBMI: Double
+    computedBMI: Double,
+    heightUnit: String,
+    weightUnit: String,
+    bmiUnit: String
   ) {
     lifecycleScope.launch {
       val success =
@@ -130,7 +164,10 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
           encounterID,
           height,
           weight,
-          computedBMI
+          computedBMI,
+          heightUnit,
+          weightUnit,
+          bmiUnit
         )
 
       if (success) {

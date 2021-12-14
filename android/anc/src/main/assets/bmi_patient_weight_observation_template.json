@@ -46,8 +46,8 @@
   "effectiveDateTime": "#EffectiveDate",
   "valueQuantity": {
     "value": "#ValueWeight",
-    "unit": "lbs",
+    "unit": "#ValueWeightUnit",
     "system": "http://unitsofmeasure.org",
-    "code": "[lb_av]"
+    "code": "body-weight-code"
   }
 }
