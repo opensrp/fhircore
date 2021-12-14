@@ -26,6 +26,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.IOException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
@@ -59,13 +60,22 @@ constructor(
   val launchDialPad
     get() = _launchDialPad
 
+  /**
+   * the handler fetches the user info after verifying credentials with flow
+   * - user-resp (failure) -> show-error
+   * - user-resp (success) -> store user info -> goto home
+   */
   val responseBodyHandler =
     object : ResponseHandler<ResponseBody> {
       override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-        response.body()?.run {
-          storeUserPreferences(this)
-          _navigateToHome.value = true
-          _showProgressBar.postValue(false)
+        if (response.isSuccessful)
+          response.body()!!.run {
+            storeUserPreferences(this)
+            _showProgressBar.postValue(false)
+            _navigateToHome.value = true
+          }
+        else {
+          handleFailure(call, IOException("Network call failed with $response"))
         }
       }
 
@@ -87,18 +97,29 @@ constructor(
     object : ResponseCallback<ResponseBody>(responseBodyHandler) {}
   }
 
+  /**
+   * the handler is called after remote login and subsequently fetches userinfo the handler handles
+   * network failures incase previous successful attempt exists
+   *
+   * - auth-resp (failure)
+   * ```
+   *    - show error
+   *    - attempt local login (true)
+   *    - goto home
+   * ```
+   * - auth-resp (success)
+   * ```
+   *    - fetch userinfo #LoginViewModel.responseBodyHandler
+   *       - user-resp (failure) -> show-error
+   *       - user-resp (success) -> store user info -> goto home
+   * ```
+   */
   val oauthResponseHandler =
     object : ResponseHandler<OAuthResponse> {
       override fun handleResponse(call: Call<OAuthResponse>, response: Response<OAuthResponse>) {
         if (!response.isSuccessful) {
-          val errorResponse = response.errorBody()?.string()
-          _loginError.postValue(errorResponse?.decodeJson<LoginError>()?.errorDescription)
-          _showProgressBar.postValue(false)
-          Timber.e("Error fetching access token %s", errorResponse)
-          return
+          handleFailure(call, IOException("Network call failed with $response"))
         } else {
-          if (attemptLocalLogin()) _navigateToHome.value = true
-          _showProgressBar.postValue(false)
           with(accountAuthenticator) {
             addAuthenticatedAccount(
               response,
