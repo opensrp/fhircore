@@ -41,7 +41,7 @@ class MeasureEvaluatorTest {
   var libraryFilePath = "test/resources/cql/measureevaluator/library/ANCIND01-bundle.json"
 
   @Test
-  @Ignore
+  @Ignore("Failing CI")
   fun runMeasureEvaluate() {
     val fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
     val parser = fhirContext.newJsonParser()!!
