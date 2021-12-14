@@ -25,7 +25,11 @@ import java.io.InputStream
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Library
+import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -84,6 +88,15 @@ class LibraryEvaluatorTest {
         contextLabel
       )
     Assert.assertEquals(result, auxResult)
+  }
+
+  @Test
+  fun createBundleTestForG6pd() {
+    val result = evaluator!!.createBundle(listOf(Patient(), Observation(), Condition()))
+
+    Assert.assertEquals(ResourceType.Patient, result.entry[0].resource.resourceType)
+    Assert.assertEquals(ResourceType.Observation, result.entry[1].resource.resourceType)
+    Assert.assertEquals(ResourceType.Condition, result.entry[2].resource.resourceType)
   }
 
   @Test
