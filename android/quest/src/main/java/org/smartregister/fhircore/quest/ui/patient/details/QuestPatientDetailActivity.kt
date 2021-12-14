@@ -82,7 +82,7 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
       .observe(
         this,
         {
-          if (it.isNotBlank()) {
+          if (it?.isNotBlank() == true) {
             progress.dismiss()
 
             AlertDialogue.showInfoAlert(this@QuestPatientDetailActivity, message = it)

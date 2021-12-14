@@ -103,7 +103,7 @@ constructor(
     return libraryEvaluator.createBundle(everything)
   }
 
-  fun runCqlFor(patientId: String, context: Context): MutableLiveData<String> {
+  fun runCqlFor(patientId: String, context: Context): MutableLiveData<String?> {
     val result = MutableLiveData("")
     viewModelScope.launch {
       val dataBundle = getAllDataFor(patientId)
