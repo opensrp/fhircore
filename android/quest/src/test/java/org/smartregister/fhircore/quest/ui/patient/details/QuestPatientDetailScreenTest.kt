@@ -117,7 +117,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       .assertExists()
       .assertIsDisplayed()
       .onChildren()
-      .assertCountEquals(1)
+      .assertCountEquals(2)
 
     composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
     composeRule.onNodeWithTag(TOOLBAR_MENU).assertDoesNotExist()
