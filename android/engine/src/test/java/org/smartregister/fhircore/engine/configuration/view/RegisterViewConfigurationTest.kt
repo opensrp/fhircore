@@ -34,9 +34,28 @@ class RegisterViewConfigurationTest : RobolectricTest() {
         "filterText",
         "searchBarHint",
         "newClientButtonText",
-        "newClientButtonStyle"
+        "newClientButtonStyle",
+        false,
+        true,
+        true,
+        true,
+        true,
+        "patient-registration",
+        true,
+        false,
+        null
       )
     Assert.assertEquals("anc", registerViewConfiguration.appId)
+    Assert.assertEquals("appTitle", registerViewConfiguration.appTitle)
+    Assert.assertEquals("searchBarHint", registerViewConfiguration.searchBarHint)
+    Assert.assertEquals("newClientButtonText", registerViewConfiguration.newClientButtonText)
+    Assert.assertEquals("newClientButtonStyle", registerViewConfiguration.newClientButtonStyle)
+    Assert.assertFalse(registerViewConfiguration.showSearchBar)
+    Assert.assertTrue(registerViewConfiguration.switchLanguages)
+    Assert.assertTrue(registerViewConfiguration.showScanQRCode)
+    Assert.assertTrue(registerViewConfiguration.showNewClientButton)
+    Assert.assertTrue(registerViewConfiguration.showSideMenu)
+    Assert.assertFalse(registerViewConfiguration.showBottomMenu)
   }
 
   @Test
@@ -56,7 +75,15 @@ class RegisterViewConfigurationTest : RobolectricTest() {
           "filterText",
           "searchBarHint",
           "newClientButtonText",
-          false
+          false,
+          true,
+          true,
+          true,
+          true,
+          "patient-registration",
+          true,
+          false,
+          null
         )
     Assert.assertEquals("anc", registerViewConfigurationOf.appId)
     Assert.assertEquals("clasification", registerViewConfigurationOf.appTitle)
@@ -64,5 +91,10 @@ class RegisterViewConfigurationTest : RobolectricTest() {
     Assert.assertEquals("searchBarHint", registerViewConfigurationOf.newClientButtonText)
     Assert.assertEquals("newClientButtonText", registerViewConfigurationOf.newClientButtonStyle)
     Assert.assertFalse(registerViewConfigurationOf.showSearchBar)
+    Assert.assertTrue(registerViewConfigurationOf.switchLanguages)
+    Assert.assertTrue(registerViewConfigurationOf.showScanQRCode)
+    Assert.assertTrue(registerViewConfigurationOf.showNewClientButton)
+    Assert.assertTrue(registerViewConfigurationOf.showSideMenu)
+    Assert.assertFalse(registerViewConfigurationOf.showBottomMenu)
   }
 }
