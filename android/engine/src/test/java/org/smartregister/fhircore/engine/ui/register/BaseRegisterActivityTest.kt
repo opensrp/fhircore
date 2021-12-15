@@ -58,6 +58,7 @@ import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
+import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 import org.smartregister.fhircore.engine.util.LAST_SYNC_TIMESTAMP
 import org.smartregister.fhircore.engine.util.extension.asString
@@ -115,8 +116,8 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     // Side Menu has 1 item
     Assert.assertEquals(1, testRegisterActivity.sideMenuOptions().size)
 
-    // Register list empty by default
-    Assert.assertTrue(testRegisterActivity.registersList().isEmpty())
+    // Register list contains 1 item
+    Assert.assertTrue(testRegisterActivity.registersList().isNotEmpty())
 
     // Support fragment contains 2 fragments
     val supportedFragments = testRegisterActivity.supportedFragments()
@@ -314,6 +315,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     Assert.assertNull(testRegisterActivity.syncBroadcaster.syncInitiator)
   }
 
+  @Test(expected = IllegalArgumentException::class)
   fun testThatWrongDateThrowsAnException() {
     testRegisterActivity.registerViewModel.lastSyncTimestamp.value = "2021-12-15"
     Assert.assertTrue(
@@ -327,6 +329,45 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     val startedIntent: Intent = Shadows.shadowOf(testRegisterActivity).nextStartedActivity
     val shadowIntent: ShadowIntent = Shadows.shadowOf(startedIntent)
     Assert.assertEquals(QuestionnaireActivity::class.java, shadowIntent.intentClass)
+  }
+
+  @Test
+  fun testSwitchNonRegisterFragment() {
+    testRegisterActivity.switchFragment(
+      tag = TestFragment.TAG + 2,
+      isRegisterFragment = false,
+      toolbarTitle = null
+    )
+    val registerActivityBinding = testRegisterActivity.registerActivityBinding
+
+    Assert.assertFalse(
+      registerActivityBinding.toolbarLayout.registerFilterTextview.hasOnClickListeners()
+    )
+
+    Assert.assertEquals(
+      testRegisterActivity.getString(R.string.clients),
+      registerActivityBinding.toolbarLayout.registerFilterTextview.text.toString()
+    )
+  }
+
+  @Test
+  fun testSwitchNonRegisterFragmentWithNewTitle() {
+    val toolbarTitle = "New Title"
+    testRegisterActivity.switchFragment(
+      tag = TestFragment.TAG + 2,
+      isRegisterFragment = false,
+      toolbarTitle = toolbarTitle
+    )
+    val registerActivityBinding = testRegisterActivity.registerActivityBinding
+
+    Assert.assertFalse(
+      registerActivityBinding.toolbarLayout.registerFilterTextview.hasOnClickListeners()
+    )
+
+    Assert.assertEquals(
+      toolbarTitle,
+      registerActivityBinding.toolbarLayout.registerFilterTextview.text.toString()
+    )
   }
 
   @AndroidEntryPoint
@@ -370,6 +411,9 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
         Pair(TestFragment.TAG + 1, TestFragment(1)),
         Pair(TestFragment.TAG + 2, TestFragment(2))
       )
+
+    override fun registersList() =
+      listOf(RegisterItem(TestFragment.TAG + 1, "TestFragment", isSelected = true))
   }
 
   @AndroidEntryPoint

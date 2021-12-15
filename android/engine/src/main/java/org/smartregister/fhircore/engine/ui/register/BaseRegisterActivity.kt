@@ -42,12 +42,8 @@ import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
-import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.contrib.views.barcode.mlkit.md.LiveBarcodeScanningFragment
-import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.sync.State
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigation.NavigationView
@@ -57,7 +53,6 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableView
@@ -101,8 +96,6 @@ abstract class BaseRegisterActivity :
 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
-  @Inject lateinit var fhirEngine: FhirEngine
-
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
@@ -117,9 +110,9 @@ abstract class BaseRegisterActivity :
 
   lateinit var drawerMenuHeaderBinding: DrawerMenuHeaderBinding
 
-  private var selectedMenuOption: SideMenuOption? = null
+  lateinit var navigationBottomSheet: NavigationBottomSheet
 
-  private lateinit var navigationBottomSheet: NavigationBottomSheet
+  private var selectedMenuOption: SideMenuOption? = null
 
   private lateinit var sideMenuOptionMap: Map<Int, SideMenuOption>
 
@@ -697,20 +690,6 @@ abstract class BaseRegisterActivity :
           .show()
       }
     }
-  }
-
-  fun isPatientExists(barcode: String): LiveData<Result<Boolean>> {
-    val result = MutableLiveData<Result<Boolean>>()
-
-    lifecycleScope.launch(registerViewModel.dispatcher.io()) {
-      try {
-        fhirEngine.load(Patient::class.java, barcode)
-        result.postValue(Result.success(true))
-      } catch (e: ResourceNotFoundException) {
-        result.postValue(Result.failure(e))
-      }
-    }
-    return result
   }
 
   open fun onBarcodeResult(barcode: String, view: View) {}
