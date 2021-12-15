@@ -83,6 +83,8 @@ android {
             includeAndroidResources = true
             returnDefaultValues = true
             all {
+                minHeapSize = "4608m"
+                maxHeapSize = "4608m"
                 beforeTest { testDescriptor ->
                     println "${testDescriptor.className} > ${testDescriptor.name} STARTED"
                 }

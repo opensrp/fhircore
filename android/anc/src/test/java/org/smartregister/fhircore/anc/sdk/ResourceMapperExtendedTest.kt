@@ -21,6 +21,7 @@ import com.google.android.fhir.logicalId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.spyk
 import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.BooleanType
@@ -31,6 +32,8 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Test
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
 class ResourceMapperExtendedTest : RobolectricTest() {
 
@@ -42,11 +45,12 @@ class ResourceMapperExtendedTest : RobolectricTest() {
     val questionnaireResponse = getQuestionnaireResponse()
 
     val fhirEngine = mockk<FhirEngine>()
+    val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
     coEvery { fhirEngine.load(Patient::class.java, "patient_id_1") } returns patient
     coEvery { fhirEngine.load(Patient::class.java, "related_patient_id_2") } returns relatedPatient
-    coEvery { fhirEngine.save(any()) } returns Unit
+    coEvery { defaultRepository.addOrUpdate(any()) } returns Unit
 
-    val resourceMapperExtended = ResourceMapperExtended(fhirEngine)
+    val resourceMapperExtended = ResourceMapperExtended(defaultRepository)
     resourceMapperExtended.saveParsedResource(
       questionnaireResponse,
       questionnaire,
@@ -54,7 +58,7 @@ class ResourceMapperExtendedTest : RobolectricTest() {
       "related_patient_id_2"
     )
 
-    coVerify(exactly = 4) { fhirEngine.save(any()) }
+    coVerify(exactly = 4) { defaultRepository.addOrUpdate(any()) }
 
     assertEquals("patient_id_1", patient.logicalId)
     assertEquals(questionnaire.item.size, patient.meta.tag.size)
