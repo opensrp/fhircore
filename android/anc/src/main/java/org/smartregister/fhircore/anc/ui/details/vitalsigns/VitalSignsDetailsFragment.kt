@@ -109,22 +109,24 @@ class VitalSignsDetailsFragment : Fragment() {
     }
   }
 
+  private fun vitalSignStringOrDefault(vitalSignString: String, defaultString: String = "-"): String {
+    return if (vitalSignString.isEmpty()) defaultString else vitalSignString
+  }
+
   private fun handleVitalSigns(patientVitalItem: PatientVitalItem) {
     binding.swipeContainer.isRefreshing = false
     binding.apply {
-      txtViewWeightValue.text =
-        if (patientVitalItem.weight.isEmpty()) "-" else patientVitalItem.weight
+      txtViewWeightValue.text = vitalSignStringOrDefault(patientVitalItem.weight)
       txtViewWeightUnit.text = patientVitalItem.weightUnit
-      txtViewHeightValue.text =
-        if (patientVitalItem.height.isEmpty()) "-" else patientVitalItem.height
+      txtViewHeightValue.text = vitalSignStringOrDefault(patientVitalItem.height)
       txtViewHeightUnit.text = patientVitalItem.heightUnit
-      txtViewBgValue.text = if (patientVitalItem.BG.isEmpty()) "-" else patientVitalItem.BG
+      txtViewBgValue.text = vitalSignStringOrDefault(patientVitalItem.BG)
       txtViewBgUnit.text = patientVitalItem.BGUnit
-      txtViewSpValue.text = if (patientVitalItem.sp02.isEmpty()) "-" else patientVitalItem.sp02
+      txtViewSpValue.text = vitalSignStringOrDefault(patientVitalItem.sp02)
       txtViewSpUnit.text = patientVitalItem.sp02Unit
-      txtViewPulseValue.text = if (patientVitalItem.pulse.isEmpty()) "-" else patientVitalItem.pulse
+      txtViewPulseValue.text = vitalSignStringOrDefault(patientVitalItem.pulse)
       txtViewPulseUnit.text = patientVitalItem.pulseUnit
-      txtViewBpValue.text = if (patientVitalItem.BPS.isEmpty()) "-" else patientVitalItem.BPS
+      txtViewBpValue.text = vitalSignStringOrDefault(patientVitalItem.BPS)
       txtViewBpUnit.text = patientVitalItem.BPSUnit
     }
   }
