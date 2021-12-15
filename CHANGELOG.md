@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Report Result Page Individual Patient Item UI update plus Unit Tests
 - ANC | Report Result Page For All Population compose UI update plus Unit Tests
 - ANC | Integrate Hilt Dependency Injection
+- ANC | Patient details show vital signs
 
 - Quest | Add the ability to search for patients by id
 - Quest | Add ability to view previous QuestionnaireResponse
