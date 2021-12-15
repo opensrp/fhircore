@@ -39,7 +39,6 @@ class MeasureEvaluatorTest {
 
   @Test
   fun runMeasureEvaluate() {
-    System.gc()
     val fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
     val parser = fhirContext.newJsonParser()!!
     val fileListString = FileUtil.recurseFolders(patientAssetsDir.toFile())
