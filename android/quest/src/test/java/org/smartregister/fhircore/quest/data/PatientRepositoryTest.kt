@@ -125,6 +125,40 @@ class PatientRepositoryTest : RobolectricTest() {
     }
 
   @Test
+  fun testGetQuestionnaireOfQuestionnaireResponseShouldReturnNonEmptyQuestionnaire() {
+    coroutineTestRule.runBlockingTest {
+      coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns
+        Questionnaire().apply {
+          id = "1"
+          name = "Sample Questionnaire name"
+          title = "Sample Questionnaire title"
+        }
+
+      val questionnaire =
+        repository.getQuestionnaire(
+          QuestionnaireResponse().apply { questionnaire = "Questionnaire/1" }
+        )
+
+      Assert.assertEquals("1", questionnaire.id)
+      Assert.assertEquals("Sample Questionnaire name", questionnaire.name)
+      Assert.assertEquals("Sample Questionnaire title", questionnaire.title)
+    }
+  }
+
+  @Test
+  fun testGetQuestionnaireOfQuestionnaireResponseShouldReturnEmptyQuestionnaire() {
+    coroutineTestRule.runBlockingTest {
+      coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns Questionnaire()
+
+      val questionnaire = repository.getQuestionnaire(QuestionnaireResponse())
+
+      Assert.assertNull(questionnaire.id)
+      Assert.assertNull(questionnaire.name)
+      Assert.assertNull(questionnaire.title)
+    }
+  }
+
+  @Test
   fun testFetchTestFormShouldReturnListOfQuestionnaireConfig() =
     coroutineTestRule.runBlockingTest {
       coEvery { fhirEngine.search<Questionnaire>(any()) } returns

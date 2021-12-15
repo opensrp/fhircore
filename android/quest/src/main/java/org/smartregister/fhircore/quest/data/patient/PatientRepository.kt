@@ -90,9 +90,7 @@ constructor(
     }
   }
 
-  private suspend fun getQuestionnaire(
-    questionnaireResponse: QuestionnaireResponse
-  ): Questionnaire {
+  suspend fun getQuestionnaire(questionnaireResponse: QuestionnaireResponse): Questionnaire {
     return if (questionnaireResponse.questionnaire != null) {
       val questionnaireId = questionnaireResponse.questionnaire.split("/")[1]
       loadQuestionnaire(questionnaireId = questionnaireId)
