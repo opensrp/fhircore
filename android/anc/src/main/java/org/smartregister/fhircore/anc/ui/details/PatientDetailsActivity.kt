@@ -234,7 +234,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
         ViewPagerAdapter(
           fragmentManager = supportFragmentManager,
           lifecycle = lifecycle,
-          isPregnant = patient.value?.isPregnant == true,
+          isPregnant = patientDetails.isPregnant == true,
           bundleOf = bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
         )
       activityAncDetailsBinding.pager.adapter = adapter
