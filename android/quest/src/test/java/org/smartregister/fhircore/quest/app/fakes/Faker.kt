@@ -107,8 +107,8 @@ object Faker {
             authored = Date()
           },
           Questionnaire().apply {
-            name = "Sample Questionnaire"
-            title = "Sample Questionnaire"
+            name = "Sample Order"
+            title = "Sample Order"
           }
         ),
         Pair(
@@ -117,10 +117,17 @@ object Faker {
             authored = Date()
           },
           Questionnaire().apply {
-            name = "Sample Questionnaire"
-            title = "Sample Questionnaire"
+            name = "Sample Test"
+            title = "Sample Test"
           }
         )
       )
+  }
+
+  fun initPatientRepositoryEmptyMocks(patientRepository: PatientRepository) {
+
+    coEvery { patientRepository.fetchDemographics(any()) } returns Patient()
+    coEvery { patientRepository.fetchTestForms(any(), any()) } returns emptyList()
+    coEvery { patientRepository.fetchTestResults(any()) } returns emptyList()
   }
 }

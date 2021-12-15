@@ -236,13 +236,16 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
         ) {
           Column {
             val totalResultsCount = testResults?.count() ?: 0
-            testResults?.forEachIndexed { index, item ->
-              ResultItem(item, questPatientDetailViewModel)
+            testResults?.let { allTestResults ->
+              allTestResults.forEachIndexed { index, item ->
+                ResultItem(item, questPatientDetailViewModel)
 
-              if (index < totalResultsCount - 1) {
-                Divider(color = colorResource(id = R.color.white_smoke))
+                if (index < totalResultsCount - 1) {
+                  Divider(color = colorResource(id = R.color.white_smoke))
+                }
               }
             }
+              ?: Text(text = stringResource(id = R.string.loading_responses))
           }
         }
         Spacer(Modifier.height(24.dp))

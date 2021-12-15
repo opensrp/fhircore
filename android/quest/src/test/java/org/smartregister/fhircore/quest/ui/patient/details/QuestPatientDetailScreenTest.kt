@@ -43,7 +43,6 @@ import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert.assertEquals
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
@@ -74,6 +73,144 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+  }
+
+  @Test
+  fun testToolbarComponents() {
+    initMocks()
+    composeRule
+      .onNodeWithTag(TOOLBAR_TITLE)
+      .assertTextEquals(application.getString(R.string.back_to_clients))
+    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
+    composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).assertHasClickAction().performClick()
+    composeRule.onNodeWithTag(TOOLBAR_MENU).assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(TOOLBAR_MENU)
+      .onChildAt(0)
+      .assertTextEquals(application.getString(R.string.test_results))
+      .assertHasClickAction()
+  }
+
+  @Test
+  fun testToolbarMenuButtonShouldToggleMenuItemsList() {
+    initMocks()
+    composeRule.onNodeWithTag(TOOLBAR_MENU).assertDoesNotExist()
+    composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
+
+    composeRule
+      .onNodeWithTag(TOOLBAR_MENU)
+      .assertExists()
+      .assertIsDisplayed()
+      .onChildren()
+      .assertCountEquals(1)
+
+    composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
+    composeRule.onNodeWithTag(TOOLBAR_MENU).assertDoesNotExist()
+  }
+
+  @Test
+  fun testToolbarTestResultsMenuItemShouldCallMenuItemClickListener() {
+    initMocks()
+    composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
+    composeRule.onNodeWithTag(TOOLBAR_MENU).onChildAt(0).performClick()
+    verify { questPatientDetailViewModel.onMenuItemClickListener(true) }
+  }
+
+  @Test
+  fun testToolbarBackPressedButtonShouldCallBackPressedClickListener() {
+    initMocks()
+    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).performClick()
+    verify { questPatientDetailViewModel.onBackPressed(true) }
+  }
+
+  @Test
+  fun testPatientDetailsCardShouldHaveCorrectData() {
+    initMocks()
+    composeRule
+      .onNodeWithTag(PATIENT_NAME)
+      .assertExists()
+      .assertIsDisplayed()
+      .assertTextEquals("John Doe, M, 21y")
+  }
+
+  @Test
+  fun testFormsListShouldDisplayAllFormWithCorrectData() {
+    initMocks()
+    composeRule.onAllNodesWithTag(FORM_ITEM).assertCountEquals(2)
+    composeRule.onAllNodesWithTag(FORM_ITEM)[0].assertTextEquals("SAMPLE ORDER RESULT")
+    composeRule.onAllNodesWithTag(FORM_ITEM)[1].assertTextEquals("SAMPLE TEST RESULT")
+  }
+
+  @Test
+  fun testFormsListItemClickShouldCallFormItemClickListener() {
+    initMocks()
+    val formItemClicks = mutableListOf<QuestionnaireConfig>()
+    every { questPatientDetailViewModel.onFormItemClickListener(any()) } answers
+      {
+        formItemClicks.add(this.invocation.args[0] as QuestionnaireConfig)
+      }
+
+    composeRule.onAllNodesWithTag(FORM_ITEM).assertCountEquals(2)
+    composeRule.onAllNodesWithTag(FORM_ITEM)[0].performClick()
+    composeRule.onAllNodesWithTag(FORM_ITEM)[1].performClick()
+
+    verify { questPatientDetailViewModel.onFormItemClickListener(any()) }
+
+    assertEquals("SAMPLE ORDER RESULT", formItemClicks[0].title.uppercase())
+    assertEquals("SAMPLE TEST RESULT", formItemClicks[1].title.uppercase())
+  }
+
+  @Test
+  fun testResultsListShouldHaveAllResultsWithCorrectData() {
+    initMocks()
+
+    // response heading should be exist and must be displayed
+    composeRule.onNodeWithText("RESPONSES (2)").assertExists().assertIsDisplayed()
+
+    // verify test result item(s) count and item title
+    composeRule.onAllNodesWithTag(RESULT_ITEM).assertCountEquals(2)
+    composeRule.onAllNodesWithTag(RESULT_ITEM, true)[0].assert(
+      hasAnyChild(hasText("Sample Order (${Date().asDdMmmYyyy()}) "))
+    )
+    composeRule.onAllNodesWithTag(RESULT_ITEM, true)[1].assert(
+      hasAnyChild(hasText("Sample Test (${Date().asDdMmmYyyy()}) "))
+    )
+  }
+
+  @Test
+  fun testResultsListItemShouldCallResultItemListener() {
+    initMocks()
+    val resultItemClicks = mutableListOf<QuestionnaireResponse>()
+    every { questPatientDetailViewModel.onTestResultItemClickListener(any()) } answers
+      {
+        resultItemClicks.add(this.invocation.args[0] as QuestionnaireResponse)
+      }
+
+    composeRule.onAllNodesWithTag(RESULT_ITEM).assertCountEquals(2)
+    composeRule.onAllNodesWithTag(RESULT_ITEM)[0].performClick()
+    composeRule.onAllNodesWithTag(RESULT_ITEM)[1].performClick()
+
+    verify { questPatientDetailViewModel.onTestResultItemClickListener(any()) }
+
+    assertEquals("Sample Order", resultItemClicks[0].meta.tagFirstRep.display)
+    assertEquals("Sample Test", resultItemClicks[1].meta.tagFirstRep.display)
+  }
+
+  @Test
+  fun testQuestPatientDetailScreenShouldHandleMissingData() {
+    initEmptyMocks()
+    composeRule
+      .onNodeWithTag(TOOLBAR_TITLE)
+      .assertTextEquals(application.getString(R.string.back_to_clients))
+    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
+    composeRule.onNodeWithTag(PATIENT_NAME).assertExists().assertTextEquals(", , ")
+    composeRule.onNodeWithTag(FORM_CONTAINER_ITEM).assert(hasAnyChild(hasText("Loading forms ...")))
+    composeRule
+      .onNodeWithTag(RESULT_CONTAINER_ITEM)
+      .assert(hasAnyChild(hasText("Loading responses ...")))
+  }
+
+  fun initMocks() {
     Faker.initPatientRepositoryMocks(patientRepository)
     questPatientDetailViewModel =
       spyk(
@@ -92,130 +229,16 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
     composeRule.setContent { QuestPatientDetailScreen(questPatientDetailViewModel) }
   }
 
-  @Test
-  fun testToolbarComponents() {
-    composeRule
-      .onNodeWithTag(TOOLBAR_TITLE)
-      .assertTextEquals(application.getString(R.string.back_to_clients))
-    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
-    composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).assertHasClickAction().performClick()
-    composeRule.onNodeWithTag(TOOLBAR_MENU).assertIsDisplayed()
-    composeRule
-      .onNodeWithTag(TOOLBAR_MENU)
-      .onChildAt(0)
-      .assertTextEquals(application.getString(R.string.test_results))
-      .assertHasClickAction()
-  }
+  fun initEmptyMocks() {
+    Faker.initPatientRepositoryEmptyMocks(patientRepository)
 
-  @Test
-  fun testToolbarMenuButtonShouldToggleMenuItemsList() {
-    composeRule.onNodeWithTag(TOOLBAR_MENU).assertDoesNotExist()
-    composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
-
-    composeRule
-      .onNodeWithTag(TOOLBAR_MENU)
-      .assertExists()
-      .assertIsDisplayed()
-      .onChildren()
-      .assertCountEquals(1)
-
-    composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
-    composeRule.onNodeWithTag(TOOLBAR_MENU).assertDoesNotExist()
-  }
-
-  @Test
-  fun testToolbarTestResultsMenuItemShouldCallMenuItemClickListener() {
-    composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
-    composeRule.onNodeWithTag(TOOLBAR_MENU).onChildAt(0).performClick()
-    verify { questPatientDetailViewModel.onMenuItemClickListener(true) }
-  }
-
-  @Test
-  fun testToolbarBackPressedButtonShouldCallBackPressedClickListener() {
-    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).performClick()
-    verify { questPatientDetailViewModel.onBackPressed(true) }
-  }
-
-  @Test
-  fun testPatientDetailsCardShouldHaveCorrectData() {
-    composeRule
-      .onNodeWithTag(PATIENT_NAME)
-      .assertExists()
-      .assertIsDisplayed()
-      .assertTextEquals("John Doe, M, 21y")
-  }
-
-  @Test
-  fun testFormsListShouldDisplayAllFormWithCorrectData() {
-    composeRule.onAllNodesWithTag(FORM_ITEM).assertCountEquals(2)
-    composeRule.onAllNodesWithTag(FORM_ITEM)[0].assertTextEquals("SAMPLE ORDER RESULT")
-    composeRule.onAllNodesWithTag(FORM_ITEM)[1].assertTextEquals("SAMPLE TEST RESULT")
-  }
-
-  @Test
-  fun testFormsListItemClickShouldCallFormItemClickListener() {
-    val formItemClicks = mutableListOf<QuestionnaireConfig>()
-    every { questPatientDetailViewModel.onFormItemClickListener(any()) } answers
-      {
-        formItemClicks.add(this.invocation.args[0] as QuestionnaireConfig)
-      }
-
-    composeRule.onAllNodesWithTag(FORM_ITEM).assertCountEquals(2)
-    composeRule.onAllNodesWithTag(FORM_ITEM)[0].performClick()
-    composeRule.onAllNodesWithTag(FORM_ITEM)[1].performClick()
-
-    verify { questPatientDetailViewModel.onFormItemClickListener(any()) }
-
-    assertEquals("SAMPLE ORDER RESULT", formItemClicks[0].title.uppercase())
-    assertEquals("SAMPLE TEST RESULT", formItemClicks[1].title.uppercase())
-  }
-
-  @Test
-  @Ignore("Fix assertions once questionnaire listing bug is resolved")
-  fun testResultsListShouldHaveAllResultsWithCorrectData() {
-    // response heading should be exist and must be displayed
-    composeRule.onNodeWithText("RESPONSES (2)").assertExists().assertIsDisplayed()
-
-    // verify test result item(s) count and item title
-    composeRule.onAllNodesWithTag(RESULT_ITEM).assertCountEquals(2)
-    composeRule.onAllNodesWithTag(RESULT_ITEM, true)[0].assert(
-      hasAnyChild(hasText("Sample Order (${Date().asDdMmmYyyy()}) "))
-    )
-    composeRule.onAllNodesWithTag(RESULT_ITEM, true)[1].assert(
-      hasAnyChild(hasText("Sample Test (${Date().asDdMmmYyyy()}) "))
-    )
-  }
-
-  @Test
-  @Ignore("Fix assertions once questionnaire listing bug is resolved")
-  fun testResultsListItemShouldCallResultItemListener() {
-    val resultItemClicks = mutableListOf<QuestionnaireResponse>()
-    every { questPatientDetailViewModel.onTestResultItemClickListener(any()) } answers
-      {
-        resultItemClicks.add(this.invocation.args[0] as QuestionnaireResponse)
-      }
-
-    composeRule.onAllNodesWithTag(RESULT_ITEM).assertCountEquals(2)
-    composeRule.onAllNodesWithTag(RESULT_ITEM)[0].performClick()
-    composeRule.onAllNodesWithTag(RESULT_ITEM)[1].performClick()
-
-    verify { questPatientDetailViewModel.onTestResultItemClickListener(any()) }
-
-    assertEquals("Sample Order", resultItemClicks[0].meta.tagFirstRep.display)
-    assertEquals("Sample Test", resultItemClicks[1].meta.tagFirstRep.display)
-  }
-
-  @Test
-  @Ignore("Fix assertions once questionnaire listing bug is resolved")
-  fun testQuestPatientDetailScreenShouldHandleMissingData() {
-    composeRule
-      .onNodeWithTag(TOOLBAR_TITLE)
-      .assertTextEquals(application.getString(R.string.back_to_clients))
-    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
-    composeRule.onNodeWithTag(PATIENT_NAME).assertExists().assertTextEquals("")
-    composeRule.onNodeWithTag(FORM_CONTAINER_ITEM).assert(hasAnyChild(hasText("Loading forms ...")))
-    composeRule
-      .onNodeWithTag(RESULT_CONTAINER_ITEM)
-      .assert(hasAnyChild(hasText("Loading responses ...")))
+    questPatientDetailViewModel =
+      spyk(
+        QuestPatientDetailViewModel(
+          patientRepository = patientRepository,
+          patientItemMapper = patientItemMapper
+        )
+      )
+    composeRule.setContent { QuestPatientDetailScreen(questPatientDetailViewModel) }
   }
 }
