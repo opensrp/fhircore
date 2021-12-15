@@ -35,7 +35,6 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.IdRes
-import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.widget.doAfterTextChanged
@@ -108,21 +107,21 @@ abstract class BaseRegisterActivity :
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
-  val registerViewModel: RegisterViewModel by viewModels()
-
-  private lateinit var drawerMenuHeaderBinding: DrawerMenuHeaderBinding
-
-  private lateinit var registerActivityBinding: BaseRegisterActivityBinding
-
   override val configurableViews: Map<String, View> = mutableMapOf()
 
-  private var selectedMenuOption: SideMenuOption? = null
-
-  private lateinit var sideMenuOptionMap: Map<Int, SideMenuOption>
+  val registerViewModel: RegisterViewModel by viewModels()
 
   val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
 
-  protected lateinit var navigationBottomSheet: NavigationBottomSheet
+  lateinit var registerActivityBinding: BaseRegisterActivityBinding
+
+  lateinit var drawerMenuHeaderBinding: DrawerMenuHeaderBinding
+
+  private var selectedMenuOption: SideMenuOption? = null
+
+  private lateinit var navigationBottomSheet: NavigationBottomSheet
+
+  private lateinit var sideMenuOptionMap: Map<Int, SideMenuOption>
 
   private lateinit var supportedFragments: Map<String, Fragment>
 
@@ -160,6 +159,7 @@ abstract class BaseRegisterActivity :
     registerActivityBinding.lifecycleOwner = this
 
     navigationBottomSheet = NavigationBottomSheet(this::onSelectRegister)
+
     setupBarcodeButtonView()
   }
 
@@ -499,10 +499,11 @@ abstract class BaseRegisterActivity :
   }
 
   private fun renderSelectLanguageDialog(context: Activity): AlertDialog {
-    val adapter: ArrayAdapter<Language> = getLanguageArrayAdapter()
+    val adapter: ArrayAdapter<Language> =
+      ArrayAdapter(this, android.R.layout.simple_list_item_1, registerViewModel.languages)
     val builder =
-      getAlertDialogBuilder().apply {
-        setTitle(getLanguageDialogTitle())
+      AlertDialog.Builder(this).apply {
+        setTitle(context.getString(R.string.select_language))
         setIcon(R.drawable.ic_outline_language_black)
       }
     val dialog =
@@ -515,14 +516,6 @@ abstract class BaseRegisterActivity :
     dialog.show()
     return dialog
   }
-
-  @VisibleForTesting
-  fun getLanguageArrayAdapter() =
-    ArrayAdapter(this, android.R.layout.simple_list_item_1, registerViewModel.languages)
-
-  @VisibleForTesting fun getAlertDialogBuilder() = AlertDialog.Builder(this)
-
-  @VisibleForTesting fun getLanguageDialogTitle() = this.getString(R.string.select_language)
 
   private fun refreshSelectedLanguage(language: Language, context: Activity) {
     updateLanguage(language)
