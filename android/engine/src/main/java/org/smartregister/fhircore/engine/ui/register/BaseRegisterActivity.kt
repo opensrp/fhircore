@@ -35,7 +35,6 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.IdRes
-import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.widget.doAfterTextChanged
@@ -43,12 +42,8 @@ import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
-import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.contrib.views.barcode.mlkit.md.LiveBarcodeScanningFragment
-import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.sync.State
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigation.NavigationView
@@ -58,7 +53,6 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableView
@@ -102,27 +96,25 @@ abstract class BaseRegisterActivity :
 
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
 
-  @Inject lateinit var fhirEngine: FhirEngine
-
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
+  override val configurableViews: Map<String, View> = mutableMapOf()
+
   val registerViewModel: RegisterViewModel by viewModels()
 
-  private lateinit var drawerMenuHeaderBinding: DrawerMenuHeaderBinding
+  val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
 
-  private lateinit var registerActivityBinding: BaseRegisterActivityBinding
+  lateinit var registerActivityBinding: BaseRegisterActivityBinding
 
-  override val configurableViews: Map<String, View> = mutableMapOf()
+  lateinit var drawerMenuHeaderBinding: DrawerMenuHeaderBinding
+
+  lateinit var navigationBottomSheet: NavigationBottomSheet
 
   private var selectedMenuOption: SideMenuOption? = null
 
   private lateinit var sideMenuOptionMap: Map<Int, SideMenuOption>
-
-  val liveBarcodeScanningFragment by lazy { LiveBarcodeScanningFragment() }
-
-  protected lateinit var navigationBottomSheet: NavigationBottomSheet
 
   private lateinit var supportedFragments: Map<String, Fragment>
 
@@ -160,6 +152,7 @@ abstract class BaseRegisterActivity :
     registerActivityBinding.lifecycleOwner = this
 
     navigationBottomSheet = NavigationBottomSheet(this::onSelectRegister)
+
     setupBarcodeButtonView()
   }
 
@@ -499,10 +492,11 @@ abstract class BaseRegisterActivity :
   }
 
   private fun renderSelectLanguageDialog(context: Activity): AlertDialog {
-    val adapter: ArrayAdapter<Language> = getLanguageArrayAdapter()
+    val adapter: ArrayAdapter<Language> =
+      ArrayAdapter(this, android.R.layout.simple_list_item_1, registerViewModel.languages)
     val builder =
-      getAlertDialogBuilder().apply {
-        setTitle(getLanguageDialogTitle())
+      AlertDialog.Builder(this).apply {
+        setTitle(context.getString(R.string.select_language))
         setIcon(R.drawable.ic_outline_language_black)
       }
     val dialog =
@@ -515,14 +509,6 @@ abstract class BaseRegisterActivity :
     dialog.show()
     return dialog
   }
-
-  @VisibleForTesting
-  fun getLanguageArrayAdapter() =
-    ArrayAdapter(this, android.R.layout.simple_list_item_1, registerViewModel.languages)
-
-  @VisibleForTesting fun getAlertDialogBuilder() = AlertDialog.Builder(this)
-
-  @VisibleForTesting fun getLanguageDialogTitle() = this.getString(R.string.select_language)
 
   private fun refreshSelectedLanguage(language: Language, context: Activity) {
     updateLanguage(language)
@@ -684,7 +670,7 @@ abstract class BaseRegisterActivity :
     if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
         PackageManager.PERMISSION_GRANTED
     ) {
-      liveBarcodeScanningFragment.show(this.supportFragmentManager, "TAG")
+      liveBarcodeScanningFragment.show(this.supportFragmentManager, "LiveBarcodeScanningFragment")
     } else {
       requestPermissionLauncher.launch(Manifest.permission.CAMERA)
     }
@@ -694,7 +680,7 @@ abstract class BaseRegisterActivity :
     return registerForActivityResult(ActivityResultContracts.RequestPermission()) {
       isGranted: Boolean ->
       if (isGranted) {
-        liveBarcodeScanningFragment.show(supportFragmentManager, "TAG")
+        liveBarcodeScanningFragment.show(supportFragmentManager, BARCODE_FRAGMENT_TAG)
       } else {
         Toast.makeText(
             this,
@@ -706,23 +692,10 @@ abstract class BaseRegisterActivity :
     }
   }
 
-  fun isPatientExists(barcode: String): LiveData<Result<Boolean>> {
-    val result = MutableLiveData<Result<Boolean>>()
-
-    lifecycleScope.launch(registerViewModel.dispatcher.io()) {
-      try {
-        fhirEngine.load(Patient::class.java, barcode)
-        result.postValue(Result.success(true))
-      } catch (e: ResourceNotFoundException) {
-        result.postValue(Result.failure(e))
-      }
-    }
-    return result
-  }
-
   open fun onBarcodeResult(barcode: String, view: View) {}
 
   companion object {
     const val BARCODE_RESULT_KEY = "result"
+    const val BARCODE_FRAGMENT_TAG = "LiveBarcodeScanningFragment"
   }
 }
