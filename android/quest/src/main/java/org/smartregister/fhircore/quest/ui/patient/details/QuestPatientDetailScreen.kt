@@ -124,15 +124,9 @@ fun ResultItem(
         .clickable { questPatientDetailViewModel.onTestResultItemClickListener(testResult.first) }
         .testTag(RESULT_ITEM)
   ) {
-    val label =
-      if (testResult.second.name.isNotEmpty()) {
-        testResult.second.name
-      } else {
-        testResult.second.title
-      }
-
     Text(
-      text = (label ?: "") + " (${testResult.first.authored?.asDdMmmYyyy() ?: ""}) ",
+      text = (questPatientDetailViewModel.fetchResultItemLabel(testResult)
+          ?: "") + " (${testResult.first.authored?.asDdMmmYyyy() ?: ""}) ",
       color = colorResource(id = R.color.black),
       fontSize = 17.sp,
       textAlign = TextAlign.Start,

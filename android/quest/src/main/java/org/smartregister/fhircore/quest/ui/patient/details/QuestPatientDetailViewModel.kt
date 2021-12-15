@@ -86,6 +86,11 @@ constructor(val patientRepository: PatientRepository, val patientItemMapper: Pat
     onBackPressClicked.value = backPressed
   }
 
+  fun fetchResultItemLabel(testResult: Pair<QuestionnaireResponse, Questionnaire>): String? {
+    return testResult.second.name?.let { name -> name }
+      ?: testResult.second.title?.let { title -> title }
+  }
+
   companion object {
     const val PROFILE_CONFIG = "configurations/form/profile_config.json"
   }

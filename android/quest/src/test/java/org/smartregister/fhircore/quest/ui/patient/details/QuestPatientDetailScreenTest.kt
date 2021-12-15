@@ -210,7 +210,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       .assert(hasAnyChild(hasText("Loading responses ...")))
   }
 
-  fun initMocks() {
+  private fun initMocks() {
     Faker.initPatientRepositoryMocks(patientRepository)
     questPatientDetailViewModel =
       spyk(
@@ -229,7 +229,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
     composeRule.setContent { QuestPatientDetailScreen(questPatientDetailViewModel) }
   }
 
-  fun initEmptyMocks() {
+  private fun initEmptyMocks() {
     Faker.initPatientRepositoryEmptyMocks(patientRepository)
 
     questPatientDetailViewModel =
