@@ -20,17 +20,14 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 
 abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
 
-  protected lateinit var registerDataViewModel: RegisterDataViewModel<I, O>
+  open lateinit var registerDataViewModel: RegisterDataViewModel<I, O>
 
-  protected val registerViewModel by activityViewModels<RegisterViewModel>()
+  open val registerViewModel by activityViewModels<RegisterViewModel>()
 
   /**
    * Implement functionality to navigate to details view when an item with [uniqueIdentifier] is
@@ -47,31 +44,29 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
   abstract fun onItemClicked(listenerIntent: ListenerIntent, data: O)
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    if (requireActivity() !is BaseRegisterActivity) {
-      throw (IllegalAccessException(
-        "You can only use BaseRegisterFragment in BaseRegisterActivity context"
-      ))
-    }
+
+    registerDataViewModel =
+      initializeRegisterDataViewModel().apply {
+        this.currentPage.observe(viewLifecycleOwner, { registerDataViewModel.loadPageData(it) })
+      }
 
     registerViewModel.filterValue.observe(
       viewLifecycleOwner,
       {
-        lifecycleScope.launch(Dispatchers.Main) {
-          val (registerFilterType, value) = it
-          if (value != null) {
-            registerDataViewModel.run {
-              showResultsCount(true)
-              filterRegisterData(
-                registerFilterType = registerFilterType,
-                filterValue = value,
-                registerFilter = this@BaseRegisterFragment::performFilter
-              )
-            }
-          } else {
-            registerDataViewModel.run {
-              showResultsCount(false)
-              reloadCurrentPageData()
-            }
+        val (registerFilterType, value) = it
+        if (value != null) {
+          registerDataViewModel.run {
+            showResultsCount(true)
+            filterRegisterData(
+              registerFilterType = registerFilterType,
+              filterValue = value,
+              registerFilter = this@BaseRegisterFragment::performFilter
+            )
+          }
+        } else {
+          registerDataViewModel.run {
+            showResultsCount(false)
+            reloadCurrentPageData()
           }
         }
       }
@@ -93,11 +88,6 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
       viewLifecycleOwner,
       { registerDataViewModel.setShowLoader(it.isNullOrEmpty()) }
     )
-
-    registerDataViewModel =
-      initializeRegisterDataViewModel().apply {
-        this.currentPage.observe(viewLifecycleOwner, { registerDataViewModel.loadPageData(it) })
-      }
   }
 
   override fun onResume() {
