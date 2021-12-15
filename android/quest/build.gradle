@@ -7,6 +7,7 @@ plugins {
     id 'org.jetbrains.dokka'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'jacoco'
+    id 'dagger.hilt.android.plugin'
 }
 
 Properties props = new Properties()
@@ -108,7 +109,31 @@ android {
             all {
                 jacoco {
                     includeNoLocationClasses = true
-                    excludes = ['jdk.internal.*']
+                    excludes = [
+                            // Android
+                            'jdk.internal.*',
+                            '**/BuildConfig.*',
+                            '**/*BR*.*',
+                            '**/Manifest*.*',
+                            '**/R.class',
+                            '**/R$*.class',
+                            // kotlin
+                            '**/*$Lambda$*.*',
+                            // Dagger and Hilt
+                            '**/*_Provide*/**',
+                            '**/*_Factory*/**',
+                            '**/*Module*.*',
+                            '**/*_Factory*.*',
+                            '**/*_MembersInjector.class',
+                            '**/*Dagger*',
+                            '**/di/*',
+                            '**/*Hilt*.*',
+                            // Data Binding
+                            'android/databinding/**/*.class',
+                            '**/android/databinding/*Binding.class',
+                            '**/android/databinding/*',
+                            '**/androidx/databinding/*',
+                    ]
                 }
             }
         }
@@ -129,6 +154,11 @@ dependencies {
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.work:work-runtime-ktx:2.6.0'
     implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
+    implementation deps.lifecycle.viewmodel
+
+    //Hilt - Dependency Injection
+    implementation "com.google.dagger:hilt-android:$hiltVersion"
+    kapt "com.google.dagger:hilt-compiler:$hiltVersion"
 
     testImplementation deps.junit5_api
     testRuntimeOnly deps.junit5_engine
@@ -143,11 +173,15 @@ dependencies {
     testImplementation deps.mockk
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1'
 
+    // Hilt test dependencies
+    testImplementation("com.google.dagger:hilt-android-testing:$hiltVersion")
+    kaptTest("com.google.dagger:hilt-android-compiler:$hiltVersion")
+
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.atsl.espresso
-    def composeVersion = "1.0.1"
+    def composeVersion = "1.0.5"
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
     testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
-    // debugImplementation because LeakCanary should only run in debug builds.
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
+//     debugImplementation because LeakCanary should only run in debug builds.
+//    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
 }

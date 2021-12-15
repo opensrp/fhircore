@@ -19,22 +19,23 @@ package org.smartregister.fhircore.engine.data.local
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
-import java.util.UUID
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 
-class DefaultRepository(
-  val fhirEngine: FhirEngine,
-  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
-) {
+@Singleton
+class DefaultRepository
+@Inject
+constructor(val fhirEngine: FhirEngine, val dispatcherProvider: DispatcherProvider) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
@@ -53,7 +54,10 @@ class DefaultRepository(
   }
 
   suspend fun save(resource: Resource) {
-    return withContext(dispatcherProvider.io()) { fhirEngine.save(resource) }
+    return withContext(dispatcherProvider.io()) {
+      resource.generateMissingId()
+      fhirEngine.save(resource)
+    }
   }
 
   suspend fun delete(resource: Resource) {
@@ -69,7 +73,7 @@ class DefaultRepository(
           fhirEngine.update(updateFrom(resource))
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
-        if (resource.logicalId.isBlank()) resource.id = UUID.randomUUID().toString()
+        resource.generateMissingId()
         fhirEngine.save(resource)
       }
     }

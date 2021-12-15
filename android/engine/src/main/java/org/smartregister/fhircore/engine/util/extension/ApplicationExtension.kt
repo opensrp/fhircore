@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.app.Application
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
@@ -25,61 +24,36 @@ import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
-import com.google.android.fhir.sync.FhirSyncWorker
-import com.google.android.fhir.sync.PeriodicSyncConfiguration
-import com.google.android.fhir.sync.RepeatInterval
+import com.google.android.fhir.sync.ResourceSyncParams
 import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJob
 import com.google.gson.Gson
-import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.configuration.app.ConfigurableApplication
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import timber.log.Timber
 
-suspend fun Application.runOneTimeSync(sharedSyncStatus: MutableSharedFlow<State>) {
-  if (this !is ConfigurableApplication)
-    throw (IllegalStateException("Application should extend ConfigurableApplication interface"))
+suspend fun FhirEngine.runOneTimeSync(
+  sharedSyncStatus: MutableSharedFlow<State>,
+  syncJob: SyncJob,
+  resourceSyncParams: ResourceSyncParams,
+  fhirResourceDataSource: FhirResourceDataSource
+) {
 
   // TODO run initial sync for binary and library resources
 
   syncJob.run(
-    fhirEngine = fhirEngine,
-    dataSource = FhirResourceDataSource.getInstance(this),
+    fhirEngine = this,
+    dataSource = fhirResourceDataSource,
     resourceSyncParams = resourceSyncParams,
     subscribeTo = sharedSyncStatus
   )
 }
 
-inline fun <reified W : FhirSyncWorker> Application.runPeriodicSync() {
-  if (this !is ConfigurableApplication)
-    throw (IllegalStateException("Application should extend ConfigurableApplication interface"))
-  syncJob.poll(
-    PeriodicSyncConfiguration(
-      repeat = RepeatInterval(this.applicationConfiguration.syncInterval, TimeUnit.MINUTES)
-    ),
-    W::class.java
-  )
-
-  CoroutineScope(Dispatchers.Main).launch {
-    syncJob.stateFlow().collect { this@runPeriodicSync.syncBroadcaster.broadcastSync(it) }
-  }
-}
-
-fun <T> Application.loadResourceTemplate(
-  id: String,
-  clazz: Class<T>,
-  data: Map<String, String?>
-): T {
+fun <T> Context.loadResourceTemplate(id: String, clazz: Class<T>, data: Map<String, String?>): T {
   var json = assets.open(id).bufferedReader().use { it.readText() }
 
   data.entries.forEach { it.value?.let { v -> json = json.replace(it.key, v) } }
@@ -87,17 +61,6 @@ fun <T> Application.loadResourceTemplate(
   return if (Resource::class.java.isAssignableFrom(clazz))
     FhirContext.forR4().newJsonParser().parseResource(json) as T
   else Gson().fromJson(json, clazz)
-}
-
-suspend inline fun <reified T> Context.loadBinaryResourceConfiguration(id: String): T? {
-  val fhirEngine = (applicationContext as ConfigurableApplication).fhirEngine
-  return kotlin
-    .runCatching {
-      val binaryConfig = fhirEngine.load(Binary::class.java, id).content.decodeToString()
-      binaryConfig.decodeJson() as T
-    }
-    .onFailure { Timber.w(it) }
-    .getOrNull()
 }
 
 suspend fun FhirEngine.searchActivePatients(

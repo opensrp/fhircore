@@ -20,11 +20,15 @@ import android.content.Context
 import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 
-class SecureSharedPreference(val context: Context) {
+@Singleton
+class SecureSharedPreference @Inject constructor(@ApplicationContext val context: Context) {
 
   val secureSharedPreferences =
     EncryptedSharedPreferences.create(

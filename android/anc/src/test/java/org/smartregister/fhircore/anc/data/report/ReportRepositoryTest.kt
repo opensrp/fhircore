@@ -38,14 +38,17 @@ import org.smartregister.fhircore.engine.util.extension.decodeJson
 class ReportRepositoryTest : RobolectricTest() {
 
   private lateinit var repository: ReportRepository
+
   private lateinit var fhirEngine: FhirEngine
+
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  val SAMPLE_REPORT_MEASURES_FILE = "sample_data_report_measures.json"
+
+  private val SAMPLE_REPORT_MEASURES_FILE = "sample_data_report_measures.json"
 
   @Before
   fun setUp() {
     fhirEngine = mockk()
-    repository = ReportRepository(fhirEngine, "", ApplicationProvider.getApplicationContext())
+    repository = ReportRepository(fhirEngine, ApplicationProvider.getApplicationContext())
   }
 
   @Test

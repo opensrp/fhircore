@@ -20,12 +20,15 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
+import dagger.hilt.android.scopes.FragmentScoped
+import javax.inject.Inject
 import org.smartregister.fhircore.anc.data.model.AllergiesItem
 import org.smartregister.fhircore.anc.databinding.ItemPlanTextBinding
 import org.smartregister.fhircore.engine.ui.base.BaseSimpleRecyclerViewHolder
 
 /** Subclass of [ListAdapter] used to display allergies for the non ANC client */
-class AllergiesAdapter :
+@FragmentScoped
+class AllergiesAdapter @Inject constructor() :
   ListAdapter<AllergiesItem, AllergiesAdapter.PatientAllergiesViewHolder>(
     AllergiesItemDiffCallback
   ) {
@@ -52,6 +55,6 @@ class AllergiesAdapter :
       oldItem.title == newItem.title
 
     override fun areContentsTheSame(oldItem: AllergiesItem, newItem: AllergiesItem) =
-      oldItem.equals(newItem)
+      oldItem == newItem
   }
 }

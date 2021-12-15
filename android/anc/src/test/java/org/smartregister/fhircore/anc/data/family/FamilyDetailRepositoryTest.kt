@@ -17,10 +17,13 @@
 package org.smartregister.fhircore.anc.data.family
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.mockk
 import java.util.Date
+import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
@@ -32,19 +35,29 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 
 class FamilyDetailRepositoryTest : RobolectricTest() {
 
+  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
+
   private lateinit var repository: FamilyDetailRepository
   private lateinit var fhirEngine: FhirEngine
-
-  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
+  private lateinit var ancPatientRepository: PatientRepository
 
   @Before
   fun setUp() {
     fhirEngine = mockk()
-    repository = FamilyDetailRepository("", fhirEngine, CoroutineTestRule().testDispatcherProvider)
+    ancPatientRepository = mockk()
+    repository =
+      FamilyDetailRepository(
+        fhirEngine = fhirEngine,
+        familyItemMapper = FamilyItemMapper(ApplicationProvider.getApplicationContext()),
+        dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
+        ancPatientRepository = ancPatientRepository
+      )
   }
 
   @Test
@@ -66,7 +79,7 @@ class FamilyDetailRepositoryTest : RobolectricTest() {
         }
       }
 
-    val patient = repository.fetchDemographics().value
+    val patient = runBlocking { repository.fetchDemographics("") }
 
     Assert.assertEquals("john", patient?.name?.first()?.given?.first()?.value)
     Assert.assertEquals("doe", patient?.name?.first()?.family)
@@ -115,7 +128,7 @@ class FamilyDetailRepositoryTest : RobolectricTest() {
         }
       }
 
-    val items = repository.fetchFamilyMembers().value
+    val items = runBlocking { repository.fetchFamilyMembers("") }
 
     Assert.assertEquals(2, items?.count())
 
@@ -142,9 +155,21 @@ class FamilyDetailRepositoryTest : RobolectricTest() {
       fhirEngine.search<Encounter>(any())
     } answers { listOf(Encounter().apply { class_ = Coding("", "", "first encounter") }) }
 
-    val items = repository.fetchEncounters().value
+    val items = runBlocking { repository.fetchEncounters("") }
 
-    Assert.assertEquals(1, items?.size)
-    Assert.assertEquals("first encounter", items?.get(0)?.class_?.display)
+    Assert.assertEquals(1, items.size)
+    Assert.assertEquals("first encounter", items[0].class_?.display)
+  }
+
+  @Test
+  fun testFetchFamilyCarePlansShouldReturnCarePlanList() {
+
+    coEvery { ancPatientRepository.searchCarePlan(any()) } returns
+      listOf(CarePlan().apply { id = "cp1" })
+
+    val carePlans = runBlocking { repository.fetchFamilyCarePlans("") }
+
+    Assert.assertEquals(1, carePlans.size)
+    Assert.assertEquals("cp1", carePlans[0].id)
   }
 }

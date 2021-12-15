@@ -17,13 +17,17 @@
 package org.smartregister.fhircore.anc.data.family
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Coding
@@ -34,7 +38,6 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
-import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -45,18 +48,36 @@ import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.util.RegisterConfiguration
 import org.smartregister.fhircore.anc.util.SearchFilter
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 
+@HiltAndroidTest
 class FamilyRepositoryTest : RobolectricTest() {
 
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   private lateinit var repository: FamilyRepository
-  private lateinit var fhirEngine: FhirEngine
+
+  private val fhirEngine: FhirEngine = spyk()
+
+  private val ancPatientRepository: PatientRepository = mockk()
+
+  @Inject lateinit var familyItemMapper: FamilyItemMapper
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   @Before
   fun setUp() {
-    fhirEngine = spyk()
-    repository = FamilyRepository(fhirEngine, FamilyItemMapper)
+    hiltRule.inject()
+    repository =
+      FamilyRepository(
+        context = ApplicationProvider.getApplicationContext(),
+        fhirEngine = fhirEngine,
+        domainMapper = familyItemMapper,
+        dispatcherProvider = dispatcherProvider,
+        ancPatientRepository = ancPatientRepository
+      )
   }
 
   @Test
@@ -64,15 +85,7 @@ class FamilyRepositoryTest : RobolectricTest() {
     val patients =
       listOf(buildPatient("1111", "Family1", "Given1"), buildPatient("2222", "Family2", "Given2"))
 
-    val ancRepository = mockk<PatientRepository>()
-    ReflectionHelpers.setField(
-      FamilyRepository::class.java,
-      repository,
-      "ancPatientRepository",
-      ancRepository
-    )
-
-    coEvery { ancRepository.searchCarePlan(any()) } returns emptyList()
+    coEvery { ancPatientRepository.searchCarePlan(any()) } returns emptyList()
     coEvery { fhirEngine.search<Patient>(any()) } returns patients
     coEvery { fhirEngine.count(any()) } returns 10
 
@@ -115,17 +128,9 @@ class FamilyRepositoryTest : RobolectricTest() {
 
   @Test
   fun postEnrollIntoAncShouldExtractEntitiesAndCallAncRepository() = runBlockingTest {
-    val ancRepository = mockk<PatientRepository>()
-    ReflectionHelpers.setField(
-      FamilyRepository::class.java,
-      repository,
-      "ancPatientRepository",
-      ancRepository
-    )
-
     val resourceMapperExtended = mockk<ResourceMapperExtended>()
 
-    coEvery { ancRepository.enrollIntoAnc("1111", any()) } just runs
+    coEvery { ancPatientRepository.enrollIntoAnc("1111", any()) } just runs
     coEvery { resourceMapperExtended.saveParsedResource(any(), any(), "1111", null) } just runs
 
     ReflectionHelpers.setField(repository, "resourceMapperExtended", resourceMapperExtended)
@@ -142,7 +147,7 @@ class FamilyRepositoryTest : RobolectricTest() {
 
     coVerify { resourceMapperExtended.saveParsedResource(any(), any(), "1111", null) }
 
-    coVerify { ancRepository.enrollIntoAnc("1111", any()) }
+    coVerify { ancPatientRepository.enrollIntoAnc("1111", any()) }
   }
 
   @Test
@@ -165,9 +170,16 @@ class FamilyRepositoryTest : RobolectricTest() {
 
     val actual = ReflectionHelpers.getField<RegisterConfiguration>(repository, "registerConfig")
 
-    assertEquals(expected.id, actual.id)
-    assertEquals(expected.primaryFilter?.filterType, actual.primaryFilter?.filterType)
-    assertEquals(expected.primaryFilter?.valueType, actual.primaryFilter?.valueType)
+    Assert.assertEquals(expected.id, actual.id)
+    Assert.assertEquals(expected.primaryFilter?.filterType, actual.primaryFilter?.filterType)
+    Assert.assertEquals(expected.primaryFilter?.valueType, actual.primaryFilter?.valueType)
+  }
+
+  @Test
+  fun testCountAllShouldReturnMoreThanOnePatientCount() {
+    coEvery { fhirEngine.count(any()) } returns 5
+    val count = runBlocking { repository.countAll() }
+    Assert.assertEquals(5, count)
   }
 
   private fun buildPatient(id: String, family: String, given: String): Patient {

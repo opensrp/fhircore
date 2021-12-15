@@ -16,11 +16,22 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
+import com.ibm.icu.util.Calendar
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
-import org.junit.jupiter.api.Test
+import org.junit.Test
+import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-class PatientExtensionTest {
+class PatientExtensionTest : RobolectricTest() {
 
   @Test
   fun testExtractAddressShouldReturnFullAddress() {
@@ -90,5 +101,197 @@ class PatientExtensionTest {
       }
 
     Assert.assertEquals("Genealogy Family", patient.extractFamilyName())
+  }
+
+  @Test
+  fun testExtractFamilyNameShouldReturnEmptyStringWhenFamilyNameIsEmptyAndGivenNameIsProvided() {
+    val patient = Patient().apply { addName().apply { addGiven("Given Name") } }
+
+    Assert.assertEquals("", patient.extractFamilyName())
+  }
+
+  @Test
+  fun testExtractFamilyNameShouldReturnEmptyStringWhenFamilyNameAndGivenNameAreEmpty() {
+    val patient = Patient()
+
+    Assert.assertEquals("", patient.extractFamilyName())
+  }
+
+  @Test
+  fun testExtractFamilyNameShouldReturnEmptyStringWhenFamilyNameAndGivenNameAreEmpty2() {
+    val patient = Patient().apply { name = listOf() }
+
+    Assert.assertEquals("", patient.extractFamilyName())
+  }
+
+  @Test
+  fun testExtractNameShouldReturnNameWithFamilyNameOnly() {
+    val patient = Patient().apply { name = listOf(HumanName().apply { family = "Doe" }) }
+
+    Assert.assertEquals("Doe", patient.extractName())
+  }
+
+  @Test
+  fun testExtractNameShouldReturnNameWithGivenNameOnly() {
+    val patient =
+      Patient().apply { name = listOf(HumanName().apply { given = listOf(StringType("John")) }) }
+
+    Assert.assertEquals("John", patient.extractName())
+  }
+
+  @Test
+  fun testExtractNameShouldReturnNameWhenGivenSingleGivenName() {
+    val patient =
+      Patient().apply {
+        name =
+          listOf(
+            HumanName().apply {
+              family = "Doe"
+              given = listOf(StringType("John"))
+            }
+          )
+      }
+
+    Assert.assertEquals("John Doe", patient.extractName())
+  }
+
+  @Test
+  fun testExtractNameShouldReturnNameWhenGivenMultipleGivenNames() {
+    val patient =
+      Patient().apply {
+        name =
+          listOf(
+            HumanName().apply {
+              family = "Doe"
+              given = listOf(StringType("John"), StringType("Tom"))
+            }
+          )
+      }
+
+    Assert.assertEquals("John Tom Doe", patient.extractName())
+  }
+
+  @Test
+  fun testExtractNameShouldReturnEmptyNameWhenPatientNameIsNull() {
+    val patient = Patient()
+
+    Assert.assertEquals("", patient.extractName())
+  }
+
+  @Test
+  fun testTitleCaseShouldConvertStringInLowerCase() {
+    val patient =
+      Patient().apply { name = listOf(HumanName().apply { given = listOf(StringType("john")) }) }
+
+    Assert.assertEquals("John", patient.extractName())
+  }
+
+  @Test
+  fun testExtractGenderShouldReturnMaleStringWhenPatientGenderIsMale() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.MALE }
+
+    Assert.assertEquals(
+      (ApplicationProvider.getApplicationContext() as Application).getString(R.string.male),
+      patient.extractGender(ApplicationProvider.getApplicationContext())
+    )
+  }
+
+  @Test
+  fun testExtractGenderShouldReturnFemaleStringWhenPatientGenderIsFemale() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.FEMALE }
+
+    Assert.assertEquals(
+      (ApplicationProvider.getApplicationContext() as Application).getString(R.string.female),
+      patient.extractGender(ApplicationProvider.getApplicationContext())
+    )
+  }
+
+  @Test
+  fun testExtractGenderShouldReturnOtherStringWhenPatientGenderIsOther() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.OTHER }
+
+    val applicationContext = (ApplicationProvider.getApplicationContext() as Application)
+
+    Assert.assertEquals(
+      applicationContext.getString(R.string.other),
+      patient.extractGender(applicationContext)
+    )
+  }
+
+  @Test
+  fun testExtractGenderShouldReturnUnknownStringWhenPatientGenderIsUnknown() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.UNKNOWN }
+
+    Assert.assertEquals(
+      (ApplicationProvider.getApplicationContext() as Application).getString(R.string.unknown),
+      patient.extractGender(ApplicationProvider.getApplicationContext())
+    )
+  }
+
+  @Test
+  fun testExtractGenderShouldReturnAnEmptyStringWhenPatientGenderIsNull() {
+    val patient = Patient().apply { gender = Enumerations.AdministrativeGender.NULL }
+
+    Assert.assertEquals("", patient.extractGender(ApplicationProvider.getApplicationContext()))
+  }
+
+  @Test
+  fun testExtractAgeShouldReturnAnEmptyStringWhenPatientDoesNotHaveBirthDate() {
+    val patient = Patient()
+
+    Assert.assertEquals("", patient.extractAge())
+  }
+
+  @Test
+  fun testExtractAgeShouldReturnCallGetAgeStringFromDaysWhenPatientHasBirthDate() {
+    val calendar =
+      Calendar.getInstance().apply { timeInMillis = (timeInMillis - (1L * 365 * 24 * 3600 * 1000)) }
+
+    val patient = Patient().apply { birthDate = calendar.time }
+
+    Assert.assertEquals("1y", patient.extractAge())
+  }
+
+  @Test
+  fun testAtRiskShouldReturnEmptyStringWhenRiskExtensionDoesNotExist() {
+    Assert.assertEquals("", Patient().atRisk())
+  }
+
+  @Test
+  fun testAtRiskShouldReturnRiskValueWhenPatientHasRiskExtension() {
+    val patient =
+      Patient().apply { addExtension(Extension("covid-risk", StringType("covid-risk"))) }
+    Assert.assertEquals("covid-risk", patient.atRisk())
+  }
+
+  @Test
+  fun testGetLastSeen() {
+    val calendar1YearAgo =
+      Calendar.getInstance().apply { timeInMillis = (timeInMillis - (1L * 365 * 24 * 3600 * 1000)) }
+    val timeNow = Calendar.getInstance().time
+    val immunizations =
+      listOf(
+        Immunization().apply {
+          occurrence = DateTimeType(timeNow)
+          protocolAppliedFirstRep.doseNumberPositiveIntType.value = 2
+        },
+        Immunization().apply {
+          occurrence = DateTimeType(calendar1YearAgo.time)
+          protocolAppliedFirstRep.doseNumberPositiveIntType.value = 1
+        }
+      )
+
+    Assert.assertEquals(DateTimeType(timeNow).toDisplay(), Patient().getLastSeen(immunizations))
+  }
+
+  @Test
+  fun testIsPregnantShouldReturnFalseWhenPatientDoesNotHavePregnantExtension() {
+    Assert.assertFalse(Patient().isPregnant())
+  }
+
+  @Test
+  fun testIsPregnantShouldReturnTrueWhenPatientHasPregnantExtension() {
+    val patient = Patient().apply { addExtension("pregnant-extension", StringType("pregnant")) }
+    Assert.assertTrue(patient.isPregnant())
   }
 }

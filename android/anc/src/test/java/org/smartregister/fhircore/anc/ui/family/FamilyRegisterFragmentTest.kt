@@ -16,51 +16,78 @@
 
 package org.smartregister.fhircore.anc.ui.family
 
+import android.app.Application
+import android.content.Intent
 import androidx.fragment.app.commitNow
-import com.google.android.fhir.sync.Sync
-import io.mockk.mockkObject
-import io.mockk.unmockkObject
+import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import org.junit.After
+import org.junit.Assert
 import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.BeforeClass
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
-import org.robolectric.annotation.Config
-import org.robolectric.annotation.Implementation
-import org.robolectric.annotation.Implements
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.shadow.FakeKeyStore
+import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
+import org.smartregister.fhircore.anc.ui.family.register.OpenFamilyProfile
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
-import org.smartregister.fhircore.engine.util.SecureSharedPreference
 
-@Config(shadows = [FamilyRegisterFragmentTest.SecureSharedPreferenceShadow::class])
+@HiltAndroidTest
 class FamilyRegisterFragmentTest : RobolectricTest() {
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  private val activityController = Robolectric.buildActivity(FamilyRegisterActivity::class.java)
 
   private lateinit var registerFragment: FamilyRegisterFragment
 
   @Before
   fun setUp() {
-    mockkObject(Sync)
-    val registerActivity =
-      Robolectric.buildActivity(FamilyRegisterActivity::class.java).create().resume().get()
+    hiltRule.inject()
+    configurationRegistry.loadAppConfigurations(
+      appId = "anc",
+      accountAuthenticator = accountAuthenticator
+    ) {}
+    val registerActivity = activityController.create().resume().get()
     registerFragment = FamilyRegisterFragment()
-    registerActivity.supportFragmentManager.commitNow { add(registerFragment, "") }
+    registerActivity.supportFragmentManager.commitNow {
+      add(registerFragment, FamilyRegisterFragment.TAG)
+    }
   }
 
   @After
-  fun cleanup() {
-    unmockkObject(Sync)
+  fun tearDown() {
+    activityController.destroy()
   }
 
   @Test
   fun testPerformSearchFilterShouldReturnTrue() {
     val familyItem =
-      FamilyItem("fid", "1111", "Name ", "M", "27", "Nairobi", true, emptyList(), 0, 0)
+      FamilyItem(
+        id = "fid",
+        identifier = "1111",
+        name = "Name ",
+        gender = "M",
+        age = "27",
+        address = "Nairobi",
+        isPregnant = true,
+        members = emptyList(),
+        servicesDue = 0,
+        servicesOverdue = 0
+      )
 
     val result =
       registerFragment.performFilter(RegisterFilterType.SEARCH_FILTER, familyItem, "1111")
@@ -70,27 +97,37 @@ class FamilyRegisterFragmentTest : RobolectricTest() {
   @Test
   fun testPerformOverdueFilterShouldReturnTrue() {
     val familyItem =
-      FamilyItem("fid", "1111", "Name ", "M", "27", "Nairobi", true, emptyList(), 4, 5)
+      FamilyItem(
+        id = "fid",
+        identifier = "1111",
+        name = "Name ",
+        gender = "M",
+        age = "27",
+        address = "Nairobi",
+        isPregnant = true,
+        members = emptyList(),
+        servicesDue = 4,
+        servicesOverdue = 5
+      )
 
     val result =
       registerFragment.performFilter(RegisterFilterType.OVERDUE_FILTER, familyItem, "1111")
     assertTrue(result)
   }
 
-  companion object {
-    @JvmStatic
-    @BeforeClass
-    fun beforeClass() {
-      FakeKeyStore.setup
-    }
-  }
+  @Test
+  fun testNavigateToDetailsShouldOpenFamilyDetailsActivity() {
 
-  @Implements(SecureSharedPreference::class)
-  class SecureSharedPreferenceShadow : Shadows() {
+    registerFragment.onItemClicked(
+      OpenFamilyProfile,
+      FamilyItem("1", "", "", "", "", "", false, listOf(), 0, 0)
+    )
 
-    @Implementation
-    fun retrieveSessionUsername(): String {
-      return "demo"
-    }
+    val expectedIntent =
+      Intent(registerFragment.requireActivity(), FamilyDetailsActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<Application>()).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 }

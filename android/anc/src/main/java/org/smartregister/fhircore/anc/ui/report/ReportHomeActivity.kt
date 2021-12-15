@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Surface
 import androidx.compose.ui.res.colorResource
@@ -28,30 +29,26 @@ import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
-import com.google.android.fhir.FhirEngine
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.common.collect.Lists
+import dagger.hilt.android.AndroidEntryPoint
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Date
-import kotlin.collections.ArrayList
-import kotlin.collections.List
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
-import org.smartregister.fhircore.anc.AncApplication
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ResultItem
-import org.smartregister.fhircore.anc.ui.anccare.register.Anc
-import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
+import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.anc.ui.report.ReportViewModel.ReportScreen
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.cql.MeasureEvaluator
@@ -61,15 +58,16 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FileUtil
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
+@AndroidEntryPoint
 class ReportHomeActivity : BaseMultiLanguageActivity() {
 
-  lateinit var fhirResourceDataSource: FhirResourceDataSource
-  private lateinit var fhirEngine: FhirEngine
+  @Inject lateinit var fhirResourceDataSource: FhirResourceDataSource
+
+  @Inject lateinit var patientRepository: PatientRepository
+
   lateinit var parser: IParser
   lateinit var fhirContext: FhirContext
   lateinit var libraryEvaluator: LibraryEvaluator
@@ -107,7 +105,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   var patientResourcesIBase = ArrayList<IBaseResource>()
   lateinit var patientDataIBase: IBaseBundle
   lateinit var patientId: String
-  lateinit var reportViewModel: ReportViewModel
+  val reportViewModel by viewModels<ReportViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -115,18 +113,15 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     measureEvaluator = MeasureEvaluator()
     fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
     parser = fhirContext.newJsonParser()
-    fhirResourceDataSource = FhirResourceDataSource.getInstance(AncApplication.getContext())
-    fhirEngine = AncApplication.getContext().fhirEngine
 
     val patientId =
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-    val repository = ReportRepository((application as AncApplication).fhirEngine, patientId, this)
-    val ancPatientRepository =
-      PatientRepository((application as AncApplication).fhirEngine, AncItemMapper)
-    val dispatcher: DispatcherProvider = DefaultDispatcherProvider
-    reportViewModel = ReportViewModel(repository, ancPatientRepository, dispatcher)
+    reportViewModel.apply {
+      this.patientId = patientId
+      registerDataViewModel =
+        initializeRegisterDataViewModel(this@ReportHomeActivity.patientRepository)
+    }
 
-    reportViewModel.registerDataViewModel = initializeRegisterDataViewModel(ancPatientRepository)
     reportViewModel.registerDataViewModel.currentPage.observe(
       this,
       { reportViewModel.registerDataViewModel.loadPageData(it) }
@@ -289,6 +284,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   }
 
   fun loadMeasureEvaluateLibrary() {
+    reportViewModel.reportState.currentScreen = ReportScreen.PREHOMElOADING
     dir = File(this.filesDir, "$dirCQLDirRoot/$fileNameMeasureLibraryCql")
     if (dir.exists()) {
       measureEvaluateLibraryData =
@@ -450,16 +446,17 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   }
 
   fun showDatePicker() {
-    val builder = MaterialDatePicker.Builder.datePicker()
-    builder.setSelection(reportViewModel.getSelectionDate())
-    val startDateMillis = reportViewModel.startDateTimeMillis.value ?: Date().time
-    val endDateMillis = reportViewModel.endDateTimeMillis.value ?: Date().time
-    val forStartOnly = if (reportViewModel.isChangingStartDate.value != false) 1L else 0L
-    builder.setCalendarConstraints(limitRange(forStartOnly, startDateMillis, endDateMillis).build())
-    val picker = builder.build()
-    picker.show(supportFragmentManager, picker.toString())
-    val funOnDatePicked = reportViewModel::onDatePicked
-    picker.addOnPositiveButtonClickListener { funOnDatePicked(it) }
+    MaterialDatePicker.Builder.datePicker().apply {
+      setSelection(reportViewModel.getSelectionDate())
+      val startDateMillis = reportViewModel.startDateTimeMillis.value ?: Date().time
+      val endDateMillis = reportViewModel.endDateTimeMillis.value ?: Date().time
+      val forStartOnly = if (reportViewModel.isChangingStartDate.value != false) 1L else 0L
+      setCalendarConstraints(limitRange(forStartOnly, startDateMillis, endDateMillis).build())
+      with(this.build()) {
+        show(supportFragmentManager, this.toString())
+        addOnPositiveButtonClickListener(reportViewModel::onDatePicked)
+      }
+    }
   }
 
   /*  Limit selectable range to start and end Date provided */
@@ -483,7 +480,9 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     private val maxDate: Long
   ) : CalendarConstraints.DateValidator {
     constructor(parcel: Parcel) : this(parcel.readLong(), parcel.readLong(), parcel.readLong())
+
     override fun writeToParcel(dest: Parcel?, flags: Int) {}
+
     override fun describeContents(): Int {
       TODO("nothing to implement")
     }

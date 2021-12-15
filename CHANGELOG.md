@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2021-xx-xx
 
 ### Added
+- ANC | Updated show search bar to true for family and anc register
+- ANC | Added individual measure reporting results to the ResultHome page
 - ANC | Update Individual Profile view
 - ANC | Added individual measure reporting results to the ResultHome page
 - ANC | Update Family Profile view
@@ -16,16 +18,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Report Patient Date Range Selection with year, Patient Search compose UI
 - ANC | Report Result Page Individual Patient Item UI update plus Unit Tests
 - ANC | Report Result Page For All Population compose UI update plus Unit Tests
+- ANC | Integrate Hilt Dependency Injection
 
 - Quest | Add the ability to search for patients by id
 - Quest | Add ability to view previous QuestionnaireResponse
 - Quest | Added workflow configurations
 - Quest | Add photo capture questionnaire widget
 - Quest | Add ability to edit questionnaire responses
-- Quest | Added Extensions for occupation, ethinicity, and marital status variable
+- Quest | Add Extensions for occupation, ethinicity, and marital status variable
+- Quest | Integrate Hilt Dependency Injection
 
 - EIR | Added workflow configurations
 - EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
+- EIR | Integrate Hilt Dependency Injection
+
+- Engine | Integrate Hilt Dependency Injection
+- ANC | Implement vital signs observation extraction from questionnaires
 
 ### Fixed
 - ANC | Resolved a bug in the Patient details : App crash when computing BMI
@@ -33,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EIR | Ability for a complete immunixation flow from Record 1st Vaccine to Full Immunization
 - Quest | Fixed test result sorting issues
 - Quest | Fixed forms loading smoothly
+- Quest | Fixed multiple entries of same test results on quest patient detail screen
+- Quest | Fixed mislabeling of questionnaire responses on quest patient detail screen
 
 
 ### Changed
@@ -49,7 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Optimized memory use for measure reporting by using String builder and loading only once cql and measure reporting libraries
 - ANC | Added progress bar to cql and measure reporting in ANC patien details page
 - ANC | Added measure reporting to ANC application
-- Engine |Added class for Measure report evaluation which will be used in ANC application
+- Engine | Added class for Measure report evaluation which will be used in ANC application
 - ANC | Added Condition resource to sync params list
 - Moved Token to secure storage from AccountManager
 - Expose [custom user attribute](https://www.keycloak.org/docs/latest/server_admin/index.html#_user-attributes) `questionnaire_publisher` available in SharedPreferences with key `USER_QUESTIONNAIRE_PUBLISHER` (#607)

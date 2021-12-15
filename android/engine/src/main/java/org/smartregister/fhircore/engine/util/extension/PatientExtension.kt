@@ -28,7 +28,6 @@ import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.smartregister.fhircore.engine.R
 
 private const val RISK = "risk"
-private val simpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.ENGLISH)
 const val DAYS_IN_YEAR = 365
 const val DAYS_IN_MONTH = 30
 const val DAYS_IN_WEEK = 7
@@ -37,10 +36,9 @@ fun Patient.extractName(): String {
   if (!hasName()) return ""
   val humanName = this.name.firstOrNull()
   return if (humanName != null) {
-    "${
-    humanName.given.joinToString(" ")
-    { it.toString().trim().toTitleCase() }
-    } ${humanName.family?.toTitleCase() ?: ""}"
+    (humanName.given + humanName.family).filterNotNull().joinToString(" ") {
+      it.toString().trim().toTitleCase()
+    }
   } else ""
 }
 
@@ -114,10 +112,14 @@ fun Patient.getLastSeen(immunizations: List<Immunization>): String {
     .maxByOrNull { it.protocolAppliedFirstRep.doseNumberPositiveIntType.value }
     ?.occurrenceDateTimeType
     ?.toDisplay()
-    ?: this.meta?.lastUpdated.makeItReadable()
+    ?: this.meta?.lastUpdated.lastSeenFormat()
 }
 
-private fun Date?.makeItReadable() = if (this != null) simpleDateFormat.format(this) else ""
+private fun Date?.lastSeenFormat(): String {
+  return if (this != null) {
+    SimpleDateFormat("MM-dd-yyyy", Locale.ENGLISH).run { format(this@lastSeenFormat) }
+  } else ""
+}
 
 fun Patient.extractAddress(): String {
   if (!hasAddress()) return ""

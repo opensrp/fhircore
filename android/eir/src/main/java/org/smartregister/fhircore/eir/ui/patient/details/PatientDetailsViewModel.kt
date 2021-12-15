@@ -19,13 +19,16 @@ package org.smartregister.fhircore.eir.ui.patient.details
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.engine.configuration.view.ImmunizationProfileViewConfiguration
 
-class PatientDetailsViewModel(val patientRepository: PatientRepository, val patientId: String) :
+@HiltViewModel
+class PatientDetailsViewModel @Inject constructor(val patientRepository: PatientRepository) :
   ViewModel() {
 
   val immunizationProfileConfiguration = MutableLiveData<ImmunizationProfileViewConfiguration>()
@@ -34,14 +37,14 @@ class PatientDetailsViewModel(val patientRepository: PatientRepository, val pati
 
   val patientImmunizations = MutableLiveData<List<Immunization>>()
 
-  fun fetchDemographics() {
+  fun fetchDemographics(patientId: String) {
     if (patientId.isNotEmpty())
       viewModelScope.launch() {
         patientDemographics.postValue(patientRepository.fetchDemographics(patientId))
       }
   }
 
-  fun fetchImmunizations() {
+  fun fetchImmunizations(patientId: String) {
     if (patientId.isNotEmpty())
       viewModelScope.launch() {
         patientImmunizations.postValue(patientRepository.getPatientImmunizations(patientId))

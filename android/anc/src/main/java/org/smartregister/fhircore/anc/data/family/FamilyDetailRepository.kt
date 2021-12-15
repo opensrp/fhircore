@@ -16,77 +16,57 @@
 
 package org.smartregister.fhircore.anc.data.family
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.search
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import javax.inject.Inject
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.anc.ui.anccare.register.AncItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
-class FamilyDetailRepository(
-  private val familyId: String,
-  private val fhirEngine: FhirEngine,
-  private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider
+class FamilyDetailRepository
+@Inject
+constructor(
+  val fhirEngine: FhirEngine,
+  val familyItemMapper: FamilyItemMapper,
+  val dispatcherProvider: DispatcherProvider,
+  val ancPatientRepository: PatientRepository
 ) {
-  private val ancPatientRepository = PatientRepository(fhirEngine, AncItemMapper)
-  fun fetchDemographics(): LiveData<Patient> {
-    val data = MutableLiveData<Patient>()
-    CoroutineScope(dispatcherProvider.io()).launch {
-      data.postValue(fhirEngine.load(Patient::class.java, familyId))
-    }
-    return data
-  }
 
-  fun fetchFamilyMembers(): LiveData<List<FamilyMemberItem>> {
-    val data = MutableLiveData<List<FamilyMemberItem>>()
-    CoroutineScope(dispatcherProvider.io()).launch {
+  suspend fun fetchDemographics(familyId: String): Patient =
+    withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, familyId) }
+
+  suspend fun fetchFamilyMembers(familyId: String): List<FamilyMemberItem> =
+    withContext(dispatcherProvider.io()) {
       val members =
         fhirEngine
           .search<Patient> { filter(Patient.LINK) { this.value = "Patient/$familyId" } }
-          .map { FamilyItemMapper.toFamilyMemberItem(it, familyId) }
+          .map { familyItemMapper.toFamilyMemberItem(it, familyId) }
 
       val householdHead =
-        FamilyItemMapper.toFamilyMemberItem(
+        familyItemMapper.toFamilyMemberItem(
           fhirEngine.load(Patient::class.java, familyId),
           familyId
         )
-      val familyMembers = ArrayList<FamilyMemberItem>()
-      familyMembers.add(householdHead)
-      familyMembers.addAll(members)
-      data.postValue(familyMembers)
+      ArrayList<FamilyMemberItem>().apply {
+        add(householdHead)
+        addAll(members)
+      }
     }
-    return data
-  }
 
-  fun fetchEncounters(): LiveData<List<Encounter>> {
-    val data = MutableLiveData<List<Encounter>>()
-    CoroutineScope(dispatcherProvider.io()).launch {
-      val encounters =
-        fhirEngine.search<Encounter> {
-          filter(Encounter.SUBJECT) { value = "Patient/$familyId" }
-          from = 0
-          count = 3
-        }
-      data.postValue(encounters)
+  suspend fun fetchEncounters(familyId: String): List<Encounter> =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.search {
+        filter(Encounter.SUBJECT) { value = "Patient/$familyId" }
+        from = 0
+        count = 3
+      }
     }
-    return data
-  }
 
-  fun fetchFamilyCarePlans(): LiveData<List<CarePlan>> {
-    val data = MutableLiveData<List<CarePlan>>()
-    CoroutineScope(dispatcherProvider.io()).launch {
-      val carePlans = ancPatientRepository.searchCarePlan(familyId)
-      data.postValue(carePlans)
-    }
-    return data
-  }
+  suspend fun fetchFamilyCarePlans(familyId: String): List<CarePlan> =
+    withContext(dispatcherProvider.io()) { ancPatientRepository.searchCarePlan(familyId) }
 }

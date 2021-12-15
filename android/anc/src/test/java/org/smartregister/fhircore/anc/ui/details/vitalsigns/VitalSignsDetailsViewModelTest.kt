@@ -18,40 +18,65 @@ package org.smartregister.fhircore.anc.ui.details.vitalsigns
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.fhir.FhirEngine
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
+import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Period
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
+import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
+import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 @ExperimentalCoroutinesApi
-internal class VitalSignsDetailsViewModelTest {
+@HiltAndroidTest
+class VitalSignsDetailsViewModelTest : RobolectricTest() {
+
+  @get:Rule val hiltRule = HiltAndroidRule(this)
+  @get:Rule val instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule val coroutinesTestRule = CoroutineTestRule()
+
   private lateinit var fhirEngine: FhirEngine
-
   private lateinit var patientDetailsViewModel: VitalSignsDetailsViewModel
-
   private lateinit var patientRepository: PatientRepository
-
-  private val patientId = "samplePatientId"
-
-  @get:Rule var coroutinesTestRule = CoroutineTestRule()
-
-  @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   @Before
   fun setUp() {
+    hiltRule.inject()
     fhirEngine = mockk(relaxed = true)
     patientRepository = mockk()
 
     patientDetailsViewModel =
-      spyk(
-        VitalSignsDetailsViewModel(
-          patientRepository,
-          coroutinesTestRule.testDispatcherProvider,
-          patientId
-        )
+      spyk(VitalSignsDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider))
+  }
+
+  @Test
+  fun testFetchEncountersShouldReturnEncountersItemList() {
+    val startDate = Date()
+    coEvery { patientRepository.fetchEncounters(any()) } returns
+      listOf(
+        Encounter().apply {
+          id = "1"
+          status = Encounter.EncounterStatus.FINISHED
+          period = Period().apply { start = startDate }
+        }
       )
+
+    val itemList = patientDetailsViewModel.fetchEncounters("").value
+    Assert.assertEquals(1, itemList?.size)
+
+    with(itemList?.get(0)!!) {
+      Assert.assertEquals("1", id)
+      Assert.assertEquals("", display)
+      Assert.assertEquals(Encounter.EncounterStatus.FINISHED, status)
+      Assert.assertEquals(startDate.time, periodStartDate?.time)
+    }
   }
 }
