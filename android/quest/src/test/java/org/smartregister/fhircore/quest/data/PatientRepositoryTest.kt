@@ -117,12 +117,46 @@ class PatientRepositoryTest : RobolectricTest() {
 
       val results = repository.fetchTestResults("1")
 
-      Assert.assertEquals("Cell Count", results.first().meta?.tagFirstRep?.display)
-      Assert.assertEquals(today.time, results.first().authored?.time)
+      Assert.assertEquals("Cell Count", results.first().first.meta?.tagFirstRep?.display)
+      Assert.assertEquals(today.time, results.first().first.authored?.time)
 
-      Assert.assertEquals("Blood Count", results.last().meta?.tagFirstRep?.display)
-      Assert.assertEquals(yesterday.time, results.last().authored?.time)
+      Assert.assertEquals("Blood Count", results.last().first.meta?.tagFirstRep?.display)
+      Assert.assertEquals(yesterday.time, results.last().first.authored?.time)
     }
+
+  @Test
+  fun testGetQuestionnaireOfQuestionnaireResponseShouldReturnNonEmptyQuestionnaire() {
+    coroutineTestRule.runBlockingTest {
+      coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns
+        Questionnaire().apply {
+          id = "1"
+          name = "Sample Questionnaire name"
+          title = "Sample Questionnaire title"
+        }
+
+      val questionnaire =
+        repository.getQuestionnaire(
+          QuestionnaireResponse().apply { questionnaire = "Questionnaire/1" }
+        )
+
+      Assert.assertEquals("1", questionnaire.id)
+      Assert.assertEquals("Sample Questionnaire name", questionnaire.name)
+      Assert.assertEquals("Sample Questionnaire title", questionnaire.title)
+    }
+  }
+
+  @Test
+  fun testGetQuestionnaireOfQuestionnaireResponseShouldReturnEmptyQuestionnaire() {
+    coroutineTestRule.runBlockingTest {
+      coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns Questionnaire()
+
+      val questionnaire = repository.getQuestionnaire(QuestionnaireResponse())
+
+      Assert.assertNull(questionnaire.id)
+      Assert.assertNull(questionnaire.name)
+      Assert.assertNull(questionnaire.title)
+    }
+  }
 
   @Test
   fun testFetchTestFormShouldReturnListOfQuestionnaireConfig() =
