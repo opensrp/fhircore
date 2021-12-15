@@ -16,10 +16,13 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert
 import org.junit.Test
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-class RegisterViewConfigurationTest {
+class RegisterViewConfigurationTest : RobolectricTest() {
 
   @Test
   fun testRegisterViewConfiguration() {
@@ -40,5 +43,26 @@ class RegisterViewConfigurationTest {
   fun testSearchFilter() {
     val searchFilter = SearchFilter("key", "code", "system")
     Assert.assertEquals("key", searchFilter.key)
+  }
+
+  @Test
+  fun testRegisterViewConfigurationOf() {
+    val registerViewConfigurationOf =
+      ApplicationProvider.getApplicationContext<Application>()
+        .registerViewConfigurationOf(
+          "anc",
+          "clasification",
+          "appTitle",
+          "filterText",
+          "searchBarHint",
+          "newClientButtonText",
+          false
+        )
+    Assert.assertEquals("anc", registerViewConfigurationOf.appId)
+    Assert.assertEquals("clasification", registerViewConfigurationOf.appTitle)
+    Assert.assertEquals("filterText", registerViewConfigurationOf.searchBarHint)
+    Assert.assertEquals("searchBarHint", registerViewConfigurationOf.newClientButtonText)
+    Assert.assertEquals("newClientButtonText", registerViewConfigurationOf.newClientButtonStyle)
+    Assert.assertFalse(registerViewConfigurationOf.showSearchBar)
   }
 }
