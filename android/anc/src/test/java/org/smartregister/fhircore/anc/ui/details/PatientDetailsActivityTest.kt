@@ -153,6 +153,21 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testOnClickedEditInfoItemShouldStartFamilyQuestionnaireActivity() {
+
+    val menuItem = RoboMenuItem(R.id.edit_info)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+
+    val expectedIntent = Intent(patientDetailsActivity, FamilyQuestionnaireActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<AncApplication>())
+        .nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+    Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
+  }
+
+  @Test
   fun testOnClickedAncEnrollmentItemShouldStartBMIQuestionnaire() {
 
     val menuItem = RoboMenuItem(R.id.bmi_widget)
