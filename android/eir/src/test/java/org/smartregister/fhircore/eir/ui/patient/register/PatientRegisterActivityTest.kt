@@ -23,7 +23,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.test.core.app.ApplicationProvider
-import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
@@ -41,7 +40,6 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.fakes.RoboMenuItem
-import org.smartregister.fhircore.eir.EirConfigService
 import org.smartregister.fhircore.eir.R
 import org.smartregister.fhircore.eir.activity.ActivityRobolectricTest
 import org.smartregister.fhircore.eir.coroutine.CoroutineTestRule
@@ -49,7 +47,6 @@ import org.smartregister.fhircore.eir.shadow.FakeKeyStore
 import org.smartregister.fhircore.eir.ui.patient.details.PatientDetailsActivity
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.ui.register.model.SideMenuOption
 
 @HiltAndroidTest
@@ -63,11 +60,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
-  @BindValue
-  val configService: ConfigService = EirConfigService(ApplicationProvider.getApplicationContext())
-  @BindValue
-  val configurationRegistry: ConfigurationRegistry =
-    spyk(ConfigurationRegistry(ApplicationProvider.getApplicationContext(), mockk(), configService))
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   @Before
   fun setUp() {
@@ -133,7 +126,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
     val data = mockk<MutableLiveData<Result<Boolean>>>()
     val observer = slot<Observer<Result<Boolean>>>()
 
-    every { activity.isPatientExists(any()) } returns data
+    every { activity.registerViewModel.patientExists(any()) } returns data
     every { data.observe(any(), capture(observer)) } returns Unit
     every { activity.navigateToDetails(any()) } returns Unit
     every { activity.registerClient(any()) } returns Unit
