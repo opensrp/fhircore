@@ -349,6 +349,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
+    const val QUESTIONNAIRE_AGE = "PR-age"
 
     fun intentArgs(
       clientIdentifier: String? = null,

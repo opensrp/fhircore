@@ -9,6 +9,8 @@
     <string name="family_register_message_alert">Family added. Register another member in family?</string>
     <string name="family_save_label">Save Family</string>
     <string name="family_member_save_label">Save Family Member</string>
+    <string name="family_update_label">Update Family</string>
+    <string name="family_member_update_label">Update Family Member</string>
     <string name="unsaved_changes_message_alert">If you leave before saving, your edits or changes will be lost</string>
     <string name="unsaved_changes_neg">Leave</string>
     <string name="unsaved_changes_pos">Stay</string>
@@ -67,7 +69,7 @@
     <string name="height">Height</string>
     <string name="weight">Weight</string>
     <string name="bmi">BMI</string>
-    <string name="sp02">Sp02</string>
+    <string name="spO2">SpO2</string>
     <string name="new_consultation">New Consultation</string>
     <string name="select_unit">Select unit</string>
     <string name="pregnancy_outcome">Pregnancy outcome</string>

@@ -1,0 +1,69 @@
+task jacocoTestReport(type: JacocoReport, dependsOn: [
+        "testDebugUnitTest",
+//       Uncomment to include instrumentation tests coverage
+//       "createDebugCoverageReport"
+]) {
+
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+
+    def excludes = [
+            // Android
+            '**Constant*.*',
+            '**/*$ViewBinder*.*',
+            'android/**/*.*',
+            '**/*Application*.*',
+            '**/*Test*.*',
+            '**/*$ViewInjector*.*',
+            '**/BuildConfig.*',
+            '**/*BR*.*',
+            '**/Manifest*.*',
+            '**/R.class',
+            '**/R$*.class',
+            // kotlin (Sealed and Data classes)
+            '**/*$Lambda$*.*',
+            '**/*Companion*.*',
+            '**/*$Result.*',
+            '**/*$Result$*.*',
+            // DI (Dagger and Hilt)
+            '**/*_MembersInjector.class',
+            '**/Dagger*Component.class',
+            '**/Dagger*Component$Builder.class',
+            '**/Dagger*Subcomponent*.class',
+            '**/*Subcomponent$Builder.class',
+            '**/*Module_*Factory.class',
+            '**/*_Factory*.*',
+            '**/*Module*.*',
+            '**/*Dagger*.*',
+            '**/*Hilt*.*',
+            '**/dagger/hilt/internal/*',
+            '**/hilt_aggregated_deps/*',
+            '**/di/*',
+            '**/*Hilt*.*',
+            // Data Binding
+            '**/databinding/*'
+    ]
+
+    def javaDebugTree = fileTree(dir: "$project.buildDir/intermediates/javac/debug/classes/", excludes: excludes)
+    def kotlinDebugTree = fileTree(dir: "${project.buildDir}/tmp/kotlin-classes/debug", excludes: excludes)
+    def mainSrc = "$project.projectDir/src/main/java"
+    def kotlinSrc = "$project.projectDir/src/main/kotlin"
+
+    sourceDirectories.setFrom(files([mainSrc, kotlinSrc]))
+    classDirectories.setFrom(files([javaDebugTree, kotlinDebugTree]))
+
+    executionData.setFrom(
+            fileTree(dir: project.buildDir, includes: [
+                    "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec",
+                    // Uncomment to include instrumentation test coverage
+                    // "outputs/code_coverage/debugAndroidTest/connected/**/*.ec"
+            ])
+    )
+}
+
+tasks.withType(Test) {
+    jacoco.includeNoLocationClasses = true
+    jacoco.excludes = ['jdk.internal.*']
+}

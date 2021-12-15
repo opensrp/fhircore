@@ -16,14 +16,14 @@
 
 package org.smartregister.fhircore.anc.sdk
 
-import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 
-class ResourceMapperExtended(val fhirEngine: FhirEngine) {
+class ResourceMapperExtended(private val defaultRepository: DefaultRepository) {
 
   // TODO https://github.com/opensrp/fhircore/issues/525
   // use ResourceMapper when supported by SDK
@@ -31,14 +31,18 @@ class ResourceMapperExtended(val fhirEngine: FhirEngine) {
     questionnaireResponse: QuestionnaireResponse,
     questionnaire: Questionnaire,
     patientId: String,
-    relatedTo: String?
+    relatedTo: String?,
+    editForm: Boolean = false
   ) {
     if (!questionnaire.hasSubjectType("Patient")) return
 
     val patient =
-      kotlin.runCatching { fhirEngine.load(Patient::class.java, patientId) }.getOrElse {
+      if (editForm)
         ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as Patient
-      }
+      else
+        defaultRepository.loadResource(patientId)
+          ?: ResourceMapper.extract(questionnaire, questionnaireResponse).entry[0].resource as
+            Patient
 
     patient.id = patientId
 
@@ -46,8 +50,7 @@ class ResourceMapperExtended(val fhirEngine: FhirEngine) {
     tags.forEach { patient.meta.addTag(it) }
 
     relatedTo?.let {
-      val related =
-        kotlin.runCatching { fhirEngine.load(Patient::class.java, relatedTo) }.getOrNull()
+      val related = defaultRepository.loadResource<Patient>(relatedTo)
 
       patient.addLink(getLink(relatedTo))
       // TODO remove when sync is implemented
@@ -58,9 +61,9 @@ class ResourceMapperExtended(val fhirEngine: FhirEngine) {
     val flagExt = QuestionnaireUtils.extractFlags(questionnaireResponse, questionnaire, patient)
     flagExt.forEach { patient.addExtension(it.second) }
 
-    fhirEngine.save(patient)
+    defaultRepository.addOrUpdate(patient)
 
-    flagExt.forEach { fhirEngine.save(it.first) }
+    flagExt.forEach { defaultRepository.addOrUpdate(it.first) }
 
     val obsList = mutableListOf<Observation>()
     QuestionnaireUtils.extractObservations(
@@ -69,7 +72,7 @@ class ResourceMapperExtended(val fhirEngine: FhirEngine) {
       patient,
       obsList
     )
-    obsList.forEach { fhirEngine.save(it) }
+    obsList.forEach { defaultRepository.addOrUpdate(it) }
   }
 
   private fun getLink(relatedTo: String): Patient.PatientLinkComponent {
