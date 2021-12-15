@@ -95,7 +95,7 @@ class VitalSignsDetailsViewModelTest : RobolectricTest() {
       FakeModel.getObservationQuantity(testValue = 1.0)
     coEvery { patientRepository.fetchVitalSigns(any(), "bg") } returns
       FakeModel.getObservationQuantity(testValue = 1.0)
-    coEvery { patientRepository.fetchVitalSigns(any(), "sp02") } returns
+    coEvery { patientRepository.fetchVitalSigns(any(), "spO2") } returns
       FakeModel.getObservationQuantity(testValue = 1.0)
 
     val patientVitalItem = patientDetailsViewModel.fetchVitalSigns("").value
