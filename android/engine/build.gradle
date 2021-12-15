@@ -15,6 +15,8 @@ android {
             includeAndroidResources = true
             returnDefaultValues = true
             all {
+                minHeapSize = "4608m"
+                maxHeapSize = "4608m"
                 jacoco {
                     includeNoLocationClasses = true
                     excludes = [
