@@ -670,7 +670,7 @@ abstract class BaseRegisterActivity :
     if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
         PackageManager.PERMISSION_GRANTED
     ) {
-      liveBarcodeScanningFragment.show(this.supportFragmentManager, "TAG")
+      liveBarcodeScanningFragment.show(this.supportFragmentManager, "LiveBarcodeScanningFragment")
     } else {
       requestPermissionLauncher.launch(Manifest.permission.CAMERA)
     }
@@ -680,7 +680,7 @@ abstract class BaseRegisterActivity :
     return registerForActivityResult(ActivityResultContracts.RequestPermission()) {
       isGranted: Boolean ->
       if (isGranted) {
-        liveBarcodeScanningFragment.show(supportFragmentManager, "TAG")
+        liveBarcodeScanningFragment.show(supportFragmentManager, BARCODE_FRAGMENT_TAG)
       } else {
         Toast.makeText(
             this,
@@ -696,5 +696,6 @@ abstract class BaseRegisterActivity :
 
   companion object {
     const val BARCODE_RESULT_KEY = "result"
+    const val BARCODE_FRAGMENT_TAG = "LiveBarcodeScanningFragment"
   }
 }

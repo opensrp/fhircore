@@ -16,8 +16,10 @@
 
 package org.smartregister.fhircore.engine.ui.register
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -40,6 +42,7 @@ import javax.inject.Inject
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -370,6 +373,18 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     )
   }
 
+  @Test
+  @Ignore("Figure out how to set permission")
+  fun testBarcodeScanButtonClickWithPermission() {
+    val testRegisterActivitySpy = spyk(testRegisterActivity)
+    every {
+      testRegisterActivitySpy.checkPermission(Manifest.permission.CAMERA, any(), any())
+    } returns PackageManager.PERMISSION_GRANTED
+    testRegisterActivitySpy.registerActivityBinding.toolbarLayout.btnScanBarcode.performClick()
+    Assert.assertTrue(testRegisterActivitySpy.liveBarcodeScanningFragment.isVisible)
+    testRegisterActivitySpy.finish()
+  }
+
   @AndroidEntryPoint
   class TestRegisterActivity : BaseRegisterActivity() {
 
@@ -427,6 +442,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
       composeView.setContent { Text(text = "Hello Fragment: $number") }
       return composeView
     }
+
     companion object {
       const val TAG = "TestFragment"
     }
