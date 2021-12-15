@@ -58,6 +58,7 @@ import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import timber.log.Timber
 
 @HiltViewModel
 open class QuestionnaireViewModel
@@ -262,7 +263,9 @@ constructor(
                 system = QuestionnaireActivity.WHO_IDENTIFIER_SYSTEM
               }
             )
+          Timber.e(FhirContext.forR4().newJsonParser().encodeResourceToString(this))
         }
+
         resourcesList.add(this)
       }
       loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
