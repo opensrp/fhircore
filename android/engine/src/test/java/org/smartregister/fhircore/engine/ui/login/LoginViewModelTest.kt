@@ -20,6 +20,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.spyk
+import io.mockk.verify
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.After
@@ -88,5 +89,27 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     val successfulLocalLogin = loginViewModel.attemptLocalLogin()
     Assert.assertTrue(successfulLocalLogin)
+  }
+
+  @Test
+  fun testForgotPasswordLoadsContact() {
+    loginViewModel.forgotPassword()
+    Assert.assertEquals("tel:0123456789", loginViewModel.launchDialPad.value)
+  }
+
+  @Test
+  fun testAttemptRemoteLoginWithCredentialsCallsAccountAuthenticator() {
+
+    // Provide username and password
+    loginViewModel.run {
+      onUsernameUpdated("testUser")
+      onPasswordUpdated("51r1K4l1")
+    }
+
+    loginViewModel.attemptRemoteLogin()
+
+    Assert.assertEquals("", loginViewModel.loginError.value)
+    loginViewModel.showProgressBar.value?.let { Assert.assertTrue(it) }
+    verify { accountAuthenticatorSpy.fetchToken("testUser", "51r1K4l1".toCharArray()) }
   }
 }
