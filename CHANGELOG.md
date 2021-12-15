@@ -40,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EIR | Ability for a complete immunixation flow from Record 1st Vaccine to Full Immunization
 - Quest | Fixed test result sorting issues
 - Quest | Fixed forms loading smoothly
+- Quest | Fixed multiple entries of same test results on quest patient detail screen
+- Quest | Fixed mislabeling of questionnaire responses on quest patient detail screen
 
 
 ### Changed
