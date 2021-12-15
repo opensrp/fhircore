@@ -122,8 +122,8 @@ class VitalSignsDetailsFragment : Fragment() {
       txtViewHeightUnit.text = patientVitalItem.heightUnit
       txtViewBgValue.text = vitalSignStringOrDefault(patientVitalItem.BG)
       txtViewBgUnit.text = patientVitalItem.BGUnit
-      txtViewSpValue.text = vitalSignStringOrDefault(patientVitalItem.sp02)
-      txtViewSpUnit.text = patientVitalItem.sp02Unit
+      txtViewSpValue.text = vitalSignStringOrDefault(patientVitalItem.spO2)
+      txtViewSpUnit.text = patientVitalItem.spO2Unit
       txtViewPulseValue.text = vitalSignStringOrDefault(patientVitalItem.pulse)
       txtViewPulseUnit.text = patientVitalItem.pulseUnit
       txtViewBpValue.text = vitalSignStringOrDefault(patientVitalItem.BPS)

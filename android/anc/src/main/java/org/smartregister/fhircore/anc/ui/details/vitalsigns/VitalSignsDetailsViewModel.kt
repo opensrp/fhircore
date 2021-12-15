@@ -60,7 +60,7 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
       val listObservationPulseRate =
         patientRepository.fetchVitalSigns(patientId = patientId, "pulse-rate")
       val listObservationBG = patientRepository.fetchVitalSigns(patientId = patientId, "bg")
-      val listObservationsp02 = patientRepository.fetchVitalSigns(patientId = patientId, "sp02")
+      val listObservationspO2 = patientRepository.fetchVitalSigns(patientId = patientId, "spO2")
 
       if (listObservationWeight.valueQuantity != null &&
           listObservationWeight.valueQuantity.value != null
@@ -95,11 +95,11 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
         patientVitalItem.BG = listObservationBG.valueQuantity.value.toPlainString() ?: ""
       patientVitalItem.BGUnit = listObservationBG.valueQuantity.unit ?: ""
 
-      if (listObservationsp02.valueQuantity != null &&
-          listObservationsp02.valueQuantity.value != null
+      if (listObservationspO2.valueQuantity != null &&
+          listObservationspO2.valueQuantity.value != null
       )
-        patientVitalItem.sp02 = listObservationsp02.valueQuantity.value.toPlainString() ?: ""
-      patientVitalItem.sp02Unit = listObservationsp02.valueQuantity.unit ?: ""
+        patientVitalItem.spO2 = listObservationspO2.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.spO2Unit = listObservationspO2.valueQuantity.unit ?: ""
 
       patientAncOverviewItem.postValue(patientVitalItem)
     }

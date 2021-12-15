@@ -106,7 +106,7 @@ class VitalSignsDetailsViewModelTest : RobolectricTest() {
       Assert.assertEquals("1.0", this?.BPS)
       Assert.assertEquals("1.0", this?.BPDS)
       Assert.assertEquals("1.0", this?.pulse)
-      Assert.assertEquals("1.0", this?.sp02)
+      Assert.assertEquals("1.0", this?.spO2)
       Assert.assertEquals("1.0", this?.BG)
     }
   }
