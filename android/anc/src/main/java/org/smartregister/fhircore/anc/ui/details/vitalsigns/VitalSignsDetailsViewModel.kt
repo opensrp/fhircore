@@ -64,6 +64,7 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
         patientRepository.fetchVitalSigns(patientId = patientId, "pulse-rate")
       val listObservationBg = patientRepository.fetchVitalSigns(patientId = patientId, "bg")
       val listObservationspO2 = patientRepository.fetchVitalSigns(patientId = patientId, "spO2")
+      val listObservationBmi = patientRepository.fetchVitalSigns(patientId = patientId, "bmi")
 
       patientVitalItem.weight = observationValueOrDefault(listObservationWeight)
       patientVitalItem.weightUnit = listObservationWeight.valueQuantity.unit ?: ""
@@ -111,6 +112,10 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
           }
         }
       }
+
+      patientVitalItem.bmi = observationValueOrDefault(listObservationBmi)
+      patientVitalItem.bmiUnit = listObservationBmi.valueQuantity.unit ?: ""
+
       patientAncOverviewItem.postValue(patientVitalItem)
     }
     return patientAncOverviewItem
