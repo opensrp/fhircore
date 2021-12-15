@@ -23,6 +23,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Observation
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.PatientVitalItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
@@ -55,54 +56,40 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
         patientRepository.fetchVitalSigns(patientId = patientId, "body-weight")
       val listObservationHeight =
         patientRepository.fetchVitalSigns(patientId = patientId, "body-height")
-      val listObservationBPS = patientRepository.fetchVitalSigns(patientId = patientId, "bp-s")
-      val listObservationBPDS = patientRepository.fetchVitalSigns(patientId = patientId, "bp-d")
+      val listObservationBps = patientRepository.fetchVitalSigns(patientId = patientId, "bp-s")
+      val listObservationBpds = patientRepository.fetchVitalSigns(patientId = patientId, "bp-d")
       val listObservationPulseRate =
         patientRepository.fetchVitalSigns(patientId = patientId, "pulse-rate")
-      val listObservationBG = patientRepository.fetchVitalSigns(patientId = patientId, "bg")
+      val listObservationBg = patientRepository.fetchVitalSigns(patientId = patientId, "bg")
       val listObservationspO2 = patientRepository.fetchVitalSigns(patientId = patientId, "spO2")
 
-      if (listObservationWeight.valueQuantity != null &&
-          listObservationWeight.valueQuantity.value != null
-      )
-        patientVitalItem.weight = listObservationWeight.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.weight = observationValueOrDefault(listObservationWeight)
       patientVitalItem.weightUnit = listObservationWeight.valueQuantity.unit ?: ""
 
-      if (listObservationHeight.valueQuantity != null &&
-          listObservationHeight.valueQuantity.value != null
-      )
-        patientVitalItem.height = listObservationHeight.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.height = observationValueOrDefault(listObservationHeight)
       patientVitalItem.heightUnit = listObservationHeight.valueQuantity.unit ?: ""
 
-      if (listObservationBPS.valueQuantity != null && listObservationBPS.valueQuantity.value != null
-      )
-        patientVitalItem.BPS = listObservationBPS.valueQuantity.value.toPlainString() ?: ""
-      patientVitalItem.BPSUnit = listObservationBPS.valueQuantity.unit ?: ""
+      patientVitalItem.bps = observationValueOrDefault(listObservationBps)
+      patientVitalItem.bpsUnit = listObservationBps.valueQuantity.unit ?: ""
 
-      if (listObservationBPDS.valueQuantity != null &&
-          listObservationBPDS.valueQuantity.value != null
-      )
-        patientVitalItem.BPDS = listObservationBPDS.valueQuantity.value.toPlainString() ?: ""
-      patientVitalItem.BPDSUnit = listObservationBPDS.valueQuantity.unit ?: ""
+      patientVitalItem.bpds = observationValueOrDefault(listObservationBpds)
+      patientVitalItem.bpdsUnit = listObservationBpds.valueQuantity.unit ?: ""
 
-      if (listObservationPulseRate.valueQuantity != null &&
-          listObservationPulseRate.valueQuantity.value != null
-      )
-        patientVitalItem.pulse = listObservationPulseRate.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.pulse = observationValueOrDefault(listObservationPulseRate)
       patientVitalItem.pulseUnit = listObservationPulseRate.valueQuantity.unit ?: ""
 
-      if (listObservationBG.valueQuantity != null && listObservationBG.valueQuantity.value != null)
-        patientVitalItem.BG = listObservationBG.valueQuantity.value.toPlainString() ?: ""
-      patientVitalItem.BGUnit = listObservationBG.valueQuantity.unit ?: ""
+      patientVitalItem.bg = observationValueOrDefault(listObservationBg)
+      patientVitalItem.bgUnit = listObservationBg.valueQuantity.unit ?: ""
 
-      if (listObservationspO2.valueQuantity != null &&
-          listObservationspO2.valueQuantity.value != null
-      )
-        patientVitalItem.spO2 = listObservationspO2.valueQuantity.value.toPlainString() ?: ""
+      patientVitalItem.spO2 = observationValueOrDefault(listObservationspO2)
       patientVitalItem.spO2Unit = listObservationspO2.valueQuantity.unit ?: ""
 
       patientAncOverviewItem.postValue(patientVitalItem)
     }
     return patientAncOverviewItem
+  }
+
+  private fun observationValueOrDefault(observation: Observation, defaultString: String = ""): String {
+    return if (observation.valueQuantity != null && observation.valueQuantity.value != null) observation.valueQuantity.value.toPlainString() else defaultString
   }
 }
