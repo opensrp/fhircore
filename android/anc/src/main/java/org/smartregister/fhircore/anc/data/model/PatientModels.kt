@@ -91,12 +91,12 @@ data class PatientVitalItem(
   var heightUnit: String = "",
   var spO2: String = "",
   var spO2Unit: String = "",
-  var BG: String = "",
-  var BGUnit: String = "",
-  var BPS: String = "",
-  var BPSUnit: String = "",
-  var BPDS: String = "",
-  var BPDSUnit: String = "",
+  var bg: String = "",
+  var bgUnit: String = "",
+  var bps: String = "",
+  var bpsUnit: String = "",
+  var bpds: String = "",
+  var bpdsUnit: String = "",
   var pulse: String = "",
   var pulseUnit: String = ""
 )

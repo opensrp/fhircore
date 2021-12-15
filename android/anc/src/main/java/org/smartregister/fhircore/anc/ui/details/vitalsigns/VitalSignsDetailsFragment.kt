@@ -109,7 +109,10 @@ class VitalSignsDetailsFragment : Fragment() {
     }
   }
 
-  private fun vitalSignStringOrDefault(vitalSignString: String, defaultString: String = "-"): String {
+  private fun vitalSignStringOrDefault(
+    vitalSignString: String,
+    defaultString: String = "-"
+  ): String {
     return if (vitalSignString.isEmpty()) defaultString else vitalSignString
   }
 
@@ -120,14 +123,14 @@ class VitalSignsDetailsFragment : Fragment() {
       txtViewWeightUnit.text = patientVitalItem.weightUnit
       txtViewHeightValue.text = vitalSignStringOrDefault(patientVitalItem.height)
       txtViewHeightUnit.text = patientVitalItem.heightUnit
-      txtViewBgValue.text = vitalSignStringOrDefault(patientVitalItem.BG)
-      txtViewBgUnit.text = patientVitalItem.BGUnit
+      txtViewBgValue.text = vitalSignStringOrDefault(patientVitalItem.bg)
+      txtViewBgUnit.text = patientVitalItem.bgUnit
       txtViewSpValue.text = vitalSignStringOrDefault(patientVitalItem.spO2)
       txtViewSpUnit.text = patientVitalItem.spO2Unit
       txtViewPulseValue.text = vitalSignStringOrDefault(patientVitalItem.pulse)
       txtViewPulseUnit.text = patientVitalItem.pulseUnit
-      txtViewBpValue.text = vitalSignStringOrDefault(patientVitalItem.BPS)
-      txtViewBpUnit.text = patientVitalItem.BPSUnit
+      txtViewBpValue.text = vitalSignStringOrDefault(patientVitalItem.bps)
+      txtViewBpUnit.text = patientVitalItem.bpsUnit
     }
   }
 

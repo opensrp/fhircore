@@ -89,7 +89,12 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
     return patientAncOverviewItem
   }
 
-  private fun observationValueOrDefault(observation: Observation, defaultString: String = ""): String {
-    return if (observation.valueQuantity != null && observation.valueQuantity.value != null) observation.valueQuantity.value.toPlainString() else defaultString
+  private fun observationValueOrDefault(
+    observation: Observation,
+    defaultString: String = ""
+  ): String {
+    return if (observation.valueQuantity != null && observation.valueQuantity.value != null)
+      observation.valueQuantity.value.toPlainString()
+    else defaultString
   }
 }
