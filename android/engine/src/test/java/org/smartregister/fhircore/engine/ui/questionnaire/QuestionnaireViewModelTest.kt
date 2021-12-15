@@ -38,6 +38,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
+import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
@@ -47,6 +48,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DecimalType
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
@@ -606,7 +608,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val authoredDate = Date()
     val versionId = "5"
     val author = Reference()
-    val patient = Patient().apply { Patient@ this.id = "123456" }
+    val patient =
+      Patient().apply {
+        Patient@ this.id = "123456"
+        this.birthDate = questionnaireViewModel.calculateDobFromAge(25)
+      }
 
     coEvery { fhirEngine.load(Patient::class.java, any()) } returns Patient()
     coEvery { fhirEngine.load(StructureMap::class.java, any()) } returns StructureMap()
@@ -647,8 +653,52 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     verify { questionnaireResponse.retainMetadata(oldQuestionnaireResponse) }
     coVerify { questionnaireResponse.deleteRelatedResources(defaultRepo) }
     Assert.assertEquals(patient, questionnaireResponse.contained[0])
+    Assert.assertEquals(
+      patient.birthDate,
+      (questionnaireResponse.contained[0] as Patient).birthDate
+    )
 
     unmockkObject(ResourceMapper)
+  }
+
+  @Test
+  fun testCalculateDobFromAge() {
+    val expectedBirthDate = Calendar.getInstance()
+    val ageInput = expectedBirthDate.get(Calendar.YEAR) - 2010
+    expectedBirthDate.set(Calendar.YEAR, 2010)
+    expectedBirthDate.set(Calendar.MONTH, 1)
+    expectedBirthDate.set(Calendar.DAY_OF_YEAR, 1)
+    val resultBirthDate = Calendar.getInstance()
+    resultBirthDate.time = questionnaireViewModel.calculateDobFromAge(ageInput)
+    Assert.assertEquals(expectedBirthDate.get(Calendar.YEAR), resultBirthDate.get(Calendar.YEAR))
+  }
+
+  @Test
+  fun testGetAgeInputFromQuestionnaire() {
+    val expectedAge = 25
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        id = "12345"
+        item =
+          listOf(
+            QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+              linkId = "q1-grp"
+              item =
+                listOf(
+                  QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+                    linkId = QuestionnaireActivity.QUESTIONNAIRE_AGE
+                    answer =
+                      listOf(
+                        QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                          value = DecimalType(25)
+                        }
+                      )
+                  }
+                )
+            }
+          )
+      }
+    Assert.assertEquals(expectedAge, questionnaireViewModel.getAgeInput(questionnaireResponse))
   }
 
   @Test

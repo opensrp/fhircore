@@ -86,7 +86,7 @@ internal class SyncBroadcasterTest {
   @DisplayName("Should remove listener")
   fun testUnRegisterSyncListener() {
     syncBroadcaster.unRegisterSyncListener(syncListenerSpy)
-    Assertions.assertFalse(syncBroadcaster.syncListeners.isEmpty())
+    Assertions.assertTrue(syncBroadcaster.syncListeners.isEmpty())
   }
 
   @Test

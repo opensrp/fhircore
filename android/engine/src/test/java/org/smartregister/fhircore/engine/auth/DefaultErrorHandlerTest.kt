@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.app.ui.register
+package org.smartregister.fhircore.engine.auth
 
-import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
+import io.mockk.mockk
+import org.junit.Assert
+import org.junit.Test
 
-class AppRegisterActivity : BaseRegisterActivity() {
+class DefaultErrorHandlerTest {
 
-  override fun mainFragmentTag(): String = AppRegisterFragment.TAG
+  @Test
+  fun testHandleMessage() {
+    Assert.assertTrue(DefaultErrorHandler.handleMessage(mockk()))
+  }
 }

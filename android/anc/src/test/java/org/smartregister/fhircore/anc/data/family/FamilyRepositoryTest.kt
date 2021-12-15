@@ -48,6 +48,8 @@ import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.util.RegisterConfiguration
 import org.smartregister.fhircore.anc.util.SearchFilter
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @HiltAndroidTest
@@ -124,6 +126,67 @@ class FamilyRepositoryTest : RobolectricTest() {
     repository.postProcessFamilyHead(Questionnaire(), QuestionnaireResponse())
 
     coVerify { resourceMapperExtended.saveParsedResource(any(), any(), any(), null) }
+  }
+
+  @Test
+  fun updateProcessFamilyMemberShouldCallSaveParsedResourceWithEditBooleanAsTrue() =
+      runBlockingTest {
+    val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
+
+    val resourceMapperExtended = spyk(ResourceMapperExtended(defaultRepository))
+
+    coEvery { resourceMapperExtended.saveParsedResource(any(), any(), any(), "1111") } just runs
+
+    ReflectionHelpers.setField(repository, "resourceMapperExtended", resourceMapperExtended)
+
+    val questionnaire = Questionnaire()
+    val questionnaireResponse = QuestionnaireResponse()
+
+    repository.updateProcessFamilyMember(
+      "1111",
+      questionnaire = questionnaire,
+      questionnaireResponse = questionnaireResponse,
+      "1111"
+    )
+
+    coVerify {
+      resourceMapperExtended.saveParsedResource(
+        questionnaireResponse = questionnaireResponse,
+        questionnaire = questionnaire,
+        any(),
+        "1111",
+        eq(true)
+      )
+    }
+  }
+
+  @Test
+  fun updateProcessFamilyHeadShouldCallSaveParsedResourceWithEditBooleanAsTrue() = runBlockingTest {
+    val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
+    val resourceMapperExtended = spyk(ResourceMapperExtended(defaultRepository))
+
+    coEvery { resourceMapperExtended.saveParsedResource(any(), any(), any(), null) } just runs
+
+    ReflectionHelpers.setField(repository, "resourceMapperExtended", resourceMapperExtended)
+
+    val questionnaire = Questionnaire()
+    val questionnaireResponse = QuestionnaireResponse()
+
+    repository.updateProcessFamilyHead(
+      "1111",
+      questionnaire = questionnaire,
+      questionnaireResponse = questionnaireResponse
+    )
+
+    coVerify {
+      resourceMapperExtended.saveParsedResource(
+        questionnaireResponse = questionnaireResponse,
+        questionnaire = questionnaire,
+        any(),
+        null,
+        eq(true)
+      )
+    }
   }
 
   @Test

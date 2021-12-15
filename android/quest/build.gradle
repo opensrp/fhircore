@@ -10,6 +10,8 @@ plugins {
     id 'dagger.hilt.android.plugin'
 }
 
+apply from: '../jacoco.gradle'
+
 Properties props = new Properties()
 
 def arr = ["FHIR_BASE_URL", "OAUTH_BASE_URL", "OAUTH_CIENT_ID", "OAUTH_CLIENT_SECRET", "OAUTH_SCOPE"]
@@ -27,6 +29,7 @@ if (rootProject.file("local.properties").exists()) {
 }
 
 android {
+    compileSdkVersion 30
     compileSdk 30
 
     dataBinding {
@@ -101,49 +104,24 @@ android {
         viewBinding true
     }
 
-    testOptions {
-        animationsDisabled true
-        unitTests {
-            includeAndroidResources = true
-            returnDefaultValues = true
-            all {
-                jacoco {
-                    includeNoLocationClasses = true
-                    excludes = [
-                            // Android
-                            'jdk.internal.*',
-                            '**/BuildConfig.*',
-                            '**/*BR*.*',
-                            '**/Manifest*.*',
-                            '**/R.class',
-                            '**/R$*.class',
-                            // kotlin
-                            '**/*$Lambda$*.*',
-                            // Dagger and Hilt
-                            '**/*_Provide*/**',
-                            '**/*_Factory*/**',
-                            '**/*Module*.*',
-                            '**/*_Factory*.*',
-                            '**/*_MembersInjector.class',
-                            '**/*Dagger*',
-                            '**/di/*',
-                            '**/*Hilt*.*',
-                            // Data Binding
-                            'android/databinding/**/*.class',
-                            '**/android/databinding/*Binding.class',
-                            '**/android/databinding/*',
-                            '**/androidx/databinding/*',
-                    ]
-                }
-            }
-        }
-    }
-
     composeOptions {
         kotlinCompilerExtensionVersion '1.0.1'
     }
 
-    compileSdkVersion 30
+    testOptions {
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
+        animationsDisabled true
+
+        unitTests {
+            includeAndroidResources = true
+            returnDefaultValues = true
+            all {
+                beforeTest { testDescriptor ->
+                    println "${testDescriptor.className} > ${testDescriptor.name} STARTED"
+                }
+            }
+        }
+    }
 }
 
 dependencies {

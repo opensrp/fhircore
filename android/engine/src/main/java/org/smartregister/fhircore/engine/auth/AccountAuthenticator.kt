@@ -39,7 +39,9 @@ import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
+import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.toSha1
 import retrofit2.Call
 import retrofit2.Callback
@@ -55,7 +57,8 @@ constructor(
   val oAuthService: OAuthService,
   val configurationRegistry: ConfigurationRegistry,
   val secureSharedPreference: SecureSharedPreference,
-  val tokenManagerService: TokenManagerService
+  val tokenManagerService: TokenManagerService,
+  val sharedPreference: SharedPreferencesHelper
 ) : AbstractAccountAuthenticator(context) {
 
   override fun addAccount(
@@ -185,19 +188,18 @@ constructor(
     data[PASSWORD] = password.concatToString()
     return try {
       oAuthService.fetchToken(data)
-    } catch (e: Exception) {
-      throw NetworkErrorException(e)
+    } catch (exception: Exception) {
+      throw NetworkErrorException(exception)
     }
   }
 
-  private fun buildOAuthPayload(grantType: String): MutableMap<String, String> {
-    val payload = mutableMapOf<String, String>()
-    payload[GRANT_TYPE] = grantType
-    payload[CLIENT_ID] = clientId()
-    payload[CLIENT_SECRET] = clientSecret()
-    payload[SCOPE] = providerScope()
-    return payload
-  }
+  private fun buildOAuthPayload(grantType: String) =
+    mutableMapOf(
+      GRANT_TYPE to grantType,
+      CLIENT_ID to clientId(),
+      CLIENT_SECRET to clientSecret(),
+      SCOPE to providerScope()
+    )
 
   fun getRefreshToken(): String? {
     Timber.v("Checking local storage for refresh token")
@@ -292,6 +294,7 @@ constructor(
       secureSharedPreference.deleteCredentials()
       launchScreen(AppSettingActivity::class.java)
     }
+    sharedPreference.remove(APP_ID_CONFIG)
   }
 
   fun launchLoginScreen() {
