@@ -318,7 +318,7 @@ class PatientRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun testFetchObservationsShouldReturnCorrectObs() {
+  fun testFetchObservationsWithEDDFilterShouldReturnCorrectObs() {
     coEvery { fhirEngine.search<Observation>(any()) } returns
       listOf(
         Observation().apply {
@@ -330,9 +330,145 @@ class PatientRepositoryTest : RobolectricTest() {
     Assert.assertEquals(4, result.valueIntegerType.value)
   }
 
+  @Test
+  fun testFetchObservationsWithRiskFilterShouldReturnCorrectObs() {
+    coEvery { fhirEngine.search<Observation>(any()) } returns
+      listOf(
+        Observation().apply {
+          value = IntegerType(4)
+          effective = DateTimeType.now()
+        }
+      )
+    val result = runBlocking { repository.fetchObservations("1111", "risk") }
+    Assert.assertEquals(4, result.valueIntegerType.value)
+  }
+
+  @Test
+  fun testFetchObservationsWithFetusesFilterShouldReturnCorrectObs() {
+    coEvery { fhirEngine.search<Observation>(any()) } returns
+      listOf(
+        Observation().apply {
+          value = IntegerType(4)
+          effective = DateTimeType.now()
+        }
+      )
+    val result = runBlocking { repository.fetchObservations("1111", "fetuses") }
+    Assert.assertEquals(4, result.valueIntegerType.value)
+  }
+
+  @Test
+  fun testFetchObservationsWithGAFilterShouldReturnCorrectObs() {
+    coEvery { fhirEngine.search<Observation>(any()) } returns
+      listOf(
+        Observation().apply {
+          value = IntegerType(4)
+          effective = DateTimeType.now()
+        }
+      )
+    val result = runBlocking { repository.fetchObservations("1111", "ga") }
+    Assert.assertEquals(4, result.valueIntegerType.value)
+  }
+
+  @Test
+  fun testFetchVitalSignsWithBodyWeightFilterShouldReturnCorrectObs() {
+    coEvery { fhirEngine.search<Observation>(any()) } returns
+      listOf(
+        Observation().apply {
+          value = IntegerType(4)
+          effective = DateTimeType.now()
+        }
+      )
+    val result = runBlocking { repository.fetchVitalSigns("1111", "body-weight") }
+    Assert.assertEquals(4, result.valueIntegerType.value)
+  }
+
+  @Test
+  fun testFetchVitalSignsWithBodyHeightFilterShouldReturnCorrectObs() {
+    coEvery { fhirEngine.search<Observation>(any()) } returns
+      listOf(
+        Observation().apply {
+          value = IntegerType(4)
+          effective = DateTimeType.now()
+        }
+      )
+    val result = runBlocking { repository.fetchVitalSigns("1111", "body-height") }
+    Assert.assertEquals(4, result.valueIntegerType.value)
+  }
+
+  @Test
+  fun testFetchVitalSignsWithBPSFilterShouldReturnCorrectObs() {
+    coEvery { fhirEngine.search<Observation>(any()) } returns
+      listOf(
+        Observation().apply {
+          value = IntegerType(4)
+          effective = DateTimeType.now()
+        }
+      )
+    val result = runBlocking { repository.fetchVitalSigns("1111", "bp-s") }
+    Assert.assertEquals(4, result.valueIntegerType.value)
+  }
+
+  @Test
+  fun testFetchVitalSignsWithBPDSFilterShouldReturnCorrectObs() {
+    coEvery { fhirEngine.search<Observation>(any()) } returns
+      listOf(
+        Observation().apply {
+          value = IntegerType(4)
+          effective = DateTimeType.now()
+        }
+      )
+    val result = runBlocking { repository.fetchVitalSigns("1111", "bp-d") }
+    Assert.assertEquals(4, result.valueIntegerType.value)
+  }
+
+  @Test
+  fun testFetchVitalSignsWithPulseRateFilterShouldReturnCorrectObs() {
+    coEvery { fhirEngine.search<Observation>(any()) } returns
+      listOf(
+        Observation().apply {
+          value = IntegerType(4)
+          effective = DateTimeType.now()
+        }
+      )
+    val result = runBlocking { repository.fetchVitalSigns("1111", "pulse-rate") }
+    Assert.assertEquals(4, result.valueIntegerType.value)
+  }
+
+  @Test
+  fun testFetchVitalSignsWithBGFilterShouldReturnCorrectObs() {
+    coEvery { fhirEngine.search<Observation>(any()) } returns
+      listOf(
+        Observation().apply {
+          value = IntegerType(4)
+          effective = DateTimeType.now()
+        }
+      )
+    val result = runBlocking { repository.fetchVitalSigns("1111", "bg") }
+    Assert.assertEquals(4, result.valueIntegerType.value)
+  }
+
+  @Test
+  fun testFetchVitalSignsWithSPo2FilterShouldReturnCorrectObs() {
+    coEvery { fhirEngine.search<Observation>(any()) } returns
+      listOf(
+        Observation().apply {
+          value = IntegerType(4)
+          effective = DateTimeType.now()
+        }
+      )
+    val result = runBlocking { repository.fetchVitalSigns("1111", "sp02") }
+    Assert.assertEquals(4, result.valueIntegerType.value)
+  }
+
   @Test(expected = UnsupportedOperationException::class)
   fun testFetchObservationsShouldThrowExceptionOnUnrecognizedFilterType() {
     val result = runBlocking { repository.fetchObservations("1111", "not known") }
+    Assert.assertEquals(4, result.valueIntegerType.value)
+  }
+
+  @Test(expected = UnsupportedOperationException::class)
+  fun testFetchVitalSignsShouldThrowExceptionOnUnrecognizedFilterType() {
+    val result = runBlocking { repository.fetchVitalSigns("1111", "not known") }
     Assert.assertEquals(4, result.valueIntegerType.value)
   }
 

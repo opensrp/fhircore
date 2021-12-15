@@ -31,6 +31,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.anc.app.fakes.FakeModel
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
@@ -77,6 +78,36 @@ class VitalSignsDetailsViewModelTest : RobolectricTest() {
       Assert.assertEquals("", display)
       Assert.assertEquals(Encounter.EncounterStatus.FINISHED, status)
       Assert.assertEquals(startDate.time, periodStartDate?.time)
+    }
+  }
+
+  @Test
+  fun testFetchObservationShouldReturnExpectedAncOverviewItem() {
+    coEvery { patientRepository.fetchVitalSigns(any(), "body-weight") } returns
+      FakeModel.getObservationQuantity(testValue = 1.0)
+    coEvery { patientRepository.fetchVitalSigns(any(), "body-height") } returns
+      FakeModel.getObservationQuantity(testValue = 1.0)
+    coEvery { patientRepository.fetchVitalSigns(any(), "bp-s") } returns
+      FakeModel.getObservationQuantity(testValue = 1.0)
+    coEvery { patientRepository.fetchVitalSigns(any(), "bp-d") } returns
+      FakeModel.getObservationQuantity(testValue = 1.0)
+    coEvery { patientRepository.fetchVitalSigns(any(), "pulse-rate") } returns
+      FakeModel.getObservationQuantity(testValue = 1.0)
+    coEvery { patientRepository.fetchVitalSigns(any(), "bg") } returns
+      FakeModel.getObservationQuantity(testValue = 1.0)
+    coEvery { patientRepository.fetchVitalSigns(any(), "spO2") } returns
+      FakeModel.getObservationQuantity(testValue = 1.0)
+
+    val patientVitalItem = patientDetailsViewModel.fetchVitalSigns("").value
+
+    with(patientVitalItem) {
+      Assert.assertEquals("1.0", this?.weight)
+      Assert.assertEquals("1.0", this?.height)
+      Assert.assertEquals("1.0", this?.bps)
+      Assert.assertEquals("1.0", this?.bpds)
+      Assert.assertEquals("1.0", this?.pulse)
+      Assert.assertEquals("1.0", this?.spO2)
+      Assert.assertEquals("1.0", this?.bg)
     }
   }
 }
