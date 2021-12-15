@@ -224,7 +224,7 @@ constructor(
         "bp-d" -> vitalSignsConfig.BPDSFilter!!
         "pulse-rate" -> vitalSignsConfig.pulseRateFilter!!
         "bg" -> vitalSignsConfig.bloodGlucoseFilter!!
-        "sp02" -> vitalSignsConfig.bloodOxygenLevelFilter!!
+        "spO2" -> vitalSignsConfig.bloodOxygenLevelFilter!!
         else ->
           throw UnsupportedOperationException("Given filter $searchFilterString not supported")
       }

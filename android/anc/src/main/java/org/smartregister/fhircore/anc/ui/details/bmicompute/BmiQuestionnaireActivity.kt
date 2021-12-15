@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.anc.ui.details.bmicompute
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import androidx.activity.viewModels
@@ -61,13 +60,6 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
         showErrorAlert(getString(R.string.try_again), getString(R.string.error_saving_form))
       else {
         val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!
-        //        val height =
-        //          BmiQuestionnaireViewModel.getHeightAsPerMetricUnit(inputHeight,
-        // isUnitModeMetric)
-        //        val weight =
-        //          BmiQuestionnaireViewModel.getWeightAsPerMetricUnit(inputWeight,
-        // isUnitModeMetric)
-        Log.e("aw", "saving bmi = " + computedBMI + " - h=" + inputHeight + " -w=" + inputWeight)
         var weightUnit = "lb"
         var heightUnit = "in"
         var bmiUnit = "lb/in2"

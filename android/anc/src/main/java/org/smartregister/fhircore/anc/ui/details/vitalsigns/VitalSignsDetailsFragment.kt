@@ -79,9 +79,6 @@ class VitalSignsDetailsFragment : Fragment() {
 
     binding.swipeContainer.setOnRefreshListener {
       ancDetailsViewModel
-        .fetchEncounters(patientId)
-        .observe(viewLifecycleOwner, this::handleEncounters)
-      ancDetailsViewModel
         .fetchVitalSigns(patientId)
         .observe(viewLifecycleOwner, this::handleVitalSigns)
     }
