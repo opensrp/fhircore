@@ -186,6 +186,11 @@ constructor(
   }
 
   suspend fun revokeActiveStatusData(patientId: String) {
+    revokeFlags(patientId)
+    revokeConditions(patientId)
+  }
+
+  suspend fun revokeFlags(patientId: String) {
     fhirEngine
       .search<Flag> { filterByPatient(Flag.PATIENT, patientId) }
       .filter { it.status == Flag.FlagStatus.ACTIVE }
@@ -195,7 +200,9 @@ constructor(
 
         fhirEngine.save(it)
       }
+  }
 
+  suspend fun revokeConditions(patientId: String) {
     fhirEngine
       .search<Condition> { filterByPatient(Condition.PATIENT, patientId) }
       .filter { it.clinicalStatus.codingFirstRep.code == "active" }

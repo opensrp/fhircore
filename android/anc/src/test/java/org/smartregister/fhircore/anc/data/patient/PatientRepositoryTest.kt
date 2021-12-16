@@ -52,6 +52,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumeration
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.EpisodeOfCare
+import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Goal
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.IntegerType
@@ -72,9 +73,11 @@ import org.smartregister.fhircore.anc.app.fakes.FakeModel.getEncounter
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.demographics
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asCodeableConcept
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.asYyyyMmDd
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
@@ -565,6 +568,41 @@ class PatientRepositoryTest : RobolectricTest() {
 
     Assert.assertEquals(CarePlan.CarePlanStatus.REVOKED, saveSlot.captured.status)
     Assert.assertEquals(Date().makeItReadable(), saveSlot.captured.period.end.makeItReadable())
+  }
+
+  @Test
+  fun testRevokeFlagsShouldUpdateFlagStatus() {
+    coEvery { fhirEngine.search<Flag>(any()) } returns
+      listOf(Flag().apply { status = Flag.FlagStatus.ACTIVE })
+    coEvery { fhirEngine.save(any()) } just runs
+
+    runBlocking { repository.revokeFlags("99") }
+
+    val saveSlot = slot<Flag>()
+
+    coVerify { fhirEngine.save(capture(saveSlot)) }
+
+    Assert.assertEquals(Flag.FlagStatus.INACTIVE, saveSlot.captured.status)
+    Assert.assertEquals(Date().makeItReadable(), saveSlot.captured.period.end.makeItReadable())
+  }
+
+  @Test
+  fun testRevokeConditionsShouldUpdateConditionStatus() {
+    coEvery { fhirEngine.search<Condition>(any()) } returns
+      listOf(Condition().apply { clinicalStatus = Coding("", "active", "").asCodeableConcept() })
+    coEvery { fhirEngine.save(any()) } just runs
+
+    runBlocking { repository.revokeConditions("99") }
+
+    val saveSlot = slot<Condition>()
+
+    coVerify { fhirEngine.save(capture(saveSlot)) }
+
+    Assert.assertEquals("inactive", saveSlot.captured.clinicalStatus.codingFirstRep.code)
+    Assert.assertEquals(
+      Date().asYyyyMmDd(),
+      saveSlot.captured.abatement.dateTimeValue().asStringValue().substringBefore("T")
+    )
   }
 
   @Test
