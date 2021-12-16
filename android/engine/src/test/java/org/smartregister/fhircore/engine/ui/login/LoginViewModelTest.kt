@@ -89,4 +89,19 @@ internal class LoginViewModelTest : RobolectricTest() {
     val successfulLocalLogin = loginViewModel.attemptLocalLogin()
     Assert.assertTrue(successfulLocalLogin)
   }
+
+  @Test
+  fun testAttemptLocalLoginWithWrongCredentials() {
+    // Simulate saving of credentials prior to login
+    accountAuthenticatorSpy.secureSharedPreference.saveCredentials(authCredentials)
+
+    // Provide username and password (The saved password is hashed, actual one is needed)
+    loginViewModel.run {
+      onUsernameUpdated("hello")
+      onPasswordUpdated("51r1K4l1")
+    }
+
+    val successfulLocalLogin = loginViewModel.attemptLocalLogin()
+    Assert.assertFalse(successfulLocalLogin)
+  }
 }
