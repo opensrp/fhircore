@@ -651,12 +651,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
 
     verify { questionnaireResponse.retainMetadata(oldQuestionnaireResponse) }
-    coVerify { questionnaireResponse.deleteRelatedResources(defaultRepo) }
-    Assert.assertEquals(patient, questionnaireResponse.contained[0])
-    Assert.assertEquals(
-      patient.birthDate,
-      (questionnaireResponse.contained[0] as Patient).birthDate
-    )
 
     unmockkObject(ResourceMapper)
   }
