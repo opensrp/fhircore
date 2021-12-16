@@ -100,6 +100,8 @@ class VitalSignsDetailsViewModelTest : RobolectricTest() {
       FakeModel.getObservationQuantity(testValue = 1.0)
     coEvery { patientRepository.fetchVitalSigns(any(), "spO2") } returns
       FakeModel.getObservationQuantity(testValue = 1.0)
+    coEvery { patientRepository.fetchVitalSigns(any(), "bmi") } returns
+      FakeModel.getObservationQuantity(testValue = 1.0)
 
     val patientVitalItem = patientDetailsViewModel.fetchVitalSigns("").value
 
@@ -111,6 +113,7 @@ class VitalSignsDetailsViewModelTest : RobolectricTest() {
       Assert.assertEquals("1.0", this?.pulse)
       Assert.assertEquals("1.0", this?.spO2)
       Assert.assertEquals("1.0", this?.bg)
+      Assert.assertEquals("1.0", this?.bmi)
     }
   }
 
