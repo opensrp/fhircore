@@ -32,6 +32,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert
 import org.junit.Before
@@ -40,7 +41,6 @@ import org.junit.Test
 import org.junit.jupiter.api.DisplayName
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
-import org.robolectric.fakes.RoboMenu
 import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
@@ -57,6 +57,7 @@ import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActi
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 @ExperimentalCoroutinesApi
@@ -201,7 +202,6 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
         PatientItem(patientId, "Mandela Nelson", "Male", "26")
       )
 
-    ReflectionHelpers.setField(patientDetailsActivity, "isMale", true)
     ReflectionHelpers.callInstanceMethod<Any>(
       patientDetailsActivity,
       "handlePatientDemographics",
@@ -238,14 +238,13 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
         PatientItem(
           patientId,
           "Mandela Nelson",
+          "fam",
           "Male",
-          "26",
-          demographics = "NK",
+          Date().plusYears(-26),
           isHouseHoldHead = false
         ),
-        PatientItem(patientId, "Mandela Nelson", "Male", "26")
+        PatientItem(patientId, "Mandela Nelson", "fam", "Male", Date().plusYears(-26))
       )
-    ReflectionHelpers.setField(patientDetailsActivity, "isMale", false)
     ReflectionHelpers.callInstanceMethod<Any>(
       patientDetailsActivity,
       "handlePatientDemographics",
@@ -253,32 +252,13 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     )
 
     Assert.assertEquals(
-      "Mandela Nelson, Male, 26",
+      "Mandela Nelson, Male, 26y",
       patientDetailsActivity.findViewById<TextView>(R.id.txtView_patientDetails).text.toString()
     )
     Assert.assertEquals(
-      "NK · ID:  · ID: samplePatientId · Head of household · ",
+      " · ID:  · ID: samplePatientId · Head of household · ",
       patientDetailsActivity.findViewById<TextView>(R.id.txtView_patientId).text.toString()
     )
-  }
-
-  @Test
-  fun testOnPrepareOptionsMenuShouldVerifySpannableString() {
-    val menu = RoboMenu(appContext)
-    menu.add(0, R.id.remove_this_person, 0, "remove this person")
-    menu.add(0, R.id.anc_enrollment, 0, "anc enrollment")
-    menu.add(0, R.id.pregnancy_outcome, 0, "pregnancy outcome")
-
-    ReflectionHelpers.setField(patientDetailsActivity, "isMale", true)
-
-    patientDetailsActivity.onPrepareOptionsMenu(menu)
-
-    Assert.assertEquals(
-      "remove this person",
-      menu.findItem(R.id.remove_this_person).title.toString()
-    )
-    Assert.assertFalse(menu.findItem(R.id.pregnancy_outcome).isVisible)
-    Assert.assertFalse(menu.findItem(R.id.anc_enrollment).isVisible)
   }
 
   @Test

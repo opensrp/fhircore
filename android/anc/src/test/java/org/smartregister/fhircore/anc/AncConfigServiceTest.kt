@@ -20,6 +20,7 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
 import javax.inject.Inject
@@ -34,6 +35,7 @@ import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 
+@HiltAndroidTest
 class AncConfigServiceTest : RobolectricTest() {
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
@@ -50,6 +52,7 @@ class AncConfigServiceTest : RobolectricTest() {
     configService =
       AncConfigService(
         context = ApplicationProvider.getApplicationContext(),
+        sharedPreferencesHelper
       )
   }
 

@@ -62,7 +62,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
 
   private lateinit var adapter: ViewPagerAdapter
   private lateinit var patientId: String
-  private var patient = MutableLiveData<PatientItem>()
+  internal var patient = MutableLiveData<PatientItem>()
   private lateinit var loadProgress: AlertDialog
 
   val ancDetailsViewModel by viewModels<AncDetailsViewModel>()
@@ -104,15 +104,13 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       this,
       {
         menu.findItem(R.id.anc_enrollment).run {
-          this.isVisible = patient.value?.nonPregnantEligibleWoman() == true
+          this.isVisible = it.nonPregnantEligibleWoman() == true
         }
-        menu.findItem(R.id.pregnancy_outcome).run {
-          this.isVisible = patient.value?.eligibleWoman() == true
-        }
+        menu.findItem(R.id.pregnancy_outcome).run { this.isVisible = it.eligibleWoman() == true }
 
         menu.findItem(R.id.remove_this_person).run {
           highlightItem(this)
-          this.isVisible = patient.value?.isHouseHoldHead != true
+          this.isVisible = it.isHouseHoldHead != true
         }
         menu.findItem(R.id.log_death).run { highlightItem(this) }
       }

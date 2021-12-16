@@ -46,6 +46,7 @@ import org.smartregister.fhircore.anc.ui.family.register.OpenFamilyProfile
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
+import org.smartregister.fhircore.engine.util.extension.plusYears
 
 @HiltAndroidTest
 class FamilyRegisterFragmentTest : RobolectricTest() {
@@ -114,8 +115,8 @@ class FamilyRegisterFragmentTest : RobolectricTest() {
       CarePlan().apply {
         this.status = CarePlan.CarePlanStatus.ACTIVE
         this.activityFirstRep.detail.apply {
-          this.scheduledPeriod.start = Date()
-          this.scheduledPeriod.end = Date()
+          this.scheduledPeriod.start = Date().plusYears(-1)
+          this.scheduledPeriod.end = Date().plusYears(-1)
           this.status = CarePlan.CarePlanActivityStatus.SCHEDULED
         }
       }
@@ -136,7 +137,7 @@ class FamilyRegisterFragmentTest : RobolectricTest() {
 
     registerFragment.onItemClicked(
       OpenFamilyProfile,
-      FamilyItem("1", "", "", "", "", "", false, listOf(), 0, 0)
+      FamilyItem("1", "", "", "", mockk(), listOf(), 0, 0)
     )
 
     val expectedIntent =
