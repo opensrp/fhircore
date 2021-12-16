@@ -70,7 +70,7 @@ object SyncBroadcaster {
   }
 
   fun unRegisterSyncListener(onSyncListener: OnSyncListener) {
-    syncListeners.remove(WeakReference(onSyncListener))
+    syncListeners.removeIf { it.get() == onSyncListener }
   }
 
   fun broadcastSync(state: State) {

@@ -37,12 +37,12 @@ jobs:
         working-directory: android
          
       - name: Run Engine unit tests with Gradle
-        run: ./gradlew :engine:clean && ./gradlew :engine:jacocoTestReport -x testReleaseUnitTest --stacktrace
+        run: ./gradlew :engine:clean && ./gradlew :engine:jacocoTestReport -x :engine:testReleaseUnitTest --stacktrace
         working-directory: android
 
       - name: Upload Engine Test Report to codecov
         working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
+        run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
 
   eir-tests:
     runs-on: ubuntu-latest
@@ -67,12 +67,12 @@ jobs:
         working-directory: android
          
       - name: Run EIR unit tests with Gradle
-        run: ./gradlew :eir:clean && ./gradlew :eir:jacocoTestReport -x testReleaseUnitTest --stacktrace
+        run: ./gradlew :eir:clean && ./gradlew :eir:jacocoTestReport -x :eir:testReleaseUnitTest --stacktrace
         working-directory: android
 
       - name: Upload EIR Test Report to codecov
         working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -F eir -f "eir/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
+        run:  bash <(curl -s https://codecov.io/bash) -F eir -f "eir/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
 
   anc-tests:
     runs-on: ubuntu-latest
@@ -97,12 +97,12 @@ jobs:
         working-directory: android
 
       - name: Run ANC unit tests with Gradle
-        run: ./gradlew :anc:clean && ./gradlew :anc:jacocoTestReport -x testReleaseUnitTest --stacktrace
+        run: ./gradlew :anc:clean && ./gradlew :anc:jacocoTestReport -x :anc:testReleaseUnitTest --stacktrace
         working-directory: android
 
       - name: Upload ANC Test Report to codecov
         working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -F anc -f "anc/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
+        run:  bash <(curl -s https://codecov.io/bash) -F anc -f "anc/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
 
   quest-tests:
     runs-on: ubuntu-latest
@@ -127,11 +127,11 @@ jobs:
         working-directory: android
 
       - name: Run Quest unit tests with Gradle
-        run: ./gradlew :quest:clean && ./gradlew :quest:jacocoTestReport -x testReleaseUnitTest --stacktrace
+        run: ./gradlew :quest:clean && ./gradlew :quest:jacocoTestReport -x :quest:testReleaseUnitTest --stacktrace
         working-directory: android
 
       - name: Upload Quest Test Report to codecov
         working-directory: android
-        run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml"
+        run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
 
 

@@ -8,48 +8,9 @@ plugins {
     id 'dagger.hilt.android.plugin'
 }
 
+apply from: '../jacoco.gradle'
+
 android {
-
-    testOptions {
-        unitTests {
-            includeAndroidResources = true
-            returnDefaultValues = true
-            all {
-                jacoco {
-                    includeNoLocationClasses = true
-                    excludes = [
-                            // Android
-                            'jdk.internal.*',
-                            '**/BuildConfig.*',
-                            '**/*BR*.*',
-                            '**/Manifest*.*',
-                            '**/R.class',
-                            '**/R$*.class',
-                            // kotlin
-                            '**/*$Lambda$*.*',
-                            // Dagger and Hilt
-                            '**/*_Provide*/**',
-                            '**/*_Factory*/**',
-                            '**/*Module*.*',
-                            '**/*_Factory*.*',
-                            '**/*_MembersInjector.class',
-                            '**/*Dagger*',
-                            '**/di/*',
-                            '**/*Hilt*.*',
-                            // Data Binding
-                            'android/databinding/**/*.class',
-                            '**/android/databinding/*Binding.class',
-                            '**/android/databinding/*',
-                            '**/androidx/databinding/*',
-                    ]
-                }
-
-                beforeTest { testDescriptor ->
-                    println "${testDescriptor.className} > ${testDescriptor.name} STARTED"
-                }
-            }
-        }
-    }
 
     compileSdkVersion 30
     dataBinding {
@@ -112,6 +73,23 @@ android {
         exclude 'META-INF/LGPL-3.0.txt'
         exclude 'META-INF/sun-jaxb.episode'
         exclude("META-INF/*.kotlin_module")
+    }
+
+    testOptions {
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
+        animationsDisabled true
+
+        unitTests {
+            includeAndroidResources = true
+            returnDefaultValues = true
+            all {
+                minHeapSize = "4608m"
+                maxHeapSize = "4608m"
+                beforeTest { testDescriptor ->
+                    println "${testDescriptor.className} > ${testDescriptor.name} STARTED"
+                }
+            }
+        }
     }
 }
 

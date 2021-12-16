@@ -114,6 +114,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
               familyRepository.fhirEngine.save(this)
             }
             addOrganizationToPatient(patientId)
+
             handlePregnancy(
               patientId = patientId,
               questionnaireResponse = questionnaireResponse,
@@ -129,6 +130,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
                 relatedTo = relatedTo
               )
             addOrganizationToPatient(patientId)
+
             handlePregnancy(
               patientId = patientId,
               questionnaireResponse = questionnaireResponse,

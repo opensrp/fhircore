@@ -22,6 +22,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
 import androidx.recyclerview.widget.RecyclerView
+import androidx.test.ext.junit.rules.ActivityScenarioRule
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -47,11 +48,13 @@ import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.model.PatientVitalItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.engine.util.extension.plusYears
+import org.smartregister.fhircore.engine.HiltActivityForTest
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -59,9 +62,12 @@ internal class VitalSignsDetailsFragmentTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @get:Rule(order = 1) val coroutinesTestRule = CoroutineTestRule()
+  @get:Rule(order = 1)
+  val activityScenarioRule = ActivityScenarioRule(HiltActivityForTest::class.java)
 
   @get:Rule(order = 2) val instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  @get:Rule(order = 3) val coroutineTestRule = CoroutineTestRule()
 
   @BindValue val patientRepository: PatientRepository = mockk(relaxUnitFun = true)
 
@@ -97,6 +103,19 @@ internal class VitalSignsDetailsFragmentTest : RobolectricTest() {
 
     patientDetailsActivity.supportFragmentManager.commitNow {
       add(vitalSignsDetailsFragment, VitalSignsDetailsFragment.TAG)
+    }
+  }
+
+  private fun launchVitalSignsDetailsFragment() {
+    activityScenarioRule.scenario.onActivity {
+      it.supportFragmentManager.commitNow {
+        add(
+          VitalSignsDetailsFragment.newInstance().also { detailsFragment ->
+            vitalSignsDetailsFragment = detailsFragment
+          },
+          VitalSignsDetailsFragment.TAG
+        )
+      }
     }
   }
 
@@ -136,6 +155,74 @@ internal class VitalSignsDetailsFragmentTest : RobolectricTest() {
 
     Assert.assertEquals(View.GONE, noVaccinesTextView?.visibility)
     Assert.assertEquals(View.VISIBLE, immunizationsListView?.visibility)
+  }
+
+  @Test
+  fun testHandleVitalSigns() {
+
+    launchVitalSignsDetailsFragment()
+
+    Assert.assertNotNull(vitalSignsDetailsFragment)
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      vitalSignsDetailsFragment,
+      "handleVitalSigns",
+      ReflectionHelpers.ClassParameter(
+        PatientVitalItem::class.java,
+        PatientVitalItem(
+          "40",
+          "kg",
+          "34",
+          "in",
+          "86",
+          "%",
+          "45",
+          "bgunit",
+          "23",
+          "bpunit",
+          "23",
+          "bpunit",
+          "23",
+          "pulseunit"
+        )
+      )
+    )
+
+    with(vitalSignsDetailsFragment.binding) {
+      Assert.assertEquals("40", txtViewWeightValue.text.toString())
+      Assert.assertEquals("kg", txtViewWeightUnit.text.toString())
+      Assert.assertEquals("34", txtViewHeightValue.text.toString())
+      Assert.assertEquals("in", txtViewHeightUnit.text.toString())
+      Assert.assertEquals("86", txtViewSpValue.text.toString())
+      Assert.assertEquals("%", txtViewSpUnit.text.toString())
+      Assert.assertEquals("45", txtViewBgValue.text.toString())
+      Assert.assertEquals("bgunit", txtViewBgUnit.text.toString())
+      Assert.assertEquals("23", txtViewBpValue.text.toString())
+      Assert.assertEquals("bpunit", txtViewBpUnit.text.toString())
+      Assert.assertEquals("23", txtViewPulseValue.text.toString())
+      Assert.assertEquals("pulseunit", txtViewPulseUnit.text.toString())
+    }
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      vitalSignsDetailsFragment,
+      "handleVitalSigns",
+      ReflectionHelpers.ClassParameter(PatientVitalItem::class.java, PatientVitalItem())
+    )
+
+    with(vitalSignsDetailsFragment.binding) {
+      Assert.assertEquals("-", txtViewWeightValue.text.toString())
+      Assert.assertEquals("", txtViewWeightUnit.text.toString())
+      Assert.assertEquals("-", txtViewHeightValue.text.toString())
+      Assert.assertEquals("", txtViewHeightUnit.text.toString())
+      Assert.assertEquals("-", txtViewSpValue.text.toString())
+      Assert.assertEquals("", txtViewSpUnit.text.toString())
+      Assert.assertEquals("-", txtViewBgValue.text.toString())
+      Assert.assertEquals("", txtViewBgUnit.text.toString())
+      Assert.assertEquals("-", txtViewBpValue.text.toString())
+      Assert.assertEquals("", txtViewBpUnit.text.toString())
+      Assert.assertEquals("-", txtViewPulseValue.text.toString())
+      Assert.assertEquals("", txtViewPulseUnit.text.toString())
+    }
   }
 
   @Test
