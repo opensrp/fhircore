@@ -22,13 +22,13 @@ import com.google.android.fhir.sync.Sync
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.spyk
 import io.mockk.unmockkObject
-import io.mockk.verify
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.eir.databinding.ItemAdverseEventMainBinding
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
 import org.smartregister.fhircore.eir.ui.patient.details.ImmunizationAdverseEventItem
@@ -54,15 +54,26 @@ class MainAdverseEventAdapterTest : RobolectricTest() {
     val viewGroup = mockk<ViewGroup>()
     every { viewGroup.context } returns ApplicationProvider.getApplicationContext()
 
-    val list = listOf(mockk<ImmunizationAdverseEventItem>())
+    val list =
+      listOf(
+        ImmunizationAdverseEventItem(
+          listOf(),
+          "Moderna",
+          listOf(Pair("1", listOf(AdverseEventItem("2021-01-01", "no details"))))
+        )
+      )
     adapter.submitList(list)
 
-    val viewHolder = spyk(adapter.createViewHolder(viewGroup, 0))
+    val viewHolder = adapter.createViewHolder(viewGroup, 0)
     Assert.assertNotNull(viewHolder)
 
-    every { viewHolder.bindTo(any(), 0) } answers {}
     adapter.bindViewHolder(viewHolder, 0)
-    verify(exactly = 1) { viewHolder.bindTo(any(), 0) }
+
+    val binding = ReflectionHelpers.getField<ItemAdverseEventMainBinding>(viewHolder, "binding")
+    Assert.assertEquals(
+      AdverseEventAdapter::class.java.simpleName,
+      binding.adverseEventListView.adapter?.javaClass?.simpleName
+    )
   }
 
   @Test
