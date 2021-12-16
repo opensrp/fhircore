@@ -75,26 +75,29 @@ class RegisterViewConfigurationTest : RobolectricTest() {
           "filterText",
           "searchBarHint",
           "newClientButtonText",
+          "newClientButtonStyle",
+          true,
+          true,
+          true,
+          true,
+          true,
+          "patient-reg-form",
           false,
-          true,
-          true,
-          true,
-          true,
-          "patient-registration",
-          true,
-          false,
-          null
+          false
         )
     Assert.assertEquals("anc", registerViewConfigurationOf.appId)
-    Assert.assertEquals("clasification", registerViewConfigurationOf.appTitle)
-    Assert.assertEquals("filterText", registerViewConfigurationOf.searchBarHint)
-    Assert.assertEquals("searchBarHint", registerViewConfigurationOf.newClientButtonText)
-    Assert.assertEquals("newClientButtonText", registerViewConfigurationOf.newClientButtonStyle)
-    Assert.assertFalse(registerViewConfigurationOf.showSearchBar)
+    Assert.assertEquals("clasification", registerViewConfigurationOf.classification)
+    Assert.assertEquals("appTitle", registerViewConfigurationOf.appTitle)
+    Assert.assertEquals("filterText", registerViewConfigurationOf.filterText)
+    Assert.assertEquals("searchBarHint", registerViewConfigurationOf.searchBarHint)
+    Assert.assertEquals("newClientButtonText", registerViewConfigurationOf.newClientButtonText)
+    Assert.assertEquals("newClientButtonStyle", registerViewConfigurationOf.newClientButtonStyle)
+    Assert.assertEquals("patient-reg-form", registerViewConfigurationOf.registrationForm)
+    Assert.assertTrue(registerViewConfigurationOf.showSearchBar)
     Assert.assertTrue(registerViewConfigurationOf.switchLanguages)
     Assert.assertTrue(registerViewConfigurationOf.showScanQRCode)
     Assert.assertTrue(registerViewConfigurationOf.showNewClientButton)
-    Assert.assertTrue(registerViewConfigurationOf.showSideMenu)
+    Assert.assertFalse(registerViewConfigurationOf.showSideMenu)
     Assert.assertFalse(registerViewConfigurationOf.showBottomMenu)
   }
 }
