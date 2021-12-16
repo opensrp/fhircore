@@ -31,14 +31,41 @@ class AncOverviewConfigurationTest : RobolectricTest() {
     val gaFilter = mockk<SearchFilter> { every { key } returns "2" }
     val fetusesFilter = mockk<SearchFilter> { every { key } returns "3" }
     val riskFilter = mockk<SearchFilter> { every { key } returns "4" }
+    val weightFilter = mockk<SearchFilter> { every { key } returns "5" }
+    val heightFilter = mockk<SearchFilter> { every { key } returns "6" }
+    val bloodOxygenLevelFilter = mockk<SearchFilter> { every { key } returns "7" }
+    val BPSFilter = mockk<SearchFilter> { every { key } returns "8" }
+    val BPDSFilter = mockk<SearchFilter> { every { key } returns "9" }
+    val pulseRateFilter = mockk<SearchFilter> { every { key } returns "10" }
+    val bloodGlucoseFilter = mockk<SearchFilter> { every { key } returns "11" }
 
     val ancOverviewConfiguration =
-      AncOverviewConfiguration(id, eddFilter, gaFilter, fetusesFilter, riskFilter)
+      AncOverviewConfiguration(
+        id,
+        eddFilter,
+        gaFilter,
+        fetusesFilter,
+        riskFilter,
+        weightFilter,
+        heightFilter,
+        bloodOxygenLevelFilter,
+        BPSFilter,
+        BPDSFilter,
+        pulseRateFilter,
+        bloodGlucoseFilter
+      )
 
     assertEquals("0", ancOverviewConfiguration.id)
     assertEquals("1", ancOverviewConfiguration.eddFilter?.key)
     assertEquals("2", ancOverviewConfiguration.gaFilter?.key)
     assertEquals("3", ancOverviewConfiguration.fetusesFilter?.key)
     assertEquals("4", ancOverviewConfiguration.riskFilter?.key)
+    assertEquals("5", ancOverviewConfiguration.weightFilter?.key)
+    assertEquals("6", ancOverviewConfiguration.heightFilter?.key)
+    assertEquals("7", ancOverviewConfiguration.bloodOxygenLevelFilter?.key)
+    assertEquals("8", ancOverviewConfiguration.BPSFilter?.key)
+    assertEquals("9", ancOverviewConfiguration.BPDSFilter?.key)
+    assertEquals("10", ancOverviewConfiguration.pulseRateFilter?.key)
+    assertEquals("11", ancOverviewConfiguration.bloodGlucoseFilter?.key)
   }
 }

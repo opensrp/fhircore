@@ -49,6 +49,14 @@
           "valueInteger": 59
         }
       ]
+    },
+    {
+      "linkId": "patient-id",
+      "answer": [
+        {
+          "valueString": "923948023470"
+        }
+      ]
     }
   ]
 }

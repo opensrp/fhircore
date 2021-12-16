@@ -59,6 +59,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
@@ -117,7 +118,7 @@ fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
 
 @Composable
 fun ResultItem(
-  questionnaireResponse: QuestionnaireResponse,
+  testResult: Pair<QuestionnaireResponse, Questionnaire>,
   questPatientDetailViewModel: QuestPatientDetailViewModel
 ) {
   Row(
@@ -126,14 +127,12 @@ fun ResultItem(
     modifier =
       Modifier.fillMaxWidth()
         .padding(12.dp)
-        .clickable {
-          questPatientDetailViewModel.onTestResultItemClickListener(questionnaireResponse)
-        }
+        .clickable { questPatientDetailViewModel.onTestResultItemClickListener(testResult.first) }
         .testTag(RESULT_ITEM)
   ) {
     Text(
-      text = (questionnaireResponse.meta?.tagFirstRep?.display
-          ?: "") + " (${questionnaireResponse.authored?.asDdMmmYyyy() ?: ""}) ",
+      text = (questPatientDetailViewModel.fetchResultItemLabel(testResult)
+          ?: "") + " (${testResult.first.authored?.asDdMmmYyyy() ?: ""}) ",
       color = colorResource(id = R.color.black),
       fontSize = 17.sp,
       textAlign = TextAlign.Start,
@@ -258,3 +257,4 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
     }
   }
 }
+

@@ -1,6 +1,6 @@
 [
   {
-    "appId": "covax",
+    "appId": "appId",
     "classification": "patient_register",
     "appTitle": "Covax",
     "filterText": "Show overdue",

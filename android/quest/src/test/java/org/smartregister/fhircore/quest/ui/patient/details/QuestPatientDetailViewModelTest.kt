@@ -32,6 +32,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
@@ -166,5 +167,57 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
 
     verify { libraryEvaluator.createBundle(any()) }
     verify { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) }
+  }
+    
+  fun testFetchResultNonNullNameShouldReturnNameValue() {
+    val result =
+      questPatientDetailViewModel.fetchResultItemLabel(
+        testResult =
+          Pair(
+            QuestionnaireResponse(),
+            Questionnaire().apply {
+              name = "Sample name"
+              title = "Sample title"
+            }
+          )
+      )
+
+    Assert.assertEquals("Sample name", result)
+    Assert.assertNotEquals("Sample title", result)
+  }
+
+  @Test
+  fun testFetchResultNullNameShouldReturnTitleValue() {
+    val result =
+      questPatientDetailViewModel.fetchResultItemLabel(
+        testResult =
+          Pair(
+            QuestionnaireResponse(),
+            Questionnaire().apply {
+              name = null
+              title = "Sample title"
+            }
+          )
+      )
+
+    Assert.assertEquals("Sample title", result)
+    Assert.assertNotEquals("Sample name", result)
+  }
+
+  @Test
+  fun testFetchResultNullNameTitleShouldReturnNull() {
+    val result =
+      questPatientDetailViewModel.fetchResultItemLabel(
+        testResult =
+          Pair(
+            QuestionnaireResponse(),
+            Questionnaire().apply {
+              name = null
+              title = null
+            }
+          )
+      )
+
+    Assert.assertNull(result)
   }
 }

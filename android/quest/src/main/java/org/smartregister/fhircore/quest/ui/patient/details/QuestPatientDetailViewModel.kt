@@ -31,6 +31,7 @@ import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
@@ -52,7 +53,7 @@ constructor(
 
   val patientItem = MutableLiveData<PatientItem>()
   val questionnaireConfigs = MutableLiveData<List<QuestionnaireConfig>>()
-  val testResults = MutableLiveData<List<QuestionnaireResponse>>()
+  val testResults = MutableLiveData<List<Pair<QuestionnaireResponse, Questionnaire>>>()
   val onBackPressClicked = MutableLiveData(false)
   val onMenuItemClicked = MutableLiveData(-1)
   val onFormItemClicked = MutableLiveData<QuestionnaireConfig>(null)
@@ -144,6 +145,11 @@ constructor(
 
   fun onBackPressed(backPressed: Boolean) {
     onBackPressClicked.value = backPressed
+  }
+
+  fun fetchResultItemLabel(testResult: Pair<QuestionnaireResponse, Questionnaire>): String? {
+    return testResult.second.name?.let { name -> name }
+      ?: testResult.second.title?.let { title -> title }
   }
 
   companion object {
