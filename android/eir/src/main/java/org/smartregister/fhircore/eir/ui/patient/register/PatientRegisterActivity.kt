@@ -67,7 +67,8 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   override fun onBarcodeResult(barcode: String, view: View) {
     super.onBarcodeResult(barcode, view)
 
-    isPatientExists(barcode)
+    registerViewModel
+      .patientExists(barcode)
       .observe(
         this,
         {

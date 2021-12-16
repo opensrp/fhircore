@@ -19,8 +19,10 @@ package org.smartregister.fhircore.engine.cql
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import java.io.ByteArrayInputStream
-import java.io.File
 import java.io.InputStream
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.junit.Assert
@@ -28,26 +30,20 @@ import org.junit.Ignore
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.FileUtil
 
-@Ignore("need to fix OOM issue")
+@Ignore("Fix java.lang.OutOfMemoryError: Java heap space")
 class MeasureEvaluatorTest {
 
-  var baseTestPathMeasureAssets =
-    System.getProperty("user.dir") +
-      File.separator +
-      "src" +
-      File.separator +
-      File.separator +
-      "test/resources/cql/measureevaluator/"
-  var patientAssetsDir = baseTestPathMeasureAssets + "first-contact"
-  var libraryFilePath = "test/resources/cql/measureevaluator/library/ANCIND01-bundle.json"
+  private var baseTestPathMeasureAssets: Path =
+    Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "cql", "measureevaluator")
+  private var patientAssetsDir: Path = baseTestPathMeasureAssets.resolve("first-contact")
+  private var libraryFilePath: Path =
+    baseTestPathMeasureAssets.resolve(Paths.get("library", "ANCIND01-bundle.json"))
 
   @Test
   fun runMeasureEvaluate() {
     val fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
     val parser = fhirContext.newJsonParser()!!
-
-    val filePatientAssetDir = File(patientAssetsDir)
-    val fileListString = FileUtil.recurseFolders(filePatientAssetDir)
+    val fileListString = FileUtil.recurseFolders(patientAssetsDir.toFile())
     val patientResources: ArrayList<String> = ArrayList()
     for (f in fileListString) {
       patientResources.add(FileUtil.readJsonFile(f))
@@ -60,8 +56,7 @@ class MeasureEvaluatorTest {
       resources.add(patientData)
     }
 
-    val libraryStream: InputStream =
-      ByteArrayInputStream(FileUtil.readJsonFile(libraryFilePath).toByteArray())
+    val libraryStream: InputStream = ByteArrayInputStream(Files.readAllBytes(libraryFilePath))
     val library = parser.parseResource(libraryStream) as IBaseBundle
 
     val measureEvaluator = MeasureEvaluator()

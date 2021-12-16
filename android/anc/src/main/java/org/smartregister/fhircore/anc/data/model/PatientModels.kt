@@ -82,3 +82,21 @@ data class PatientBmiItem(
   var weight: String = "",
   var bmi: String = ""
 )
+
+@Stable
+data class PatientVitalItem(
+  var weight: String = "",
+  var weightUnit: String = "",
+  var height: String = "",
+  var heightUnit: String = "",
+  var spO2: String = "",
+  var spO2Unit: String = "",
+  var bg: String = "",
+  var bgUnit: String = "",
+  var bps: String = "",
+  var bpsUnit: String = "",
+  var bpds: String = "",
+  var bpdsUnit: String = "",
+  var pulse: String = "",
+  var pulseUnit: String = ""
+)

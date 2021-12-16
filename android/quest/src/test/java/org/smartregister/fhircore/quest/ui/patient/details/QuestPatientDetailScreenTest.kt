@@ -73,26 +73,11 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    Faker.initPatientRepositoryMocks(patientRepository)
-    questPatientDetailViewModel =
-      spyk(
-        QuestPatientDetailViewModel(
-          patientRepository = patientRepository,
-          patientItemMapper = patientItemMapper
-        )
-      )
-    // Simulate retrieval of data from repository
-    questPatientDetailViewModel.run {
-      getDemographics(patientId)
-      getAllResults(patientId)
-      getAllForms(application)
-    }
-
-    composeRule.setContent { QuestPatientDetailScreen(questPatientDetailViewModel) }
   }
 
   @Test
   fun testToolbarComponents() {
+    initMocks()
     composeRule
       .onNodeWithTag(TOOLBAR_TITLE)
       .assertTextEquals(application.getString(R.string.back_to_clients))
@@ -108,6 +93,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
 
   @Test
   fun testToolbarMenuButtonShouldToggleMenuItemsList() {
+    initMocks()
     composeRule.onNodeWithTag(TOOLBAR_MENU).assertDoesNotExist()
     composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
 
@@ -124,6 +110,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
 
   @Test
   fun testToolbarTestResultsMenuItemShouldCallMenuItemClickListener() {
+    initMocks()
     composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
     composeRule.onNodeWithTag(TOOLBAR_MENU).onChildAt(0).performClick()
     verify { questPatientDetailViewModel.onMenuItemClickListener(true) }
@@ -131,12 +118,14 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
 
   @Test
   fun testToolbarBackPressedButtonShouldCallBackPressedClickListener() {
+    initMocks()
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).performClick()
     verify { questPatientDetailViewModel.onBackPressed(true) }
   }
 
   @Test
   fun testPatientDetailsCardShouldHaveCorrectData() {
+    initMocks()
     composeRule
       .onNodeWithTag(PATIENT_NAME)
       .assertExists()
@@ -146,6 +135,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
 
   @Test
   fun testFormsListShouldDisplayAllFormWithCorrectData() {
+    initMocks()
     composeRule.onAllNodesWithTag(FORM_ITEM).assertCountEquals(2)
     composeRule.onAllNodesWithTag(FORM_ITEM)[0].assertTextEquals("SAMPLE ORDER RESULT")
     composeRule.onAllNodesWithTag(FORM_ITEM)[1].assertTextEquals("SAMPLE TEST RESULT")
@@ -153,6 +143,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
 
   @Test
   fun testFormsListItemClickShouldCallFormItemClickListener() {
+    initMocks()
     val formItemClicks = mutableListOf<QuestionnaireConfig>()
     every { questPatientDetailViewModel.onFormItemClickListener(any()) } answers
       {
@@ -171,42 +162,83 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
 
   @Test
   fun testResultsListShouldHaveAllResultsWithCorrectData() {
+    initMocks()
+
     // response heading should be exist and must be displayed
     composeRule.onNodeWithText("RESPONSES (2)").assertExists().assertIsDisplayed()
 
     // verify test result item(s) count and item title
-    composeRule.onAllNodesWithTag(RESULT_ITEMS).assertCountEquals(2)
-    composeRule.onAllNodesWithTag(RESULT_ITEMS, true)[0].assert(
+    composeRule.onAllNodesWithTag(RESULT_ITEM).assertCountEquals(2)
+    composeRule.onAllNodesWithTag(RESULT_ITEM, true)[0].assert(
       hasAnyChild(hasText("Sample Order (${Date().asDdMmmYyyy()}) "))
     )
-    composeRule.onAllNodesWithTag(RESULT_ITEMS, true)[1].assert(
+    composeRule.onAllNodesWithTag(RESULT_ITEM, true)[1].assert(
       hasAnyChild(hasText("Sample Test (${Date().asDdMmmYyyy()}) "))
     )
   }
 
   @Test
   fun testResultsListItemShouldCallResultItemListener() {
+    initMocks()
     val resultItemClicks = mutableListOf<QuestionnaireResponse>()
     every { questPatientDetailViewModel.onTestResultItemClickListener(any()) } answers
       {
         resultItemClicks.add(this.invocation.args[0] as QuestionnaireResponse)
       }
 
+    composeRule.onAllNodesWithTag(RESULT_ITEM).assertCountEquals(2)
     composeRule.onAllNodesWithTag(RESULT_ITEM)[0].performClick()
+    composeRule.onAllNodesWithTag(RESULT_ITEM)[1].performClick()
 
     verify { questPatientDetailViewModel.onTestResultItemClickListener(any()) }
 
     assertEquals("Sample Order", resultItemClicks[0].meta.tagFirstRep.display)
+    assertEquals("Sample Test", resultItemClicks[1].meta.tagFirstRep.display)
   }
 
   @Test
   fun testQuestPatientDetailScreenShouldHandleMissingData() {
+    initEmptyMocks()
     composeRule
       .onNodeWithTag(TOOLBAR_TITLE)
       .assertTextEquals(application.getString(R.string.back_to_clients))
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
-    composeRule.onNodeWithTag(PATIENT_NAME).assertExists().assertTextEquals("John Doe, M, 21y")
-    composeRule.onNodeWithTag(FORM_CONTAINER_ITEM).assertExists()
-    composeRule.onNodeWithTag(RESULT_CONTAINER_ITEM).assertExists()
+    composeRule.onNodeWithTag(PATIENT_NAME).assertExists().assertTextEquals(", , ")
+    composeRule.onNodeWithTag(FORM_CONTAINER_ITEM).assert(hasAnyChild(hasText("Loading forms ...")))
+    composeRule
+      .onNodeWithTag(RESULT_CONTAINER_ITEM)
+      .assert(hasAnyChild(hasText("Loading responses ...")))
+  }
+
+  private fun initMocks() {
+    Faker.initPatientRepositoryMocks(patientRepository)
+    questPatientDetailViewModel =
+      spyk(
+        QuestPatientDetailViewModel(
+          patientRepository = patientRepository,
+          patientItemMapper = patientItemMapper
+        )
+      )
+    // Simulate retrieval of data from repository
+    questPatientDetailViewModel.run {
+      getDemographics(patientId)
+      getAllResults(patientId)
+      getAllForms(application)
+    }
+
+    composeRule.setContent { QuestPatientDetailScreen(questPatientDetailViewModel) }
+  }
+
+  private fun initEmptyMocks() {
+    Faker.initPatientRepositoryEmptyMocks(patientRepository)
+
+    questPatientDetailViewModel =
+      spyk(
+        QuestPatientDetailViewModel(
+          patientRepository = patientRepository,
+          patientItemMapper = patientItemMapper
+        )
+      )
+    composeRule.setContent { QuestPatientDetailScreen(questPatientDetailViewModel) }
   }
 }
