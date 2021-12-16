@@ -58,6 +58,7 @@ class AncItemMapperTest : RobolectricTest() {
           Anc(
             patient,
             null,
+            listOf(),
             listOf(
               CarePlan().apply {
                 addActivity().apply {
@@ -91,6 +92,7 @@ class AncItemMapperTest : RobolectricTest() {
                 country = "PK"
               }
             },
+            listOf(),
             listOf(
               CarePlan().apply {
                 addActivity().apply {
@@ -109,7 +111,7 @@ class AncItemMapperTest : RobolectricTest() {
       )
 
     verifyPatientDemographics(patientItem, VisitStatus.DUE)
-    Assert.assertEquals("KHI PK", patientItem.address)
+    Assert.assertEquals("Nairobi Kenya", patientItem.address)
   }
 
   @Test
@@ -117,7 +119,7 @@ class AncItemMapperTest : RobolectricTest() {
     ancItemMapper.setAncItemMapperType(AncItemMapper.AncItemMapperType.DETAILS)
     val patientItem = ancItemMapper.mapToDomainModel(dto = Anc(patient, null, listOf()))
     verifyPatientDemographics(patientItem, VisitStatus.PLANNED)
-    Assert.assertFalse(patientItem.isPregnant)
+    Assert.assertFalse(patientItem.isPregnant!!)
   }
 
   private fun verifyPatientDemographics(
