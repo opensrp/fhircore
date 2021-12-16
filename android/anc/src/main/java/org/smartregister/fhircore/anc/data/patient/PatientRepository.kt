@@ -238,7 +238,7 @@ constructor(
         }
       }
     if (observations.isNotEmpty())
-      finalObservation = observations.sortedBy { it.effectiveDateTimeType.value }.first()
+      finalObservation = observations.sortedBy { it.effectiveDateTimeType.value }.last()
 
     return finalObservation
   }
@@ -386,21 +386,19 @@ constructor(
   private suspend fun recordBmi(
     patientId: String,
     formEncounterId: String,
-    height: Double? = null,
     weight: Double? = null,
+    height: Double? = null,
     computedBMI: Double? = null,
     isUnitModeMetric: Boolean
   ): Boolean {
 
     var weightUnit = "lbs"
     var heightUnit = "in"
-    var bmiUnit = "lb/in2"
     var weightUnitCode = "[lb_av]"
     var heightUnitCode = "[in_i]"
     if (isUnitModeMetric) {
       weightUnit = "kg"
       heightUnit = "cm"
-      bmiUnit = "kg/m2"
       weightUnitCode = "kg"
       heightUnitCode = "cm"
     }
@@ -445,8 +443,7 @@ constructor(
         bmiEncounter = bmiEncounter,
         computedBmi = computedBMI,
         refObsWeightFormId = bmiWeightObservationRecordId,
-        refObsHeightFormId = bmiHeightObservationRecordId,
-        bmiUnit = bmiUnit
+        refObsHeightFormId = bmiHeightObservationRecordId
       )
     val bmiObservation =
       loadConfig(Template.BMI_PATIENT_BMI, Observation::class.java, bmiObservationData)
@@ -465,7 +462,6 @@ constructor(
     refObsHeightFormId: String? = null,
     heightUnit: String? = null,
     weightUnit: String? = null,
-    bmiUnit: String? = null,
     heightUnitCode: String? = null,
     weightUnitCode: String? = null,
   ): Map<String, String?> {
@@ -482,7 +478,6 @@ constructor(
       "#RefIdObservationBodyWeight" to refObsWeightFormId,
       "#ValueWeightUnit" to weightUnit?.toString(),
       "#ValueHeightUnit" to heightUnit?.toString(),
-      "#ValueBmiUnit" to bmiUnit?.toString(),
       "#ValueWeightUnitCode" to weightUnitCode?.toString(),
       "#ValueHeightUnitCode" to heightUnitCode?.toString(),
     )

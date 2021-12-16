@@ -28,8 +28,6 @@ import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.PatientVitalItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
-import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
-import org.smartregister.fhircore.anc.util.computeBMIViaUSCUnits
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @HiltViewModel
@@ -64,7 +62,6 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
         patientRepository.fetchVitalSigns(patientId = patientId, "pulse-rate")
       val listObservationBg = patientRepository.fetchVitalSigns(patientId = patientId, "bg")
       val listObservationspO2 = patientRepository.fetchVitalSigns(patientId = patientId, "spO2")
-      val listObservationBmi = patientRepository.fetchVitalSigns(patientId = patientId, "bmi")
 
       patientVitalItem.weight = observationValueOrDefault(listObservationWeight)
       patientVitalItem.weightUnit = listObservationWeight.valueQuantity.unit ?: ""
@@ -87,7 +84,7 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
       patientVitalItem.spO2 = observationValueOrDefault(listObservationspO2)
       patientVitalItem.spO2Unit = listObservationspO2.valueQuantity.unit ?: ""
 
-      if (patientVitalItem.height.isNotEmpty() &&
+      /*if (patientVitalItem.height.isNotEmpty() &&
           patientVitalItem.weight.isNotEmpty() &&
           patientVitalItem.height.toDouble() > 0 &&
           patientVitalItem.weight.toDouble() > 0
@@ -111,8 +108,9 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
             patientVitalItem.bmiUnit = "lbs/in2"
           }
         }
-      }
+      }*/
 
+      val listObservationBmi = patientRepository.fetchVitalSigns(patientId = patientId, "bmi")
       patientVitalItem.bmi = observationValueOrDefault(listObservationBmi)
       patientVitalItem.bmiUnit = listObservationBmi.valueQuantity.unit ?: ""
 

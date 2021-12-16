@@ -143,12 +143,11 @@ internal class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
     dialog = ShadowAlertDialog.getLatestDialog() as AlertDialog
 
     assertNotNull(dialog)
-    // TODO FIX BMI RESULT @ABDUL WAHAB
-    //    assertEquals(
-    //      bmiQuestionnaireActivity.getString(org.smartregister.fhircore.anc.R.string.your_bmi) +
-    //        " 19.04",
-    //      dialog.findViewById<TextView>(R.id.alertTitle)?.text
-    //    )
+    assertEquals(
+      bmiQuestionnaireActivity.getString(org.smartregister.fhircore.anc.R.string.your_bmi) +
+        " 19.04",
+      dialog.findViewById<TextView>(R.id.alertTitle)?.text
+    )
 
     coEvery {
       patientRepository.recordComputedBmi(any(), any(), any(), any(), any(), any(), any(), any())

@@ -58,15 +58,6 @@
         "code": "8302-2"
       }
     },
-    "bmiFilter": {
-      "filterType": "TOKEN",
-      "key": "code",
-      "valueType": "CODEABLECONCEPT",
-      "valueCoding": {
-        "system": "http://loinc.org",
-        "code": "39156-5"
-      }
-    },
     "bloodOxygenLevelFilter": {
       "filterType": "TOKEN",
       "key": "code",
@@ -110,6 +101,15 @@
       "valueCoding": {
         "system": "http://loinc.org",
         "code": "15074-8"
+      }
+    },
+    "bmiFilter": {
+      "filterType": "TOKEN",
+      "key": "code",
+      "valueType": "CODEABLECONCEPT",
+      "valueCoding": {
+        "system": "http://loinc.org",
+        "code": "39156-5"
       }
     }
   }

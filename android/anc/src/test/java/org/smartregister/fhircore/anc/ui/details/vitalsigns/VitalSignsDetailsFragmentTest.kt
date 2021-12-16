@@ -177,7 +177,9 @@ internal class VitalSignsDetailsFragmentTest : RobolectricTest() {
           "23",
           "bpunit",
           "23",
-          "pulseunit"
+          "pulseunit",
+          "22.5",
+          "kg/m2"
         )
       )
     )
@@ -195,6 +197,8 @@ internal class VitalSignsDetailsFragmentTest : RobolectricTest() {
       Assert.assertEquals("bpunit", txtViewBpUnit.text.toString())
       Assert.assertEquals("23", txtViewPulseValue.text.toString())
       Assert.assertEquals("pulseunit", txtViewPulseUnit.text.toString())
+      Assert.assertEquals("22.5", txtViewBmiValue.text.toString())
+      Assert.assertEquals("kg/m2", txtViewBmiUnit.text.toString())
     }
 
     ReflectionHelpers.callInstanceMethod<Any>(
