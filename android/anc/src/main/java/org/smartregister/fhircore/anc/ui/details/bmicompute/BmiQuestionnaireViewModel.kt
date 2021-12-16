@@ -95,8 +95,7 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
     return if (isUnitModeMetric) {
       val heightCms = questionnaireResponse.find(KEY_HEIGHT_CM)
       val height = heightCms?.answer?.firstOrNull()?.valueDecimalType?.value?.toDouble() ?: 0.0
-      val heightInMeters = height.div(HEIGHT_METER_CENTIMETER_MULTIPLIER)
-      heightInMeters
+      height
     } else {
       val heightFeets = questionnaireResponse.find(KEY_HEIGHT_FT)
       val heightInches = questionnaireResponse.find(KEY_HEIGHT_INCH)
@@ -124,7 +123,10 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
   fun calculateBmi(height: Double, weight: Double, isUnitModeMetric: Boolean): Double {
     return if (height <= 0 || weight <= 0) -1.0
     else if (isUnitModeMetric)
-      computeBMIViaMetricUnits(heightInMeters = height, weightInKgs = weight)
+      computeBMIViaMetricUnits(
+        heightInMeters = height / HEIGHT_METER_CENTIMETER_MULTIPLIER,
+        weightInKgs = weight
+      )
     else computeBMIViaUSCUnits(heightInInches = height, weightInPounds = weight)
   }
 
@@ -183,24 +185,20 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
     questionnaireResponse: QuestionnaireResponse,
     patientId: String,
     encounterID: String,
-    height: Double,
     weight: Double,
+    height: Double,
     computedBMI: Double,
-    heightUnit: String,
-    weightUnit: String,
-    bmiUnit: String
+    isUnitModeMetric: Boolean
   ): Boolean {
     return patientRepository.recordComputedBmi(
       questionnaire,
       questionnaireResponse,
       patientId,
       encounterID,
-      height,
       weight,
+      height,
       computedBMI,
-      heightUnit,
-      weightUnit,
-      bmiUnit
+      isUnitModeMetric
     )
   }
 }

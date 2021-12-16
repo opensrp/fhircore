@@ -37,11 +37,14 @@
   "subject": {
     "reference": "#RefPatient"
   },
+  "encounter": {
+    "reference": "#RefEncounter"
+  },
   "effectiveDateTime": "#EffectiveDate",
   "valueQuantity": {
     "value": "#ValueHeight",
     "unit": "#ValueHeightUnit",
     "system": "http://unitsofmeasure.org",
-    "code": "body-height-code"
+    "code": "#ValueHeightUnitCode"
   }
 }

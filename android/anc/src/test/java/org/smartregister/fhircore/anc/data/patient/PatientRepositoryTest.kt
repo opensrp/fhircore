@@ -489,9 +489,7 @@ class PatientRepositoryTest : RobolectricTest() {
           height = 1.6764,
           weight = 50.0,
           computedBmi = 9.8,
-          heightUnit = "m",
-          weightUnit = "kg",
-          bmiUnit = "kg/m2"
+          isUnitModeMetric = true
         )
 
       coVerify(exactly = 4) { fhirEngine.save(any()) }

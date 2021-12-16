@@ -32,12 +32,15 @@
   "subject": {
     "reference": "#RefPatient"
   },
+  "encounter": {
+    "reference": "#RefEncounter"
+  },
   "effectiveDateTime": "#EffectiveDate",
   "valueQuantity": {
     "value": "#ValueBmi",
     "unit": "#ValueBmiUnit",
     "system": "http://unitsofmeasure.org",
-    "code": "body-bmi-code"
+    "code": "kg/m2"
   },
   "derivedFrom": [
     {

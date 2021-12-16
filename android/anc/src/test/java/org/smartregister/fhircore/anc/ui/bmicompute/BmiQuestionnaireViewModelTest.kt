@@ -83,7 +83,7 @@ class BmiQuestionnaireViewModelTest : RobolectricTest() {
 
     // via metric Unit
     val expectedBmi2 = 22.90
-    val computedBmi2 = viewModel.calculateBmi(1.78, 72.57, true)
+    val computedBmi2 = viewModel.calculateBmi(178.0, 72.57, true)
     Assert.assertEquals(expectedBmi2, computedBmi2, 0.1)
 
     // invalid input check
@@ -156,7 +156,7 @@ class BmiQuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testFetInputHeightShouldReturnExpectedHeight() {
     val heightInMeters = viewModel.getInputHeight(getQuestionnaireResponse(), true)
-    Assert.assertEquals(1.7, heightInMeters, 0.0)
+    Assert.assertEquals(170.0, heightInMeters, 0.0)
 
     val heightInFeet = viewModel.getInputHeight(getQuestionnaireResponse(), false)
     Assert.assertEquals(120.0, heightInFeet, 0.0)
@@ -174,21 +174,10 @@ class BmiQuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testSaveComputedBmiShouldReturnTrue() {
     coEvery {
-      patientRepository.recordComputedBmi(
-        any(),
-        any(),
-        any(),
-        any(),
-        any(),
-        any(),
-        any(),
-        any(),
-        any(),
-        any()
-      )
+      patientRepository.recordComputedBmi(any(), any(), any(), any(), any(), any(), any(), any())
     } returns true
     val result = runBlocking {
-      viewModel.saveComputedBmi(mockk(), mockk(), "", "", 0.0, 0.0, 0.0, "", "", "")
+      viewModel.saveComputedBmi(mockk(), mockk(), "", "", 0.0, 0.0, 0.0, true)
     }
     Assert.assertTrue(result)
   }

@@ -238,7 +238,7 @@ constructor(
         }
       }
     if (observations.isNotEmpty())
-      finalObservation = observations.sortedBy { it.effectiveDateTimeType.value }.last()
+      finalObservation = observations.sortedBy { it.effectiveDateTimeType.value }.first()
 
     return finalObservation
   }
@@ -374,24 +374,13 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     patientId: String,
     encounterID: String,
-    height: Double,
     weight: Double,
+    height: Double,
     computedBmi: Double,
-    heightUnit: String,
-    weightUnit: String,
-    bmiUnit: String
+    isUnitModeMetric: Boolean
   ): Boolean {
     resourceMapperExtended.saveParsedResource(questionnaireResponse, questionnaire, patientId, null)
-    return recordBmi(
-      patientId,
-      encounterID,
-      height,
-      weight,
-      computedBmi,
-      heightUnit,
-      weightUnit,
-      bmiUnit
-    )
+    return recordBmi(patientId, encounterID, weight, height, computedBmi, isUnitModeMetric)
   }
 
   private suspend fun recordBmi(
@@ -400,18 +389,23 @@ constructor(
     height: Double? = null,
     weight: Double? = null,
     computedBMI: Double? = null,
-    heightUnit: String,
-    weightUnit: String,
-    bmiUnit: String
+    isUnitModeMetric: Boolean
   ): Boolean {
-    val bmiEncounterData =
-      buildBmiConfigData(
-        patientId = patientId,
-        recordId = formEncounterId,
-        height = height,
-        weight = weight,
-        computedBmi = computedBMI
-      )
+
+    var weightUnit = "lbs"
+    var heightUnit = "in"
+    var bmiUnit = "lb/in2"
+    var weightUnitCode = "[lb_av]"
+    var heightUnitCode = "[in_i]"
+    if (isUnitModeMetric) {
+      weightUnit = "kg"
+      heightUnit = "cm"
+      bmiUnit = "kg/m2"
+      weightUnitCode = "kg"
+      heightUnitCode = "cm"
+    }
+
+    val bmiEncounterData = buildBmiConfigData(patientId = patientId, recordId = formEncounterId)
     val bmiEncounter = loadConfig(Template.BMI_ENCOUNTER, Encounter::class.java, bmiEncounterData)
     fhirEngine.save(bmiEncounter)
 
@@ -421,10 +415,9 @@ constructor(
         patientId = patientId,
         recordId = bmiWeightObservationRecordId,
         bmiEncounter = bmiEncounter,
-        height = height,
         weight = weight,
-        computedBmi = computedBMI,
-        weightUnit = weightUnit
+        weightUnit = weightUnit,
+        weightUnitCode = weightUnitCode
       )
     val bmiWeightObservation =
       loadConfig(Template.BMI_PATIENT_WEIGHT, Observation::class.java, bmiWeightObservationData)
@@ -437,9 +430,8 @@ constructor(
         recordId = bmiHeightObservationRecordId,
         bmiEncounter = bmiEncounter,
         height = height,
-        weight = weight,
-        computedBmi = computedBMI,
-        heightUnit = heightUnit
+        heightUnit = heightUnit,
+        heightUnitCode = heightUnitCode
       )
     val bmiHeightObservation =
       loadConfig(Template.BMI_PATIENT_HEIGHT, Observation::class.java, bmiHeightObservationData)
@@ -451,8 +443,6 @@ constructor(
         patientId = patientId,
         recordId = bmiObservationRecordId,
         bmiEncounter = bmiEncounter,
-        height = height,
-        weight = weight,
         computedBmi = computedBMI,
         refObsWeightFormId = bmiWeightObservationRecordId,
         refObsHeightFormId = bmiHeightObservationRecordId,
@@ -475,7 +465,9 @@ constructor(
     refObsHeightFormId: String? = null,
     heightUnit: String? = null,
     weightUnit: String? = null,
-    bmiUnit: String? = null
+    bmiUnit: String? = null,
+    heightUnitCode: String? = null,
+    weightUnitCode: String? = null,
   ): Map<String, String?> {
     return mapOf(
       "#Id" to recordId,
@@ -490,7 +482,9 @@ constructor(
       "#RefIdObservationBodyWeight" to refObsWeightFormId,
       "#ValueWeightUnit" to weightUnit?.toString(),
       "#ValueHeightUnit" to heightUnit?.toString(),
-      "#ValueBmiUnit" to bmiUnit?.toString()
+      "#ValueBmiUnit" to bmiUnit?.toString(),
+      "#ValueWeightUnitCode" to weightUnitCode?.toString(),
+      "#ValueHeightUnitCode" to heightUnitCode?.toString(),
     )
   }
 

@@ -48,6 +48,6 @@
     "value": "#ValueWeight",
     "unit": "#ValueWeightUnit",
     "system": "http://unitsofmeasure.org",
-    "code": "body-weight-code"
+    "code": "#ValueWeightUnitCode"
   }
 }
