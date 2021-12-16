@@ -486,7 +486,7 @@ class PatientRepositoryTest : RobolectricTest() {
           effective = DateTimeType.now()
         }
       )
-    val result = runBlocking { repository.fetchVitalSigns("1111", "sp02") }
+    val result = runBlocking { repository.fetchVitalSigns("1111", "spO2") }
     Assert.assertEquals(4, result.valueIntegerType.value)
   }
 
