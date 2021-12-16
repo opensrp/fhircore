@@ -21,14 +21,15 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import java.text.SimpleDateFormat
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
@@ -61,21 +62,30 @@ class FamilyDetailScreenTest : RobolectricTest() {
     )
 
   @Test
-  @Ignore("Fix")
   fun testSurfaceComponent() {
-    composeRule.setContent { FamilyDetailScreen(FamilyDetailViewModel(mockk())) }
+    val viewModel =
+      FamilyDetailViewModel(
+        mockk {
+          coEvery { fetchDemographics(any()) } returns
+            Patient().apply {
+              addName().apply {
+                family = "John"
+                addGiven("Doe")
+              }
+            }
+        }
+      )
+    viewModel.fetchDemographics("")
+
+    composeRule.setContent { FamilyDetailScreen(viewModel) }
 
     // Top bar is displayed
     composeRule.onNodeWithText("All Families").assertExists()
     composeRule.onNodeWithText("All Families").assertIsDisplayed()
 
-    // Family name is displayed
-    composeRule.onNodeWithText("Doe").assertExists()
-    composeRule.onNodeWithText("Doe").assertIsDisplayed()
-
-    // Given name is displayed
-    composeRule.onNodeWithText("John").assertExists()
-    composeRule.onNodeWithText("John").assertIsDisplayed()
+    // Family name given is displayed
+    composeRule.onNodeWithText("John Doe").assertExists()
+    composeRule.onNodeWithText("John Doe").assertIsDisplayed()
   }
 
   @Test

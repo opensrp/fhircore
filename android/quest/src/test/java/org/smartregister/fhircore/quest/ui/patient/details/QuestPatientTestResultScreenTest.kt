@@ -16,13 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertTextEquals
-import androidx.compose.ui.test.hasAnyChild
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -33,7 +31,6 @@ import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.R
@@ -46,7 +43,6 @@ import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 class QuestPatientTestResultScreenTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) val composeRule = createComposeRule()
 
   @Inject lateinit var patientItemMapper: PatientItemMapper
@@ -91,11 +87,8 @@ class QuestPatientTestResultScreenTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Fix issue loading data to profile")
   fun testPatientDetailsCardShouldHaveCorrectData() {
-    composeRule
-      .onNodeWithTag(PATIENT_BIO_INFO)
-      .assert(hasAnyChild(hasText("John Doe")))
-      .assert(hasAnyChild(hasText("Male - 21y")))
+    composeRule.onNodeWithText("John Doe").assertExists()
+    composeRule.onNodeWithText("M - 21y").assertExists()
   }
 }

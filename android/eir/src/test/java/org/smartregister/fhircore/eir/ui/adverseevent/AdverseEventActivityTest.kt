@@ -136,11 +136,31 @@ internal class AdverseEventActivityTest : ActivityRobolectricTest() {
     verify(exactly = 0) { adverseEventAdapter.submitList(any()) }
   }
 
+  @Test
+  fun testPopulateAdverseEventsListShouldVerifyAdapterSubmitCall() {
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      adverseEventActivity,
+      "populateAdverseEventsList",
+      ReflectionHelpers.ClassParameter(List::class.java, getImmunizations()),
+      ReflectionHelpers.ClassParameter(
+        List::class.java,
+        listOf(
+          Pair("1", getImmunizationAdverseEventItem()),
+          Pair("2", getImmunizationAdverseEventItem()),
+          Pair("3", getImmunizationAdverseEventItem())
+        )
+      )
+    )
+
+    verify(exactly = 1) { adverseEventAdapter.submitList(any()) }
+  }
+
   override fun getActivity(): Activity {
     return adverseEventActivity
   }
 
-  fun getPatient(): Patient {
+  private fun getPatient(): Patient {
     val patient =
       spyk<Patient>().apply {
         id = "samplePatientId"
@@ -152,10 +172,11 @@ internal class AdverseEventActivityTest : ActivityRobolectricTest() {
     return patient
   }
 
-  fun getImmunizations(): List<Immunization> {
+  private fun getImmunizations(): List<Immunization> {
     val patient = getPatient()
     val immunization1 =
       spyk<Immunization>().apply {
+        id = "1"
         patientTarget = patient
         vaccineCode =
           CodeableConcept(Coding("system", "vaccine_code", "code display")).setText("Astrazeneca")
@@ -166,6 +187,7 @@ internal class AdverseEventActivityTest : ActivityRobolectricTest() {
 
     val immunization2 =
       spyk<Immunization>().apply {
+        id = "2"
         patientTarget = patient
         vaccineCode =
           CodeableConcept(Coding("system", "vaccine_code", "code display")).setText("Astrazeneca")
@@ -176,6 +198,7 @@ internal class AdverseEventActivityTest : ActivityRobolectricTest() {
 
     val immunization3 =
       spyk<Immunization>().apply {
+        id = "3"
         patientTarget = patient
         vaccineCode =
           CodeableConcept(Coding("system", "vaccine_code", "code display")).setText("Pfizer")
@@ -186,7 +209,7 @@ internal class AdverseEventActivityTest : ActivityRobolectricTest() {
     return listOf(immunization1, immunization2, immunization3)
   }
 
-  fun getImmunizationAdverseEventItem(): List<ImmunizationAdverseEventItem> {
+  private fun getImmunizationAdverseEventItem(): List<ImmunizationAdverseEventItem> {
     val listOfImmunizationIds = arrayListOf("1")
     val listOfImmunizationAdverseEvent =
       arrayListOf(
@@ -195,26 +218,8 @@ internal class AdverseEventActivityTest : ActivityRobolectricTest() {
       )
     val listDosses =
       arrayListOf<Pair<String, List<AdverseEventItem>>>(Pair("1", listOfImmunizationAdverseEvent))
-    val immunization1 =
-      spyk<ImmunizationAdverseEventItem>().apply {
-        vaccine = "Moderna"
-        immunizationIds = listOfImmunizationIds
-        dosesWithAdverseEvents = listDosses
-      }
+    val immunization1 = ImmunizationAdverseEventItem(listOfImmunizationIds, "Moderna", listDosses)
 
-    val immunization2 =
-      spyk<ImmunizationAdverseEventItem>().apply {
-        vaccine = "Moderna"
-        immunizationIds = listOfImmunizationIds
-        dosesWithAdverseEvents = listDosses
-      }
-
-    val immunization3 =
-      spyk<ImmunizationAdverseEventItem>().apply {
-        vaccine = "Moderna"
-        immunizationIds = listOfImmunizationIds
-        dosesWithAdverseEvents = listDosses
-      }
-    return listOf(immunization1, immunization2, immunization3)
+    return listOf(immunization1)
   }
 }
