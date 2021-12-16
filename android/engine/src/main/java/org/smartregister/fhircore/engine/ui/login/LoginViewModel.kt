@@ -97,15 +97,18 @@ constructor(
           Timber.e("Error fetching access token %s", errorResponse)
           return
         } else {
-          if (attemptLocalLogin()) _navigateToHome.value = true
           _showProgressBar.postValue(false)
-          with(accountAuthenticator) {
-            addAuthenticatedAccount(
-              response,
-              username.value!!.trim(),
-              password.value?.trim()?.toCharArray()!!
-            )
-            getUserInfo().enqueue(userInfoResponseCallback)
+          if (attemptLocalLogin()) _navigateToHome.value = true
+          else {
+            with(accountAuthenticator) {
+              addAuthenticatedAccount(
+                response,
+                username.value!!.trim(),
+                password.value?.trim()?.toCharArray()!!
+              )
+              getUserInfo().enqueue(userInfoResponseCallback)
+            }
+            if (attemptLocalLogin()) _navigateToHome.value = true
           }
         }
       }
