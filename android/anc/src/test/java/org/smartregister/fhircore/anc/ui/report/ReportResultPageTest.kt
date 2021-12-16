@@ -21,12 +21,13 @@ import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.lifecycle.MutableLiveData
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
@@ -37,11 +38,13 @@ import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 
 @ExperimentalCoroutinesApi
+@HiltAndroidTest
 class ReportResultPageTest : RobolectricTest() {
 
   private lateinit var viewModel: ReportViewModel
-  @get:Rule val composeRule = createComposeRule()
-  @get:Rule var coroutinesTestRule = CoroutineTestRule()
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 1) val composeRule = createComposeRule()
+  @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
   private val testMeasureReportItem = MutableLiveData(ReportItem(title = "Report Result Title"))
   private val patientSelectionType = MutableLiveData("")
   private val selectedPatient = MutableLiveData(PatientItem(name = "Test Patient Name"))
@@ -51,6 +54,7 @@ class ReportResultPageTest : RobolectricTest() {
 
   @Before
   fun setUp() {
+    hiltRule.inject()
     viewModel =
       mockk {
         every { selectedMeasureReportItem } returns this@ReportResultPageTest.testMeasureReportItem
@@ -65,7 +69,6 @@ class ReportResultPageTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Failing in PR, though passing at local")
   fun testReportResultScreen() {
     composeRule.setContent { ReportResultScreen(viewModel = viewModel) }
     // toolbar should have valid title and icon
