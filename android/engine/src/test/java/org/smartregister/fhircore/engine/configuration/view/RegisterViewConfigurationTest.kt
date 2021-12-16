@@ -28,22 +28,22 @@ class RegisterViewConfigurationTest : RobolectricTest() {
   fun testRegisterViewConfiguration() {
     val registerViewConfiguration =
       RegisterViewConfiguration(
-        "anc",
-        "clasification",
-        "appTitle",
-        "filterText",
-        "searchBarHint",
-        "newClientButtonText",
-        "newClientButtonStyle",
-        false,
-        true,
-        true,
-        true,
-        true,
-        "patient-registration",
-        true,
-        false,
-        null
+        appId = "anc",
+        classification = "clasification",
+        appTitle = "appTitle",
+        filterText = "filterText",
+        searchBarHint = "searchBarHint",
+        newClientButtonText = "newClientButtonText",
+        newClientButtonStyle = "newClientButtonStyle",
+        showSearchBar = false,
+        showFilter = true,
+        switchLanguages = true,
+        showScanQRCode = true,
+        showNewClientButton = true,
+        registrationForm = "patient-registration",
+        showSideMenu = true,
+        showBottomMenu = false,
+        primaryFilter = null
       )
     Assert.assertEquals("anc", registerViewConfiguration.appId)
     Assert.assertEquals("appTitle", registerViewConfiguration.appTitle)
@@ -69,21 +69,21 @@ class RegisterViewConfigurationTest : RobolectricTest() {
     val registerViewConfigurationOf =
       ApplicationProvider.getApplicationContext<Application>()
         .registerViewConfigurationOf(
-          "anc",
-          "clasification",
-          "appTitle",
-          "filterText",
-          "searchBarHint",
-          "newClientButtonText",
-          "newClientButtonStyle",
-          true,
-          true,
-          true,
-          true,
-          true,
-          "patient-reg-form",
-          false,
-          false
+          appId = "anc",
+          classification = "clasification",
+          appTitle = "appTitle",
+          filterText = "filterText",
+          searchBarHint = "searchBarHint",
+          newClientButtonText = "newClientButtonText",
+          newClientButtonStyle = "newClientButtonStyle",
+          showSearchBar = true,
+          showFilter = true,
+          switchLanguages = true,
+          showScanQRCode = true,
+          showNewClientButton = true,
+          registrationForm = "patient-reg-form",
+          showSideMenu = false,
+          showBottomMenu = false
         )
     Assert.assertEquals("anc", registerViewConfigurationOf.appId)
     Assert.assertEquals("clasification", registerViewConfigurationOf.classification)

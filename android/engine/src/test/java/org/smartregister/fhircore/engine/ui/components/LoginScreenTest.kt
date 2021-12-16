@@ -122,7 +122,7 @@ class LoginScreenTest : RobolectricTest() {
     composeRule.onNodeWithText("Forgot Password!").assertExists()
     composeRule.onNodeWithText("Forgot Password!").assertIsDisplayed()
 
-    // verify forgot password dialog sontent
+    // verify forgot password dialog content
     composeRule.onNodeWithText("Please call your supervisor at 012-3456-789").assertExists()
     composeRule.onNodeWithText("Please call your supervisor at 012-3456-789").assertIsDisplayed()
 

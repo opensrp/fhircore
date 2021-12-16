@@ -25,11 +25,11 @@ class AuthConfigurationTest {
   fun testAuthConfiguration() {
     val authConfiguration =
       AuthConfiguration(
-        "https://keycloak-sampleorg",
-        "https://fhir.sample.org/",
-        "fhir client",
-        "client secret",
-        "openid"
+        oauthServerBaseUrl = "https://keycloak-sampleorg",
+        fhirServerBaseUrl = "https://fhir.sample.org/",
+        clientId = "fhir client",
+        clientSecret = "client secret",
+        accountType = "openid"
       )
     Assert.assertEquals("https://keycloak-sampleorg", authConfiguration.oauthServerBaseUrl)
     Assert.assertEquals("https://fhir.sample.org/", authConfiguration.fhirServerBaseUrl)
