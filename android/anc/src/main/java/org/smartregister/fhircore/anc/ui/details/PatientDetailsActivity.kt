@@ -36,7 +36,12 @@ import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivit
 import org.smartregister.fhircore.anc.ui.details.adapter.ViewPagerAdapter
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants.FAMILY_REGISTER_FORM
+import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
 import org.smartregister.fhircore.anc.util.startAncEnrollment
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
@@ -47,6 +52,8 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
   private lateinit var patientId: String
   private var isPregnant: Boolean = false
   private var isMale: Boolean = false
+  private var isHouseHold: Boolean = false
+  private lateinit var loadProgress: AlertDialog
 
   val ancDetailsViewModel by viewModels<AncDetailsViewModel>()
   private lateinit var activityAncDetailsBinding: ActivityNonAncDetailsBinding
@@ -59,6 +66,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
     activityAncDetailsBinding =
       DataBindingUtil.setContentView(this, R.layout.activity_non_anc_details)
     setSupportActionBar(activityAncDetailsBinding.patientDetailsToolbar)
+    loadProgress = showProgressAlert(this@PatientDetailsActivity, R.string.loading)
 
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
@@ -68,6 +76,9 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
   override fun onResume() {
     super.onResume()
     activityAncDetailsBinding.txtViewPatientId.text = patientId
+
+    loadProgress.show()
+
     ancDetailsViewModel
       .fetchDemographics(patientId)
       .observe(this@PatientDetailsActivity, this::handlePatientDemographics)
@@ -112,6 +123,19 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
         )
         true
       }
+      R.id.edit_info -> {
+        startActivity(
+          Intent(this, FamilyQuestionnaireActivity::class.java)
+            .putExtras(
+              QuestionnaireActivity.intentArgs(
+                clientIdentifier = patientId,
+                formName = if (isHouseHold) FAMILY_REGISTER_FORM else FAMILY_MEMBER_REGISTER_FORM
+              )
+            )
+            .putExtra(FamilyFormConstants.FAMILY_EDIT_INFO, true)
+        )
+        true
+      }
       R.id.anc_enrollment -> {
         this.startAncEnrollment(patientId)
         true
@@ -149,6 +173,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       activityAncDetailsBinding.txtViewPatientId.text = patientIdText
       isMale = this.patientDetails.gender == getString(R.string.male)
       isPregnant = this.patientDetails.isPregnant
+      isHouseHold = this.patientDetails.isHouseHoldHead
 
       if (isMale) {
         adapter =
@@ -160,6 +185,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
               bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
           )
         activityAncDetailsBinding.pager.adapter = adapter
+        loadProgress.hide()
         TabLayoutMediator(activityAncDetailsBinding.tablayout, activityAncDetailsBinding.pager) {
             tab,
             position ->
@@ -176,6 +202,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
               bundleOf(Pair(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId))
           )
         activityAncDetailsBinding.pager.adapter = adapter
+        loadProgress.hide()
         TabLayoutMediator(activityAncDetailsBinding.tablayout, activityAncDetailsBinding.pager) {
             tab,
             position ->

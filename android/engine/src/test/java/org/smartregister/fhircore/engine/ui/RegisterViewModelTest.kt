@@ -16,11 +16,17 @@
 
 package org.smartregister.fhircore.engine.ui
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import javax.inject.Inject
+import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.Patient
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -28,6 +34,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.register.RegisterViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -36,6 +43,10 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 class RegisterViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
+
+  @get:Rule(order = 2) val coroutineTestRule = CoroutineTestRule()
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
@@ -49,13 +60,15 @@ class RegisterViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     configurationRegistry.loadAppConfigurations("appId", accountAuthenticator) {}
+    val fhirEngine = spyk<FhirEngine>()
+    coEvery { fhirEngine.load(Patient::class.java, "barcodeId") } returns Patient()
     viewModel =
       RegisterViewModel(
-        fhirEngine = mockk(),
+        fhirEngine = fhirEngine,
         syncJob = mockk(),
         fhirResourceDataSource = mockk(),
         configurationRegistry = configurationRegistry,
-        dispatcher = mockk(),
+        dispatcher = coroutineTestRule.testDispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper
       )
   }
@@ -98,5 +111,14 @@ class RegisterViewModelTest : RobolectricTest() {
   fun testSetLastSyncTimestampShouldUpdateGlobalSyncTimestamp() {
     viewModel.setLastSyncTimestamp("12345")
     Assert.assertEquals("12345", viewModel.lastSyncTimestamp.value)
+  }
+
+  @Test
+  fun testPatientExistsShouldReturnTrue() {
+    coroutineTestRule.runBlockingTest {
+      val patientExists = viewModel.patientExists("barcodeId")
+      Assert.assertNotNull(patientExists.value)
+      Assert.assertTrue(patientExists.value!!.isSuccess)
+    }
   }
 }

@@ -160,12 +160,14 @@
           "answerOption": [
             {
               "valueCoding": {
+                "system":"http://hl7.org/fhir/administrative-gender",
                 "code": "female",
                 "display": "Female"
               }
             },
             {
               "valueCoding": {
+                "system":"http://hl7.org/fhir/administrative-gender",
                 "code": "male",
                 "display": "Male"
               }
