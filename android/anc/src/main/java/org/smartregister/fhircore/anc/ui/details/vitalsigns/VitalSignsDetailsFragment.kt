@@ -28,6 +28,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.EncounterItem
+import org.smartregister.fhircore.anc.data.model.PatientVitalItem
 import org.smartregister.fhircore.anc.databinding.FragmentVitalDetailsBinding
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.anc.ui.details.adapter.AllergiesAdapter
@@ -72,10 +73,14 @@ class VitalSignsDetailsFragment : Fragment() {
       .fetchEncounters(patientId)
       .observe(viewLifecycleOwner, this::handleEncounters)
 
+    ancDetailsViewModel
+      .fetchVitalSigns(patientId)
+      .observe(viewLifecycleOwner, this::handleVitalSigns)
+
     binding.swipeContainer.setOnRefreshListener {
       ancDetailsViewModel
-        .fetchEncounters(patientId)
-        .observe(viewLifecycleOwner, this::handleEncounters)
+        .fetchVitalSigns(patientId)
+        .observe(viewLifecycleOwner, this::handleVitalSigns)
     }
 
     binding.swipeContainer.setColorSchemeResources(
@@ -87,7 +92,6 @@ class VitalSignsDetailsFragment : Fragment() {
   }
 
   private fun handleEncounters(listEncounters: List<EncounterItem>) {
-    binding.swipeContainer.isRefreshing = false
     when {
       listEncounters.isEmpty() -> {
         binding.apply {
@@ -102,6 +106,31 @@ class VitalSignsDetailsFragment : Fragment() {
         }
         encounterAdapter.submitList(listEncounters)
       }
+    }
+  }
+
+  private fun vitalSignStringOrDefault(
+    vitalSignString: String,
+    defaultString: String = "-"
+  ): String {
+    return if (vitalSignString.isEmpty()) defaultString else vitalSignString
+  }
+
+  private fun handleVitalSigns(patientVitalItem: PatientVitalItem) {
+    binding.swipeContainer.isRefreshing = false
+    binding.apply {
+      txtViewWeightValue.text = vitalSignStringOrDefault(patientVitalItem.weight)
+      txtViewWeightUnit.text = patientVitalItem.weightUnit
+      txtViewHeightValue.text = vitalSignStringOrDefault(patientVitalItem.height)
+      txtViewHeightUnit.text = patientVitalItem.heightUnit
+      txtViewBgValue.text = vitalSignStringOrDefault(patientVitalItem.bg)
+      txtViewBgUnit.text = patientVitalItem.bgUnit
+      txtViewSpValue.text = vitalSignStringOrDefault(patientVitalItem.spO2)
+      txtViewSpUnit.text = patientVitalItem.spO2Unit
+      txtViewPulseValue.text = vitalSignStringOrDefault(patientVitalItem.pulse)
+      txtViewPulseUnit.text = patientVitalItem.pulseUnit
+      txtViewBpValue.text = vitalSignStringOrDefault(patientVitalItem.bps)
+      txtViewBpUnit.text = patientVitalItem.bpsUnit
     }
   }
 

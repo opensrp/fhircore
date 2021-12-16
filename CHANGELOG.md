@@ -19,12 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Report Result Page Individual Patient Item UI update plus Unit Tests
 - ANC | Report Result Page For All Population compose UI update plus Unit Tests
 - ANC | Integrate Hilt Dependency Injection
+- ANC | Patient details show vital signs
 
 - Quest | Add the ability to search for patients by id
 - Quest | Add ability to view previous QuestionnaireResponse
 - Quest | Added workflow configurations
 - Quest | Add photo capture questionnaire widget
 - Quest | Add ability to edit questionnaire responses
+- Quest | Patient registration birthDate from age
 - Quest | Integrate Hilt Dependency Injection
 
 - EIR | Added workflow configurations
@@ -40,6 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EIR | Ability for a complete immunixation flow from Record 1st Vaccine to Full Immunization
 - Quest | Fixed test result sorting issues
 - Quest | Fixed forms loading smoothly
+- Quest | Fixed multiple entries of same test results on quest patient detail screen
+- Quest | Fixed mislabeling of questionnaire responses on quest patient detail screen
 
 
 ### Changed
