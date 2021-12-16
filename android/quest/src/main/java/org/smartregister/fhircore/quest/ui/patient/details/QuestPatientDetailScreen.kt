@@ -257,4 +257,3 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
     }
   }
 }
-

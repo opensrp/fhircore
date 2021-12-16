@@ -168,7 +168,7 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
     verify { libraryEvaluator.createBundle(any()) }
     verify { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) }
   }
-    
+
   fun testFetchResultNonNullNameShouldReturnNameValue() {
     val result =
       questPatientDetailViewModel.fetchResultItemLabel(
