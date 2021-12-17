@@ -42,19 +42,19 @@ class AncOverviewConfigurationTest : RobolectricTest() {
 
     val ancOverviewConfiguration =
       AncOverviewConfiguration(
-        id,
-        eddFilter,
-        gaFilter,
-        fetusesFilter,
-        riskFilter,
-        weightFilter,
-        heightFilter,
-        bloodOxygenLevelFilter,
-        BPSFilter,
-        BPDSFilter,
-        pulseRateFilter,
-        bloodGlucoseFilter,
-        bmiFilter
+        id = id,
+        eddFilter = eddFilter,
+        gaFilter = gaFilter,
+        fetusesFilter = fetusesFilter,
+        riskFilter = riskFilter,
+        weightFilter = weightFilter,
+        heightFilter = heightFilter,
+        bloodOxygenLevelFilter = bloodOxygenLevelFilter,
+        BPSFilter = BPSFilter,
+        BPDSFilter = BPDSFilter,
+        pulseRateFilter = pulseRateFilter,
+        bloodGlucoseFilter = bloodGlucoseFilter,
+        bmiFilter = bmiFilter
       )
 
     assertEquals("0", ancOverviewConfiguration.id)

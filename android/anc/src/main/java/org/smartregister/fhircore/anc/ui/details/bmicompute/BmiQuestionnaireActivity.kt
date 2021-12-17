@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.anc.ui.details.bmicompute
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import androidx.activity.viewModels
@@ -57,21 +56,17 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
         bmiQuestionnaireViewModel.getInputHeight(questionnaireResponse, isUnitModeMetric)
       val computedBMI =
         bmiQuestionnaireViewModel.calculateBmi(inputHeight, inputWeight, isUnitModeMetric)
-      Log.e(
-        "aw",
-        "calculate bmi - w=" + inputWeight + " - h=" + inputHeight + " - bmi=" + computedBMI
-      )
       if (computedBMI < 0)
         showErrorAlert(getString(R.string.try_again), getString(R.string.error_saving_form))
       else {
         val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!
         showBmiDataAlert(
-          questionnaireResponse,
-          patientId,
-          inputWeight,
-          inputHeight,
-          computedBMI,
-          isUnitModeMetric
+          questionnaireResponse = questionnaireResponse,
+          patientId = patientId,
+          weight = inputWeight,
+          height = inputHeight,
+          computedBMI = computedBMI,
+          isUnitModeMetric = isUnitModeMetric
         )
       }
     }
@@ -117,12 +112,12 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
       .setPositiveButton(R.string.str_save) { dialogInterface, _ ->
         dialogInterface.dismiss()
         proceedRecordBMI(
-          questionnaireResponse,
-          patientId,
-          weight,
-          height,
-          computedBMI,
-          isUnitModeMetric
+          questionnaireResponse = questionnaireResponse,
+          patientId = patientId,
+          weight = weight,
+          height = height,
+          computedBMI = computedBMI,
+          isUnitModeMetric = isUnitModeMetric
         )
       }
       .show()
@@ -139,14 +134,14 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
     lifecycleScope.launch {
       val success =
         bmiQuestionnaireViewModel.saveComputedBmi(
-          questionnaire,
-          questionnaireResponse,
-          patientId,
-          encounterID,
-          weight,
-          height,
-          computedBMI,
-          isUnitModeMetric
+          questionnaire = questionnaire,
+          questionnaireResponse = questionnaireResponse,
+          patientId = patientId,
+          encounterID = encounterID,
+          weight = weight,
+          height = height,
+          computedBMI = computedBMI,
+          isUnitModeMetric = isUnitModeMetric
         )
 
       if (success) {

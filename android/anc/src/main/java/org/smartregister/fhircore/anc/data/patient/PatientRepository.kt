@@ -380,7 +380,14 @@ constructor(
     isUnitModeMetric: Boolean
   ): Boolean {
     resourceMapperExtended.saveParsedResource(questionnaireResponse, questionnaire, patientId, null)
-    return recordBmi(patientId, encounterID, weight, height, computedBmi, isUnitModeMetric)
+    return recordBmi(
+      patientId = patientId,
+      formEncounterId = encounterID,
+      weight = weight,
+      height = height,
+      computedBMI = computedBmi,
+      isUnitModeMetric = isUnitModeMetric
+    )
   }
 
   private suspend fun recordBmi(

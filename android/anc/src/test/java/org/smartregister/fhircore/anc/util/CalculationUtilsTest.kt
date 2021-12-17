@@ -22,14 +22,14 @@ import org.junit.Test
 class CalculationUtilsTest {
 
   @Test
-  fun testBMI_viaUSCUnit() {
+  fun testBMIViaUSCUnitIsComputed() {
     val expectedBMI = 22.96
     val computedBMI = computeBMIViaUSCUnits(70.0, 160.0)
     assertEquals(expectedBMI, computedBMI, 0.1)
   }
 
   @Test
-  fun testBMI_viaMetricUnit() {
+  fun testBMIviaMetricIsComputed() {
     val expectedBMI = 22.90
     val computedBMI = computeBMIViaMetricUnits(1.78, 72.57)
     assertEquals(expectedBMI, computedBMI, 0.1)

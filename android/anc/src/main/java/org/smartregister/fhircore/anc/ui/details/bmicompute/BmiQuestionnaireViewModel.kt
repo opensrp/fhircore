@@ -52,28 +52,10 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
 
     const val HEIGHT_FEET_INCHES_MULTIPLIER = 12
     const val HEIGHT_METER_CENTIMETER_MULTIPLIER = 100
-    const val HEIGHT_INCH_METER_MULTIPLIER = 39.3701
-    const val WEIGHT_POUND_KG_MULTIPLIER = 2.20462
 
     const val BMI_CATEGORY_UNDERWEIGHT_MAX_THRESHOLD = 18.5
     const val BMI_CATEGORY_NORMAL_MAX_THRESHOLD = 25
     const val BMI_CATEGORY_OVERWEIGHT_MAX_THRESHOLD = 30
-
-    fun getHeightAsPerMetricUnit(inputHeight: Double, unitModeMetric: Boolean): Double {
-      return if (unitModeMetric) {
-        inputHeight
-      } else {
-        inputHeight / HEIGHT_INCH_METER_MULTIPLIER
-      }
-    }
-
-    fun getWeightAsPerMetricUnit(inputWeight: Double, unitModeMetric: Boolean): Double {
-      return if (unitModeMetric) {
-        inputWeight
-      } else {
-        inputWeight / WEIGHT_POUND_KG_MULTIPLIER
-      }
-    }
   }
 
   enum class BmiCategory(val value: Int) {
@@ -191,14 +173,14 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
     isUnitModeMetric: Boolean
   ): Boolean {
     return patientRepository.recordComputedBmi(
-      questionnaire,
-      questionnaireResponse,
-      patientId,
-      encounterID,
-      weight,
-      height,
-      computedBMI,
-      isUnitModeMetric
+      questionnaire = questionnaire,
+      questionnaireResponse = questionnaireResponse,
+      patientId = patientId,
+      encounterID = encounterID,
+      weight = weight,
+      height = height,
+      computedBmi = computedBMI,
+      isUnitModeMetric = isUnitModeMetric
     )
   }
 }
