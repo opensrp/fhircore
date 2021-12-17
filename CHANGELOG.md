@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EIR | Integrate Hilt Dependency Injection
 
 - Engine | Integrate Hilt Dependency Injection
+- Engine | Fixed login authentication issue.
 - ANC | Implement vital signs observation extraction from questionnaires
 
 ### Fixed

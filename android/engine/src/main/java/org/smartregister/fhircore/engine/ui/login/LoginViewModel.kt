@@ -77,6 +77,7 @@ constructor(
         else {
           handleFailure(call, IOException("Network call failed with $response"))
         }
+        Timber.i(response.errorBody()?.toString() ?: "No error")
       }
 
       override fun handleFailure(call: Call<ResponseBody>, throwable: Throwable) {
@@ -149,10 +150,6 @@ constructor(
     )
   }
 
-  private val oauthResponseCallback: ResponseCallback<OAuthResponse> by lazy {
-    object : ResponseCallback<OAuthResponse>(oauthResponseHandler) {}
-  }
-
   private val _navigateToHome = MutableLiveData<Boolean>()
   val navigateToHome: LiveData<Boolean>
     get() = _navigateToHome
@@ -217,7 +214,7 @@ constructor(
       _showProgressBar.postValue(true)
       accountAuthenticator
         .fetchToken(username.value!!.trim(), password.value!!.trim().toCharArray())
-        .enqueue(oauthResponseCallback)
+        .enqueue(object : ResponseCallback<OAuthResponse>(oauthResponseHandler) {})
     }
   }
 
