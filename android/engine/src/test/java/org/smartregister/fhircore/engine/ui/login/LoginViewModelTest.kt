@@ -99,10 +99,6 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     val successfulLocalLogin = loginViewModel.attemptLocalLogin()
     Assert.assertTrue(successfulLocalLogin)
-
-    // Navigate to home screen
-    Assert.assertNotNull(loginViewModel.navigateToHome.value)
-    Assert.assertTrue(loginViewModel.navigateToHome.value!!)
   }
 
   @Test
