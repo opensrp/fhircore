@@ -133,6 +133,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
 
   @Test
   fun testToolbarRunCqlMenuItemShouldCallMenuItemClickListener() {
+    initMocks()
     composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
     composeRule.onNodeWithTag(TOOLBAR_MENU).onChildAt(1).performClick()
     verify { questPatientDetailViewModel.onMenuItemClickListener(R.string.run_cql) }
