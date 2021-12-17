@@ -31,9 +31,11 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.app.fakes.FakeModel.authCredentials
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -44,6 +46,7 @@ import retrofit2.Response
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
+@Config(shadows = [AccountManagerShadow::class])
 internal class LoginViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
