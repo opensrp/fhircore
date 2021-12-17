@@ -46,7 +46,7 @@ class LoginActivity :
     loginViewModel.apply {
       navigateToHome.observe(this@LoginActivity, { loginService.navigateToHome() })
       launchDialPad.observe(this@LoginActivity, { if (!it.isNullOrEmpty()) launchDialPad(it) })
-      // loginUser() commented out to make user login everytime
+      // loginUser() TODO commented out to make user login everytime. Make it configurable via settings
     }
 
     if (configurationRegistry.isAppIdInitialized()) {
