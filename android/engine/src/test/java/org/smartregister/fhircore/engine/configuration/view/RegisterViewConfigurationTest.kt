@@ -16,29 +16,88 @@
 
 package org.smartregister.fhircore.engine.configuration.view
 
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert
 import org.junit.Test
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-class RegisterViewConfigurationTest {
+class RegisterViewConfigurationTest : RobolectricTest() {
 
   @Test
   fun testRegisterViewConfiguration() {
     val registerViewConfiguration =
       RegisterViewConfiguration(
-        "anc",
-        "clasification",
-        "appTitle",
-        "filterText",
-        "searchBarHint",
-        "newClientButtonText",
-        "newClientButtonStyle"
+        appId = "anc",
+        classification = "clasification",
+        appTitle = "appTitle",
+        filterText = "filterText",
+        searchBarHint = "searchBarHint",
+        newClientButtonText = "newClientButtonText",
+        newClientButtonStyle = "newClientButtonStyle",
+        showSearchBar = false,
+        showFilter = true,
+        switchLanguages = true,
+        showScanQRCode = true,
+        showNewClientButton = true,
+        registrationForm = "patient-registration",
+        showSideMenu = true,
+        showBottomMenu = false,
+        primaryFilter = null
       )
     Assert.assertEquals("anc", registerViewConfiguration.appId)
+    Assert.assertEquals("appTitle", registerViewConfiguration.appTitle)
+    Assert.assertEquals("searchBarHint", registerViewConfiguration.searchBarHint)
+    Assert.assertEquals("newClientButtonText", registerViewConfiguration.newClientButtonText)
+    Assert.assertEquals("newClientButtonStyle", registerViewConfiguration.newClientButtonStyle)
+    Assert.assertFalse(registerViewConfiguration.showSearchBar)
+    Assert.assertTrue(registerViewConfiguration.switchLanguages)
+    Assert.assertTrue(registerViewConfiguration.showScanQRCode)
+    Assert.assertTrue(registerViewConfiguration.showNewClientButton)
+    Assert.assertTrue(registerViewConfiguration.showSideMenu)
+    Assert.assertFalse(registerViewConfiguration.showBottomMenu)
   }
 
   @Test
   fun testSearchFilter() {
     val searchFilter = SearchFilter("key", "code", "system")
     Assert.assertEquals("key", searchFilter.key)
+  }
+
+  @Test
+  fun testRegisterViewConfigurationOf() {
+    val registerViewConfigurationOf =
+      ApplicationProvider.getApplicationContext<Application>()
+        .registerViewConfigurationOf(
+          appId = "anc",
+          classification = "clasification",
+          appTitle = "appTitle",
+          filterText = "filterText",
+          searchBarHint = "searchBarHint",
+          newClientButtonText = "newClientButtonText",
+          newClientButtonStyle = "newClientButtonStyle",
+          showSearchBar = true,
+          showFilter = true,
+          switchLanguages = true,
+          showScanQRCode = true,
+          showNewClientButton = true,
+          registrationForm = "patient-reg-form",
+          showSideMenu = false,
+          showBottomMenu = false
+        )
+    Assert.assertEquals("anc", registerViewConfigurationOf.appId)
+    Assert.assertEquals("clasification", registerViewConfigurationOf.classification)
+    Assert.assertEquals("appTitle", registerViewConfigurationOf.appTitle)
+    Assert.assertEquals("filterText", registerViewConfigurationOf.filterText)
+    Assert.assertEquals("searchBarHint", registerViewConfigurationOf.searchBarHint)
+    Assert.assertEquals("newClientButtonText", registerViewConfigurationOf.newClientButtonText)
+    Assert.assertEquals("newClientButtonStyle", registerViewConfigurationOf.newClientButtonStyle)
+    Assert.assertEquals("patient-reg-form", registerViewConfigurationOf.registrationForm)
+    Assert.assertTrue(registerViewConfigurationOf.showSearchBar)
+    Assert.assertTrue(registerViewConfigurationOf.switchLanguages)
+    Assert.assertTrue(registerViewConfigurationOf.showScanQRCode)
+    Assert.assertTrue(registerViewConfigurationOf.showNewClientButton)
+    Assert.assertFalse(registerViewConfigurationOf.showSideMenu)
+    Assert.assertFalse(registerViewConfigurationOf.showBottomMenu)
   }
 }
