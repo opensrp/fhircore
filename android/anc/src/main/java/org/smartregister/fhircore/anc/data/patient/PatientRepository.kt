@@ -59,6 +59,7 @@ import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.anc.util.loadRegisterConfigAnc
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
@@ -87,8 +88,11 @@ constructor(
   private val registerConfig = context.loadRegisterConfig(RegisterType.ANC_REGISTER_ID)
 
   private val ancOverviewConfig = context.loadRegisterConfigAnc(AncOverviewType.ANC_OVERVIEW_ID)
+  private val vitalSignsConfig = context.loadRegisterConfigAnc(AncOverviewType.VITAL_SIGNS)
 
-  val resourceMapperExtended = ResourceMapperExtended(fhirEngine)
+  private val detailRepository = DefaultRepository(fhirEngine, dispatcherProvider)
+
+  val resourceMapperExtended = ResourceMapperExtended(detailRepository)
 
   override suspend fun loadData(
     query: String,
@@ -206,6 +210,34 @@ constructor(
       }
     if (observations.isNotEmpty())
       finalObservation = observations.sortedBy { it.effectiveDateTimeType.value }.first()
+
+    return finalObservation
+  }
+
+  suspend fun fetchVitalSigns(patientId: String, searchFilterString: String): Observation {
+    val searchFilter: SearchFilter =
+      when (searchFilterString) {
+        "body-weight" -> vitalSignsConfig.weightFilter!!
+        "body-height" -> vitalSignsConfig.heightFilter!!
+        "bp-s" -> vitalSignsConfig.BPSFilter!!
+        "bp-d" -> vitalSignsConfig.BPDSFilter!!
+        "pulse-rate" -> vitalSignsConfig.pulseRateFilter!!
+        "bg" -> vitalSignsConfig.bloodGlucoseFilter!!
+        "spO2" -> vitalSignsConfig.bloodOxygenLevelFilter!!
+        else ->
+          throw UnsupportedOperationException("Given filter $searchFilterString not supported")
+      }
+    var finalObservation = Observation()
+    val observations =
+      withContext(dispatcherProvider.io()) {
+        fhirEngine.search<Observation> {
+          filterBy(searchFilter)
+          // for patient filter use extension created
+          filterByPatient(Observation.SUBJECT, patientId)
+        }
+      }
+    if (observations.isNotEmpty())
+      finalObservation = observations.sortedBy { it.effectiveDateTimeType.value }.last()
 
     return finalObservation
   }

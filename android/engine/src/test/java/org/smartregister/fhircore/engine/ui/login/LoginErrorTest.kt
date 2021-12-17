@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.remote.shared.interceptor
+package org.smartregister.fhircore.engine.ui.login
 
-import javax.inject.Inject
-import okhttp3.Interceptor
+import org.junit.Assert
+import org.junit.Test
 
-class LoginInterceptor @Inject constructor() : Interceptor {
+class LoginErrorTest {
 
-  override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
-    val request = chain.request()
-    return chain.proceed(request)
+  @Test
+  fun testLoginErrorConstructorInitializesLoginerror() {
+    val loginError = LoginError("test error", "test description")
+    Assert.assertEquals("test error", loginError.error)
+    Assert.assertEquals("test description", loginError.errorDescription)
   }
 }

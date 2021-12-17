@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.remote.shared
+package org.smartregister.fhircore.engine.data.remote.shared.interceptor
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
@@ -28,7 +28,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.auth.TokenManagerService
-import org.smartregister.fhircore.engine.data.remote.shared.interceptor.OAuthInterceptor
 import org.smartregister.fhircore.engine.robolectric.FhircoreTestRunner
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 

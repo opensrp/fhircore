@@ -24,6 +24,8 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.clearAllMocks
+import java.io.File
+import java.io.FileReader
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.Questionnaire
@@ -55,7 +57,22 @@ abstract class RobolectricTest {
     return data[0] as T?
   }
 
+  fun String.readFile(): String {
+    val file = File("$ASSET_BASE_PATH/$this")
+    val charArray = CharArray(file.length().toInt()).apply { FileReader(file).read(this) }
+    return String(charArray)
+  }
+
   companion object {
+    val ASSET_BASE_PATH =
+      (System.getProperty("user.dir") +
+        File.separator +
+        "src" +
+        File.separator +
+        "test" +
+        File.separator +
+        "resources" +
+        File.separator)
 
     @JvmStatic
     @BeforeClass

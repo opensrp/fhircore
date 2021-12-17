@@ -41,6 +41,7 @@ import org.smartregister.fhircore.anc.util.filterByPatientName
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.find
 
@@ -56,7 +57,9 @@ constructor(
 
   private val registerConfig = context.loadRegisterConfig(RegisterType.FAMILY_REGISTER_ID)
 
-  private val resourceMapperExtended = ResourceMapperExtended(fhirEngine)
+  private val detailRepository = DefaultRepository(fhirEngine, dispatcherProvider)
+
+  private val resourceMapperExtended = ResourceMapperExtended(detailRepository)
 
   override suspend fun loadData(
     query: String,
@@ -111,6 +114,29 @@ constructor(
     questionnaireResponse: QuestionnaireResponse
   ): String {
     return postProcessFamilyMember(questionnaire, questionnaireResponse, null)
+  }
+
+  suspend fun updateProcessFamilyHead(
+    patientId: String,
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse
+  ) {
+    updateProcessFamilyMember(patientId, questionnaire, questionnaireResponse, null)
+  }
+
+  suspend fun updateProcessFamilyMember(
+    patientId: String,
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    relatedTo: String?
+  ) {
+    resourceMapperExtended.saveParsedResource(
+      questionnaireResponse,
+      questionnaire,
+      patientId,
+      relatedTo,
+      editForm = true
+    )
   }
 
   suspend fun enrollIntoAnc(

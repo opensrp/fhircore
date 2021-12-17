@@ -262,6 +262,110 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     assertEquals(expectedIntent.component, actualIntent.component)
   }
 
+  @Test
+  fun testTextOfSavedButtonForFamilyRegister() {
+
+    val intent1 =
+      Intent().apply {
+        putExtra(QUESTIONNAIRE_ARG_FORM, FamilyFormConstants.FAMILY_REGISTER_FORM)
+          .putExtra(FamilyFormConstants.FAMILY_EDIT_INFO, false)
+      }
+
+    val familyQuestionnaireActivity1 =
+      Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent1).create().get()
+
+    assertEquals(
+      getString(R.string.family_save_label),
+      familyQuestionnaireActivity1.saveBtn.text.toString()
+    )
+  }
+
+  @Test
+  fun testTextOfSavedButtonForFamilyMemberRegister() {
+
+    val intent1 =
+      Intent().apply {
+        putExtra(QUESTIONNAIRE_ARG_FORM, FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM)
+          .putExtra(FamilyFormConstants.FAMILY_EDIT_INFO, false)
+      }
+
+    val familyQuestionnaireActivity1 =
+      Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent1).create().get()
+
+    assertEquals(
+      getString(R.string.family_member_save_label),
+      familyQuestionnaireActivity1.saveBtn.text.toString()
+    )
+  }
+
+  @Test
+  fun testTextOfSavedButtonForEditFamilyRegister() {
+
+    val intent1 =
+      Intent().apply {
+        putExtra(QUESTIONNAIRE_ARG_FORM, FamilyFormConstants.FAMILY_REGISTER_FORM)
+          .putExtra(FamilyFormConstants.FAMILY_EDIT_INFO, true)
+      }
+
+    val familyQuestionnaireActivity1 =
+      Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent1).create().get()
+
+    assertEquals(
+      getString(R.string.family_update_label),
+      familyQuestionnaireActivity1.saveBtn.text.toString()
+    )
+  }
+
+  @Test
+  fun testTextOfSavedButtonForEditFamilyMemberRegister() {
+
+    val intent1 =
+      Intent().apply {
+        putExtra(QUESTIONNAIRE_ARG_FORM, FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM)
+          .putExtra(FamilyFormConstants.FAMILY_EDIT_INFO, true)
+      }
+
+    val familyQuestionnaireActivity1 =
+      Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent1).create().get()
+
+    assertEquals(
+      getString(R.string.family_member_update_label),
+      familyQuestionnaireActivity1.saveBtn.text.toString()
+    )
+  }
+
+  @Test
+  fun testTextOfSavedButtonForAncRegister() {
+
+    val intent1 =
+      Intent().apply {
+        putExtra(QUESTIONNAIRE_ARG_FORM, FamilyFormConstants.ANC_ENROLLMENT_FORM)
+          .putExtra(FamilyFormConstants.FAMILY_EDIT_INFO, false)
+      }
+
+    val familyQuestionnaireActivity1 =
+      Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent1).create().get()
+
+    val intent2 =
+      Intent().apply {
+        putExtra(QUESTIONNAIRE_ARG_FORM, FamilyFormConstants.ANC_ENROLLMENT_FORM)
+          .putExtra(FamilyFormConstants.FAMILY_EDIT_INFO, true)
+      }
+
+    val familyQuestionnaireActivity2 =
+      Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent2).create().get()
+
+    assertEquals(
+      getString(R.string.mark_as_ANC_client),
+      familyQuestionnaireActivity1.saveBtn.text.toString()
+    )
+
+    assertEquals(
+      getString(R.string.mark_as_ANC_client),
+      familyQuestionnaireActivity2.saveBtn.text.toString()
+    )
+  }
+
   override fun getActivity(): Activity {
     return familyQuestionnaireActivity
   }

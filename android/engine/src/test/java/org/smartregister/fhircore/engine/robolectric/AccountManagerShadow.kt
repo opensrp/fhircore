@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.app.ui.register
+package org.smartregister.fhircore.engine.robolectric
 
-import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
+import android.accounts.Account
+import android.accounts.AccountManager
+import org.robolectric.Shadows
+import org.robolectric.annotation.Implementation
+import org.robolectric.annotation.Implements
 
-class AppRegisterActivity : BaseRegisterActivity() {
+@Implements(AccountManager::class)
+class AccountManagerShadow : Shadows() {
 
-  override fun mainFragmentTag(): String = AppRegisterFragment.TAG
+  @Implementation fun notifyAccountAuthenticated(account: Account) = true
 }

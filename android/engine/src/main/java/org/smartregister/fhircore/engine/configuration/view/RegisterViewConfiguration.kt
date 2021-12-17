@@ -51,6 +51,8 @@ data class SearchFilter(val key: String, val code: String, val system: String)
  * A function providing a DSL for configuring [RegisterViewConfiguration]. The configurations
  * provided by this method are used on the register calling this method
  *
+ * @param appId Sets Application ID
+ * @param classification Categorize this configuration type
  * @param appTitle Sets the title of the app as displayed on the side menu
  * @param filterText Sets the text displayed on the switch view
  * @param searchBarHint Sets the text on the searchBar
@@ -61,10 +63,13 @@ data class SearchFilter(val key: String, val code: String, val system: String)
  * @param showScanQRCode Hides or shows the scan QR code button
  * @param showNewClientButton Hides or shows the button for register new client
  * @param registrationForm Name of questionnaire form used for registration
+ * @param showSideMenu Hide or show the side menu
+ * @param showBottomMenu Hide or show the Bottom navigation menu
  */
 @Stable
 fun Context.registerViewConfigurationOf(
-  id: String = "",
+  appId: String = "",
+  classification: String = "",
   appTitle: String = this.getString(R.string.default_app_title),
   filterText: String = this.getString(R.string.show_overdue),
   searchBarHint: String = this.getString(R.string.search_hint),
@@ -78,11 +83,10 @@ fun Context.registerViewConfigurationOf(
   registrationForm: String = "patient-registration",
   showSideMenu: Boolean = true,
   showBottomMenu: Boolean = false,
-  primaryFilter: SearchFilter? = null
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
-    appId = id,
-    classification = "",
+    appId = appId,
+    classification = classification,
     appTitle = appTitle,
     filterText = filterText,
     searchBarHint = searchBarHint,
@@ -96,6 +100,5 @@ fun Context.registerViewConfigurationOf(
     registrationForm = registrationForm,
     showSideMenu = showSideMenu,
     showBottomMenu = showBottomMenu,
-    primaryFilter = primaryFilter
   )
 }

@@ -16,10 +16,12 @@
 
 package org.smartregister.fhircore.engine.ui.register
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJob
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,6 +29,7 @@ import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -131,5 +134,18 @@ constructor(
       sharedPreferencesHelper.write(LAST_SYNC_TIMESTAMP, lastSyncTimestamp)
     }
     _lastSyncTimestamp.value = lastSyncTimestamp
+  }
+
+  fun patientExists(barcode: String): LiveData<Result<Boolean>> {
+    val result = MutableLiveData<Result<Boolean>>()
+    viewModelScope.launch(dispatcher.io()) {
+      try {
+        fhirEngine.load(Patient::class.java, barcode)
+        result.postValue(Result.success(true))
+      } catch (resourceNotFoundException: ResourceNotFoundException) {
+        result.postValue(Result.failure(resourceNotFoundException))
+      }
+    }
+    return result
   }
 }

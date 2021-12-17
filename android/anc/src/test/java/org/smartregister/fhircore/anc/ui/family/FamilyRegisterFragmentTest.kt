@@ -25,12 +25,14 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
 import org.junit.After
 import org.junit.Assert
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
+import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
@@ -129,5 +131,16 @@ class FamilyRegisterFragmentTest : RobolectricTest() {
       Shadows.shadowOf(ApplicationProvider.getApplicationContext<Application>()).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testInitializeRegisterDataViewModelShouldInitializeViewModel() {
+
+    var registerDataViewModel = registerFragment.initializeRegisterDataViewModel()
+    assertNotNull(registerDataViewModel)
+    Assert.assertEquals(
+      FamilyRepository::class.simpleName,
+      registerDataViewModel.registerRepository::class.simpleName
+    )
   }
 }
