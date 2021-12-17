@@ -88,8 +88,6 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       getAllResults(patientId)
       getAllForms(application)
     }
-
-    composeRule.setContent { QuestPatientDetailScreen(questPatientDetailViewModel) }
   }
 
   @Test
