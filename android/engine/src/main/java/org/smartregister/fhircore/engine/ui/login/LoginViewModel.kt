@@ -98,8 +98,9 @@ constructor(
           return
         } else {
           _showProgressBar.postValue(false)
-          if (attemptLocalLogin()) _navigateToHome.value = true
-          else {
+          if (attemptLocalLogin()) {
+            _navigateToHome.value = true
+          } else {
             with(accountAuthenticator) {
               addAuthenticatedAccount(
                 response,
@@ -108,7 +109,6 @@ constructor(
               )
               getUserInfo().enqueue(userInfoResponseCallback)
             }
-            if (attemptLocalLogin()) _navigateToHome.value = true
           }
         }
       }

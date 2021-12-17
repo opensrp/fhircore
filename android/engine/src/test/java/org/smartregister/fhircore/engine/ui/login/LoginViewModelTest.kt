@@ -19,6 +19,8 @@ package org.smartregister.fhircore.engine.ui.login
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,10 +31,13 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.FakeModel.authCredentials
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import retrofit2.Call
+import retrofit2.Response
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -103,5 +108,31 @@ internal class LoginViewModelTest : RobolectricTest() {
 
     val successfulLocalLogin = loginViewModel.attemptLocalLogin()
     Assert.assertFalse(successfulLocalLogin)
+  }
+
+  @Test
+  fun testAttemptLocalLoginWithFirstTimeUser() {
+
+    // Provide username and password (The saved password is hashed, actual one is needed)
+    loginViewModel.run {
+      onUsernameUpdated("demo")
+      onPasswordUpdated("51r1K4l1")
+    }
+
+    val callMock = mockk<Call<OAuthResponse>>()
+    val mockResponse =
+      Response.success<OAuthResponse?>(
+        OAuthResponse(
+          accessToken = authCredentials.sessionToken,
+          tokenType = "openid email profile",
+          refreshToken = authCredentials.refreshToken,
+          scope = "openid"
+        )
+      )
+    every { callMock.execute() } returns mockResponse
+
+    every { accountAuthenticatorSpy.fetchToken(any(), any()) } returns callMock
+
+    loginViewModel.attemptRemoteLogin()
   }
 }
