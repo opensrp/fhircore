@@ -20,8 +20,10 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
-import io.mockk.mockk
+import io.mockk.just
+import io.mockk.runs
 import io.mockk.spyk
+import io.mockk.verify
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.After
@@ -35,6 +37,7 @@ import org.smartregister.fhircore.engine.data.remote.model.response.OAuthRespons
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import retrofit2.Call
 import retrofit2.Response
@@ -55,6 +58,8 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
+  @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
   private lateinit var loginViewModel: LoginViewModel
 
   private lateinit var accountAuthenticatorSpy: AccountAuthenticator
@@ -66,12 +71,10 @@ internal class LoginViewModelTest : RobolectricTest() {
     accountAuthenticatorSpy = spyk(accountAuthenticator)
 
     loginViewModel =
-      spyk(
-        LoginViewModel(
-          accountAuthenticator = accountAuthenticatorSpy,
-          dispatcher = dispatcherProvider,
-          sharedPreferences = sharedPreferencesHelper
-        )
+      LoginViewModel(
+        accountAuthenticator = accountAuthenticatorSpy,
+        dispatcher = dispatcherProvider,
+        sharedPreferences = sharedPreferencesHelper
       )
   }
 
@@ -111,7 +114,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testAttemptLocalLoginWithFirstTimeUser() {
+  fun testAttemptLocalLoginWithNewUser() {
 
     // Provide username and password (The saved password is hashed, actual one is needed)
     loginViewModel.run {
@@ -119,9 +122,38 @@ internal class LoginViewModelTest : RobolectricTest() {
       onPasswordUpdated("51r1K4l1")
     }
 
-    val callMock = mockk<Call<OAuthResponse>>()
-    val mockResponse =
-      Response.success<OAuthResponse?>(
+    val callMock = spyk<Call<OAuthResponse>>()
+
+    every { callMock.enqueue(any()) } just runs
+
+    every { accountAuthenticatorSpy.fetchToken(any(), any()) } returns callMock
+
+    loginViewModel.attemptRemoteLogin()
+
+    // Login error is reset
+    Assert.assertNotNull(loginViewModel.loginError.value)
+    Assert.assertTrue(loginViewModel.loginError.value!!.isEmpty())
+
+    // Show progress bar active
+    Assert.assertNotNull(loginViewModel.showProgressBar.value)
+    Assert.assertTrue(loginViewModel.showProgressBar.value!!)
+
+    verify { accountAuthenticatorSpy.fetchToken(any(), any()) }
+  }
+
+  @Test
+  fun testOauthResponseHandlerHandleSuccessfulResponse() {
+
+    // Provide username and password (The saved password is hashed, actual one is needed)
+    loginViewModel.run {
+      onUsernameUpdated("demo")
+      onPasswordUpdated("51r1K4l1")
+    }
+
+    val callMock = spyk<Call<OAuthResponse>>()
+
+    val mockResponse: Response<OAuthResponse> =
+      Response.success(
         OAuthResponse(
           accessToken = authCredentials.sessionToken,
           tokenType = "openid email profile",
@@ -129,10 +161,17 @@ internal class LoginViewModelTest : RobolectricTest() {
           scope = "openid"
         )
       )
-    every { callMock.execute() } returns mockResponse
 
-    every { accountAuthenticatorSpy.fetchToken(any(), any()) } returns callMock
+    loginViewModel.oauthResponseHandler.handleResponse(call = callMock, response = mockResponse)
 
-    loginViewModel.attemptRemoteLogin()
+    // Show progress bar inactive
+    Assert.assertNotNull(loginViewModel.showProgressBar.value)
+    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+
+    // New user credentials added
+    val retrieveCredentials = secureSharedPreference.retrieveCredentials()
+    Assert.assertNotNull(retrieveCredentials)
+    Assert.assertEquals(authCredentials.username, retrieveCredentials!!.username)
+    Assert.assertEquals(authCredentials.sessionToken, retrieveCredentials.sessionToken)
   }
 }

@@ -30,7 +30,11 @@ import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.app.fakes.FakeKeyStore
 
 @RunWith(FhircoreTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
+@Config(
+  sdk = [Build.VERSION_CODES.O_MR1],
+  application = HiltTestApplication::class,
+  shadows = [AccountManagerShadow::class]
+)
 abstract class RobolectricTest {
   /** Get the liveData value by observing but wait for 3 seconds if not ready then stop observing */
   @Throws(InterruptedException::class)
