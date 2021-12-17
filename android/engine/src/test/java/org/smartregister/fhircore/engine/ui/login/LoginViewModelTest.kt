@@ -177,4 +177,26 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertEquals(authCredentials.username, retrieveCredentials!!.username)
     Assert.assertEquals(authCredentials.sessionToken, retrieveCredentials.sessionToken)
   }
+
+  @Test
+  fun testForgotPasswordLoadsContact() {
+    loginViewModel.forgotPassword()
+    Assert.assertEquals("tel:0123456789", loginViewModel.launchDialPad.value)
+  }
+
+  @Test
+  fun testAttemptRemoteLoginWithCredentialsCallsAccountAuthenticator() {
+
+    // Provide username and password
+    loginViewModel.run {
+      onUsernameUpdated("testUser")
+      onPasswordUpdated("51r1K4l1")
+    }
+
+    loginViewModel.attemptRemoteLogin()
+
+    Assert.assertEquals("", loginViewModel.loginError.value)
+    loginViewModel.showProgressBar.value?.let { Assert.assertTrue(it) }
+    verify { accountAuthenticatorSpy.fetchToken("testUser", "51r1K4l1".toCharArray()) }
+  }
 }
