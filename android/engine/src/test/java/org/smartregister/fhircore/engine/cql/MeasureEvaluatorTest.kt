@@ -30,7 +30,7 @@ import org.junit.Ignore
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.FileUtil
 
-@Ignore("Failing CI with incompatible types: NonExistentClass cannot be converted to Annotation")
+@Ignore("Fix java.lang.OutOfMemoryError: Java heap space")
 class MeasureEvaluatorTest {
 
   private var baseTestPathMeasureAssets: Path =
