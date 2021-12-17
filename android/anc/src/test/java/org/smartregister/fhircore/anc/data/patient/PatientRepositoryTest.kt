@@ -606,6 +606,68 @@ class PatientRepositoryTest : RobolectricTest() {
   }
 
   @Test
+  fun testMarkDeceasedShouldUpdatePatientData() {
+    coEvery { fhirEngine.load(Patient::class.java, any()) } returns
+      Patient().apply { active = true }
+    coEvery { repository.revokeCarePlans(any(), any()) } answers {}
+    coEvery { repository.revokeActiveStatusData(any()) } answers {}
+    coEvery { fhirEngine.save(any()) } just runs
+
+    runBlocking { repository.markDeceased("99", Date()) }
+
+    val saveSlot = slot<Patient>()
+
+    coVerify { fhirEngine.save(capture(saveSlot)) }
+
+    Assert.assertEquals(
+      Date().asYyyyMmDd(),
+      saveSlot.captured.deceasedDateTimeType.dateTimeValue().asStringValue().substringBefore("T")
+    )
+  }
+
+  @Test
+  fun testDeletePatientWithEntryInErrorShouldMarkPatientInactive() {
+    coEvery { fhirEngine.load(Patient::class.java, any()) } returns
+      Patient().apply {
+        active = true
+        addLink().other.reference = "ref"
+      }
+    coEvery { repository.revokeCarePlans(any(), any()) } answers {}
+    coEvery { repository.revokeActiveStatusData(any()) } answers {}
+    coEvery { fhirEngine.save(any()) } just runs
+
+    runBlocking { repository.deletePatient("99", DeletionReason.ENTRY_IN_ERROR) }
+
+    val saveSlot = slot<Patient>()
+
+    coVerify { fhirEngine.save(capture(saveSlot)) }
+
+    Assert.assertFalse(saveSlot.captured.active)
+    Assert.assertEquals(0, saveSlot.captured.link.size)
+  }
+
+  @Test
+  fun testDeletePatientWithMovedOutShouldRemovePatientLink() {
+    coEvery { fhirEngine.load(Patient::class.java, any()) } returns
+      Patient().apply {
+        active = true
+        addLink().other.reference = "ref"
+      }
+    coEvery { repository.revokeCarePlans(any(), any()) } answers {}
+    coEvery { repository.revokeActiveStatusData(any()) } answers {}
+    coEvery { fhirEngine.save(any()) } just runs
+
+    runBlocking { repository.deletePatient("99", DeletionReason.MOVED_OUT) }
+
+    val saveSlot = slot<Patient>()
+
+    coVerify { fhirEngine.save(capture(saveSlot)) }
+
+    Assert.assertTrue(saveSlot.captured.active)
+    Assert.assertEquals(0, saveSlot.captured.link.size)
+  }
+
+  @Test
   fun testCountAllShouldReturnMoreThanOneCount() {
 
     coEvery { fhirEngine.count(any()) } returns 5
