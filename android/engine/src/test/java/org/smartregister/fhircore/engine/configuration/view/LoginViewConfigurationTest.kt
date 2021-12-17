@@ -23,13 +23,25 @@ class LoginViewConfigurationTest {
 
   @Test
   fun testLoginViewConfiguration() {
-    val loginViewConfiguration = LoginViewConfiguration("anc", "app")
+    val loginViewConfiguration =
+      LoginViewConfiguration("anc", "classification", "app", "1.0.0", 2, true, true)
     Assert.assertEquals("anc", loginViewConfiguration.appId)
+    Assert.assertEquals("classification", loginViewConfiguration.classification)
+    Assert.assertEquals("1.0.0", loginViewConfiguration.applicationVersion)
+    Assert.assertEquals(2, loginViewConfiguration.applicationVersionCode)
+    Assert.assertTrue(loginViewConfiguration.darkMode)
+    Assert.assertTrue(loginViewConfiguration.showLogo)
   }
 
   @Test
   fun testLoginViewConfigurationOf() {
-    val loginViewConfigurationOf = loginViewConfigurationOf("anc")
+    val loginViewConfigurationOf =
+      loginViewConfigurationOf("anc", "classification", "app", "1.0.0", 2, true, true)
     Assert.assertEquals("anc", loginViewConfigurationOf.appId)
+    Assert.assertEquals("classification", loginViewConfigurationOf.classification)
+    Assert.assertEquals("1.0.0", loginViewConfigurationOf.applicationVersion)
+    Assert.assertEquals(2, loginViewConfigurationOf.applicationVersionCode)
+    Assert.assertTrue(loginViewConfigurationOf.darkMode)
+    Assert.assertTrue(loginViewConfigurationOf.showLogo)
   }
 }
