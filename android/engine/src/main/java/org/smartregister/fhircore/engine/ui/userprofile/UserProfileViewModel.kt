@@ -43,16 +43,15 @@ constructor(
   val configurationRegistry: ConfigurationRegistry
 ) : ViewModel() {
 
-  val languages by lazy {
+  val languages by lazy { fetchLanguages() }
+
+  fun fetchLanguages() =
     configurationRegistry
       .retrieveConfiguration<ApplicationConfiguration>(AppConfigClassification.APPLICATION)
-      .run { languages }
+      .run { this@run.languages }
       .map { Language(it, Locale.forLanguageTag(it).displayName) }
-  }
 
-  val registerViewConfiguration: RegisterViewConfiguration? by lazy {
-    getRegisterViewConfigurations()
-  }
+  val registerViewConfiguration: RegisterViewConfiguration? by lazy { fetchRegisterConfiguration() }
 
   val onLogout = MutableLiveData<Boolean?>(null)
   val language = MutableLiveData<Language?>(null)
@@ -83,7 +82,7 @@ constructor(
     this.language.postValue(language)
   }
 
-  fun getRegisterViewConfigurations(): RegisterViewConfiguration? =
+  fun fetchRegisterConfiguration(): RegisterViewConfiguration? =
     try {
       configurationRegistry.retrieveConfiguration(
         configClassification = AppConfigClassification.PATIENT_REGISTER

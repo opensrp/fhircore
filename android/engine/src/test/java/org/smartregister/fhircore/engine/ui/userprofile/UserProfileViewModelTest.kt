@@ -20,18 +20,27 @@ import android.os.Looper
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.spyk
 import io.mockk.verify
+import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Shadows
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncInitiator
+import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
 class UserProfileViewModelTest : RobolectricTest() {
@@ -41,15 +50,28 @@ class UserProfileViewModelTest : RobolectricTest() {
   lateinit var userProfileViewModel: UserProfileViewModel
   lateinit var accountAuthenticator: AccountAuthenticator
   lateinit var secureSharedPreference: SecureSharedPreference
+  lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  lateinit var configurationRegistry: ConfigurationRegistry
+
+  @Inject lateinit var realConfigurationRegistry: ConfigurationRegistry
 
   val syncBroadcaster = SyncBroadcaster
 
   @Before
   fun setUp() {
+    hiltRule.inject()
     accountAuthenticator = mockk()
     secureSharedPreference = mockk()
+    sharedPreferencesHelper = mockk()
+    configurationRegistry = mockk()
     userProfileViewModel =
-      UserProfileViewModel(syncBroadcaster, accountAuthenticator, secureSharedPreference)
+      UserProfileViewModel(
+        syncBroadcaster,
+        accountAuthenticator,
+        secureSharedPreference,
+        sharedPreferencesHelper,
+        configurationRegistry
+      )
   }
 
   @Test
@@ -78,5 +100,139 @@ class UserProfileViewModelTest : RobolectricTest() {
     verify(exactly = 1) { accountAuthenticator.logout() }
     Shadows.shadowOf(Looper.getMainLooper()).idle()
     Assert.assertTrue(userProfileViewModel.onLogout.value!!)
+  }
+
+  @Test
+  fun allowSwitchingLanguagesShouldReturnTrueWhenConfigurationIsTrue() {
+    val registerViewConfiguration = mockk<RegisterViewConfiguration>()
+    every { registerViewConfiguration.switchLanguages } returns true
+    ReflectionHelpers.setField(
+      userProfileViewModel,
+      "registerViewConfiguration\$delegate",
+      lazy { registerViewConfiguration }
+    )
+
+    Assert.assertTrue(userProfileViewModel.allowSwitchingLanguages())
+  }
+
+  @Test
+  fun allowSwitchingLanguagesShouldReturnFalseWhenConfigurationIsFalse() {
+    val registerViewConfiguration = mockk<RegisterViewConfiguration>()
+    every { registerViewConfiguration.switchLanguages } returns false
+    ReflectionHelpers.setField(
+      userProfileViewModel,
+      "registerViewConfiguration\$delegate",
+      lazy { registerViewConfiguration }
+    )
+
+    Assert.assertFalse(userProfileViewModel.allowSwitchingLanguages())
+  }
+
+  @Test
+  fun loadSelectedLanguage() {
+    every { sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, any()) } returns "fr"
+
+    Assert.assertEquals("French", userProfileViewModel.loadSelectedLanguage())
+    verify { sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, "en") }
+  }
+
+  @Test
+  fun setLanguageShouldCallSharedPreferencesHelperWriteWithSelectedLanguageTagAndPostValue() {
+    val language = Language("es", "Spanish")
+    var postedValue: Language? = null
+
+    every { sharedPreferencesHelper.write(any(), any<String>()) } just runs
+
+    userProfileViewModel.language.observeForever { postedValue = it }
+
+    userProfileViewModel.setLanguage(language)
+
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+    verify { sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, "es") }
+    Assert.assertEquals(language, postedValue!!)
+  }
+
+  @Test
+  fun getRegisterViewConfigurationsShouldReturnConfiguration() {
+    every { accountAuthenticator.launchLoginScreen() } just runs
+    realConfigurationRegistry.loadAppConfigurations("appId", accountAuthenticator) {}
+    userProfileViewModel =
+      UserProfileViewModel(
+        syncBroadcaster,
+        accountAuthenticator,
+        secureSharedPreference,
+        sharedPreferencesHelper,
+        realConfigurationRegistry
+      )
+
+    val registerViewConfiguration = userProfileViewModel.fetchRegisterConfiguration()
+    Assert.assertEquals("Covax", registerViewConfiguration!!.appTitle)
+  }
+
+  @Test
+  fun fetchLanguagesShouldReturnEnglishAndSwahiliAsModels() {
+    every { accountAuthenticator.launchLoginScreen() } just runs
+    realConfigurationRegistry.loadAppConfigurations("appId", accountAuthenticator) {}
+    userProfileViewModel =
+      UserProfileViewModel(
+        syncBroadcaster,
+        accountAuthenticator,
+        secureSharedPreference,
+        sharedPreferencesHelper,
+        realConfigurationRegistry
+      )
+
+    val languages = userProfileViewModel.fetchLanguages()
+    Assert.assertEquals("English", languages[0].displayName)
+    Assert.assertEquals("en", languages[0].tag)
+    Assert.assertEquals("Swahili", languages[1].displayName)
+    Assert.assertEquals("sw", languages[1].tag)
+  }
+
+  @Test
+  fun languagesLazyPropertyShouldRunFetchLanguagesAndReturnConfiguredLanguages() {
+    realConfigurationRegistry.appId = "appId"
+    every { accountAuthenticator.launchLoginScreen() } just runs
+    userProfileViewModel =
+      spyk(
+        UserProfileViewModel(
+          syncBroadcaster,
+          accountAuthenticator,
+          secureSharedPreference,
+          sharedPreferencesHelper,
+          realConfigurationRegistry
+        )
+      )
+    every { userProfileViewModel.fetchLanguages() } returns mockk()
+
+    val languages = userProfileViewModel.languages
+
+    Assert.assertEquals("English", languages[0].displayName)
+    Assert.assertEquals("en", languages[0].tag)
+    Assert.assertEquals("Swahili", languages[1].displayName)
+    Assert.assertEquals("sw", languages[1].tag)
+  }
+
+  @Test
+  fun registerViewConfigurationLazyPropertyShouldInvokeFetchRegisterConfigurationAndReturnRegisterConfiguration() {
+    realConfigurationRegistry.appId = "appId"
+    every { accountAuthenticator.launchLoginScreen() } just runs
+    realConfigurationRegistry.loadAppConfigurations("appId", accountAuthenticator) {}
+    userProfileViewModel =
+      UserProfileViewModel(
+        syncBroadcaster,
+        accountAuthenticator,
+        secureSharedPreference,
+        sharedPreferencesHelper,
+        realConfigurationRegistry
+      )
+
+    val registerViewConfiguration = userProfileViewModel.registerViewConfiguration
+
+    Assert.assertEquals("Covax", registerViewConfiguration!!.appTitle)
+    Assert.assertEquals("appId", registerViewConfiguration.appId)
+    Assert.assertEquals("patient-registration", registerViewConfiguration.registrationForm)
+    Assert.assertFalse(registerViewConfiguration.showBottomMenu)
   }
 }
