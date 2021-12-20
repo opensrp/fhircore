@@ -86,8 +86,7 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
       patientVitalItem.spO2 = observationValueOrDefault(listObservationspO2)
       patientVitalItem.spO2Unit = listObservationspO2.valueQuantity.unit ?: ""
 
-      //      val listObservationBmi = patientRepository.fetchVitalSigns(patientId = patientId,
-      // "bmi")
+      //      val listObservationBmi = patientRepository.fetchVitalSigns(patientId = patientId, "bmi")
       //      patientVitalItem.bmi = observationValueOrDefault(listObservationBmi)
       //      patientVitalItem.bmiUnit = listObservationBmi.valueQuantity.unit ?: ""
 
@@ -122,7 +121,7 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
         } else {
           patientVitalItem.bmi = "N/A"
         }
-      } // */
+      }
 
       patientAncOverviewItem.postValue(patientVitalItem)
     }

@@ -1,11 +1,6 @@
 {
   "resourceType": "Observation",
   "id": "#Id",
-  "meta": {
-    "profile": [
-      "http://hl7.org/fhir/StructureDefinition/vitalsigns"
-    ]
-  },
   "status": "final",
   "category": [
     {
@@ -25,6 +20,11 @@
         "system": "http://loinc.org",
         "code": "8302-2",
         "display": "Body height"
+      },
+      {
+        "system": "http://loinc.org",
+        "code": "3137-7",
+        "display": "Body height Measured"
       },
       {
         "system": "http://acme.org/devices/clinical-codes",
