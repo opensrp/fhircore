@@ -27,6 +27,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.EpisodeOfCare
@@ -237,8 +238,14 @@ constructor(
           filterByPatient(Observation.SUBJECT, patientId)
         }
       }
-    if (observations.isNotEmpty())
-      finalObservation = observations.sortedBy { it.effectiveDateTimeType.value }.last()
+    if (observations.isNotEmpty()) {
+      val listOfObservations =
+        observations.distinctBy { it.effectiveDateTimeType == DateTimeType(Date()) }
+      finalObservation =
+        if (listOfObservations.isNotEmpty())
+          listOfObservations.sortedBy { it.effectiveDateTimeType.value }.last()
+        else observations.sortedBy { it.effectiveDateTimeType.value }.last()
+    }
 
     return finalObservation
   }
