@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Report Patient Date Range Selection with year, Patient Search compose UI
 - ANC | Report Result Page Individual Patient Item UI update plus Unit Tests
 - ANC | Report Result Page For All Population compose UI update plus Unit Tests
+- ANC | Remove Family feature
 - ANC | Integrate Hilt Dependency Injection
 - ANC | Patient details show vital signs
 - ANC | Patient details show height, weight and BMI post computing BMI

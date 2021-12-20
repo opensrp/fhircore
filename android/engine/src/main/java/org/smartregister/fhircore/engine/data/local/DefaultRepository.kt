@@ -33,9 +33,9 @@ import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 
 @Singleton
-class DefaultRepository
+open class DefaultRepository
 @Inject
-constructor(val fhirEngine: FhirEngine, val dispatcherProvider: DispatcherProvider) {
+constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: DispatcherProvider) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
