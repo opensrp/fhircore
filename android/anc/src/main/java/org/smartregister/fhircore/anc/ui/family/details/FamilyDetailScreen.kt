@@ -33,6 +33,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Surface
@@ -42,11 +44,17 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.TaskAlt
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -59,19 +67,45 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
+const val TOOLBAR_MENU = "toolbarMenuTag"
+const val TOOLBAR_MENU_BUTTON = "toolbarMenuButtonTag"
+const val TOOLBAR_TITLE = "toolbarTitle"
+
 @Composable
 fun FamilyDetailScreen(familyDetailViewModel: FamilyDetailViewModel) {
   val hasFamilyCarePlan =
     !familyDetailViewModel.familyCarePlans.observeAsState().value.isNullOrEmpty()
   val patient = familyDetailViewModel.demographics.observeAsState()
 
+  var showMenu by remember { mutableStateOf(false) }
+
   Surface(color = colorResource(id = R.color.white_smoke)) {
     Column {
       TopAppBar(
-        title = { Text(text = stringResource(id = R.string.all_families)) },
+        title = {
+          Text(text = stringResource(id = R.string.all_families), Modifier.testTag(TOOLBAR_TITLE))
+        },
         navigationIcon = {
           IconButton(onClick = familyDetailViewModel::onAppBackClick) {
             Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")
+          }
+        },
+        actions = {
+          IconButton(
+            onClick = { showMenu = !showMenu },
+            modifier = Modifier.testTag(TOOLBAR_MENU_BUTTON)
+          ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null) }
+          DropdownMenu(
+            expanded = showMenu,
+            onDismissRequest = { showMenu = false },
+            Modifier.testTag(TOOLBAR_MENU)
+          ) {
+            DropdownMenuItem(
+              onClick = {
+                showMenu = false
+                familyDetailViewModel.onRemoveFamilyMenuItemClicked()
+              }
+            ) { Text(text = stringResource(id = R.string.remove_family)) }
           }
         }
       )

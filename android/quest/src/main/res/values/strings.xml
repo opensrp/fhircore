@@ -4,6 +4,7 @@
 
     <string name="back_to_clients">Back to client list</string>
     <string name="test_results">Test Results</string>
+    <string name="run_cql">Run CQL</string>
 
     <string name="menu_clients">Clients</string>
     <string name="menu_settings">Settings</string>
