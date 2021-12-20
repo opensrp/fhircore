@@ -34,5 +34,6 @@
     <string name="add_vitals">Ongeza Vitamini</string>
     <string name="add_conditions">Ongeza Masharti</string>
     <string name="bmi_widget">Wijeti ya BMI</string>
+    <string name="remove_family">Toa Familia</string>
 
 </resources>

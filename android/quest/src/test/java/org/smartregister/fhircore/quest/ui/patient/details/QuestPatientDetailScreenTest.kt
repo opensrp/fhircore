@@ -73,6 +73,21 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    Faker.initPatientRepositoryMocks(patientRepository)
+    questPatientDetailViewModel =
+      spyk(
+        QuestPatientDetailViewModel(
+          patientRepository = patientRepository,
+          patientItemMapper = patientItemMapper,
+          mockk()
+        )
+      )
+    // Simulate retrieval of data from repository
+    questPatientDetailViewModel.run {
+      getDemographics(patientId)
+      getAllResults(patientId)
+      getAllForms(application)
+    }
   }
 
   @Test
@@ -102,7 +117,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       .assertExists()
       .assertIsDisplayed()
       .onChildren()
-      .assertCountEquals(1)
+      .assertCountEquals(2)
 
     composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
     composeRule.onNodeWithTag(TOOLBAR_MENU).assertDoesNotExist()
@@ -113,7 +128,15 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
     initMocks()
     composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
     composeRule.onNodeWithTag(TOOLBAR_MENU).onChildAt(0).performClick()
-    verify { questPatientDetailViewModel.onMenuItemClickListener(true) }
+    verify { questPatientDetailViewModel.onMenuItemClickListener(R.string.test_results) }
+  }
+
+  @Test
+  fun testToolbarRunCqlMenuItemShouldCallMenuItemClickListener() {
+    initMocks()
+    composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
+    composeRule.onNodeWithTag(TOOLBAR_MENU).onChildAt(1).performClick()
+    verify { questPatientDetailViewModel.onMenuItemClickListener(R.string.run_cql) }
   }
 
   @Test
@@ -216,7 +239,8 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       spyk(
         QuestPatientDetailViewModel(
           patientRepository = patientRepository,
-          patientItemMapper = patientItemMapper
+          patientItemMapper = patientItemMapper,
+          mockk()
         )
       )
     // Simulate retrieval of data from repository
@@ -236,7 +260,8 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       spyk(
         QuestPatientDetailViewModel(
           patientRepository = patientRepository,
-          patientItemMapper = patientItemMapper
+          patientItemMapper = patientItemMapper,
+          mockk()
         )
       )
     composeRule.setContent { QuestPatientDetailScreen(questPatientDetailViewModel) }

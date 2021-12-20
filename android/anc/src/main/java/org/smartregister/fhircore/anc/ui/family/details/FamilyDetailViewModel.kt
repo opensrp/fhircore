@@ -19,6 +19,7 @@ package org.smartregister.fhircore.anc.ui.family.details
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -27,6 +28,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
+import timber.log.Timber
 
 @HiltViewModel
 class FamilyDetailViewModel
@@ -34,6 +36,10 @@ class FamilyDetailViewModel
 constructor(
   val repository: FamilyDetailRepository,
 ) : ViewModel() {
+
+  var isRemoveFamily = MutableLiveData(false)
+
+  var isRemoveFamilyMenuItemClicked = MutableLiveData(false)
 
   val addNewMember = MutableLiveData(false)
 
@@ -66,6 +72,21 @@ constructor(
   fun fetchEncounters(familyId: String) {
     viewModelScope.launch { encounters.postValue(repository.fetchEncounters(familyId)) }
   }
+  fun removeFamily(familyId: String) {
+
+    viewModelScope.launch {
+      try {
+        val family: Patient =
+          repository.loadResource(familyId)
+            ?: throw ResourceNotFoundException("Family resource for that ID NOT Found")
+
+        repository.delete(family)
+        isRemoveFamily.postValue(true)
+      } catch (e: Exception) {
+        Timber.e(e)
+      }
+    }
+  }
 
   fun onMemberItemClick(familyMemberItem: FamilyMemberItem) {
     memberItemClicked.value = familyMemberItem
@@ -77,6 +98,10 @@ constructor(
 
   fun onAddMemberItemClicked() {
     addNewMember.value = true
+  }
+
+  fun onRemoveFamilyMenuItemClicked() {
+    isRemoveFamilyMenuItemClicked.value = true
   }
 
   fun onSeeAllEncountersListener() {}

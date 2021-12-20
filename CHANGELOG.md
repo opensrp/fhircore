@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Report Patient Date Range Selection with year, Patient Search compose UI
 - ANC | Report Result Page Individual Patient Item UI update plus Unit Tests
 - ANC | Report Result Page For All Population compose UI update plus Unit Tests
+- ANC | Remove Family feature
 - ANC | Integrate Hilt Dependency Injection
 - ANC | Patient details show vital signs
 
@@ -28,12 +29,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Add ability to edit questionnaire responses
 - Quest | Patient registration birthDate from age
 - Quest | Integrate Hilt Dependency Injection
+- Quest | CQL runner for G6PD
+- Quest | Extraction of resources for Patient, Condition, Encounter, Observations
 
 - EIR | Added workflow configurations
 - EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
 - EIR | Integrate Hilt Dependency Injection
 
 - Engine | Integrate Hilt Dependency Injection
+- Engine | Fixed login authentication issue.
 - ANC | Implement vital signs observation extraction from questionnaires
 
 ### Fixed
