@@ -31,7 +31,7 @@ class CalculationUtilsTest {
   @Test
   fun testBMIviaMetricIsComputed() {
     val expectedBMI = 22.90
-    val computedBMI = computeBMIViaMetricUnits(1.78, 72.57)
+    val computedBMI = computeBMIViaMetricUnits(178.0, 72.57)
     assertEquals(expectedBMI, computedBMI, 0.1)
   }
 }

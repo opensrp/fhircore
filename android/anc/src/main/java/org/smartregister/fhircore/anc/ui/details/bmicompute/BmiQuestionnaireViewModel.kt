@@ -51,7 +51,6 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
     const val KEY_HEIGHT_CM = "vital-signs-height_cm"
 
     const val HEIGHT_FEET_INCHES_MULTIPLIER = 12
-    const val HEIGHT_METER_CENTIMETER_MULTIPLIER = 100
 
     const val BMI_CATEGORY_UNDERWEIGHT_MAX_THRESHOLD = 18.5
     const val BMI_CATEGORY_NORMAL_MAX_THRESHOLD = 25
@@ -105,10 +104,7 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
   fun calculateBmi(height: Double, weight: Double, isUnitModeMetric: Boolean): Double {
     return if (height <= 0 || weight <= 0) -1.0
     else if (isUnitModeMetric)
-      computeBMIViaMetricUnits(
-        heightInMeters = height / HEIGHT_METER_CENTIMETER_MULTIPLIER,
-        weightInKgs = weight
-      )
+      computeBMIViaMetricUnits(heightInCentimeters = height, weightInKgs = weight)
     else computeBMIViaUSCUnits(heightInInches = height, weightInPounds = weight)
   }
 

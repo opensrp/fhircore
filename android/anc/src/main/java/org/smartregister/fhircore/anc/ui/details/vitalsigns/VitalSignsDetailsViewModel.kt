@@ -109,7 +109,7 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
               )
               .toString()
           patientVitalItem.bmiUnit = "kg/m2"
-        } else if (patientVitalItem.weightUnit.equals("lbs", true) &&
+        } else if (patientVitalItem.weightUnit.equals("lb", true) &&
             patientVitalItem.heightUnit.equals("in", true)
         ) {
           patientVitalItem.bmi =

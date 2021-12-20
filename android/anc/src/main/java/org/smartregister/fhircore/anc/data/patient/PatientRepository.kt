@@ -379,8 +379,8 @@ constructor(
     computedBmi: Double,
     isUnitModeMetric: Boolean
   ): Boolean {
-    // resourceMapperExtended.saveParsedResource(questionnaireResponse, questionnaire, patientId,
-    // null)
+    // resourceMapperExtended.saveParsedResource(questionnaireResponse,
+    // questionnaire, patientId, null)
     return recordBmi(
       patientId = patientId,
       formEncounterId = encounterID,
@@ -399,12 +399,12 @@ constructor(
     computedBMI: Double? = null,
     isUnitModeMetric: Boolean
   ): Boolean {
-    var weightUnit = "lbs"
+    var weightUnit = "lb"
     var heightUnit = "in"
     var weightUnitCode = "[lb_av]"
     var heightUnitCode = "[in_i]"
     // Todo: confirm if bmi unit can be displayed in lb/in2 or only in kg/m2
-    var bmiUnit = "lb/in2"
+    var bmiUnit = "kg/m2"
     if (isUnitModeMetric) {
       weightUnit = "kg"
       heightUnit = "cm"
