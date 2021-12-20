@@ -102,9 +102,15 @@ fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
         DropdownMenuItem(
           onClick = {
             showMenu = false
-            questPatientDetailViewModel.onMenuItemClickListener(true)
+            questPatientDetailViewModel.onMenuItemClickListener(R.string.test_results)
           }
         ) { Text(text = stringResource(id = R.string.test_results)) }
+        DropdownMenuItem(
+          onClick = {
+            showMenu = false
+            questPatientDetailViewModel.onMenuItemClickListener(R.string.run_cql)
+          }
+        ) { Text(text = stringResource(id = R.string.run_cql)) }
       }
     }
   )
@@ -229,20 +235,24 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
           modifier = Modifier.fillMaxWidth().padding(top = 12.dp).testTag(RESULT_CONTAINER_ITEM)
         ) {
           Column {
-            val totalResultsCount = testResults?.count() ?: 0
-            testResults?.let { allTestResults ->
-              allTestResults.forEachIndexed { index, item ->
-                ResultItem(item, questPatientDetailViewModel)
-
-                if (index < totalResultsCount - 1) {
-                  Divider(color = colorResource(id = R.color.white_smoke))
+            Divider(color = colorResource(id = R.color.white_smoke))
+            Column {
+              testResults?.let {
+                it.forEachIndexed { index, item ->
+                  ResultItem(item, questPatientDetailViewModel)
+                  if (index < it.size) {
+                    Divider(color = colorResource(id = R.color.white_smoke))
+                  }
                 }
               }
+                ?: Text(
+                  text = stringResource(id = R.string.loading_responses),
+                  modifier = Modifier.padding(16.dp)
+                )
             }
-              ?: Text(text = stringResource(id = R.string.loading_responses))
+            Spacer(Modifier.height(24.dp))
           }
         }
-        Spacer(Modifier.height(24.dp))
       }
     }
   }

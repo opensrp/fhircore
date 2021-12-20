@@ -23,6 +23,7 @@ import android.os.Looper
 import android.view.MenuInflater
 import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -31,7 +32,10 @@ import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.spyk
+import io.mockk.unmockkObject
+import io.mockk.verify
 import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert
@@ -41,6 +45,7 @@ import org.junit.Test
 import org.junit.jupiter.api.DisplayName
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
+import org.robolectric.fakes.RoboMenu
 import org.robolectric.fakes.RoboMenuItem
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
@@ -56,6 +61,7 @@ import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivit
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.plusYears
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
@@ -191,6 +197,92 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     patientDetailsActivity.onOptionsItemSelected(menuItem)
 
     Assert.assertFalse(patientDetailsActivity.onOptionsItemSelected(RoboMenuItem(-1)))
+  }
+
+  @Test
+  fun testOnClickedLogDeathShouldShowDialog() {
+    mockkObject(AlertDialogue)
+    every {
+      AlertDialogue.showDatePickerAlert(
+        any(),
+        any(),
+        getString(R.string.log_death_button_title),
+        any(),
+        any(),
+        getString(R.string.log_death_confirm_message),
+        true
+      )
+    } returns mockk()
+
+    val menuItem = RoboMenuItem(R.id.log_death)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+
+    verify {
+      AlertDialogue.showDatePickerAlert(
+        any(),
+        any(),
+        getString(R.string.log_death_button_title),
+        any(),
+        any(),
+        getString(R.string.log_death_confirm_message),
+        true
+      )
+    }
+
+    unmockkObject(AlertDialogue)
+  }
+
+  @Test
+  fun testOnClickedRemovePersonShouldShowDialog() {
+    mockkObject(AlertDialogue)
+    every {
+      AlertDialogue.showConfirmAlert(
+        any(),
+        R.string.remove_this_person_confirm_message,
+        R.string.remove_this_person_confirm_title,
+        any(),
+        R.string.remove_this_person_button_title,
+        any()
+      )
+    } returns mockk()
+
+    val menuItem = RoboMenuItem(R.id.remove_this_person)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+
+    verify {
+      AlertDialogue.showConfirmAlert(
+        any(),
+        R.string.remove_this_person_confirm_message,
+        R.string.remove_this_person_confirm_title,
+        any(),
+        R.string.remove_this_person_button_title,
+        any()
+      )
+    }
+
+    unmockkObject(AlertDialogue)
+  }
+
+  @Test
+  fun testPrepareOptionsMenuShouldShowRelevantOptions() {
+    val menu = RoboMenu()
+    menu.add(0, R.id.add_vitals, 1, R.string.add_vitals)
+    menu.add(0, R.id.log_death, 2, R.string.log_death)
+    menu.add(0, R.id.anc_enrollment, 3, R.string.mark_as_anc_client)
+    menu.add(0, R.id.remove_this_person, 4, R.string.remove_this_person)
+    menu.add(0, R.id.pregnancy_outcome, 5, R.string.pregnancy_outcome)
+
+    patientDetailsActivity.patient =
+      MutableLiveData(
+        PatientItem(birthDate = Date().plusYears(-21), gender = "Female", isPregnant = true)
+      )
+    patientDetailsActivity.onPrepareOptionsMenu(menu)
+
+    Assert.assertTrue(menu.findMenuItem(getString(R.string.add_vitals)).isVisible)
+    Assert.assertTrue(menu.findMenuItemContaining(getString(R.string.log_death)).isVisible)
+    Assert.assertFalse(menu.findMenuItem(getString(R.string.mark_as_anc_client)).isVisible)
+    Assert.assertTrue(menu.findMenuItemContaining(getString(R.string.remove_this_person)).isVisible)
+    Assert.assertTrue(menu.findMenuItem(getString(R.string.pregnancy_outcome)).isVisible)
   }
 
   @Test

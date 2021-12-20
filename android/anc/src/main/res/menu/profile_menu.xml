@@ -18,7 +18,7 @@
     <item
         android:id="@+id/anc_enrollment"
         android:orderInCategory="300"
-        android:title="@string/mark_as_ANC_client" />
+        android:title="@string/mark_as_anc_client" />
     <item
         android:id="@+id/view_past_encounters"
         android:orderInCategory="300"

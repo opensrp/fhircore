@@ -27,7 +27,6 @@
     <string name="back_to_anc_clients">Back to ANC Clients</string>
     <string name="edit">Edit</string>
     <string name="edit_info">Edit info</string>
-    <string name="mark_as_ANC_client">Mark as ANC client</string>
     <string name="view_family">View family</string>
     <string name="compute_bmi">Compute BMI</string>
     <string name="your_bmi">Your BMI = </string>

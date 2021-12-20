@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Add ability to edit questionnaire responses
 - Quest | Patient registration birthDate from age
 - Quest | Integrate Hilt Dependency Injection
+- Quest | CQL runner for G6PD
+- Quest | Extraction of resources for Patient, Condition, Encounter, Observations
 
 - EIR | Added workflow configurations
 - EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map

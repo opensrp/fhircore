@@ -100,21 +100,18 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
   }
 
   override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-    patient.observe(
-      this,
-      {
-        menu.findItem(R.id.anc_enrollment).run {
-          this.isVisible = it.nonPregnantEligibleWoman() == true
-        }
-        menu.findItem(R.id.pregnancy_outcome).run { this.isVisible = it.eligibleWoman() == true }
-
-        menu.findItem(R.id.remove_this_person).run {
-          highlightItem(this)
-          this.isVisible = it.isHouseHoldHead != true
-        }
-        menu.findItem(R.id.log_death).run { highlightItem(this) }
+    patient.value?.let {
+      menu.findItem(R.id.anc_enrollment).run {
+        this.isVisible = it.nonPregnantEligibleWoman() == true
       }
-    )
+      menu.findItem(R.id.pregnancy_outcome).run { this.isVisible = it.eligibleWoman() == true }
+
+      menu.findItem(R.id.remove_this_person).run {
+        highlightItem(this)
+        this.isVisible = it.isHouseHoldHead != true
+      }
+      menu.findItem(R.id.log_death).run { highlightItem(this) }
+    }
 
     return super.onPrepareOptionsMenu(menu)
   }

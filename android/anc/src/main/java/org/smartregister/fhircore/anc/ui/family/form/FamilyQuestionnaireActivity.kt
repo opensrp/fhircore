@@ -51,14 +51,14 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
     if (isEditFamily) {
       when (intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!) {
-        FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_ANC_client)
+        FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_anc_client)
         FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM ->
           saveBtn.setText(R.string.family_member_update_label)
         FamilyFormConstants.FAMILY_REGISTER_FORM -> saveBtn.setText(R.string.family_update_label)
       }
     } else {
       when (intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!) {
-        FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_ANC_client)
+        FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_anc_client)
         FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM ->
           saveBtn.setText(R.string.family_member_save_label)
         FamilyFormConstants.FAMILY_REGISTER_FORM -> saveBtn.setText(R.string.family_save_label)
