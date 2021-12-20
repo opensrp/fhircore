@@ -33,6 +33,8 @@ interface OAuthService {
 
   @GET("protocol/openid-connect/userinfo") fun userInfo(): Call<ResponseBody>
 
+  @GET("practitioner-details/{keycloak-uuid}") fun practitionerDetails(): Call<ResponseBody>
+
   @FormUrlEncoded
   @POST("protocol/openid-connect/logout")
   fun logout(
