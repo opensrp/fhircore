@@ -21,6 +21,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTextInput
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
@@ -34,6 +35,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.login.APP_NAME_TEXT_TAG
+import org.smartregister.fhircore.engine.ui.login.ForgotPasswordDialog
 import org.smartregister.fhircore.engine.ui.login.LOGIN_BUTTON_TAG
 import org.smartregister.fhircore.engine.ui.login.LOGIN_FOOTER
 import org.smartregister.fhircore.engine.ui.login.LoginScreen
@@ -110,5 +112,26 @@ class LoginScreenTest : RobolectricTest() {
 
     // verify login footer group properties
     composeRule.onNodeWithTag(LOGIN_FOOTER).assertExists()
+  }
+
+  @Test
+  fun testForgotPasswordDialog() {
+    composeRule.setContent { ForgotPasswordDialog(forgotPassword = {}, onDismissDialog = {}) }
+
+    // verify forgot password dialog title is displayed
+    composeRule.onNodeWithText("Forgot Password!").assertExists()
+    composeRule.onNodeWithText("Forgot Password!").assertIsDisplayed()
+
+    // verify forgot password dialog content
+    composeRule.onNodeWithText("Please call your supervisor at 012-3456-789").assertExists()
+    composeRule.onNodeWithText("Please call your supervisor at 012-3456-789").assertIsDisplayed()
+
+    // verify cancel button is displayed
+    composeRule.onNodeWithText("CANCEL").assertExists()
+    composeRule.onNodeWithText("CANCEL").assertIsDisplayed()
+
+    // verify dial number button is displayed
+    composeRule.onNodeWithText("DIAL NUMBER").assertExists()
+    composeRule.onNodeWithText("DIAL NUMBER").assertIsDisplayed()
   }
 }

@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.remote.shared.interceptor
+package org.smartregister.fhircore.engine.robolectric
 
-import javax.inject.Inject
-import okhttp3.Interceptor
+import android.accounts.Account
+import android.accounts.AccountManager
+import org.robolectric.Shadows
+import org.robolectric.annotation.Implementation
+import org.robolectric.annotation.Implements
 
-class LoginInterceptor @Inject constructor() : Interceptor {
+@Implements(AccountManager::class)
+class AccountManagerShadow : Shadows() {
 
-  override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
-    val request = chain.request()
-    return chain.proceed(request)
-  }
+  @Implementation fun notifyAccountAuthenticated(account: Account) = true
 }

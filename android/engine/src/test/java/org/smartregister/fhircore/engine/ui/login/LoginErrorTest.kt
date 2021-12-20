@@ -14,27 +14,17 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.data.remote.shared.interceptor
+package org.smartregister.fhircore.engine.ui.login
 
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.spyk
-import io.mockk.verify
-import okhttp3.Interceptor
-import okhttp3.Request
+import org.junit.Assert
 import org.junit.Test
 
-class LoginInterceptorTest {
-
-  private val loginInterceptor = spyk<LoginInterceptor>()
-
-  private val interceptorChain = mockk<Interceptor.Chain>(relaxed = true)
+class LoginErrorTest {
 
   @Test
-  fun testIntercept() {
-    val chainedRequest = mockk<Request>()
-    every { interceptorChain.request() } returns chainedRequest
-    loginInterceptor.intercept(interceptorChain)
-    verify { interceptorChain.proceed(chainedRequest) }
+  fun testLoginErrorConstructorInitializesLoginerror() {
+    val loginError = LoginError("test error", "test description")
+    Assert.assertEquals("test error", loginError.error)
+    Assert.assertEquals("test description", loginError.errorDescription)
   }
 }
