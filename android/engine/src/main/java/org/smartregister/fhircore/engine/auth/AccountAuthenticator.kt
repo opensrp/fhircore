@@ -188,19 +188,18 @@ constructor(
     data[PASSWORD] = password.concatToString()
     return try {
       oAuthService.fetchToken(data)
-    } catch (e: Exception) {
-      throw NetworkErrorException(e)
+    } catch (exception: Exception) {
+      throw NetworkErrorException(exception)
     }
   }
 
-  private fun buildOAuthPayload(grantType: String): MutableMap<String, String> {
-    val payload = mutableMapOf<String, String>()
-    payload[GRANT_TYPE] = grantType
-    payload[CLIENT_ID] = clientId()
-    payload[CLIENT_SECRET] = clientSecret()
-    payload[SCOPE] = providerScope()
-    return payload
-  }
+  private fun buildOAuthPayload(grantType: String) =
+    mutableMapOf(
+      GRANT_TYPE to grantType,
+      CLIENT_ID to clientId(),
+      CLIENT_SECRET to clientSecret(),
+      SCOPE to providerScope()
+    )
 
   fun getRefreshToken(): String? {
     Timber.v("Checking local storage for refresh token")

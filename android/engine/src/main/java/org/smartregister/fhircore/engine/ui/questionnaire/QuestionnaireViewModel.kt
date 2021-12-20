@@ -27,6 +27,7 @@ import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.targetStructureMap
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
@@ -54,10 +55,12 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
+import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import timber.log.Timber
 
 @HiltViewModel
 open class QuestionnaireViewModel
@@ -120,6 +123,8 @@ constructor(
     editMode: Boolean = false
   ) {
     viewModelScope.launch {
+      // important to set response subject so that structure map can handle subject for all entities
+      handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
 
       // if no structure-map and no extraction is configured return without further processing
       if (questionnaire.targetStructureMap != null ||
@@ -143,6 +148,13 @@ constructor(
 
               if (resource is Patient) resource.managingOrganization = organizationRef
               else if (resource is Group) resource.managingEntity = organizationRef
+              // TODO: calculate birthDate from AgeInput as calculation isn't supported by sdk
+              // https://github.com/google/android-fhir/issues/803
+              if (resource is Patient) {
+                getAgeInput(questionnaireResponse)?.let {
+                  resource.birthDate = calculateDobFromAge(it)
+                }
+              }
             }
           }
 
@@ -169,18 +181,24 @@ constructor(
     }
   }
 
+  fun handleQuestionnaireResponseSubject(
+    resourceId: String?,
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse
+  ) {
+    if (resourceId?.isNotBlank() == true) {
+      val subjectType = questionnaire.subjectType.firstOrNull()?.code ?: ResourceType.Patient.name
+      questionnaireResponse.subject = Reference().apply { reference = "$subjectType/$resourceId" }
+    }
+  }
+
   suspend fun saveQuestionnaireResponse(
     resourceId: String?,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ) {
-    val subjectType = questionnaire.subjectType.firstOrNull()?.code ?: ResourceType.Patient.name
 
     if (resourceId?.isNotBlank() == true) {
-      // TODO revise this logic when syncing strategy has final decision
-      // https://github.com/opensrp/fhircore/issues/726
-      loadPatient(resourceId)?.meta?.tag?.forEach { questionnaireResponse.meta.addTag(it) }
-      questionnaireResponse.subject = Reference().apply { reference = "$subjectType/$resourceId" }
       questionnaireResponse.questionnaire =
         "${questionnaire.resourceType}/${questionnaire.logicalId}"
 
@@ -262,7 +280,9 @@ constructor(
                 system = QuestionnaireActivity.WHO_IDENTIFIER_SYSTEM
               }
             )
+          Timber.e(FhirContext.forR4().newJsonParser().encodeResourceToString(this))
         }
+
         resourcesList.add(this)
       }
       loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
@@ -276,5 +296,24 @@ constructor(
     intent: Intent
   ): QuestionnaireResponse {
     return ResourceMapper.populate(questionnaire, *getPopulationResources(intent))
+  }
+
+  fun getAgeInput(questionnaireResponse: QuestionnaireResponse): Int? {
+    return questionnaireResponse
+      .find(QuestionnaireActivity.QUESTIONNAIRE_AGE)
+      ?.answer
+      ?.firstOrNull()
+      ?.valueDecimalType
+      ?.value
+      ?.toInt()
+  }
+
+  fun calculateDobFromAge(age: Int): Date {
+    val cal: Calendar = Calendar.getInstance()
+    // Subtract #age years from the calendar
+    cal.add(Calendar.YEAR, -age)
+    cal.set(Calendar.DAY_OF_YEAR, 1)
+    cal.set(Calendar.MONTH, 1)
+    return cal.time
   }
 }

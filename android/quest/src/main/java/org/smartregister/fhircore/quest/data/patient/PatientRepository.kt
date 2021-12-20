@@ -35,6 +35,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
+import timber.log.Timber
 
 class PatientRepository
 @Inject
@@ -74,10 +75,42 @@ constructor(
   suspend fun fetchDemographics(patientId: String): Patient =
     withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, patientId) }
 
-  suspend fun fetchTestResults(patientId: String): List<QuestionnaireResponse> =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.search { filter(QuestionnaireResponse.SUBJECT) { value = "Patient/$patientId" } }
+  suspend fun fetchTestResults(
+    patientId: String
+  ): List<Pair<QuestionnaireResponse, Questionnaire>> {
+    return withContext(dispatcherProvider.io()) {
+      val questionnaireResponses = searchQuestionnaireResponses(patientId)
+
+      val testResults = mutableListOf<Pair<QuestionnaireResponse, Questionnaire>>()
+      questionnaireResponses.forEach {
+        val questionnaire = getQuestionnaire(it)
+        testResults.add(Pair(it, questionnaire))
+      }
+      testResults
     }
+  }
+
+  suspend fun getQuestionnaire(questionnaireResponse: QuestionnaireResponse): Questionnaire {
+    return if (questionnaireResponse.questionnaire != null) {
+      val questionnaireId = questionnaireResponse.questionnaire.split("/")[1]
+      loadQuestionnaire(questionnaireId = questionnaireId)
+    } else {
+      Timber.e(
+        Exception(
+          "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
+        )
+      )
+      Questionnaire()
+    }
+  }
+
+  private suspend fun loadQuestionnaire(questionnaireId: String): Questionnaire =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.load(Questionnaire::class.java, questionnaireId)
+    }
+
+  private suspend fun searchQuestionnaireResponses(patientId: String): List<QuestionnaireResponse> =
+    fhirEngine.search { filter(QuestionnaireResponse.SUBJECT) { value = "Patient/$patientId" } }
 
   suspend fun fetchTestForms(
     filter: SearchFilter,

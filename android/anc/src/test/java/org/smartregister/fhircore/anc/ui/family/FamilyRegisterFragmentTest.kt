@@ -16,20 +16,29 @@
 
 package org.smartregister.fhircore.anc.ui.family
 
+import android.app.Application
+import android.content.Intent
 import androidx.fragment.app.commitNow
+import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
 import org.junit.After
+import org.junit.Assert
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows
+import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
+import org.smartregister.fhircore.anc.ui.family.register.OpenFamilyProfile
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
@@ -106,5 +115,32 @@ class FamilyRegisterFragmentTest : RobolectricTest() {
     val result =
       registerFragment.performFilter(RegisterFilterType.OVERDUE_FILTER, familyItem, "1111")
     assertTrue(result)
+  }
+
+  @Test
+  fun testNavigateToDetailsShouldOpenFamilyDetailsActivity() {
+
+    registerFragment.onItemClicked(
+      OpenFamilyProfile,
+      FamilyItem("1", "", "", "", "", "", false, listOf(), 0, 0)
+    )
+
+    val expectedIntent =
+      Intent(registerFragment.requireActivity(), FamilyDetailsActivity::class.java)
+    val actualIntent =
+      Shadows.shadowOf(ApplicationProvider.getApplicationContext<Application>()).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testInitializeRegisterDataViewModelShouldInitializeViewModel() {
+
+    var registerDataViewModel = registerFragment.initializeRegisterDataViewModel()
+    assertNotNull(registerDataViewModel)
+    Assert.assertEquals(
+      FamilyRepository::class.simpleName,
+      registerDataViewModel.registerRepository::class.simpleName
+    )
   }
 }

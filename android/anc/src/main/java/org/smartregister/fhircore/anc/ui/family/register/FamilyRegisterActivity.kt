@@ -24,7 +24,6 @@ import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRegisterFragment
 import org.smartregister.fhircore.anc.ui.report.ReportHomeActivity
@@ -39,8 +38,6 @@ import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 
 @AndroidEntryPoint
 class FamilyRegisterActivity : BaseRegisterActivity() {
-
-  @Inject lateinit var familyRepository: FamilyRepository
 
   @Inject lateinit var patientRepository: PatientRepository
 

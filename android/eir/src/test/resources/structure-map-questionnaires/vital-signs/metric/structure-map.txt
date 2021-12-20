@@ -37,6 +37,9 @@ group ExtractWeight(source src : QuestionnaireResponse, target bundle : Bundle, 
                        src -> qty.code = "kg" "rule_ei_12_3";
                        src -> qty.unit = "kg" "rule_ei_12_4";
                      } "rule_ei_12";
+                src -> obs.subject = create('Reference') as reference then {
+                        src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
+                      } "rule_ei_6";
                 src -> obs.encounter = reference(encounter) "ew_5";
                 src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "eh_6";
             } "ew_2";
@@ -58,6 +61,9 @@ group ExtractHeight(source src : QuestionnaireResponse, target bundle : Bundle, 
                        src -> qty.unit = "cm" "rule_ei_12_4";
                      } "rule_ei_12";
                 src -> obs.encounter = reference(encounter) "eh_5";
+                src -> obs.subject = create('Reference') as reference then {
+                       src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
+                       } "rule_ei_6";
                 src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "eh_6";
             } "eh_2";
         } "eh_1";
@@ -78,6 +84,9 @@ group ExtractOxygenSat(source src : QuestionnaireResponse, target bundle : Bundl
                        src -> qty.unit = "%" "rule_ei_12_3";
                      } "rule_ei_12";
                 src -> obs.encounter = reference(encounter) "eos_5";
+                src -> obs.subject = create('Reference') as reference then {
+                       src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
+                       } "rule_ei_6";
                 src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "eos_6";
             } "eos_2";
         } "eos_1";
@@ -101,6 +110,9 @@ group ExtractBloodPressure(source src : QuestionnaireResponse, target bundle : B
                        src -> qty.unit = "mmHg" "rule_ei_12_4";
                      } "rule_ei_12";
                 src -> obs.encounter = reference(encounter) "ebp_5";
+                src -> obs.subject = create('Reference') as reference then {
+                       src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
+                       } "rule_ei_6";
                 src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "ebp_6";
             } "ebp_2";
 
@@ -118,6 +130,9 @@ group ExtractBloodPressure(source src : QuestionnaireResponse, target bundle : B
                        src -> qty.unit = "mmHg" "rule_ei1_12_4";
                      } "rule_ei1_12";
                 src -> obs.encounter = reference(encounter) "eh1_5";
+                src -> obs.subject = create('Reference') as reference then {
+                       src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
+                       } "rule_ei_6";
                 src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "eh1_6";
             } "eh1_2";
         } "ebp_1";
@@ -135,6 +150,9 @@ group ExtractPulseRate(source src : QuestionnaireResponse, target bundle : Bundl
                        src -> qty.unit = "beats/minute" "rule_ei_12_4";
                      } "rule_ei_12";
                 src -> obs.encounter = reference(encounter) "epr_5";
+                src -> obs.subject = create('Reference') as reference then {
+                       src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
+                       } "rule_ei_6";
                 src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "epr_6";
             } "epr_2";
         } "epr_1";
@@ -152,6 +170,9 @@ group ExtractBloodGlucose(source src : QuestionnaireResponse, target bundle : Bu
                        src -> qty.unit = "mmol/l" "rule_ei_12_4";
                      } "rule_ei_12";
                 src -> obs.encounter = reference(encounter) "ebc_5";
+                src -> obs.subject = create('Reference') as reference then {
+                       src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
+                       } "rule_ei_6";
                 src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "ebc_6";
             } "ebc_2";
         } "ebc_1";

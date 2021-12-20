@@ -30,7 +30,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverterFactory
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhircore.engine.data.remote.shared.interceptor.LoginInterceptor
 import org.smartregister.fhircore.engine.data.remote.shared.interceptor.OAuthInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -43,7 +42,7 @@ class NetworkModule {
 
   @Provides
   @AuthOkHttpClientQualifier
-  fun provideAuthOkHttpClient(interceptor: LoginInterceptor) =
+  fun provideAuthOkHttpClient(interceptor: OAuthInterceptor) =
     OkHttpClient.Builder()
       .addInterceptor(interceptor)
       .addInterceptor(HttpLoggingInterceptor().apply { HttpLoggingInterceptor.Level.BASIC })

@@ -76,6 +76,7 @@ fun AppSettingScreen(
       onValueChange = onAppIdChanged,
       value = appId,
       maxLines = 1,
+      singleLine = true,
       placeholder = {
         Text(
           color = Color.LightGray,

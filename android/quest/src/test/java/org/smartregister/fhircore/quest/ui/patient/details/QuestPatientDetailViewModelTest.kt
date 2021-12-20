@@ -17,17 +17,30 @@
 package org.smartregister.fhircore.quest.ui.patient.details
 
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
+import io.mockk.verify
 import javax.inject.Inject
+import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Library
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -41,6 +54,7 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
   @Inject lateinit var patientItemMapper: PatientItemMapper
 
   @BindValue val patientRepository: PatientRepository = mockk()
+  @BindValue val libraryEvaluator: LibraryEvaluator = spyk()
 
   private val patientId = "5583145"
 
@@ -53,7 +67,8 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
     questPatientDetailViewModel =
       QuestPatientDetailViewModel(
         patientRepository = patientRepository,
-        patientItemMapper = patientItemMapper
+        patientItemMapper = patientItemMapper,
+        libraryEvaluator = libraryEvaluator
       )
   }
 
@@ -67,9 +82,8 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnMenuItemClickListener() {
-    questPatientDetailViewModel.onMenuItemClickListener(true)
+    questPatientDetailViewModel.onMenuItemClickListener(R.string.test_results)
     Assert.assertNotNull(questPatientDetailViewModel.onMenuItemClicked.value)
-    Assert.assertTrue(questPatientDetailViewModel.onMenuItemClicked.value!!)
   }
 
   @Test
@@ -111,5 +125,99 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
       "67890",
       questPatientDetailViewModel.questionnaireConfigs.value!!.last().identifier
     )
+  }
+
+  @Test
+  fun testGetAllDataFor() = runBlockingTest {
+    val fhirEngineMock = mockk<FhirEngine>()
+    coEvery { patientRepository.fhirEngine } returns fhirEngineMock
+    coEvery { fhirEngineMock.load(Patient::class.java, "1111") } returns
+      Patient().apply { id = "1111" }
+
+    coEvery {
+      hint(Condition::class)
+      fhirEngineMock.search<Condition>(any())
+    } returns listOf(Condition().apply { id = "c1" })
+
+    val result = questPatientDetailViewModel.getAllDataFor("1111")
+
+    Assert.assertNotNull(result.entryFirstRep.resource)
+    Assert.assertEquals("1111", result.entry[0].resource.id)
+    Assert.assertEquals("c1", result.entry[1].resource.id)
+  }
+
+  @Test
+  fun testRunCqlFor() = runBlockingTest {
+    val fhirEngineMock = mockk<FhirEngine>()
+    coEvery { patientRepository.fhirEngine } returns fhirEngineMock
+    coEvery { fhirEngineMock.load(Library::class.java, any()) } returns Library()
+
+    coEvery { fhirEngineMock.load(Patient::class.java, "1111") } returns
+      Patient().apply { id = "1111" }
+
+    coEvery {
+      hint(Condition::class)
+      fhirEngineMock.search<Condition>(any())
+    } returns listOf(Condition().apply { id = "c1" })
+
+    every { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) } returns listOf("1", "2")
+    every { libraryEvaluator.createBundle(any()) } returns Bundle()
+
+    questPatientDetailViewModel.runCqlFor("1111", ApplicationProvider.getApplicationContext())
+
+    verify { libraryEvaluator.createBundle(any()) }
+    verify { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) }
+  }
+
+  fun testFetchResultNonNullNameShouldReturnNameValue() {
+    val result =
+      questPatientDetailViewModel.fetchResultItemLabel(
+        testResult =
+          Pair(
+            QuestionnaireResponse(),
+            Questionnaire().apply {
+              name = "Sample name"
+              title = "Sample title"
+            }
+          )
+      )
+
+    Assert.assertEquals("Sample name", result)
+    Assert.assertNotEquals("Sample title", result)
+  }
+
+  @Test
+  fun testFetchResultNullNameShouldReturnTitleValue() {
+    val result =
+      questPatientDetailViewModel.fetchResultItemLabel(
+        testResult =
+          Pair(
+            QuestionnaireResponse(),
+            Questionnaire().apply {
+              name = null
+              title = "Sample title"
+            }
+          )
+      )
+
+    Assert.assertEquals("Sample title", result)
+    Assert.assertNotEquals("Sample name", result)
+  }
+
+  @Test
+  fun testFetchResultNullNameTitleShouldReturnNull() {
+    val result =
+      questPatientDetailViewModel.fetchResultItemLabel(
+        testResult =
+          Pair(
+            QuestionnaireResponse(),
+            Questionnaire().apply {
+              name = null
+              title = null
+            }
+          )
+      )
+
+    Assert.assertNull(result)
   }
 }

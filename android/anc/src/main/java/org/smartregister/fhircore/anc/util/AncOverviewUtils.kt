@@ -25,6 +25,7 @@ import org.hl7.fhir.r4.model.UriType
 
 object AncOverviewType {
   const val ANC_OVERVIEW_ID = "anc_overview"
+  const val VITAL_SIGNS = "vital-signs"
 }
 
 const val ANC_OVERVIEW_FILE = "anc_overview_configurations.json"

@@ -21,8 +21,10 @@ import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.logicalId
 import java.util.Date
 import java.util.UUID
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
@@ -34,12 +36,46 @@ fun Resource.toJson(parser: IParser = FhirContext.forR4().newJsonParser()): Stri
   parser.encodeResourceToString(this)
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
+  var extensionUpdateForm = listOf<Extension>()
+  if (updatedResource is Patient) {
+    extensionUpdateForm = updatedResource.extension
+  }
+  var extension = listOf<Extension>()
+  if (this is Patient) {
+    extension = this.extension
+  }
   val jsonParser = FhirContext.forR4().newJsonParser()
   val stringJson = toJson(jsonParser)
   val originalResourceJson = JSONObject(stringJson)
 
   originalResourceJson.updateFrom(JSONObject(updatedResource.toJson(jsonParser)))
-  return jsonParser.parseResource(this::class.java, originalResourceJson.toString())
+  return jsonParser.parseResource(this::class.java, originalResourceJson.toString()).apply {
+    val meta = this.meta
+    val metaUpdateForm = this@updateFrom.meta
+    if ((meta == null || meta.isEmpty)) {
+      if (metaUpdateForm != null) {
+        this.meta = metaUpdateForm
+        this.meta.tag = metaUpdateForm.tag
+      }
+    } else {
+      val setOfTags = mutableSetOf<Coding>()
+      setOfTags.addAll(meta.tag)
+      setOfTags.addAll(metaUpdateForm.tag)
+      this.meta.tag = setOfTags.distinct()
+    }
+    if (this is Patient && this@updateFrom is Patient && updatedResource is Patient) {
+      if (extension.isEmpty()) {
+        if (extensionUpdateForm.isNotEmpty()) {
+          this.extension = extensionUpdateForm
+        }
+      } else {
+        val setOfExtension = mutableSetOf<Extension>()
+        setOfExtension.addAll(extension)
+        setOfExtension.addAll(extensionUpdateForm)
+        this.extension = setOfExtension.distinct()
+      }
+    }
+  }
 }
 
 @Throws(JSONException::class)
