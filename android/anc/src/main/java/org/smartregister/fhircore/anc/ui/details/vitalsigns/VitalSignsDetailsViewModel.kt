@@ -28,6 +28,8 @@ import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.PatientVitalItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
+import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
+import org.smartregister.fhircore.anc.util.computeBMIViaUSCUnits
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @HiltViewModel
@@ -84,35 +86,43 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
       patientVitalItem.spO2 = observationValueOrDefault(listObservationspO2)
       patientVitalItem.spO2Unit = listObservationspO2.valueQuantity.unit ?: ""
 
-      /*if (patientVitalItem.height.isNotEmpty() &&
+      //      val listObservationBmi = patientRepository.fetchVitalSigns(patientId = patientId,
+      // "bmi")
+      //      patientVitalItem.bmi = observationValueOrDefault(listObservationBmi)
+      //      patientVitalItem.bmiUnit = listObservationBmi.valueQuantity.unit ?: ""
+
+      // Todo: confirm if BMI can be displayed from
+      //  Add-Vitals height/weight if its of same Units
+      if (patientVitalItem.bmi.isEmpty() &&
+          patientVitalItem.height.isNotEmpty() &&
           patientVitalItem.weight.isNotEmpty() &&
           patientVitalItem.height.toDouble() > 0 &&
           patientVitalItem.weight.toDouble() > 0
       ) {
-        if (patientVitalItem.weightUnit.isNotEmpty()) {
-          if (patientVitalItem.weightUnit.equals("kg", true)) {
-            patientVitalItem.bmi =
-              computeBMIViaMetricUnits(
-                  patientVitalItem.height.toDouble(),
-                  patientVitalItem.weight.toDouble()
-                )
-                .toString()
-            patientVitalItem.bmiUnit = "kg/m2"
-          } else {
-            patientVitalItem.bmi =
-              computeBMIViaUSCUnits(
-                  patientVitalItem.height.toDouble(),
-                  patientVitalItem.weight.toDouble()
-                )
-                .toString()
-            patientVitalItem.bmiUnit = "lbs/in2"
-          }
+        if (patientVitalItem.weightUnit.equals("kg", true) &&
+            patientVitalItem.heightUnit.equals("cm", true)
+        ) {
+          patientVitalItem.bmi =
+            computeBMIViaMetricUnits(
+                patientVitalItem.height.toDouble(),
+                patientVitalItem.weight.toDouble()
+              )
+              .toString()
+          patientVitalItem.bmiUnit = "kg/m2"
+        } else if (patientVitalItem.weightUnit.equals("lbs", true) &&
+            patientVitalItem.heightUnit.equals("in", true)
+        ) {
+          patientVitalItem.bmi =
+            computeBMIViaUSCUnits(
+                patientVitalItem.height.toDouble(),
+                patientVitalItem.weight.toDouble()
+              )
+              .toString()
+          patientVitalItem.bmiUnit = "lbs/in2"
+        } else {
+          patientVitalItem.bmi = "N/A"
         }
-      }*/
-
-      val listObservationBmi = patientRepository.fetchVitalSigns(patientId = patientId, "bmi")
-      patientVitalItem.bmi = observationValueOrDefault(listObservationBmi)
-      patientVitalItem.bmiUnit = listObservationBmi.valueQuantity.unit ?: ""
+      } // */
 
       patientAncOverviewItem.postValue(patientVitalItem)
     }

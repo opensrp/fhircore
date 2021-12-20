@@ -42,9 +42,9 @@
   },
   "effectiveDateTime": "#EffectiveDate",
   "valueQuantity": {
-    "value": "#ValueHeight",
-    "unit": "#ValueHeightUnit",
+    "value": "#HeightValue",
+    "unit": "#HeightUnit",
     "system": "http://unitsofmeasure.org",
-    "code": "#ValueHeightUnitCode"
+    "code": "#CodeHeightUnit"
   }
 }

@@ -379,7 +379,8 @@ constructor(
     computedBmi: Double,
     isUnitModeMetric: Boolean
   ): Boolean {
-    resourceMapperExtended.saveParsedResource(questionnaireResponse, questionnaire, patientId, null)
+    // resourceMapperExtended.saveParsedResource(questionnaireResponse, questionnaire, patientId,
+    // null)
     return recordBmi(
       patientId = patientId,
       formEncounterId = encounterID,
@@ -398,16 +399,18 @@ constructor(
     computedBMI: Double? = null,
     isUnitModeMetric: Boolean
   ): Boolean {
-
     var weightUnit = "lbs"
     var heightUnit = "in"
     var weightUnitCode = "[lb_av]"
     var heightUnitCode = "[in_i]"
+    // Todo: confirm if bmi unit can be displayed in lb/in2 or only in kg/m2
+    var bmiUnit = "lb/in2"
     if (isUnitModeMetric) {
       weightUnit = "kg"
       heightUnit = "cm"
       weightUnitCode = "kg"
       heightUnitCode = "cm"
+      bmiUnit = "kg/m2"
     }
 
     val bmiEncounterData = buildBmiConfigData(patientId = patientId, recordId = formEncounterId)
@@ -449,6 +452,7 @@ constructor(
         recordId = bmiObservationRecordId,
         bmiEncounter = bmiEncounter,
         computedBmi = computedBMI,
+        bmiUnit = bmiUnit,
         refObsWeightFormId = bmiWeightObservationRecordId,
         refObsHeightFormId = bmiHeightObservationRecordId
       )
@@ -469,6 +473,7 @@ constructor(
     refObsHeightFormId: String? = null,
     heightUnit: String? = null,
     weightUnit: String? = null,
+    bmiUnit: String? = null,
     heightUnitCode: String? = null,
     weightUnitCode: String? = null,
   ): Map<String, String?> {
@@ -478,15 +483,16 @@ constructor(
       "#RefEncounter" to bmiEncounter?.id,
       "#RefPractitioner" to "Practitioner/399",
       "#EffectiveDate" to DateType(Date()).format(),
-      "#ValueWeight" to weight?.toString(),
-      "#ValueHeight" to height?.toString(),
-      "#ValueBmi" to computedBmi.toString(),
+      "#WeightValue" to weight?.toString(),
+      "#HeightValue" to height?.toString(),
+      "#BmiValue" to computedBmi.toString(),
       "#RefIdObservationBodyHeight" to refObsHeightFormId,
       "#RefIdObservationBodyWeight" to refObsWeightFormId,
-      "#ValueWeightUnit" to weightUnit?.toString(),
-      "#ValueHeightUnit" to heightUnit?.toString(),
-      "#ValueWeightUnitCode" to weightUnitCode?.toString(),
-      "#ValueHeightUnitCode" to heightUnitCode?.toString(),
+      "#WeightUnit" to weightUnit?.toString(),
+      "#HeightUnit" to heightUnit?.toString(),
+      "#BmiUnit" to bmiUnit?.toString(),
+      "#CodeWeightUnit" to weightUnitCode?.toString(),
+      "#CodeHeightUnit" to heightUnitCode?.toString(),
     )
   }
 

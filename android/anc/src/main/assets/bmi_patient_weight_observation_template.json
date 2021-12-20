@@ -45,9 +45,9 @@
   },
   "effectiveDateTime": "#EffectiveDate",
   "valueQuantity": {
-    "value": "#ValueWeight",
-    "unit": "#ValueWeightUnit",
+    "value": "#WeightValue",
+    "unit": "#WeightUnit",
     "system": "http://unitsofmeasure.org",
-    "code": "#ValueWeightUnitCode"
+    "code": "#CodeWeightUnit"
   }
 }
