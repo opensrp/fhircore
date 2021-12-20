@@ -78,6 +78,7 @@ constructor(
   fun fetchEncounters(familyId: String) {
     viewModelScope.launch { encounters.postValue(repository.fetchEncounters(familyId)) }
   }
+
   fun removeFamily(familyId: String) {
 
     viewModelScope.launch {

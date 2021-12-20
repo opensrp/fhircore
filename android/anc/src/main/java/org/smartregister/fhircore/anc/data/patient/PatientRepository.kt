@@ -321,8 +321,14 @@ constructor(
           filterByPatient(Observation.SUBJECT, patientId)
         }
       }
-    if (observations.isNotEmpty())
-      finalObservation = observations.sortedBy { it.effectiveDateTimeType.value }.last()
+    if (observations.isNotEmpty()) {
+      val listOfObservations =
+        observations.distinctBy { it.effectiveDateTimeType == DateTimeType(Date()) }
+      finalObservation =
+        if (listOfObservations.isNotEmpty())
+          listOfObservations.sortedBy { it.effectiveDateTimeType.value }.last()
+        else observations.sortedBy { it.effectiveDateTimeType.value }.last()
+    }
 
     return finalObservation
   }
