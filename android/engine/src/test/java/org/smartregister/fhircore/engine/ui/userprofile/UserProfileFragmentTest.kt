@@ -16,12 +16,18 @@
 
 package org.smartregister.fhircore.engine.ui.userprofile
 
+import android.app.Activity
+import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.Lifecycle
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.mockkStatic
+import io.mockk.spyk
+import io.mockk.unmockkStatic
+import io.mockk.verify
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -29,6 +35,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.HiltActivityForTest
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.ui.register.model.Language
+import org.smartregister.fhircore.engine.util.extension.refresh
+import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
 @HiltAndroidTest
 class UserProfileFragmentTest : RobolectricTest() {
@@ -70,5 +79,41 @@ class UserProfileFragmentTest : RobolectricTest() {
     userProfileFragment.userProfileViewModel.logoutUser()
     Assert.assertNotNull(userProfileFragment.userProfileViewModel.onLogout.value)
     Assert.assertTrue(userProfileFragment.userProfileViewModel.onLogout.value!!)
+  }
+
+  @Test
+  fun setLanguageAndRefreshShouldCallSetAppLocaleAndRefresh() {
+    mockkStatic(Context::setAppLocale)
+    mockkStatic(Activity::refresh)
+    launchUserProfileFragment()
+    val language = Language("es", "Spanish")
+
+    userProfileFragment.setLanguageAndRefresh(language)
+
+    val fragmentActivity = userProfileFragment.requireActivity()
+    verify { fragmentActivity.refresh() }
+    verify { fragmentActivity.setAppLocale("es") }
+
+    unmockkStatic(Context::setAppLocale)
+    unmockkStatic(Activity::refresh)
+  }
+
+  @Test
+  fun postingNewLanguageOnViewModelShouldCallSetLanguageAndRefresh() {
+    mockkStatic(Context::setAppLocale)
+    mockkStatic(Activity::refresh)
+
+    launchUserProfileFragment()
+    val language = Language("es", "Spanish")
+    val viewModel = spyk(userProfileFragment.userProfileViewModel)
+
+    viewModel.language.postValue(language)
+
+    val activity = userProfileFragment.requireActivity()
+    verify { activity.setAppLocale("es") }
+    verify { activity.refresh() }
+
+    unmockkStatic(Context::setAppLocale)
+    unmockkStatic(Activity::refresh)
   }
 }
