@@ -30,6 +30,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Divider
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -40,11 +42,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
@@ -61,6 +65,7 @@ import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 fun UserProfileScreen(userProfileViewModel: UserProfileViewModel, modifier: Modifier = Modifier) {
 
   val username by remember { mutableStateOf(userProfileViewModel.retrieveUsername()) }
+  var expanded by remember { mutableStateOf(false) }
 
   Column(modifier = modifier.padding(vertical = 20.dp)) {
     if (!username.isNullOrEmpty()) {
@@ -92,6 +97,56 @@ fun UserProfileScreen(userProfileViewModel: UserProfileViewModel, modifier: Modi
       clickListener = userProfileViewModel::runSync,
       modifier = modifier
     )
+
+    // Language option
+    if (userProfileViewModel.allowSwitchingLanguages()) {
+      Row(
+        modifier =
+          modifier
+            .fillMaxWidth()
+            .clickable { expanded = true }
+            .padding(vertical = 16.dp, horizontal = 20.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+      ) {
+        Row(modifier = Modifier.align(Alignment.CenterVertically)) {
+          Icon(
+            painterResource(R.drawable.ic_outline_language_black),
+            stringResource(R.string.language),
+            tint = BlueTextColor,
+            modifier = Modifier.size(26.dp)
+          )
+          Spacer(modifier = modifier.width(20.dp))
+          Text(text = stringResource(id = R.string.language), fontSize = 18.sp)
+        }
+        Box(contentAlignment = Alignment.CenterEnd) {
+          Text(
+            text = userProfileViewModel.loadSelectedLanguage(),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = modifier.wrapContentWidth(Alignment.End)
+          )
+          DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = modifier.wrapContentWidth(Alignment.End)
+          ) {
+            for (language in userProfileViewModel.languages) {
+              DropdownMenuItem(onClick = { userProfileViewModel.setLanguage(language) }) {
+                Text(text = language.displayName, fontSize = 18.sp)
+              }
+            }
+          }
+        }
+        Icon(
+          imageVector = Icons.Rounded.ChevronRight,
+          "",
+          tint = Color.LightGray,
+          modifier = modifier.wrapContentWidth(Alignment.End)
+        )
+      }
+      Divider(color = DividerColor)
+    }
+
     UserProfileRow(
       icon = Icons.Rounded.Logout,
       text = stringResource(id = R.string.logout),
