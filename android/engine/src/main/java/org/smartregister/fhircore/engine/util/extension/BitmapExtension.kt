@@ -16,26 +16,12 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import io.mockk.mockkStatic
-import io.mockk.verify
-import java.io.File
-import java.io.FileOutputStream
-import org.junit.Test
+import android.graphics.Bitmap
+import java.io.ByteArrayOutputStream
 
-class FileExtensionTest {
-
-  @Test
-  fun testFileShouldReturnBase64Encoded() {
-    mockkStatic(File::encodeToBase64)
-
-    val file = File.createTempFile("sample_file", ".txt")
-    val writer = FileOutputStream(file)
-    writer.write("file".toByteArray())
-
-    file.encodeToBase64()
-
-    verify { file.encodeToBase64() }
-
-    file.delete()
+fun Bitmap.encodeToByteArray(): ByteArray {
+  ByteArrayOutputStream().use { outputStream ->
+    this.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+    return outputStream.toByteArray()
   }
 }
