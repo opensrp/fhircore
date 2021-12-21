@@ -4,5 +4,11 @@
     "classification": "application",
     "theme": "QuestDefault",
     "languages": ["en", "sw"]
+  },
+  {
+    "appId": "g6pd",
+    "classification": "application",
+    "theme": "QuestDefault",
+    "languages": ["en", "sw"]
   }
 ]
