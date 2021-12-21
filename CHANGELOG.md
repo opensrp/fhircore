@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Integrate Hilt Dependency Injection
 - Quest | CQL runner for G6PD
 - Quest | Extraction of resources for Patient, Condition, Encounter, Observations
+- Quest | Added G6PD login configuration
 
 - EIR | Added workflow configurations
 - EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
