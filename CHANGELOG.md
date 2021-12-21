@@ -40,6 +40,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Engine | Integrate Hilt Dependency Injection
 - Engine | Fixed login authentication issue.
 - ANC | Implement vital signs observation extraction from questionnaires
+- Engine | Implement language switcher on profile page
+- Quest | Add Swahili translations for patient registration questionnaire and activate language switcher
+- ANC | Activate language switcher on profile page
 
 ### Fixed
 - ANC | Resolved a bug in the Patient details : App crash when computing BMI
