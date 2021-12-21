@@ -21,9 +21,11 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.util.startFamilyMemberRegistration
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -56,6 +58,21 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
           }
         }
       )
+
+      familyDetailViewModel.apply {
+        isRemoveFamily.observe(familyDetailsActivity, { if (it) finish() })
+      }
+
+      familyDetailViewModel.apply {
+        isRemoveFamilyMenuItemClicked.observe(
+          familyDetailsActivity,
+          {
+            if (it) {
+              removeFamilyMenuItemClicked(familyId = familyId)
+            }
+          }
+        )
+      }
     }
 
     familyDetailViewModel.run {
@@ -75,5 +92,15 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
           putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, familyMemberItem.id)
         }
       )
+  }
+
+  private fun removeFamilyMenuItemClicked(familyId: String) {
+    AlertDialogue.showConfirmAlert(
+      this,
+      R.string.confirm_remove_family_message,
+      R.string.confirm_remove_family_title,
+      { familyDetailViewModel.removeFamily(familyId = familyId) },
+      R.string.family_register_ok_title
+    )
   }
 }
