@@ -17,12 +17,22 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Application
+import android.content.Intent
+import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
+import io.mockk.every
+import io.mockk.just
+import io.mockk.runs
+import io.mockk.slot
+import io.mockk.spyk
+import io.mockk.verify
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import org.robolectric.Shadows
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.ui.login.LoginActivity
 
 class AndroidExtensionTest : RobolectricTest() {
   private lateinit var context: Application
@@ -50,10 +60,7 @@ class AndroidExtensionTest : RobolectricTest() {
 
   @Test
   fun testGetThemeShouldReturnDefaultIfInvalidNameSpecified() {
-    val result = context.getTheme("invalid")
-
-    val expected = R.style.AppTheme_NoActionBar
-    assertEquals(R.style.AppTheme_NoActionBar, result)
+    assertEquals(R.style.AppTheme_NoActionBar, context.getTheme("invalid"))
   }
 
   @Test
@@ -61,5 +68,25 @@ class AndroidExtensionTest : RobolectricTest() {
     val result = context.getTheme("AppTheme.PopupOverlay")
 
     assertEquals(R.style.AppTheme_PopupOverlay, result)
+  }
+
+  @Test
+  fun `Activity#refresh() should call startActivity and finish()`() {
+    val activity = spyk(LoginActivity())
+    val intentCapture = slot<Intent>()
+
+    every { activity.packageName } returns "package-name"
+    every { activity.startActivity(any()) } just runs
+
+    activity.refresh()
+
+    verify { activity.startActivity(capture(intentCapture)) }
+    verify { activity.finish() }
+
+    assertEquals(activity.javaClass.name, intentCapture.captured.component?.className)
+    assertEquals(activity.packageName, intentCapture.captured.component?.packageName)
+
+    // Fixes a compose and activity test failure
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
   }
 }

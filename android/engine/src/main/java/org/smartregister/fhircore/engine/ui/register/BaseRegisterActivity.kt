@@ -139,7 +139,6 @@ abstract class BaseRegisterActivity :
     )
 
     registerViewModel.run {
-      loadLanguages()
       selectedLanguage.observe(
         this@BaseRegisterActivity,
         { updateLanguage(Language(it, Locale.forLanguageTag(it).displayName)) }
@@ -343,7 +342,7 @@ abstract class BaseRegisterActivity :
     setupSideMenu()
 
     val languageMenuItem = findSideMenuItem(R.id.menu_item_language)!!
-    languageMenuItem.isVisible = viewConfiguration.switchLanguages
+    languageMenuItem.isVisible = registerViewModel.allowLanguageSwitching()
 
     registerActivityBinding.navView.apply {
       setNavigationItemSelectedListener(this@BaseRegisterActivity)
