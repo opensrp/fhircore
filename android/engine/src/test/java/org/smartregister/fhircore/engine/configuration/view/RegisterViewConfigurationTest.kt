@@ -37,7 +37,6 @@ class RegisterViewConfigurationTest : RobolectricTest() {
         newClientButtonStyle = "newClientButtonStyle",
         showSearchBar = false,
         showFilter = true,
-        switchLanguages = true,
         showScanQRCode = true,
         showNewClientButton = true,
         registrationForm = "patient-registration",
@@ -51,7 +50,6 @@ class RegisterViewConfigurationTest : RobolectricTest() {
     Assert.assertEquals("newClientButtonText", registerViewConfiguration.newClientButtonText)
     Assert.assertEquals("newClientButtonStyle", registerViewConfiguration.newClientButtonStyle)
     Assert.assertFalse(registerViewConfiguration.showSearchBar)
-    Assert.assertTrue(registerViewConfiguration.switchLanguages)
     Assert.assertTrue(registerViewConfiguration.showScanQRCode)
     Assert.assertTrue(registerViewConfiguration.showNewClientButton)
     Assert.assertTrue(registerViewConfiguration.showSideMenu)
@@ -78,7 +76,6 @@ class RegisterViewConfigurationTest : RobolectricTest() {
           newClientButtonStyle = "newClientButtonStyle",
           showSearchBar = true,
           showFilter = true,
-          switchLanguages = true,
           showScanQRCode = true,
           showNewClientButton = true,
           registrationForm = "patient-reg-form",
@@ -94,7 +91,6 @@ class RegisterViewConfigurationTest : RobolectricTest() {
     Assert.assertEquals("newClientButtonStyle", registerViewConfigurationOf.newClientButtonStyle)
     Assert.assertEquals("patient-reg-form", registerViewConfigurationOf.registrationForm)
     Assert.assertTrue(registerViewConfigurationOf.showSearchBar)
-    Assert.assertTrue(registerViewConfigurationOf.switchLanguages)
     Assert.assertTrue(registerViewConfigurationOf.showScanQRCode)
     Assert.assertTrue(registerViewConfigurationOf.showNewClientButton)
     Assert.assertFalse(registerViewConfigurationOf.showSideMenu)

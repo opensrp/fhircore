@@ -31,10 +31,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Shadows
-import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncInitiator
@@ -103,27 +101,21 @@ class UserProfileViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun allowSwitchingLanguagesShouldReturnTrueWhenConfigurationIsTrue() {
-    val registerViewConfiguration = mockk<RegisterViewConfiguration>()
-    every { registerViewConfiguration.switchLanguages } returns true
-    ReflectionHelpers.setField(
-      userProfileViewModel,
-      "registerViewConfiguration\$delegate",
-      lazy { registerViewConfiguration }
-    )
+  fun allowSwitchingLanguagesShouldReturnTrueWhenMultipleLanguagesAreConfigured() {
+    val languages = listOf(Language("es", "Spanish"), Language("en", "English"))
+    userProfileViewModel = spyk(userProfileViewModel)
+
+    every { userProfileViewModel.languages } returns languages
 
     Assert.assertTrue(userProfileViewModel.allowSwitchingLanguages())
   }
 
   @Test
   fun allowSwitchingLanguagesShouldReturnFalseWhenConfigurationIsFalse() {
-    val registerViewConfiguration = mockk<RegisterViewConfiguration>()
-    every { registerViewConfiguration.switchLanguages } returns false
-    ReflectionHelpers.setField(
-      userProfileViewModel,
-      "registerViewConfiguration\$delegate",
-      lazy { registerViewConfiguration }
-    )
+    val languages = listOf(Language("es", "Spanish"))
+    userProfileViewModel = spyk(userProfileViewModel)
+
+    every { userProfileViewModel.languages } returns languages
 
     Assert.assertFalse(userProfileViewModel.allowSwitchingLanguages())
   }
@@ -151,23 +143,6 @@ class UserProfileViewModelTest : RobolectricTest() {
 
     verify { sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, "es") }
     Assert.assertEquals(language, postedValue!!)
-  }
-
-  @Test
-  fun getRegisterViewConfigurationsShouldReturnConfiguration() {
-    every { accountAuthenticator.launchLoginScreen() } just runs
-    realConfigurationRegistry.loadAppConfigurations("appId", accountAuthenticator) {}
-    userProfileViewModel =
-      UserProfileViewModel(
-        syncBroadcaster,
-        accountAuthenticator,
-        secureSharedPreference,
-        sharedPreferencesHelper,
-        realConfigurationRegistry
-      )
-
-    val registerViewConfiguration = userProfileViewModel.fetchRegisterConfiguration()
-    Assert.assertEquals("Covax", registerViewConfiguration!!.appTitle)
   }
 
   @Test
@@ -212,27 +187,5 @@ class UserProfileViewModelTest : RobolectricTest() {
     Assert.assertEquals("en", languages[0].tag)
     Assert.assertEquals("Swahili", languages[1].displayName)
     Assert.assertEquals("sw", languages[1].tag)
-  }
-
-  @Test
-  fun registerViewConfigurationLazyPropertyShouldInvokeFetchRegisterConfigurationAndReturnRegisterConfiguration() {
-    realConfigurationRegistry.appId = "appId"
-    every { accountAuthenticator.launchLoginScreen() } just runs
-    realConfigurationRegistry.loadAppConfigurations("appId", accountAuthenticator) {}
-    userProfileViewModel =
-      UserProfileViewModel(
-        syncBroadcaster,
-        accountAuthenticator,
-        secureSharedPreference,
-        sharedPreferencesHelper,
-        realConfigurationRegistry
-      )
-
-    val registerViewConfiguration = userProfileViewModel.registerViewConfiguration
-
-    Assert.assertEquals("Covax", registerViewConfiguration!!.appTitle)
-    Assert.assertEquals("appId", registerViewConfiguration.appId)
-    Assert.assertEquals("patient-registration", registerViewConfiguration.registrationForm)
-    Assert.assertFalse(registerViewConfiguration.showBottomMenu)
   }
 }

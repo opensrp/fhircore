@@ -9,7 +9,6 @@
     "newClientButtonStyle": "rounded_corner",
     "showSearchBar": true,
     "showFilter": false,
-    "switchLanguages": true,
     "showScanQRCode": false,
     "showNewClientButton": true,
     "showSideMenu": false,

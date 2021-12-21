@@ -25,12 +25,10 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import timber.log.Timber
 
 @HiltViewModel
 class UserProfileViewModel
@@ -51,8 +49,6 @@ constructor(
       .run { this@run.languages }
       .map { Language(it, Locale.forLanguageTag(it).displayName) }
 
-  val registerViewConfiguration: RegisterViewConfiguration? by lazy { fetchRegisterConfiguration() }
-
   val onLogout = MutableLiveData<Boolean?>(null)
   val language = MutableLiveData<Language?>(null)
 
@@ -67,8 +63,7 @@ constructor(
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
-  fun allowSwitchingLanguages() =
-    (registerViewConfiguration != null && registerViewConfiguration!!.switchLanguages)
+  fun allowSwitchingLanguages() = languages.size > 1
 
   fun loadSelectedLanguage(): String =
     Locale.forLanguageTag(
@@ -81,14 +76,4 @@ constructor(
     sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, language.tag)
     this.language.postValue(language)
   }
-
-  fun fetchRegisterConfiguration(): RegisterViewConfiguration? =
-    try {
-      configurationRegistry.retrieveConfiguration(
-        configClassification = AppConfigClassification.PATIENT_REGISTER
-      )
-    } catch (e: Error) {
-      Timber.e(e)
-      null
-    }
 }

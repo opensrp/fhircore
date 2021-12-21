@@ -145,7 +145,6 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
         newClientButtonStyle = "",
         showSearchBar = true,
         showFilter = true,
-        switchLanguages = true,
         showScanQRCode = true,
         showNewClientButton = true,
         showSideMenu = true,
