@@ -118,7 +118,8 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
                 patientVitalItem.weight.toDouble()
               )
               .toString()
-          patientVitalItem.bmiUnit = "lbs/in2"
+          // Todo: confirm if bmi unit can be displayed in lb/in2 or only in kg/m2
+          patientVitalItem.bmiUnit = "kg/m2"
         } else {
           patientVitalItem.bmi = "N/A"
         }

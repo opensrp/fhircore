@@ -489,6 +489,7 @@ constructor(
       "#RefPatient" to asPatientReference(patientId).reference,
       "#RefEncounter" to bmiEncounter?.id,
       "#RefPractitioner" to "Practitioner/399",
+      "#RefDateStart" to DateType(Date()).format(),
       "#EffectiveDate" to DateType(Date()).format(),
       "#WeightValue" to weight?.toString(),
       "#HeightValue" to height?.toString(),

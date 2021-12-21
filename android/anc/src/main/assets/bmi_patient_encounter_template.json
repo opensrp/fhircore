@@ -17,6 +17,9 @@
   "subject": {
     "reference": "#RefPatient"
   },
+  "period" : {
+    "start" : "#RefDateStart"
+  },
   "participant": [
     {
       "individual": {
