@@ -107,7 +107,6 @@
           "display": "Body Weight"
         },
         {
-          "unit": "kg",
           "system": "http://unitsofmeasure.org",
           "code": "kg"
         }

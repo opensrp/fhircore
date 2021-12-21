@@ -145,7 +145,22 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
         )
 
       if (success) {
-        exitForm()
+        super.handleQuestionnaireResponse(questionnaireResponse = questionnaireResponse)
+
+        // below not useful
+        //        questionnaireViewModel.extractAndSaveResources(
+        //          resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
+        //          questionnaireResponse = questionnaireResponse,
+        //        questionnaire = questionnaire)
+
+        // below not useful
+        //        questionnaireViewModel.extractAndSaveResources(
+        //          questionnaire = questionnaire,
+        //          questionnaireResponse = questionnaireResponse,
+        //          resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
+        //          editMode = editMode
+        //        )
+        // exitForm()
       } else {
         showErrorAlert(getString(R.string.try_again), getString(R.string.error_saving_form))
       }

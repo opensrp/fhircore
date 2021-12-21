@@ -107,7 +107,6 @@
           "display": "Body Weight"
         },
         {
-          "unit": "lbs",
           "system": "http://unitsofmeasure.org",
           "code": "[lb_av]"
         }

@@ -146,12 +146,10 @@ class VitalSignsDetailsViewModelTest : RobolectricTest() {
 
   private fun getTestVitalOverviewItem(): PatientVitalItem {
     return PatientVitalItem().apply {
-      height = "1.5"
-      heightUnit = "m"
+      height = "150"
+      heightUnit = "cm"
       weight = "50"
       weightUnit = "kg"
-      bmi = "22.54"
-      bmiUnit = "kg/m"
     }
   }
 }

@@ -11,14 +11,15 @@
           "display": "Consultation"
         }
       ],
-      "text": "BMI check Consult"
+      "text": "BMI check Consultation"
     }
   ],
   "subject": {
     "reference": "#RefPatient"
   },
   "period" : {
-    "start" : "#RefDateStart"
+    "start" : "#RefDateStart",
+    "end": "#RefDateEnd"
   },
   "participant": [
     {

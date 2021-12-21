@@ -436,7 +436,7 @@ constructor(
       )
     val bmiWeightObservation =
       loadConfig(Template.BMI_PATIENT_WEIGHT, Observation::class.java, bmiWeightObservationData)
-    fhirEngine.save(bmiWeightObservation)
+    // fhirEngine.save(bmiWeightObservation)
 
     val bmiHeightObservationRecordId = getUniqueId()
     val bmiHeightObservationData =
@@ -450,7 +450,7 @@ constructor(
       )
     val bmiHeightObservation =
       loadConfig(Template.BMI_PATIENT_HEIGHT, Observation::class.java, bmiHeightObservationData)
-    fhirEngine.save(bmiHeightObservation)
+    // fhirEngine.save(bmiHeightObservation)
 
     val bmiObservationRecordId = getUniqueId()
     val bmiObservationData =
@@ -490,6 +490,7 @@ constructor(
       "#RefEncounter" to bmiEncounter?.id,
       "#RefPractitioner" to "Practitioner/399",
       "#RefDateStart" to DateType(Date()).format(),
+      "#RefDateEnd" to DateType(Date()).format(),
       "#EffectiveDate" to DateType(Date()).format(),
       "#WeightValue" to weight?.toString(),
       "#HeightValue" to height?.toString(),

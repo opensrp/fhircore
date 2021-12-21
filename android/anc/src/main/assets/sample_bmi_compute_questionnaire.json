@@ -7,6 +7,16 @@
   "subjectType": [
     "Patient"
   ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/5020"
+    },
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/5021"
+    }
+  ],
   "item": [
     {
       "linkId": "select-mode",
@@ -51,21 +61,39 @@
       "type": "group",
       "item": [
         {
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
-              "valueCoding": {
-                "system": "http://unitsofmeasure.org",
-                "code": "kg"
-              }
-            }
-          ],
           "linkId": "vital-signs-body-wight_lb",
-          "definition": "http://acme.org/devices/clinical-codes",
-          "text": "Body Weight (lb)",
           "type": "decimal",
           "maxValue": 999,
           "minValue": 0,
+          "definition": "http://acme.org/devices/clinical-codes",
+          "text": "Body Weight (lb)",
+          "code": [
+            {
+              "system": "http://loinc.org",
+              "code": "29463-7",
+              "display": "Body Weight"
+            },
+            {
+              "system": "http://loinc.org",
+              "code": "3141-9",
+              "display": "Body weight Measured"
+            },
+            {
+              "system": "http://snomed.info/sct",
+              "code": "27113001",
+              "display": "Body weight"
+            },
+            {
+              "system": "http://acme.org/devices/clinical-codes",
+              "code": "body-weight",
+              "display": "Body Weight"
+            },
+            {
+              "unit": "lbs",
+              "system": "http://unitsofmeasure.org",
+              "code": "[lb_av]"
+            }
+          ],
           "enableWhen": [
             {
               "question": "select-mode",
@@ -77,21 +105,29 @@
           ]
         },
         {
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
-              "valueCoding": {
-                "system": "http://unitsofmeasure.org",
-                "code": "[in_i]"
-              }
-            }
-          ],
           "linkId": "vital-signs-height_ft",
+          "type": "decimal",
           "definition": "http://acme.org/devices/clinical-codes",
           "text": "Height (ft)",
-          "type": "decimal",
-          "maxValue": "24",
+          "maxValue": 9,
           "minValue": 0,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+              "valueBoolean": true
+            }
+          ],
+          "code": [
+            {
+              "system": "http://loinc.org",
+              "code": "3137-7",
+              "display": "Body height"
+            },
+            {
+              "system": "http://unitsofmeasure.org",
+              "code": "[ft_i]"
+            }
+          ],
           "enableWhen": [
             {
               "question": "select-mode",
@@ -104,11 +140,28 @@
         },
         {
           "linkId": "vital-signs-height_in",
-          "definition": "http://acme.org/devices/clinical-codes",
-          "text": "Height (inches)",
           "type": "decimal",
-          "maxValue": "11.99",
-          "minValue": 0,
+          "definition": "http://acme.org/devices/clinical-codes",
+          "text": "Height (in)",
+          "maxValue": 11.99,
+          "minValue": 0.01,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+              "valueBoolean": true
+            }
+          ],
+          "code": [
+            {
+              "system": "http://loinc.org",
+              "code": "3137-7",
+              "display": "Body height"
+            },
+            {
+              "system": "http://unitsofmeasure.org",
+              "code": "[in_i]"
+            }
+          ],
           "enableWhen": [
             {
               "question": "select-mode",
@@ -120,21 +173,44 @@
           ]
         },
         {
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
-              "valueCoding": {
-                "system": "http://unitsofmeasure.org",
-                "code": "kg"
-              }
-            }
-          ],
           "linkId": "vital-signs-body-wight_kg",
           "definition": "http://acme.org/devices/clinical-codes",
           "text": "Body Weight (kg)",
           "type": "decimal",
           "maxValue": 999,
           "minValue": 0,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+              "valueBoolean": true
+            }
+          ],
+          "code": [
+            {
+              "system": "http://loinc.org",
+              "code": "29463-7",
+              "display": "Body Weight"
+            },
+            {
+              "system": "http://loinc.org",
+              "code": "3141-9",
+              "display": "Body weight Measured"
+            },
+            {
+              "system": "http://snomed.info/sct",
+              "code": "27113001",
+              "display": "Body weight"
+            },
+            {
+              "system": "http://acme.org/devices/clinical-codes",
+              "code": "body-weight",
+              "display": "Body Weight"
+            },
+            {
+              "system": "http://unitsofmeasure.org",
+              "code": "kg"
+            }
+          ],
           "enableWhen": [
             {
               "question": "select-mode",
@@ -146,21 +222,25 @@
           ]
         },
         {
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
-              "valueCoding": {
-                "system": "http://unitsofmeasure.org",
-                "code": "[in_i]"
-              }
-            }
-          ],
           "linkId": "vital-signs-height_cm",
           "definition": "http://acme.org/devices/clinical-codes",
           "text": "Height (cm)",
           "type": "decimal",
           "maxValue": 300,
           "minValue": 0,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+              "valueBoolean": true
+            }
+          ],
+          "code": [
+            {
+              "system": "http://loinc.org",
+              "code": "3137-7",
+              "display": "Body height"
+            }
+          ],
           "enableWhen": [
             {
               "question": "select-mode",
@@ -172,6 +252,23 @@
           ]
         }
       ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.id"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "patient-id",
+      "type": "text"
     }
   ]
 }
