@@ -81,6 +81,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   lateinit var fragment: FhirCoreQuestionnaireFragment
   private val parser = FhirContext.forR4().newJsonParser()
 
+  override fun onSaveInstanceState(outState: Bundle) {
+    super.onSaveInstanceState(outState)
+    outState.clear()
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_questionnaire)
