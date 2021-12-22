@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import java.util.Calendar
 import java.util.Date
 import org.hl7.fhir.r4.model.DateType
 import org.junit.Assert.assertEquals
@@ -50,6 +51,33 @@ class DateTimeExtensionTest : RobolectricTest() {
     val formatted = date.plusMonthsAsString(3)
 
     assertTrue("2013-01-12".contentEquals(formatted))
+  }
+
+  @Test
+  fun testDatePlusYearsShouldAddYearsToDate() {
+    val date = DateType("2010-10-12").value
+
+    val added = date.plusYears(8).asYyyyMmDd()
+
+    assertTrue("2018-10-12".contentEquals(added))
+  }
+
+  @Test
+  fun testDateYearsPassedShouldReturnCorrectValue() {
+    val date = Calendar.getInstance().apply { add(Calendar.YEAR, -9) }.time
+
+    val years = date.yearsPassed()
+
+    assertEquals(9, years)
+  }
+
+  @Test
+  fun testDateAgeDisplayShouldReturnCorrectAge() {
+    val date = Calendar.getInstance().apply { add(Calendar.YEAR, -9) }.time
+
+    val age = date.toAgeDisplay()
+
+    assertEquals("9y", age)
   }
 
   @Test

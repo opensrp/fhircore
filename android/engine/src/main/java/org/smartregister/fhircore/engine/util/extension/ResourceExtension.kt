@@ -61,7 +61,7 @@ fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
       val setOfTags = mutableSetOf<Coding>()
       setOfTags.addAll(meta.tag)
       setOfTags.addAll(metaUpdateForm.tag)
-      this.meta.tag = setOfTags.distinct()
+      this.meta.tag = setOfTags.distinctBy { it.code + it.system }
     }
     if (this is Patient && this@updateFrom is Patient && updatedResource is Patient) {
       if (extension.isEmpty()) {
