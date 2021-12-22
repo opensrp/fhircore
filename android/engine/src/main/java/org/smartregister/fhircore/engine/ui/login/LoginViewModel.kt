@@ -61,7 +61,8 @@ constructor(
     get() = _launchDialPad
 
   /**
-   * the handler fetches the user info after verifying credentials with flow
+   * Fetch the user info after verifying credentials with flow.
+   *
    * - user-resp (failure) -> show-error
    * - user-resp (success) -> store user info -> goto home
    */
@@ -99,21 +100,17 @@ constructor(
   }
 
   /**
-   * the handler is called after remote login and subsequently fetches userinfo the handler handles
-   * network failures incase previous successful attempt exists
+   * Call after remote login and subsequently fetch userinfo, handles
+   * network failures incase previous successful attempt exists.
    *
    * - auth-resp (failure)
-   * ```
    *    - show error
    *    - attempt local login (true)
    *    - goto home
-   * ```
    * - auth-resp (success)
-   * ```
    *    - fetch userinfo #LoginViewModel.responseBodyHandler
    *       - user-resp (failure) -> show-error
    *       - user-resp (success) -> store user info -> goto home
-   * ```
    */
   val oauthResponseHandler =
     object : ResponseHandler<OAuthResponse> {
