@@ -19,10 +19,16 @@ package org.smartregister.fhircore.engine.ui.userprofile
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Locale
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltViewModel
 class UserProfileViewModel
@@ -30,10 +36,21 @@ class UserProfileViewModel
 constructor(
   val syncBroadcaster: SyncBroadcaster,
   val accountAuthenticator: AccountAuthenticator,
-  val secureSharedPreference: SecureSharedPreference
+  val secureSharedPreference: SecureSharedPreference,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val configurationRegistry: ConfigurationRegistry
 ) : ViewModel() {
 
+  val languages by lazy { fetchLanguages() }
+
+  fun fetchLanguages() =
+    configurationRegistry
+      .retrieveConfiguration<ApplicationConfiguration>(AppConfigClassification.APPLICATION)
+      .run { this@run.languages }
+      .map { Language(it, Locale.forLanguageTag(it).displayName) }
+
   val onLogout = MutableLiveData<Boolean?>(null)
+  val language = MutableLiveData<Language?>(null)
 
   fun runSync() {
     syncBroadcaster.syncInitiator?.runSync()
@@ -45,4 +62,18 @@ constructor(
   }
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
+
+  fun allowSwitchingLanguages() = languages.size > 1
+
+  fun loadSelectedLanguage(): String =
+    Locale.forLanguageTag(
+        sharedPreferencesHelper.read(SharedPreferencesHelper.LANG, Locale.ENGLISH.toLanguageTag())
+          ?: Locale.ENGLISH.toLanguageTag()
+      )
+      .displayName
+
+  fun setLanguage(language: Language) {
+    sharedPreferencesHelper.write(SharedPreferencesHelper.LANG, language.tag)
+    this.language.postValue(language)
+  }
 }

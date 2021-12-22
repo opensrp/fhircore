@@ -78,7 +78,7 @@ constructor(
   val filterValue
     get() = _filterValue
 
-  lateinit var languages: List<Language>
+  val languages: List<Language> by lazy { loadLanguages() }
 
   val sharedSyncStatus = MutableSharedFlow<State>()
 
@@ -94,10 +94,10 @@ constructor(
     this.registerViewConfiguration.value = registerViewConfiguration
   }
 
-  fun loadLanguages() {
-    languages =
-      applicationConfiguration.languages.map { Language(it, Locale.forLanguageTag(it).displayName) }
-  }
+  fun loadLanguages() =
+    applicationConfiguration.languages.map { Language(it, Locale.forLanguageTag(it).displayName) }
+
+  fun allowLanguageSwitching() = languages.size > 1
 
   fun runSync() =
     viewModelScope.launch(dispatcher.io()) {

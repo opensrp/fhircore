@@ -34,7 +34,10 @@ import timber.log.Timber
 fun Context.showToast(message: String, toastLength: Int = Toast.LENGTH_LONG) =
   Toast.makeText(this, message, toastLength).show()
 
-fun Activity.refresh() = startActivity(Intent(this, this.javaClass))
+fun Activity.refresh() {
+  startActivity(Intent(this, this.javaClass))
+  finish()
+}
 
 fun Context.setAppLocale(languageTag: String): Configuration? {
   val res: Resources = this.resources
