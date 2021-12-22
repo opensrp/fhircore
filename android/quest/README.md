@@ -44,7 +44,6 @@ Create new register view for an organization as follows
     "newClientButtonStyle": "rounded_corner",
     "showSearchBar": true,
     "showFilter": false,
-    "switchLanguages": true,
     "showScanQRCode": false,
     "showNewClientButton": true,
     "showSideMenu": false,
