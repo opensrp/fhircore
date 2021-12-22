@@ -72,6 +72,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
 
     Assert.assertEquals(2, alertDialog.listView.count)
 
+    // TODO: test click
     // confirmButton.performClick()
     // Assert.assertTrue(confirmCalled.size > 0)
 
@@ -82,6 +83,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       neutralButton.text
     )
 
+    // TODO: test click
     // neutralButton.performClick()
     // Assert.assertTrue(neutralCalled.size > 0)
   }
