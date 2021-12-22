@@ -63,8 +63,7 @@ constructor(
   /**
    * Fetch the user info after verifying credentials with flow.
    *
-   * - user-resp (failure) -> show-error
-   * - user-resp (success) -> store user info -> goto home
+   * On user-resp (failure) show-error. On user-resp (success) store user info and goto home.
    */
   val responseBodyHandler =
     object : ResponseHandler<ResponseBody> {
@@ -100,17 +99,16 @@ constructor(
   }
 
   /**
-   * Call after remote login and subsequently fetch userinfo, handles
-   * network failures incase previous successful attempt exists.
+   * Call after remote login and subsequently fetch userinfo, handles network failures incase
+   * previous successful attempt exists.
    *
-   * - auth-resp (failure)
-   *    - show error
-   *    - attempt local login (true)
-   *    - goto home
-   * - auth-resp (success)
-   *    - fetch userinfo #LoginViewModel.responseBodyHandler
-   *       - user-resp (failure) -> show-error
-   *       - user-resp (success) -> store user info -> goto home
+   * On auth-resp (failure) show error, attempt local login (true), and goto home.
+   *
+   * On auth-resp success, fetch userinfo #LoginViewModel.responseBodyHandler. On subsequent
+   * user-resp (failure) show-error, otherwise on user-resp (success) store user info, and goto
+   * home.
+   * ```
+   * ```
    */
   val oauthResponseHandler =
     object : ResponseHandler<OAuthResponse> {
