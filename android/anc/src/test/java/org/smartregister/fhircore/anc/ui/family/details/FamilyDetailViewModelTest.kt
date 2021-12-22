@@ -18,6 +18,7 @@ package org.smartregister.fhircore.anc.ui.family.details
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -153,5 +154,12 @@ class FamilyDetailViewModelTest : RobolectricTest() {
     Assert.assertEquals(1, items?.size)
     Assert.assertEquals(cpTitle, carePlan.title)
     Assert.assertEquals(cpPeriodStartDate, carePlan.period.start)
+  }
+
+  @Test
+  fun testChangeFamilyHeadShouldCallRepositoryMethod() {
+    coEvery { familyDetailRepository.familyRepository.changeFamilyHead(any(), any()) } answers {}
+    familyDetailViewModel.changeFamilyHead("111", "222")
+    coVerify { familyDetailRepository.familyRepository.changeFamilyHead(any(), any()) }
   }
 }

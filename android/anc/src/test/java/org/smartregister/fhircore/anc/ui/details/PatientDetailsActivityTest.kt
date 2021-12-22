@@ -18,6 +18,7 @@ package org.smartregister.fhircore.anc.ui.details
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Looper
 import android.view.MenuInflater
@@ -54,6 +55,7 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.patient.DeletionReason
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
@@ -351,6 +353,23 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
       " · ID:  · ID: samplePatientId · Head of household · ",
       patientDetailsActivity.findViewById<TextView>(R.id.txtView_patientId).text.toString()
     )
+  }
+
+  @Test
+  fun testOnDeleteFamilyMemberRequested() {
+    var dialog = mockk<AlertDialog>()
+
+    every { patientDetailsActivitySpy.getSelectedKey(any()) } returns DeletionReason.MOVED_OUT.name
+    coEvery { patientDetailsActivitySpy.ancDetailsViewModel.deletePatient(any(), any()) } returns
+      MutableLiveData(true)
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientDetailsActivitySpy,
+      "onDeleteFamilyMemberRequested",
+      ReflectionHelpers.ClassParameter(DialogInterface::class.java, dialog)
+    )
+
+    verify { patientDetailsActivitySpy.ancDetailsViewModel.deletePatient(any(), any()) }
   }
 
   @Test

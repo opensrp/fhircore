@@ -243,8 +243,13 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
       loadProgress.dismiss()
     }
   }
+
+  fun getSelectedKey(dialog: DialogInterface): String? {
+    return (dialog as AlertDialog).getSingleChoiceSelectedKey()
+  }
+
   private fun onDeleteFamilyMemberRequested(dialog: DialogInterface) {
-    val selection = (dialog as AlertDialog).getSingleChoiceSelectedKey()
+    val selection = getSelectedKey(dialog)
     if (selection?.isNotBlank() == true) {
       ancDetailsViewModel
         .deletePatient(patientId, DeletionReason.values().single { it.name == selection })

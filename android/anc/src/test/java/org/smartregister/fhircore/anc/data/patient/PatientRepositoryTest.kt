@@ -35,6 +35,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import java.lang.IllegalStateException
 import java.text.SimpleDateFormat
 import java.util.Date
 import javax.inject.Inject
@@ -665,6 +666,18 @@ class PatientRepositoryTest : RobolectricTest() {
 
     Assert.assertTrue(saveSlot.captured.active)
     Assert.assertEquals(0, saveSlot.captured.link.size)
+  }
+
+  @Test(expected = IllegalStateException::class)
+  fun testDeletePatientWithFamilyHeadShouldThrowException() {
+    coEvery { fhirEngine.load(Patient::class.java, any()) } returns
+      Patient().apply {
+        active = true
+        addLink().other.reference = "ref"
+        meta.addTag(Coding("", "family", "family"))
+      }
+
+    runBlocking { repository.deletePatient("99", DeletionReason.MOVED_OUT) }
   }
 
   @Test

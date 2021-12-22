@@ -21,6 +21,7 @@ import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -42,6 +43,7 @@ import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
+import org.smartregister.fhircore.anc.data.patient.DeletionReason
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
@@ -183,5 +185,23 @@ internal class AncDetailsViewModelTest : RobolectricTest() {
       Assert.assertEquals(Encounter.EncounterStatus.FINISHED, this?.status)
       Assert.assertEquals("completed", this?.display)
     }
+  }
+
+  @Test
+  fun testDeletePatientShouldCallPatientRepository() = runBlockingTest {
+    coEvery { patientRepository.deletePatient("111", any()) } answers {}
+
+    ancDetailsViewModel.deletePatient("111", DeletionReason.MOVED_OUT)
+
+    coVerify { patientRepository.deletePatient("111", any()) }
+  }
+
+  @Test
+  fun testMarkDeceasedShouldCallPatientRepository() = runBlockingTest {
+    coEvery { patientRepository.markDeceased("111", any()) } answers {}
+
+    ancDetailsViewModel.markDeceased("111", Date())
+
+    coVerify { patientRepository.markDeceased("111", any()) }
   }
 }

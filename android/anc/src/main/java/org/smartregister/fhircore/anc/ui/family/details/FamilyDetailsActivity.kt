@@ -121,8 +121,12 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
     loadData()
   }
 
+  fun getSelectedKey(dialog: DialogInterface): String? {
+    return (dialog as AlertDialog).getSingleChoiceSelectedKey()
+  }
+
   private fun onFamilyHeadChangeRequested(dialog: DialogInterface) {
-    val selection = (dialog as AlertDialog).getSingleChoiceSelectedKey()
+    val selection = getSelectedKey(dialog)
     if (selection?.isNotBlank() == true) {
       familyDetailViewModel
         .changeFamilyHead(familyId, selection)
