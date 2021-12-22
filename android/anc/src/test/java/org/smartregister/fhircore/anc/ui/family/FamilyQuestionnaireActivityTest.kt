@@ -356,12 +356,12 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
       Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent2).create().get()
 
     assertEquals(
-      getString(R.string.mark_as_ANC_client),
+      getString(R.string.mark_as_anc_client),
       familyQuestionnaireActivity1.saveBtn.text.toString()
     )
 
     assertEquals(
-      getString(R.string.mark_as_ANC_client),
+      getString(R.string.mark_as_anc_client),
       familyQuestionnaireActivity2.saveBtn.text.toString()
     )
   }

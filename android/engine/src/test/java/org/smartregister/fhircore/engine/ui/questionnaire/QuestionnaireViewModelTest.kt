@@ -71,7 +71,6 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 
 @HiltAndroidTest
@@ -651,12 +650,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
 
     verify { questionnaireResponse.retainMetadata(oldQuestionnaireResponse) }
-    coVerify { questionnaireResponse.deleteRelatedResources(defaultRepo) }
-    Assert.assertEquals(patient, questionnaireResponse.contained[0])
-    Assert.assertEquals(
-      patient.birthDate,
-      (questionnaireResponse.contained[0] as Patient).birthDate
-    )
 
     unmockkObject(ResourceMapper)
   }
