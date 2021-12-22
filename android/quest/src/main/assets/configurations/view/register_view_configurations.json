@@ -35,7 +35,7 @@
     "showNewClientButton": true,
     "showSideMenu": false,
     "showBottomMenu": true,
-    "registrationForm": "3435",
+    "registrationForm": "9088",
     "primaryFilter": {
       "key": "_tag",
       "system": "http://fhir.ona.io",

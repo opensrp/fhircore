@@ -16,7 +16,10 @@
 
 package org.smartregister.fhircore.quest.data.patient.model
 
+import android.content.Context
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.graphics.Color
+import org.smartregister.fhircore.quest.R
 
 @Stable
 data class PatientItem(
@@ -25,7 +28,8 @@ data class PatientItem(
   val name: String = "",
   val gender: String = "",
   val age: String = "",
-  val address: String = ""
+  val address: String = "",
+  val g6pdStatus: G6PDStatus? = null
 )
 
 fun PatientItem.genderFull(): String {
@@ -35,3 +39,18 @@ fun PatientItem.genderFull(): String {
     else -> gender
   }
 }
+
+enum class G6PDStatus {
+  Deficient(Color.Red),
+  Intermediate(Color(android.graphics.Color.parseColor("#FFA500"))),
+  Normal(Color.Green);
+
+  val color: Color
+
+  constructor(color: Color) {
+    this.color = color
+  }
+}
+
+fun G6PDStatus.makeItLabel(context: Context): String =
+  context.getString(R.string.g6pd_status_label, name)

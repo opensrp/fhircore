@@ -1,0 +1,12 @@
+[
+  {
+    "appId": "quest",
+    "classification": "patient_register_row",
+    "showG6pdStatus": false
+  },
+  {
+    "appId": "g6pd",
+    "classification": "patient_register_row",
+    "showG6pdStatus": true
+  }
+]
