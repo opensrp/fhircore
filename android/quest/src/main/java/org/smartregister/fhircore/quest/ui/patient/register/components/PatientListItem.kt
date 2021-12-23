@@ -56,7 +56,7 @@ fun PatientRow(
   patientItem: PatientItem,
   clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit,
   modifier: Modifier = Modifier,
-  patientRegisterRowViewConfiguration: PatientRegisterRowViewConfiguration
+  patientRegisterRowViewConfiguration: PatientRegisterRowViewConfiguration = patientRegisterRowViewConfigurationOf()
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -109,9 +109,7 @@ fun PatientRow() {
     PatientRow(
       patientItem = PatientItem("1", "1", "Rickey Ron", "M", "32y", "", G6PDStatus.Deficient),
       clickListener = { listenerIntent, data -> },
-      modifier = Modifier.background(Color.White),
-      patientRegisterRowViewConfiguration =
-        patientRegisterRowViewConfigurationOf(appId = "quest", showG6pdStatus = false)
+      modifier = Modifier.background(Color.White)
     )
   }
 }
