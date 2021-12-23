@@ -235,24 +235,21 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
           modifier = Modifier.fillMaxWidth().padding(top = 12.dp).testTag(RESULT_CONTAINER_ITEM)
         ) {
           Column {
-            Divider(color = colorResource(id = R.color.white_smoke))
-            Column {
-              testResults?.let {
-                it.forEachIndexed { index, item ->
-                  ResultItem(item, questPatientDetailViewModel)
-                  if (index < it.size) {
-                    Divider(color = colorResource(id = R.color.white_smoke))
-                  }
+            testResults?.let {
+              it.forEachIndexed { index, item ->
+                ResultItem(item, questPatientDetailViewModel)
+                if (index < it.size - 1) {
+                  Divider(color = colorResource(id = R.color.white_smoke))
                 }
               }
-                ?: Text(
-                  text = stringResource(id = R.string.loading_responses),
-                  modifier = Modifier.padding(16.dp)
-                )
             }
-            Spacer(Modifier.height(24.dp))
+              ?: Text(
+                text = stringResource(id = R.string.loading_responses),
+                modifier = Modifier.padding(16.dp)
+              )
           }
         }
+        Spacer(Modifier.height(24.dp))
       }
     }
   }

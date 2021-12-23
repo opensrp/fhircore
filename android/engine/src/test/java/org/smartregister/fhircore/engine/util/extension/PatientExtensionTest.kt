@@ -18,7 +18,8 @@ package org.smartregister.fhircore.engine.util.extension
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import com.ibm.icu.util.Calendar
+import java.util.Calendar
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
@@ -46,6 +47,58 @@ class PatientExtensionTest : RobolectricTest() {
       }
 
     Assert.assertEquals("12 B, Gulshan, Karimabad Sindh", patient.extractAddress())
+  }
+
+  @Test
+  fun testIsFamilyHeadShouldReturnTrueWithTagFamily() {
+    val patient = Patient().apply { meta.addTag().display = "FamiLy" }
+
+    Assert.assertTrue(patient.isFamilyHead())
+  }
+
+  @Test
+  fun testIsFamilyHeadShouldReturnTrueWithNoTagAsFamily() {
+    val patient = Patient().apply { meta.addTag().display = "Pregnant" }
+
+    Assert.assertFalse(patient.isFamilyHead())
+  }
+
+  @Test
+  fun testHasActivePregnancyShouldReturnTrueWithActivePregnancyCondition() {
+    val conditions =
+      listOf(
+        Condition().apply {
+          this.clinicalStatus.addCoding().code = "L123"
+          this.clinicalStatus.addCoding().code = "active"
+          this.code.addCoding().display = "OCD"
+        },
+        Condition().apply {
+          this.clinicalStatus.addCoding().code = "L123"
+          this.clinicalStatus.addCoding().code = "active"
+          this.code.addCoding().display = "preGnant"
+        }
+      )
+
+    Assert.assertTrue(conditions.hasActivePregnancy())
+  }
+
+  @Test
+  fun testHasActivePregnancyShouldReturnFalseWithNoActivePregnancyCondition() {
+    val conditions =
+      listOf(
+        Condition().apply {
+          this.clinicalStatus.addCoding().code = "L123"
+          this.clinicalStatus.addCoding().code = "active"
+          this.code.addCoding().display = "OCD"
+        },
+        Condition().apply {
+          this.clinicalStatus.addCoding().code = "L123"
+          this.clinicalStatus.addCoding().code = "inactive"
+          this.code.addCoding().display = "preGnant"
+        }
+      )
+
+    Assert.assertFalse(conditions.hasActivePregnancy())
   }
 
   @Test
@@ -88,6 +141,14 @@ class PatientExtensionTest : RobolectricTest() {
     val expectedAge12 = "0d"
     // if difference b/w current date and DOB is O from extractAge extension
     Assert.assertEquals(expectedAge12, getAgeStringFromDays(0))
+  }
+
+  @Test
+  fun testExtractAge() {
+    val patient =
+      Patient().apply { birthDate = Calendar.getInstance().apply { add(Calendar.YEAR, -19) }.time }
+
+    Assert.assertEquals("19y", patient.extractAge())
   }
 
   @Test
@@ -282,16 +343,5 @@ class PatientExtensionTest : RobolectricTest() {
       )
 
     Assert.assertEquals(DateTimeType(timeNow).toDisplay(), Patient().getLastSeen(immunizations))
-  }
-
-  @Test
-  fun testIsPregnantShouldReturnFalseWhenPatientDoesNotHavePregnantExtension() {
-    Assert.assertFalse(Patient().isPregnant())
-  }
-
-  @Test
-  fun testIsPregnantShouldReturnTrueWhenPatientHasPregnantExtension() {
-    val patient = Patient().apply { addExtension("pregnant-extension", StringType("pregnant")) }
-    Assert.assertTrue(patient.isPregnant())
   }
 }

@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.anc.ui.family.details
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -25,10 +27,13 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.util.startFamilyMemberRegistration
+import org.smartregister.fhircore.engine.ui.base.AlertDialogListItem
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue.getSingleChoiceSelectedKey
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.showToast
 
 @AndroidEntryPoint
 class FamilyDetailsActivity : BaseMultiLanguageActivity() {
@@ -59,6 +64,27 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
         }
       )
 
+      changeHead.observe(
+        familyDetailsActivity,
+        { changeHead ->
+          if (changeHead) {
+            val eligibleMembers = familyDetailViewModel.familyMembers.othersEligibleForHead()
+
+            if (eligibleMembers.isNullOrEmpty())
+              this@FamilyDetailsActivity.showToast(getString(R.string.no_eligible_family_head))
+            else
+              AlertDialogue.showConfirmAlert(
+                context = this@FamilyDetailsActivity,
+                message = R.string.change_head_confirm_message,
+                title = R.string.change_head_confirm_title,
+                confirmButtonListener = familyDetailsActivity::onFamilyHeadChangeRequested,
+                confirmButtonText = R.string.change_head_button_title,
+                options = eligibleMembers.map { AlertDialogListItem(it.id, it.name) }
+              )
+          }
+        }
+      )
+
       familyDetailViewModel.apply {
         isRemoveFamily.observe(familyDetailsActivity, { if (it) finish() })
       }
@@ -75,14 +101,45 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
       }
     }
 
+    loadData()
+
+    setContent { AppTheme { FamilyDetailScreen(familyDetailViewModel) } }
+  }
+
+  private fun loadData() {
     familyDetailViewModel.run {
       fetchDemographics(familyId)
       fetchFamilyMembers(familyId)
       fetchCarePlans(familyId)
       fetchEncounters(familyId)
     }
+  }
 
-    setContent { AppTheme { FamilyDetailScreen(familyDetailViewModel) } }
+  override fun onResume() {
+    super.onResume()
+
+    loadData()
+  }
+
+  fun getSelectedKey(dialog: DialogInterface): String? {
+    return (dialog as AlertDialog).getSingleChoiceSelectedKey()
+  }
+
+  private fun onFamilyHeadChangeRequested(dialog: DialogInterface) {
+    val selection = getSelectedKey(dialog)
+    if (selection?.isNotBlank() == true) {
+      familyDetailViewModel
+        .changeFamilyHead(familyId, selection)
+        .observe(
+          this@FamilyDetailsActivity,
+          {
+            if (it) {
+              dialog.dismiss()
+              finish()
+            }
+          }
+        )
+    } else this.showToast(getString(R.string.invalid_selection))
   }
 
   private fun onFamilyMemberItemClicked(familyMemberItem: FamilyMemberItem?) {

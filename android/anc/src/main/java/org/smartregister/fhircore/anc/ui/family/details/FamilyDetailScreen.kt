@@ -65,6 +65,7 @@ import androidx.compose.ui.unit.sp
 import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
+import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
 const val TOOLBAR_MENU = "toolbarMenuTag"
@@ -125,9 +126,9 @@ fun FamilyDetailScreen(familyDetailViewModel: FamilyDetailViewModel) {
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
-          text = patient.value?.address?.firstOrNull()?.city.toString(),
+          text = patient.value?.extractAddress() ?: "",
           color = colorResource(id = R.color.white),
-          fontSize = 25.sp
+          fontSize = 20.sp
         )
       }
 
@@ -146,7 +147,10 @@ fun FamilyDetailScreen(familyDetailViewModel: FamilyDetailViewModel) {
 
         Spacer(Modifier.height(12.dp))
 
-        MemberHeading(familyDetailViewModel::onAddMemberItemClicked)
+        MemberHeading(
+          familyDetailViewModel::onAddMemberItemClicked,
+          familyDetailViewModel::onChangeHeadClicked
+        )
         familyDetailViewModel.familyMembers.observeAsState().value?.run {
           MembersList(this, familyDetailViewModel::onMemberItemClick)
         }
@@ -165,7 +169,7 @@ fun FamilyDetailScreen(familyDetailViewModel: FamilyDetailViewModel) {
 }
 
 @Composable
-fun MemberHeading(onAddMemberItemClicked: () -> Unit) {
+fun MemberHeading(onAddMemberItemClicked: () -> Unit, onChangeHeadClicked: () -> Unit) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -178,9 +182,18 @@ fun MemberHeading(onAddMemberItemClicked: () -> Unit) {
       textAlign = TextAlign.Start,
       fontSize = 16.sp,
     )
+    TextButton(contentPadding = PaddingValues(0.dp), onClick = { onChangeHeadClicked() }) {
+      Text(
+        text = stringResource(id = R.string.change_head).uppercase(),
+        color = colorResource(id = R.color.colorPrimaryLight),
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Start
+      )
+    }
     TextButton(contentPadding = PaddingValues(0.dp), onClick = { onAddMemberItemClicked() }) {
       Text(
-        text = stringResource(id = R.string.add).uppercase() + "+",
+        text = stringResource(id = R.string.add_member).uppercase() + "+",
         color = colorResource(id = R.color.colorPrimaryLight),
         fontSize = 16.sp,
         fontWeight = FontWeight.Bold,
@@ -206,7 +219,10 @@ fun MembersList(
       val totalMemberCount = members.count()
       members.forEachIndexed { index, item ->
         Column(
-          modifier = Modifier.fillMaxWidth().clickable { onMemberItemClick(item) },
+          modifier =
+            Modifier.fillMaxWidth().clickable(enabled = item.deathDate == null) {
+              onMemberItemClick(item)
+            },
         ) {
           Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -220,6 +236,16 @@ fun MembersList(
               textAlign = TextAlign.Start,
               modifier = Modifier.padding(end = 12.dp)
             )
+
+            item.deathDate?.let {
+              Text(
+                text = "Deceased(${item.deathDate.makeItReadable()})",
+                color = colorResource(id = R.color.status_gray),
+                fontSize = 14.sp,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.padding(end = 12.dp)
+              )
+            }
 
             Image(
               painter = painterResource(id = R.drawable.ic_forward_arrow),
@@ -245,7 +271,7 @@ fun MembersList(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
           ) {
-            if (item.pregnant) {
+            if (item.pregnant == true) {
               Image(
                 painter = painterResource(R.drawable.ic_pregnant),
                 contentDescription = stringResource(id = R.string.pregnant_woman),

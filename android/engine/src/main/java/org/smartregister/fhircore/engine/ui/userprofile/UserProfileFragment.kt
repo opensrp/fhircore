@@ -24,7 +24,10 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
+import org.smartregister.fhircore.engine.ui.register.model.Language
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.refresh
+import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
 @AndroidEntryPoint
 class UserProfileFragment : Fragment() {
@@ -49,6 +52,21 @@ class UserProfileFragment : Fragment() {
         if (shouldLogout != null && !shouldLogout) requireActivity().finish()
       }
     )
+
+    userProfileViewModel.language.observe(
+      viewLifecycleOwner,
+      { language: Language? ->
+        if (language == null) return@observe
+
+        setLanguageAndRefresh(language)
+      }
+    )
+  }
+
+  fun setLanguageAndRefresh(language: Language) {
+    val activityContext = requireActivity()
+    activityContext.setAppLocale(language.tag)
+    activityContext.refresh()
   }
 
   companion object {

@@ -26,6 +26,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.ui.register.model.Language
 
 class UserProfileScreenKtTest : RobolectricTest() {
 
@@ -36,11 +37,13 @@ class UserProfileScreenKtTest : RobolectricTest() {
   @Before
   fun setUp() {
     every { userProfileViewModel.retrieveUsername() } returns "johndoe"
-    composeRule.setContent { UserProfileScreen(userProfileViewModel = userProfileViewModel) }
+    every { userProfileViewModel.allowSwitchingLanguages() } returns false
   }
 
   @Test
   fun testUserProfileShouldDisplayCorrectContent() {
+    composeRule.setContent { UserProfileScreen(userProfileViewModel = userProfileViewModel) }
+
     composeRule.onNodeWithText("Johndoe").assertExists()
     composeRule.onNodeWithText("Sync").assertExists()
     composeRule.onNodeWithText("Log out").assertExists()
@@ -48,10 +51,40 @@ class UserProfileScreenKtTest : RobolectricTest() {
 
   @Test
   fun testSyncRowClickShouldInitiateSync() {
+    composeRule.setContent { UserProfileScreen(userProfileViewModel = userProfileViewModel) }
     every { userProfileViewModel.runSync() } returns Unit
 
     composeRule.onNodeWithText("Sync").performClick()
 
     verify { userProfileViewModel.runSync() }
+  }
+
+  @Test
+  fun testLanguageRowIsNotShownWhenAllowSwitchingLanguagesIsFalse() {
+    composeRule.setContent { UserProfileScreen(userProfileViewModel = userProfileViewModel) }
+
+    composeRule.onNodeWithText("Language").assertDoesNotExist()
+  }
+
+  @Test
+  fun testLanguageRowIsShownWhenAllowSwitchingLanguagesIsTrue() {
+    every { userProfileViewModel.allowSwitchingLanguages() } returns true
+    every { userProfileViewModel.loadSelectedLanguage() } returns "Some lang"
+    composeRule.setContent { UserProfileScreen(userProfileViewModel = userProfileViewModel) }
+
+    composeRule.onNodeWithText("Language").assertExists()
+  }
+
+  @Test
+  fun testLanguageRowIsShownWithDropMenuItemsWhenAllowSwitchingLanguagesIsTrueAndLanguagesReturned() {
+    val languages = listOf(Language("es", "Spanish"), Language("en", "English"))
+    every { userProfileViewModel.languages } returns languages
+    every { userProfileViewModel.allowSwitchingLanguages() } returns true
+    every { userProfileViewModel.loadSelectedLanguage() } returns "Some lang"
+    composeRule.setContent { UserProfileScreen(userProfileViewModel = userProfileViewModel) }
+
+    composeRule.onNodeWithText("Language").performClick()
+    composeRule.onNodeWithText("Spanish").assertExists()
+    composeRule.onNodeWithText("English").assertExists()
   }
 }

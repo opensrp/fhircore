@@ -116,6 +116,15 @@ constructor(
     return structureMap
   }
 
+  fun appendOrganizationInfo(resource: Resource) {
+    authenticatedUserInfo?.organization?.let { org ->
+      val organizationRef = Reference().apply { reference = "Organization/$org" }
+
+      if (resource is Patient) resource.managingOrganization = organizationRef
+      else if (resource is Group) resource.managingEntity = organizationRef
+    }
+  }
+
   fun extractAndSaveResources(
     resourceId: String?,
     questionnaire: Questionnaire,
@@ -142,24 +151,11 @@ constructor(
             }
 
             // add managing organization of logged in user to record
-            authenticatedUserInfo?.organization?.let { org ->
-              val organizationRef = Reference().apply { reference = "Organization/$org" }
-              val resource = bun.resource
+            appendOrganizationInfo(bun.resource)
 
-              if (resource is Patient) resource.managingOrganization = organizationRef
-              else if (resource is Group) resource.managingEntity = organizationRef
-              // TODO: calculate birthDate from AgeInput as calculation isn't supported by sdk
-              // https://github.com/google/android-fhir/issues/803
-              if (resource is Patient) {
-                getAgeInput(questionnaireResponse)?.let {
-                  resource.birthDate = calculateDobFromAge(it)
-                }
-              }
+            if (bun.resource != null) {
+              questionnaireResponse.contained.add(bun.resource)
             }
-          }
-
-          if (bun.resource != null) {
-            questionnaireResponse.contained.add(bun.resource)
           }
         }
 

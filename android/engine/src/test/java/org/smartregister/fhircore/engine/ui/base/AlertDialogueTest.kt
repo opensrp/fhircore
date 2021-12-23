@@ -22,6 +22,8 @@ import android.content.DialogInterface
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.get
+import java.util.Date
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -54,7 +56,8 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       confirmButtonText = R.string.questionnaire_alert_confirm_button_title,
       confirmButtonListener = { confirmCalled.add(true) },
       neutralButtonText = R.string.questionnaire_alert_ack_button_title,
-      neutralButtonListener = { neutralCalled.add(true) }
+      neutralButtonListener = { neutralCalled.add(true) },
+      options = arrayOf(AlertDialogListItem("a", "A"), AlertDialogListItem("b", "B"))
     )
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
@@ -67,6 +70,9 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       getString(R.string.questionnaire_alert_confirm_button_title)
     )
 
+    Assert.assertEquals(2, alertDialog.listView.count)
+
+    // TODO: test click
     // confirmButton.performClick()
     // Assert.assertTrue(confirmCalled.size > 0)
 
@@ -77,6 +83,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       neutralButton.text
     )
 
+    // TODO: test click
     // neutralButton.performClick()
     // Assert.assertTrue(neutralCalled.size > 0)
   }
@@ -169,6 +176,30 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       "Info title",
       getString(R.string.submit_button_text)
     )
+  }
+
+  @Test
+  fun testShowDatePromptShouldShowAlertWithCorrectData() {
+    val dateDialog =
+      AlertDialogue.showDatePickerAlert(
+        context = context,
+        max = Date(),
+        title = "Date title",
+        confirmButtonText = "Date confirm",
+        confirmButtonListener = {}
+      )
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realAlertDialog")
+
+    Assert.assertNotNull(dialog)
+    Assert.assertTrue(alertDialog.isShowing)
+
+    Assert.assertEquals("Date title", (dialog.customTitleView as TextView).text)
+
+    val confirmButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)
+    Assert.assertEquals(View.VISIBLE, confirmButton.visibility)
+    Assert.assertEquals("Date confirm", confirmButton.text)
   }
 
   private fun assertSimpleMessageDialog(
