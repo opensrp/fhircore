@@ -56,7 +56,8 @@ fun PatientRow(
   patientItem: PatientItem,
   clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit,
   modifier: Modifier = Modifier,
-  patientRegisterRowViewConfiguration: PatientRegisterRowViewConfiguration = patientRegisterRowViewConfigurationOf()
+  patientRegisterRowViewConfiguration: PatientRegisterRowViewConfiguration =
+    patientRegisterRowViewConfigurationOf()
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,

@@ -49,7 +49,11 @@ class PatientRegisterListTest : RobolectricTest() {
         every { pagingItemsSpy.loadState.append } returns LoadState.NotLoading(true)
         every { pagingItemsSpy.loadState.refresh } returns LoadState.NotLoading(true)
 
-        PatientRegisterList(pagingItems = pagingItemsSpy, clickListener = { _, _ -> }, patientRegisterRowViewConfiguration = patientRegisterRowViewConfigurationOf())
+        PatientRegisterList(
+          pagingItems = pagingItemsSpy,
+          clickListener = { _, _ -> },
+          patientRegisterRowViewConfiguration = patientRegisterRowViewConfigurationOf()
+        )
       }
 
       composeRule.onAllNodesWithTag(PATIENT_BIO).assertCountEquals(2)
