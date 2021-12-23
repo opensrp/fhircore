@@ -17,13 +17,17 @@
 package org.smartregister.fhircore.anc.data.family.model
 
 import androidx.compose.runtime.Stable
+import java.util.Date
 
 @Stable
 data class FamilyMemberItem(
   val name: String,
   val id: String,
-  val age: String,
+  val birthdate: Date?,
   val gender: String,
-  val pregnant: Boolean,
-  val houseHoldHead: Boolean
+  val pregnant: Boolean? = null,
+  val houseHoldHead: Boolean,
+  val deathDate: Date? = null,
+  val servicesDue: Int? = null,
+  val servicesOverdue: Int? = null
 )

@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.family.details
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -43,6 +44,8 @@ constructor(
 
   val addNewMember = MutableLiveData(false)
 
+  val changeHead = MutableLiveData(false)
+
   val backClicked = MutableLiveData(false)
 
   val memberItemClicked = MutableLiveData<FamilyMemberItem>(null)
@@ -56,6 +59,9 @@ constructor(
   val encounters = MutableLiveData<List<Encounter>>()
 
   val familyCarePlans = MutableLiveData<List<CarePlan>>()
+
+  fun MutableLiveData<List<FamilyMemberItem>>.othersEligibleForHead() =
+    this.value?.filter { it.deathDate == null && !it.houseHoldHead }
 
   fun fetchDemographics(familyId: String) {
     viewModelScope.launch { demographics.postValue(repository.fetchDemographics(familyId)) }
@@ -72,6 +78,7 @@ constructor(
   fun fetchEncounters(familyId: String) {
     viewModelScope.launch { encounters.postValue(repository.fetchEncounters(familyId)) }
   }
+
   fun removeFamily(familyId: String) {
 
     viewModelScope.launch {
@@ -88,6 +95,15 @@ constructor(
     }
   }
 
+  fun changeFamilyHead(currentHead: String, newHead: String): LiveData<Boolean> {
+    val changed = MutableLiveData(false)
+    viewModelScope.launch {
+      repository.familyRepository.changeFamilyHead(currentHead, newHead)
+      changed.postValue(true)
+    }
+    return changed
+  }
+
   fun onMemberItemClick(familyMemberItem: FamilyMemberItem) {
     memberItemClicked.value = familyMemberItem
   }
@@ -98,6 +114,10 @@ constructor(
 
   fun onAddMemberItemClicked() {
     addNewMember.value = true
+  }
+
+  fun onChangeHeadClicked() {
+    changeHead.value = true
   }
 
   fun onRemoveFamilyMenuItemClicked() {

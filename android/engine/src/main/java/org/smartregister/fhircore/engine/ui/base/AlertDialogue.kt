@@ -18,10 +18,16 @@ package org.smartregister.fhircore.engine.ui.base
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.content.DialogInterface
+import android.content.res.Resources
+import android.os.Build
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.StringRes
+import androidx.core.view.setPadding
+import java.util.Calendar
+import java.util.Date
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.engine.util.extension.show
@@ -33,7 +39,20 @@ enum class AlertIntent {
   INFO
 }
 
+data class AlertDialogListItem(val key: String, val value: String)
+
 object AlertDialogue {
+  private val ITEMS_LIST_KEY = "alert_dialog_items_list"
+
+  fun AlertDialog.getSingleChoiceSelectedKey() = getSingleChoiceSelectedItem()?.key
+
+  fun AlertDialog.getSingleChoiceSelectedItem() =
+    if (this.listView.checkedItemCount != 1) null
+    else getListItems()!![this.listView.checkedItemPosition]
+
+  fun AlertDialog.getListItems() =
+    this.ownerActivity?.intent?.getSerializableExtra(ITEMS_LIST_KEY) as Array<AlertDialogListItem>?
+
   fun showAlert(
     context: Activity,
     alertIntent: AlertIntent,
@@ -43,6 +62,7 @@ object AlertDialogue {
     @StringRes confirmButtonText: Int = R.string.questionnaire_alert_confirm_button_title,
     neutralButtonListener: ((d: DialogInterface) -> Unit)? = null,
     @StringRes neutralButtonText: Int = R.string.questionnaire_alert_neutral_button_title,
+    options: Array<AlertDialogListItem>? = null
   ): AlertDialog {
     val dialog =
       AlertDialog.Builder(context)
@@ -58,6 +78,7 @@ object AlertDialogue {
           confirmButtonListener?.let {
             setPositiveButton(confirmButtonText) { d, _ -> confirmButtonListener.invoke(d) }
           }
+          options?.run { setSingleChoiceItems(options.map { it.value }.toTypedArray(), -1, null) }
         }
         .show()
 
@@ -68,6 +89,11 @@ object AlertDialogue {
     }
 
     dialog.findViewById<TextView>(R.id.tv_alert_message)?.apply { this.text = message }
+
+    options?.let {
+      context.intent.putExtra(ITEMS_LIST_KEY, it)
+      dialog.setOwnerActivity(context)
+    }
 
     return dialog
   }
@@ -121,7 +147,8 @@ object AlertDialogue {
     @StringRes message: Int,
     @StringRes title: Int? = null,
     confirmButtonListener: ((d: DialogInterface) -> Unit),
-    @StringRes confirmButtonText: Int
+    @StringRes confirmButtonText: Int,
+    options: List<AlertDialogListItem>? = null
   ): AlertDialog {
     return showAlert(
       context = context,
@@ -131,7 +158,58 @@ object AlertDialogue {
       confirmButtonListener = confirmButtonListener,
       confirmButtonText = confirmButtonText,
       neutralButtonListener = { d -> d.dismiss() },
-      neutralButtonText = R.string.questionnaire_alert_neutral_button_title
+      neutralButtonText = R.string.questionnaire_alert_neutral_button_title,
+      options = options?.toTypedArray()
     )
+  }
+
+  fun showDatePickerAlert(
+    context: Activity,
+    confirmButtonListener: ((d: Date) -> Unit),
+    confirmButtonText: String,
+    max: Date?,
+    default: Date = Date(),
+    title: String?,
+    dangerActionColor: Boolean = true,
+  ): DatePickerDialog {
+    val dateDialog =
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) DatePickerDialog(context)
+      else DatePickerDialog(context, null, default.year, default.month, default.date)
+
+    dateDialog.apply {
+      max?.let { this.datePicker.maxDate = it.time }
+      val id = Resources.getSystem().getIdentifier("date_picker_header_date", "id", "android")
+      if (id != 0) {
+        this.datePicker.findViewById<TextView>(id).textSize = 14f
+      }
+
+      title?.let {
+        this.setCustomTitle(
+          TextView(context).apply {
+            this.text = it
+            this.setPadding(20)
+          }
+        )
+      }
+
+      this.setButton(DialogInterface.BUTTON_POSITIVE, confirmButtonText) { d, _ ->
+        val date =
+          Calendar.getInstance().apply {
+            (d as DatePickerDialog).datePicker.let { this.set(it.year, it.month, it.dayOfMonth) }
+          }
+        confirmButtonListener.invoke(date.time)
+      }
+    }
+
+    dateDialog.create()
+
+    if (dangerActionColor)
+      dateDialog
+        .getButton(DialogInterface.BUTTON_POSITIVE)
+        .setTextColor(context.resources.getColor(R.color.colorError))
+
+    dateDialog.show()
+
+    return dateDialog
   }
 }

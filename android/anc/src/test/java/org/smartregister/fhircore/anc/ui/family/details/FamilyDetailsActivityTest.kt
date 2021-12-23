@@ -19,13 +19,22 @@ package org.smartregister.fhircore.anc.ui.family.details
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.Application
+import android.content.DialogInterface
 import android.content.Intent
+import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.spyk
+import io.mockk.unmockkObject
+import io.mockk.verify
+import java.util.Date
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -41,6 +50,8 @@ import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
+import org.smartregister.fhircore.engine.util.extension.plusYears
 
 @HiltAndroidTest
 class FamilyDetailsActivityTest : ActivityRobolectricTest() {
@@ -83,8 +94,28 @@ class FamilyDetailsActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testOnChangeFamilyHeadButtonClickedShouldShowAlert() = runBlockingTest {
+    mockkObject(AlertDialogue)
+
+    every { AlertDialogue.showConfirmAlert(any(), any(), any(), any(), any(), any()) } returns
+      mockk()
+
+    familyDetailsActivity.familyDetailViewModel.familyMembers.value =
+      listOf(FamilyMemberItem("F1", "1", Date(), "M", false, false))
+
+    familyDetailsActivity.familyDetailViewModel.onChangeHeadClicked()
+
+    verify(timeout = 2000) {
+      AlertDialogue.showConfirmAlert(any(), any(), any(), any(), any(), any())
+    }
+
+    unmockkObject(AlertDialogue)
+  }
+
+  @Test
   fun testOnFamilyMemberItemClickedShouldStartAncDetailsActivity() {
-    val familyMemberItem = FamilyMemberItem("fmname", "fm1", "21", "F", true, false)
+    val familyMemberItem =
+      FamilyMemberItem("fmname", "fm1", Date().plusYears(-21), "F", true, false)
 
     familyDetailsActivity.familyDetailViewModel.onMemberItemClick(familyMemberItem)
 
@@ -92,6 +123,27 @@ class FamilyDetailsActivityTest : ActivityRobolectricTest() {
     val actualIntent = shadowOf(application).nextStartedActivity
 
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testOnChangeFamilyHeadRequestedShouldCallRepository() {
+    var dialog = mockk<AlertDialog>()
+
+    val familyDetailsActivitySpy = spyk(familyDetailsActivity)
+
+    every { dialog.dismiss() } answers {}
+    every { familyDetailsActivitySpy.getSelectedKey(any()) } returns "111"
+    coEvery {
+      familyDetailsActivitySpy.familyDetailViewModel.changeFamilyHead(any(), any())
+    } returns MutableLiveData(true)
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      familyDetailsActivitySpy,
+      "onFamilyHeadChangeRequested",
+      ReflectionHelpers.ClassParameter(DialogInterface::class.java, dialog)
+    )
+
+    verify { familyDetailsActivitySpy.familyDetailViewModel.changeFamilyHead(any(), any()) }
   }
 
   @Test

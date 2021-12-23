@@ -19,28 +19,40 @@ package org.smartregister.fhircore.engine.util.extension
 import java.util.Date
 import org.hl7.fhir.r4.model.CarePlan
 
-fun CarePlan.started() = period.start.before(Date())
+/** If no period.start specified plan is always available unless status suggests so */
+fun CarePlan.started() = period?.start?.before(Date()) ?: true
 
-fun CarePlan.ended() = period.end.before(Date())
+/** If no period.end specified plan never ends unless status suggests so */
+fun CarePlan.ended() = period?.end?.before(Date()) ?: false
 
 fun CarePlan.due() = status.equals(CarePlan.CarePlanStatus.ACTIVE) && started() && !ended()
 
 fun CarePlan.overdue() = status.equals(CarePlan.CarePlanStatus.ACTIVE) && ended()
 
+fun CarePlan.milestonesDue() = this.activity.filter { it.due() }
+
+fun CarePlan.milestonesOverdue() = this.activity.filter { it.overdue() }
+
+/** If no scheduledPeriod.start specified activity detail is always available */
 fun CarePlan.CarePlanActivityDetailComponent.started(): Boolean =
-  scheduledPeriod.start?.before(Date()) == true
+  scheduledPeriod?.start?.before(Date()) ?: true
 
+/** If no scheduledPeriod.end specified activity detail never ends */
 fun CarePlan.CarePlanActivityDetailComponent.ended(): Boolean =
-  scheduledPeriod.end?.before(Date()) == true
+  scheduledPeriod?.end?.before(Date()) ?: false
 
-fun CarePlan.CarePlanActivityDetailComponent.due() =
-  status.isIn(
-    CarePlan.CarePlanActivityStatus.SCHEDULED,
-    CarePlan.CarePlanActivityStatus.NOTSTARTED
-  ) && started() && !ended()
+fun CarePlan.CarePlanActivityComponent.due() =
+  if (!hasDetail()) true
+  else
+    detail.status.isIn(
+      CarePlan.CarePlanActivityStatus.SCHEDULED,
+      CarePlan.CarePlanActivityStatus.NOTSTARTED
+    ) && detail.started() && !detail.ended()
 
-fun CarePlan.CarePlanActivityDetailComponent.overdue() =
-  status.isIn(
-    CarePlan.CarePlanActivityStatus.SCHEDULED,
-    CarePlan.CarePlanActivityStatus.NOTSTARTED
-  ) && ended()
+fun CarePlan.CarePlanActivityComponent.overdue() =
+  if (!hasDetail()) false
+  else
+    detail.status.isIn(
+      CarePlan.CarePlanActivityStatus.SCHEDULED,
+      CarePlan.CarePlanActivityStatus.NOTSTARTED
+    ) && detail.ended()

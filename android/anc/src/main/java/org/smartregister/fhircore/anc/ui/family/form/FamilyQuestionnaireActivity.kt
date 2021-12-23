@@ -24,6 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
@@ -50,14 +51,14 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
     if (isEditFamily) {
       when (intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!) {
-        FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_ANC_client)
+        FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_anc_client)
         FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM ->
           saveBtn.setText(R.string.family_member_update_label)
         FamilyFormConstants.FAMILY_REGISTER_FORM -> saveBtn.setText(R.string.family_update_label)
       }
     } else {
       when (intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!) {
-        FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_ANC_client)
+        FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_anc_client)
         FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM ->
           saveBtn.setText(R.string.family_member_save_label)
         FamilyFormConstants.FAMILY_REGISTER_FORM -> saveBtn.setText(R.string.family_save_label)
@@ -107,6 +108,13 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
           FamilyFormConstants.FAMILY_REGISTER_FORM -> {
             val patientId =
               familyRepository.postProcessFamilyHead(questionnaire, questionnaireResponse)
+            familyRepository.fhirEngine.load(Patient::class.java, patientId).run {
+              questionnaireViewModel.appendOrganizationInfo(this)
+
+              familyRepository.fhirEngine.save(this)
+            }
+            addOrganizationToPatient(patientId)
+
             handlePregnancy(
               patientId = patientId,
               questionnaireResponse = questionnaireResponse,
@@ -121,6 +129,8 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
                 questionnaireResponse = questionnaireResponse,
                 relatedTo = relatedTo
               )
+            addOrganizationToPatient(patientId)
+
             handlePregnancy(
               patientId = patientId,
               questionnaireResponse = questionnaireResponse,
@@ -129,6 +139,14 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
           }
         }
       }
+    }
+  }
+
+  suspend fun addOrganizationToPatient(patientId: String) {
+    familyRepository.fhirEngine.load(Patient::class.java, patientId).run {
+      questionnaireViewModel.appendOrganizationInfo(this)
+
+      familyRepository.fhirEngine.save(this)
     }
   }
 
