@@ -23,5 +23,10 @@ import kotlinx.serialization.Serializable
 data class UserInfo(
   @SerialName("questionnaire_publisher") val questionnairePublisher: String? = null,
   @SerialName("organization") val organization: String? = null,
-  @SerialName("location") val location: String? = null
+  @SerialName("location") val location: String? = null,
+  @SerialName("family_name") val familyName: String,
+  @SerialName("given_name") val givenName: String,
+  @SerialName("name") val name: String,
+  @SerialName("preferred_username") val preferredUsername: String,
+  @SerialName("sub") val sub: String
 )

@@ -170,6 +170,9 @@ constructor(
 
   fun getUserInfo(): Call<ResponseBody> = oAuthService.userInfo()
 
+  fun getPractitionerDetails(keycloak_uuid: String): Call<ResponseBody> =
+    oAuthService.practitionerDetails(keycloak_uuid)
+
   fun refreshToken(refreshToken: String): OAuthResponse? {
     val data = buildOAuthPayload(REFRESH_TOKEN)
     data[REFRESH_TOKEN] = refreshToken

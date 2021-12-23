@@ -1,0 +1,482 @@
+{
+    "resourceType": "Bundle",
+    "id": "799d03a1-b281-496c-bebf-98b18580f491",
+    "meta": {
+      "lastUpdated": "2021-08-23T14:49:13.118+05:00"
+    },
+    "type": "searchset",
+    "total": 1,
+    "link": [
+      {
+        "relation": "self",
+        "url": "http://localhost:8080/fhir/UserDetails?identifier=93bc9c3d-6321-41b0-9b93-1275d7114e21"
+      }
+    ],
+    "entry": [
+      {
+        "fullUrl": "http://localhost:8080/fhir/UserDetails/Practitioner:123",
+        "resource": {
+          "resourceType": "UserDetails",
+          "id": "Practitioner:123",
+          "meta": {
+            "profile": [
+              "http://hl7.org/fhir/profiles/custom-resource"
+            ]
+          },
+          "keycloak": {
+            "user-bio": {
+              "sub": "b87ff3c2-cbc6-43e6-b753-a9620756f9e4",
+              "email_verified": false,
+              "name": "Demo User",
+              "preferred_username": "demo",
+              "given_name": "Demo",
+              "family_name": "User"
+            },
+            "user-roles": [
+              "ROLE_OPENMRS",
+              "ROLE_realm-admin",
+              "ROLE_EDIT_KEYCLOAK_USERS",
+              "ROLE_offline_access",
+              "ROLE_User",
+              "ROLE_VIEW_KEYCLOAK_USERS",
+              "ROLE_uma_authorization",
+              "ROLE_ALL_EVENTS",
+              "ROLE_PLANS_FOR_USER"
+            ]
+          },
+          "fhir": {
+            "teams": [
+              {
+                "fullUrl": "http://fhir.labs.smartregister.org/fhir/Organization/212",
+                "resource": {
+                  "resourceType": "Organization",
+                  "id": "212",
+                  "meta": {
+                    "versionId": "3",
+                    "lastUpdated": "2021-06-29T02:17:11.870+00:00",
+                    "source": "#4f714be1049b0986"
+                  },
+                  "identifier": [
+                    {
+                      "use": "official",
+                      "value": "212"
+                    }
+                  ],
+                  "active": false,
+                  "name": "My Team"
+                },
+                "search": {
+                  "mode": "match"
+                }
+              },
+              {
+                "fullUrl": "http://fhir.labs.smartregister.org/fhir/Organization/205",
+                "resource": {
+                  "resourceType": "Organization",
+                  "id": "205",
+                  "meta": {
+                    "versionId": "2",
+                    "lastUpdated": "2021-06-22T08:43:41.801+00:00",
+                    "source": "#e4f4daada5b65d9b"
+                  },
+                  "identifier": [
+                    {
+                      "use": "official",
+                      "value": "205"
+                    }
+                  ],
+                  "active": true,
+                  "name": "test 345"
+                },
+                "search": {
+                  "mode": "match"
+                }
+              }
+            ],
+            "location-hierarchy": {
+              "fullUrl": "http://localhost:8080/fhir/LocationHierarchy/Location Resource:157",
+              "resource": {
+                "resourceType": "LocationHierarchy",
+                "id": "Location Resource:157",
+                "meta": {
+                  "profile": [
+                    "http://hl7.org/fhir/profiles/custom-resource"
+                  ]
+                },
+                "LocationHierarchyTree": {
+                  "locationsHierarchy": {
+                    "listOfNodes": {
+                      "treeNodeId": "Location/157",
+                      "treeNode": [
+                        {
+                          "nodeId": "Location/157",
+                          "label": "Root OpenSRP Location",
+                          "node": {
+                            "resourceType": "Location",
+                            "id": "157",
+                            "meta": {
+                              "versionId": "1",
+                              "lastUpdated": "2021-07-27T13:50:09.011+05:00",
+                              "source": "#5xz8nvdG3BY5kOPX"
+                            },
+                            "identifier": [
+                              {
+                                "use": "official",
+                                "value": "93bc9c3d-6321-41b0-9b93-1275d7114e21"
+                              }
+                            ],
+                            "status": "active",
+                            "name": "Root OpenSRP Location",
+                            "alias": [
+                              "root location"
+                            ],
+                            "description": "An imaginary root location to which all the literal root locations set as their partOf",
+                            "physicalType": {
+                              "coding": [
+                                {
+                                  "system": "http://terminology.hl7.org/CodeSystem/location-physical-type",
+                                  "code": "jdn",
+                                  "display": "Jurisdiction"
+                                }
+                              ]
+                            }
+                          },
+                          "children": [
+                            {
+                              "childId": "Location/402",
+                              "treeNode": {
+                                "nodeId": "Location/402",
+                                "node": {
+                                  "resourceType": "Location",
+                                  "id": "402",
+                                  "meta": {
+                                    "versionId": "1",
+                                    "lastUpdated": "2021-08-16T13:17:41.021+05:00",
+                                    "source": "#dAAZicoPylibnwNA"
+                                  },
+                                  "identifier": [
+                                    {
+                                      "use": "official",
+                                      "value": "114444413bc9c3d-6321-41b0-9b93-1275d7114e22"
+                                    }
+                                  ],
+                                  "status": "active",
+                                  "name": "Child loc - Ona Office Sub Location with partof",
+                                  "alias": [
+                                    "ona office 1"
+                                  ],
+                                  "description": "The Sub location where the ona office is located",
+                                  "physicalType": {
+                                    "coding": [
+                                      {
+                                        "system": "http://terminology.hl7.org/CodeSystem/location-physical-type",
+                                        "code": "jdn",
+                                        "display": "Jurisdiction"
+                                      }
+                                    ]
+                                  },
+                                  "partOf": {
+                                    "reference": "Location/157"
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "childId": "Location/302",
+                              "treeNode": {
+                                "nodeId": "Location/302",
+                                "node": {
+                                  "resourceType": "Location",
+                                  "id": "302",
+                                  "meta": {
+                                    "versionId": "1",
+                                    "lastUpdated": "2021-08-11T00:29:40.273+05:00",
+                                    "source": "#KWe9L5eEBapQTzMH"
+                                  },
+                                  "identifier": [
+                                    {
+                                      "use": "official",
+                                      "value": "1113bc9c3d-6321-41b0-9b93-1275d7114e22"
+                                    }
+                                  ],
+                                  "status": "active",
+                                  "name": "Ona Office Sub Location without partof",
+                                  "alias": [
+                                    "ona office 1"
+                                  ],
+                                  "description": "The Sub location where the ona office is located",
+                                  "physicalType": {
+                                    "coding": [
+                                      {
+                                        "system": "http://terminology.hl7.org/CodeSystem/location-physical-type",
+                                        "code": "jdn",
+                                        "display": "Jurisdiction"
+                                      }
+                                    ]
+                                  },
+                                  "partOf": {
+                                    "reference": "Location/157"
+                                  }
+                                },
+                                "children": [
+                                  {
+                                    "childId": "Location/403",
+                                    "treeNode": {
+                                      "nodeId": "Location/403",
+                                      "node": {
+                                        "resourceType": "Location",
+                                        "id": "403",
+                                        "meta": {
+                                          "versionId": "1",
+                                          "lastUpdated": "2021-08-16T13:19:52.132+05:00",
+                                          "source": "#uUNuTePwEB5GXgPH"
+                                        },
+                                        "identifier": [
+                                          {
+                                            "use": "official",
+                                            "value": "2114444413bc9c3d-6321-41b0-9b93-1275d7114e22"
+                                          }
+                                        ],
+                                        "status": "active",
+                                        "name": "Child loc of 302 - Ona Office Sub Location with partof",
+                                        "alias": [
+                                          "ona office 1"
+                                        ],
+                                        "description": "The Sub location where the ona office is located",
+                                        "physicalType": {
+                                          "coding": [
+                                            {
+                                              "system": "http://terminology.hl7.org/CodeSystem/location-physical-type",
+                                              "code": "jdn",
+                                              "display": "Jurisdiction"
+                                            }
+                                          ]
+                                        },
+                                        "partOf": {
+                                          "reference": "Location/302"
+                                        }
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "childId": "Location/353",
+                                    "treeNode": {
+                                      "nodeId": "Location/353",
+                                      "node": {
+                                        "resourceType": "Location",
+                                        "id": "353",
+                                        "meta": {
+                                          "versionId": "1",
+                                          "lastUpdated": "2021-08-11T17:10:46.478+05:00",
+                                          "source": "#AP4IvqiV1mTWmBIR"
+                                        },
+                                        "identifier": [
+                                          {
+                                            "use": "official",
+                                            "value": "4444413bc9c3d-6321-41b0-9b93-1275d7114e22"
+                                          }
+                                        ],
+                                        "status": "active",
+                                        "name": "Ona Office Sub Location without partof",
+                                        "alias": [
+                                          "ona office 1"
+                                        ],
+                                        "description": "The Sub location where the ona office is located",
+                                        "physicalType": {
+                                          "coding": [
+                                            {
+                                              "system": "http://terminology.hl7.org/CodeSystem/location-physical-type",
+                                              "code": "jdn",
+                                              "display": "Jurisdiction"
+                                            }
+                                          ]
+                                        },
+                                        "partOf": {
+                                          "reference": "Location/302"
+                                        }
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "childId": "Location/352",
+                                    "treeNode": {
+                                      "nodeId": "Location/352",
+                                      "node": {
+                                        "resourceType": "Location",
+                                        "id": "352",
+                                        "meta": {
+                                          "versionId": "1",
+                                          "lastUpdated": "2021-08-11T17:06:23.324+05:00",
+                                          "source": "#Er3xYLR2KmwfBv8m"
+                                        },
+                                        "identifier": [
+                                          {
+                                            "use": "official",
+                                            "value": "4444413bc9c3d-6321-41b0-9b93-1275d7114e22"
+                                          }
+                                        ],
+                                        "status": "active",
+                                        "name": "Ona Office Sub Location without partof",
+                                        "alias": [
+                                          "ona office 1"
+                                        ],
+                                        "description": "The Sub location where the ona office is located",
+                                        "physicalType": {
+                                          "coding": [
+                                            {
+                                              "system": "http://terminology.hl7.org/CodeSystem/location-physical-type",
+                                              "code": "jdn",
+                                              "display": "Jurisdiction"
+                                            }
+                                          ]
+                                        },
+                                        "partOf": {
+                                          "reference": "Location/302"
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "childId": "Location/159",
+                              "treeNode": {
+                                "nodeId": "Location/159",
+                                "node": {
+                                  "resourceType": "Location",
+                                  "id": "159",
+                                  "meta": {
+                                    "versionId": "1",
+                                    "lastUpdated": "2021-07-27T13:52:47.186+05:00",
+                                    "source": "#UdetF6OZlme5bQty"
+                                  },
+                                  "identifier": [
+                                    {
+                                      "use": "official",
+                                      "value": "93bac9cqd-6321-41b0-9b93-1275d7111114e22"
+                                    }
+                                  ],
+                                  "status": "active",
+                                  "name": "111aOna Office Sub Location with partof",
+                                  "alias": [
+                                    "ona office 11"
+                                  ],
+                                  "description": "The Sub location where the ona office is located",
+                                  "type": [
+                                    {
+                                      "coding": [
+                                        {
+                                          "system": "level",
+                                          "code": "root",
+                                          "display": "Jurisdiction"
+                                        },
+                                        {
+                                          "system": "type",
+                                          "code": "District",
+                                          "display": "Jurisdiction"
+                                        }
+                                      ]
+                                    }
+                                  ],
+                                  "physicalType": {
+                                    "coding": [
+                                      {
+                                        "system": "http://terminology.hl7.org/CodeSystem/location-physical-type",
+                                        "code": "jdn",
+                                        "display": "Jurisdiction"
+                                      }
+                                    ]
+                                  },
+                                  "partOf": {
+                                    "reference": "Location/157"
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "childId": "Location/158",
+                              "treeNode": {
+                                "nodeId": "Location/158",
+                                "node": {
+                                  "resourceType": "Location",
+                                  "id": "158",
+                                  "meta": {
+                                    "versionId": "1",
+                                    "lastUpdated": "2021-07-27T13:52:39.299+05:00",
+                                    "source": "#9E875nFL4uTN0Jbz"
+                                  },
+                                  "identifier": [
+                                    {
+                                      "use": "official",
+                                      "value": "93bc9cqd-6321-41b0-9b93-1275d7111114e22"
+                                    }
+                                  ],
+                                  "status": "active",
+                                  "name": "111Ona Office Sub Location with partof",
+                                  "alias": [
+                                    "ona office 11"
+                                  ],
+                                  "description": "The Sub location where the ona office is located",
+                                  "type": [
+                                    {
+                                      "coding": [
+                                        {
+                                          "system": "level",
+                                          "code": "root",
+                                          "display": "Jurisdiction"
+                                        },
+                                        {
+                                          "system": "type",
+                                          "code": "District",
+                                          "display": "Jurisdiction"
+                                        }
+                                      ]
+                                    }
+                                  ],
+                                  "physicalType": {
+                                    "coding": [
+                                      {
+                                        "system": "http://terminology.hl7.org/CodeSystem/location-physical-type",
+                                        "code": "jdn",
+                                        "display": "Jurisdiction"
+                                      }
+                                    ]
+                                  },
+                                  "partOf": {
+                                    "reference": "Location/157"
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "parentChildren": [
+                      {
+                        "identifier": "Location/157",
+                        "childIdentifiers": [
+                          "Location/158/_history/1"
+                        ]
+                      },
+                      {
+                        "identifier": "Location/302",
+                        "childIdentifiers": [
+                          "Location/403/_history/1",
+                          "Location/353/_history/1",
+                          "Location/352/_history/1"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "locationId": "157"
+              }
+            }
+          },
+          "config": []
+        }
+      }
+    ]
+  }

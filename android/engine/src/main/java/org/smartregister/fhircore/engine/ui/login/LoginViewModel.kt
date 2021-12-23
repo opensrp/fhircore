@@ -25,14 +25,20 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.State
+import com.google.android.fhir.sync.SyncJob
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
@@ -42,6 +48,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
+import org.smartregister.fhircore.engine.util.extension.runOneTimeSync
 import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
@@ -50,6 +57,10 @@ import timber.log.Timber
 class LoginViewModel
 @Inject
 constructor(
+  val fhirEngine: FhirEngine,
+  val syncJob: SyncJob,
+  val fhirResourceDataSource: FhirResourceDataSource,
+  val configurationRegistry: ConfigurationRegistry,
   val accountAuthenticator: AccountAuthenticator,
   val dispatcher: DispatcherProvider,
   val sharedPreferences: SharedPreferencesHelper
@@ -58,6 +69,8 @@ constructor(
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
   val launchDialPad
     get() = _launchDialPad
+
+  val sharedSyncStatus = MutableSharedFlow<State>()
 
   val responseBodyHandler =
     object : ResponseHandler<ResponseBody> {
@@ -77,11 +90,26 @@ constructor(
       }
     }
 
+  val practitionerResponseBodyHandler =
+    object : ResponseHandler<ResponseBody> {
+      override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+        response.body()?.run { runSync() }
+        Timber.i(response.errorBody()?.toString() ?: "No error")
+      }
+
+      override fun handleFailure(call: Call<ResponseBody>, throwable: Throwable) {
+        Timber.e(throwable)
+      }
+    }
+
   private fun storeUserPreferences(responseBody: ResponseBody) {
     val responseBodyString = responseBody.string()
     Timber.d(responseBodyString)
     val userResponse = responseBodyString.decodeJson<UserInfo>()
     sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, userResponse.encodeJson())
+    accountAuthenticator
+      .getPractitionerDetails(userResponse.sub)
+      .enqueue(object : ResponseCallback<ResponseBody>(practitionerResponseBodyHandler) {})
   }
 
   val oauthResponseHandler =
@@ -127,6 +155,20 @@ constructor(
       password.value!!.trim().toCharArray()
     )
   }
+
+  fun runSync() =
+    viewModelScope.launch(dispatcher.io()) {
+      try {
+        fhirEngine.runOneTimeSync(
+          sharedSyncStatus = sharedSyncStatus,
+          syncJob = syncJob,
+          resourceSyncParams = configurationRegistry.configService.resourceSyncParams,
+          fhirResourceDataSource = fhirResourceDataSource
+        )
+      } catch (exception: Exception) {
+        Timber.e("Error syncing data", exception.stackTraceToString())
+      }
+    }
 
   private val _navigateToHome = MutableLiveData<Boolean>()
   val navigateToHome: LiveData<Boolean>
