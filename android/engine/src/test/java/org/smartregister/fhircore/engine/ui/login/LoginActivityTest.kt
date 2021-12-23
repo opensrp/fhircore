@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import android.app.Activity
+import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -42,8 +43,19 @@ class LoginActivityTest : ActivityRobolectricTest() {
 
   lateinit var loginService: LoginService
 
+  val fhirEngine = spyk<FhirEngine>()
+
   @BindValue
-  val loginViewModel = LoginViewModel(accountAuthenticator, DefaultDispatcherProvider(), mockk())
+  val loginViewModel =
+    LoginViewModel(
+      fhirEngine = fhirEngine,
+      syncJob = mockk(),
+      fhirResourceDataSource = mockk(),
+      configurationRegistry = mockk(),
+      dispatcher = DefaultDispatcherProvider(),
+      accountAuthenticator = accountAuthenticator,
+      sharedPreferences = mockk()
+    )
 
   @Before
   fun setUp() {

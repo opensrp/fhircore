@@ -17,10 +17,12 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.just
+import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
@@ -73,8 +75,14 @@ internal class LoginViewModelTest : RobolectricTest() {
     // Spy needed to control interaction with the real injected dependency
     accountAuthenticatorSpy = spyk(accountAuthenticator)
 
+    val fhirEngine = spyk<FhirEngine>()
+
     loginViewModel =
       LoginViewModel(
+        fhirEngine = fhirEngine,
+        syncJob = mockk(),
+        fhirResourceDataSource = mockk(),
+        configurationRegistry = mockk(),
         accountAuthenticator = accountAuthenticatorSpy,
         dispatcher = dispatcherProvider,
         sharedPreferences = sharedPreferencesHelper
