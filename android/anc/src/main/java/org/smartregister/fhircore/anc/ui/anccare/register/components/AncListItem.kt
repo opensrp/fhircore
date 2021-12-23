@@ -42,9 +42,11 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.util.Date
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
+import org.smartregister.fhircore.anc.data.model.demographics
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
 import org.smartregister.fhircore.anc.ui.anccare.register.RecordAncVisit
@@ -56,6 +58,7 @@ import org.smartregister.fhircore.engine.ui.theme.OverdueDarkRedColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueLightColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.extension.plusYears
 
 @Composable
 fun AncRow(
@@ -67,7 +70,7 @@ fun AncRow(
 ) {
   val titleText =
     if (!displaySelectContentOnly) {
-      patientItem.demographics
+      patientItem.demographics()
     } else {
       patientItem.name
     }
@@ -162,8 +165,7 @@ fun PreviewAncItemDue() {
       PatientItem(
         patientIdentifier = "1213231",
         gender = "F",
-        age = "27y",
-        demographics = "Anna Bell, 27",
+        birthDate = Date().plusYears(27),
         name = "Anna Bell",
         atRisk = "yes risky",
         address = "Nairobi",
@@ -182,8 +184,7 @@ fun PreviewAncItemOverDue() {
       PatientItem(
         patientIdentifier = "1213231",
         gender = "F",
-        age = "27y",
-        demographics = "Anna Bell, 27",
+        birthDate = Date().plusYears(27),
         name = "Anna Bell",
         atRisk = "yes risky",
         address = "Nairobi",

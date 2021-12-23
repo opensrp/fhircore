@@ -77,7 +77,7 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
             data.identifier.contentEquals(value.toString())
       }
       RegisterFilterType.OVERDUE_FILTER -> {
-        data.servicesOverdue > 0
+        data.servicesOverdue != null && data.servicesOverdue > 0
       }
       else -> false
     }

@@ -19,6 +19,8 @@ package org.smartregister.fhircore.anc.data.model
 import androidx.compose.runtime.Stable
 import java.util.Date
 import org.hl7.fhir.r4.model.Encounter
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
+import org.smartregister.fhircore.engine.util.extension.yearsPassed
 
 enum class VisitStatus {
   DUE,
@@ -30,16 +32,22 @@ enum class VisitStatus {
 data class PatientItem(
   val patientIdentifier: String = "",
   val name: String = "",
+  val familyName: String = "",
   val gender: String = "",
-  val age: String = "",
-  val demographics: String = "",
+  val birthDate: Date? = null,
   val atRisk: String = "",
   val address: String = "",
-  val isPregnant: Boolean = true,
+  val isPregnant: Boolean? = null,
   val visitStatus: VisitStatus = VisitStatus.PLANNED,
-  val familyName: String = "",
-  val isHouseHoldHead: Boolean = false
+  val isHouseHoldHead: Boolean? = null
 )
+
+fun PatientItem.demographics() = "$name, $gender, ${birthDate.toAgeDisplay()}"
+
+fun PatientItem.nonPregnantEligibleWoman() = this.isPregnant != true && this.gender.startsWith("F")
+
+fun PatientItem.eligibleWoman() =
+  this.gender.startsWith("F") && this.birthDate?.let { it.yearsPassed() > 10 } ?: true
 
 @Stable
 data class PatientDetailItem(

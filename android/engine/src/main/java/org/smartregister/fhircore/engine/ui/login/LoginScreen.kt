@@ -156,8 +156,13 @@ fun LoginPage(
       Column(modifier = modifier.padding(4.dp), verticalArrangement = Arrangement.Center) {
         // TODO Add configurable logo. Images to be downloaded from server
         if (viewConfiguration.showLogo) {
+          val logoDrawable =
+            when (viewConfiguration.appId) {
+              "g6pd" -> R.drawable.ic_logo_g6pd
+              else -> R.drawable.ic_liberia
+            }
           Image(
-            painter = painterResource(id = R.drawable.ic_liberia),
+            painter = painterResource(id = logoDrawable),
             contentDescription = stringResource(id = R.string.app_logo),
             modifier =
               modifier

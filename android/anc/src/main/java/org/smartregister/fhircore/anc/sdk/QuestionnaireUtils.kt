@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.anc.sdk
 
+import com.google.android.fhir.logicalId
+import java.util.Date
 import java.util.UUID
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -117,6 +119,7 @@ object QuestionnaireUtils {
         flag.id = getUniqueId()
         flag.status = Flag.FlagStatus.ACTIVE
         flag.subject = asPatientReference(patient.id)
+        flag.period.start = Date()
         // todo simplify
         if (it.hasValueCoding() && extractFlagExtension(it.valueCoding, qi) != null) {
           flag.code = asCodeableConcept(it)
@@ -184,7 +187,7 @@ object QuestionnaireUtils {
   }
 
   fun Resource.asReference(): Reference {
-    val referenceValue = "${fhirType()}/$id"
+    val referenceValue = "${fhirType()}/$logicalId"
 
     return Reference().apply { this.reference = referenceValue }
   }

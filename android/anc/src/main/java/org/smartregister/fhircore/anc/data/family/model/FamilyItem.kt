@@ -17,21 +17,20 @@
 package org.smartregister.fhircore.anc.data.family.model
 
 import androidx.compose.runtime.Stable
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 @Stable
 data class FamilyItem(
   val id: String,
   val identifier: String?,
   val name: String,
-  val gender: String,
-  val age: String,
   val address: String,
-  val isPregnant: Boolean,
+  val head: FamilyMemberItem,
   val members: List<FamilyMemberItem>,
-  val servicesDue: Int,
-  val servicesOverdue: Int
+  val servicesDue: Int? = null,
+  val servicesOverdue: Int? = null
 ) {
   fun extractDemographics(): String {
-    return "$name, $gender, $age"
+    return "${head.name}, ${head.gender}, ${head.birthdate.toAgeDisplay()}"
   }
 }

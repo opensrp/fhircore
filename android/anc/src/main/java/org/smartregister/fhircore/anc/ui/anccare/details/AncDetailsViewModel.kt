@@ -21,6 +21,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.data.model.AncOverviewItem
@@ -28,6 +29,7 @@ import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
+import org.smartregister.fhircore.anc.data.patient.DeletionReason
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
@@ -50,7 +52,7 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
   fun fetchCarePlan(patientId: String): LiveData<List<CarePlanItem>> {
     val patientCarePlan = MutableLiveData<List<CarePlanItem>>()
     viewModelScope.launch(dispatcher.io()) {
-      val listCarePlan = patientRepository.searchCarePlan(id = patientId)
+      val listCarePlan = patientRepository.searchCarePlan(patientId = patientId)
       val listCarePlanItem = patientRepository.fetchCarePlanItem(listCarePlan)
       patientCarePlan.postValue(listCarePlanItem)
     }
@@ -107,5 +109,23 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
       patientEncounters.postValue(listEncountersItem)
     }
     return patientEncounters
+  }
+
+  fun deletePatient(patientId: String, reason: DeletionReason): LiveData<Boolean> {
+    val changed = MutableLiveData(false)
+    viewModelScope.launch(dispatcher.io()) {
+      patientRepository.deletePatient(patientId, reason)
+      changed.postValue(true)
+    }
+    return changed
+  }
+
+  fun markDeceased(patientId: String, deathDate: Date): LiveData<Boolean> {
+    val changed = MutableLiveData(false)
+    viewModelScope.launch(dispatcher.io()) {
+      patientRepository.markDeceased(patientId, deathDate)
+      changed.postValue(true)
+    }
+    return changed
   }
 }

@@ -18,10 +18,9 @@ package org.smartregister.fhircore.engine.util.extension
 
 import android.content.Context
 import java.text.SimpleDateFormat
-import java.time.Instant
 import java.util.Date
 import java.util.Locale
-import java.util.concurrent.TimeUnit
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
@@ -67,8 +66,7 @@ fun Patient.extractGender(context: Context): String? =
 
 fun Patient.extractAge(): String {
   if (!hasBirthDate()) return ""
-  val ageDiffMilli = Instant.now().toEpochMilli() - this.birthDate.time
-  return getAgeStringFromDays(TimeUnit.DAYS.convert(ageDiffMilli, TimeUnit.MILLISECONDS))
+  return getAgeStringFromDays(birthDate.daysPassed())
 }
 
 fun getAgeStringFromDays(days: Long): String {
@@ -136,7 +134,27 @@ fun Patient.extractAddress(): String {
   }
 }
 
+fun Patient.extractDeathDate() =
+  if (this.hasDeceasedDateTimeType()) deceasedDateTimeType?.value else null
+
 fun String?.join(other: String?, separator: String) =
   this.orEmpty().plus(other?.plus(separator).orEmpty())
 
-fun Patient.isPregnant() = this.extension.any { it.value.toString().contains("pregnant", true) }
+fun Patient.extractFamilyTag() =
+  this.meta.tag.firstOrNull {
+    it.display.contentEquals("family", true) || it.display.contains("head", true)
+  }
+
+fun Patient.isFamilyHead() = this.extractFamilyTag() != null
+
+fun List<Condition>.hasActivePregnancy() =
+  this.any {
+    // is active and any of the display / text into code is pregnant
+    val active = it.clinicalStatus.coding.any { it.code == "active" }
+    val pregnancy =
+      it.code.coding.map { it.display }.plus(it.code.text).any {
+        it.contentEquals("pregnant", true)
+      }
+
+    active && pregnancy
+  }
