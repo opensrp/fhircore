@@ -24,6 +24,8 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.quest.configuration.view.patientRegisterRowViewConfigurationOf
+import org.smartregister.fhircore.quest.data.patient.model.G6PDStatus
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -44,9 +46,17 @@ class PatientRowTest : RobolectricTest() {
         name = "John Doe",
         gender = "Male",
         age = "27",
-        address = "Nairobi"
+        address = "Nairobi",
+        g6pdStatus = G6PDStatus.Deficient
       )
-    composeRule.setContent { PatientRow(patientItem = patientItem, { _, _ -> }) }
+    composeRule.setContent {
+      PatientRow(
+        patientItem = patientItem,
+        { _, _ -> },
+        patientRegisterRowViewConfiguration =
+          patientRegisterRowViewConfigurationOf(appId = "g6pd", showG6pdStatus = true)
+      )
+    }
   }
 
   @Test
@@ -55,5 +65,6 @@ class PatientRowTest : RobolectricTest() {
     composeRule.onNodeWithText("Male").assertIsDisplayed()
     composeRule.onNodeWithText("John Doe, 27").assertExists()
     composeRule.onNodeWithText("John Doe, 27").assertIsDisplayed()
+    composeRule.onNodeWithText("G6PD Status - Deficient").assertExists().assertIsDisplayed()
   }
 }
