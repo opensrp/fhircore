@@ -118,7 +118,7 @@ constructor(
     val userResponse = responseBodyString.decodeJson<UserInfo>()
     sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, userResponse.encodeJson())
     accountAuthenticator
-      .getPractitionerDetails(userResponse.sub)
+      .getPractitionerDetails(userResponse.sub!!)
       .enqueue(object : ResponseCallback<ResponseBody>(practitionerResponseBodyHandler) {})
   }
 

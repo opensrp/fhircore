@@ -24,9 +24,9 @@ data class UserInfo(
   @SerialName("questionnaire_publisher") val questionnairePublisher: String? = null,
   @SerialName("organization") val organization: String? = null,
   @SerialName("location") val location: String? = null,
-  @SerialName("family_name") val familyName: String,
-  @SerialName("given_name") val givenName: String,
-  @SerialName("name") val name: String,
-  @SerialName("preferred_username") val preferredUsername: String,
-  @SerialName("sub") val sub: String
+  @SerialName("family_name") val familyName: String? = null,
+  @SerialName("given_name") val givenName: String? = null,
+  @SerialName("name") val name: String? = null,
+  @SerialName("preferred_username") val preferredUsername: String? = null,
+  @SerialName("sub") val sub: String? = null
 )
