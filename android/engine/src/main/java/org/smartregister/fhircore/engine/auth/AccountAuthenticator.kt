@@ -29,6 +29,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.core.os.bundleOf
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Locale
 import javax.inject.Inject
@@ -36,7 +38,9 @@ import javax.inject.Singleton
 import okhttp3.ResponseBody
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.data.remote.model.response.UserDetails
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
@@ -55,6 +59,7 @@ constructor(
   @ApplicationContext val context: Context,
   val accountManager: AccountManager,
   val oAuthService: OAuthService,
+  val fhirResourceService: FhirResourceService,
   val configurationRegistry: ConfigurationRegistry,
   val secureSharedPreference: SecureSharedPreference,
   val tokenManagerService: TokenManagerService,
@@ -170,8 +175,16 @@ constructor(
 
   fun getUserInfo(): Call<ResponseBody> = oAuthService.userInfo()
 
-  fun getPractitionerDetails(keycloak_uuid: String): Call<ResponseBody> =
-    oAuthService.practitionerDetails(keycloak_uuid)
+  // TODO move to some external file
+  suspend fun getPractitionerDetails(keycloak_uuid: String): org.hl7.fhir.r4.model.Bundle {
+    FhirContext.forR4().registerCustomType(UserDetails::class.java)
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val qJson =
+      context.assets.open("sample_practitionar_payload.json").bufferedReader().use { it.readText() }
+
+    return iParser.parseResource(qJson) as org.hl7.fhir.r4.model.Bundle
+  }
+  //    fhirResourceService.getResource("practitioner-details/$keycloak_uuid")
 
   fun refreshToken(refreshToken: String): OAuthResponse? {
     val data = buildOAuthPayload(REFRESH_TOKEN)

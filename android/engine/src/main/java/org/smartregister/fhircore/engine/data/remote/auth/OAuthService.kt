@@ -24,7 +24,6 @@ import retrofit2.http.FieldMap
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.POST
-import retrofit2.http.Path
 
 interface OAuthService {
 
@@ -33,9 +32,6 @@ interface OAuthService {
   fun fetchToken(@FieldMap(encoded = false) body: Map<String, String>): Call<OAuthResponse>
 
   @GET("protocol/openid-connect/userinfo") fun userInfo(): Call<ResponseBody>
-
-  @GET("practitioner-details/{keycloak-uuid}")
-  fun practitionerDetails(@Path(value = "keycloak-uuid") keycloak_uuid: String): Call<ResponseBody>
 
   @FormUrlEncoded
   @POST("protocol/openid-connect/logout")

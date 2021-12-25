@@ -83,7 +83,11 @@ constructor(
       override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
         if (response.isSuccessful)
           response.body()!!.run {
-            storeUserPreferences(this)
+            val responseBodyString = this.string()
+            Timber.d(responseBodyString)
+            val userResponse = responseBodyString.decodeJson<UserInfo>()
+            storeUserPreferences(userResponse)
+            callPractitionerDetails(userResponse)
             _showProgressBar.postValue(false)
             _navigateToHome.value = true
           }
@@ -100,26 +104,18 @@ constructor(
       }
     }
 
-  val practitionerResponseBodyHandler =
-    object : ResponseHandler<ResponseBody> {
-      override fun handleResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-        response.body()?.run { runSync() }
-        Timber.i(response.errorBody()?.toString() ?: "No error")
-      }
+  private fun storeUserPreferences(userInfo: UserInfo) {
+    sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, userInfo.encodeJson())
+  }
 
-      override fun handleFailure(call: Call<ResponseBody>, throwable: Throwable) {
-        Timber.e(throwable)
+  private fun callPractitionerDetails(userResponse: UserInfo) {
+    viewModelScope.launch(dispatcher.io()) {
+      val bundle = accountAuthenticator.getPractitionerDetails(userResponse.sub!!)
+      bundle.entry.forEach {
+        Timber.e(it.resource.toString())
+        fhirEngine.save(it.resource)
       }
     }
-
-  private fun storeUserPreferences(responseBody: ResponseBody) {
-    val responseBodyString = responseBody.string()
-    Timber.d(responseBodyString)
-    val userResponse = responseBodyString.decodeJson<UserInfo>()
-    sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, userResponse.encodeJson())
-    accountAuthenticator
-      .getPractitionerDetails(userResponse.sub!!)
-      .enqueue(object : ResponseCallback<ResponseBody>(practitionerResponseBodyHandler) {})
   }
 
   private val userInfoResponseCallback: ResponseCallback<ResponseBody> by lazy {

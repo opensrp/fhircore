@@ -45,6 +45,7 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator.Companion.AUT
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator.Companion.IS_NEW_ACCOUNT
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
@@ -61,6 +62,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
   @Inject lateinit var accountManager: AccountManager
 
   @Inject lateinit var oAuthService: OAuthService
+
+  @Inject lateinit var fhirResourceService: FhirResourceService
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
@@ -85,6 +88,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
           context = context,
           accountManager = accountManager,
           oAuthService = spyk(oAuthService),
+          fhirResourceService = spyk(fhirResourceService),
           configurationRegistry = configurationRegistry,
           secureSharedPreference = secureSharedPreference,
           tokenManagerService = tokenManagerService,
