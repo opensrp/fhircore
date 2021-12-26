@@ -90,6 +90,11 @@ constructor(
 
   var searchTextState = mutableStateOf(TextFieldValue(""))
 
+  fun getSelectedPatient(): MutableLiveData<PatientItem> {
+    return if (selectedPatientItem.value != null) selectedPatientItem
+    else MutableLiveData(PatientItem(patientIdentifier = "All", name = "All"))
+  }
+
   private val _filterValue = MutableLiveData<Pair<RegisterFilterType, Any?>>()
   val filterValue
     get() = _filterValue
@@ -273,9 +278,14 @@ constructor(
   ): LiveData<String> {
     val patientData = MutableLiveData<String>()
     viewModelScope.launch(dispatcher.io()) {
-      val auxCQLPatientData =
-        parser.encodeResourceToString(fhirResourceDataSource.loadData(patientURL))
-      patientData.postValue(auxCQLPatientData)
+      try {
+        val dataFromUrl = fhirResourceDataSource.loadData(patientURL)
+        val auxCQLPatientData = parser.encodeResourceToString(dataFromUrl)
+        patientData.postValue(auxCQLPatientData)
+      } catch (e: Exception) {
+        e.printStackTrace()
+        patientData.postValue("")
+      }
     }
     return patientData
   }

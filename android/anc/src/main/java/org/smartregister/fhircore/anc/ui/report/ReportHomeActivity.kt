@@ -399,12 +399,17 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   }
 
   fun handleCQLMeasureLoadPatient(auxPatientData: String) {
-    val testData = libraryEvaluator.processCQLPatientBundle(auxPatientData)
-    val patientDataStream: InputStream = ByteArrayInputStream(testData!!.toByteArray())
-    patientDataIBase = parser.parseResource(patientDataStream) as IBaseBundle
-    patientResourcesIBase.add(patientDataIBase)
-
-    handleMeasureEvaluate()
+    if (auxPatientData.isNotEmpty()) {
+      val testData = libraryEvaluator.processCQLPatientBundle(auxPatientData)
+      val patientDataStream: InputStream = ByteArrayInputStream(testData!!.toByteArray())
+      patientDataIBase = parser.parseResource(patientDataStream) as IBaseBundle
+      patientResourcesIBase.add(patientDataIBase)
+      handleMeasureEvaluate()
+    } else {
+      var resultItem = ResultItem("Failed", false, "", "Failed", "0")
+      reportViewModel.resultForIndividual.value = resultItem
+      reportViewModel.reportState.currentScreen = ReportScreen.RESULT
+    }
   }
 
   fun generateMeasureReport(

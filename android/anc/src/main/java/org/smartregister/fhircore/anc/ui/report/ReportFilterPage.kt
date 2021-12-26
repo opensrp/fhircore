@@ -88,7 +88,7 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
   val reportMeasureItem by remember { mutableStateOf(viewModel.selectedMeasureReportItem.value) }
   val patientSelectionType by remember { mutableStateOf(viewModel.patientSelectionType.value) }
   val generateReportEnabled by remember { mutableStateOf(viewModel.isReadyToGenerateReport.value) }
-  val selectedPatient by remember { mutableStateOf(viewModel.selectedPatientItem.value) }
+  val selectedPatient by remember { mutableStateOf(viewModel.getSelectedPatient().value) }
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
   val homeActivity = LocalContext.current
@@ -106,7 +106,7 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
     onGenerateReportPress = {
       auxGenerateReport(homeActivity, startDate, endDate, reportMeasureItem!!, selectedPatient!!)
     },
-    selectedPatient = selectedPatient ?: PatientItem()
+    selectedPatient = selectedPatient
   )
 }
 
