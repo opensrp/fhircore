@@ -22,6 +22,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
@@ -69,7 +70,7 @@ constructor(
     )
   }
 
-  override suspend fun getPopulationResources(intent: Intent): Array<Resource> {
+  override suspend fun getPopulationResources(intent: Intent, questionnaire: Questionnaire): Array<Resource> {
     val resourcesList = mutableListOf<Resource>()
 
     intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let { patientId ->

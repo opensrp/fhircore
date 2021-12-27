@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.util.extension
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.logicalId
+import org.hl7.fhir.r4.model.Base
 import java.util.Date
 import java.util.UUID
 import org.hl7.fhir.r4.model.Coding
@@ -27,10 +28,12 @@ import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.json.JSONException
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import timber.log.Timber
 
 fun Resource.toJson(parser: IParser = FhirContext.forR4().newJsonParser()): String =
   parser.encodeResourceToString(this)
@@ -145,6 +148,21 @@ fun QuestionnaireResponse.retainMetadata(questionnaireResponse: QuestionnaireRes
   }
 }
 
+fun QuestionnaireResponse.assertSubject() {
+  if (!this.hasSubject() || !this.subject.hasReference())
+    throw IllegalStateException("QuestionnaireResponse must have a subject reference assigned")
+}
+
 fun Resource.generateMissingId() {
   if (logicalId.isBlank()) id = UUID.randomUUID().toString()
 }
+
+fun Resource.asReference(): Reference {
+  val referenceValue = "${fhirType()}/$logicalId"
+
+  return Reference().apply { this.reference = referenceValue }
+}
+
+fun Resource.setPropertySafely(name: String, value: Base) = kotlin.runCatching {
+  this.setProperty(name, value)
+}.onFailure { Timber.w(it) }.getOrNull()

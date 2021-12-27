@@ -112,7 +112,7 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
     coEvery { recordVaccineViewModel.loadPatientImmunization(patientId) } returns immunization
 
     val resources: Array<Resource>
-    runBlocking { resources = recordVaccineViewModel.getPopulationResources(intent) }
+    runBlocking { resources = recordVaccineViewModel.getPopulationResources(intent, questionnaire) }
 
     coVerify { fhirEngine.load(Patient::class.java, patientId) }
     coVerify { recordVaccineViewModel.loadPatientImmunization(patientId) }

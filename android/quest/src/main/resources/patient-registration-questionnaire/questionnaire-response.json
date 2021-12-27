@@ -54,7 +54,10 @@
       }
     }
   ],
-  "questionnaire": "Questionnaire/3435/_history/12",
+  "questionnaire": "Questionnaire/3435",
+  "subject": {
+    "reference": "Patient/12345"
+  },
   "item": [
     {
       "linkId": "bio",

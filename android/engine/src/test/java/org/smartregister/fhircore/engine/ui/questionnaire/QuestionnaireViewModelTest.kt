@@ -525,7 +525,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     intent.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "2")
 
     runBlocking {
-      val resourceList = questionnaireViewModel.getPopulationResources(intent)
+      val resourceList = questionnaireViewModel.getPopulationResources(intent, questionnaire)
       Assert.assertEquals(3, resourceList.size)
     }
   }
