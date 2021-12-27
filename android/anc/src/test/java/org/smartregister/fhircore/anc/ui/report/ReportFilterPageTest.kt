@@ -72,6 +72,7 @@ class ReportFilterPageTest : RobolectricTest() {
         every { endDate } returns MutableLiveData("")
         every { patientSelectionType } returns this@ReportFilterPageTest.patientSelectionType
         every { selectedPatientItem } returns this@ReportFilterPageTest.selectionPatient
+        every { getSelectedPatient() } returns this@ReportFilterPageTest.selectionPatient
       }
   }
 
