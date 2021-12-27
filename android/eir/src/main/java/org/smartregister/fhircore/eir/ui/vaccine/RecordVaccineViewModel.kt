@@ -70,7 +70,10 @@ constructor(
     )
   }
 
-  override suspend fun getPopulationResources(intent: Intent, questionnaire: Questionnaire): Array<Resource> {
+  override suspend fun getPopulationResources(
+    intent: Intent,
+    questionnaire: Questionnaire
+  ): Array<Resource> {
     val resourcesList = mutableListOf<Resource>()
 
     intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let { patientId ->

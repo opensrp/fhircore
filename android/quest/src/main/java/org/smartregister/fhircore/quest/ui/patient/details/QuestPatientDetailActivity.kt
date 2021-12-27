@@ -23,6 +23,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -35,7 +36,6 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import timber.log.Timber
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
@@ -77,23 +77,25 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
           }
         )
       R.string.run_cql -> runCql()
-      R.string.edit_patient_info -> startActivity(
-        Intent(this, QuestionnaireActivity::class.java)
-          .putExtras(
-            QuestionnaireActivity.intentArgs(
-              clientIdentifier = patientId,
-              formName = getRegistrationForm(),
-              editMode = true
+      R.string.edit_patient_info ->
+        startActivity(
+          Intent(this, QuestionnaireActivity::class.java)
+            .putExtras(
+              QuestionnaireActivity.intentArgs(
+                clientIdentifier = patientId,
+                formName = getRegistrationForm(),
+                editMode = true
+              )
             )
-          )
-      )
+        )
     }
   }
 
   fun getRegistrationForm(): String {
     return configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
-      configClassification = QuestConfigClassification.PATIENT_REGISTER
-    ).registrationForm
+        configClassification = QuestConfigClassification.PATIENT_REGISTER
+      )
+      .registrationForm
   }
 
   fun runCql() {

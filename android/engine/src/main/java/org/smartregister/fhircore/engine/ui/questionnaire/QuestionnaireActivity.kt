@@ -36,13 +36,10 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -52,7 +49,6 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.find
-import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
@@ -137,8 +133,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         setOnClickListener(this@QuestionnaireActivity)
         if (readOnly) {
           text = context.getString(R.string.done)
-        }
-        else if (editMode) {
+        } else if (editMode) {
           text = getString(R.string.edit)
         }
       }
@@ -211,8 +206,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           confirmButtonText = R.string.questionnaire_alert_submit_button_title
         )
       }
-    }
-    else {
+    } else {
       showToast(getString(R.string.error_saving_form))
     }
   }
@@ -334,7 +328,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     fun Intent.questionnaireEditMode() = this.getBooleanExtra(QUESTIONNAIRE_EDIT_MODE, false)
     fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
-    fun Intent.populationResources() = this.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)
+    fun Intent.populationResources() =
+      this.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)
 
     fun intentArgs(
       clientIdentifier: String? = null,

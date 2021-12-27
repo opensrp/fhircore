@@ -35,7 +35,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
@@ -82,7 +81,8 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper
 ) : ViewModel() {
 
-  private val EXTRACTED_REFERENCES_EXTENSION = "http://fhir.ona.com/fhir/StructureDefinition/questionnaire-response-extracted-references"
+  private val EXTRACTED_REFERENCES_EXTENSION =
+    "http://fhir.ona.com/fhir/StructureDefinition/questionnaire-response-extracted-references"
 
   private val authenticatedUserInfo by lazy {
     sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
@@ -172,18 +172,11 @@ constructor(
             }
           }
 
-          // TODO https://github.com/opensrp/fhircore/issues/900
-          // we may not need this as we do not want to delete resources but may be we want to update
-          // we also do not want to save whole resource.. rather we save reference via modifier extension
-          // which can not be ignored
           questionnaireResponse.contained.add(bun.resource)
-          questionnaireResponse.addResourceReferenceExtension(bun.resource)
         }
 
         saveBundleResources(bundle)
 
-        // TODO https://github.com/opensrp/fhircore/issues/900
-        // we may just want to load same questionnaire response incase of edit in activity
         if (editMode && editQuestionnaireResponse != null) {
           questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
         }
@@ -201,10 +194,6 @@ constructor(
         viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
       }
     }
-  }
-
-  fun QuestionnaireResponse.addResourceReferenceExtension(resource: Resource){
-    this.addModifierExtension(Extension(EXTRACTED_REFERENCES_EXTENSION, resource.asReference()))
   }
 
   /**
@@ -289,8 +278,7 @@ constructor(
   }
 
   open suspend fun getPopulationResources(
-    intent: Intent,
-    questionnaire: Questionnaire
+    intent: Intent
   ): Array<Resource> {
     val resourcesList = mutableListOf<Resource>()
 
@@ -316,18 +304,6 @@ constructor(
         resourcesList.add(this)
       }
       loadRelatedPerson(patientId)?.forEach { resourcesList.add(it) }
-
-      if (intent.questionnaireEditMode() &&
-          intent.questionnaireResponse().isNullOrBlank() &&
-          intent.populationResources().isNullOrEmpty()
-      ) {
-        defaultRepository.loadQuestionnaireResponses(patientId, questionnaire).lastOrNull()?.let {
-          it.contained.forEach {
-            Class.forName("org.hl7.fhir.r4.model.${it.resourceType}")
-            resourcesList.add(defaultRepository.fhirEngine.load(it::class.java, it.id))
-          }
-        }
-      }
     }
 
     return resourcesList.toTypedArray()
@@ -337,9 +313,12 @@ constructor(
     questionnaire: Questionnaire,
     intent: Intent
   ): QuestionnaireResponse {
-    return kotlin.runCatching {
-      ResourceMapper.populate(questionnaire, *getPopulationResources(intent, questionnaire))
-      }.onFailure { Timber.e(it) }.getOrThrow()
+    return kotlin
+      .runCatching {
+        ResourceMapper.populate(questionnaire, *getPopulationResources(intent))
+      }
+      .onFailure { Timber.e(it) }
+      .getOrThrow()
   }
 
   fun getAgeInput(questionnaireResponse: QuestionnaireResponse): Int? {

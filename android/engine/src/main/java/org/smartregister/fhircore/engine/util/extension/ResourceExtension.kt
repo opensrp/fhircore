@@ -19,9 +19,9 @@ package org.smartregister.fhircore.engine.util.extension
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.logicalId
-import org.hl7.fhir.r4.model.Base
 import java.util.Date
 import java.util.UUID
+import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
@@ -163,6 +163,5 @@ fun Resource.asReference(): Reference {
   return Reference().apply { this.reference = referenceValue }
 }
 
-fun Resource.setPropertySafely(name: String, value: Base) = kotlin.runCatching {
-  this.setProperty(name, value)
-}.onFailure { Timber.w(it) }.getOrNull()
+fun Resource.setPropertySafely(name: String, value: Base) =
+  kotlin.runCatching { this.setProperty(name, value) }.onFailure { Timber.w(it) }.getOrNull()
