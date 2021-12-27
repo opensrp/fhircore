@@ -42,6 +42,7 @@ import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.model.UnitConstants
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asPatientReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
@@ -216,19 +217,22 @@ constructor(
   }
 
   suspend fun fetchVitalSigns(patientId: String, searchFilterString: String): Observation {
-    val searchFilter: SearchFilter =
-      when (searchFilterString) {
-        "body-weight" -> vitalSignsConfig.weightFilter!!
-        "body-height" -> vitalSignsConfig.heightFilter!!
-        "bmi" -> vitalSignsConfig.bmiFilter!!
-        "bp-s" -> vitalSignsConfig.BPSFilter!!
-        "bp-d" -> vitalSignsConfig.BPDSFilter!!
-        "pulse-rate" -> vitalSignsConfig.pulseRateFilter!!
-        "bg" -> vitalSignsConfig.bloodGlucoseFilter!!
-        "spO2" -> vitalSignsConfig.bloodOxygenLevelFilter!!
-        else ->
-          throw UnsupportedOperationException("Given filter $searchFilterString not supported")
-      }
+    var searchFilter: SearchFilter
+    vitalSignsConfig.run {
+      searchFilter =
+        when (searchFilterString) {
+          "body-weight" -> weightFilter!!
+          "body-height" -> heightFilter!!
+          "bmi" -> bmiFilter!!
+          "bp-s" -> BPSFilter!!
+          "bp-d" -> BPDSFilter!!
+          "pulse-rate" -> pulseRateFilter!!
+          "bg" -> bloodGlucoseFilter!!
+          "spO2" -> bloodOxygenLevelFilter!!
+          else ->
+            throw UnsupportedOperationException("Given filter $searchFilterString not supported")
+        }
+    }
     var finalObservation = Observation()
     val observations =
       withContext(dispatcherProvider.io()) {
@@ -406,18 +410,17 @@ constructor(
     computedBMI: Double? = null,
     isUnitModeMetric: Boolean
   ): Boolean {
-    var weightUnit = "lb"
-    var heightUnit = "in"
-    var weightUnitCode = "[lb_av]"
-    var heightUnitCode = "[in_i]"
-    // Todo: confirm if bmi unit can be displayed in lb/in2 or only in kg/m2
-    var bmiUnit = "kg/m2"
+    var weightUnit = UnitConstants.UNIT_WEIGHT_USC
+    var heightUnit = UnitConstants.UNIT_HEIGHT_USC
+    var weightUnitCode = UnitConstants.UNIT_CODE_WEIGHT_USC
+    var heightUnitCode = UnitConstants.UNIT_CODE_HEIGHT_USC
+    var bmiUnit = UnitConstants.UNIT_BMI_USC
     if (isUnitModeMetric) {
-      weightUnit = "kg"
-      heightUnit = "cm"
-      weightUnitCode = "kg"
-      heightUnitCode = "cm"
-      bmiUnit = "kg/m2"
+      weightUnit = UnitConstants.UNIT_WEIGHT_METRIC
+      heightUnit = UnitConstants.UNIT_HEIGHT_METRIC
+      weightUnitCode = UnitConstants.UNIT_CODE_WEIGHT_METRIC
+      heightUnitCode = UnitConstants.UNIT_CODE_HEIGHT_METRIC
+      bmiUnit = UnitConstants.UNIT_BMI_METRIC
     }
 
     val bmiEncounterData = buildBmiConfigData(patientId = patientId, recordId = formEncounterId)
