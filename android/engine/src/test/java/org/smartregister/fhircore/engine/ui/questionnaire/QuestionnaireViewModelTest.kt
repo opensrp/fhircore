@@ -413,13 +413,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       }
 
-    questionnaireViewModel.extractAndSaveResources(null, questionnaire, QuestionnaireResponse())
+    val questionnaireResponse = QuestionnaireResponse().apply { subject = Reference("12345") }
 
-    val patientSlot = slot<Patient>()
+    questionnaireViewModel.extractAndSaveResources(null, questionnaire, questionnaireResponse)
 
-    coVerify { defaultRepo.addOrUpdate(capture(patientSlot)) }
-
-    Assert.assertEquals("1234567", patientSlot.captured.meta.tagFirstRep.code)
+    coVerify { defaultRepo.addOrUpdate(any()) }
 
     unmockkObject(ResourceMapper)
   }
@@ -534,14 +532,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testSaveQuestionnaireResponseShouldCallAddOrUpdateWhenResourceIdIsNotBlank() {
 
     val questionnaire = Questionnaire().apply { id = "qId" }
-    val questionnaireResponse = QuestionnaireResponse()
+    val questionnaireResponse = QuestionnaireResponse().apply { subject = Reference("12345") }
     coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
 
     runBlocking {
-      questionnaireViewModel.saveQuestionnaireResponse(
-        questionnaire,
-        questionnaireResponse
-      )
+      questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
     }
 
     coVerify { defaultRepo.addOrUpdate(questionnaireResponse) }
@@ -551,17 +546,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testSaveQuestionnaireResponseShouldAddIdAndAuthoredWhenQuestionnaireResponseDoesNotHaveId() {
 
     val questionnaire = Questionnaire().apply { id = "qId" }
-    val questionnaireResponse = QuestionnaireResponse()
+    val questionnaireResponse = QuestionnaireResponse().apply { subject = Reference("12345") }
     coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
 
     Assert.assertNull(questionnaireResponse.id)
     Assert.assertNull(questionnaireResponse.authored)
 
     runBlocking {
-      questionnaireViewModel.saveQuestionnaireResponse(
-        questionnaire,
-        questionnaireResponse
-      )
+      questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
     }
 
     Assert.assertNotNull(questionnaireResponse.id)
@@ -577,14 +569,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       QuestionnaireResponse().apply {
         id = "qrId"
         authored = authoredDate
+        subject = Reference("12345")
       }
     coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
 
     runBlocking {
-      questionnaireViewModel.saveQuestionnaireResponse(
-        questionnaire,
-        questionnaireResponse
-      )
+      questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
     }
 
     Assert.assertEquals("qrId", questionnaireResponse.id)

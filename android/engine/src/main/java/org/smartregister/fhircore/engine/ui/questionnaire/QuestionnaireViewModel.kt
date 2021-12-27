@@ -48,8 +48,6 @@ import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.populationResources
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.questionnaireEditMode
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.questionnaireResponse
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -277,9 +275,7 @@ constructor(
     viewModelScope.launch { defaultRepository.save(resource = resource) }
   }
 
-  open suspend fun getPopulationResources(
-    intent: Intent
-  ): Array<Resource> {
+  open suspend fun getPopulationResources(intent: Intent): Array<Resource> {
     val resourcesList = mutableListOf<Resource>()
 
     intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.run {
@@ -314,9 +310,7 @@ constructor(
     intent: Intent
   ): QuestionnaireResponse {
     return kotlin
-      .runCatching {
-        ResourceMapper.populate(questionnaire, *getPopulationResources(intent))
-      }
+      .runCatching { ResourceMapper.populate(questionnaire, *getPopulationResources(intent)) }
       .onFailure { Timber.e(it) }
       .getOrThrow()
   }
