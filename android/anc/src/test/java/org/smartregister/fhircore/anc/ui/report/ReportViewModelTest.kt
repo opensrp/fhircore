@@ -90,8 +90,7 @@ internal class ReportViewModelTest {
       this@ReportViewModelTest.resultForIndividual
     every { reportViewModel.resultForPopulation } returns
       this@ReportViewModelTest.resultForPopulation
-    every { reportViewModel.selectedPatientItem } returns
-            this@ReportViewModelTest.selectedPatient
+    every { reportViewModel.selectedPatientItem } returns this@ReportViewModelTest.selectedPatient
   }
 
   @Test
