@@ -52,6 +52,7 @@ import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.ListenerIntent
+import timber.log.Timber
 
 @HiltViewModel
 class ReportViewModel
@@ -68,6 +69,8 @@ constructor(
 
   val backPress: MutableLiveData<Boolean> = MutableLiveData(false)
   val showDatePicker: MutableLiveData<Boolean> = MutableLiveData(false)
+  val processGenerateReport: MutableLiveData<Boolean> = MutableLiveData(false)
+  val alertSelectPatient: MutableLiveData<Boolean> = MutableLiveData(false)
   val isChangingStartDate: MutableLiveData<Boolean> = MutableLiveData(false)
   val selectedMeasureReportItem: MutableLiveData<ReportItem> = MutableLiveData(null)
   val selectedPatientItem: MutableLiveData<PatientItem> = MutableLiveData(null)
@@ -92,7 +95,7 @@ constructor(
 
   fun getSelectedPatient(): MutableLiveData<PatientItem> {
     return if (selectedPatientItem.value != null) selectedPatientItem
-    else MutableLiveData(PatientItem(patientIdentifier = "All", name = "All"))
+    else MutableLiveData(PatientItem(patientIdentifier = "Select Patient", name = "Select Patient"))
   }
 
   private val _filterValue = MutableLiveData<Pair<RegisterFilterType, Any?>>()
@@ -224,6 +227,14 @@ constructor(
     reportState.currentScreen = ReportScreen.RESULT
   }
 
+  fun auxGenerateReport() {
+    if (patientSelectionType.value.equals("All", true) || selectedPatientItem.value != null) {
+      processGenerateReport.setValue(true)
+    } else {
+      alertSelectPatient.setValue(true)
+    }
+  }
+
   fun onDatePicked(selection: Long) {
     showDatePicker.value = false
     if (isChangingStartDate.value != false) {
@@ -283,7 +294,7 @@ constructor(
         val auxCQLPatientData = parser.encodeResourceToString(dataFromUrl)
         patientData.postValue(auxCQLPatientData)
       } catch (e: Exception) {
-        e.printStackTrace()
+        Timber.e(e)
         patientData.postValue("")
       }
     }

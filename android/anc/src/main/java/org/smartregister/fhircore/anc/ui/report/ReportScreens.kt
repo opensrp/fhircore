@@ -273,15 +273,17 @@ fun PatientSelectionBox(
     if (patientSelection.value == ReportViewModel.PatientSelectionType.INDIVIDUAL) {
       Row(modifier = Modifier.padding(start = 24.dp)) {
         Spacer(modifier = Modifier.size(8.dp))
-        SelectedPatientItem(
-          selectedPatient = selectedPatient!!,
-          onCancelSelectedPatient = {
-            onPatientSelectionChange(ReportViewModel.PatientSelectionType.ALL)
-          },
-          onChangeClickListener = {
-            onPatientSelectionChange(ReportViewModel.PatientSelectionType.INDIVIDUAL)
-          }
-        )
+        selectedPatient?.let {
+          SelectedPatientItem(
+            selectedPatient = selectedPatient,
+            onCancelSelectedPatient = {
+              onPatientSelectionChange(ReportViewModel.PatientSelectionType.ALL)
+            },
+            onChangeClickListener = {
+              onPatientSelectionChange(ReportViewModel.PatientSelectionType.INDIVIDUAL)
+            }
+          )
+        }
       }
     }
   }
