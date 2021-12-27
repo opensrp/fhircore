@@ -29,6 +29,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -444,6 +445,48 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireResponseSlot.captured.subject.reference.replace("Patient/", "")
     )
     Assert.assertEquals("1234567", questionnaireResponseSlot.captured.meta.tagFirstRep.code)
+  }
+
+  @Test
+  fun testExtractAndSaveResourcesWithEditModeShouldSaveQuestionnaireResponse() {
+    mockkObject(ResourceMapper)
+
+    coEvery { ResourceMapper.extract(any(), any(), any(), any()) } returns
+      Bundle().apply { addEntry().resource = Patient().apply { id = "12345" } }
+
+    coEvery { fhirEngine.load(Patient::class.java, "12345") } returns Patient()
+    coEvery { defaultRepo.addOrUpdate(any()) } just runs
+
+    val questionnaireResponseSlot = slot<QuestionnaireResponse>()
+    val patientSlot = slot<Resource>()
+    val questionnaire =
+      Questionnaire().apply {
+        addUseContext().apply {
+          code = Coding().apply { code = "focus" }
+          value = CodeableConcept().apply { addCoding().apply { code = "1234567" } }
+        }
+        addExtension().url = "sdc-questionnaire-itemExtractionContext"
+      }
+
+    questionnaireViewModel.extractAndSaveResources(
+      "12345",
+      questionnaire,
+      QuestionnaireResponse(),
+      true
+    )
+
+    coVerifyOrder {
+      defaultRepo.addOrUpdate(capture(patientSlot))
+      defaultRepo.addOrUpdate(capture(questionnaireResponseSlot))
+    }
+
+    Assert.assertEquals(
+      "12345",
+      questionnaireResponseSlot.captured.subject.reference.replace("Patient/", "")
+    )
+    Assert.assertEquals("12345", patientSlot.captured.id)
+
+    unmockkObject(ResourceMapper)
   }
 
   @Test

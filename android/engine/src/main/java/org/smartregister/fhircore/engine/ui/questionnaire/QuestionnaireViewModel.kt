@@ -79,9 +79,6 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper
 ) : ViewModel() {
 
-  private val EXTRACTED_REFERENCES_EXTENSION =
-    "http://fhir.ona.com/fhir/StructureDefinition/questionnaire-response-extracted-references"
-
   private val authenticatedUserInfo by lazy {
     sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
   }
@@ -309,10 +306,7 @@ constructor(
     questionnaire: Questionnaire,
     intent: Intent
   ): QuestionnaireResponse {
-    return kotlin
-      .runCatching { ResourceMapper.populate(questionnaire, *getPopulationResources(intent)) }
-      .onFailure { Timber.e(it) }
-      .getOrThrow()
+    return ResourceMapper.populate(questionnaire, *getPopulationResources(intent))
   }
 
   fun getAgeInput(questionnaireResponse: QuestionnaireResponse): Int? {
