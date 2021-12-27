@@ -22,7 +22,11 @@ import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.mockk
+import java.util.Date
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Patient
 import org.junit.After
 import org.junit.Assert
 import org.junit.Assert.assertNotNull
@@ -36,12 +40,15 @@ import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
+import org.smartregister.fhircore.anc.ui.family.register.Family
+import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterFragment
 import org.smartregister.fhircore.anc.ui.family.register.OpenFamilyProfile
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
+import org.smartregister.fhircore.engine.util.extension.plusYears
 
 @HiltAndroidTest
 class FamilyRegisterFragmentTest : RobolectricTest() {
@@ -77,19 +84,18 @@ class FamilyRegisterFragmentTest : RobolectricTest() {
 
   @Test
   fun testPerformSearchFilterShouldReturnTrue() {
-    val familyItem =
-      FamilyItem(
-        id = "fid",
-        identifier = "1111",
-        name = "Name ",
-        gender = "M",
-        age = "27",
-        address = "Nairobi",
-        isPregnant = true,
-        members = emptyList(),
-        servicesDue = 0,
-        servicesOverdue = 0
-      )
+    val head =
+      Patient().apply {
+        id = "fid"
+        identifierFirstRep.value = "1111"
+        nameFirstRep.family = "Name"
+        addressFirstRep.city = "Nairobi"
+        meta.addTag().display = "family"
+      }
+    val mapper = FamilyItemMapper(registerFragment.requireContext())
+    val members = listOf(mapper.toFamilyMemberItem(head, listOf(), listOf()))
+
+    val familyItem = mapper.mapToDomainModel(Family(head, members, emptyList()))
 
     val result =
       registerFragment.performFilter(RegisterFilterType.SEARCH_FILTER, familyItem, "1111")
@@ -98,19 +104,30 @@ class FamilyRegisterFragmentTest : RobolectricTest() {
 
   @Test
   fun testPerformOverdueFilterShouldReturnTrue() {
+    val head =
+      Patient().apply {
+        id = "fid"
+        identifierFirstRep.value = "1111"
+        nameFirstRep.family = "Name"
+        addressFirstRep.city = "Nairobi"
+        meta.addTag().display = "family"
+      }
+
+    val careplan =
+      CarePlan().apply {
+        this.status = CarePlan.CarePlanStatus.ACTIVE
+        this.activityFirstRep.detail.apply {
+          this.scheduledPeriod.start = Date().plusYears(-1)
+          this.scheduledPeriod.end = Date().plusYears(-1)
+          this.status = CarePlan.CarePlanActivityStatus.SCHEDULED
+        }
+      }
+
+    val mapper = FamilyItemMapper(mockk())
+    val members = listOf(mapper.toFamilyMemberItem(head, listOf(), listOf(careplan)))
+
     val familyItem =
-      FamilyItem(
-        id = "fid",
-        identifier = "1111",
-        name = "Name ",
-        gender = "M",
-        age = "27",
-        address = "Nairobi",
-        isPregnant = true,
-        members = emptyList(),
-        servicesDue = 4,
-        servicesOverdue = 5
-      )
+      FamilyItemMapper(mockk()).mapToDomainModel(Family(head, members, listOf(careplan)))
 
     val result =
       registerFragment.performFilter(RegisterFilterType.OVERDUE_FILTER, familyItem, "1111")
@@ -122,7 +139,7 @@ class FamilyRegisterFragmentTest : RobolectricTest() {
 
     registerFragment.onItemClicked(
       OpenFamilyProfile,
-      FamilyItem("1", "", "", "", "", "", false, listOf(), 0, 0)
+      FamilyItem("1", "", "", "", mockk(), listOf(), 0, 0)
     )
 
     val expectedIntent =

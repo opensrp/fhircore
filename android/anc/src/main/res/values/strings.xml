@@ -27,7 +27,6 @@
     <string name="back_to_anc_clients">Back to ANC Clients</string>
     <string name="edit">Edit</string>
     <string name="edit_info">Edit info</string>
-    <string name="mark_as_ANC_client">Mark as ANC client</string>
     <string name="view_family">View family</string>
     <string name="compute_bmi">Compute BMI</string>
     <string name="your_bmi">Your BMI = </string>
@@ -39,7 +38,21 @@
     <string name="bmi_category_overweight">Overweight = 25 – 29.9</string>
     <string name="bmi_category_obesity">Obesity = BMI of 30 or greater</string>
     <string name="view_past_encounters">View past encounters</string>
+    <string name="log_death">Mark as Deceased</string>
+    <string name="log_death_confirm_message">Confirm you want to log death of this person. This action is irreversible.</string>
+    <string name="log_death_button_title">Confirm</string>
     <string name="remove_this_person">Remove this person</string>
+    <string name="remove_this_person_button_title">Remove</string>
+    <string name="remove_this_person_confirm_title">Reason for removal</string>
+    <string name="remove_this_person_confirm_message">Confirm you want to remove person from family</string>
+    <string name="remove_this_person_reason_death">Death</string>
+    <string name="remove_this_person_reason_error_entry">Entry in error</string>
+    <string name="remove_this_person_reason_moved_out">Moved out</string>
+    <string name="change_head_button_title">Change</string>
+    <string name="change_head_confirm_title">Select New Family Head</string>
+    <string name="change_head_confirm_message"></string>
+    <string name="invalid_selection">Invalid Selection</string>
+    <string name="no_eligible_family_head">No eligible family members</string>
     <string name="care_plan">Care plan</string>
     <string name="see_all">See All</string>
     <string name="anc_overview">ANC Overview</string>
@@ -77,6 +90,7 @@
 
     <string name="all_families">All Families</string>
     <string name="add_member">Add Member</string>
+    <string name="change_head">Change Head</string>
     <string name="encounters">Encounters</string>
     <string name="members">Members</string>
 

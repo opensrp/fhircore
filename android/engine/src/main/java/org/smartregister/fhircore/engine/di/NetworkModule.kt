@@ -42,9 +42,9 @@ class NetworkModule {
 
   @Provides
   @AuthOkHttpClientQualifier
-  fun provideAuthOkHttpClient(interceptor: OAuthInterceptor) =
+  fun provideAuthOkHttpClient(oAuthInterceptor: OAuthInterceptor) =
     OkHttpClient.Builder()
-      .addInterceptor(interceptor)
+      .addInterceptor(oAuthInterceptor)
       .addInterceptor(HttpLoggingInterceptor().apply { HttpLoggingInterceptor.Level.BASIC })
       .build()
 
