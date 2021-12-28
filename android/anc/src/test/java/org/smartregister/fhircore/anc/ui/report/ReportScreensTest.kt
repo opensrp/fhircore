@@ -124,7 +124,9 @@ class ReportScreensTest : RobolectricTest() {
       PatientSelectionBox(
         patientSelectionText = "All",
         selectedPatient = null,
-        onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.ALL) }
+        onPatientSelectionChange = {
+          listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.ALL)
+        }
       )
     }
     composeRule.onNodeWithTag(REPORT_PATIENT_SELECTION).assertExists()
@@ -136,7 +138,11 @@ class ReportScreensTest : RobolectricTest() {
       PatientSelectionBox(
         patientSelectionText = "Individual",
         selectedPatient = PatientItem(),
-        onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.INDIVIDUAL) }
+        onPatientSelectionChange = {
+          listenerObjectSpy.onPatientSelectionChanged(
+            ReportViewModel.PatientSelectionType.INDIVIDUAL
+          )
+        }
       )
     }
     composeRule.onNodeWithTag(REPORT_PATIENT_SELECTION).assertExists()
@@ -149,12 +155,18 @@ class ReportScreensTest : RobolectricTest() {
       PatientSelectionBox(
         patientSelectionText = "Individual",
         selectedPatient = PatientItem(),
-        onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.INDIVIDUAL) }
+        onPatientSelectionChange = {
+          listenerObjectSpy.onPatientSelectionChanged(
+            ReportViewModel.PatientSelectionType.INDIVIDUAL
+          )
+        }
       )
     }
     composeRule.onNodeWithTag(REPORT_CHANGE_PATIENT).assertExists()
     composeRule.onNodeWithTag(REPORT_CHANGE_PATIENT).performClick()
-    verify { listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.INDIVIDUAL) }
+    verify {
+      listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.INDIVIDUAL)
+    }
   }
 
   @Test

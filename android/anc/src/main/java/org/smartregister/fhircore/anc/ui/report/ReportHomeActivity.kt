@@ -441,6 +441,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         ResultItem(isMatchedIndicator = false, status = "Failed")
       reportViewModel.reportState.currentScreen = ReportScreen.RESULT
     }
+  }
 
   fun generateMeasureReport(
     startDate: String,
@@ -521,13 +522,16 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     override fun describeContents(): Int {
       TODO("nothing to implement")
     }
+
     override fun isValid(date: Long): Boolean {
       return if (forStartDateOnly == 1L) maxDate >= date else minDate <= date
     }
+
     companion object CREATOR : Parcelable.Creator<RangeValidator> {
       override fun createFromParcel(parcel: Parcel): RangeValidator {
         return RangeValidator(parcel)
       }
+
       override fun newArray(size: Int): Array<RangeValidator?> {
         return arrayOfNulls(size)
       }
