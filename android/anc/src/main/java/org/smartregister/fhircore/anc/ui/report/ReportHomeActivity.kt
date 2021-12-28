@@ -53,6 +53,7 @@ import org.smartregister.fhircore.anc.ui.report.ReportViewModel.ReportScreen
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.cql.MeasureEvaluator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
@@ -141,6 +142,35 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       {
         if (it) {
           showDatePicker()
+        }
+      }
+    )
+
+    reportViewModel.processGenerateReport.observe(
+      this,
+      {
+        if (it) {
+          // Todo: for Davison, update params for All patient selection
+          generateMeasureReport(
+            startDate = reportViewModel.startDate.value ?: "",
+            endDate = reportViewModel.endDate.value ?: "",
+            reportType = reportViewModel.selectedMeasureReportItem.value?.reportType ?: "",
+            patientId = reportViewModel.selectedPatientItem.value?.patientIdentifier ?: "",
+            subject = reportViewModel.selectedPatientItem.value?.familyName ?: ""
+          )
+        }
+      }
+    )
+
+    reportViewModel.alertSelectPatient.observe(
+      this,
+      {
+        if (it) {
+          AlertDialogue.showErrorAlert(
+            context = this,
+            message = getString(R.string.select_patient),
+            title = getString(R.string.invalid_selection)
+          )
         }
       }
     )
@@ -399,12 +429,18 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   }
 
   fun handleCqlMeasureLoadPatient(auxPatientData: String) {
-    val testData = libraryEvaluator.processCqlPatientBundle(auxPatientData)
-    val patientDataStream: InputStream = ByteArrayInputStream(testData!!.toByteArray())
-    patientDataIBase = parser.parseResource(patientDataStream) as IBaseBundle
-    patientResourcesIBase.add(patientDataIBase)
-
-    handleMeasureEvaluate()
+    if (auxPatientData.isNotEmpty()) {
+      val testData = libraryEvaluator.processCqlPatientBundle(auxPatientData)
+      val patientDataStream: InputStream = ByteArrayInputStream(testData.toByteArray())
+      patientDataIBase = parser.parseResource(patientDataStream) as IBaseBundle
+      patientResourcesIBase.add(patientDataIBase)
+      handleMeasureEvaluate()
+    } else {
+      // Todo: for Davison update result item when empty response for loadPatient Api
+      reportViewModel.resultForIndividual.value =
+        ResultItem(isMatchedIndicator = false, status = "Failed")
+      reportViewModel.reportState.currentScreen = ReportScreen.RESULT
+    }
   }
 
   fun generateMeasureReport(
@@ -486,13 +522,16 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     override fun describeContents(): Int {
       TODO("nothing to implement")
     }
+
     override fun isValid(date: Long): Boolean {
       return if (forStartDateOnly == 1L) maxDate >= date else minDate <= date
     }
+
     companion object CREATOR : Parcelable.Creator<RangeValidator> {
       override fun createFromParcel(parcel: Parcel): RangeValidator {
         return RangeValidator(parcel)
       }
+
       override fun newArray(size: Int): Array<RangeValidator?> {
         return arrayOfNulls(size)
       }
