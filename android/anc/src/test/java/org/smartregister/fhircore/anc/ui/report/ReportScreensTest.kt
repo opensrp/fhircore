@@ -167,6 +167,12 @@ class ReportScreensTest : RobolectricTest() {
     verify {
       listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.INDIVIDUAL)
     }
+
+    composeRule.onNodeWithTag(REPORT_CANCEL_PATIENT).assertExists()
+    composeRule.onNodeWithTag(REPORT_CANCEL_PATIENT).performClick()
+    verify {
+      listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.INDIVIDUAL)
+    }
   }
 
   @Test
