@@ -118,7 +118,7 @@ class ReportFilterPageTest : RobolectricTest() {
       )
     }
     composeRule.onNodeWithTag(REPORT_GENERATE_BUTTON).assertExists()
-    // composeRule.onNodeWithTag(REPORT_GENERATE_BUTTON).performClick()
-    // verify { listenerObjectSpy.onGenerateReportClick() }
+    composeRule.onNodeWithTag(REPORT_GENERATE_BUTTON).performClick()
+    verify { listenerObjectSpy.onGenerateReportClick() }
   }
 }

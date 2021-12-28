@@ -386,6 +386,28 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testGenerateMeasureReport() {
+    coEvery { reportViewModel.processGenerateReport.value } returns true
+    val reportMeasureItem = "ANC"
+    val selectedPatientId = "123456789"
+    val selectedPatientName = "Patient Mom"
+    val startDate = "01/12/2020"
+    val endDate = "01/12/2021"
+    reportHomeActivitySpy.generateMeasureReport(
+      startDate,
+      endDate,
+      reportMeasureItem,
+      selectedPatientId,
+      selectedPatientName
+    )
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.PREHOMElOADING,
+      reportViewModel.reportState.currentScreen
+    )
+    Assert.assertEquals(reportHomeActivitySpy.cqlMeasureReportReportType, reportMeasureItem)
+  }
+
+  @Test
   fun testProcessGenerateReportForInvalidData() {
     coEvery { reportViewModel.patientSelectionType.value } returns "not-all"
     coEvery { reportViewModel.selectedPatientItem.value } returns null
