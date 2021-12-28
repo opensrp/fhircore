@@ -153,7 +153,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       .onNodeWithTag(PATIENT_NAME)
       .assertExists()
       .assertIsDisplayed()
-      .assertTextEquals("John Doe, M, 21y")
+      .assertTextEquals("John Doe, M, 22y")
   }
 
   @Test
