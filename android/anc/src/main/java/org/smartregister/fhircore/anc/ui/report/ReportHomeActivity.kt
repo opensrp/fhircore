@@ -430,7 +430,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
 
   fun handleCqlMeasureLoadPatient(auxPatientData: String) {
     if (auxPatientData.isNotEmpty()) {
-      val testData = libraryEvaluator.processCQLPatientBundle(auxPatientData)
+      val testData = libraryEvaluator.processCqlPatientBundle(auxPatientData)
       val patientDataStream: InputStream = ByteArrayInputStream(testData.toByteArray())
       patientDataIBase = parser.parseResource(patientDataStream) as IBaseBundle
       patientResourcesIBase.add(patientDataIBase)
