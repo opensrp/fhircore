@@ -362,7 +362,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
     val selectedPatientName = "Patient Mom"
     val startDate = "01/12/2020"
     val endDate = "01/12/2021"
-    every { reportHomeActivitySpy.loadCQLMeasurePatientData() } returns Unit
+    every { reportHomeActivitySpy.loadCqlMeasurePatientData() } returns Unit
     reportHomeActivitySpy.generateMeasureReport(
       startDate,
       endDate,
@@ -377,7 +377,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   fun testHandleCQLMeasureLoadPatientForEmptyData() {
     val testData = ""
     // every { reportHomeActivitySpy.handleMeasureEvaluate() } returns Unit
-    reportHomeActivitySpy.handleCQLMeasureLoadPatient(testData)
+    reportHomeActivitySpy.handleCqlMeasureLoadPatient(testData)
     Assert.assertEquals(
       ReportViewModel.ReportScreen.RESULT,
       reportViewModel.reportState.currentScreen
