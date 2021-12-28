@@ -90,6 +90,6 @@ class QuestPatientTestResultScreenTest : RobolectricTest() {
   @Test
   fun testPatientDetailsCardShouldHaveCorrectData() {
     composeRule.onNodeWithText("John Doe").assertExists()
-    composeRule.onNodeWithText("M - 21y").assertExists()
+    composeRule.onNodeWithText("M - 22y").assertExists()
   }
 }
