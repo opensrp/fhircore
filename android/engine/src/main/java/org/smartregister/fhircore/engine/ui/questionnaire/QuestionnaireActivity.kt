@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -35,13 +36,10 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -51,7 +49,6 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.find
-import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
@@ -101,13 +98,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     lifecycleScope.launchWhenCreated {
       readOnly = intent.getBooleanExtra(QUESTIONNAIRE_READ_ONLY, false)
-
-      if (readOnly) {
-        findViewById<Button>(R.id.btn_edit_qr).apply {
-          visibility = View.VISIBLE
-          setOnClickListener(this@QuestionnaireActivity)
-        }
-      }
+      editMode = intent.getBooleanExtra(QUESTIONNAIRE_EDIT_MODE, false)
 
       val formName = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
       // form is either name of form in asset/form-config or questionnaire-id
@@ -142,6 +133,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         setOnClickListener(this@QuestionnaireActivity)
         if (readOnly) {
           text = context.getString(R.string.done)
+        } else if (editMode) {
+          text = getString(R.string.edit)
         }
       }
 
@@ -212,30 +205,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           confirmButtonListener = { handleQuestionnaireSubmit() },
           confirmButtonText = R.string.questionnaire_alert_submit_button_title
         )
-      }
-    } else if (view.id == R.id.btn_edit_qr) {
-      readOnly = false
-      editMode = true
-
-      lifecycleScope.launch(Dispatchers.Default) {
-        // Reload the questionnaire and reopen the fragment
-        questionnaire.item.prepareQuestionsForReadingOrEditing(
-          "QuestionnaireResponse.item",
-          readOnly
-        )
-        supportFragmentManager.commit { detach(fragment) }
-
-        intent.getStringArrayListExtra(QUESTIONNAIRE_POPULATION_RESOURCES)?.run {
-          val jsonParser = FhirContext.forR4().newJsonParser()
-          forEach {
-            val resource = jsonParser.parseResource(it) as Resource
-            if (resource.resourceType.name == ResourceType.QuestionnaireResponse.name) {
-              questionnaireViewModel.editQuestionnaireResponse = resource as QuestionnaireResponse
-              return@forEach
-            }
-          }
-        }
-        renderFragment()
       }
     } else {
       showToast(getString(R.string.error_saving_form))
@@ -351,15 +320,22 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val FORM_CONFIGURATIONS = "configurations/form/form_configurations.json"
     const val QUESTIONNAIRE_ARG_FORM = "questionnaire-form-name"
     const val QUESTIONNAIRE_READ_ONLY = "read-only"
+    const val QUESTIONNAIRE_EDIT_MODE = "edit-mode"
     const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
 
+    fun Intent.questionnaireEditMode() = this.getBooleanExtra(QUESTIONNAIRE_EDIT_MODE, false)
+    fun Intent.questionnaireResponse() = this.getStringExtra(QUESTIONNAIRE_RESPONSE)
+    fun Intent.populationResources() =
+      this.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)
+
     fun intentArgs(
       clientIdentifier: String? = null,
       formName: String,
       readOnly: Boolean = false,
+      editMode: Boolean = false,
       questionnaireResponse: QuestionnaireResponse? = null,
       immunizationId: String? = null,
       populationResources: ArrayList<Resource> = ArrayList()
@@ -368,7 +344,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
         Pair(QUESTIONNAIRE_ARG_FORM, formName),
         Pair(QUESTIONNAIRE_READ_ONLY, readOnly),
-        Pair(ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY, immunizationId)
+        Pair(ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY, immunizationId),
+        Pair(QUESTIONNAIRE_EDIT_MODE, editMode)
       )
         .apply {
           val jsonParser = FhirContext.forR4().newJsonParser()
