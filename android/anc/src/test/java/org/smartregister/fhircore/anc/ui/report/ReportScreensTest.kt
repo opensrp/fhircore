@@ -43,7 +43,7 @@ class ReportScreensTest : RobolectricTest() {
         fun onReportMeasureItemClick() {}
         fun onStartDatePress() {}
         fun onEndDatePress() {}
-        fun onPatientSelectionChanged() {}
+        fun onPatientSelectionChanged(patientSelectionType: String) {}
         fun onCancelSelectedPatient() {}
         fun onPatientChangeClick() {}
         fun onGenerateReportClick() {}
@@ -124,7 +124,7 @@ class ReportScreensTest : RobolectricTest() {
       PatientSelectionBox(
         patientSelectionText = "All",
         selectedPatient = null,
-        onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged() }
+        onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.ALL) }
       )
     }
     composeRule.onNodeWithTag(REPORT_PATIENT_SELECTION).assertExists()
@@ -136,7 +136,7 @@ class ReportScreensTest : RobolectricTest() {
       PatientSelectionBox(
         patientSelectionText = "Individual",
         selectedPatient = PatientItem(),
-        onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged() }
+        onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.INDIVIDUAL) }
       )
     }
     composeRule.onNodeWithTag(REPORT_PATIENT_SELECTION).assertExists()
@@ -149,12 +149,12 @@ class ReportScreensTest : RobolectricTest() {
       PatientSelectionBox(
         patientSelectionText = "Individual",
         selectedPatient = PatientItem(),
-        onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged() }
+        onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.INDIVIDUAL) }
       )
     }
     composeRule.onNodeWithTag(REPORT_CHANGE_PATIENT).assertExists()
     composeRule.onNodeWithTag(REPORT_CHANGE_PATIENT).performClick()
-    verify { listenerObjectSpy.onPatientSelectionChanged() }
+    verify { listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.INDIVIDUAL) }
   }
 
   @Test
