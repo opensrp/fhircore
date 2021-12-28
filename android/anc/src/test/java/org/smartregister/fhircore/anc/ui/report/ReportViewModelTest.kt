@@ -96,7 +96,7 @@ internal class ReportViewModelTest {
   }
 
   @Test
-  fun testFetchCQLLibraryData() {
+  fun testFetchCqlLibraryData() {
     val auxCQLLibraryData = "Library JSON"
     coroutinesTestRule.runBlockingTest {
       coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
@@ -105,59 +105,59 @@ internal class ReportViewModelTest {
       coEvery { parser.encodeResourceToString(resource) } returns auxCQLLibraryData
     }
     val libraryDataLiveData: String =
-      reportViewModel.fetchCQLLibraryData(parser, fhirResourceDataSource, "").value!!
+      reportViewModel.fetchCqlLibraryData(parser, fhirResourceDataSource, "").value!!
     Assert.assertEquals(auxCQLLibraryData, libraryDataLiveData)
   }
 
   @Test
-  fun testFetchCQLFhirHelperData() {
-    val auxCQLHelperData = "Helper JSON"
+  fun testFetchCqlFhirHelperData() {
+    val auxCqlHelperData = "Helper JSON"
     coroutinesTestRule.runBlockingTest {
       coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
       coEvery { bundle.entry } returns entryList
       coEvery { entryList[0].resource } returns resource
-      coEvery { parser.encodeResourceToString(resource) } returns auxCQLHelperData
+      coEvery { parser.encodeResourceToString(resource) } returns auxCqlHelperData
     }
     val libraryDataLiveData: String =
-      reportViewModel.fetchCQLFhirHelperData(parser, fhirResourceDataSource, "").value!!
-    Assert.assertEquals(auxCQLHelperData, libraryDataLiveData)
+      reportViewModel.fetchCqlFhirHelperData(parser, fhirResourceDataSource, "").value!!
+    Assert.assertEquals(auxCqlHelperData, libraryDataLiveData)
   }
 
   @Test
-  fun testFetchCQLValueSetData() {
-    val auxCQLValueSetData = "ValueSet JSON"
+  fun testFetchCqlValueSetData() {
+    val auxCqlValueSetData = "ValueSet JSON"
     coroutinesTestRule.runBlockingTest {
       coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
-      coEvery { parser.encodeResourceToString(bundle) } returns auxCQLValueSetData
+      coEvery { parser.encodeResourceToString(bundle) } returns auxCqlValueSetData
     }
     val libraryDataLiveData: String =
-      reportViewModel.fetchCQLValueSetData(parser, fhirResourceDataSource, "").value!!
-    Assert.assertEquals(auxCQLValueSetData, libraryDataLiveData)
+      reportViewModel.fetchCqlValueSetData(parser, fhirResourceDataSource, "").value!!
+    Assert.assertEquals(auxCqlValueSetData, libraryDataLiveData)
   }
 
   @Test
-  fun testFetchCQLPatientData() {
-    val auxCQLValueSetData = "Patient Data JSON"
+  fun testFetchCqlPatientData() {
+    val auxCqlValueSetData = "Patient Data JSON"
     coroutinesTestRule.runBlockingTest {
       coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
-      coEvery { parser.encodeResourceToString(bundle) } returns auxCQLValueSetData
+      coEvery { parser.encodeResourceToString(bundle) } returns auxCqlValueSetData
     }
     val libraryDataLiveData: String =
-      reportViewModel.fetchCQLPatientData(parser, fhirResourceDataSource, "1").value!!
-    Assert.assertEquals(auxCQLValueSetData, libraryDataLiveData)
+      reportViewModel.fetchCqlPatientData(parser, fhirResourceDataSource, "1").value!!
+    Assert.assertEquals(auxCqlValueSetData, libraryDataLiveData)
   }
 
   @Test
-  fun testFetchCQLMeasureEvaluateLibraryAndValueSets() {
-    val auxCQLLibraryAndValueSetData = "{\"parameters\":\"parameters\"}"
+  fun testFetchCqlMeasureEvaluateLibraryAndValueSets() {
+    val auxCqlLibraryAndValueSetData = "{\"parameters\":\"parameters\"}"
     coroutinesTestRule.runBlockingTest {
       coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
       coEvery { bundle.entry } returns entryList
       coEvery { entryList[0].resource } returns resource
-      coEvery { parser.encodeResourceToString(resource) } returns auxCQLLibraryAndValueSetData
+      coEvery { parser.encodeResourceToString(resource) } returns auxCqlLibraryAndValueSetData
     }
     val libraryDataLiveData: String =
-      reportViewModel.fetchCQLMeasureEvaluateLibraryAndValueSets(
+      reportViewModel.fetchCqlMeasureEvaluateLibraryAndValueSets(
           parser,
           fhirResourceDataSource,
           "https://hapi.fhir.org/baseR4/Library?_id=ANCDataElements,WHOCommon,ANCConcepts,ANCContactDataElements,FHIRHelpers,ANCStratifiers,ANCIND01,ANCCommon,ANCBaseDataElements,FHIRCommon,ANCBaseConcepts",
