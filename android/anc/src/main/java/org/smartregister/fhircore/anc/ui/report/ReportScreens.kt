@@ -232,7 +232,7 @@ fun DateRangeItem(
 fun PatientSelectionBox(
   patientSelectionText: String,
   selectedPatient: PatientItem?,
-  onPatientSelectionTypeChanged: (String) -> Unit,
+  onPatientSelectionChange: (String) -> Unit,
 ) {
   Column(
     modifier = Modifier.wrapContentWidth().testTag(REPORT_PATIENT_SELECTION),
@@ -251,7 +251,7 @@ fun PatientSelectionBox(
         selected = patientSelection.value == ReportViewModel.PatientSelectionType.ALL,
         onClick = {
           patientSelection.value = ReportViewModel.PatientSelectionType.ALL
-          onPatientSelectionTypeChanged(patientSelection.value)
+          onPatientSelectionChange(patientSelection.value)
         }
       )
       Spacer(modifier = Modifier.size(16.dp))
@@ -263,7 +263,7 @@ fun PatientSelectionBox(
         selected = patientSelection.value == ReportViewModel.PatientSelectionType.INDIVIDUAL,
         onClick = {
           patientSelection.value = ReportViewModel.PatientSelectionType.INDIVIDUAL
-          onPatientSelectionTypeChanged(patientSelection.value)
+          onPatientSelectionChange(patientSelection.value)
         }
       )
       Spacer(modifier = Modifier.size(16.dp))
@@ -277,10 +277,10 @@ fun PatientSelectionBox(
           SelectedPatientItem(
             selectedPatient = selectedPatient,
             onCancelSelectedPatient = {
-              onPatientSelectionTypeChanged(ReportViewModel.PatientSelectionType.ALL)
+              onPatientSelectionChange(ReportViewModel.PatientSelectionType.ALL)
             },
             onChangeClickListener = {
-              onPatientSelectionTypeChanged(ReportViewModel.PatientSelectionType.INDIVIDUAL)
+              onPatientSelectionChange(ReportViewModel.PatientSelectionType.INDIVIDUAL)
             }
           )
         }

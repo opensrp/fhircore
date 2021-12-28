@@ -112,7 +112,7 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
 fun PreviewPatientSelectionAll() {
   PatientSelectionBox(
     patientSelectionText = ReportViewModel.PatientSelectionType.ALL,
-    onPatientSelectionTypeChanged = {},
+    onPatientSelectionChange = {},
     selectedPatient = PatientItem()
   )
 }
@@ -123,7 +123,7 @@ fun PreviewPatientSelectionAll() {
 fun PreviewPatientSelectionIndividual() {
   PatientSelectionBox(
     patientSelectionText = ReportViewModel.PatientSelectionType.INDIVIDUAL,
-    onPatientSelectionTypeChanged = {},
+    onPatientSelectionChange = {},
     selectedPatient = PatientItem(name = "Ind Patient Item")
   )
 }

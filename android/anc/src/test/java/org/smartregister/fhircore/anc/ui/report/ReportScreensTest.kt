@@ -124,7 +124,7 @@ class ReportScreensTest : RobolectricTest() {
       PatientSelectionBox(
         patientSelectionText = "All",
         selectedPatient = null,
-        onPatientSelectionTypeChanged = { listenerObjectSpy.onPatientSelectionChanged() }
+        onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged() }
       )
     }
     composeRule.onNodeWithTag(REPORT_PATIENT_SELECTION).assertExists()
@@ -136,7 +136,7 @@ class ReportScreensTest : RobolectricTest() {
       PatientSelectionBox(
         patientSelectionText = "Individual",
         selectedPatient = PatientItem(),
-        onPatientSelectionTypeChanged = { listenerObjectSpy.onPatientSelectionChanged() }
+        onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged() }
       )
     }
     composeRule.onNodeWithTag(REPORT_PATIENT_SELECTION).assertExists()
@@ -149,7 +149,7 @@ class ReportScreensTest : RobolectricTest() {
       PatientSelectionBox(
         patientSelectionText = "Individual",
         selectedPatient = PatientItem(),
-        onPatientSelectionTypeChanged = { listenerObjectSpy.onPatientSelectionChanged() }
+        onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged() }
       )
     }
     composeRule.onNodeWithTag(REPORT_CHANGE_PATIENT).assertExists()
