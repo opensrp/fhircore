@@ -17,6 +17,10 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.DialogInterface
+import android.view.View
+import android.widget.TextView
 import androidx.lifecycle.MutableLiveData
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
@@ -43,13 +47,16 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows
+import org.robolectric.shadows.ShadowAlertDialog
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
-import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
-import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FileUtil
 
@@ -350,10 +357,114 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun auxGenerateReportTest() {
-    every { reportHomeActivitySpy.generateMeasureReport(any(), any(), any(), any(), any()) } returns
-      Unit
+  fun testProcessGenerateReport() {
+    coEvery { reportViewModel.patientSelectionType.value } returns "All"
+    reportViewModel.auxGenerateReport()
+    Assert.assertEquals(true, reportViewModel.processGenerateReport.value)
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.PREHOMElOADING,
+      reportViewModel.reportState.currentScreen
+    )
 
-    auxGenerateReport(reportHomeActivitySpy, "", "", ReportItem(), PatientItem())
+    val reportMeasureItem = "ANC"
+    val selectedPatientId = "123456789"
+    val selectedPatientName = "Patient Mom"
+    val startDate = "01/12/2020"
+    val endDate = "01/12/2021"
+    every { reportHomeActivitySpy.loadCqlMeasurePatientData() } returns Unit
+    reportHomeActivitySpy.generateMeasureReport(
+      startDate,
+      endDate,
+      reportMeasureItem,
+      selectedPatientId,
+      selectedPatientName
+    )
+    Assert.assertEquals(reportHomeActivitySpy.patientId, selectedPatientId)
+  }
+
+  @Test
+  fun testHandleCQLMeasureLoadPatientForEmptyData() {
+    val testData = ""
+    // every { reportHomeActivitySpy.handleMeasureEvaluate() } returns Unit
+    reportHomeActivitySpy.handleCqlMeasureLoadPatient(testData)
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.RESULT,
+      reportViewModel.reportState.currentScreen
+    )
+    Assert.assertEquals("Failed", reportViewModel.resultForIndividual.value?.status)
+  }
+
+  @Test
+  fun testGenerateMeasureReport() {
+    coEvery { reportViewModel.processGenerateReport.value } returns true
+    val reportMeasureItem = "ANC"
+    val selectedPatientId = "123456789"
+    val selectedPatientName = "Patient Mom"
+    val startDate = "01/12/2020"
+    val endDate = "01/12/2021"
+    reportHomeActivitySpy.generateMeasureReport(
+      startDate,
+      endDate,
+      reportMeasureItem,
+      selectedPatientId,
+      selectedPatientName
+    )
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.PREHOMElOADING,
+      reportViewModel.reportState.currentScreen
+    )
+    Assert.assertEquals(reportHomeActivitySpy.cqlMeasureReportReportType, reportMeasureItem)
+  }
+
+  @Test
+  fun testProcessGenerateReportForInvalidData() {
+    coEvery { reportViewModel.patientSelectionType.value } returns "not-all"
+    coEvery { reportViewModel.selectedPatientItem.value } returns null
+    reportViewModel.auxGenerateReport()
+    Assert.assertEquals(true, reportViewModel.alertSelectPatient.value)
+
+    AlertDialogue.showErrorAlert(
+      context = reportHomeActivity,
+      message = getString(R.string.select_patient),
+      title = getString(R.string.invalid_selection)
+    )
+
+    val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+
+    assertSimpleMessageDialog(
+      dialog,
+      getString(R.string.select_patient),
+      getString(R.string.invalid_selection),
+      getString(R.string.questionnaire_alert_ack_button_title)
+    )
+  }
+
+  private fun assertSimpleMessageDialog(
+    dialog: ShadowAlertDialog,
+    message: String,
+    title: String,
+    confirmButtonTitle: String
+  ) {
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realAlertDialog")
+
+    Assert.assertNotNull(dialog)
+    Assert.assertTrue(alertDialog.isShowing)
+
+    Assert.assertEquals(
+      message,
+      dialog.view.findViewById<TextView>(org.smartregister.fhircore.engine.R.id.tv_alert_message)!!
+        .text
+    )
+    Assert.assertEquals(title, dialog.title)
+
+    Assert.assertEquals(
+      View.GONE,
+      dialog.view.findViewById<View>(org.smartregister.fhircore.engine.R.id.pr_circular)!!
+        .visibility
+    )
+
+    val confirmButton = alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)
+    Assert.assertEquals(View.VISIBLE, confirmButton.visibility)
+    Assert.assertEquals(confirmButtonTitle, confirmButton.text)
   }
 }
