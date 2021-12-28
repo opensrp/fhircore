@@ -167,7 +167,7 @@ constructor(
     backPress.value = true
   }
 
-  fun fetchCQLLibraryData(
+  fun fetchCqlLibraryData(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
     libraryURL: String
@@ -254,7 +254,7 @@ constructor(
     reportState.currentScreen = ReportScreen.FILTER
   }
 
-  fun fetchCQLFhirHelperData(
+  fun fetchCqlFhirHelperData(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
     helperURL: String
@@ -268,7 +268,7 @@ constructor(
     return helperData
   }
 
-  fun fetchCQLValueSetData(
+  fun fetchCqlValueSetData(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
     valueSetURL: String
@@ -282,7 +282,7 @@ constructor(
     return valueSetData
   }
 
-  fun fetchCQLPatientData(
+  fun fetchCqlPatientData(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
     patientURL: String
@@ -301,7 +301,7 @@ constructor(
     return patientData
   }
 
-  fun fetchCQLMeasureEvaluateLibraryAndValueSets(
+  fun fetchCqlMeasureEvaluateLibraryAndValueSets(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
     libAndValueSetURL: String,
