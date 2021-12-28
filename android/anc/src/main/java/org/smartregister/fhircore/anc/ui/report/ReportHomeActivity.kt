@@ -437,7 +437,8 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       handleMeasureEvaluate()
     } else {
       // Todo: for Davison update result item when empty response for loadPatient Api
-      reportViewModel.resultForIndividual.value = ResultItem(isMatchedIndicator = false)
+      reportViewModel.resultForIndividual.value =
+        ResultItem(isMatchedIndicator = false, status = "Failed")
       reportViewModel.reportState.currentScreen = ReportScreen.RESULT
     }
   }

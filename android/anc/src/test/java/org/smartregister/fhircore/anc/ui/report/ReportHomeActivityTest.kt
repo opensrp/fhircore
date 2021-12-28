@@ -346,4 +346,50 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
     )
     Assert.assertEquals(reportHomeActivitySpy.patientId, selectedPatientId)
   }
+
+  @Test
+  fun testProcessGenerateReport() {
+    coEvery { reportViewModel.patientSelectionType.value } returns "All"
+    reportViewModel.auxGenerateReport()
+    Assert.assertEquals(true, reportViewModel.processGenerateReport.value)
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.PREHOMElOADING,
+      reportViewModel.reportState.currentScreen
+    )
+
+    val reportMeasureItem = "ANC"
+    val selectedPatientId = "123456789"
+    val selectedPatientName = "Patient Mom"
+    val startDate = "01/12/2020"
+    val endDate = "01/12/2021"
+    every { reportHomeActivitySpy.loadCQLMeasurePatientData() } returns Unit
+    reportHomeActivitySpy.generateMeasureReport(
+      startDate,
+      endDate,
+      reportMeasureItem,
+      selectedPatientId,
+      selectedPatientName
+    )
+    Assert.assertEquals(reportHomeActivitySpy.patientId, selectedPatientId)
+  }
+
+  @Test
+  fun testHandleCQLMeasureLoadPatientForEmptyData() {
+    val testData = ""
+    // every { reportHomeActivitySpy.handleMeasureEvaluate() } returns Unit
+    reportHomeActivitySpy.handleCQLMeasureLoadPatient(testData)
+    Assert.assertEquals(
+      ReportViewModel.ReportScreen.RESULT,
+      reportViewModel.reportState.currentScreen
+    )
+    Assert.assertEquals("Failed", reportViewModel.resultForIndividual.value?.status)
+  }
+
+  @Test
+  fun testProcessGenerateReportForInvalidData() {
+    coEvery { reportViewModel.patientSelectionType.value } returns "not-all"
+    coEvery { reportViewModel.selectedPatientItem.value } returns null
+    reportViewModel.auxGenerateReport()
+    Assert.assertEquals(true, reportViewModel.alertSelectPatient.value)
+  }
 }

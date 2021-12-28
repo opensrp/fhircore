@@ -296,6 +296,7 @@ internal class ReportViewModelTest {
 
   @Test
   fun auxGenerateReportTest() {
+    every { reportViewModel.selectedPatientItem.value } returns null
     reportViewModel.onPatientSelectionTypeChanged("All")
     reportViewModel.auxGenerateReport()
     Assert.assertEquals(true, reportViewModel.processGenerateReport.value)
@@ -303,7 +304,8 @@ internal class ReportViewModelTest {
 
   @Test
   fun auxGenerateReportTestForIndividual() {
-    reportViewModel.onPatientSelectionTypeChanged("sldf")
+    every { reportViewModel.selectedPatientItem } returns this@ReportViewModelTest.selectedPatient
+    reportViewModel.onPatientSelectionTypeChanged("test-patient-id")
     reportViewModel.auxGenerateReport()
     Assert.assertEquals(true, reportViewModel.processGenerateReport.value)
   }
