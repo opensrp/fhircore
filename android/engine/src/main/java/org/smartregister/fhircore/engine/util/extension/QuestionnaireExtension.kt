@@ -16,8 +16,13 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import com.google.android.fhir.datacapture.targetStructureMap
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+
+fun Questionnaire.isExtractionCandidate() =
+  this.targetStructureMap != null ||
+    this.extension.any { it.url.contains("sdc-questionnaire-itemExtractionContext") }
 
 fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {
   return item.find(linkId, null)
