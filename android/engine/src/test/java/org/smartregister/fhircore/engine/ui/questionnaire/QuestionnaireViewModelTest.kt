@@ -29,6 +29,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -416,13 +417,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       }
 
-    questionnaireViewModel.extractAndSaveResources(null, questionnaire, QuestionnaireResponse())
+    val questionnaireResponse = QuestionnaireResponse().apply { subject = Reference("12345") }
 
-    val patientSlot = slot<Patient>()
+    questionnaireViewModel.extractAndSaveResources(null, questionnaire, questionnaireResponse)
 
-    coVerify { defaultRepo.addOrUpdate(capture(patientSlot)) }
-
-    Assert.assertEquals("1234567", patientSlot.captured.meta.tagFirstRep.code)
+    coVerify { defaultRepo.addOrUpdate(any()) }
 
     unmockkObject(ResourceMapper)
   }
@@ -449,6 +448,48 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireResponseSlot.captured.subject.reference.replace("Patient/", "")
     )
     Assert.assertEquals("1234567", questionnaireResponseSlot.captured.meta.tagFirstRep.code)
+  }
+
+  @Test
+  fun testExtractAndSaveResourcesWithEditModeShouldSaveQuestionnaireResponse() {
+    mockkObject(ResourceMapper)
+
+    coEvery { ResourceMapper.extract(any(), any(), any(), any()) } returns
+      Bundle().apply { addEntry().resource = Patient().apply { id = "12345" } }
+
+    coEvery { fhirEngine.load(Patient::class.java, "12345") } returns Patient()
+    coEvery { defaultRepo.addOrUpdate(any()) } just runs
+
+    val questionnaireResponseSlot = slot<QuestionnaireResponse>()
+    val patientSlot = slot<Resource>()
+    val questionnaire =
+      Questionnaire().apply {
+        addUseContext().apply {
+          code = Coding().apply { code = "focus" }
+          value = CodeableConcept().apply { addCoding().apply { code = "1234567" } }
+        }
+        addExtension().url = "sdc-questionnaire-itemExtractionContext"
+      }
+
+    questionnaireViewModel.extractAndSaveResources(
+      "12345",
+      questionnaire,
+      QuestionnaireResponse(),
+      true
+    )
+
+    coVerifyOrder {
+      defaultRepo.addOrUpdate(capture(patientSlot))
+      defaultRepo.addOrUpdate(capture(questionnaireResponseSlot))
+    }
+
+    Assert.assertEquals(
+      "12345",
+      questionnaireResponseSlot.captured.subject.reference.replace("Patient/", "")
+    )
+    Assert.assertEquals("12345", patientSlot.captured.id)
+
+    unmockkObject(ResourceMapper)
   }
 
   @Test
@@ -537,17 +578,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testSaveQuestionnaireResponseShouldCallAddOrUpdateWhenResourceIdIsNotBlank() {
 
     val questionnaire = Questionnaire().apply { id = "qId" }
-    val questionnaireResponse = QuestionnaireResponse()
+    val questionnaireResponse = QuestionnaireResponse().apply { subject = Reference("12345") }
     coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
-    coEvery { fhirEngine.load(Patient::class.java, "12345") } returns
-      Patient().apply { id = "12345" }
 
     runBlocking {
-      questionnaireViewModel.saveQuestionnaireResponse(
-        "12345",
-        questionnaire,
-        questionnaireResponse
-      )
+      questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
     }
 
     coVerify { defaultRepo.addOrUpdate(questionnaireResponse) }
@@ -557,20 +592,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testSaveQuestionnaireResponseShouldAddIdAndAuthoredWhenQuestionnaireResponseDoesNotHaveId() {
 
     val questionnaire = Questionnaire().apply { id = "qId" }
-    val questionnaireResponse = QuestionnaireResponse()
+    val questionnaireResponse = QuestionnaireResponse().apply { subject = Reference("12345") }
     coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
-    coEvery { fhirEngine.load(Patient::class.java, "12345") } returns
-      Patient().apply { id = "12345" }
 
     Assert.assertNull(questionnaireResponse.id)
     Assert.assertNull(questionnaireResponse.authored)
 
     runBlocking {
-      questionnaireViewModel.saveQuestionnaireResponse(
-        "12345",
-        questionnaire,
-        questionnaireResponse
-      )
+      questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
     }
 
     Assert.assertNotNull(questionnaireResponse.id)
@@ -586,17 +615,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       QuestionnaireResponse().apply {
         id = "qrId"
         authored = authoredDate
+        subject = Reference("12345")
       }
     coEvery { defaultRepo.addOrUpdate(any()) } returns Unit
-    coEvery { fhirEngine.load(Patient::class.java, "12345") } returns
-      Patient().apply { id = "12345" }
 
     runBlocking {
-      questionnaireViewModel.saveQuestionnaireResponse(
-        "12345",
-        questionnaire,
-        questionnaireResponse
-      )
+      questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
     }
 
     Assert.assertEquals("qrId", questionnaireResponse.id)
@@ -790,7 +814,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { questionnaireViewModel.performExtraction(any(), any()) } returns
       Bundle().apply { addEntry().resource = Patient() }
 
-    coEvery { questionnaireViewModel.saveQuestionnaireResponse(any(), any(), any()) } just runs
+    coEvery { questionnaireViewModel.saveQuestionnaireResponse(any(), any()) } just runs
 
     questionnaireViewModel.extractAndSaveResources(
       "0993ldsfkaljlsnldm",
@@ -800,7 +824,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coVerify(exactly = 1, timeout = 2000) { questionnaireViewModel.saveBundleResources(any()) }
     coVerify(exactly = 1, timeout = 2000) {
-      questionnaireViewModel.saveQuestionnaireResponse(any(), questionnaire, questionnaireResponse)
+      questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
     }
   }
 
@@ -834,7 +858,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { questionnaireViewModel.performExtraction(any(), any()) } returns
       Bundle().apply { addEntry().resource = Patient() }
 
-    coEvery { questionnaireViewModel.saveQuestionnaireResponse(any(), any(), any()) } just runs
+    coEvery { questionnaireViewModel.saveQuestionnaireResponse(any(), any()) } just runs
     coEvery { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) } returns listOf()
 
     questionnaireViewModel.extractAndSaveResources(
@@ -845,7 +869,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coVerify(exactly = 1, timeout = 2000) { questionnaireViewModel.saveBundleResources(any()) }
     coVerify(exactly = 1, timeout = 2000) {
-      questionnaireViewModel.saveQuestionnaireResponse(any(), questionnaire, questionnaireResponse)
+      questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
     }
     coVerify { libraryEvaluator.runCqlLibrary("123", any(), any(), any()) }
   }

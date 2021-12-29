@@ -31,7 +31,9 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verify
 import kotlinx.coroutines.test.runBlockingTest
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Observation
@@ -47,6 +49,7 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowToast
+import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
@@ -101,6 +104,21 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
     questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.test_results)
     val expectedIntent =
       Intent(questPatientDetailActivity, QuestPatientTestResultActivity::class.java)
+    val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
+  }
+
+  @Test
+  fun testOnMenuItemClickListenerShouldStartQuestionnaireActivity() {
+    questPatientDetailActivity.configurationRegistry.appId = "quest"
+    questPatientDetailActivity.configurationRegistry.configurationsMap.put(
+      "quest|patient_register",
+      RegisterViewConfiguration("", "", "", "", "", "", "")
+    )
+
+    questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.edit_patient_info)
+
+    val expectedIntent = Intent(questPatientDetailActivity, QuestionnaireActivity::class.java)
     val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }

@@ -154,8 +154,8 @@ class LibraryEvaluatorTest {
   }
 
   @Test
-  fun processCQLPatientBundleTest() {
-    val results = evaluator!!.processCQLPatientBundle(testData)
+  fun processCqlPatientBundleTest() {
+    val results = evaluator!!.processCqlPatientBundle(testData)
     Assert.assertNotNull(results)
   }
 }

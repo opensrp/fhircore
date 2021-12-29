@@ -131,6 +131,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         "1234",
         "my-form",
         true,
+        false,
         questionnaireResponse,
         populationResources = populationResources,
         immunizationId = "2323"

@@ -102,6 +102,12 @@ fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
         DropdownMenuItem(
           onClick = {
             showMenu = false
+            questPatientDetailViewModel.onMenuItemClickListener(R.string.edit_patient_info)
+          }
+        ) { Text(text = stringResource(id = R.string.edit_patient_info)) }
+        DropdownMenuItem(
+          onClick = {
+            showMenu = false
             questPatientDetailViewModel.onMenuItemClickListener(R.string.test_results)
           }
         ) { Text(text = stringResource(id = R.string.test_results)) }
