@@ -47,14 +47,17 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.extension.cqfLibraryId
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
@@ -71,7 +74,8 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val transformSupportServices: TransformSupportServices,
   val dispatcherProvider: DispatcherProvider,
-  val sharedPreferencesHelper: SharedPreferencesHelper
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val libraryEvaluator: LibraryEvaluator
 ) : ViewModel() {
 
   private val authenticatedUserInfo by lazy {
@@ -170,10 +174,21 @@ constructor(
         if (editMode && editQuestionnaireResponse != null) {
           editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
         }
+
+        if (questionnaireResponse.subject.reference.startsWith("Patient/"))
+          questionnaire.cqfLibraryId()?.run {
+            libraryEvaluator.runCqlLibrary(
+              this,
+              loadPatient(questionnaireResponse.subject.extractId())!!,
+              bundle.entry.map { it.resource },
+              defaultRepository
+            )
+          }
       } else {
         saveQuestionnaireResponse(resourceId, questionnaire, questionnaireResponse)
-        viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
       }
+
+      viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
     }
   }
 
@@ -224,13 +239,9 @@ constructor(
     )
   }
 
-  fun saveBundleResources(bundle: Bundle) {
-    viewModelScope.launch {
-      if (!bundle.isEmpty) {
-        bundle.entry.forEach { bundleEntry -> defaultRepository.addOrUpdate(bundleEntry.resource) }
-      }
-
-      viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
+  suspend fun saveBundleResources(bundle: Bundle) {
+    if (!bundle.isEmpty) {
+      bundle.entry.forEach { bundleEntry -> defaultRepository.addOrUpdate(bundleEntry.resource) }
     }
   }
 

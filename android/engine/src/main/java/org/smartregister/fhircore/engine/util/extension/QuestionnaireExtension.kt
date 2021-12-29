@@ -16,8 +16,14 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+
+fun Questionnaire.cqfLibraryId() =
+  this.extension.single { it.url.contains("cqf-library") }?.let {
+    it.value.asStringValue().replace("Library/", "")
+  }
 
 fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {
   return item.find(linkId, null)

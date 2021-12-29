@@ -32,8 +32,8 @@ import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.json.JSONArray
 import org.json.JSONObject
 import org.opencds.cqf.cql.engine.data.CompositeDataProvider
@@ -50,6 +50,7 @@ import org.opencds.cqf.cql.evaluator.engine.terminology.BundleTerminologyProvide
 import org.opencds.cqf.cql.evaluator.fhir.adapter.r4.AdapterFactory
 import org.opencds.cqf.cql.evaluator.library.CqlFhirParametersConverter
 import org.opencds.cqf.cql.evaluator.library.LibraryEvaluator
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 
 /**
  * This class contains methods to run CQL evaluators given Fhir expressions It borrows code from
@@ -193,39 +194,63 @@ class LibraryEvaluator @Inject constructor() {
     return auxPatientDataObj.toString()
   }
 
-  fun runCqlLibrary(
-    library: org.hl7.fhir.r4.model.Library,
-    helper: org.hl7.fhir.r4.model.Library,
-    valueSet: Bundle,
-    data: Bundle
+  suspend fun runCqlLibrary(
+    libraryId: String,
+    patient: Patient,
+    resources: List<Resource>,
+    // TODO refactor class by modular and single responsibility principle
+    repository: DefaultRepository
   ): List<String> {
-    loadConfigs(library, helper, valueSet, data)
+    val library = repository.loadResource<org.hl7.fhir.r4.model.Library>(libraryId)!!
+
+    val helpers =
+      library.relatedArtifact
+        .filter { it.hasResource() && it.resource.startsWith("Library/") }
+        .mapNotNull {
+          repository.loadResource<org.hl7.fhir.r4.model.Library>(
+            it.resource.replace("Library/", "")
+          )
+        }
+
+    loadConfigs(
+      library,
+      helpers,
+      Bundle(),
+      createBundle(listOf(patient, *resources.toTypedArray()))
+    )
+
     val result =
       libEvaluator!!.evaluate(
         VersionedIdentifier().withId(library.name).withVersion(library.version),
-        Pair.of(
-          "Patient",
-          data.entry.first { it.resource.resourceType == ResourceType.Patient }.resource.logicalId
-        ),
+        Pair.of("Patient", patient.logicalId),
         null,
         null
       ) as
         Parameters
 
     parser.setPrettyPrint(false)
-    return result.parameter.map { "${it.name} -> ${it.value ?: it.resource}" }
+    return result.parameter.mapNotNull { p ->
+      (p.value ?: p.resource)?.let {
+        if (p.name.equals(OUTPUT_PARAMETER_KEY) && it.isResource) {
+          repository.save(it as Resource)
+
+          // display full resource log only if it is OUTPUT
+          "${p.name} -> ${parser.encodeResourceToString(it)}"
+        } else "${p.name} -> $it"
+      }
+    }
   }
 
   private fun loadConfigs(
     library: org.hl7.fhir.r4.model.Library,
-    helper: org.hl7.fhir.r4.model.Library,
+    helpers: List<org.hl7.fhir.r4.model.Library>,
     valueSet: Bundle,
     data: Bundle,
   ) {
     parser.setPrettyPrint(true)
     // Load Library Content and create a LibraryContentProvider, which is the interface used by the
     // LibraryLoader for getting library CQL/ELM/etc.
-    val resources: List<IBaseResource> = Lists.newArrayList(library, helper)
+    val resources: List<IBaseResource> = Lists.newArrayList(library, *helpers.toTypedArray())
 
     bundleFactory.addRootPropertiesToBundle("bundled-directory", bundleLinks, resources.size, null)
     bundleFactory.addResourcesToBundle(
@@ -279,5 +304,9 @@ class LibraryEvaluator @Inject constructor() {
       null
     )
     return bundleFactory.resourceBundle as Bundle
+  }
+
+  companion object {
+    const val OUTPUT_PARAMETER_KEY = "OUTPUT"
   }
 }

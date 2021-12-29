@@ -28,7 +28,10 @@
   "extension": [ {
     "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
     "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/5875"
-  } ],
+  }, {
+    "url": "http://hl7.org/fhir/StructureDefinition/cqf-library",
+    "valueCanonical": "Library/4575"
+  }],
   "item": [ {
     "extension": [ {
       "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/cpg-itemImage",

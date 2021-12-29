@@ -25,6 +25,7 @@ import androidx.annotation.StringRes
 import dagger.hilt.android.AndroidEntryPoint
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
+import org.smartregister.fhircore.engine.cql.LibraryEvaluator.Companion.OUTPUT_PARAMETER_KEY
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -85,7 +86,11 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
           if (it?.isNotBlank() == true) {
             progress.dismiss()
 
-            AlertDialogue.showInfoAlert(this@QuestPatientDetailActivity, message = it)
+            AlertDialogue.showInfoAlert(this, it, getString(R.string.run_cql_log))
+            // show separate alert for output resources generated
+            it.substringAfter(OUTPUT_PARAMETER_KEY, "").takeIf { it.isNotBlank() }?.let {
+              AlertDialogue.showInfoAlert(this, it, getString(R.string.run_cql_output))
+            }
           }
         }
       )
