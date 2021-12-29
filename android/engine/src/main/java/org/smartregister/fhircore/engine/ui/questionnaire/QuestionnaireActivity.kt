@@ -36,10 +36,13 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -49,6 +52,7 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.find
+import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
@@ -99,7 +103,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     lifecycleScope.launchWhenCreated {
       readOnly = intent.getBooleanExtra(QUESTIONNAIRE_READ_ONLY, false)
       editMode = intent.getBooleanExtra(QUESTIONNAIRE_EDIT_MODE, false)
-      
+
       if (readOnly) {
         findViewById<Button>(R.id.btn_edit_qr).apply {
           visibility = View.VISIBLE
@@ -212,6 +216,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           confirmButtonListener = { handleQuestionnaireSubmit() },
           confirmButtonText = R.string.questionnaire_alert_submit_button_title
         )
+      }
     } else if (view.id == R.id.btn_edit_qr) {
       readOnly = false
       editMode = true
