@@ -31,9 +31,11 @@ import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
+import org.smartregister.fhircore.anc.data.model.demographics
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 class AncItemMapperTest : RobolectricTest() {
 
@@ -42,8 +44,8 @@ class AncItemMapperTest : RobolectricTest() {
   private val patient: Patient = getPatient()
 
   @Test
-  fun testMapToDomainModelShouldVerifyRegisterWithPlannedStatusPatient() {
-    val patientItem = ancItemMapper.mapToDomainModel(dto = Anc(patient, null, listOf()))
+  fun testMapToDomainModel() {
+    val patientItem = ancItemMapper.mapToDomainModel(dto = Anc(patient, null, listOf(), listOf()))
     verifyPatientDemographics(patientItem, VisitStatus.PLANNED)
   }
 
@@ -56,6 +58,7 @@ class AncItemMapperTest : RobolectricTest() {
           Anc(
             patient,
             null,
+            listOf(),
             listOf(
               CarePlan().apply {
                 addActivity().apply {
@@ -89,6 +92,7 @@ class AncItemMapperTest : RobolectricTest() {
                 country = "PK"
               }
             },
+            listOf(),
             listOf(
               CarePlan().apply {
                 addActivity().apply {
@@ -107,7 +111,7 @@ class AncItemMapperTest : RobolectricTest() {
       )
 
     verifyPatientDemographics(patientItem, VisitStatus.DUE)
-    Assert.assertEquals("KHI PK", patientItem.address)
+    Assert.assertEquals("Nairobi Kenya", patientItem.address)
   }
 
   @Test
@@ -115,7 +119,7 @@ class AncItemMapperTest : RobolectricTest() {
     ancItemMapper.setAncItemMapperType(AncItemMapper.AncItemMapperType.DETAILS)
     val patientItem = ancItemMapper.mapToDomainModel(dto = Anc(patient, null, listOf()))
     verifyPatientDemographics(patientItem, VisitStatus.PLANNED)
-    Assert.assertFalse(patientItem.isPregnant)
+    Assert.assertFalse(patientItem.isPregnant!!)
   }
 
   private fun verifyPatientDemographics(
@@ -126,8 +130,8 @@ class AncItemMapperTest : RobolectricTest() {
       Assert.assertEquals("test_patient_id_1", patientIdentifier)
       Assert.assertEquals("Jane Mc", name)
       Assert.assertEquals("M", gender)
-      Assert.assertEquals("0d", age)
-      Assert.assertEquals("Jane Mc, M, 0d", demographics)
+      Assert.assertEquals("0d", birthDate.toAgeDisplay())
+      Assert.assertEquals("Jane Mc, M, 0d", demographics())
       Assert.assertEquals("", atRisk)
       Assert.assertEquals("Mc Family", familyName)
       Assert.assertEquals(expectedVisitStatus, visitStatus)

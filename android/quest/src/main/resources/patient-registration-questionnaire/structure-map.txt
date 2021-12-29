@@ -10,7 +10,8 @@ group PatientRegistration(source src : QuestionnaireResponse, target bundle: Bun
 }
 
 group ExtractPatient(source src : QuestionnaireResponse, target patient : Patient) {
-    src -> patient.id = uuid() "r_p_id";
+    src -> patient.id = uuid() "r_p_id_1";
+
     src.item as item_bio where(linkId = 'bio') then {
        item_bio.item as item_name where(linkId = 'PR-name') -> patient.name = create('HumanName') as patientName then {
           src -> patientName.family = evaluate(item_name, $this.item.where(linkId = 'PR-name-family').answer.value) "r_p_fname";
@@ -58,7 +59,7 @@ group ExtractPatient(source src : QuestionnaireResponse, target patient : Patien
 
 group ExtractPregnancyCondition(source src : QuestionnaireResponse, target bundle : Bundle, source patient : Patient) {
     src.item as item_bio where(linkId = 'bio') then {
-        item_bio.item as item_preg where(linkId = 'is_pregnant' and answer.count() > 0) then {
+        item_bio.item as item_preg where(linkId = 'is_pregnant' and answer.count() > 0 and answer.value.code = '77386006') then {
         	src -> bundle.entry as entry, entry.resource = create('Condition') as cnd then {
     	    	src -> cnd.id = uuid() "r_c_id";
     	    	src -> cnd.recordedDate = evaluate(src, now()) "r_c_rec_date";
@@ -66,7 +67,7 @@ group ExtractPregnancyCondition(source src : QuestionnaireResponse, target bundl
     	    	src -> cnd.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", 'confirmed') "r_c_verif_st";
     	    	src -> cnd.subject = reference(patient) "r_c_sub";
     	    	src -> cnd.code = create('CodeableConcept') as ccPreg then {
-                  src -> ccPreg.coding = c("http://snomed.info/sct", "77386006", "Pregnant") "r_c_cod_cod";
+                  src -> ccPreg.coding = evaluate(item_preg, $this.answer.value) "r_c_cod_cod";
                   src -> ccPreg.text = "Pregnant" "r_c_cod_text";
                } "r_c_code";
         	} "r_c";

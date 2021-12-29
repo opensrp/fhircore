@@ -17,20 +17,25 @@
 package org.smartregister.fhircore.anc.data.patient
 
 import android.content.Context
+import androidx.annotation.StringRes
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.lang.IllegalStateException
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.EpisodeOfCare
+import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Goal
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -38,10 +43,12 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.model.UnitConstants
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asPatientReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
@@ -64,18 +71,22 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
-import org.smartregister.fhircore.engine.util.extension.extractAge
-import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.format
-import org.smartregister.fhircore.engine.util.extension.isPregnant
+import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
+import org.smartregister.fhircore.engine.util.extension.isFamilyHead
 import org.smartregister.fhircore.engine.util.extension.loadResourceTemplate
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.overdue
 import org.smartregister.fhircore.engine.util.extension.plusMonthsAsString
 import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
+
+enum class DeletionReason(@StringRes val label: Int) {
+  ENTRY_IN_ERROR(R.string.remove_this_person_reason_error_entry),
+  MOVED_OUT(R.string.remove_this_person_reason_moved_out)
+}
 
 class PatientRepository
 @Inject
@@ -113,9 +124,10 @@ constructor(
           .distinctBy { it.subject.extractId() }
 
       val patients =
-        pregnancies.map { fhirEngine.load(Patient::class.java, it.subject.extractId()) }.sortedBy {
-          it.nameFirstRep.family
-        }
+        pregnancies
+          .map { fhirEngine.load(Patient::class.java, it.subject.extractId()) }
+          .filter { it.active }
+          .sortedBy { it.nameFirstRep.family }
 
       patients.map {
         val head =
@@ -126,13 +138,81 @@ constructor(
             .getOrNull()
 
         val carePlans = searchCarePlan(it.logicalId)
-        domainMapper.mapToDomainModel(Anc(it, head, carePlans))
+        val conditions = searchCondition(it.logicalId)
+        domainMapper.mapToDomainModel(Anc(it, head, conditions, carePlans))
       }
     }
   }
 
-  suspend fun searchCarePlan(id: String): List<CarePlan> {
-    return fhirEngine.search { filterByPatient(CarePlan.SUBJECT, id) }
+  suspend fun searchPatientByLink(linkId: String): List<Patient> {
+    return fhirEngine.search {
+      filterByPatient(Patient.LINK, linkId)
+      filter(Patient.ACTIVE, true)
+    }
+  }
+
+  suspend fun searchCondition(patientId: String): List<Condition> =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.search { filterByPatient(Condition.SUBJECT, patientId) }
+    }
+
+  suspend fun searchCarePlan(patientId: String, tag: Coding? = null): List<CarePlan> =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.search {
+        filterByPatient(CarePlan.SUBJECT, patientId)
+
+        tag?.run {
+          filterBy(
+            SearchFilter(
+              "_tag",
+              Enumerations.SearchParamType.TOKEN,
+              Enumerations.DataType.CODING,
+              tag
+            )
+          )
+        }
+      }
+    }
+
+  suspend fun revokeCarePlans(patientId: String, tag: Coding? = null) {
+    // revoke all incomplete careplans
+    searchCarePlan(patientId, tag).forEach {
+      if (it.status != CarePlan.CarePlanStatus.COMPLETED) {
+        it.status = CarePlan.CarePlanStatus.REVOKED
+        it.period.end = Date()
+
+        fhirEngine.save(it)
+      }
+    }
+  }
+
+  suspend fun revokeActiveStatusData(patientId: String) {
+    revokeFlags(patientId)
+    revokeConditions(patientId)
+  }
+
+  suspend fun revokeFlags(patientId: String) {
+    fhirEngine
+      .search<Flag> { filterByPatient(Flag.PATIENT, patientId) }
+      .filter { it.status == Flag.FlagStatus.ACTIVE }
+      .forEach {
+        it.status = Flag.FlagStatus.INACTIVE
+        it.period.end = Date()
+
+        fhirEngine.save(it)
+      }
+  }
+
+  suspend fun revokeConditions(patientId: String) {
+    fhirEngine
+      .search<Condition> { filterByPatient(Condition.PATIENT, patientId) }
+      .filter { it.clinicalStatus.codingFirstRep.code == "active" }
+      .forEach {
+        it.clinicalStatus.codingFirstRep.code = "inactive"
+        it.abatement = DateTimeType(Date())
+
+        fhirEngine.save(it)
+      }
   }
 
   override suspend fun countAll(): Long =
@@ -161,8 +241,8 @@ constructor(
               patientIdentifier = patient.logicalId,
               name = patientHead.extractName(),
               gender = patientHead.extractGender(context) ?: "",
-              age = patientHead.extractAge(),
-              demographics = patientHead.extractAddress()
+              birthDate = patientHead.birthDate,
+              address = patientHead.extractAddress()
             )
         }
 
@@ -171,15 +251,20 @@ constructor(
             patientIdentifier = patient.logicalId,
             name = patient.extractName(),
             gender = patient.extractGender(context) ?: "",
-            isPregnant = patient.isPregnant(),
-            age = patient.extractAge(),
-            familyName = patient.extractFamilyName(),
-            demographics = patient.extractAddress(),
+            isPregnant = searchCondition(patient.logicalId).hasActivePregnancy(),
+            birthDate = patient.birthDate,
+            address = patient.extractAddress(),
             isHouseHoldHead = patient.link.isEmpty()
           )
         ancPatientDetailItem = PatientDetailItem(ancPatientItem, ancPatientItemHead)
       }
     return ancPatientDetailItem
+  }
+
+  suspend fun fetchActiveFlag(patientId: String, flagCode: Coding): Flag? {
+    return fhirEngine.search<Flag> { filterByPatient(Flag.PATIENT, patientId) }.firstOrNull {
+      it.status == Flag.FlagStatus.ACTIVE && it.code.coding.any { it.code == flagCode.code }
+    }
   }
 
   fun fetchCarePlanItem(carePlan: List<CarePlan>): List<CarePlanItem> =
@@ -216,19 +301,22 @@ constructor(
   }
 
   suspend fun fetchVitalSigns(patientId: String, searchFilterString: String): Observation {
-    val searchFilter: SearchFilter =
-      when (searchFilterString) {
-        "body-weight" -> vitalSignsConfig.weightFilter!!
-        "body-height" -> vitalSignsConfig.heightFilter!!
-        "bmi" -> vitalSignsConfig.bmiFilter!!
-        "bp-s" -> vitalSignsConfig.BPSFilter!!
-        "bp-d" -> vitalSignsConfig.BPDSFilter!!
-        "pulse-rate" -> vitalSignsConfig.pulseRateFilter!!
-        "bg" -> vitalSignsConfig.bloodGlucoseFilter!!
-        "spO2" -> vitalSignsConfig.bloodOxygenLevelFilter!!
-        else ->
-          throw UnsupportedOperationException("Given filter $searchFilterString not supported")
-      }
+    var searchFilter: SearchFilter
+    vitalSignsConfig.run {
+      searchFilter =
+        when (searchFilterString) {
+          "body-weight" -> weightFilter!!
+          "body-height" -> heightFilter!!
+          "bmi" -> bmiFilter!!
+          "bp-s" -> BPSFilter!!
+          "bp-d" -> BPDSFilter!!
+          "pulse-rate" -> pulseRateFilter!!
+          "bg" -> bloodGlucoseFilter!!
+          "spO2" -> bloodOxygenLevelFilter!!
+          else ->
+            throw UnsupportedOperationException("Given filter $searchFilterString not supported")
+        }
+    }
     var finalObservation = Observation()
     val observations =
       withContext(dispatcherProvider.io()) {
@@ -254,6 +342,48 @@ constructor(
     withContext(dispatcherProvider.io()) {
       fhirEngine.search { filter(Encounter.SUBJECT) { value = "Patient/$patientId" } }
     }
+
+  suspend fun markDeceased(patientId: String, deathDate: Date) {
+    withContext(dispatcherProvider.io()) {
+      val patient = fhirEngine.load(Patient::class.java, patientId)
+
+      if (!patient.active) throw IllegalStateException("Patient already deleted")
+
+      if (patient.hasDeceased()) throw IllegalStateException("Patient already marked deceased")
+
+      patient.deceased = DateTimeType(deathDate)
+
+      revokeCarePlans(patientId)
+      revokeActiveStatusData(patientId)
+
+      fhirEngine.save(patient)
+    }
+  }
+
+  suspend fun deletePatient(patientId: String, reason: DeletionReason) {
+    withContext(dispatcherProvider.io()) {
+      val patient = fhirEngine.load(Patient::class.java, patientId)
+
+      if (!patient.active) throw IllegalStateException("Patient already deleted")
+
+      if (patient.isFamilyHead())
+        throw IllegalStateException("A patient representing family can not be deleted")
+
+      when (reason) {
+        DeletionReason.MOVED_OUT -> {
+          patient.link.clear()
+        }
+        DeletionReason.ENTRY_IN_ERROR -> {
+          patient.active = false
+          patient.link.clear()
+          revokeCarePlans(patientId)
+          revokeActiveStatusData(patientId)
+        }
+      }
+
+      fhirEngine.save(patient)
+    }
+  }
 
   suspend fun enrollIntoAnc(patientId: String, lmp: DateType) {
     val conditionData = buildConfigData(patientId = patientId, lmp = lmp)
@@ -406,18 +536,17 @@ constructor(
     computedBMI: Double? = null,
     isUnitModeMetric: Boolean
   ): Boolean {
-    var weightUnit = "lb"
-    var heightUnit = "in"
-    var weightUnitCode = "[lb_av]"
-    var heightUnitCode = "[in_i]"
-    // Todo: confirm if bmi unit can be displayed in lb/in2 or only in kg/m2
-    var bmiUnit = "kg/m2"
+    var weightUnit = UnitConstants.UNIT_WEIGHT_USC
+    var heightUnit = UnitConstants.UNIT_HEIGHT_USC
+    var weightUnitCode = UnitConstants.UNIT_CODE_WEIGHT_USC
+    var heightUnitCode = UnitConstants.UNIT_CODE_HEIGHT_USC
+    var bmiUnit = UnitConstants.UNIT_BMI_USC
     if (isUnitModeMetric) {
-      weightUnit = "kg"
-      heightUnit = "cm"
-      weightUnitCode = "kg"
-      heightUnitCode = "cm"
-      bmiUnit = "kg/m2"
+      weightUnit = UnitConstants.UNIT_WEIGHT_METRIC
+      heightUnit = UnitConstants.UNIT_HEIGHT_METRIC
+      weightUnitCode = UnitConstants.UNIT_CODE_WEIGHT_METRIC
+      heightUnitCode = UnitConstants.UNIT_CODE_HEIGHT_METRIC
+      bmiUnit = UnitConstants.UNIT_BMI_METRIC
     }
 
     val bmiEncounterData = buildBmiConfigData(patientId = patientId, recordId = formEncounterId)
