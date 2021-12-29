@@ -99,6 +99,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     lifecycleScope.launchWhenCreated {
       readOnly = intent.getBooleanExtra(QUESTIONNAIRE_READ_ONLY, false)
       editMode = intent.getBooleanExtra(QUESTIONNAIRE_EDIT_MODE, false)
+      
+      if (readOnly) {
+        findViewById<Button>(R.id.btn_edit_qr).apply {
+          visibility = View.VISIBLE
+          setOnClickListener(this@QuestionnaireActivity)
+        }
+      }
 
       val formName = intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!
       // form is either name of form in asset/form-config or questionnaire-id
@@ -205,6 +212,29 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           confirmButtonListener = { handleQuestionnaireSubmit() },
           confirmButtonText = R.string.questionnaire_alert_submit_button_title
         )
+    } else if (view.id == R.id.btn_edit_qr) {
+      readOnly = false
+      editMode = true
+
+      lifecycleScope.launch(Dispatchers.Default) {
+        // Reload the questionnaire and reopen the fragment
+        questionnaire.item.prepareQuestionsForReadingOrEditing(
+          "QuestionnaireResponse.item",
+          readOnly
+        )
+        supportFragmentManager.commit { detach(fragment) }
+
+        intent.getStringArrayListExtra(QUESTIONNAIRE_POPULATION_RESOURCES)?.run {
+          val jsonParser = FhirContext.forR4().newJsonParser()
+          forEach {
+            val resource = jsonParser.parseResource(it) as Resource
+            if (resource.resourceType.name == ResourceType.QuestionnaireResponse.name) {
+              questionnaireViewModel.editQuestionnaireResponse = resource as QuestionnaireResponse
+              return@forEach
+            }
+          }
+        }
+        renderFragment()
       }
     } else {
       showToast(getString(R.string.error_saving_form))
