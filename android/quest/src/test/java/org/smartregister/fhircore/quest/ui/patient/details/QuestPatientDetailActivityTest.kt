@@ -31,9 +31,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
-import io.mockk.verify
 import kotlinx.coroutines.test.runBlockingTest
-import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Observation

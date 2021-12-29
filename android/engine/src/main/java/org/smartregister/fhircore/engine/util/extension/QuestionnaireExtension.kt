@@ -29,7 +29,7 @@ fun Questionnaire.cqfLibraryId() =
   this.extension.single { it.url.contains("cqf-library") }?.let {
     it.value.asStringValue().replace("Library/", "")
   }
-  
+
 fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {
   return item.find(linkId, null)
 }
