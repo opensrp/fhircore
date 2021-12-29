@@ -66,6 +66,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -91,6 +92,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private lateinit var questionnaireViewModel: QuestionnaireViewModel
 
   private lateinit var defaultRepo: DefaultRepository
+  private val libraryEvaluator: LibraryEvaluator = mockk()
 
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
 
@@ -108,7 +110,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           transformSupportServices = mockk(),
           dispatcherProvider = defaultRepo.dispatcherProvider,
-          sharedPreferencesHelper = sharedPreferencesHelper
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          libraryEvaluator = libraryEvaluator
         )
       )
     coEvery { fhirEngine.save(any()) } answers {}
@@ -716,7 +719,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     bundle.total = size
 
     // call the method under test
-    questionnaireViewModel.saveBundleResources(bundle)
+    runBlocking { questionnaireViewModel.saveBundleResources(bundle) }
 
     coVerify(exactly = size) { defaultRepo.addOrUpdate(any()) }
   }
@@ -742,7 +745,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     bundle.total = size
 
     // call the method under test
-    questionnaireViewModel.saveBundleResources(bundle)
+    runBlocking { questionnaireViewModel.saveBundleResources(bundle) }
 
     coVerify(exactly = 1) { defaultRepo.addOrUpdate(capture(resource)) }
   }
@@ -783,7 +786,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     questionnaire.addSubjectType("Patient")
     val questionnaireResponse = QuestionnaireResponse()
 
-    every { questionnaireViewModel.saveBundleResources(any()) } just runs
+    coEvery { questionnaireViewModel.saveBundleResources(any()) } just runs
     coEvery { questionnaireViewModel.performExtraction(any(), any()) } returns
       Bundle().apply { addEntry().resource = Patient() }
 
@@ -799,6 +802,52 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify(exactly = 1, timeout = 2000) {
       questionnaireViewModel.saveQuestionnaireResponse(any(), questionnaire, questionnaireResponse)
     }
+  }
+
+  @Test
+  fun `extractAndSaveResources() should call runCqlFor when Questionnaire uses cqf-library extenion`() {
+    coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns
+      samplePatientRegisterQuestionnaire
+
+    val questionnaire = Questionnaire()
+    questionnaire.extension.add(
+      Extension(
+        "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext",
+        Expression().apply {
+          language = "application/x-fhir-query"
+          expression = "Patient"
+        }
+      )
+    )
+    questionnaire.extension.add(
+      Extension(
+        "http://hl7.org/fhir/uv/sdc/StructureDefinition/cqf-library",
+        CanonicalType("Library/123")
+      )
+    )
+
+    questionnaire.addSubjectType("Patient")
+    val questionnaireResponse = QuestionnaireResponse()
+
+    coEvery { questionnaireViewModel.loadPatient(any()) } returns Patient().apply { id = "123" }
+    coEvery { questionnaireViewModel.saveBundleResources(any()) } just runs
+    coEvery { questionnaireViewModel.performExtraction(any(), any()) } returns
+      Bundle().apply { addEntry().resource = Patient() }
+
+    coEvery { questionnaireViewModel.saveQuestionnaireResponse(any(), any(), any()) } just runs
+    coEvery { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) } returns listOf()
+
+    questionnaireViewModel.extractAndSaveResources(
+      "0993ldsfkaljlsnldm",
+      questionnaire,
+      questionnaireResponse
+    )
+
+    coVerify(exactly = 1, timeout = 2000) { questionnaireViewModel.saveBundleResources(any()) }
+    coVerify(exactly = 1, timeout = 2000) {
+      questionnaireViewModel.saveQuestionnaireResponse(any(), questionnaire, questionnaireResponse)
+    }
+    coVerify { libraryEvaluator.runCqlLibrary("123", any(), any(), any()) }
   }
 
   @Test

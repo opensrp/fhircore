@@ -18,10 +18,14 @@ package org.smartregister.fhircore.engine.cql
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
+import com.google.android.fhir.logicalId
 import com.google.common.collect.Lists
+import io.mockk.coEvery
+import io.mockk.mockk
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Bundle
@@ -33,6 +37,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.FileUtil
 import timber.log.Timber
 
@@ -120,7 +125,24 @@ class LibraryEvaluatorTest {
       ) as
         Bundle
 
-    val result = evaluator!!.runCqlLibrary(cqlLibrary, fhirHelpersLibrary, Bundle(), dataBundle)
+    val patient =
+      dataBundle.entry.first { it.resource.resourceType == ResourceType.Patient }.resource as
+        Patient
+
+    val defaultRepository = mockk<DefaultRepository>()
+
+    coEvery { defaultRepository.loadResource<Library>(cqlLibrary.logicalId) } returns cqlLibrary
+    coEvery { defaultRepository.loadResource<Library>(fhirHelpersLibrary.logicalId) } returns
+      fhirHelpersLibrary
+
+    val result = runBlocking {
+      evaluator!!.runCqlLibrary(
+        cqlLibrary.logicalId,
+        patient,
+        dataBundle.entry.map { it.resource },
+        defaultRepository
+      )
+    }
 
     System.out.println(result)
 
