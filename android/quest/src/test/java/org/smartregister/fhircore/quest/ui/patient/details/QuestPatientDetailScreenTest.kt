@@ -45,6 +45,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.R
@@ -65,6 +66,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
   val application = ApplicationProvider.getApplicationContext<Application>()
 
   val patientRepository: PatientRepository = mockk()
+  val defaultRepository: DefaultRepository = mockk()
 
   lateinit var questPatientDetailViewModel: QuestPatientDetailViewModel
 
@@ -78,6 +80,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       spyk(
         QuestPatientDetailViewModel(
           patientRepository = patientRepository,
+          defaultRepository = defaultRepository,
           patientItemMapper = patientItemMapper,
           mockk()
         )
@@ -153,7 +156,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       .onNodeWithTag(PATIENT_NAME)
       .assertExists()
       .assertIsDisplayed()
-      .assertTextEquals("John Doe, M, 21y")
+      .assertTextEquals("John Doe, M, 22y")
   }
 
   @Test
@@ -239,6 +242,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       spyk(
         QuestPatientDetailViewModel(
           patientRepository = patientRepository,
+          defaultRepository = defaultRepository,
           patientItemMapper = patientItemMapper,
           mockk()
         )
@@ -260,6 +264,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       spyk(
         QuestPatientDetailViewModel(
           patientRepository = patientRepository,
+          defaultRepository = defaultRepository,
           patientItemMapper = patientItemMapper,
           mockk()
         )

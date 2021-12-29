@@ -27,12 +27,11 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
-import io.mockk.verify
 import kotlinx.coroutines.test.runBlockingTest
-import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Observation
@@ -77,8 +76,11 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     Faker.initPatientRepositoryMocks(patientRepository)
+
+    val intent =
+      Intent().apply { this.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "123") }
     questPatientDetailActivityController =
-      Robolectric.buildActivity(QuestPatientDetailActivity::class.java)
+      Robolectric.buildActivity(QuestPatientDetailActivity::class.java, intent)
     questPatientDetailActivity = spyk(questPatientDetailActivityController.create().resume().get())
   }
 
@@ -109,19 +111,18 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
     val fhirEngineMockk = mockk<FhirEngine>()
     every { patientRepository.fhirEngine } returns fhirEngineMockk
-    coEvery { fhirEngineMockk.load(Patient::class.java, any()) } returns Patient()
+    coEvery { fhirEngineMockk.load(Patient::class.java, any()) } returns
+      Patient().apply { id = "123" }
     coEvery { fhirEngineMockk.load(Library::class.java, any()) } returns Library()
     coEvery { fhirEngineMockk.search<Condition>(any()) } returns listOf()
     coEvery { fhirEngineMockk.search<Observation>(any()) } returns listOf()
-    every { libraryEvaluator.createBundle(any()) } returns Bundle()
-    every { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) } returns listOf("1", "2")
+    coEvery { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) } returns listOf("1", "2")
 
     questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.run_cql)
 
     Assert.assertNotNull(ShadowAlertDialog.getLatestAlertDialog())
 
-    verify { libraryEvaluator.createBundle(any()) }
-    verify { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) }
+    coVerify { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) }
 
     val lastAlert = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
 
