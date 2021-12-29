@@ -53,6 +53,7 @@ import org.smartregister.fhircore.anc.ui.report.ReportViewModel.ReportScreen
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.cql.MeasureEvaluator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
@@ -77,27 +78,27 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   var helperData: String = ""
   var valueSetData: String = ""
   val evaluatorId = "ANCRecommendationA2"
-  val contextCQL = "patient"
+  val contextCql = "patient"
   val contextLabel = "mom-with-anemia"
-  var cqlBaseURL = ""
-  var libraryURL = ""
-  var measureEvaluateLibraryURL = ""
-  var measureTypeURL = ""
-  var cqlMeasureReportURL = ""
+  var cqlBaseUrl = ""
+  var libraryUrl = ""
+  var measureEvaluateLibraryUrl = ""
+  var measureTypeUrl = ""
+  var cqlMeasureReportUrl = ""
   var cqlMeasureReportStartDate = ""
   var cqlMeasureReportEndDate = ""
   var cqlMeasureReportReportType = ""
   var cqlMeasureReportLibInitialString = ""
   var cqlMeasureReportSubject = ""
-  var cqlHelperURL = ""
-  var valueSetURL = ""
-  var patientURL = ""
+  var cqlHelperUrl = ""
+  var valueSetUrl = ""
+  var patientUrl = ""
   val cqlConfigFileName = "configs/cql_configs.properties"
   lateinit var dir: File
   lateinit var libraryMeasure: IBaseBundle
   var measureEvaluateLibraryData: String = ""
   lateinit var valueSetBundle: IBaseBundle
-  val dirCQLDirRoot = "cql_libraries"
+  val dirCqlDirRoot = "cql_libraries"
   val fileNameMainLibraryCql = "main_library_cql"
   val fileNameHelperLibraryCql = "helper_library_cql"
   val fileNameValueSetLibraryCql = "value_set_library_cql"
@@ -145,31 +146,60 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       }
     )
 
-    cqlBaseURL =
+    reportViewModel.processGenerateReport.observe(
+      this,
+      {
+        if (it) {
+          // Todo: for Davison, update params for All patient selection
+          generateMeasureReport(
+            startDate = reportViewModel.startDate.value ?: "",
+            endDate = reportViewModel.endDate.value ?: "",
+            reportType = reportViewModel.selectedMeasureReportItem.value?.reportType ?: "",
+            patientId = reportViewModel.selectedPatientItem.value?.patientIdentifier ?: "",
+            subject = reportViewModel.selectedPatientItem.value?.familyName ?: ""
+          )
+        }
+      }
+    )
+
+    reportViewModel.alertSelectPatient.observe(
+      this,
+      {
+        if (it) {
+          AlertDialogue.showErrorAlert(
+            context = this,
+            message = getString(R.string.select_patient),
+            title = getString(R.string.invalid_selection)
+          )
+        }
+      }
+    )
+
+    cqlBaseUrl =
       this.let { FileUtil.getProperty("smart_register_base_url", it, cqlConfigFileName) }!!
 
-    libraryURL =
-      cqlBaseURL + this.let { FileUtil.getProperty("cql_library_url", it, cqlConfigFileName) }
+    libraryUrl =
+      cqlBaseUrl + this.let { FileUtil.getProperty("cql_library_url", it, cqlConfigFileName) }
 
-    cqlHelperURL =
-      cqlBaseURL +
+    cqlHelperUrl =
+      cqlBaseUrl +
         this.let { FileUtil.getProperty("cql_helper_library_url", it, cqlConfigFileName) }
 
-    valueSetURL =
-      cqlBaseURL + this.let { FileUtil.getProperty("cql_value_set_url", it, cqlConfigFileName) }
+    valueSetUrl =
+      cqlBaseUrl + this.let { FileUtil.getProperty("cql_value_set_url", it, cqlConfigFileName) }
 
-    patientURL =
-      cqlBaseURL + this.let { FileUtil.getProperty("cql_patient_url", it, cqlConfigFileName) }
+    patientUrl =
+      cqlBaseUrl + this.let { FileUtil.getProperty("cql_patient_url", it, cqlConfigFileName) }
 
-    measureEvaluateLibraryURL =
+    measureEvaluateLibraryUrl =
       this.let {
         FileUtil.getProperty("cql_measure_report_library_value_sets_url", it, cqlConfigFileName)
       }!!
 
-    measureTypeURL =
+    measureTypeUrl =
       this.let { FileUtil.getProperty("cql_measure_report_resource_url", it, cqlConfigFileName) }!!
 
-    cqlMeasureReportURL =
+    cqlMeasureReportUrl =
       this.let { FileUtil.getProperty("cql_measure_report_url", it, cqlConfigFileName) }!!
 
     cqlMeasureReportLibInitialString =
@@ -230,51 +260,51 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     }
   }
 
-  fun loadCQLLibraryData() {
-    dir = File(this.filesDir, "$dirCQLDirRoot/$fileNameMainLibraryCql")
+  fun loadCqlLibraryData() {
+    dir = File(this.filesDir, "$dirCqlDirRoot/$fileNameMainLibraryCql")
     if (dir.exists()) {
       libraryData =
-        this.let { FileUtil.readFileFromInternalStorage(it, fileNameMainLibraryCql, dirCQLDirRoot) }
+        this.let { FileUtil.readFileFromInternalStorage(it, fileNameMainLibraryCql, dirCqlDirRoot) }
           .toString()
-      loadCQLHelperData()
+      loadCqlHelperData()
     } else {
       reportViewModel
-        .fetchCQLLibraryData(parser, fhirResourceDataSource, libraryURL)
-        .observe(this, this::handleCQLLibraryData)
+        .fetchCqlLibraryData(parser, fhirResourceDataSource, libraryUrl)
+        .observe(this, this::handleCqlLibraryData)
     }
     reportViewModel.reportState.currentScreen = ReportScreen.PREHOMElOADING
   }
 
-  fun loadCQLHelperData() {
-    dir = File(this.filesDir, "$dirCQLDirRoot/$fileNameHelperLibraryCql")
+  fun loadCqlHelperData() {
+    dir = File(this.filesDir, "$dirCqlDirRoot/$fileNameHelperLibraryCql")
     if (dir.exists()) {
       helperData =
         this.let {
-            FileUtil.readFileFromInternalStorage(it, fileNameHelperLibraryCql, dirCQLDirRoot)
+            FileUtil.readFileFromInternalStorage(it, fileNameHelperLibraryCql, dirCqlDirRoot)
           }
           .toString()
-      loadCQLLibrarySources()
-      loadCQLValueSetData()
+      loadCqlLibrarySources()
+      loadCqlValueSetData()
     } else {
       reportViewModel
-        .fetchCQLFhirHelperData(parser, fhirResourceDataSource, cqlHelperURL)
-        .observe(this, this::handleCQLHelperData)
+        .fetchCqlFhirHelperData(parser, fhirResourceDataSource, cqlHelperUrl)
+        .observe(this, this::handleCqlHelperData)
     }
   }
 
-  fun loadCQLValueSetData() {
-    dir = File(this.filesDir, "$dirCQLDirRoot/$fileNameValueSetLibraryCql")
+  fun loadCqlValueSetData() {
+    dir = File(this.filesDir, "$dirCqlDirRoot/$fileNameValueSetLibraryCql")
     if (dir.exists()) {
       valueSetData =
         this.let {
-            FileUtil.readFileFromInternalStorage(it, fileNameValueSetLibraryCql, dirCQLDirRoot)
+            FileUtil.readFileFromInternalStorage(it, fileNameValueSetLibraryCql, dirCqlDirRoot)
           }
           .toString()
       postValueSetData(valueSetData)
     } else {
       reportViewModel
-        .fetchCQLValueSetData(parser, fhirResourceDataSource, valueSetURL)
-        .observe(this, this::handleCQLValueSetData)
+        .fetchCqlValueSetData(parser, fhirResourceDataSource, valueSetUrl)
+        .observe(this, this::handleCqlValueSetData)
     }
   }
 
@@ -285,11 +315,11 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
 
   fun loadMeasureEvaluateLibrary() {
     reportViewModel.reportState.currentScreen = ReportScreen.PREHOMElOADING
-    dir = File(this.filesDir, "$dirCQLDirRoot/$fileNameMeasureLibraryCql")
+    dir = File(this.filesDir, "$dirCqlDirRoot/$fileNameMeasureLibraryCql")
     if (dir.exists()) {
       measureEvaluateLibraryData =
         this.let {
-            FileUtil.readFileFromInternalStorage(it, fileNameMeasureLibraryCql, dirCQLDirRoot)
+            FileUtil.readFileFromInternalStorage(it, fileNameMeasureLibraryCql, dirCqlDirRoot)
           }
           .toString()
       val libraryStreamMeasure: InputStream =
@@ -298,26 +328,26 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       reportViewModel.reportState.currentScreen = ReportScreen.HOME
     } else {
       reportViewModel
-        .fetchCQLMeasureEvaluateLibraryAndValueSets(
+        .fetchCqlMeasureEvaluateLibraryAndValueSets(
           parser,
           fhirResourceDataSource,
-          measureEvaluateLibraryURL,
-          measureTypeURL,
+          measureEvaluateLibraryUrl,
+          measureTypeUrl,
           cqlMeasureReportLibInitialString
         )
         .observe(this, this::handleMeasureEvaluateLibrary)
     }
   }
 
-  fun handleCQLLibraryData(auxLibraryData: String) {
+  fun handleCqlLibraryData(auxLibraryData: String) {
     libraryData = auxLibraryData
     this.let {
-      FileUtil.writeFileOnInternalStorage(it, fileNameMainLibraryCql, libraryData, dirCQLDirRoot)
+      FileUtil.writeFileOnInternalStorage(it, fileNameMainLibraryCql, libraryData, dirCqlDirRoot)
     }
-    loadCQLHelperData()
+    loadCqlHelperData()
   }
 
-  fun loadCQLLibrarySources() {
+  fun loadCqlLibrarySources() {
     val libraryStream: InputStream = ByteArrayInputStream(libraryData.toByteArray())
     val fhirHelpersStream: InputStream = ByteArrayInputStream(helperData.toByteArray())
     val library = parser.parseResource(libraryStream)
@@ -325,36 +355,36 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     libraryResources = Lists.newArrayList(library, fhirHelpersLibrary)
   }
 
-  fun handleCQLHelperData(auxHelperData: String) {
+  fun handleCqlHelperData(auxHelperData: String) {
     helperData = auxHelperData
     this.let {
-      FileUtil.writeFileOnInternalStorage(it, fileNameHelperLibraryCql, helperData, dirCQLDirRoot)
+      FileUtil.writeFileOnInternalStorage(it, fileNameHelperLibraryCql, helperData, dirCqlDirRoot)
     }
-    loadCQLLibrarySources()
-    loadCQLValueSetData()
+    loadCqlLibrarySources()
+    loadCqlValueSetData()
   }
 
-  fun handleCQLValueSetData(auxValueSetData: String) {
+  fun handleCqlValueSetData(auxValueSetData: String) {
     valueSetData = auxValueSetData
     this.let {
       FileUtil.writeFileOnInternalStorage(
         it,
         fileNameValueSetLibraryCql,
         valueSetData,
-        dirCQLDirRoot
+        dirCqlDirRoot
       )
     }
     postValueSetData(valueSetData)
   }
 
-  fun handleCQL(): String {
+  fun handleCql(): String {
     return libraryEvaluator.runCql(
       libraryResources,
       valueSetBundle,
       patientDataIBase,
       fhirContext,
       evaluatorId,
-      contextCQL,
+      contextCql,
       contextLabel
     )
   }
@@ -365,7 +395,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         patientResourcesIBase,
         libraryMeasure,
         fhirContext,
-        cqlMeasureReportURL,
+        cqlMeasureReportUrl,
         cqlMeasureReportStartDate,
         cqlMeasureReportEndDate,
         cqlMeasureReportReportType,
@@ -383,7 +413,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         it,
         fileNameMeasureLibraryCql,
         measureEvaluateLibraryData,
-        dirCQLDirRoot
+        dirCqlDirRoot
       )
     }
     val libraryStreamMeasure: InputStream =
@@ -392,19 +422,25 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     reportViewModel.reportState.currentScreen = ReportScreen.HOME
   }
 
-  fun loadCQLMeasurePatientData() {
+  fun loadCqlMeasurePatientData() {
     reportViewModel
-      .fetchCQLPatientData(parser, fhirResourceDataSource, "$patientURL$patientId/\$everything")
-      .observe(this, this::handleCQLMeasureLoadPatient)
+      .fetchCqlPatientData(parser, fhirResourceDataSource, "$patientUrl$patientId/\$everything")
+      .observe(this, this::handleCqlMeasureLoadPatient)
   }
 
-  fun handleCQLMeasureLoadPatient(auxPatientData: String) {
-    val testData = libraryEvaluator.processCQLPatientBundle(auxPatientData)
-    val patientDataStream: InputStream = ByteArrayInputStream(testData!!.toByteArray())
-    patientDataIBase = parser.parseResource(patientDataStream) as IBaseBundle
-    patientResourcesIBase.add(patientDataIBase)
-
-    handleMeasureEvaluate()
+  fun handleCqlMeasureLoadPatient(auxPatientData: String) {
+    if (auxPatientData.isNotEmpty()) {
+      val testData = libraryEvaluator.processCqlPatientBundle(auxPatientData)
+      val patientDataStream: InputStream = ByteArrayInputStream(testData.toByteArray())
+      patientDataIBase = parser.parseResource(patientDataStream) as IBaseBundle
+      patientResourcesIBase.add(patientDataIBase)
+      handleMeasureEvaluate()
+    } else {
+      // Todo: for Davison update result item when empty response for loadPatient Api
+      reportViewModel.resultForIndividual.value =
+        ResultItem(isMatchedIndicator = false, status = "Failed")
+      reportViewModel.reportState.currentScreen = ReportScreen.RESULT
+    }
   }
 
   fun generateMeasureReport(
@@ -424,7 +460,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     cqlMeasureReportReportType = reportType
 
     reportViewModel.reportState.currentScreen = ReportScreen.PREHOMElOADING
-    loadCQLMeasurePatientData()
+    loadCqlMeasurePatientData()
   }
 
   private fun performFilter(
@@ -486,13 +522,16 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     override fun describeContents(): Int {
       TODO("nothing to implement")
     }
+
     override fun isValid(date: Long): Boolean {
       return if (forStartDateOnly == 1L) maxDate >= date else minDate <= date
     }
+
     companion object CREATOR : Parcelable.Creator<RangeValidator> {
       override fun createFromParcel(parcel: Parcel): RangeValidator {
         return RangeValidator(parcel)
       }
+
       override fun newArray(size: Int): Array<RangeValidator?> {
         return arrayOfNulls(size)
       }

@@ -52,6 +52,7 @@ import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.ListenerIntent
+import timber.log.Timber
 
 @HiltViewModel
 class ReportViewModel
@@ -68,6 +69,8 @@ constructor(
 
   val backPress: MutableLiveData<Boolean> = MutableLiveData(false)
   val showDatePicker: MutableLiveData<Boolean> = MutableLiveData(false)
+  val processGenerateReport: MutableLiveData<Boolean> = MutableLiveData(false)
+  val alertSelectPatient: MutableLiveData<Boolean> = MutableLiveData(false)
   val isChangingStartDate: MutableLiveData<Boolean> = MutableLiveData(false)
   val selectedMeasureReportItem: MutableLiveData<ReportItem> = MutableLiveData(null)
   val selectedPatientItem: MutableLiveData<PatientItem> = MutableLiveData(null)
@@ -89,6 +92,11 @@ constructor(
     get() = _patientSelectionType
 
   var searchTextState = mutableStateOf(TextFieldValue(""))
+
+  fun getSelectedPatient(): MutableLiveData<PatientItem> {
+    return if (selectedPatientItem.value != null) selectedPatientItem
+    else MutableLiveData(PatientItem(patientIdentifier = "Select Patient", name = "Select Patient"))
+  }
 
   private val _filterValue = MutableLiveData<Pair<RegisterFilterType, Any?>>()
   val filterValue
@@ -159,7 +167,7 @@ constructor(
     backPress.value = true
   }
 
-  fun fetchCQLLibraryData(
+  fun fetchCqlLibraryData(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
     libraryURL: String
@@ -219,6 +227,14 @@ constructor(
     reportState.currentScreen = ReportScreen.RESULT
   }
 
+  fun auxGenerateReport() {
+    if (patientSelectionType.value.equals("All", true) || selectedPatientItem.value != null) {
+      processGenerateReport.setValue(true)
+    } else {
+      alertSelectPatient.setValue(true)
+    }
+  }
+
   fun onDatePicked(selection: Long) {
     showDatePicker.value = false
     if (isChangingStartDate.value != false) {
@@ -238,7 +254,7 @@ constructor(
     reportState.currentScreen = ReportScreen.FILTER
   }
 
-  fun fetchCQLFhirHelperData(
+  fun fetchCqlFhirHelperData(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
     helperURL: String
@@ -252,7 +268,7 @@ constructor(
     return helperData
   }
 
-  fun fetchCQLValueSetData(
+  fun fetchCqlValueSetData(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
     valueSetURL: String
@@ -266,21 +282,26 @@ constructor(
     return valueSetData
   }
 
-  fun fetchCQLPatientData(
+  fun fetchCqlPatientData(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
     patientURL: String
   ): LiveData<String> {
     val patientData = MutableLiveData<String>()
     viewModelScope.launch(dispatcher.io()) {
-      val auxCQLPatientData =
-        parser.encodeResourceToString(fhirResourceDataSource.loadData(patientURL))
-      patientData.postValue(auxCQLPatientData)
+      try {
+        val dataFromUrl = fhirResourceDataSource.loadData(patientURL)
+        val auxCQLPatientData = parser.encodeResourceToString(dataFromUrl)
+        patientData.postValue(auxCQLPatientData)
+      } catch (e: Exception) {
+        Timber.e(e)
+        patientData.postValue("")
+      }
     }
     return patientData
   }
 
-  fun fetchCQLMeasureEvaluateLibraryAndValueSets(
+  fun fetchCqlMeasureEvaluateLibraryAndValueSets(
     parser: IParser,
     fhirResourceDataSource: FhirResourceDataSource,
     libAndValueSetURL: String,

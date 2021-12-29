@@ -176,7 +176,7 @@ class LibraryEvaluator @Inject constructor() {
    * and returns a bundle with patient entry
    * @param patientData
    */
-  fun processCQLPatientBundle(patientData: String): String {
+  fun processCqlPatientBundle(patientData: String): String {
     val auxPatientDataObj = JSONObject(patientData)
     val oldJSONArrayEntry = auxPatientDataObj.getJSONArray("entry")
     val newJSONArrayEntry = JSONArray()

@@ -7,6 +7,8 @@
     <string name="run_cql">Run CQL</string>
     <string name="run_cql_log">CQL FULL LOG</string>
     <string name="run_cql_output">CQL OUTPUT DATA</string>
+  
+    <string name="edit_patient_info">Edit Info</string>
 
     <string name="menu_clients">Clients</string>
     <string name="menu_settings">Settings</string>

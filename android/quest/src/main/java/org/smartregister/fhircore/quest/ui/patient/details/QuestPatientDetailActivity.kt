@@ -23,15 +23,19 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator.Companion.OUTPUT_PARAMETER_KEY
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -40,6 +44,8 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
   private lateinit var patientId: String
 
   val patientViewModel by viewModels<QuestPatientDetailViewModel>()
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -64,15 +70,33 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
   }
 
   private fun launchTestResults(@StringRes id: Int) {
-    if (id == R.string.test_results) {
-      startActivity(
-        Intent(this, QuestPatientTestResultActivity::class.java).apply {
-          putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
-        }
-      )
-    } else if (id == R.string.run_cql) {
-      runCql()
+    when (id) {
+      R.string.test_results ->
+        startActivity(
+          Intent(this, QuestPatientTestResultActivity::class.java).apply {
+            putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
+          }
+        )
+      R.string.run_cql -> runCql()
+      R.string.edit_patient_info ->
+        startActivity(
+          Intent(this, QuestionnaireActivity::class.java)
+            .putExtras(
+              QuestionnaireActivity.intentArgs(
+                clientIdentifier = patientId,
+                formName = getRegistrationForm(),
+                editMode = true
+              )
+            )
+        )
     }
+  }
+
+  fun getRegistrationForm(): String {
+    return configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
+        configClassification = QuestConfigClassification.PATIENT_REGISTER
+      )
+      .registrationForm
   }
 
   fun runCql() {
