@@ -23,6 +23,7 @@ import ca.uhn.fhir.rest.api.BundleLinks
 import com.google.android.fhir.logicalId
 import com.google.common.collect.Lists
 import javax.inject.Inject
+import javax.inject.Singleton
 import org.apache.commons.lang3.tuple.Pair
 import org.cqframework.cql.cql2elm.CqlTranslatorOptions
 import org.cqframework.cql.cql2elm.ModelManager
@@ -56,6 +57,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
  * This class contains methods to run CQL evaluators given Fhir expressions It borrows code from
  * https://github.com/DBCG/CqlEvaluatorSampleApp See also https://www.hl7.org/fhir/
  */
+@Singleton
 class LibraryEvaluator @Inject constructor() {
   private val fhirContext = FhirContext.forR4Cached()
   private val parser = fhirContext.newJsonParser()
@@ -72,6 +74,7 @@ class LibraryEvaluator @Inject constructor() {
   val cqlFhirParametersConverter by lazy {
     CqlFhirParametersConverter(fhirContext, adapterFactory, fhirTypeConverter)
   }
+  val fhirModelResolver by lazy { R4FhirModelResolver() }
   /**
    * This method loads configurations for CQL evaluation
    * @param libraryResources Fhir resource type Library
@@ -284,9 +287,7 @@ class LibraryEvaluator @Inject constructor() {
     cqlEvaluator =
       CqlEvaluator(
         FhirLibraryLoader(ModelManager(), listOf(libraryProvider)),
-        mapOf(
-          "http://hl7.org/fhir" to CompositeDataProvider(R4FhirModelResolver(), retrieveProvider)
-        ),
+        mapOf("http://hl7.org/fhir" to CompositeDataProvider(fhirModelResolver, retrieveProvider)),
         terminologyProvider
       )
 
