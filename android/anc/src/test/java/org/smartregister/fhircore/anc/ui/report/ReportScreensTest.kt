@@ -19,7 +19,9 @@ package org.smartregister.fhircore.anc.ui.report
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import io.mockk.spyk
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
 import org.junit.Rule
@@ -41,7 +43,7 @@ class ReportScreensTest : RobolectricTest() {
         fun onReportMeasureItemClick() {}
         fun onStartDatePress() {}
         fun onEndDatePress() {}
-        fun onPatientSelectionChanged() {}
+        fun onPatientSelectionChanged(patientSelectionType: String) {}
         fun onCancelSelectedPatient() {}
         fun onPatientChangeClick() {}
         fun onGenerateReportClick() {}
@@ -122,7 +124,9 @@ class ReportScreensTest : RobolectricTest() {
       PatientSelectionBox(
         patientSelectionText = "All",
         selectedPatient = null,
-        onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged() }
+        onPatientSelectionChange = {
+          listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.ALL)
+        }
       )
     }
     composeRule.onNodeWithTag(REPORT_PATIENT_SELECTION).assertExists()
@@ -134,11 +138,41 @@ class ReportScreensTest : RobolectricTest() {
       PatientSelectionBox(
         patientSelectionText = "Individual",
         selectedPatient = PatientItem(),
-        onPatientSelectionChange = { listenerObjectSpy.onPatientSelectionChanged() }
+        onPatientSelectionChange = {
+          listenerObjectSpy.onPatientSelectionChanged(
+            ReportViewModel.PatientSelectionType.INDIVIDUAL
+          )
+        }
       )
     }
     composeRule.onNodeWithTag(REPORT_PATIENT_SELECTION).assertExists()
     composeRule.onNodeWithTag(REPORT_PATIENT_ITEM).assertExists()
+  }
+
+  @Test
+  fun testPatientSelectionChangeListener() {
+    composeRule.setContent {
+      PatientSelectionBox(
+        patientSelectionText = "Individual",
+        selectedPatient = PatientItem(),
+        onPatientSelectionChange = {
+          listenerObjectSpy.onPatientSelectionChanged(
+            ReportViewModel.PatientSelectionType.INDIVIDUAL
+          )
+        }
+      )
+    }
+    composeRule.onNodeWithTag(REPORT_CHANGE_PATIENT).assertExists()
+    composeRule.onNodeWithTag(REPORT_CHANGE_PATIENT).performClick()
+    verify {
+      listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.INDIVIDUAL)
+    }
+
+    composeRule.onNodeWithTag(REPORT_CANCEL_PATIENT).assertExists()
+    composeRule.onNodeWithTag(REPORT_CANCEL_PATIENT).performClick()
+    verify {
+      listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.INDIVIDUAL)
+    }
   }
 
   @Test

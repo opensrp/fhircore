@@ -35,6 +35,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
@@ -59,6 +60,8 @@ internal class ReportViewModelTest {
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
   private val testReportItem = ReportItem(title = "TestReportItem")
   private val patientSelectionType = MutableLiveData("All")
+  private val selectedPatient =
+    MutableLiveData(PatientItem(patientIdentifier = "Select Patient", name = "Select Patient"))
   private val isChangingStartDate = MutableLiveData(true)
   private val isChangingEndDate = MutableLiveData(true)
   private val resultForIndividual =
@@ -87,6 +90,7 @@ internal class ReportViewModelTest {
       this@ReportViewModelTest.resultForIndividual
     every { reportViewModel.resultForPopulation } returns
       this@ReportViewModelTest.resultForPopulation
+    every { reportViewModel.selectedPatientItem } returns this@ReportViewModelTest.selectedPatient
   }
 
   @Test
@@ -283,5 +287,26 @@ internal class ReportViewModelTest {
   fun testReportResultForPopulation() {
     val expectedResult = listOf(ResultItemPopulation(title = "resultForPopulation"))
     Assert.assertEquals(expectedResult, reportViewModel.resultForPopulation.value)
+  }
+
+  @Test
+  fun testGetSelectedPatient() {
+    Assert.assertNotNull(reportViewModel.getSelectedPatient().value)
+  }
+
+  @Test
+  fun auxGenerateReportTest() {
+    every { reportViewModel.selectedPatientItem.value } returns null
+    reportViewModel.onPatientSelectionTypeChanged("All")
+    reportViewModel.auxGenerateReport()
+    Assert.assertEquals(true, reportViewModel.processGenerateReport.value)
+  }
+
+  @Test
+  fun auxGenerateReportTestForIndividual() {
+    every { reportViewModel.selectedPatientItem } returns this@ReportViewModelTest.selectedPatient
+    reportViewModel.onPatientSelectionTypeChanged("test-patient-id")
+    reportViewModel.auxGenerateReport()
+    Assert.assertEquals(true, reportViewModel.processGenerateReport.value)
   }
 }
