@@ -26,9 +26,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -36,8 +34,10 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.AssetUtil
+import org.smartregister.fhircore.engine.util.extension.isPatient
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
@@ -47,8 +47,9 @@ class QuestPatientDetailViewModel
 @Inject
 constructor(
   val patientRepository: PatientRepository,
+  val defaultRepository: DefaultRepository,
   val patientItemMapper: PatientItemMapper,
-  val libraryEvaluator: LibraryEvaluator
+  val libraryEvaluator: LibraryEvaluator,
 ) : ViewModel() {
 
   val patientItem = MutableLiveData<PatientItem>()
@@ -82,7 +83,7 @@ constructor(
     viewModelScope.launch { testResults.postValue(patientRepository.fetchTestResults(patientId)) }
   }
 
-  suspend fun getAllDataFor(patientId: String): Bundle {
+  suspend fun getAllDataFor(patientId: String): List<Resource> {
     val fhirEngine = patientRepository.fhirEngine
     val patient = fhirEngine.load(Patient::class.java, patientId)
     val observations =
@@ -94,14 +95,11 @@ constructor(
         filter(Condition.SUBJECT) { this.value = "Patient/$patientId" }
       }
 
-    val everything =
-      mutableListOf<Resource>().apply {
-        add(patient)
-        addAll(observations)
-        addAll(conditions)
-      }
-
-    return libraryEvaluator.createBundle(everything)
+    return mutableListOf<Resource>().apply {
+      add(patient)
+      addAll(observations)
+      addAll(conditions)
+    }
   }
 
   fun runCqlFor(patientId: String, context: Context): MutableLiveData<String?> {
@@ -111,16 +109,18 @@ constructor(
       val config =
         AssetUtil.decodeAsset<ProfileConfig>(fileName = PROFILE_CONFIG, context = context)
 
-      val fhirEngine = patientRepository.fhirEngine
+      val patient = dataBundle.first { it.isPatient(patientId) }
+      val otherResources = dataBundle.filterNot { it.isPatient(patientId) }
+
       val data =
         kotlin
           .runCatching {
             libraryEvaluator
               .runCqlLibrary(
-                library = fhirEngine.load(Library::class.java, config.cqlProfileLibraryFilter.code),
-                helper = fhirEngine.load(Library::class.java, config.cqlHelperLibraryFilter.code),
-                valueSet = Bundle(),
-                data = dataBundle
+                libraryId = config.cqlProfileLibraryFilter.code,
+                patient = patient as Patient,
+                resources = otherResources,
+                repository = defaultRepository
               )
               .joinToString("\n")
           }
