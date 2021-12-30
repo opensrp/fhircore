@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.cql
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.common.collect.Lists
 import io.mockk.coEvery
@@ -129,17 +130,20 @@ class LibraryEvaluatorTest {
       dataBundle.entry.first { it.resource.resourceType == ResourceType.Patient }.resource as
         Patient
 
-    val defaultRepository = mockk<DefaultRepository>()
+    val fhirEngine = mockk<FhirEngine>()
+    val defaultRepository = DefaultRepository(fhirEngine, mockk())
 
-    coEvery { defaultRepository.loadResource<Library>(cqlLibrary.logicalId) } returns cqlLibrary
-    coEvery { defaultRepository.loadResource<Library>(fhirHelpersLibrary.logicalId) } returns
+    coEvery { fhirEngine.load(Library::class.java, cqlLibrary.logicalId) } returns cqlLibrary
+    coEvery { fhirEngine.load(Library::class.java, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
 
     val result = runBlocking {
       evaluator!!.runCqlLibrary(
         cqlLibrary.logicalId,
         patient,
-        dataBundle.entry.map { it.resource },
+        dataBundle.entry.filter { it.resource.resourceType != ResourceType.Patient }.map {
+          it.resource
+        },
         defaultRepository
       )
     }

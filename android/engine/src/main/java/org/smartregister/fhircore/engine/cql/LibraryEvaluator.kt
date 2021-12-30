@@ -204,13 +204,14 @@ class LibraryEvaluator @Inject constructor() {
     // TODO refactor class by modular and single responsibility principle
     repository: DefaultRepository
   ): List<String> {
-    val library = repository.loadResource<org.hl7.fhir.r4.model.Library>(libraryId)!!
+    val library = repository.fhirEngine.load(org.hl7.fhir.r4.model.Library::class.java, libraryId)
 
     val helpers =
       library.relatedArtifact
         .filter { it.hasResource() && it.resource.startsWith("Library/") }
         .mapNotNull {
-          repository.loadResource<org.hl7.fhir.r4.model.Library>(
+          repository.fhirEngine.load(
+            org.hl7.fhir.r4.model.Library::class.java,
             it.resource.replace("Library/", "")
           )
         }
