@@ -53,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Fixed forms loading smoothly
 - Quest | Fixed multiple entries of same test results on quest patient detail screen
 - Quest | Fixed mislabeling of questionnaire responses on quest patient detail screen
-
+- Quest | Fix patient registration with estimated age/dob
 
 ### Changed
 - EIR | Updated overdue trigger flow for Vaccine Due date
