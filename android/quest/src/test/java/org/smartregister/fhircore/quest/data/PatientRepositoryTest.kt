@@ -37,6 +37,8 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.quest.app.fakes.Faker.buildPatient
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
@@ -50,6 +52,8 @@ class PatientRepositoryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var patientItemMapper: PatientItemMapper
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   private val fhirEngine: FhirEngine = mockk()
 
@@ -58,8 +62,14 @@ class PatientRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
     repository =
-      PatientRepository(fhirEngine, patientItemMapper, coroutineTestRule.testDispatcherProvider)
+      PatientRepository(
+        fhirEngine,
+        patientItemMapper,
+        coroutineTestRule.testDispatcherProvider,
+        configurationRegistry
+      )
   }
 
   @Test

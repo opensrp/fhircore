@@ -31,12 +31,10 @@ import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.ListenerIntent
 import org.smartregister.fhircore.engine.util.extension.createFactory
-import org.smartregister.fhircore.quest.configuration.view.PatientRegisterRowViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
 import org.smartregister.fhircore.quest.ui.patient.register.components.PatientRegisterList
-import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @AndroidEntryPoint
 class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() {
@@ -56,11 +54,7 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
     PatientRegisterList(
       pagingItems = pagingItems,
       modifier = Modifier,
-      clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) },
-      patientRegisterRowViewConfiguration =
-        configurationRegistry.retrieveConfiguration<PatientRegisterRowViewConfiguration>(
-          configClassification = QuestConfigClassification.PATIENT_REGISTER_ROW
-        )
+      clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
     )
   }
 

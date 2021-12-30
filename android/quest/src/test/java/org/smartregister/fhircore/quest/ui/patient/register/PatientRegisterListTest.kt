@@ -30,7 +30,6 @@ import io.mockk.spyk
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.quest.configuration.view.patientRegisterRowViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.components.PATIENT_BIO
@@ -49,11 +48,7 @@ class PatientRegisterListTest : RobolectricTest() {
         every { pagingItemsSpy.loadState.append } returns LoadState.NotLoading(true)
         every { pagingItemsSpy.loadState.refresh } returns LoadState.NotLoading(true)
 
-        PatientRegisterList(
-          pagingItems = pagingItemsSpy,
-          clickListener = { _, _ -> },
-          patientRegisterRowViewConfiguration = patientRegisterRowViewConfigurationOf()
-        )
+        PatientRegisterList(pagingItems = pagingItemsSpy, clickListener = { _, _ -> })
       }
 
       composeRule.onAllNodesWithTag(PATIENT_BIO).assertCountEquals(2)
@@ -88,8 +83,7 @@ class PatientRegisterListTest : RobolectricTest() {
             Assert.assertEquals(OpenPatientProfile, i)
 
             clickedItemList.add(p)
-          },
-          patientRegisterRowViewConfiguration = patientRegisterRowViewConfigurationOf()
+          }
         )
       }
 

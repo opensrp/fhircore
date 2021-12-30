@@ -18,6 +18,8 @@ package org.smartregister.fhircore.quest.configuration.view
 
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.Configuration
 
 @Stable
@@ -25,8 +27,28 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 class PatientRegisterRowViewConfiguration(
   override val appId: String,
   override val classification: String,
-  var showG6pdStatus: Boolean = false
+  val filters: List<Filter>? = null
 ) : Configuration
+
+@Stable
+@Serializable
+data class Filter(
+  val resourceType: Enumerations.ResourceType,
+  val key: String,
+  val valuePrefix: String? = null,
+  val prefixColor: String? = null,
+  val color: String,
+  val valueType: Enumerations.DataType,
+  val valueCoding: Code?,
+  val valueString: String? = null,
+  val dynamicColors: List<DynamicColor>? = null
+)
+
+@Stable
+@Serializable
+data class Code(val system: String? = null, val code: String? = null, val display: String? = null)
+
+@Stable @Serializable data class DynamicColor(val valueEqual: String, val useColor: String)
 
 /**
  * @param appId Set unique identifier for this configuration
@@ -36,11 +58,5 @@ class PatientRegisterRowViewConfiguration(
 @Stable
 fun patientRegisterRowViewConfigurationOf(
   appId: String = "quest",
-  classification: String = "patient_list_row",
-  showG6pdStatus: Boolean = false
-) =
-  PatientRegisterRowViewConfiguration(
-    appId = appId,
-    classification = classification,
-    showG6pdStatus = showG6pdStatus
-  )
+  classification: String = "patient_list_row"
+) = PatientRegisterRowViewConfiguration(appId = appId, classification = classification)

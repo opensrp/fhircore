@@ -33,19 +33,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-import org.smartregister.fhircore.quest.configuration.view.PatientRegisterRowViewConfiguration
-import org.smartregister.fhircore.quest.configuration.view.patientRegisterRowViewConfigurationOf
-import org.smartregister.fhircore.quest.data.patient.model.G6PDStatus
+import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.data.patient.model.genderFull
-import org.smartregister.fhircore.quest.data.patient.model.makeItLabel
 import org.smartregister.fhircore.quest.ui.patient.register.OpenPatientProfile
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRowClickListenerIntent
 
@@ -55,9 +51,7 @@ const val PATIENT_BIO = "patientBio"
 fun PatientRow(
   patientItem: PatientItem,
   clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit,
-  modifier: Modifier = Modifier,
-  patientRegisterRowViewConfiguration: PatientRegisterRowViewConfiguration =
-    patientRegisterRowViewConfigurationOf()
+  modifier: Modifier = Modifier
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -86,16 +80,22 @@ fun PatientRow(
           modifier = modifier.wrapContentWidth()
         )
 
-        if (patientRegisterRowViewConfiguration.showG6pdStatus) {
-          patientItem.g6pdStatus?.run {
-            Text(color = SubtitleTextColor, text = " - ", fontSize = 16.sp)
+        patientItem.additionalData?.forEach {
+          it.valuePrefix?.let { prefix ->
             Text(
-              text = makeItLabel(LocalContext.current),
-              color = color,
+              text = prefix,
+              color = Color(android.graphics.Color.parseColor(it.color ?: "#000000")),
               fontSize = 16.sp,
               modifier = modifier.wrapContentWidth()
             )
           }
+
+          Text(
+            text = it.value,
+            color = Color(android.graphics.Color.parseColor(it.color ?: "#000000")),
+            fontSize = 16.sp,
+            modifier = modifier.wrapContentWidth()
+          )
         }
       }
     }
@@ -108,7 +108,7 @@ fun PatientRow(
 fun PatientRow() {
   MaterialTheme {
     PatientRow(
-      patientItem = PatientItem("1", "1", "Rickey Ron", "M", "32y", "", G6PDStatus.Deficient),
+      patientItem = PatientItem("1", "1", "Rickey Ron", "M", "32y", ""),
       clickListener = { listenerIntent, data -> },
       modifier = Modifier.background(Color.White)
     )
@@ -121,11 +121,18 @@ fun PatientRow() {
 fun PatientRowWithG6PDDeficientStatus() {
   MaterialTheme {
     PatientRow(
-      patientItem = PatientItem("1", "1", "Rickey Ron", "M", "32y", "", G6PDStatus.Deficient),
+      patientItem =
+        PatientItem(
+          "1",
+          "1",
+          "Rickey Ron",
+          "M",
+          "32y",
+          "",
+          listOf(AdditionalData("Deficient", "#FF0000", " G6PD Status - "))
+        ),
       clickListener = { listenerIntent, data -> },
-      modifier = Modifier.background(Color.White),
-      patientRegisterRowViewConfiguration =
-        patientRegisterRowViewConfigurationOf(appId = "g6pd", showG6pdStatus = true)
+      modifier = Modifier.background(Color.White)
     )
   }
 }
@@ -136,11 +143,18 @@ fun PatientRowWithG6PDDeficientStatus() {
 fun PatientRowWithG6PDIntermediateStatus() {
   MaterialTheme {
     PatientRow(
-      patientItem = PatientItem("1", "1", "Rickey Ron", "M", "32y", "", G6PDStatus.Intermediate),
+      patientItem =
+        PatientItem(
+          "1",
+          "1",
+          "Rickey Ron",
+          "M",
+          "32y",
+          "",
+          listOf(AdditionalData("Intermediate", "#FFA500", " G6PD Status - "))
+        ),
       clickListener = { listenerIntent, data -> },
-      modifier = Modifier.background(Color.White),
-      patientRegisterRowViewConfiguration =
-        patientRegisterRowViewConfigurationOf(appId = "g6pd", showG6pdStatus = true)
+      modifier = Modifier.background(Color.White)
     )
   }
 }
@@ -151,11 +165,18 @@ fun PatientRowWithG6PDIntermediateStatus() {
 fun PatientRowWithG6PDNormalStatus() {
   MaterialTheme {
     PatientRow(
-      patientItem = PatientItem("1", "1", "Rickey Ron", "M", "32y", "", G6PDStatus.Normal),
+      patientItem =
+        PatientItem(
+          "1",
+          "1",
+          "Rickey Ron",
+          "M",
+          "32y",
+          "",
+          listOf(AdditionalData("Normal", "#00FF00", " G6PD Status - "))
+        ),
       clickListener = { listenerIntent, data -> },
-      modifier = Modifier.background(Color.White),
-      patientRegisterRowViewConfiguration =
-        patientRegisterRowViewConfigurationOf(appId = "g6pd", showG6pdStatus = true)
+      modifier = Modifier.background(Color.White)
     )
   }
 }

@@ -32,7 +32,6 @@ import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-import org.smartregister.fhircore.quest.configuration.view.PatientRegisterRowViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRowClickListenerIntent
 
@@ -40,12 +39,11 @@ import org.smartregister.fhircore.quest.ui.patient.register.PatientRowClickListe
 fun PatientRegisterList(
   pagingItems: LazyPagingItems<PatientItem>,
   modifier: Modifier = Modifier,
-  clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit,
-  patientRegisterRowViewConfiguration: PatientRegisterRowViewConfiguration
+  clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit
 ) {
   LazyColumn {
     items(pagingItems, key = { it.id }) {
-      PatientRow(it!!, clickListener, modifier = modifier, patientRegisterRowViewConfiguration)
+      PatientRow(it!!, clickListener, modifier = modifier)
       Divider(color = DividerColor, thickness = 1.dp)
     }
 
