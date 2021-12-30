@@ -24,7 +24,6 @@ import androidx.paging.compose.LazyPagingItems
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Patient
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
@@ -40,7 +39,6 @@ import org.smartregister.fhircore.quest.ui.patient.register.components.PatientRe
 class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() {
 
   @Inject lateinit var patientRepository: PatientRepository
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
