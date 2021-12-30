@@ -25,7 +25,7 @@ group ExtractPatient(source src : QuestionnaireResponse, target patient : Patien
        src -> patient.gender = evaluate(item_bio, $this.item.where(linkId = 'PR-gender').answer.value.code) "r_p_gender";
 
        item_bio.item as item_dob where(linkId = 'PR-birth-date' and answer.count() > 0) -> patient.birthDate = evaluate(item_dob, $this.answer.value) "r_p_dob";
-       item_bio.item as item_age where(linkId = 'PR-age' and answer.count() > 0) -> patient.birthDate = evaluate(item_age, today() - $this.answer.value) "r_p_age";
+       item_bio.item as item_age where(linkId = 'PR-age' and answer.count() > 0) -> patient.birthDate = evaluate(item_age, today() - ($this.answer.value.toString() + " 'years'").toQuantity()) "r_p_age";
 
        item_bio.item as item_marital where(linkId = 'PR-marital-status') -> patient.maritalStatus = create('CodeableConcept') as mcc then {
           src -> mcc.coding = evaluate(item_marital, $this.answer.value) "r_p_martial_cod";
