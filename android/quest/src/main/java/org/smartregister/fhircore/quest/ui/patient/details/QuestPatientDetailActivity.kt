@@ -28,6 +28,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.cql.LibraryEvaluator.Companion.OUTPUT_PARAMETER_KEY
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -48,7 +49,7 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: "1"
+    patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)!!
 
     patientViewModel.apply {
       val detailActivity = this@QuestPatientDetailActivity
@@ -109,7 +110,11 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
           if (it?.isNotBlank() == true) {
             progress.dismiss()
 
-            AlertDialogue.showInfoAlert(this@QuestPatientDetailActivity, message = it)
+            AlertDialogue.showInfoAlert(this, it, getString(R.string.run_cql_log))
+            // show separate alert for output resources generated
+            it.substringAfter(OUTPUT_PARAMETER_KEY, "").takeIf { it.isNotBlank() }?.let {
+              AlertDialogue.showInfoAlert(this, it, getString(R.string.run_cql_output))
+            }
           }
         }
       )
