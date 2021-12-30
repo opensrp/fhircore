@@ -18,6 +18,5 @@
     <string name="loading_responses">Loading responses ...</string>
     <string name="no_test_results_found">No test results found</string>
     <string name="patient_test_results">TEST RESULTS</string>
-    <string name="g6pd_status_label">G6PD Status - %1$s</string>
 
 </resources>

@@ -60,9 +60,6 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
   val configurationRegistry: ConfigurationRegistry
 ) : RegisterRepository<Patient, PatientItem> {
-  /*
-  @Inject
-  lateinit var configurationRegistry: ConfigurationRegistry*/
 
   override suspend fun loadData(
     query: String,

@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.data.patient.model
 
 import androidx.compose.runtime.Stable
-import androidx.compose.ui.graphics.Color
 
 @Stable
 data class PatientItem(
@@ -42,17 +41,5 @@ fun PatientItem.genderFull(): String {
     "M" -> "Male"
     "F" -> "Female"
     else -> gender
-  }
-}
-
-enum class G6PDStatus {
-  Deficient(Color.Red),
-  Intermediate(Color(android.graphics.Color.parseColor("#FFA500"))),
-  Normal(Color.Green);
-
-  val color: Color
-
-  constructor(color: Color) {
-    this.color = color
   }
 }
