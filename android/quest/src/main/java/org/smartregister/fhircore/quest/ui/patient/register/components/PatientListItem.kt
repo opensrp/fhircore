@@ -39,6 +39,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.quest.configuration.view.Properties
+import org.smartregister.fhircore.quest.configuration.view.Property
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.data.patient.model.genderFull
@@ -79,23 +81,44 @@ fun PatientRow(
           fontSize = 16.sp,
           modifier = modifier.wrapContentWidth()
         )
+        Column {
+          patientItem.additionalData?.forEach {
+            Row {
+              it.label?.let { label ->
+                Text(
+                  text = label,
+                  color =
+                    Color(
+                      android.graphics.Color.parseColor(it.properties?.label?.color ?: "#000000")
+                    ),
+                  fontSize = it.properties?.label?.textSize?.sp ?: 16.sp,
+                  modifier = modifier.wrapContentWidth()
+                )
+              }
 
-        patientItem.additionalData?.forEach {
-          it.valuePrefix?.let { prefix ->
-            Text(
-              text = prefix,
-              color = Color(android.graphics.Color.parseColor(it.color ?: "#000000")),
-              fontSize = 16.sp,
-              modifier = modifier.wrapContentWidth()
-            )
+              it.valuePrefix?.let { prefix ->
+                Text(
+                  text = prefix,
+                  color =
+                    Color(
+                      android.graphics.Color.parseColor(it.properties?.value?.color ?: "#000000")
+                    ),
+                  fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,
+                  modifier = modifier.wrapContentWidth()
+                )
+              }
+
+              Text(
+                text = it.value,
+                color =
+                  Color(
+                    android.graphics.Color.parseColor(it.properties?.value?.color ?: "#000000")
+                  ),
+                fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,
+                modifier = modifier.wrapContentWidth()
+              )
+            }
           }
-
-          Text(
-            text = it.value,
-            color = Color(android.graphics.Color.parseColor(it.color ?: "#000000")),
-            fontSize = 16.sp,
-            modifier = modifier.wrapContentWidth()
-          )
         }
       }
     }
@@ -118,50 +141,6 @@ fun PatientRow() {
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
-fun PatientRowWithG6PDDeficientStatus() {
-  MaterialTheme {
-    PatientRow(
-      patientItem =
-        PatientItem(
-          "1",
-          "1",
-          "Rickey Ron",
-          "M",
-          "32y",
-          "",
-          listOf(AdditionalData("Deficient", "#FF0000", " G6PD Status - "))
-        ),
-      clickListener = { listenerIntent, data -> },
-      modifier = Modifier.background(Color.White)
-    )
-  }
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
-fun PatientRowWithG6PDIntermediateStatus() {
-  MaterialTheme {
-    PatientRow(
-      patientItem =
-        PatientItem(
-          "1",
-          "1",
-          "Rickey Ron",
-          "M",
-          "32y",
-          "",
-          listOf(AdditionalData("Intermediate", "#FFA500", " G6PD Status - "))
-        ),
-      clickListener = { listenerIntent, data -> },
-      modifier = Modifier.background(Color.White)
-    )
-  }
-}
-
-@Composable
-@Preview(showBackground = true)
-@ExcludeFromJacocoGeneratedReport
 fun PatientRowWithG6PDNormalStatus() {
   MaterialTheme {
     PatientRow(
@@ -173,7 +152,18 @@ fun PatientRowWithG6PDNormalStatus() {
           "M",
           "32y",
           "",
-          listOf(AdditionalData("Normal", "#00FF00", " G6PD Status - "))
+          listOf(
+            AdditionalData(
+              label = " Label 1",
+              value = "Normal",
+              valuePrefix = " G6PD Status - ",
+              properties =
+                Properties(
+                  label = Property(color = "#FF0000", textSize = 16),
+                  value = Property(color = "#00a000", textSize = 16)
+                )
+            )
+          )
         ),
       clickListener = { listenerIntent, data -> },
       modifier = Modifier.background(Color.White)

@@ -12,7 +12,6 @@
         "resourceType": "CONDITION",
         "key": "code",
         "valueType": "CODEABLECONCEPT",
-        "color": "#000000",
         "valuePrefix": " G6PD Status - ",
         "valueCoding": {
           "system": "http://snomed.info/sct",
