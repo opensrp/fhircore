@@ -38,6 +38,12 @@
         "resource": "PatientRegisterRowViewConfiguration",
         "classification": "patient_register_row",
         "description": "Configurations for Patient Row"
+      },
+      {
+        "workflowPoint": "test_result_detail_view",
+        "resource": "DetailViewConfiguration",
+        "classification": "test_result_detail_view",
+        "description": "Configurations for Test Results Details"
       }
     ]
   }

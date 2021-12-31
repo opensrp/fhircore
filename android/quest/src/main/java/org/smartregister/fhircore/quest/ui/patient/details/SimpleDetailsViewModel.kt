@@ -16,53 +16,42 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import android.content.Context
-import androidx.annotation.StringRes
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.fhir.search.search
+import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.configuration.view.SearchFilter
-import org.smartregister.fhircore.engine.cql.LibraryEvaluator
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.engine.util.AssetUtil
-import org.smartregister.fhircore.engine.util.extension.isPatient
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.quest.configuration.view.DetailViewConfiguration
-import org.smartregister.fhircore.quest.configuration.view.PatientRegisterRowViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItem
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItemCell
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItemRow
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
-import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
+import org.smartregister.fhircore.quest.util.getSearchResults
+import timber.log.Timber
 
 @HiltViewModel
-class SimpleDetailsViewModel
-@Inject
-constructor(val patientRepository: PatientRepository): ViewModel(), SimpleDetailsDataProvider {
+class SimpleDetailsViewModel @Inject constructor(val patientRepository: PatientRepository) :
+  ViewModel(), SimpleDetailsDataProvider {
 
   override val detailsViewItem: MutableLiveData<DetailsViewItem>
     get() = MutableLiveData(null)
 
   val patientItem = MutableLiveData<PatientItem>()
 
-  fun loadData(patientId: String) {
+  fun loadData(encounterId: String) {
     viewModelScope.launch {
+      val encounter = patientRepository.loadEncounter(encounterId)
       val config =
         patientRepository.configurationRegistry.retrieveConfiguration<DetailViewConfiguration>(
-          configClassification = QuestConfigClassification.DETAIL_VIEW
+          configClassification = QuestConfigClassification.TEST_RESULT_DETAIL_VIEW
         )
 
       val dataItem = DetailsViewItem()
@@ -71,9 +60,40 @@ constructor(val patientRepository: PatientRepository): ViewModel(), SimpleDetail
       config.rows.forEach {
         val row = DetailsViewItemRow()
 
-        it.columns.forEach {
-          // TODO patientRepository.getSearchResults(patientId, )
-          // TODO row.cells.add(DetailsViewItemCell(, it))
+        it.filters.forEach { f ->
+          val value =
+            kotlin
+              .runCatching {
+                when (f.resourceType) {
+                  Enumerations.ResourceType.CONDITION ->
+                    getSearchResults<Condition>(
+                        encounter.referenceValue(),
+                        Condition.ENCOUNTER,
+                        f,
+                        patientRepository.fhirEngine
+                      )
+                      .firstOrNull()
+                      ?.code
+                      ?.codingFirstRep
+                      ?.display
+                  Enumerations.ResourceType.OBSERVATION ->
+                    getSearchResults<Observation>(
+                        encounter.referenceValue(),
+                        Observation.ENCOUNTER,
+                        f,
+                        patientRepository.fhirEngine
+                      )
+                      .firstOrNull()
+                      ?.value
+                      ?.asStringValue()
+                  else -> null
+                }
+              }
+              .onFailure { Timber.e(it) }
+              .getOrNull()
+              ?: "N/A"
+
+          row.cells.add(DetailsViewItemCell(value, f))
         }
 
         dataItem.rows.add(row)
@@ -82,5 +102,4 @@ constructor(val patientRepository: PatientRepository): ViewModel(), SimpleDetail
       detailsViewItem.postValue(dataItem)
     }
   }
-
 }

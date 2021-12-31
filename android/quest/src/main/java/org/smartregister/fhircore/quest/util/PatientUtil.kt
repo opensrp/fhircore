@@ -52,7 +52,7 @@ suspend fun loadAdditionalData(
     when (filter.resourceType) {
       Enumerations.ResourceType.CONDITION -> {
         val conditions =
-          getSearchResults<Condition>(patientId, Condition.SUBJECT, filter, fhirEngine)
+          getSearchResults<Condition>("Patient/$patientId", Condition.SUBJECT, filter, fhirEngine)
 
         val sortedByDescending = conditions.maxByOrNull { it.recordedDate }
         sortedByDescending?.code?.coding
@@ -74,14 +74,14 @@ suspend fun loadAdditionalData(
   return result
 }
 
-private suspend inline fun <reified T : Resource> getSearchResults(
-  patientId: String,
-  reference: ReferenceClientParam,
+suspend inline fun <reified T : Resource> getSearchResults(
+  reference: String,
+  referenceParam: ReferenceClientParam,
   filter: Filter,
   fhirEngine: FhirEngine
 ): List<T> {
   return fhirEngine.search {
-    filterByPatient(reference, patientId)
+    filterByReference(referenceParam, reference)
 
     when (filter.valueType) {
       Enumerations.DataType.CODEABLECONCEPT -> {
@@ -109,8 +109,8 @@ fun getColor(value: String, dynamicColors: List<DynamicColor>?): String? {
   return dynamicColors?.firstOrNull { it.valueEqual == value }?.useColor
 }
 
-fun Search.filterByPatient(reference: ReferenceClientParam, patientId: String) {
-  filter(reference) { this.value = "${ResourceType.Patient.name}/$patientId" }
+fun Search.filterByReference(referenceParam: ReferenceClientParam, reference: String) {
+  filter(referenceParam) { this.value = reference }
 }
 
 fun Code.asCoding(): Coding {

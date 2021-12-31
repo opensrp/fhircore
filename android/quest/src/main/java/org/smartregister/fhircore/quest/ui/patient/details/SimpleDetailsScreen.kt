@@ -18,13 +18,8 @@ package org.smartregister.fhircore.quest.ui.patient.details
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Colors
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Surface
@@ -39,22 +34,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.MutableLiveData
+import androidx.ui.core.Direction
 import org.hl7.fhir.r4.model.Enumerations
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.configuration.view.Code
+import org.smartregister.fhircore.quest.configuration.view.DynamicColor
 import org.smartregister.fhircore.quest.configuration.view.Filter
+import org.smartregister.fhircore.quest.configuration.view.Properties
+import org.smartregister.fhircore.quest.configuration.view.Property
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItem
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItemCell
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItemRow
+import org.smartregister.fhircore.quest.util.getColor
 
 private fun String?.value() = this ?: ""
 
@@ -63,7 +61,7 @@ private fun String?.value() = this ?: ""
 fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
   val dataItem by dataProvider.detailsViewItem.observeAsState()
 
-  Surface(color = colorResource(id = R.color.white_smoke)) {
+  Surface(color = colorResource(id = R.color.white)) {
     Column {
       TopAppBar(
         title = { Text(text = dataItem?.label.value(), Modifier.testTag(TOOLBAR_TITLE)) },
@@ -75,27 +73,22 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
         }
       )
 
-      Column {
-        dataItem?.rows?.forEach { r ->
-          Row {
+      Column(modifier = Modifier.padding(20.dp)) {
+        dataItem?.rows?.forEachIndexed { i, r ->
+          Row(Modifier.padding(10.dp)) {
             r.cells.forEach { c ->
-              Column (modifier = Modifier
-                .weight(1f)
-                .padding(5.dp)){
-                c.filter.valuePrefix?.let {
-                  Text(
-                    text = it,
-                    color = Color(c.filter.color.toLong(radix = 16)),
-                    fontSize = TextUnit(15f, TextUnitType.Sp),
-                  )
-                }
-                Text(
-                  text = c.value.toString(),
-                  color = Color(c.filter.color.toLong(radix = 16)),
-                  fontSize = TextUnit(15f, TextUnitType.Sp),
-                )
-              }
+              if (c.filter.properties?.labelDirection == Direction.UP) {
+                Column(modifier = Modifier.weight(1f).padding(5.dp)) { DetailsViewCell(c) }
+              } else Row(modifier = Modifier.weight(1f).padding(5.dp)) { DetailsViewCell(c) }
             }
+          }
+
+          // if no cells configured for in row add divider line
+          if (r.cells.size == 0) {
+            Divider(
+              color = colorResource(id = R.color.white_smoke),
+              modifier = Modifier.padding(20.dp)
+            )
           }
         }
       }
@@ -104,10 +97,81 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
 }
 
 @ExperimentalUnitApi
+@Composable
+fun DetailsViewCell(cell: DetailsViewItemCell) {
+  with(cell.filter) {
+    this.label?.let {
+      TextView(
+        this.properties?.label,
+        this.label,
+        this.dynamicColors,
+        this.properties?.valueFormatter
+      )
+    }
+
+    TextView(
+      this.properties?.value,
+      cell.value,
+      this.dynamicColors,
+      this.properties?.valueFormatter
+    )
+  }
+}
+
+@ExperimentalUnitApi
+@Composable
+fun TextView(
+  property: Property?,
+  value: Any,
+  colors: List<DynamicColor>?,
+  valueFormatter: Map<String, String>?
+) {
+  val dynamicColor = getColor(value.toString(), colors)
+  val color =
+    when {
+      dynamicColor?.isNotBlank() == true -> dynamicColor
+      property?.color?.isNotBlank() == true -> property.color
+      else -> "FF888888"
+    }
+
+  val formattedValue = valueFormatter?.get(value) ?: value.toString()
+  val size = property?.textSize?.toFloat() ?: 15f
+  Text(
+    text = formattedValue,
+    color = Color(color.toLong(radix = 16)),
+    fontSize = TextUnit(size, TextUnitType.Sp),
+  )
+}
+
+@ExperimentalUnitApi
 @ExcludeFromJacocoGeneratedReport
 @Composable
-@Preview
-fun simpleDetailsScreenView() {
+@Preview(showBackground = true)
+fun simpleDetailsScreenView1() {
+  val row1Props =
+    Properties(
+      labelDirection = Direction.UP,
+      label = Property(color = "FF888888", textSize = 15),
+      value = Property(textSize = 30)
+    )
+
+  val row3Props =
+    Properties(
+      labelDirection = Direction.UP,
+      label = Property(color = "FF888888", textSize = 15),
+      value = Property(textSize = 40)
+    )
+
+  val row4Props =
+    Properties(
+      labelDirection = Direction.UP,
+      valueFormatter =
+        mapOf(
+          "Dynamic Value 1" to "Dynamic value 1 with a different text with value One",
+          "Dynamic Value 2" to "Dynamic value 2 with a different text with value Two"
+        )
+    )
+
   SimpleDetailsScreen(
     object : SimpleDetailsDataProvider {
       override val detailsViewItem: MutableLiveData<DetailsViewItem>
@@ -121,12 +185,31 @@ fun simpleDetailsScreenView() {
                     cells =
                       mutableListOf(
                         DetailsViewItemCell(
-                          "My test value 1",
-                          filterOf("key 1", "Label 1")
+                          "Val 1",
+                          filterOf("key 1", "Sample Label 1", row1Props)
                         ),
                         DetailsViewItemCell(
-                          "My test value 2",
-                          filterOf("key 2", "Label 2")
+                          "Val 2",
+                          filterOf("key 2", "Sample Label Two", row1Props)
+                        )
+                      )
+                  ),
+                  DetailsViewItemRow(),
+                  DetailsViewItemRow(
+                    cells =
+                      mutableListOf(
+                        DetailsViewItemCell(
+                          "Value of Yellow",
+                          filterOf("key 1", "Label 1", row3Props)
+                        )
+                      )
+                  ),
+                  DetailsViewItemRow(
+                    cells =
+                      mutableListOf(
+                        DetailsViewItemCell(
+                          "Dynamic Value 1",
+                          filterOf("key 1", "What is the value of Label", row4Props)
                         )
                       )
                   )
@@ -137,14 +220,90 @@ fun simpleDetailsScreenView() {
   )
 }
 
-private fun filterOf(key: String, label: String, size: Int): Filter {
+@ExperimentalUnitApi
+@ExcludeFromJacocoGeneratedReport
+@Composable
+@Preview(showBackground = true)
+fun simpleDetailsScreenView2() {
+  val row1Props =
+    Properties(label = Property(color = "FF8888FF", textSize = 16), value = Property(textSize = 16))
+
+  val row3Props =
+    Properties(
+      labelDirection = Direction.UP,
+      label = Property(color = "FF08F00F", textSize = 15),
+      value = Property(textSize = 40)
+    )
+
+  val row4Props =
+    Properties(
+      labelDirection = Direction.UP,
+      valueFormatter =
+        mapOf(
+          "Dynamic Value 1" to "Dynamic value 1 with a different text with value One",
+          "Dynamic Value 2" to "Dynamic value 2 with a different text with value Two"
+        )
+    )
+
+  SimpleDetailsScreen(
+    object : SimpleDetailsDataProvider {
+      override val detailsViewItem: MutableLiveData<DetailsViewItem>
+        get() =
+          MutableLiveData(
+            DetailsViewItem(
+              label = "My Sample Label",
+              rows =
+                mutableListOf(
+                  DetailsViewItemRow(
+                    cells =
+                      mutableListOf(
+                        DetailsViewItemCell(
+                          "Val 1",
+                          filterOf("key 1", "Sample Label 1", row1Props)
+                        ),
+                        DetailsViewItemCell(
+                          "Val 2",
+                          filterOf("key 2", "Sample Label Two", row1Props)
+                        )
+                      )
+                  ),
+                  DetailsViewItemRow(),
+                  DetailsViewItemRow(
+                    cells =
+                      mutableListOf(
+                        DetailsViewItemCell(
+                          "Value of Magenta",
+                          filterOf("key 1", "Label 1", row3Props)
+                        )
+                      )
+                  ),
+                  DetailsViewItemRow(
+                    cells =
+                      mutableListOf(
+                        DetailsViewItemCell(
+                          "Dynamic Value 2",
+                          filterOf("key 1", "What is the value of Label", row4Props)
+                        )
+                      )
+                  )
+                )
+            )
+          )
+    }
+  )
+}
+
+private fun filterOf(key: String, label: String, properties: Properties): Filter {
   return Filter(
     resourceType = Enumerations.ResourceType.ENCOUNTER,
-    color = "FF888888",
     key = key,
-    valuePrefix = label,
-    //TODO
-    valueString = ""+size,
+    label = label,
+    properties = properties,
+    dynamicColors =
+      listOf(
+        DynamicColor("Value of Magenta", "FFFF0FF0"),
+        DynamicColor("Value of Yellow", "FFFFFF00"),
+      ),
     valueType = Enumerations.DataType.CODING,
     valueCoding = Code("sys", "cod", "disp")
   )

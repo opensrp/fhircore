@@ -18,8 +18,6 @@ package org.smartregister.fhircore.quest.configuration.view
 
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.Configuration
 
 @Stable
@@ -28,18 +26,14 @@ class DetailViewConfiguration(
   override val appId: String,
   override val classification: String,
   val label: String = "",
-  val rows: List<DetailViewRow>
+  val rows: List<DetailViewRowConfiguration>
 ) : Configuration
 
-@Stable
-@Serializable
-class DetailViewRow(
-  val columns: List<Filter>
-)
+@Stable @Serializable class DetailViewRowConfiguration(val filters: List<Filter>)
 
 @Stable
 fun detailViewConfigurationOf(
   appId: String,
   classification: String,
-  rows: List<DetailViewRow>
+  rows: List<DetailViewRowConfiguration>
 ) = DetailViewConfiguration(appId = appId, classification = classification, rows = rows)
