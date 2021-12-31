@@ -37,16 +37,23 @@ data class Filter(
   val key: String,
   val valuePrefix: String? = null,
   val prefixColor: String? = null,
-  val color: String,
+  val label: String? = null,
   val valueType: Enumerations.DataType,
   val valueCoding: Code?,
   val valueString: String? = null,
-  val dynamicColors: List<DynamicColor>? = null
+  val dynamicColors: List<DynamicColor>? = null,
+  val properties: Properties? = null
 )
 
 @Stable
 @Serializable
 data class Code(val system: String? = null, val code: String? = null, val display: String? = null)
+
+@Stable
+@Serializable
+data class Properties(val label: Property? = null, val value: Property? = null)
+
+@Stable @Serializable data class Property(val color: String? = null, val textSize: Int? = null)
 
 @Stable @Serializable data class DynamicColor(val valueEqual: String, val useColor: String)
 

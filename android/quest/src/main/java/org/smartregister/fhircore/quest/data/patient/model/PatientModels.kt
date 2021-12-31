@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.data.patient.model
 
 import androidx.compose.runtime.Stable
+import org.smartregister.fhircore.quest.configuration.view.Properties
 
 @Stable
 data class PatientItem(
@@ -31,9 +32,10 @@ data class PatientItem(
 
 @Stable
 data class AdditionalData(
+  val label: String? = null,
   val value: String,
-  val color: String? = null,
-  val valuePrefix: String? = null
+  val valuePrefix: String? = null,
+  val properties: Properties? = null
 )
 
 fun PatientItem.genderFull(): String {
