@@ -30,6 +30,7 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.json.JSONException
 import org.json.JSONObject
@@ -186,6 +187,9 @@ fun QuestionnaireResponse.assertSubject() {
 fun Resource.generateMissingId() {
   if (logicalId.isBlank()) id = UUID.randomUUID().toString()
 }
+
+fun Resource.isPatient(patientId: String) =
+  this.resourceType == ResourceType.Patient && this.logicalId == patientId
 
 fun Resource.asReference(): Reference {
   val referenceValue = "${fhirType()}/$logicalId"

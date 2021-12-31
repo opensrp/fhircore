@@ -76,6 +76,7 @@ internal class RecordVaccineViewModelTest : RobolectricTest() {
           mockk(),
           patientRepository,
           DefaultDispatcherProvider(),
+          mockk(),
           mockk()
         )
       )

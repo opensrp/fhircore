@@ -25,9 +25,9 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
-import io.mockk.verify
 import java.text.SimpleDateFormat
 import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -84,7 +84,8 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
         transformSupportServices = mockk(),
         patientRepository = mockk(),
         dispatcherProvider = DefaultDispatcherProvider(),
-        sharedPreferencesHelper = mockk()
+        sharedPreferencesHelper = mockk(),
+        libraryEvaluator = mockk()
       )
     )
 
@@ -143,7 +144,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
     recordVaccineActivity.handleQuestionnaireResponse(mockk())
 
-    verify { recordVaccineViewModel.saveBundleResources(any()) }
+    coVerify { recordVaccineViewModel.saveBundleResources(any()) }
   }
 
   @Test

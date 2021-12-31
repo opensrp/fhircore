@@ -77,7 +77,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         configurationRegistry = mockk(),
         transformSupportServices = mockk(),
         dispatcherProvider = mockk(),
-        sharedPreferencesHelper = mockk()
+        sharedPreferencesHelper = mockk(),
+        libraryEvaluator = mockk()
       )
     )
 
