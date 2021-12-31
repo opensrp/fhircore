@@ -25,17 +25,17 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 @AndroidEntryPoint
-class QuestPatientTestResultActivity : BaseMultiLanguageActivity() {
+class SimpleDetailsActivity : BaseMultiLanguageActivity() {
 
   private lateinit var patientId: String
 
-  val patientViewModel by viewModels<QuestPatientDetailViewModel>()
+  val viewModel by viewModels<SimpleDetailsViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: "1"
-    patientViewModel.onBackPressClicked.observe(this, { finish() })
-    patientViewModel.getDemographics(patientId)
-    setContent { AppTheme { QuestPatientTestResultScreen(patientViewModel) } }
+    viewModel.onBackPressClicked.observe(this, { finish() })
+    viewModel.loadData(patientId)
+    setContent { AppTheme { SimpleDetailsScreen(viewModel) } }
   }
 }

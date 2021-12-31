@@ -46,7 +46,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 @HiltAndroidTest
 class QuestPatientTestResultActivityTest : RobolectricTest() {
 
-  private lateinit var questPatientTestResultActivity: QuestPatientTestResultActivity
+  private lateinit var simpleDetailsActivity: SimpleDetailsActivity
 
   @BindValue val patientRepository: PatientRepository = mockk()
 
@@ -61,20 +61,20 @@ class QuestPatientTestResultActivityTest : RobolectricTest() {
     hiltRule.inject()
     configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     Faker.initPatientRepositoryMocks(patientRepository)
-    questPatientTestResultActivity =
-      Robolectric.buildActivity(QuestPatientTestResultActivity::class.java).create().resume().get()
+    simpleDetailsActivity =
+      Robolectric.buildActivity(SimpleDetailsActivity::class.java).create().resume().get()
   }
 
   @After
   override fun tearDown() {
     super.tearDown()
-    questPatientTestResultActivity.finish()
+    simpleDetailsActivity.finish()
   }
 
   @Test
   fun testOnBackPressListenerShouldCallFinishActivity() {
-    questPatientTestResultActivity.patientViewModel.onBackPressed(true)
-    Assert.assertTrue(questPatientTestResultActivity.isFinishing)
+    simpleDetailsActivity.patientViewModel.onBackPressed(true)
+    Assert.assertTrue(simpleDetailsActivity.isFinishing)
   }
 
   @Test

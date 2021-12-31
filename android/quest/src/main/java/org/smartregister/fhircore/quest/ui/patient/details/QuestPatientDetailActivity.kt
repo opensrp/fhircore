@@ -73,7 +73,7 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
     when (id) {
       R.string.test_results ->
         startActivity(
-          Intent(this, QuestPatientTestResultActivity::class.java).apply {
+          Intent(this, SimpleDetailsActivity::class.java).apply {
             putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
           }
         )

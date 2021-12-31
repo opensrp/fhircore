@@ -101,7 +101,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   fun testOnMenuItemClickListenerShouldStartQuestPatientTestResultActivity() {
     questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.test_results)
     val expectedIntent =
-      Intent(questPatientDetailActivity, QuestPatientTestResultActivity::class.java)
+      Intent(questPatientDetailActivity, SimpleDetailsActivity::class.java)
     val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
