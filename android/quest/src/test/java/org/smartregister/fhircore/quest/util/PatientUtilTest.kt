@@ -16,11 +16,15 @@
 
 package org.smartregister.fhircore.quest.util
 
+import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.ReferenceFilter
+import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.mockk
+import io.mockk.slot
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
@@ -31,6 +35,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.quest.configuration.view.Code
@@ -58,10 +63,25 @@ class PatientUtilTest : RobolectricTest() {
   @Test
   fun testLoadAdditionalDataShouldReturnExpectedData() {
 
+    val searchSlot = slot<Search>()
+
     val fhirEngine =
-      mockk<FhirEngine> { coEvery { search<Condition>(any()) } returns getConditions() }
+      mockk<FhirEngine> {
+        coEvery { search<Condition>(capture(searchSlot)) } returns getConditions()
+      }
 
     val data = runBlocking { loadAdditionalData("", configurationRegistry, fhirEngine) }
+
+    Assert.assertNotNull(searchSlot.captured)
+    Assert.assertEquals(
+      1,
+      ReflectionHelpers.getField<List<ReferenceFilter>>(searchSlot.captured, "referenceFilters")
+        .size
+    )
+    Assert.assertEquals(
+      1,
+      ReflectionHelpers.getField<List<TokenClientParam>>(searchSlot.captured, "tokenFilters").size
+    )
 
     Assert.assertEquals(1, data.size)
     with(data[0]) {
