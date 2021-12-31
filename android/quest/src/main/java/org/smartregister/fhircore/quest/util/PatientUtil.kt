@@ -55,18 +55,19 @@ suspend fun loadAdditionalData(
           getSearchResults<Condition>(patientId, Condition.SUBJECT, filter, fhirEngine)
 
         val sortedByDescending = conditions.maxByOrNull { it.recordedDate }
-        sortedByDescending?.code?.coding
-          ?.firstOrNull { it.code == filter.valueCoding!!.code }
-          ?.let {
+        sortedByDescending?.category?.forEach { cc ->
+          cc.coding.firstOrNull { c -> c.code == filter.valueCoding!!.code }?.let {
+            val status = sortedByDescending.code?.coding?.firstOrNull()?.display ?: ""
             result.add(
               AdditionalData(
                 label = filter.label,
-                value = it.display,
+                value = status,
                 valuePrefix = filter.valuePrefix,
-                properties = propertiesMapping(it.display, filter)
+                properties = propertiesMapping(status, filter)
               )
             )
           }
+        }
       }
     }
   }
