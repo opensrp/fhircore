@@ -40,7 +40,7 @@ suspend fun loadAdditionalData(
   patientId: String,
   configurationRegistry: ConfigurationRegistry,
   fhirEngine: FhirEngine
-): List<AdditionalData>? {
+): List<AdditionalData> {
   val result = mutableListOf<AdditionalData>()
 
   val patientRegisterRowViewConfiguration =

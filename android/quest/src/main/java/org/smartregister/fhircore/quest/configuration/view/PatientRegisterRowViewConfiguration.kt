@@ -36,7 +36,6 @@ data class Filter(
   val resourceType: Enumerations.ResourceType,
   val key: String,
   val valuePrefix: String? = null,
-  val prefixColor: String? = null,
   val label: String? = null,
   val valueType: Enumerations.DataType,
   val valueCoding: Code?,
