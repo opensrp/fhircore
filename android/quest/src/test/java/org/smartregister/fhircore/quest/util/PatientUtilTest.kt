@@ -87,9 +87,8 @@ class PatientUtilTest : RobolectricTest() {
     with(data[0]) {
       Assert.assertNull(label)
       Assert.assertEquals(" G6PD Status - ", valuePrefix)
-      Assert.assertEquals("Normal", value)
-      Assert.assertEquals("Normal", value)
-      Assert.assertEquals("#00a000", properties?.value?.color)
+      Assert.assertEquals("Intermediate", value)
+      Assert.assertEquals("#FFA500", properties?.value?.color)
     }
   }
 
@@ -122,12 +121,21 @@ class PatientUtilTest : RobolectricTest() {
     return listOf(
       Condition().apply {
         recordedDate = Date()
+        category =
+          listOf(
+            CodeableConcept().apply {
+              addCoding().apply {
+                system = "http://snomed.info/sct"
+                code = "9024005"
+              }
+            }
+          )
         code =
           CodeableConcept().apply {
             addCoding().apply {
               system = "http://snomed.info/sct"
-              code = "260372006"
-              display = "Normal"
+              code = "11896004"
+              display = "Intermediate"
             }
           }
       }
