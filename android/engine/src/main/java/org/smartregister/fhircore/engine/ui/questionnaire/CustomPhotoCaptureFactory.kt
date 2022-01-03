@@ -78,10 +78,11 @@ class CustomPhotoCaptureFactory(
       if (result) {
         lifecycleScope
           .launch(dispatcher.io()) {
-            imageFile = compress(context, imageFile) {
-              quality(30)
-              size(64_000)
-            }
+            imageFile =
+              compress(context, imageFile) {
+                quality(30)
+                size(64_000)
+              }
             val imageBitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
             loadThumbnail(imageBitmap)
             val imageBytes = imageBitmap.encodeToByteArray()
