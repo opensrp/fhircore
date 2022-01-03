@@ -26,6 +26,7 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
@@ -65,18 +66,21 @@ class SimpleDetailsScreenTest : RobolectricTest() {
           patientRepository = patientRepository
         )
       )
-    viewModel.loadData(encounterId)
 
     composeRule.setContent { SimpleDetailsScreen(viewModel) }
   }
 
   @Test
   fun testToolbarComponents() {
+    every { patientRepository. }
+
+    viewModel.loadData(encounterId)
+
     composeRule
       .onNodeWithTag(TOOLBAR_TITLE)
       .assertTextEquals(
         ApplicationProvider.getApplicationContext<HiltTestApplication>()
-          .getString(R.string.back_to_clients)
+          .getString(R.string.test_results)
       )
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
   }
