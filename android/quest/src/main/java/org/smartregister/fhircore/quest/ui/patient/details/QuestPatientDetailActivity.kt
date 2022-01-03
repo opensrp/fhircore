@@ -148,7 +148,8 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
               ?.find { it.resourceType == ResourceType.Encounter }
               ?.logicalId
           if (encounterId == null) showToast("Missing linked encounter. Invalid data")
-          else startActivity(
+          else
+            startActivity(
               Intent(this, SimpleDetailsActivity::class.java).apply {
                 putExtra("RECORD_ID", encounterId.replace("#", ""))
               }

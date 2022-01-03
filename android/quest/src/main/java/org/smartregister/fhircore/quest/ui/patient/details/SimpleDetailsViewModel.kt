@@ -24,10 +24,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Observation
+import org.jetbrains.annotations.VisibleForTesting
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.quest.configuration.view.DetailViewConfiguration
+import org.smartregister.fhircore.quest.configuration.view.Filter
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItem
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItemCell
@@ -40,6 +43,7 @@ import timber.log.Timber
 class SimpleDetailsViewModel @Inject constructor(val patientRepository: PatientRepository) :
   ViewModel(), SimpleDetailsDataProvider {
 
+  @VisibleForTesting
   private val _detailsViewItem: MutableLiveData<DetailsViewItem> = MutableLiveData(null)
   override val detailsViewItem: LiveData<DetailsViewItem> = _detailsViewItem
 
@@ -68,24 +72,8 @@ class SimpleDetailsViewModel @Inject constructor(val patientRepository: PatientR
           val value =
             when (f.resourceType) {
               Enumerations.ResourceType.CONDITION ->
-                getSearchResults<Condition>(
-                    encounter.referenceValue(),
-                    Condition.ENCOUNTER,
-                    f,
-                    patientRepository.fhirEngine
-                  )
-                  .firstOrNull()
-                  ?.code
-                  ?.codingFirstRep
-              Enumerations.ResourceType.OBSERVATION ->
-                getSearchResults<Observation>(
-                    encounter.referenceValue(),
-                    Observation.ENCOUNTER,
-                    f,
-                    patientRepository.fhirEngine
-                  )
-                  .firstOrNull()
-                  ?.value
+                getCondition(encounter, f)?.code?.codingFirstRep
+              Enumerations.ResourceType.OBSERVATION -> getObservation(encounter, f)?.value
               else -> null
             }
 
@@ -99,5 +87,25 @@ class SimpleDetailsViewModel @Inject constructor(val patientRepository: PatientR
 
       _detailsViewItem.postValue(dataItem)
     }
+  }
+
+  suspend fun getCondition(encounter: Encounter, filter: Filter): Condition? {
+    return getSearchResults<Condition>(
+        encounter.referenceValue(),
+        Condition.ENCOUNTER,
+        filter,
+        patientRepository.fhirEngine
+      )
+      .firstOrNull()
+  }
+
+  suspend fun getObservation(encounter: Encounter, filter: Filter): Observation? {
+    return getSearchResults<Observation>(
+        encounter.referenceValue(),
+        Observation.ENCOUNTER,
+        filter,
+        patientRepository.fhirEngine
+      )
+      .firstOrNull()
   }
 }

@@ -16,17 +16,23 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onChildAt
+import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
@@ -34,10 +40,13 @@ import javax.inject.Inject
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
+import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 
@@ -45,7 +54,7 @@ import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 class SimpleDetailsScreenTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-  @get:Rule(order = 1) val composeRule = createComposeRule()
+  @get:Rule(order = 30) val composeRule = createComposeRule()
 
   @Inject lateinit var patientItemMapper: PatientItemMapper
 
@@ -54,46 +63,54 @@ class SimpleDetailsScreenTest : RobolectricTest() {
 
   private lateinit var viewModel: SimpleDetailsViewModel
 
-  private val encounterId = "5583145"
-
   @Before
   fun setUp() {
     hiltRule.inject()
     Faker.initPatientRepositoryMocks(patientRepository)
-    viewModel =
-      spyk(
-        SimpleDetailsViewModel(
-          patientRepository = patientRepository
-        )
-      )
 
-    composeRule.setContent { SimpleDetailsScreen(viewModel) }
+    coEvery { patientRepository.configurationRegistry } returns
+      ConfigurationRegistry(ApplicationProvider.getApplicationContext(), mockk(), mockk())
+
+    viewModel = spyk(SimpleDetailsViewModel(patientRepository = patientRepository))
   }
 
   @Test
-  fun testToolbarComponents() {
-    every { patientRepository. }
+  fun testToolbarComponent() {
+    val item =
+      ReflectionHelpers.getField<MutableLiveData<DetailsViewItem>>(viewModel, "_detailsViewItem")
+    item.postValue(DetailsViewItem("Test Results"))
 
-    viewModel.loadData(encounterId)
+    composeRule.setContent { SimpleDetailsScreen(viewModel) }
 
     composeRule
-      .onNodeWithTag(TOOLBAR_TITLE)
+      .onNodeWithTag(DETAILS_TOOLBAR_TITLE)
       .assertTextEquals(
         ApplicationProvider.getApplicationContext<HiltTestApplication>()
           .getString(R.string.test_results)
       )
-    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
+    composeRule.onNodeWithTag(DETAILS_TOOLBAR_BACK_ARROW).assertHasClickAction()
+  }
+
+  @Test
+  fun testScreenShouldHaveDynamicData() {
+    composeRule.setContent { simpleDetailsScreenView2() }
+
+    val rows = composeRule.onAllNodesWithTag(DETAILS_DATA_ROW, true)
+    rows.assertCountEquals(4)
+    rows[0].onChildAt(0).assert(hasText("Sample Label 1"))
+    rows[0].onChildAt(1).assert(hasText("Val 1"))
+    rows[0].onChildAt(2).assert(hasText("Sample Label Two"))
+    rows[0].onChildAt(3).assert(hasText("Val 2"))
+    rows[1].onChildren().assertCountEquals(0)
+    rows[2].onChildAt(0).assert(hasText("Label 1"))
+    rows[2].onChildAt(1).assert(hasText("Value of Magenta"))
   }
 
   @Test
   fun testToolbarBackPressedButtonShouldCallBackPressedClickListener() {
-    composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).performClick()
-    verify { viewModel.onBackPressed(true) }
-  }
+    composeRule.setContent { SimpleDetailsScreen(viewModel) }
 
-  @Test
-  fun testPatientDetailsCardShouldHaveCorrectData() {
-    composeRule.onNodeWithText("John Doe").assertExists()
-    composeRule.onNodeWithText("M - 22y").assertExists()
+    composeRule.onNodeWithTag(DETAILS_TOOLBAR_BACK_ARROW).performClick()
+    verify { viewModel.onBackPressed(true) }
   }
 }

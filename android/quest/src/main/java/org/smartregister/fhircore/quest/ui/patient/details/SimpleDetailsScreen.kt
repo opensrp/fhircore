@@ -47,7 +47,6 @@ import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Type
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
-import org.smartregister.fhircore.engine.util.extension.stringValue
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.configuration.view.Code
@@ -63,6 +62,11 @@ import timber.log.Timber
 
 private fun String?.value() = this ?: ""
 
+const val DETAILS_TOOLBAR_TITLE = "detailsToolbarTitle"
+const val DETAILS_TOOLBAR_BACK_ARROW = "detailsToolbarBackArrow"
+const val DETAILS_DATA_ROWS = "detailsDataRows"
+const val DETAILS_DATA_ROW = "detailsDataRow"
+
 @Composable
 fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
   val dataItem by dataProvider.detailsViewItem.observeAsState()
@@ -70,20 +74,20 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
   Surface(color = colorResource(id = R.color.white)) {
     Column {
       TopAppBar(
-        title = { Text(text = dataItem?.label.value(), Modifier.testTag(TOOLBAR_TITLE)) },
+        title = { Text(text = dataItem?.label.value(), Modifier.testTag(DETAILS_TOOLBAR_TITLE)) },
         navigationIcon = {
           IconButton(
             onClick = { dataProvider.onBackPressed(true) },
-            Modifier.testTag(TOOLBAR_BACK_ARROW)
+            Modifier.testTag(DETAILS_TOOLBAR_BACK_ARROW)
           ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
         }
       )
 
-      Column(modifier = Modifier.padding(20.dp)) {
+      Column(modifier = Modifier.padding(20.dp).testTag(DETAILS_DATA_ROWS)) {
         dataItem?.rows?.forEachIndexed { i, r ->
           kotlin
             .runCatching {
-              Row(Modifier.padding(10.dp)) {
+              Row(Modifier.padding(10.dp).testTag(DETAILS_DATA_ROW)) {
                 r.cells.forEach { c ->
                   if (c.filter.properties?.labelDirection == Direction.UP) {
                     Column(modifier = Modifier.weight(1f).padding(5.dp)) { DetailsViewCell(c) }
@@ -157,13 +161,16 @@ fun TextView(
 @Composable
 @Preview
 fun emptyView() {
-  SimpleDetailsScreen(dataProvider = object : SimpleDetailsDataProvider {
+  SimpleDetailsScreen(
+    dataProvider =
+      object : SimpleDetailsDataProvider {
 
-    override val onBackPressClicked: LiveData<Boolean> = MutableLiveData(true)
-    override fun onBackPressed(back: Boolean) {}
-    override val detailsViewItem: LiveData<DetailsViewItem>
-      get() = MutableLiveData(null)
-  })
+        override val onBackPressClicked: LiveData<Boolean> = MutableLiveData(true)
+        override fun onBackPressed(back: Boolean) {}
+        override val detailsViewItem: LiveData<DetailsViewItem>
+          get() = MutableLiveData(null)
+      }
+  )
 }
 
 @ExcludeFromJacocoGeneratedReport
@@ -318,7 +325,7 @@ fun simpleDetailsScreenView2() {
   )
 }
 
-private fun filterOf(key: String, label: String, properties: Properties): Filter {
+fun filterOf(key: String, label: String, properties: Properties): Filter {
   return Filter(
     resourceType = Enumerations.ResourceType.ENCOUNTER,
     key = key,

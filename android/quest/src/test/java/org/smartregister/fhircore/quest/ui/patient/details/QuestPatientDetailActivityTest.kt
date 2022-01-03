@@ -168,6 +168,12 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnTestResultItemClickListenerShouldStartQuestionnaireActivity() {
+    questPatientDetailActivity.configurationRegistry.appId = "quest"
+    questPatientDetailActivity.configurationRegistry.configurationsMap.put(
+      "quest|patient_register",
+      RegisterViewConfiguration("", "", "", "", "", "", "")
+    )
+
     questPatientDetailActivity.patientViewModel.onTestResultItemClickListener(
       QuestionnaireResponse().apply { questionnaire = "Questionnaire/12345" }
     )

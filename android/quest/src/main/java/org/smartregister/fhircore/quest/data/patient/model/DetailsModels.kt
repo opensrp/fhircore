@@ -29,5 +29,4 @@ data class DetailsViewItem(
 @Stable
 data class DetailsViewItemRow(val cells: MutableList<DetailsViewItemCell> = mutableListOf())
 
-@Stable
-data class DetailsViewItemCell(val value: Type?, val filter: Filter)
+@Stable data class DetailsViewItemCell(val value: Type?, val filter: Filter)

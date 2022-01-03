@@ -20,15 +20,19 @@ import com.google.android.fhir.logicalId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import java.math.BigDecimal
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.BooleanType
+import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
@@ -477,5 +481,33 @@ class ResourceExtensionTest : RobolectricTest() {
     resource.generateMissingId()
 
     Assert.assertFalse(resource.logicalId.isEmpty())
+  }
+
+  @Test
+  fun `Type#valueToString() should return string representation`() {
+    Assert.assertEquals("12345", StringType("12345").valueToString())
+    Assert.assertEquals("true", BooleanType(true).valueToString())
+    Assert.assertEquals(Date().makeItReadable(), DateTimeType(Date()).valueToString())
+    Assert.assertEquals("d", Coding("s", "c", "d").valueToString())
+    Assert.assertEquals(
+      "d",
+      CodeableConcept().apply { addCoding(Coding("s", "c", "d")) }.valueToString()
+    )
+    Assert.assertEquals(
+      "3.4",
+      Quantity()
+        .apply {
+          this.value = BigDecimal.valueOf(3.4)
+          this.unit = "G"
+        }
+        .valueToString()
+    )
+  }
+
+  @Test
+  fun `Resource#generateReferenceValue() should return correct reference`() {
+    val resource = Patient().apply { id = "123456" }
+
+    Assert.assertEquals("Patient/123456", resource.referenceValue())
   }
 }
