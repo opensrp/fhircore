@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
+import android.content.Intent
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.testing.BindValue
@@ -44,7 +45,7 @@ import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
-class QuestPatientTestResultActivityTest : RobolectricTest() {
+class SimpleDetailsActivityTest : RobolectricTest() {
 
   private lateinit var simpleDetailsActivity: SimpleDetailsActivity
 
@@ -61,8 +62,10 @@ class QuestPatientTestResultActivityTest : RobolectricTest() {
     hiltRule.inject()
     configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     Faker.initPatientRepositoryMocks(patientRepository)
+
+    val intent = Intent().putExtra("RECORD_ID", "1234")
     simpleDetailsActivity =
-      Robolectric.buildActivity(SimpleDetailsActivity::class.java).create().resume().get()
+      Robolectric.buildActivity(SimpleDetailsActivity::class.java, intent).create().resume().get()
   }
 
   @After
@@ -73,7 +76,7 @@ class QuestPatientTestResultActivityTest : RobolectricTest() {
 
   @Test
   fun testOnBackPressListenerShouldCallFinishActivity() {
-    simpleDetailsActivity.patientViewModel.onBackPressed(true)
+    simpleDetailsActivity.viewModel.onBackPressed(true)
     Assert.assertTrue(simpleDetailsActivity.isFinishing)
   }
 

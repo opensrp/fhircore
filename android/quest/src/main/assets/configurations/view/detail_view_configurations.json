@@ -16,7 +16,7 @@
             "resourceType": "OBSERVATION",
             "key": "code",
             "valueType": "CODEABLECONCEPT",
-            "label": " G6PD (U/g Hb)",
+            "label": "G6PD (U/g Hb)",
             "valueCoding": {
               "system": "http://snomed.info/sct",
               "code": "86859003"
@@ -24,7 +24,7 @@
             "properties": {
               "labelDirection": "UP",
               "value": {
-                "textSize": 30
+                "textSize": 35
               }
             }
           },
@@ -40,27 +40,34 @@
             "properties": {
               "labelDirection": "UP",
               "value": {
-                "textSize": 30
+                "textSize": 35
               }
             }
-          },
+          }
+        ]
+      },
+      {
+        "filters": []
+      },
+      {
+        "filters": [
           {
             "resourceType": "CONDITION",
-            "key": "code",
+            "key": "category",
             "valueType": "CODEABLECONCEPT",
-            "label": " Status ",
+            "label": "Status ",
             "valueCoding": {
               "system": "http://snomed.info/sct",
-              "code": "260372006"
+              "code": "9024005"
             },
             "dynamicColors": [
               {
                 "valueEqual": "Deficient",
-                "useColor": "FFFF0000"
+                "useColor": "FFFFA500"
               },
               {
                 "valueEqual": "Intermediate",
-                "useColor": "FFFFA500"
+                "useColor": "FF0068FF"
               },
               {
                 "valueEqual": "Normal",
@@ -70,18 +77,22 @@
             "properties": {
               "labelDirection": "UP",
               "value": {
-                "textSize": 40
+                "textSize": 45
               }
             }
-          },
+          }
+        ]
+      },
+      {
+        "filters": [
           {
             "resourceType": "CONDITION",
-            "key": "code",
+            "key": "category",
             "valueType": "CODEABLECONCEPT",
-            "label": " How is status determined? ",
+            "label": "How is status determined? ",
             "valueCoding": {
               "system": "http://snomed.info/sct",
-              "code": "260372006"
+              "code": "9024005"
             },
             "properties": {
               "labelDirection": "UP",

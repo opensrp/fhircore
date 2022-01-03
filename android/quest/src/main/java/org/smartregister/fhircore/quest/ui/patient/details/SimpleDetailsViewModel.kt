@@ -16,10 +16,10 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -32,7 +32,6 @@ import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItem
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItemCell
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItemRow
-import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import org.smartregister.fhircore.quest.util.getSearchResults
 import timber.log.Timber
@@ -41,10 +40,15 @@ import timber.log.Timber
 class SimpleDetailsViewModel @Inject constructor(val patientRepository: PatientRepository) :
   ViewModel(), SimpleDetailsDataProvider {
 
-  override val detailsViewItem: MutableLiveData<DetailsViewItem>
-    get() = MutableLiveData(null)
+  private val _detailsViewItem: MutableLiveData<DetailsViewItem> = MutableLiveData(null)
+  override val detailsViewItem: LiveData<DetailsViewItem> = _detailsViewItem
 
-  val patientItem = MutableLiveData<PatientItem>()
+  private val _onBackPressClicked: MutableLiveData<Boolean> = MutableLiveData(false)
+  override val onBackPressClicked: LiveData<Boolean> = _onBackPressClicked
+
+  override fun onBackPressed(back: Boolean) {
+    _onBackPressClicked.postValue(back)
+  }
 
   fun loadData(encounterId: String) {
     viewModelScope.launch {
@@ -62,36 +66,28 @@ class SimpleDetailsViewModel @Inject constructor(val patientRepository: PatientR
 
         it.filters.forEach { f ->
           val value =
-            kotlin
-              .runCatching {
-                when (f.resourceType) {
-                  Enumerations.ResourceType.CONDITION ->
-                    getSearchResults<Condition>(
-                        encounter.referenceValue(),
-                        Condition.ENCOUNTER,
-                        f,
-                        patientRepository.fhirEngine
-                      )
-                      .firstOrNull()
-                      ?.code
-                      ?.codingFirstRep
-                      ?.display
-                  Enumerations.ResourceType.OBSERVATION ->
-                    getSearchResults<Observation>(
-                        encounter.referenceValue(),
-                        Observation.ENCOUNTER,
-                        f,
-                        patientRepository.fhirEngine
-                      )
-                      .firstOrNull()
-                      ?.value
-                      ?.asStringValue()
-                  else -> null
-                }
-              }
-              .onFailure { Timber.e(it) }
-              .getOrNull()
-              ?: "N/A"
+            when (f.resourceType) {
+              Enumerations.ResourceType.CONDITION ->
+                getSearchResults<Condition>(
+                    encounter.referenceValue(),
+                    Condition.ENCOUNTER,
+                    f,
+                    patientRepository.fhirEngine
+                  )
+                  .firstOrNull()
+                  ?.code
+                  ?.codingFirstRep
+              Enumerations.ResourceType.OBSERVATION ->
+                getSearchResults<Observation>(
+                    encounter.referenceValue(),
+                    Observation.ENCOUNTER,
+                    f,
+                    patientRepository.fhirEngine
+                  )
+                  .firstOrNull()
+                  ?.value
+              else -> null
+            }
 
           row.cells.add(DetailsViewItemCell(value, f))
         }
@@ -99,7 +95,9 @@ class SimpleDetailsViewModel @Inject constructor(val patientRepository: PatientR
         dataItem.rows.add(row)
       }
 
-      detailsViewItem.postValue(dataItem)
+      Timber.i(dataItem.rows.toString())
+
+      _detailsViewItem.postValue(dataItem)
     }
   }
 }

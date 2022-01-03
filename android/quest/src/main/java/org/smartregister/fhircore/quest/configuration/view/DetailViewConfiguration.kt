@@ -30,10 +30,3 @@ class DetailViewConfiguration(
 ) : Configuration
 
 @Stable @Serializable class DetailViewRowConfiguration(val filters: List<Filter>)
-
-@Stable
-fun detailViewConfigurationOf(
-  appId: String,
-  classification: String,
-  rows: List<DetailViewRowConfiguration>
-) = DetailViewConfiguration(appId = appId, classification = classification, rows = rows)

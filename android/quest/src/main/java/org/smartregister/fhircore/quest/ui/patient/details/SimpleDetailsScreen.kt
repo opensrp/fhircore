@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
+import android.widget.TextView
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -39,10 +40,15 @@ import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.ui.core.Direction
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.Type
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.engine.util.extension.stringValue
+import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.configuration.view.Code
 import org.smartregister.fhircore.quest.configuration.view.DynamicColor
@@ -53,10 +59,10 @@ import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItem
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItemCell
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItemRow
 import org.smartregister.fhircore.quest.util.getColor
+import timber.log.Timber
 
 private fun String?.value() = this ?: ""
 
-@ExperimentalUnitApi
 @Composable
 fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
   val dataItem by dataProvider.detailsViewItem.observeAsState()
@@ -75,35 +81,38 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
 
       Column(modifier = Modifier.padding(20.dp)) {
         dataItem?.rows?.forEachIndexed { i, r ->
-          Row(Modifier.padding(10.dp)) {
-            r.cells.forEach { c ->
-              if (c.filter.properties?.labelDirection == Direction.UP) {
-                Column(modifier = Modifier.weight(1f).padding(5.dp)) { DetailsViewCell(c) }
-              } else Row(modifier = Modifier.weight(1f).padding(5.dp)) { DetailsViewCell(c) }
-            }
-          }
+          kotlin
+            .runCatching {
+              Row(Modifier.padding(10.dp)) {
+                r.cells.forEach { c ->
+                  if (c.filter.properties?.labelDirection == Direction.UP) {
+                    Column(modifier = Modifier.weight(1f).padding(5.dp)) { DetailsViewCell(c) }
+                  } else Row(modifier = Modifier.weight(1f).padding(5.dp)) { DetailsViewCell(c) }
+                }
+              }
 
-          // if no cells configured for in row add divider line
-          if (r.cells.size == 0) {
-            Divider(
-              color = colorResource(id = R.color.white_smoke),
-              modifier = Modifier.padding(20.dp)
-            )
-          }
+              // if no cells configured for in row add divider line
+              if (r.cells.size == 0) {
+                Divider(
+                  color = colorResource(id = R.color.white_smoke),
+                  modifier = Modifier.padding(20.dp)
+                )
+              }
+            }
+            .onFailure { Timber.e(it) }
         }
       }
     }
   }
 }
 
-@ExperimentalUnitApi
 @Composable
 fun DetailsViewCell(cell: DetailsViewItemCell) {
   with(cell.filter) {
     this.label?.let {
       TextView(
         this.properties?.label,
-        this.label,
+        StringType(this.label),
         this.dynamicColors,
         this.properties?.valueFormatter
       )
@@ -118,15 +127,16 @@ fun DetailsViewCell(cell: DetailsViewItemCell) {
   }
 }
 
-@ExperimentalUnitApi
+@OptIn(ExperimentalUnitApi::class)
 @Composable
 fun TextView(
   property: Property?,
-  value: Any,
+  value: Type?,
   colors: List<DynamicColor>?,
   valueFormatter: Map<String, String>?
 ) {
-  val dynamicColor = getColor(value.toString(), colors)
+  val valueStr = value.valueToString()
+  val dynamicColor = getColor(valueStr, colors)
   val color =
     when {
       dynamicColor?.isNotBlank() == true -> dynamicColor
@@ -134,8 +144,8 @@ fun TextView(
       else -> "FF888888"
     }
 
-  val formattedValue = valueFormatter?.get(value) ?: value.toString()
-  val size = property?.textSize?.toFloat() ?: 15f
+  val formattedValue = valueFormatter?.get(valueStr) ?: valueStr
+  val size = property?.textSize?.toFloat() ?: 16f
   Text(
     text = formattedValue,
     color = Color(color.toLong(radix = 16)),
@@ -143,7 +153,19 @@ fun TextView(
   )
 }
 
-@ExperimentalUnitApi
+@ExcludeFromJacocoGeneratedReport
+@Composable
+@Preview
+fun emptyView() {
+  SimpleDetailsScreen(dataProvider = object : SimpleDetailsDataProvider {
+
+    override val onBackPressClicked: LiveData<Boolean> = MutableLiveData(true)
+    override fun onBackPressed(back: Boolean) {}
+    override val detailsViewItem: LiveData<DetailsViewItem>
+      get() = MutableLiveData(null)
+  })
+}
+
 @ExcludeFromJacocoGeneratedReport
 @Composable
 @Preview(showBackground = true)
@@ -174,7 +196,9 @@ fun simpleDetailsScreenView1() {
 
   SimpleDetailsScreen(
     object : SimpleDetailsDataProvider {
-      override val detailsViewItem: MutableLiveData<DetailsViewItem>
+      override val onBackPressClicked: LiveData<Boolean> = MutableLiveData(true)
+      override fun onBackPressed(back: Boolean) {}
+      override val detailsViewItem: LiveData<DetailsViewItem>
         get() =
           MutableLiveData(
             DetailsViewItem(
@@ -185,11 +209,11 @@ fun simpleDetailsScreenView1() {
                     cells =
                       mutableListOf(
                         DetailsViewItemCell(
-                          "Val 1",
+                          StringType("Val 1"),
                           filterOf("key 1", "Sample Label 1", row1Props)
                         ),
                         DetailsViewItemCell(
-                          "Val 2",
+                          StringType("Val 2"),
                           filterOf("key 2", "Sample Label Two", row1Props)
                         )
                       )
@@ -199,7 +223,7 @@ fun simpleDetailsScreenView1() {
                     cells =
                       mutableListOf(
                         DetailsViewItemCell(
-                          "Value of Yellow",
+                          StringType("Value of Yellow"),
                           filterOf("key 1", "Label 1", row3Props)
                         )
                       )
@@ -208,7 +232,7 @@ fun simpleDetailsScreenView1() {
                     cells =
                       mutableListOf(
                         DetailsViewItemCell(
-                          "Dynamic Value 1",
+                          StringType("Dynamic Value 1"),
                           filterOf("key 1", "What is the value of Label", row4Props)
                         )
                       )
@@ -220,7 +244,6 @@ fun simpleDetailsScreenView1() {
   )
 }
 
-@ExperimentalUnitApi
 @ExcludeFromJacocoGeneratedReport
 @Composable
 @Preview(showBackground = true)
@@ -247,7 +270,9 @@ fun simpleDetailsScreenView2() {
 
   SimpleDetailsScreen(
     object : SimpleDetailsDataProvider {
-      override val detailsViewItem: MutableLiveData<DetailsViewItem>
+      override val onBackPressClicked: LiveData<Boolean> = MutableLiveData(true)
+      override fun onBackPressed(back: Boolean) {}
+      override val detailsViewItem: LiveData<DetailsViewItem>
         get() =
           MutableLiveData(
             DetailsViewItem(
@@ -258,11 +283,11 @@ fun simpleDetailsScreenView2() {
                     cells =
                       mutableListOf(
                         DetailsViewItemCell(
-                          "Val 1",
+                          StringType("Val 1"),
                           filterOf("key 1", "Sample Label 1", row1Props)
                         ),
                         DetailsViewItemCell(
-                          "Val 2",
+                          StringType("Val 2"),
                           filterOf("key 2", "Sample Label Two", row1Props)
                         )
                       )
@@ -272,7 +297,7 @@ fun simpleDetailsScreenView2() {
                     cells =
                       mutableListOf(
                         DetailsViewItemCell(
-                          "Value of Magenta",
+                          StringType("Value of Magenta"),
                           filterOf("key 1", "Label 1", row3Props)
                         )
                       )
@@ -281,7 +306,7 @@ fun simpleDetailsScreenView2() {
                     cells =
                       mutableListOf(
                         DetailsViewItemCell(
-                          "Dynamic Value 2",
+                          StringType("Dynamic Value 2"),
                           filterOf("key 1", "What is the value of Label", row4Props)
                         )
                       )
