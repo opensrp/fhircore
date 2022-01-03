@@ -23,8 +23,8 @@ import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
-import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.spyk
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
@@ -41,6 +41,8 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.quest.configuration.view.Code
 import org.smartregister.fhircore.quest.configuration.view.DynamicColor
 import org.smartregister.fhircore.quest.configuration.view.Filter
+import org.smartregister.fhircore.quest.configuration.view.Properties
+import org.smartregister.fhircore.quest.configuration.view.Property
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -48,6 +50,7 @@ class PatientUtilTest : RobolectricTest() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
+  @Inject lateinit var fhirEngine: FhirEngine
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
@@ -58,17 +61,14 @@ class PatientUtilTest : RobolectricTest() {
       appId = "g6pd",
       accountAuthenticator = accountAuthenticator
     ) {}
+    fhirEngine = spyk(fhirEngine)
   }
 
   @Test
   fun testLoadAdditionalDataShouldReturnExpectedData() {
 
     val searchSlot = slot<Search>()
-
-    val fhirEngine =
-      mockk<FhirEngine> {
-        coEvery { search<Condition>(capture(searchSlot)) } returns getConditions()
-      }
+    coEvery { fhirEngine.search<Condition>(capture(searchSlot)) } returns getConditions()
 
     val data = runBlocking { loadAdditionalData("", configurationRegistry, fhirEngine) }
 
@@ -95,7 +95,7 @@ class PatientUtilTest : RobolectricTest() {
   @Test
   fun testPropertiesMapping() {
 
-    val filter =
+    var filter =
       Filter(
         resourceType = Enumerations.ResourceType.CONDITION,
         key = "code",
@@ -110,11 +110,20 @@ class PatientUtilTest : RobolectricTest() {
     Assert.assertNull(properties.value?.textSize)
     Assert.assertEquals("#00FF00", properties.value?.color)
 
+    filter =
+      Filter(
+        resourceType = Enumerations.ResourceType.CONDITION,
+        key = "code",
+        valueType = Enumerations.DataType.CODEABLECONCEPT,
+        valueCoding = Code(),
+        properties = Properties(label = Property(), value = Property(color = "#000000", 20))
+      )
+
     properties = runBlocking { propertiesMapping("Deficient", filter) }
 
-    Assert.assertNull(properties.label)
-    Assert.assertNull(properties.value?.textSize)
-    Assert.assertNull(properties.value?.color)
+    Assert.assertNotNull(properties.label)
+    Assert.assertEquals("#000000", properties.value?.color)
+    Assert.assertEquals(20, properties.value?.textSize)
   }
 
   private fun getConditions(): List<Condition> {
