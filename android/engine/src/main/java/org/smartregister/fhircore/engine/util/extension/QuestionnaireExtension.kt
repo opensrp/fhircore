@@ -26,9 +26,11 @@ fun Questionnaire.isExtractionCandidate() =
     this.extension.any { it.url.contains("sdc-questionnaire-itemExtractionContext") }
 
 fun Questionnaire.cqfLibraryId() =
-  this.extension.single { it.url.contains("cqf-library") }?.let {
-    it.value.asStringValue().replace("Library/", "")
-  }
+  this.extension
+    .singleOrNull { it.url.contains("cqf-library") }
+    ?.value
+    ?.asStringValue()
+    ?.replace("Library/", "")
 
 fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {
   return item.find(linkId, null)

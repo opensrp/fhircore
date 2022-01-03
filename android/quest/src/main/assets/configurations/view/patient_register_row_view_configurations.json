@@ -10,12 +10,12 @@
     "filters": [
       {
         "resourceType": "CONDITION",
-        "key": "code",
+        "key": "category",
         "valueType": "CODEABLECONCEPT",
         "valuePrefix": " G6PD Status - ",
         "valueCoding": {
           "system": "http://snomed.info/sct",
-          "code": "260372006"
+          "code": "9024005"
         },
         "dynamicColors": [
           {

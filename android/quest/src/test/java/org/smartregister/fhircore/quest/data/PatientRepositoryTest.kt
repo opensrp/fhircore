@@ -22,6 +22,8 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
@@ -45,6 +47,7 @@ import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.genderFull
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
+import org.smartregister.fhircore.quest.util.loadAdditionalData
 
 @HiltAndroidTest
 class PatientRepositoryTest : RobolectricTest() {
@@ -85,6 +88,8 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @Test
   fun testLoadDataShouldReturnPatientItemList() = runBlockingTest {
+    mockkStatic(::loadAdditionalData)
+    coEvery { loadAdditionalData(any(), any(), any()) } returns listOf()
     coEvery { fhirEngine.search<Patient>(any()) } returns
       listOf(buildPatient("1234", "Doe", "John", 1, Enumerations.AdministrativeGender.FEMALE))
     coEvery { fhirEngine.count(any()) } returns 1
@@ -97,6 +102,7 @@ class PatientRepositoryTest : RobolectricTest() {
     Assert.assertEquals("Female", data[0].genderFull())
 
     coVerify { fhirEngine.search<Patient>(any()) }
+    unmockkStatic(::loadAdditionalData)
   }
 
   @Test
