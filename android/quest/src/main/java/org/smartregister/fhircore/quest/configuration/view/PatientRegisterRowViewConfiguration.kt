@@ -61,14 +61,3 @@ data class Properties(
 @Stable @Serializable data class Property(val color: String? = null, val textSize: Int? = null)
 
 @Stable @Serializable data class DynamicColor(val valueEqual: String, val useColor: String)
-
-/**
- * @param appId Set unique identifier for this configuration
- * @param classification set the classification
- * @param showG6pdStatus enable of disable the status
- */
-@Stable
-fun patientRegisterRowViewConfigurationOf(
-  appId: String = "quest",
-  classification: String = "patient_list_row"
-) = PatientRegisterRowViewConfiguration(appId = appId, classification = classification)

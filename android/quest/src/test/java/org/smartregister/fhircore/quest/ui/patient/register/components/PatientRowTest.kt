@@ -32,7 +32,6 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 class PatientRowTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
   @get:Rule(order = 1) val composeRule = createComposeRule()
 
   @Before
@@ -46,7 +45,7 @@ class PatientRowTest : RobolectricTest() {
         gender = "Male",
         age = "27",
         address = "Nairobi",
-        additionalData = listOf(AdditionalData("Deficient", "#FF0000", " G6PD Status - "))
+        additionalData = listOf(AdditionalData("G6PD", "Deficient", " G6PD Status - "))
       )
     composeRule.setContent { PatientRow(patientItem = patientItem, { _, _ -> }) }
   }
@@ -57,6 +56,7 @@ class PatientRowTest : RobolectricTest() {
     composeRule.onNodeWithText("Male").assertIsDisplayed()
     composeRule.onNodeWithText("John Doe, 27").assertExists()
     composeRule.onNodeWithText("John Doe, 27").assertIsDisplayed()
+    composeRule.onNodeWithText("G6PD").assertExists().assertIsDisplayed()
     composeRule.onNodeWithText(" G6PD Status - ").assertExists().assertIsDisplayed()
     composeRule.onNodeWithText("Deficient").assertExists().assertIsDisplayed()
   }
