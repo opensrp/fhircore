@@ -1,4 +1,4 @@
-map "http://fhir.labs.smartregister.org/fhir/StructureMap/5021" = 'VitalSignsMetric'
+map "http://fhir.labs.smartregister.org/fhir/StructureMap/5021" = 'VitalSignsStandard'
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
@@ -42,6 +42,7 @@ group ExtractWeight(source src : QuestionnaireResponse, target bundle : Bundle, 
                        src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
                        } "rule_ei_6";
                 src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "eh_6";
+                src -> obs.effective = evaluate(item, now()) "ew_7";
             } "ew_2";
         } "ew_1";
 }
@@ -65,6 +66,7 @@ group ExtractHeight(source src : QuestionnaireResponse, target bundle : Bundle, 
                        src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
                        } "rule_ei_6";
                 src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "eh_6";
+                src -> obs.effective = evaluate(item, now()) "eh_7";
             } "eh_2";
         } "eh_1";
 }
@@ -88,6 +90,7 @@ group ExtractOxygenSat(source src : QuestionnaireResponse, target bundle : Bundl
                        src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
                        } "rule_ei_6";
                 src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "eos_6";
+                src -> obs.effective = evaluate(item, now()) "eos_7";
             } "eos_2";
         } "eos_1";
 }
@@ -114,6 +117,7 @@ group ExtractBloodPressure(source src : QuestionnaireResponse, target bundle : B
                        src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
                        } "rule_ei_6";
                 src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "ebp_6";
+                src -> obs.effective = evaluate(item, now()) "ebp_7";
             } "ebp_2";
 
             src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
@@ -134,6 +138,7 @@ group ExtractBloodPressure(source src : QuestionnaireResponse, target bundle : B
                        src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
                        } "rule_ei_6";
                 src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "eh1_6";
+                src -> obs.effective = evaluate(item, now()) "eh1_7";
             } "eh1_2";
         } "ebp_1";
 }
@@ -154,6 +159,7 @@ group ExtractPulseRate(source src : QuestionnaireResponse, target bundle : Bundl
                        src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
                        } "rule_ei_6";
                 src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "epr_6";
+                src -> obs.effective = evaluate(item, now()) "epr_7";
             } "epr_2";
         } "epr_1";
 }
@@ -174,6 +180,7 @@ group ExtractBloodGlucose(source src : QuestionnaireResponse, target bundle : Bu
                        src -> reference.reference = evaluate(src, 'Patient/' + $this.item.where(linkId = 'patient-id').answer.value) "rule_ei_6_1";
                        } "rule_ei_6";
                 src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", 'vital-signs', "Vital Signs") "ebc_6";
+                src -> obs.effective = evaluate(item, now()) "ebc_7";
             } "ebc_2";
         } "ebc_1";
 }
