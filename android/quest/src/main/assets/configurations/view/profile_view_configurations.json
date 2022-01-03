@@ -1,0 +1,32 @@
+[
+  {
+    "appId" : "quest",
+    "classification" : "profile_view",
+    "client_statuses": [],
+    "contentTitle": "Responses",
+    "contentItemTitle": true,
+    "contentItemSubTitle": false
+  },
+  {
+    "appId" : "g6pd",
+    "classification" : "profile_view",
+    "client_statuses": [
+      {
+        "resourceType": "Condition",
+        "filterType": "TOKEN",
+        "key": "code",
+        "valueType": "CODEABLECONCEPT",
+        "prefixColor": "#000000",
+        "color": "#000000",
+        "valuePrefix": "G6PD Status - ",
+        "valueCoding": {
+          "system": "http://snomed.info/sct",
+          "code": "9024005"
+        }
+      }
+    ],
+    "contentTitle": "TEST RESULTS",
+    "contentItemTitle": true,
+    "contentItemSubTitle": true
+  }
+]

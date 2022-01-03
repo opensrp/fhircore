@@ -38,6 +38,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.configuration.view.ProfileViewConfiguration
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import timber.log.Timber
 
@@ -67,7 +68,9 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
     patientViewModel.run {
       getDemographics(patientId)
       getAllResults(patientId)
-      getAllForms(this@QuestPatientDetailActivity)
+      getAllForms(this@QuestPatientDetailActivity, profileViewConfiguration = configurationRegistry.retrieveConfiguration<ProfileViewConfiguration>(
+        configClassification = QuestConfigClassification.PROFILE_VIEW
+      ))
     }
     setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
   }

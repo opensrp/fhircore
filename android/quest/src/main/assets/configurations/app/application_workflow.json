@@ -14,6 +14,12 @@
         "resource": "LoginViewConfiguration",
         "classification": "login",
         "description": "Configurations for login"
+      },
+      {
+        "workflowPoint": "profile_view",
+        "resource": "ProfileViewConfiguration",
+        "classification": "profile_view",
+        "description": "Configurations for profile view"
       }
     ]
   },
@@ -44,6 +50,12 @@
         "resource": "DetailViewConfiguration",
         "classification": "test_result_detail_view",
         "description": "Configurations for Test Results Details"
+      },
+      {
+        "workflowPoint": "profile_view",
+        "resource": "ProfileViewConfiguration",
+        "classification": "profile_view",
+        "description": "Configurations for profile view"
       }
     ]
   }

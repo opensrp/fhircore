@@ -38,6 +38,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.extension.isPatient
+import org.smartregister.fhircore.quest.configuration.view.ProfileViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
@@ -68,13 +69,13 @@ constructor(
     }
   }
 
-  fun getAllForms(context: Context) {
+  fun getAllForms(context: Context, profileViewConfiguration: ProfileViewConfiguration) {
     viewModelScope.launch {
       // TODO Load binary resources
       val config =
         AssetUtil.decodeAsset<ProfileConfig>(fileName = PROFILE_CONFIG, context = context)
       questionnaireConfigs.postValue(
-        patientRepository.fetchTestForms(config.profileQuestionnaireFilter)
+        patientRepository.fetchTestForms(config.profileQuestionnaireFilter, profileViewConfiguration.appId)
       )
     }
   }
