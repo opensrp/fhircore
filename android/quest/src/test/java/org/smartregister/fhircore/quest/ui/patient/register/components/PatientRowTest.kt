@@ -24,6 +24,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -44,7 +45,8 @@ class PatientRowTest : RobolectricTest() {
         name = "John Doe",
         gender = "Male",
         age = "27",
-        address = "Nairobi"
+        address = "Nairobi",
+        additionalData = listOf(AdditionalData("Deficient", "#FF0000", " G6PD Status - "))
       )
     composeRule.setContent { PatientRow(patientItem = patientItem, { _, _ -> }) }
   }
@@ -55,5 +57,7 @@ class PatientRowTest : RobolectricTest() {
     composeRule.onNodeWithText("Male").assertIsDisplayed()
     composeRule.onNodeWithText("John Doe, 27").assertExists()
     composeRule.onNodeWithText("John Doe, 27").assertIsDisplayed()
+    composeRule.onNodeWithText(" G6PD Status - ").assertExists().assertIsDisplayed()
+    composeRule.onNodeWithText("Deficient").assertExists().assertIsDisplayed()
   }
 }

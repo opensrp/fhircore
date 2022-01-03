@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,14 +27,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.quest.configuration.view.Properties
+import org.smartregister.fhircore.quest.configuration.view.Property
+import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.data.patient.model.genderFull
 import org.smartregister.fhircore.quest.ui.patient.register.OpenPatientProfile
@@ -45,7 +53,7 @@ const val PATIENT_BIO = "patientBio"
 fun PatientRow(
   patientItem: PatientItem,
   clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit,
-  modifier: Modifier = Modifier,
+  modifier: Modifier = Modifier
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -73,7 +81,92 @@ fun PatientRow(
           fontSize = 16.sp,
           modifier = modifier.wrapContentWidth()
         )
+        Column {
+          patientItem.additionalData?.forEach {
+            Row {
+              it.label?.let { label ->
+                Text(
+                  text = label,
+                  color =
+                    Color(
+                      android.graphics.Color.parseColor(it.properties?.label?.color ?: "#000000")
+                    ),
+                  fontSize = it.properties?.label?.textSize?.sp ?: 16.sp,
+                  modifier = modifier.wrapContentWidth()
+                )
+              }
+
+              it.valuePrefix?.let { prefix ->
+                Text(
+                  text = prefix,
+                  color =
+                    Color(
+                      android.graphics.Color.parseColor(it.properties?.value?.color ?: "#000000")
+                    ),
+                  fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,
+                  modifier = modifier.wrapContentWidth()
+                )
+              }
+
+              Text(
+                text = it.value,
+                color =
+                  Color(
+                    android.graphics.Color.parseColor(it.properties?.value?.color ?: "#000000")
+                  ),
+                fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,
+                modifier = modifier.wrapContentWidth()
+              )
+            }
+          }
+        }
       }
     }
+  }
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun PatientRow() {
+  MaterialTheme {
+    PatientRow(
+      patientItem = PatientItem("1", "1", "Rickey Ron", "M", "32y", ""),
+      clickListener = { listenerIntent, data -> },
+      modifier = Modifier.background(Color.White)
+    )
+  }
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun PatientRowWithG6PDNormalStatus() {
+  MaterialTheme {
+    PatientRow(
+      patientItem =
+        PatientItem(
+          "1",
+          "1",
+          "Rickey Ron",
+          "M",
+          "32y",
+          "",
+          listOf(
+            AdditionalData(
+              label = " Label 1",
+              value = "Normal",
+              valuePrefix = " G6PD Status - ",
+              properties =
+                Properties(
+                  label = Property(color = "#FF0000", textSize = 16),
+                  value = Property(color = "#00a000", textSize = 16)
+                )
+            )
+          )
+        ),
+      clickListener = { listenerIntent, data -> },
+      modifier = Modifier.background(Color.White)
+    )
   }
 }

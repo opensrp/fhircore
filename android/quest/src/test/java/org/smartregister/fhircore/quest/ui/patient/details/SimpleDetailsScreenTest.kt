@@ -26,6 +26,7 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
@@ -41,7 +42,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 
 @HiltAndroidTest
-class QuestPatientTestResultScreenTest : RobolectricTest() {
+class SimpleDetailsScreenTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   @get:Rule(order = 1) val composeRule = createComposeRule()
@@ -51,35 +52,35 @@ class QuestPatientTestResultScreenTest : RobolectricTest() {
   val patientRepository: PatientRepository = mockk()
   val defaultRepository: DefaultRepository = mockk()
 
-  private lateinit var questPatientDetailViewModel: QuestPatientDetailViewModel
+  private lateinit var viewModel: SimpleDetailsViewModel
 
-  private val patientId = "5583145"
+  private val encounterId = "5583145"
 
   @Before
   fun setUp() {
     hiltRule.inject()
     Faker.initPatientRepositoryMocks(patientRepository)
-    questPatientDetailViewModel =
+    viewModel =
       spyk(
-        QuestPatientDetailViewModel(
-          patientRepository = patientRepository,
-          defaultRepository = defaultRepository,
-          patientItemMapper = patientItemMapper,
-          mockk()
+        SimpleDetailsViewModel(
+          patientRepository = patientRepository
         )
       )
-    questPatientDetailViewModel.getDemographics(patientId)
 
-    composeRule.setContent { QuestPatientTestResultScreen(questPatientDetailViewModel) }
+    composeRule.setContent { SimpleDetailsScreen(viewModel) }
   }
 
   @Test
   fun testToolbarComponents() {
+    every { patientRepository. }
+
+    viewModel.loadData(encounterId)
+
     composeRule
       .onNodeWithTag(TOOLBAR_TITLE)
       .assertTextEquals(
         ApplicationProvider.getApplicationContext<HiltTestApplication>()
-          .getString(R.string.back_to_clients)
+          .getString(R.string.test_results)
       )
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).assertHasClickAction()
   }
@@ -87,7 +88,7 @@ class QuestPatientTestResultScreenTest : RobolectricTest() {
   @Test
   fun testToolbarBackPressedButtonShouldCallBackPressedClickListener() {
     composeRule.onNodeWithTag(TOOLBAR_BACK_ARROW).performClick()
-    verify { questPatientDetailViewModel.onBackPressed(true) }
+    verify { viewModel.onBackPressed(true) }
   }
 
   @Test

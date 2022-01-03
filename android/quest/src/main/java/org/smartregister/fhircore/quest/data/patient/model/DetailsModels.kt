@@ -17,31 +17,17 @@
 package org.smartregister.fhircore.quest.data.patient.model
 
 import androidx.compose.runtime.Stable
-import org.smartregister.fhircore.quest.configuration.view.Properties
+import org.hl7.fhir.r4.model.Type
+import org.smartregister.fhircore.quest.configuration.view.Filter
 
 @Stable
-data class PatientItem(
-  val id: String = "",
-  val identifier: String = "",
-  val name: String = "",
-  val gender: String = "",
-  val age: String = "",
-  val address: String = "",
-  var additionalData: List<AdditionalData>? = null
+data class DetailsViewItem(
+  var label: String = "",
+  val rows: MutableList<DetailsViewItemRow> = mutableListOf()
 )
 
 @Stable
-data class AdditionalData(
-  val label: String? = null,
-  val value: String,
-  val valuePrefix: String? = null,
-  val properties: Properties? = null
-)
+data class DetailsViewItemRow(val cells: MutableList<DetailsViewItemCell> = mutableListOf())
 
-fun PatientItem.genderFull(): String {
-  return when (gender) {
-    "M" -> "Male"
-    "F" -> "Female"
-    else -> gender
-  }
-}
+@Stable
+data class DetailsViewItemCell(val value: Type?, val filter: Filter)

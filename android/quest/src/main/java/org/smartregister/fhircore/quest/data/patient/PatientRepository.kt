@@ -24,9 +24,11 @@ import com.google.android.fhir.search.search
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
@@ -35,6 +37,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
+import org.smartregister.fhircore.quest.util.loadAdditionalData
 import timber.log.Timber
 
 class PatientRepository
@@ -42,7 +45,8 @@ class PatientRepository
 constructor(
   override val fhirEngine: FhirEngine,
   override val domainMapper: PatientItemMapper,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
+  val configurationRegistry: ConfigurationRegistry
 ) : RegisterRepository<Patient, PatientItem> {
 
   override suspend fun loadData(
@@ -65,7 +69,12 @@ constructor(
           from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
         }
 
-      patients.map { domainMapper.mapToDomainModel(it) }
+      patients.map {
+        val patientItem = domainMapper.mapToDomainModel(it)
+        patientItem.additionalData =
+          loadAdditionalData(patientItem.id, configurationRegistry, fhirEngine)
+        patientItem
+      }
     }
   }
 
@@ -108,6 +117,9 @@ constructor(
     withContext(dispatcherProvider.io()) {
       fhirEngine.load(Questionnaire::class.java, questionnaireId)
     }
+
+  suspend fun loadEncounter(id: String): Encounter =
+    withContext(dispatcherProvider.io()) { fhirEngine.load(Encounter::class.java, id) }
 
   private suspend fun searchQuestionnaireResponses(patientId: String): List<QuestionnaireResponse> =
     fhirEngine.search { filter(QuestionnaireResponse.SUBJECT) { value = "Patient/$patientId" } }
