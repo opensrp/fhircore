@@ -36,6 +36,8 @@ import com.google.android.fhir.datacapture.views.QuestionnaireItemViewHolderFact
 import com.google.android.fhir.datacapture.views.QuestionnaireItemViewItem
 import com.google.android.material.button.MaterialButton
 import id.zelory.compressor.Compressor.compress
+import id.zelory.compressor.constraint.quality
+import id.zelory.compressor.constraint.size
 import id.zelory.compressor.extension
 import java.io.File
 import kotlinx.coroutines.launch
@@ -76,7 +78,10 @@ class CustomPhotoCaptureFactory(
       if (result) {
         lifecycleScope
           .launch(dispatcher.io()) {
-            imageFile = compress(context, imageFile)
+            imageFile = compress(context, imageFile) {
+              quality(30)
+              size(64_000)
+            }
             val imageBitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
             loadThumbnail(imageBitmap)
             val imageBytes = imageBitmap.encodeToByteArray()
