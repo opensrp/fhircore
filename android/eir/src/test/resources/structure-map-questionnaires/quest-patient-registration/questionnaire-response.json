@@ -119,10 +119,10 @@
           ]
         },
         {
-          "linkId": "PR-birth-date",
+          "linkId": "PR-age",
           "answer": [
             {
-              "valueDate": "1991-12-14"
+              "valueInteger": 23
             }
           ]
         },

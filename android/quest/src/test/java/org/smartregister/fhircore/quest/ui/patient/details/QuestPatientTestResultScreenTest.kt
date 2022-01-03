@@ -33,6 +33,7 @@ import javax.inject.Inject
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
@@ -48,6 +49,7 @@ class QuestPatientTestResultScreenTest : RobolectricTest() {
   @Inject lateinit var patientItemMapper: PatientItemMapper
 
   val patientRepository: PatientRepository = mockk()
+  val defaultRepository: DefaultRepository = mockk()
 
   private lateinit var questPatientDetailViewModel: QuestPatientDetailViewModel
 
@@ -61,6 +63,7 @@ class QuestPatientTestResultScreenTest : RobolectricTest() {
       spyk(
         QuestPatientDetailViewModel(
           patientRepository = patientRepository,
+          defaultRepository = defaultRepository,
           patientItemMapper = patientItemMapper,
           mockk()
         )
@@ -90,6 +93,6 @@ class QuestPatientTestResultScreenTest : RobolectricTest() {
   @Test
   fun testPatientDetailsCardShouldHaveCorrectData() {
     composeRule.onNodeWithText("John Doe").assertExists()
-    composeRule.onNodeWithText("M - 21y").assertExists()
+    composeRule.onNodeWithText("M - 22y").assertExists()
   }
 }
