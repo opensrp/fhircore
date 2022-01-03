@@ -40,7 +40,7 @@
   "encounter": {
     "reference": "#RefEncounter"
   },
-  "effectiveDateTime": "#EffectiveDate",
+  "effectiveDateTime": "#EffectiveDateTime",
   "valueQuantity": {
     "value": "#HeightValue",
     "unit": "#HeightUnit",

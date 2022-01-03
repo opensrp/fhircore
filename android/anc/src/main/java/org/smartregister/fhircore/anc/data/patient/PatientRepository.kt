@@ -20,6 +20,7 @@ import android.content.Context
 import androidx.annotation.StringRes
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -326,16 +327,10 @@ constructor(
           filterByPatient(Observation.SUBJECT, patientId)
         }
       }
-    if (observations.isNotEmpty()) {
-      val listOfObservations =
-        observations.distinctBy { it.effectiveDateTimeType == DateTimeType(Date()) }
-      finalObservation =
-        if (listOfObservations.isNotEmpty())
-          listOfObservations.sortedBy { it.effectiveDateTimeType.value }.last()
-        else observations.sortedBy { it.effectiveDateTimeType.value }.last()
-    }
 
-    return finalObservation
+    return if (observations.isNotEmpty()) {
+      observations.sortedBy { it.effectiveDateTimeType.value }.last()
+    } else Observation()
   }
 
   suspend fun fetchEncounters(patientId: String): List<Encounter> =
@@ -619,7 +614,7 @@ constructor(
       "#RefEncounter" to bmiEncounter?.id,
       "#RefPractitioner" to "Practitioner/399",
       "#RefDateStart" to DateType(Date()).format(),
-      "#EffectiveDate" to DateType(Date()).format(),
+      "#EffectiveDateTime" to DateTimeType(Date()).format(),
       "#WeightValue" to weight?.toString(),
       "#HeightValue" to height?.toString(),
       "#BmiValue" to computedBmi.toString(),
