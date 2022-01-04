@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -92,30 +93,22 @@ fun PatientRow(
                       android.graphics.Color.parseColor(it.properties?.label?.color ?: "#000000")
                     ),
                   fontSize = it.properties?.label?.textSize?.sp ?: 16.sp,
-                  modifier = modifier.wrapContentWidth()
-                )
-              }
-
-              it.valuePrefix?.let { prefix ->
-                Text(
-                  text = prefix,
-                  color =
-                    Color(
-                      android.graphics.Color.parseColor(it.properties?.value?.color ?: "#000000")
-                    ),
-                  fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,
-                  modifier = modifier.wrapContentWidth()
+                  modifier = modifier.wrapContentWidth(),
+                  fontWeight =
+                    FontWeight(it.properties?.label?.fontWeight?.weight ?: FontWeight.Normal.weight)
                 )
               }
 
               Text(
-                text = it.value,
+                text = (it.valuePrefix ?: "") + it.value,
                 color =
                   Color(
                     android.graphics.Color.parseColor(it.properties?.value?.color ?: "#000000")
                   ),
                 fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,
-                modifier = modifier.wrapContentWidth()
+                modifier = modifier.wrapContentWidth(),
+                fontWeight =
+                  FontWeight(it.properties?.value?.fontWeight?.weight ?: FontWeight.Normal.weight)
               )
             }
           }
