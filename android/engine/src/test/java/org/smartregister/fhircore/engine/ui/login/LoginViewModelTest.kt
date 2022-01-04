@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
@@ -77,7 +78,8 @@ internal class LoginViewModelTest : RobolectricTest() {
       LoginViewModel(
         accountAuthenticator = accountAuthenticatorSpy,
         dispatcher = dispatcherProvider,
-        sharedPreferences = sharedPreferencesHelper
+        sharedPreferences = sharedPreferencesHelper,
+        app = ApplicationProvider.getApplicationContext()
       )
   }
 
