@@ -112,7 +112,6 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
       .setPositiveButton(R.string.str_save) { dialogInterface, _ ->
         dialogInterface.dismiss()
         proceedRecordBMI(
-          questionnaireResponse = questionnaireResponse,
           patientId = patientId,
           weight = weight,
           height = height,
@@ -124,7 +123,6 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
   }
 
   private fun proceedRecordBMI(
-    questionnaireResponse: QuestionnaireResponse,
     patientId: String,
     weight: Double,
     height: Double,
@@ -134,8 +132,6 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
     lifecycleScope.launch {
       val success =
         bmiQuestionnaireViewModel.saveComputedBmi(
-          questionnaire = questionnaire,
-          questionnaireResponse = questionnaireResponse,
           patientId = patientId,
           encounterID = encounterID,
           weight = weight,

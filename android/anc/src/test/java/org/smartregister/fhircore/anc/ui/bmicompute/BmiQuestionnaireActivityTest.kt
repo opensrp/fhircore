@@ -150,7 +150,7 @@ internal class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
     )
 
     coEvery {
-      patientRepository.recordComputedBmi(any(), any(), any(), any(), any(), any(), any(), any())
+      patientRepository.recordComputedBmi(any(), any(), any(), any(), any(), any())
     } returns true
     dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
   }
@@ -165,16 +165,12 @@ internal class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
   fun testProceedRecordBMIShouldSaveData() {
     every { bmiQuestionnaireActivitySpy getProperty "questionnaire" } returns mockk<Questionnaire>()
     coEvery {
-      patientRepository.recordComputedBmi(any(), any(), any(), any(), any(), any(), any(), any())
+      patientRepository.recordComputedBmi(any(), any(), any(), any(), any(), any())
     } returns true
 
     ReflectionHelpers.callInstanceMethod<Any>(
       bmiQuestionnaireActivitySpy,
       "proceedRecordBMI",
-      ReflectionHelpers.ClassParameter(
-        QuestionnaireResponse::class.java,
-        getQuestionnaireResponse()
-      ),
       ReflectionHelpers.ClassParameter(String::class.java, "Patient/1"),
       ReflectionHelpers.ClassParameter(Double::class.java, 5),
       ReflectionHelpers.ClassParameter(Double::class.java, 5),
@@ -185,7 +181,7 @@ internal class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
     verify(exactly = 1) { bmiQuestionnaireActivitySpy.finish() }
 
     coEvery {
-      patientRepository.recordComputedBmi(any(), any(), any(), any(), any(), any(), any(), any())
+      patientRepository.recordComputedBmi(any(), any(), any(), any(), any(), any())
     } returns false
     every { bmiQuestionnaireActivitySpy.getString(any()) } returns ""
     every { bmiQuestionnaireActivitySpy["showErrorAlert"](any<String>(), any<String>()) }
@@ -193,10 +189,6 @@ internal class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
     ReflectionHelpers.callInstanceMethod<Any>(
       bmiQuestionnaireActivitySpy,
       "proceedRecordBMI",
-      ReflectionHelpers.ClassParameter(
-        QuestionnaireResponse::class.java,
-        getQuestionnaireResponse()
-      ),
       ReflectionHelpers.ClassParameter(String::class.java, "Patient/1"),
       ReflectionHelpers.ClassParameter(Double::class.java, 5),
       ReflectionHelpers.ClassParameter(Double::class.java, 5),

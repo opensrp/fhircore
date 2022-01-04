@@ -39,8 +39,6 @@ import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Goal
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.anc.R
@@ -317,7 +315,6 @@ constructor(
             throw UnsupportedOperationException("Given filter $searchFilterString not supported")
         }
     }
-    var finalObservation = Observation()
     val observations =
       withContext(dispatcherProvider.io()) {
         fhirEngine.search<Observation> {
@@ -327,9 +324,7 @@ constructor(
         }
       }
 
-    return if (observations.isNotEmpty()) {
-      observations.sortedBy { it.effectiveDateTimeType.value }.last()
-    } else Observation()
+    return observations.maxByOrNull { it.effectiveDateTimeType.value } ?: Observation()
   }
 
   suspend fun fetchEncounters(patientId: String): List<Encounter> =
@@ -501,8 +496,6 @@ constructor(
   }
 
   suspend fun recordComputedBmi(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
     patientId: String,
     encounterID: String,
     weight: Double,
@@ -510,8 +503,6 @@ constructor(
     computedBmi: Double,
     isUnitModeMetric: Boolean
   ): Boolean {
-    // resourceMapperExtended.saveParsedResource(questionnaireResponse,
-    // questionnaire, patientId, null)
     return recordBmi(
       patientId = patientId,
       formEncounterId = encounterID,

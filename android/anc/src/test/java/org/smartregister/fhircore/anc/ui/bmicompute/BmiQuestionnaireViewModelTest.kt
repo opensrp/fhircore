@@ -152,11 +152,9 @@ class BmiQuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testSaveComputedBmiShouldReturnTrue() {
     coEvery {
-      patientRepository.recordComputedBmi(any(), any(), any(), any(), any(), any(), any(), any())
+      patientRepository.recordComputedBmi(any(), any(), any(), any(), any(), any())
     } returns true
-    val result = runBlocking {
-      viewModel.saveComputedBmi(mockk(), mockk(), "", "", 0.0, 0.0, 0.0, true)
-    }
+    val result = runBlocking { viewModel.saveComputedBmi("", "", 0.0, 0.0, 0.0, true) }
     Assert.assertTrue(result)
   }
 

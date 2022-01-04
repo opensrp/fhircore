@@ -513,8 +513,6 @@ class PatientRepositoryTest : RobolectricTest() {
     runBlocking {
       val result =
         repository.recordComputedBmi(
-          questionnaire = mockk(),
-          questionnaireResponse = mockk(),
           patientId = "patient_1",
           encounterID = "encounter_1",
           height = 1.6764,

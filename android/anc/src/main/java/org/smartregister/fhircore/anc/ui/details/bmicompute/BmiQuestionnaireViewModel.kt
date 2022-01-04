@@ -24,7 +24,6 @@ import android.text.style.ForegroundColorSpan
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
@@ -159,8 +158,6 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
   }
 
   suspend fun saveComputedBmi(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
     patientId: String,
     encounterID: String,
     weight: Double,
@@ -169,8 +166,6 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
     isUnitModeMetric: Boolean
   ): Boolean {
     return patientRepository.recordComputedBmi(
-      questionnaire = questionnaire,
-      questionnaireResponse = questionnaireResponse,
       patientId = patientId,
       encounterID = encounterID,
       weight = weight,
