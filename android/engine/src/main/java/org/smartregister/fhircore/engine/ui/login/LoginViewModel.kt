@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.ui.login
 import android.accounts.AccountManager
 import android.accounts.AccountManagerCallback
 import android.accounts.AccountManagerFuture
+import android.app.Application
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.lifecycle.LiveData
@@ -27,10 +28,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.IOException
+import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import org.jetbrains.annotations.TestOnly
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
@@ -53,7 +56,8 @@ class LoginViewModel
 constructor(
   val accountAuthenticator: AccountAuthenticator,
   val dispatcher: DispatcherProvider,
-  val sharedPreferences: SharedPreferencesHelper
+  val sharedPreferences: SharedPreferencesHelper,
+  val app: Application
 ) : ViewModel(), AccountManagerCallback<Bundle> {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -82,7 +86,7 @@ constructor(
 
       override fun handleFailure(call: Call<ResponseBody>, throwable: Throwable) {
         Timber.e(throwable)
-        _loginError.postValue(throwable.localizedMessage)
+        handleErrorMessage(throwable)
         _showProgressBar.postValue(false)
       }
     }
@@ -133,7 +137,7 @@ constructor(
           _navigateToHome.value = true
           return
         }
-        _loginError.postValue(throwable.localizedMessage)
+        handleErrorMessage(throwable)
         _showProgressBar.postValue(false)
       }
     }
@@ -222,5 +226,13 @@ constructor(
   fun navigateToHome(navigateHome: Boolean = true) {
     _navigateToHome.value = navigateHome
     _navigateToHome.postValue(navigateHome)
+  }
+
+  private fun handleErrorMessage(throwable: Throwable) {
+    if (throwable is UnknownHostException) {
+      _loginError.postValue(app.getString(R.string.login_call_fail_error_message))
+    } else {
+      _loginError.postValue(app.getString(R.string.invalid_login_credentials))
+    }
   }
 }
