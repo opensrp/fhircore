@@ -89,7 +89,7 @@
     <string name="replace_photo">Replace photo</string>
     <string name="take_photo">Take photo</string>
     <string name="edit">Edit</string>
-    <string name="application_not_supported">Application %1$s is not supported</string>
+    <string name="application_not_supported">Application %1$s not found</string>
     <string name="eCBIS_app_name">eCBIS</string>
     <string name="invalid_login_credentials">username or password is invalid</string>
 </resources>
