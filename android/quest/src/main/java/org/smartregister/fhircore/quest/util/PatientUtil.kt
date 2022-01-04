@@ -101,7 +101,8 @@ fun propertiesMapping(value: String, filter: Filter): Properties {
     value =
       Property(
         color = getColor(value, filter.dynamicColors) ?: filter.properties?.value?.color,
-        textSize = filter.properties?.value?.textSize
+        textSize = filter.properties?.value?.textSize,
+        fontWeight = filter.properties?.value?.fontWeight
       )
   )
 }

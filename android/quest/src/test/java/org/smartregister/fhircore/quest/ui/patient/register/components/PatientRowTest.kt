@@ -57,7 +57,6 @@ class PatientRowTest : RobolectricTest() {
     composeRule.onNodeWithText("John Doe, 27").assertExists()
     composeRule.onNodeWithText("John Doe, 27").assertIsDisplayed()
     composeRule.onNodeWithText("G6PD").assertExists().assertIsDisplayed()
-    composeRule.onNodeWithText(" G6PD Status - ").assertExists().assertIsDisplayed()
-    composeRule.onNodeWithText("Deficient").assertExists().assertIsDisplayed()
+    composeRule.onNodeWithText(" G6PD Status - Deficient").assertExists().assertIsDisplayed()
   }
 }
