@@ -16,9 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import androidx.annotation.StringRes
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItem
 
 interface SimpleDetailsDataProvider {

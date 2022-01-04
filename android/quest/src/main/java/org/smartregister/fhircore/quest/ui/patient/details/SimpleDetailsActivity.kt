@@ -22,7 +22,6 @@ import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import timber.log.Timber
 
 @AndroidEntryPoint
 class SimpleDetailsActivity : BaseMultiLanguageActivity() {

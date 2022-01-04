@@ -29,7 +29,6 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.PrimitiveType
 import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.Questionnaire
@@ -47,13 +46,13 @@ fun Type?.valueToString(): String {
   return if (this == null) ""
   else if (this.isDateTime) (this as BaseDateTimeType).value.makeItReadable()
   else if (this.isPrimitive) (this as PrimitiveType<*>).asStringValue()
-  else if (this is Coding) this.display?:code
+  else if (this is Coding) this.display ?: code
   else if (this is CodeableConcept) this.stringValue()
-  else if (this is Quantity) this.value.toPlainString()
-  else this.asStringValue()
+  else if (this is Quantity) this.value.toPlainString() else this.asStringValue()
 }
 
-fun CodeableConcept.stringValue(): String = this.text?:this.codingFirstRep.display?:this.codingFirstRep.code
+fun CodeableConcept.stringValue(): String =
+  this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
 
 fun Resource.toJson(parser: IParser = FhirContext.forR4().newJsonParser()): String =
   parser.encodeResourceToString(this)
