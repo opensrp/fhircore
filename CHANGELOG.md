@@ -54,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Fixed multiple entries of same test results on quest patient detail screen
 - Quest | Fixed mislabeling of questionnaire responses on quest patient detail screen
 - Quest | Fix patient registration with estimated age/dob
+- Engine | Fixed app crash when wrong appId is provided
 
 ### Changed
 - EIR | Updated overdue trigger flow for Vaccine Due date
