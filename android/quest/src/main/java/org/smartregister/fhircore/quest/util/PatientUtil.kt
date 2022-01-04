@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.util
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -29,7 +28,6 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.quest.configuration.view.Code
-import org.smartregister.fhircore.quest.configuration.view.DynamicColor
 import org.smartregister.fhircore.quest.configuration.view.Filter
 import org.smartregister.fhircore.quest.configuration.view.PatientRegisterRowViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.Properties
@@ -82,11 +80,14 @@ private suspend inline fun <reified T : Resource> getSearchResults(
   fhirEngine: FhirEngine
 ): List<T> {
   return fhirEngine.search {
-    filterByPatient(reference, patientId)
+    filter(reference) { this.value = "${ResourceType.Patient.name}/$patientId" }
 
     when (filter.valueType) {
       Enumerations.DataType.CODEABLECONCEPT -> {
-        filter(TokenClientParam(filter.key), filter.valueCoding!!.asCodeableConcept())
+        filter(
+          TokenClientParam(filter.key),
+          CodeableConcept().addCoding(filter.valueCoding!!.asCoding())
+        )
       }
       Enumerations.DataType.CODING -> {
         filter(TokenClientParam(filter.key), filter.valueCoding!!.asCoding())
@@ -100,25 +101,12 @@ fun propertiesMapping(value: String, filter: Filter): Properties {
     label = filter.properties?.label,
     value =
       Property(
-        color = getColor(value, filter.dynamicColors) ?: filter.properties?.value?.color,
+        color = filter.dynamicColors?.firstOrNull { it.valueEqual == value }?.useColor
+            ?: filter.properties?.value?.color,
         textSize = filter.properties?.value?.textSize,
         fontWeight = filter.properties?.value?.fontWeight
       )
   )
 }
 
-fun getColor(value: String, dynamicColors: List<DynamicColor>?): String? {
-  return dynamicColors?.firstOrNull { it.valueEqual == value }?.useColor
-}
-
-fun Search.filterByPatient(reference: ReferenceClientParam, patientId: String) {
-  filter(reference) { this.value = "${ResourceType.Patient.name}/$patientId" }
-}
-
-fun Code.asCoding(): Coding {
-  return Coding(system, code, display)
-}
-
-fun Code.asCodeableConcept(): CodeableConcept {
-  return CodeableConcept().addCoding(this.asCoding())
-}
+fun Code.asCoding() = Coding(system, code, display)
