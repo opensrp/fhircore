@@ -77,10 +77,10 @@ class PatientModelsTest : RobolectricTest() {
       ResultItemPopulation(title = "testTitlePopulation", dataList = emptyList())
     patientVitalItem =
       PatientVitalItem(
-        height = "1.6",
+        height = "160",
         weight = "60",
         bmi = "22",
-        heightUnit = "m",
+        heightUnit = "cm",
         weightUnit = "kg",
         bmiUnit = "kg/m2"
       )
@@ -161,11 +161,14 @@ class PatientModelsTest : RobolectricTest() {
 
   @Test
   fun testPatientVitalItem() {
-    Assert.assertEquals("1.6", patientVitalItem.height)
-    Assert.assertEquals("m", patientVitalItem.heightUnit)
+    Assert.assertEquals("160", patientVitalItem.height)
+    Assert.assertEquals("cm", patientVitalItem.heightUnit)
     Assert.assertEquals("60", patientVitalItem.weight)
     Assert.assertEquals("kg", patientVitalItem.weightUnit)
     Assert.assertEquals("22", patientVitalItem.bmi)
     Assert.assertEquals("kg/m2", patientVitalItem.bmiUnit)
+    Assert.assertEquals(true, patientVitalItem.isWeightAndHeightAreValid())
+    Assert.assertEquals(true, patientVitalItem.isWeightAndHeightAreInMetricUnit())
+    Assert.assertEquals(false, patientVitalItem.isWeightAndHeightAreInUSCUnit())
   }
 }
