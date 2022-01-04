@@ -48,9 +48,9 @@ class StructureMapTestUtilities : RobolectricTest() {
   @Test
   fun `perform immunization extraction`() {
     val immunizationQuestionnaireResponseString =
-      "structure-map-questionnaires/immunization/questionnaire-response.json".readFile()
+      "structure-map-questionnaires/eir/immunization/questionnaire-response.json".readFile()
     val immunizationStructureMap =
-      "structure-map-questionnaires/immunization/structure-map.txt".readFile()
+      "structure-map-questionnaires/eir/immunization/structure-map.txt".readFile()
 
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
@@ -86,14 +86,14 @@ class StructureMapTestUtilities : RobolectricTest() {
 
   @Test
   fun `populate immunization Questionnaire`() {
-    val patientJson = "structure-map-questionnaires/immunization/patient.json".readFile()
+    val patientJson = "structure-map-questionnaires/eir/immunization/patient.json".readFile()
     val immunizationJson =
-      "structure-map-questionnaires/immunization/immunization-1.json".readFile()
+      "structure-map-questionnaires/eir/immunization/immunization-1.json".readFile()
     val immunizationStructureMap =
-      "structure-map-questionnaires/immunization/structure-map.txt".readFile()
+      "structure-map-questionnaires/eir/immunization/structure-map.txt".readFile()
 
     val questionnaireJson =
-      "structure-map-questionnaires/immunization/questionnaire.json".readFile()
+      "structure-map-questionnaires/eir/immunization/questionnaire.json".readFile()
 
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
@@ -133,12 +133,12 @@ class StructureMapTestUtilities : RobolectricTest() {
   @Test
   fun `populate patient registration Questionnaire and extract Resources`() {
     val patientRegistrationQuestionnaire =
-      "structure-map-questionnaires/patient-registration/questionnaire.json".readFile()
+      "structure-map-questionnaires/eir/patient-registration/questionnaire.json".readFile()
     val patientRegistrationStructureMap =
-      "structure-map-questionnaires/patient-registration/structure-map.txt".readFile()
+      "structure-map-questionnaires/eir/patient-registration/structure-map.txt".readFile()
     val relatedPersonJson =
-      "structure-map-questionnaires/patient-registration/related-person.json".readFile()
-    val patientJson = "structure-map-questionnaires/patient-registration/patient.json".readFile()
+      "structure-map-questionnaires/eir/patient-registration/related-person.json".readFile()
+    val patientJson = "structure-map-questionnaires/eir/patient-registration/patient.json".readFile()
 
     val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val questionnaire =
@@ -177,10 +177,10 @@ class StructureMapTestUtilities : RobolectricTest() {
   @Test
   fun `populate adverse event Questionnaire and extract Resources`() {
     val adverseEventQuestionnaire =
-      "structure-map-questionnaires/adverse-event/questionnaire.json".readFile()
+      "structure-map-questionnaires/eir/adverse-event/questionnaire.json".readFile()
     val adverseEventStructureMap =
-      "structure-map-questionnaires/adverse-event/structure-map.txt".readFile()
-    val immunizationJson = "structure-map-questionnaires/adverse-event/immunization.json".readFile()
+      "structure-map-questionnaires/eir/adverse-event/structure-map.txt".readFile()
+    val immunizationJson = "structure-map-questionnaires/eir/adverse-event/immunization.json".readFile()
 
     val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val questionnaire = iParser.parseResource(Questionnaire::class.java, adverseEventQuestionnaire)
@@ -215,7 +215,7 @@ class StructureMapTestUtilities : RobolectricTest() {
   @Test
   fun `convert StructureMap to JSON`() {
     val patientRegistrationStructureMap =
-      "structure-map-questionnaires/patient-registration/structure-map.txt".readFile()
+      "structure-map-questionnaires/eir/patient-registration/structure-map.txt".readFile()
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
@@ -234,9 +234,9 @@ class StructureMapTestUtilities : RobolectricTest() {
   @Test
   fun `perform extraction from patient registration Questionnaire`() {
     val patientRegistrationQuestionnaireResponse =
-      "structure-map-questionnaires/patient-registration/questionnaire-response.json".readFile()
+      "structure-map-questionnaires/eir/patient-registration/questionnaire-response.json".readFile()
     val patientRegistrationStructureMap =
-      "structure-map-questionnaires/patient-registration/structure-map.txt".readFile()
+      "structure-map-questionnaires/eir/patient-registration/structure-map.txt".readFile()
 
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
@@ -273,9 +273,9 @@ class StructureMapTestUtilities : RobolectricTest() {
   @Test
   fun `perform extraction from adverse event Questionnaire`() {
     val adverseEventQuestionnaireResponse =
-      "structure-map-questionnaires/adverse-event/questionnaire-response.json".readFile()
+      "structure-map-questionnaires/eir/adverse-event/questionnaire-response.json".readFile()
     val adverseEventStructureMap =
-      "structure-map-questionnaires/adverse-event/structure-map.txt".readFile()
+      "structure-map-questionnaires/eir/adverse-event/structure-map.txt".readFile()
 
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
@@ -309,9 +309,9 @@ class StructureMapTestUtilities : RobolectricTest() {
   @Test
   fun `perform extraction from  vital signs metric Questionnaire`() {
     val vitalSignQuestionnaireResponse =
-      "structure-map-questionnaires/vital-signs/metric/questionnaire-response-pulse-rate.json".readFile()
+      "structure-map-questionnaires/anc/vital-signs/metric/questionnaire-response-pulse-rate.json".readFile()
     val vitalSignStructureMap =
-      "structure-map-questionnaires/vital-signs/metric/structure-map.txt".readFile()
+      "structure-map-questionnaires/anc/vital-signs/metric/structure-map.txt".readFile()
 
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
@@ -345,9 +345,9 @@ class StructureMapTestUtilities : RobolectricTest() {
   @Test
   fun `perform extraction from  vital signs standard Questionnaire`() {
     val vitalSignQuestionnaireResponse =
-      "structure-map-questionnaires/vital-signs/standard/questionnaire-response-pulse-rate.json".readFile()
+      "structure-map-questionnaires/anc/vital-signs/standard/questionnaire-response-pulse-rate.json".readFile()
     val vitalSignStructureMap =
-      "structure-map-questionnaires/vital-signs/standard/structure-map.txt".readFile()
+      "structure-map-questionnaires/anc/vital-signs/standard/structure-map.txt".readFile()
 
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
