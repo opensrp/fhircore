@@ -20,7 +20,6 @@ import android.content.Context
 import androidx.annotation.StringRes
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
