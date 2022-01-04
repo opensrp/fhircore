@@ -16,7 +16,7 @@
       {
         "fullUrl": "http://localhost:8080/fhir/UserDetails/Practitioner:123",
         "resource": {
-          "resourceType": "UserDetails",
+          "resourceType": "PractitionerDetails",
           "id": "Practitioner:123",
           "meta": {
             "profile": [
