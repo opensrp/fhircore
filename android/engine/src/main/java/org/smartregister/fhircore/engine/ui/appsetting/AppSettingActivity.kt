@@ -51,9 +51,15 @@ class AppSettingActivity : AppCompatActivity() {
           configurationRegistry.loadAppConfigurations(
             appId = applicationId,
             accountAuthenticator = accountAuthenticator
-          ) {
-            sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
-            finish()
+          ) { loadSuccessful: Boolean ->
+            if (loadSuccessful) {
+              sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
+              finish()
+            } else {
+              showToast(
+                getString(R.string.application_not_supported, appSettingViewModel.appId.value)
+              )
+            }
           }
         } else if (loadConfigs != null && !loadConfigs)
           showToast(getString(R.string.application_not_supported, appSettingViewModel.appId.value))
