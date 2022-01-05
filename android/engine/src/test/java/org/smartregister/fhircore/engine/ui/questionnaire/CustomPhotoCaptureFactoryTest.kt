@@ -28,11 +28,8 @@ import com.google.android.fhir.datacapture.views.QuestionnaireItemViewItem
 import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import id.zelory.compressor.Compressor
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
@@ -67,9 +64,6 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
     every { file.delete() } returns true
     every { photoCaptureFactory.imageFile } returns file
 
-    mockkObject(Compressor)
-    coEvery { Compressor.compress(any(), any()) } returns file
-
     val callback = slot<ActivityResultCallback<Boolean>>()
     every {
       fragment.registerForActivityResult(
@@ -83,6 +77,7 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
     photoCaptureFactory.populateQuestionnaireResponse("text".encodeToByteArray())
 
     callback.captured.onActivityResult(true)
+    callback.captured.onActivityResult(false)
 
     verify { photoCaptureFactory.loadThumbnail(any()) }
     verify { photoCaptureFactory.populateQuestionnaireResponse(any()) }
