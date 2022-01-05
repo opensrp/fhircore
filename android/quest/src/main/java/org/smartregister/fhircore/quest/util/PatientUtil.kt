@@ -48,24 +48,21 @@ suspend fun loadAdditionalData(
     )
 
   patientRegisterRowViewConfiguration.filters?.forEach { filter ->
-    when (filter.resourceType) {
-      Enumerations.ResourceType.CONDITION -> {
-        val conditions =
-          getSearchResults<Condition>("Patient/$patientId", Condition.SUBJECT, filter, fhirEngine)
+    if (filter.resourceType == Enumerations.ResourceType.CONDITION) {
+      val conditions = getSearchResults<Condition>(patientId, Condition.SUBJECT, filter, fhirEngine)
 
-        val sortedByDescending = conditions.maxByOrNull { it.recordedDate }
-        sortedByDescending?.category?.forEach { cc ->
-          cc.coding.firstOrNull { c -> c.code == filter.valueCoding!!.code }?.let {
-            val status = sortedByDescending.code?.coding?.firstOrNull()?.display ?: ""
-            result.add(
-              AdditionalData(
-                label = filter.label,
-                value = status,
-                valuePrefix = filter.valuePrefix,
-                properties = propertiesMapping(status, filter)
-              )
+      val sortedByDescending = conditions.maxByOrNull { it.recordedDate }
+      sortedByDescending?.category?.forEach { cc ->
+        cc.coding.firstOrNull { c -> c.code == filter.valueCoding!!.code }?.let {
+          val status = sortedByDescending.code?.coding?.firstOrNull()?.display ?: ""
+          result.add(
+            AdditionalData(
+              label = filter.label,
+              value = status,
+              valuePrefix = filter.valuePrefix,
+              properties = propertiesMapping(status, filter)
             )
-          }
+          )
         }
       }
     }
@@ -129,7 +126,7 @@ suspend inline fun <reified T : Resource> getSearchResults(
           CodeableConcept().addCoding(filter.valueCoding!!.asCoding())
         )
       }
-      Enumerations.DataType.CODING -> {
+      else -> {
         filter(TokenClientParam(filter.key), filter.valueCoding!!.asCoding())
       }
     }
