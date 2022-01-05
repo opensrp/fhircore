@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
@@ -24,6 +25,8 @@ import io.mockk.just
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
+import java.io.IOException
+import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.After
@@ -32,6 +35,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.FakeModel.authCredentials
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
@@ -77,7 +82,8 @@ internal class LoginViewModelTest : RobolectricTest() {
       LoginViewModel(
         accountAuthenticator = accountAuthenticatorSpy,
         dispatcher = dispatcherProvider,
-        sharedPreferences = sharedPreferencesHelper
+        sharedPreferences = sharedPreferencesHelper,
+        app = ApplicationProvider.getApplicationContext()
       )
   }
 
@@ -198,5 +204,29 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertEquals("", loginViewModel.loginError.value)
     loginViewModel.showProgressBar.value?.let { Assert.assertTrue(it) }
     verify { accountAuthenticatorSpy.fetchToken("testUser", "51r1K4l1".toCharArray()) }
+  }
+
+  @Test
+  fun testHandleErrorMessageShouldVerifyExpectedMessage() {
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      loginViewModel,
+      "handleErrorMessage",
+      ReflectionHelpers.ClassParameter(Throwable::class.java, UnknownHostException())
+    )
+    Assert.assertEquals(
+      loginViewModel.app.getString(R.string.login_call_fail_error_message),
+      loginViewModel.loginError.value
+    )
+
+    ReflectionHelpers.callInstanceMethod<Any>(
+      loginViewModel,
+      "handleErrorMessage",
+      ReflectionHelpers.ClassParameter(Throwable::class.java, IOException())
+    )
+    Assert.assertEquals(
+      loginViewModel.app.getString(R.string.invalid_login_credentials),
+      loginViewModel.loginError.value
+    )
   }
 }
