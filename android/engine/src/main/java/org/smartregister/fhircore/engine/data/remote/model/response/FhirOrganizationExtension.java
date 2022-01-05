@@ -5,7 +5,8 @@ import ca.uhn.fhir.model.api.annotation.DatatypeDef;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hl7.fhir.r4.model.*;
+import org.hl7.fhir.r4.model.Organization;
+import org.hl7.fhir.r4.model.Bundle;
 
 /*
  * Copyright 2021 Ona Systems, Inc

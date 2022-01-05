@@ -24,7 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.instance.model.api.ICompositeType;
-import org.hl7.fhir.r4.model.*;
+import org.hl7.fhir.r4.model.Type;
+import org.hl7.fhir.r4.model.StringType;
+import org.hl7.fhir.r4.model.Location;
 
 @DatatypeDef(name = "TreeNode")
 public class TreeNode extends Type implements ICompositeType {

@@ -20,7 +20,10 @@ import ca.uhn.fhir.model.api.annotation.Description;
 import ca.uhn.fhir.model.api.annotation.ResourceDef;
 import java.util.ArrayList;
 import java.util.List;
-import org.hl7.fhir.r4.model.*;
+import org.hl7.fhir.r4.model.Location;
+import org.hl7.fhir.r4.model.StringType;
+import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.ResourceType;
 
 @ResourceDef(name = "LocationHierarchy", profile = "http://hl7.org/fhir/profiles/custom-resource")
 public class LocationHierarchy extends Location {

@@ -39,7 +39,13 @@ import okhttp3.ResponseBody
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhircore.engine.data.remote.model.response.*
+import org.smartregister.fhircore.engine.data.remote.model.response.FhirCareTeamExtension
+import org.smartregister.fhircore.engine.data.remote.model.response.FhirOrganizationExtension
+import org.smartregister.fhircore.engine.data.remote.model.response.FhirPractitionerDetails
+import org.smartregister.fhircore.engine.data.remote.model.response.KeycloakUserDetails
+import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.data.remote.model.response.PractitionerDetails
+import org.smartregister.fhircore.engine.data.remote.model.response.UserBioData
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.APP_ID_CONFIG
@@ -188,7 +194,6 @@ constructor(
 
     val qJson =
       context.assets.open("sample_practitionar_payload.json").bufferedReader().use { it.readText() }
-
 
     return iParser.parseResource(qJson) as org.hl7.fhir.r4.model.Bundle
   }
