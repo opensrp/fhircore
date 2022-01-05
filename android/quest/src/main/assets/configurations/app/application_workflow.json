@@ -16,10 +16,10 @@
         "description": "Configurations for login"
       },
       {
-        "workflowPoint": "profile_view",
-        "resource": "ProfileViewConfiguration",
-        "classification": "profile_view",
-        "description": "Configurations for profile view"
+        "workflowPoint": "patient_details_view",
+        "resource": "PatientDetailsViewConfiguration",
+        "classification": "patient_details_view",
+        "description": "Configurations for patient details view"
       }
     ]
   },
@@ -52,10 +52,10 @@
         "description": "Configurations for Test Results Details"
       },
       {
-        "workflowPoint": "profile_view",
-        "resource": "ProfileViewConfiguration",
-        "classification": "profile_view",
-        "description": "Configurations for profile view"
+        "workflowPoint": "patient_details_view",
+        "resource": "PatientDetailsViewConfiguration",
+        "classification": "patient_details_view",
+        "description": "Configurations for patient details view"
       }
     ]
   }

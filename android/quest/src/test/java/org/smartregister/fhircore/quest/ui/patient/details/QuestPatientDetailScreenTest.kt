@@ -87,7 +87,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       )
     // Simulate retrieval of data from repository
     questPatientDetailViewModel.run {
-      getDemographics(patientId)
+      getDemographicsWithAdditionalData(patientId)
       getAllResults(patientId)
       getAllForms(application)
     }
@@ -257,7 +257,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       )
     // Simulate retrieval of data from repository
     questPatientDetailViewModel.run {
-      getDemographics(patientId)
+      getDemographicsWithAdditionalData(patientId)
       getAllResults(patientId)
       getAllForms(application)
     }

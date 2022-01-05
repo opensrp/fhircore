@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.patient.details
 
 import android.content.Context
 import androidx.annotation.StringRes
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -32,13 +33,15 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
+import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.extension.isPatient
-import org.smartregister.fhircore.quest.configuration.view.ProfileViewConfiguration
+import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
+import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
@@ -53,6 +56,11 @@ constructor(
   val libraryEvaluator: LibraryEvaluator,
 ) : ViewModel() {
 
+  private val _patientDetailsViewConfiguration =
+    MutableLiveData<PatientDetailsViewConfiguration>(patientDetailsViewConfigurationOf())
+  val patientDetailsViewConfiguration: LiveData<PatientDetailsViewConfiguration>
+    get() = _patientDetailsViewConfiguration
+
   val patientItem = MutableLiveData<PatientItem>()
   val questionnaireConfigs = MutableLiveData<List<QuestionnaireConfig>>()
   val testResults = MutableLiveData<List<Pair<QuestionnaireResponse, Questionnaire>>>()
@@ -61,21 +69,25 @@ constructor(
   val onFormItemClicked = MutableLiveData<QuestionnaireConfig>(null)
   val onFormTestResultClicked = MutableLiveData<QuestionnaireResponse>(null)
 
-  fun getDemographics(patientId: String) {
+  fun getDemographicsWithAdditionalData(patientId: String) {
     viewModelScope.launch {
-      patientItem.postValue(
-        patientItemMapper.mapToDomainModel(patientRepository.fetchDemographics(patientId))
-      )
+      patientItem.postValue(patientRepository.fetchDemographicsWithAdditionalData(patientId))
     }
   }
 
-  fun getAllForms(context: Context, profileViewConfiguration: ProfileViewConfiguration) {
+  fun getAllForms(
+    context: Context,
+    patientDetailsViewConfiguration: PatientDetailsViewConfiguration
+  ) {
     viewModelScope.launch {
       // TODO Load binary resources
       val config =
         AssetUtil.decodeAsset<ProfileConfig>(fileName = PROFILE_CONFIG, context = context)
       questionnaireConfigs.postValue(
-        patientRepository.fetchTestForms(config.profileQuestionnaireFilter, profileViewConfiguration.appId)
+        patientRepository.fetchTestForms(
+          config.profileQuestionnaireFilter,
+          patientDetailsViewConfiguration.appId
+        )
       )
     }
   }
@@ -151,6 +163,10 @@ constructor(
   fun fetchResultItemLabel(testResult: Pair<QuestionnaireResponse, Questionnaire>): String? {
     return testResult.second.name?.let { name -> name }
       ?: testResult.second.title?.let { title -> title }
+  }
+
+  fun updateViewConfigurations(patientDetailsViewConfiguration: PatientDetailsViewConfiguration) {
+    _patientDetailsViewConfiguration.value = patientDetailsViewConfiguration
   }
 
   companion object {

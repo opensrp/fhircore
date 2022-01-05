@@ -29,6 +29,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator.Companion.OUTPUT_PARAMETER_KEY
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
@@ -38,12 +39,12 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.configuration.view.ProfileViewConfiguration
+import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import timber.log.Timber
 
 @AndroidEntryPoint
-class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
+class QuestPatientDetailActivity : BaseMultiLanguageActivity(), ConfigurableComposableView<PatientDetailsViewConfiguration> {
 
   private lateinit var patientId: String
 
@@ -65,11 +66,17 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
       onFormItemClicked.observe(detailActivity, detailActivity::launchQuestionnaireForm)
       onFormTestResultClicked.observe(detailActivity, detailActivity::onTestResultItemClickListener)
     }
+
+    if(configurationRegistry.isAppIdInitialized()) {
+      configureViews(configurationRegistry.retrieveConfiguration<PatientDetailsViewConfiguration>(
+        configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
+      ))
+    }
     patientViewModel.run {
-      getDemographics(patientId)
+      getDemographicsWithAdditionalData(patientId)
       getAllResults(patientId)
-      getAllForms(this@QuestPatientDetailActivity, profileViewConfiguration = configurationRegistry.retrieveConfiguration<ProfileViewConfiguration>(
-        configClassification = QuestConfigClassification.PROFILE_VIEW
+      getAllForms(this@QuestPatientDetailActivity, patientDetailsViewConfiguration = configurationRegistry.retrieveConfiguration<PatientDetailsViewConfiguration>(
+        configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
       ))
     }
     setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
@@ -186,5 +193,9 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
         )
       }
     }
+  }
+
+  override fun configureViews(viewConfiguration: PatientDetailsViewConfiguration) {
+    patientViewModel.updateViewConfigurations(viewConfiguration)
   }
 }

@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
@@ -50,6 +51,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
@@ -64,6 +66,8 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
+import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
 
 const val TOOLBAR_TITLE = "toolbarTitle"
 const val TOOLBAR_BACK_ARROW = "toolbarBackArrow"
@@ -178,6 +182,7 @@ fun FormItem(
 
 @Composable
 fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailViewModel) {
+  val viewConfiguration by questPatientDetailViewModel.patientDetailsViewConfiguration.observeAsState(patientDetailsViewConfigurationOf())
   val patientItem by questPatientDetailViewModel.patientItem.observeAsState(null)
   val forms by questPatientDetailViewModel.questionnaireConfigs.observeAsState(null)
   val testResults by questPatientDetailViewModel.testResults.observeAsState(null)
@@ -199,6 +204,42 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
           fontWeight = FontWeight.Bold,
           modifier = Modifier.testTag(PATIENT_NAME)
         )
+        // Adding Additional Data i.e, G6PD Status etc.
+        patientItem?.additionalData?.forEach {
+          Row {
+            it.label?.let { label ->
+              Text(
+                text = label,
+                color =
+                  Color(
+                    android.graphics.Color.parseColor(it.properties?.label?.color ?: "#000000")
+                  ),
+                fontSize = it.properties?.label?.textSize?.sp ?: 16.sp,
+                modifier = Modifier.wrapContentWidth()
+              )
+            }
+
+            it.valuePrefix?.let { prefix ->
+              Text(
+                text = prefix,
+                color =
+                  Color(
+                    android.graphics.Color.parseColor(it.properties?.value?.color ?: "#000000")
+                  ),
+                fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,
+                modifier = Modifier.wrapContentWidth()
+              )
+            }
+
+            Text(
+              text = it.value,
+              color =
+                Color(android.graphics.Color.parseColor(it.properties?.value?.color ?: "#000000")),
+              fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,
+              modifier = Modifier.wrapContentWidth()
+            )
+          }
+        }
       }
 
       // Forms section

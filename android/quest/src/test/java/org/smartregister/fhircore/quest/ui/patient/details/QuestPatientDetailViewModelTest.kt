@@ -75,7 +75,7 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
 
   @Test
   fun testGetDemographicsShouldFetchPatient() {
-    questPatientDetailViewModel.getDemographics(patientId)
+    questPatientDetailViewModel.getDemographicsWithAdditionalData(patientId)
     val patient = questPatientDetailViewModel.patientItem.value
     Assert.assertNotNull(patient)
     Assert.assertEquals(patientId, patient!!.id)

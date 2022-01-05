@@ -6,29 +6,24 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 
 @Stable
 @Serializable
-data class ProfileViewConfiguration(
+data class PatientDetailsViewConfiguration(
   override val appId: String,
   override val classification: String,
-  val g6pdStatus: Boolean = false,
+  val clientInfo: String = "Patient name, F, 30",
   val contentTitle: String = "Responses",
-  val contentItemTitle: Boolean = true,
-  val contentItemSubTitle: Boolean = true,
+  val filters: List<Filter>? = null
 ) : Configuration
 
 @Stable
-fun profileViewConfigurationOf(
+fun patientDetailsViewConfigurationOf(
   appId: String = "quest",
   classification: String = "patient_details",
-  g6pdStatus: Boolean = false,
-  contentTitle: String = "Responses",
-  contentItemTitle: Boolean = true,
-  contentItemSubTitle: Boolean = true,
+  clientInfo: String = "Patient name, F, 30",
+  contentTitle: String = "Responses"
 ) =
-  ProfileViewConfiguration(
+  PatientDetailsViewConfiguration(
     appId = appId,
     classification = classification,
-    g6pdStatus = g6pdStatus,
-    contentTitle = contentTitle,
-    contentItemTitle = contentItemTitle,
-    contentItemSubTitle = contentItemSubTitle,
+    clientInfo = clientInfo,
+    contentTitle = contentTitle
   )
