@@ -17,8 +17,8 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.google.android.fhir.FhirEngine
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every

@@ -17,8 +17,8 @@
 package org.smartregister.fhircore.engine.ui.login
 
 import android.app.Activity
-import com.google.android.fhir.FhirEngine
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
