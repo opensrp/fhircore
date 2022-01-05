@@ -67,7 +67,7 @@
       "StructureMap"
     ],
     "type": "token",
-    "expression": "publisher"
+    "expression": ""
   },
   {
     "resourceType": "SearchParameter",
@@ -77,7 +77,7 @@
       "Library"
     ],
     "type": "token",
-    "expression": "publisher"
+    "expression": ""
   },
   {
     "resourceType": "SearchParameter",

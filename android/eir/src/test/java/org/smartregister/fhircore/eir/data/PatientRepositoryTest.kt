@@ -32,8 +32,10 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -43,6 +45,7 @@ import org.smartregister.fhircore.eir.data.model.VaccineStatus
 import org.smartregister.fhircore.eir.robolectric.RobolectricTest
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.toHumanDisplay
 
 class PatientRepositoryTest : RobolectricTest() {
 
@@ -98,6 +101,45 @@ class PatientRepositoryTest : RobolectricTest() {
   fun testCountAllShouldReturnAsExpected() {
     coEvery { fhirEngine.count(any()) } returns 1
     runBlocking { Assert.assertEquals(1, patientRepository.countAll()) }
+  }
+
+  @Test
+  fun testFetchDemographicsShouldReturnPatientDetail() {
+    coEvery { fhirEngine.load(Patient::class.java, "test_patient_1_id") } returns getPatient()
+    val patient = runBlocking { patientRepository.fetchDemographics("test_patient_1_id") }
+
+    Assert.assertEquals("jane", patient.nameFirstRep.givenAsSingleString)
+    Assert.assertEquals("Mc", patient.nameFirstRep.family)
+    Assert.assertEquals("12345678", patient.telecomFirstRep.value)
+    Assert.assertEquals("Nairobi", patient.addressFirstRep.city)
+    Assert.assertEquals("Kenya", patient.addressFirstRep.country)
+  }
+
+  @Test
+  fun testGetAdverseEventsShouldReturnExpectedItem() {
+
+    coEvery { fhirEngine.load(Observation::class.java, "1") } returns
+      Observation().apply {
+        code = CodeableConcept().apply { addCoding().apply { display = "Obs" } }
+      }
+
+    val mDate = Date()
+    val immunization =
+      Immunization().apply {
+        addReaction().apply {
+          detail =
+            Reference().apply {
+              date = mDate
+              reference = "Observation/1"
+            }
+        }
+      }
+
+    val adverseEventItem = runBlocking { patientRepository.getAdverseEvents(immunization) }
+
+    Assert.assertEquals(1, adverseEventItem.size)
+    Assert.assertEquals(mDate.toHumanDisplay(), adverseEventItem[0].date)
+    Assert.assertEquals("Obs", adverseEventItem[0].detail)
   }
 
   private fun getPatient(): Patient {
