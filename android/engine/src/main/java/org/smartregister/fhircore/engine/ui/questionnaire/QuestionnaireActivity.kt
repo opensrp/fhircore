@@ -27,7 +27,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
-import com.google.android.fhir.FhirEngineProvider.fhirEngine
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
 import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
@@ -65,6 +65,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var fhirEngine: FhirEngine
 
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 

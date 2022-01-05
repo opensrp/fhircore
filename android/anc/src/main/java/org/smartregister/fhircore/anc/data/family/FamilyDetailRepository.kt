@@ -17,12 +17,14 @@
 package org.smartregister.fhircore.anc.data.family
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
@@ -47,9 +49,11 @@ constructor(
   suspend fun fetchEncounters(familyId: String): List<Encounter> =
     withContext(dispatcherProvider.io()) {
       fhirEngine.search {
-        filter(Encounter.SUBJECT) { value = "Patient/$familyId" }
-        from = 0
-        count = 3
+        Search(ResourceType.Encounter).apply {
+          filter(Encounter.SUBJECT, { value = "Patient/$familyId" })
+          from = 0
+          count = 3
+        }
       }
     }
 
