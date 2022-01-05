@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import android.widget.TextView
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -57,7 +56,6 @@ import org.smartregister.fhircore.quest.configuration.view.Property
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItem
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItemCell
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItemRow
-import org.smartregister.fhircore.quest.util.getColor
 import timber.log.Timber
 
 private fun String?.value() = this ?: ""
@@ -140,7 +138,7 @@ fun TextView(
   valueFormatter: Map<String, String>?
 ) {
   val valueStr = value.valueToString()
-  val dynamicColor = getColor(valueStr, colors)
+  val dynamicColor = colors?.firstOrNull { it.valueEqual == valueStr }?.useColor
   val color =
     when {
       dynamicColor?.isNotBlank() == true -> dynamicColor
