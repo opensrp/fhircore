@@ -22,6 +22,7 @@ task jacocoTestReport(type: JacocoReport, dependsOn: [
             '**/Manifest*.*',
             '**/R.class',
             '**/R$*.class',
+            '**/*Preview*.*',
             // kotlin (Sealed and Data classes)
             '**/*$Lambda$*.*',
             '**/*Companion*.*',
