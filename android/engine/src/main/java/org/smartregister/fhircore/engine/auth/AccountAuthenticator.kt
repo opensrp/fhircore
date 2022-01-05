@@ -176,15 +176,19 @@ constructor(
 
   // TODO move to some external file
   suspend fun getPractitionerDetails(keycloak_uuid: String): org.hl7.fhir.r4.model.Bundle {
+
     FhirContext.forR4().registerCustomType(PractitionerDetails::class.java)
     FhirContext.forR4().registerCustomType(FhirCareTeamExtension::class.java)
     FhirContext.forR4().registerCustomType(FhirOrganizationExtension::class.java)
     FhirContext.forR4().registerCustomType(FhirPractitionerDetails::class.java)
     FhirContext.forR4().registerCustomType(KeycloakUserDetails::class.java)
     FhirContext.forR4().registerCustomType(UserBioData::class.java)
+
     val iParser: IParser = FhirContext.forR4().newJsonParser()
+
     val qJson =
       context.assets.open("sample_practitionar_payload.json").bufferedReader().use { it.readText() }
+
 
     return iParser.parseResource(qJson) as org.hl7.fhir.r4.model.Bundle
   }
