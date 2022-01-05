@@ -300,7 +300,7 @@ constructor(
 
   suspend fun fetchVitalSigns(patientId: String, searchFilterString: String): Observation {
     var searchFilter: SearchFilter
-    vitalSignsConfig.run {
+    with(vitalSignsConfig) {
       searchFilter =
         when (searchFilterString) {
           "body-weight" -> weightFilter!!
