@@ -67,7 +67,7 @@
         "code": "59408-5"
       }
     },
-    "BPSFilter": {
+    "bpsFilter": {
       "filterType": "TOKEN",
       "key": "code",
       "valueType": "CODEABLECONCEPT",
@@ -76,7 +76,7 @@
         "code": "bp-s"
       }
     },
-    "BPDSFilter": {
+    "bpdsFilter": {
       "filterType": "TOKEN",
       "key": "code",
       "valueType": "CODEABLECONCEPT",

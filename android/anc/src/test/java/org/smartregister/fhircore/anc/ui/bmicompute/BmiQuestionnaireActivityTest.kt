@@ -170,7 +170,7 @@ internal class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
 
     ReflectionHelpers.callInstanceMethod<Any>(
       bmiQuestionnaireActivitySpy,
-      "proceedRecordBMI",
+      "proceedRecordBmi",
       ReflectionHelpers.ClassParameter(String::class.java, "Patient/1"),
       ReflectionHelpers.ClassParameter(Double::class.java, 5),
       ReflectionHelpers.ClassParameter(Double::class.java, 5),
@@ -188,7 +188,7 @@ internal class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
 
     ReflectionHelpers.callInstanceMethod<Any>(
       bmiQuestionnaireActivitySpy,
-      "proceedRecordBMI",
+      "proceedRecordBmi",
       ReflectionHelpers.ClassParameter(String::class.java, "Patient/1"),
       ReflectionHelpers.ClassParameter(Double::class.java, 5),
       ReflectionHelpers.ClassParameter(Double::class.java, 5),

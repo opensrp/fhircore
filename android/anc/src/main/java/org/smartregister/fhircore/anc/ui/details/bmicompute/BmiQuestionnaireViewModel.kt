@@ -28,8 +28,8 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
-import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
-import org.smartregister.fhircore.anc.util.computeBMIViaUSCUnits
+import org.smartregister.fhircore.anc.util.computeBmiViaMetricUnits
+import org.smartregister.fhircore.anc.util.computeBmiViaUscUnits
 import org.smartregister.fhircore.engine.util.extension.find
 
 @HiltViewModel
@@ -103,8 +103,8 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
   fun calculateBmi(height: Double, weight: Double, isUnitModeMetric: Boolean): Double {
     return if (height <= 0 || weight <= 0) -1.0
     else if (isUnitModeMetric)
-      computeBMIViaMetricUnits(heightInCentimeters = height, weightInKgs = weight)
-    else computeBMIViaUSCUnits(heightInInches = height, weightInPounds = weight)
+      computeBmiViaMetricUnits(heightInCentimeters = height, weightInKgs = weight)
+    else computeBmiViaUscUnits(heightInInches = height, weightInPounds = weight)
   }
 
   fun getBmiResult(computedBMI: Double, context: Context): SpannableString {
@@ -159,18 +159,18 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
 
   suspend fun saveComputedBmi(
     patientId: String,
-    encounterID: String,
+    encounterId: String,
     weight: Double,
     height: Double,
-    computedBMI: Double,
+    computedBmi: Double,
     isUnitModeMetric: Boolean
   ): Boolean {
     return patientRepository.recordComputedBmi(
       patientId = patientId,
-      encounterID = encounterID,
+      encounterId = encounterId,
       weight = weight,
       height = height,
-      computedBmi = computedBMI,
+      computedBmi = computedBmi,
       isUnitModeMetric = isUnitModeMetric
     )
   }

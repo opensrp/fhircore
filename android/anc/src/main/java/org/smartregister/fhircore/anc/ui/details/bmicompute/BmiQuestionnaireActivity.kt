@@ -31,14 +31,14 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 class BmiQuestionnaireActivity : QuestionnaireActivity() {
 
   val bmiQuestionnaireViewModel by viewModels<BmiQuestionnaireViewModel>()
-  private var encounterID = QuestionnaireUtils.getUniqueId()
+  private var encounterId = QuestionnaireUtils.getUniqueId()
   private lateinit var saveBtn: Button
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
     saveBtn.text = getString(R.string.compute_bmi)
-    encounterID = QuestionnaireUtils.getUniqueId()
+    encounterId = QuestionnaireUtils.getUniqueId()
   }
 
   override fun onClick(view: View) {
@@ -54,9 +54,9 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
         bmiQuestionnaireViewModel.getInputWeight(questionnaireResponse, isUnitModeMetric)
       val inputHeight =
         bmiQuestionnaireViewModel.getInputHeight(questionnaireResponse, isUnitModeMetric)
-      val computedBMI =
+      val computedBmi =
         bmiQuestionnaireViewModel.calculateBmi(inputHeight, inputWeight, isUnitModeMetric)
-      if (computedBMI < 0)
+      if (computedBmi < 0)
         showErrorAlert(getString(R.string.try_again), getString(R.string.error_saving_form))
       else {
         val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!
@@ -65,7 +65,7 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
           patientId = patientId,
           weight = inputWeight,
           height = inputHeight,
-          computedBMI = computedBMI,
+          computedBmi = computedBmi,
           isUnitModeMetric = isUnitModeMetric
         )
       }
@@ -97,12 +97,12 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
     patientId: String,
     weight: Double,
     height: Double,
-    computedBMI: Double,
+    computedBmi: Double,
     isUnitModeMetric: Boolean
   ) {
-    val message = bmiQuestionnaireViewModel.getBmiResult(computedBMI, this)
+    val message = bmiQuestionnaireViewModel.getBmiResult(computedBmi, this)
     AlertDialog.Builder(this)
-      .setTitle(getString(R.string.your_bmi) + " $computedBMI")
+      .setTitle(getString(R.string.your_bmi) + " $computedBmi")
       .setMessage(message)
       .setCancelable(false)
       .setNegativeButton(R.string.re_compute) { dialogInterface, _ ->
@@ -111,32 +111,32 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
       }
       .setPositiveButton(R.string.str_save) { dialogInterface, _ ->
         dialogInterface.dismiss()
-        proceedRecordBMI(
+        proceedRecordBmi(
           patientId = patientId,
           weight = weight,
           height = height,
-          computedBMI = computedBMI,
+          computedBmi = computedBmi,
           isUnitModeMetric = isUnitModeMetric
         )
       }
       .show()
   }
 
-  private fun proceedRecordBMI(
+  private fun proceedRecordBmi(
     patientId: String,
     weight: Double,
     height: Double,
-    computedBMI: Double,
+    computedBmi: Double,
     isUnitModeMetric: Boolean
   ) {
     lifecycleScope.launch {
       val success =
         bmiQuestionnaireViewModel.saveComputedBmi(
           patientId = patientId,
-          encounterID = encounterID,
+          encounterId = encounterId,
           weight = weight,
           height = height,
-          computedBMI = computedBMI,
+          computedBmi = computedBmi,
           isUnitModeMetric = isUnitModeMetric
         )
 

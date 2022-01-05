@@ -306,8 +306,8 @@ constructor(
           "body-weight" -> weightFilter!!
           "body-height" -> heightFilter!!
           "bmi" -> bmiFilter!!
-          "bp-s" -> BPSFilter!!
-          "bp-d" -> BPDSFilter!!
+          "bp-s" -> bpsFilter!!
+          "bp-d" -> bpdsFilter!!
           "pulse-rate" -> pulseRateFilter!!
           "bg" -> bloodGlucoseFilter!!
           "spO2" -> bloodOxygenLevelFilter!!
@@ -497,7 +497,7 @@ constructor(
 
   suspend fun recordComputedBmi(
     patientId: String,
-    encounterID: String,
+    encounterId: String,
     weight: Double,
     height: Double,
     computedBmi: Double,
@@ -505,10 +505,10 @@ constructor(
   ): Boolean {
     return recordBmi(
       patientId = patientId,
-      formEncounterId = encounterID,
+      formEncounterId = encounterId,
       weight = weight,
       height = height,
-      computedBMI = computedBmi,
+      computedBmi = computedBmi,
       isUnitModeMetric = isUnitModeMetric
     )
   }
@@ -518,7 +518,7 @@ constructor(
     formEncounterId: String,
     weight: Double? = null,
     height: Double? = null,
-    computedBMI: Double? = null,
+    computedBmi: Double? = null,
     isUnitModeMetric: Boolean
   ): Boolean {
     var weightUnit = UnitConstants.UNIT_WEIGHT_USC
@@ -572,7 +572,7 @@ constructor(
         patientId = patientId,
         recordId = bmiObservationRecordId,
         bmiEncounter = bmiEncounter,
-        computedBmi = computedBMI,
+        computedBmi = computedBmi,
         bmiUnit = bmiUnit,
         refObsWeightFormId = bmiWeightObservationRecordId,
         refObsHeightFormId = bmiHeightObservationRecordId

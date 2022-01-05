@@ -29,8 +29,8 @@ import org.smartregister.fhircore.anc.data.model.PatientVitalItem
 import org.smartregister.fhircore.anc.data.model.UnitConstants
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
-import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
-import org.smartregister.fhircore.anc.util.computeBMIViaUSCUnits
+import org.smartregister.fhircore.anc.util.computeBmiViaMetricUnits
+import org.smartregister.fhircore.anc.util.computeBmiViaUscUnits
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @HiltViewModel
@@ -93,7 +93,7 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
         when {
           patientVitalItem.isWeightAndHeightAreInMetricUnit() -> {
             patientVitalItem.bmi =
-              computeBMIViaMetricUnits(
+              computeBmiViaMetricUnits(
                   patientVitalItem.height.toDouble(),
                   patientVitalItem.weight.toDouble()
                 )
@@ -102,7 +102,7 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
           }
           patientVitalItem.isWeightAndHeightAreInUSCUnit() -> {
             patientVitalItem.bmi =
-              computeBMIViaUSCUnits(
+              computeBmiViaUscUnits(
                   patientVitalItem.height.toDouble(),
                   patientVitalItem.weight.toDouble()
                 )
