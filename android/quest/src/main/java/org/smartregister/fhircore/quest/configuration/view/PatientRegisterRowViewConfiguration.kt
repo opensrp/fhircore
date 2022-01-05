@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.configuration.view
 
 import androidx.compose.runtime.Stable
-import androidx.ui.core.Direction
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Enumerations
 import org.smartregister.fhircore.engine.configuration.Configuration
@@ -50,12 +49,7 @@ data class Code(val system: String? = null, val code: String? = null, val displa
 
 @Stable
 @Serializable
-data class Properties(
-  val label: Property? = null,
-  val value: Property? = null,
-  val valueFormatter: Map<String, String>? = null,
-  val labelDirection: Direction = Direction.LEFT
-)
+data class Properties(val label: Property? = null, val value: Property? = null)
 
 @Stable
 @Serializable

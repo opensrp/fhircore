@@ -121,7 +121,7 @@ fun PatientRow(
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
-fun PatientRow() {
+fun PreviewPatientRow() {
   MaterialTheme {
     PatientRow(
       patientItem = PatientItem("1", "1", "Rickey Ron", "M", "32y", ""),
@@ -134,7 +134,7 @@ fun PatientRow() {
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
-fun PatientRowWithG6PDNormalStatus() {
+fun PreviewPatientRowWithG6PDNormalStatus() {
   MaterialTheme {
     PatientRow(
       patientItem =

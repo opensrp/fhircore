@@ -38,7 +38,6 @@ import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.quest.util.loadAdditionalData
-import org.smartregister.fhircore.quest.util.loadAdditionalDataForPatientDetails
 import timber.log.Timber
 
 class PatientRepository
@@ -156,7 +155,7 @@ constructor(
   suspend fun fetchDemographicsWithAdditionalData(patientId: String): PatientItem {
     return withContext(dispatcherProvider.io()) {
       val patientItem = domainMapper.mapToDomainModel(fetchDemographics(patientId))
-      patientItem.additionalData = loadAdditionalDataForPatientDetails(patientItem.id, configurationRegistry, fhirEngine)
+      patientItem.additionalData = loadAdditionalData(patientItem.id, configurationRegistry, fhirEngine)
       patientItem
     }
   }
