@@ -122,7 +122,7 @@ data class PatientVitalItem(
       heightUnit.equals(UnitConstants.UNIT_HEIGHT_METRIC, true)
   }
 
-  fun isWeightAndHeightAreInUSCUnit(): Boolean {
+  fun isWeightAndHeightAreInUscUnit(): Boolean {
     return weightUnit.equals(UnitConstants.UNIT_WEIGHT_USC, true) &&
       heightUnit.equals(UnitConstants.UNIT_HEIGHT_USC, true)
   }

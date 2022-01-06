@@ -100,7 +100,7 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
                 .toString()
             patientVitalItem.bmiUnit = UnitConstants.UNIT_BMI_METRIC
           }
-          patientVitalItem.isWeightAndHeightAreInUSCUnit() -> {
+          patientVitalItem.isWeightAndHeightAreInUscUnit() -> {
             patientVitalItem.bmi =
               computeBmiViaUscUnits(
                   patientVitalItem.height.toDouble(),

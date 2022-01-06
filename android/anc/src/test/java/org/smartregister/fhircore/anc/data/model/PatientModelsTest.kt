@@ -169,6 +169,6 @@ class PatientModelsTest : RobolectricTest() {
     Assert.assertEquals("kg/m2", patientVitalItem.bmiUnit)
     Assert.assertEquals(true, patientVitalItem.isWeightAndHeightAreValid())
     Assert.assertEquals(true, patientVitalItem.isWeightAndHeightAreInMetricUnit())
-    Assert.assertEquals(false, patientVitalItem.isWeightAndHeightAreInUSCUnit())
+    Assert.assertEquals(false, patientVitalItem.isWeightAndHeightAreInUscUnit())
   }
 }
