@@ -221,7 +221,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
 
             it.valuePrefix?.let { prefix ->
               Text(
-                text = prefix,
+                text = viewConfiguration.valuePrefix,
                 color =
                   Color(
                     android.graphics.Color.parseColor(it.properties?.value?.color ?: "#000000")
@@ -272,7 +272,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
 
         // Responses section
         Text(
-          text = "RESPONSES (${testResults?.size?.toString() ?: ""})",
+          text = "${viewConfiguration.contentTitle} (${testResults?.size?.toString() ?: ""})",
           color = colorResource(id = R.color.grayText),
           fontSize = 16.sp,
           fontWeight = FontWeight.Bold

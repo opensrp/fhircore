@@ -11,7 +11,7 @@ data class PatientDetailsViewConfiguration(
   override val classification: String,
   val clientInfo: String = "Patient name, F, 30",
   val contentTitle: String = "Responses",
-  val filters: List<Filter>? = null
+  val valuePrefix: String = "G6PD "
 ) : Configuration
 
 @Stable
@@ -19,11 +19,13 @@ fun patientDetailsViewConfigurationOf(
   appId: String = "quest",
   classification: String = "patient_details",
   clientInfo: String = "Patient name, F, 30",
-  contentTitle: String = "Responses"
+  contentTitle: String = "Responses",
+  valuePrefix: String = "G6PD "
 ) =
   PatientDetailsViewConfiguration(
     appId = appId,
     classification = classification,
     clientInfo = clientInfo,
-    contentTitle = contentTitle
+    contentTitle = contentTitle,
+    valuePrefix = valuePrefix
   )

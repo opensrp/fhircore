@@ -70,7 +70,7 @@ suspend fun loadAdditionalData(
   return result
 }
 
-private suspend inline fun <reified T : Resource> getSearchResults(
+suspend inline fun <reified T : Resource> getSearchResults(
   patientId: String,
   reference: ReferenceClientParam,
   filter: Filter,

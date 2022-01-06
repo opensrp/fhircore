@@ -2,40 +2,12 @@
   {
     "appId": "quest",
     "classification": "patient_details_view",
-    "client_info": "Patient name, M, 30",
-    "filters": [],
     "contentTitle": "Responses"
   },
   {
     "appId": "g6pd",
     "classification": "patient_details_view",
-    "client_info": "Patient name, M, 30",
-    "filters": [
-      {
-        "resourceType": "CONDITION",
-        "key": "category",
-        "valueType": "CODEABLECONCEPT",
-        "valuePrefix": "G6PD ",
-        "valueCoding": {
-          "system": "http://snomed.info/sct",
-          "code": "9024005"
-        },
-        "dynamicColors": [
-          {
-            "valueEqual": "Deficient",
-            "useColor": "#FF0000"
-          },
-          {
-            "valueEqual": "Intermediate",
-            "useColor": "#FFA500"
-          },
-          {
-            "valueEqual": "Normal",
-            "useColor": "#00a000"
-          }
-        ]
-      }
-    ],
+    "valuePrefix": "G6PD ",
     "contentTitle": "TEST RESULTS"
   }
 ]
