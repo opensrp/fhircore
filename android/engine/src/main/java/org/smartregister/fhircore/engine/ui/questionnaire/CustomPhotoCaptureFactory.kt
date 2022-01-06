@@ -163,8 +163,8 @@ class CustomPhotoCaptureFactory(
         // Custom validation message
       }
 
-      //       TODO -> Should use the overridden setReadOnly()
-      //        after upgrading Data Capture library to Beta
+      // TODO -> Should use the overridden setReadOnly()
+      // after upgrading Data Capture library to Beta
 
       fun setReadOnly(isReadOnly: Boolean) {
         ivThumbnail.isEnabled = !isReadOnly
