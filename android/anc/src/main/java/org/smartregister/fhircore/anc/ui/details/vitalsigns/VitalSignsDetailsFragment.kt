@@ -131,6 +131,11 @@ class VitalSignsDetailsFragment : Fragment() {
       txtViewPulseUnit.text = patientVitalItem.pulseUnit
       txtViewBpValue.text = vitalSignStringOrDefault(patientVitalItem.bps)
       txtViewBpUnit.text = patientVitalItem.bpsUnit
+      if (patientVitalItem.bmi.isNotEmpty()) {
+        linearLayoutBmi.show()
+        txtViewBmiValue.text = patientVitalItem.bmi
+        txtViewBmiUnit.text = patientVitalItem.bmiUnit
+      }
     }
   }
 

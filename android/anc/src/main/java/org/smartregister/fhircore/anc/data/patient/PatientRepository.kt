@@ -39,8 +39,6 @@ import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Goal
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.anc.R
@@ -48,6 +46,7 @@ import org.smartregister.fhircore.anc.data.model.CarePlanItem
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.model.UnitConstants
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asPatientReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
@@ -300,19 +299,22 @@ constructor(
   }
 
   suspend fun fetchVitalSigns(patientId: String, searchFilterString: String): Observation {
-    val searchFilter: SearchFilter =
-      when (searchFilterString) {
-        "body-weight" -> vitalSignsConfig.weightFilter!!
-        "body-height" -> vitalSignsConfig.heightFilter!!
-        "bp-s" -> vitalSignsConfig.BPSFilter!!
-        "bp-d" -> vitalSignsConfig.BPDSFilter!!
-        "pulse-rate" -> vitalSignsConfig.pulseRateFilter!!
-        "bg" -> vitalSignsConfig.bloodGlucoseFilter!!
-        "spO2" -> vitalSignsConfig.bloodOxygenLevelFilter!!
-        else ->
-          throw UnsupportedOperationException("Given filter $searchFilterString not supported")
-      }
-    var finalObservation = Observation()
+    var searchFilter: SearchFilter
+    with(vitalSignsConfig) {
+      searchFilter =
+        when (searchFilterString) {
+          "body-weight" -> weightFilter!!
+          "body-height" -> heightFilter!!
+          "bmi" -> bmiFilter!!
+          "bp-s" -> bpsFilter!!
+          "bp-d" -> bpdsFilter!!
+          "pulse-rate" -> pulseRateFilter!!
+          "bg" -> bloodGlucoseFilter!!
+          "spO2" -> bloodOxygenLevelFilter!!
+          else ->
+            throw UnsupportedOperationException("Given filter $searchFilterString not supported")
+        }
+    }
     val observations =
       withContext(dispatcherProvider.io()) {
         fhirEngine.search<Observation> {
@@ -321,16 +323,8 @@ constructor(
           filterByPatient(Observation.SUBJECT, patientId)
         }
       }
-    if (observations.isNotEmpty()) {
-      val listOfObservations =
-        observations.distinctBy { it.effectiveDateTimeType == DateTimeType(Date()) }
-      finalObservation =
-        if (listOfObservations.isNotEmpty())
-          listOfObservations.sortedBy { it.effectiveDateTimeType.value }.last()
-        else observations.sortedBy { it.effectiveDateTimeType.value }.last()
-    }
 
-    return finalObservation
+    return observations.maxByOrNull { it.effectiveDateTimeType.value } ?: Observation()
   }
 
   suspend fun fetchEncounters(patientId: String): List<Encounter> =
@@ -502,33 +496,45 @@ constructor(
   }
 
   suspend fun recordComputedBmi(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
     patientId: String,
-    encounterID: String,
-    height: Double,
+    encounterId: String,
     weight: Double,
-    computedBmi: Double
+    height: Double,
+    computedBmi: Double,
+    isUnitModeMetric: Boolean
   ): Boolean {
-    resourceMapperExtended.saveParsedResource(questionnaireResponse, questionnaire, patientId, null)
-    return recordBmi(patientId, encounterID, height, weight, computedBmi)
+    return recordBmi(
+      patientId = patientId,
+      formEncounterId = encounterId,
+      weight = weight,
+      height = height,
+      computedBmi = computedBmi,
+      isUnitModeMetric = isUnitModeMetric
+    )
   }
 
-  private suspend fun recordBmi(
+  suspend fun recordBmi(
     patientId: String,
     formEncounterId: String,
-    height: Double? = null,
     weight: Double? = null,
-    computedBMI: Double? = null
+    height: Double? = null,
+    computedBmi: Double? = null,
+    isUnitModeMetric: Boolean
   ): Boolean {
-    val bmiEncounterData =
-      buildBmiConfigData(
-        patientId = patientId,
-        recordId = formEncounterId,
-        height = height,
-        weight = weight,
-        computedBmi = computedBMI
-      )
+    var weightUnit = UnitConstants.UNIT_WEIGHT_USC
+    var heightUnit = UnitConstants.UNIT_HEIGHT_USC
+    var weightUnitCode = UnitConstants.UNIT_CODE_WEIGHT_USC
+    var heightUnitCode = UnitConstants.UNIT_CODE_HEIGHT_USC
+    var bmiUnit = UnitConstants.UNIT_BMI_USC
+    if (isUnitModeMetric) {
+      weightUnit = UnitConstants.UNIT_WEIGHT_METRIC
+      heightUnit = UnitConstants.UNIT_HEIGHT_METRIC
+      weightUnitCode = UnitConstants.UNIT_CODE_WEIGHT_METRIC
+      heightUnitCode = UnitConstants.UNIT_CODE_HEIGHT_METRIC
+      bmiUnit = UnitConstants.UNIT_BMI_METRIC
+    }
+
+    val bmiEncounterData = buildBmiConfigData(patientId = patientId, recordId = formEncounterId)
     val bmiEncounter = loadConfig(Template.BMI_ENCOUNTER, Encounter::class.java, bmiEncounterData)
     fhirEngine.save(bmiEncounter)
 
@@ -538,9 +544,9 @@ constructor(
         patientId = patientId,
         recordId = bmiWeightObservationRecordId,
         bmiEncounter = bmiEncounter,
-        height = height,
         weight = weight,
-        computedBmi = computedBMI
+        weightUnit = weightUnit,
+        weightUnitCode = weightUnitCode
       )
     val bmiWeightObservation =
       loadConfig(Template.BMI_PATIENT_WEIGHT, Observation::class.java, bmiWeightObservationData)
@@ -553,9 +559,8 @@ constructor(
         recordId = bmiHeightObservationRecordId,
         bmiEncounter = bmiEncounter,
         height = height,
-        weight = weight,
-        computedBmi = computedBMI,
-        refObsWeightFormId = bmiWeightObservationRecordId
+        heightUnit = heightUnit,
+        heightUnitCode = heightUnitCode
       )
     val bmiHeightObservation =
       loadConfig(Template.BMI_PATIENT_HEIGHT, Observation::class.java, bmiHeightObservationData)
@@ -567,9 +572,8 @@ constructor(
         patientId = patientId,
         recordId = bmiObservationRecordId,
         bmiEncounter = bmiEncounter,
-        height = height,
-        weight = weight,
-        computedBmi = computedBMI,
+        computedBmi = computedBmi,
+        bmiUnit = bmiUnit,
         refObsWeightFormId = bmiWeightObservationRecordId,
         refObsHeightFormId = bmiHeightObservationRecordId
       )
@@ -587,19 +591,30 @@ constructor(
     weight: Double? = null,
     computedBmi: Double? = null,
     refObsWeightFormId: String? = null,
-    refObsHeightFormId: String? = null
+    refObsHeightFormId: String? = null,
+    heightUnit: String? = null,
+    weightUnit: String? = null,
+    bmiUnit: String? = null,
+    heightUnitCode: String? = null,
+    weightUnitCode: String? = null,
   ): Map<String, String?> {
     return mapOf(
       "#Id" to recordId,
       "#RefPatient" to asPatientReference(patientId).reference,
       "#RefEncounter" to bmiEncounter?.id,
       "#RefPractitioner" to "Practitioner/399",
-      "#EffectiveDate" to DateType(Date()).format(),
-      "#ValueWeight" to weight?.toString(),
-      "#ValueHeight" to height?.toString(),
-      "#ValueBmi" to computedBmi.toString(),
+      "#RefDateStart" to DateType(Date()).format(),
+      "#EffectiveDateTime" to DateTimeType(Date()).format(),
+      "#WeightValue" to weight?.toString(),
+      "#HeightValue" to height?.toString(),
+      "#BmiValue" to computedBmi.toString(),
       "#RefIdObservationBodyHeight" to refObsHeightFormId,
       "#RefIdObservationBodyWeight" to refObsWeightFormId,
+      "#WeightUnit" to weightUnit?.toString(),
+      "#HeightUnit" to heightUnit?.toString(),
+      "#BmiUnit" to bmiUnit?.toString(),
+      "#CodeWeightUnit" to weightUnitCode?.toString(),
+      "#CodeHeightUnit" to heightUnitCode?.toString(),
     )
   }
 

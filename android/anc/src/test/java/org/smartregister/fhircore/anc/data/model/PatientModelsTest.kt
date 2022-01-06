@@ -38,6 +38,7 @@ class PatientModelsTest : RobolectricTest() {
   private lateinit var reportItem: ReportItem
   private lateinit var resulttItem: ResultItem
   private lateinit var resulttItemPopulation: ResultItemPopulation
+  private lateinit var patientVitalItem: PatientVitalItem
 
   @Before
   fun setUp() {
@@ -74,6 +75,15 @@ class PatientModelsTest : RobolectricTest() {
     resulttItem = ResultItem("True", true, "Test description")
     resulttItemPopulation =
       ResultItemPopulation(title = "testTitlePopulation", dataList = emptyList())
+    patientVitalItem =
+      PatientVitalItem(
+        height = "160",
+        weight = "60",
+        bmi = "22",
+        heightUnit = "cm",
+        weightUnit = "kg",
+        bmiUnit = "kg/m2"
+      )
   }
 
   @Test
@@ -147,5 +157,18 @@ class PatientModelsTest : RobolectricTest() {
   fun testResultItemPopulation() {
     Assert.assertEquals("testTitlePopulation", resulttItemPopulation.title)
     Assert.assertNotNull(resulttItemPopulation.dataList)
+  }
+
+  @Test
+  fun testPatientVitalItem() {
+    Assert.assertEquals("160", patientVitalItem.height)
+    Assert.assertEquals("cm", patientVitalItem.heightUnit)
+    Assert.assertEquals("60", patientVitalItem.weight)
+    Assert.assertEquals("kg", patientVitalItem.weightUnit)
+    Assert.assertEquals("22", patientVitalItem.bmi)
+    Assert.assertEquals("kg/m2", patientVitalItem.bmiUnit)
+    Assert.assertEquals(true, patientVitalItem.isValidWeightAndHeight())
+    Assert.assertEquals(true, patientVitalItem.isWeightAndHeightAreInMetricUnit())
+    Assert.assertEquals(false, patientVitalItem.isWeightAndHeightAreInUscUnit())
   }
 }
