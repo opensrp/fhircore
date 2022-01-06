@@ -17,16 +17,17 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import java.io.ByteArrayOutputStream
+import io.mockk.mockk
+import io.mockk.verify
+import org.junit.Test
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-fun Bitmap.encodeToByteArray(): ByteArray {
-  ByteArrayOutputStream().use { outputStream ->
-    this.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-    return outputStream.toByteArray()
+class BitmapExtensionTest : RobolectricTest() {
+
+  @Test
+  fun testEncodeToByteArrayShouldVerifyCall() {
+    val bitmap = mockk<Bitmap>(relaxed = true)
+    bitmap.encodeToByteArray()
+    verify { bitmap.compress(any(), any(), any()) }
   }
-}
-
-fun ByteArray.decodeToBitmap(offset: Int = 0): Bitmap {
-  return BitmapFactory.decodeByteArray(this, offset, this.size)
 }
