@@ -20,6 +20,11 @@
         "system": "http://loinc.org",
         "code": "39156-5",
         "display": "Body mass index (BMI) [Ratio]"
+      },
+      {
+        "system": "http://acme.org/devices/clinical-codes",
+        "code": "body-mass-index",
+        "display": "Body Mass Index (BMI)"
       }
     ],
     "text": "BMI"
@@ -27,10 +32,13 @@
   "subject": {
     "reference": "#RefPatient"
   },
-  "effectiveDateTime": "#EffectiveDate",
+  "encounter": {
+    "reference": "#RefEncounter"
+  },
+  "effectiveDateTime": "#EffectiveDateTime",
   "valueQuantity": {
-    "value": "#ValueBmi",
-    "unit": "kg/m2",
+    "value": "#BmiValue",
+    "unit": "#BmiUnit",
     "system": "http://unitsofmeasure.org",
     "code": "kg/m2"
   },
