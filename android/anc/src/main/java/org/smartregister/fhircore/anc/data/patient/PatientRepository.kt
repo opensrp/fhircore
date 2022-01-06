@@ -513,7 +513,7 @@ constructor(
     )
   }
 
-  private suspend fun recordBmi(
+  suspend fun recordBmi(
     patientId: String,
     formEncounterId: String,
     weight: Double? = null,
