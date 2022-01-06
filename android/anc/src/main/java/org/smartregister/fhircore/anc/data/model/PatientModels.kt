@@ -110,7 +110,7 @@ data class PatientVitalItem(
   var bmi: String = "",
   var bmiUnit: String = ""
 ) {
-  fun isWeightAndHeightAreValid(): Boolean {
+  fun isValidWeightAndHeight(): Boolean {
     return weight.isNotEmpty() &&
       height.isNotEmpty() &&
       weight.toDouble() > 0 &&

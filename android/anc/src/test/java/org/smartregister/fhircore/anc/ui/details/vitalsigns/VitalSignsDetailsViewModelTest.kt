@@ -176,6 +176,7 @@ class VitalSignsDetailsViewModelTest : RobolectricTest() {
       Assert.assertNotNull(vitalSignOverviewItem)
       Assert.assertEquals(vitalSignOverviewItem.height, expectVitalSignItem.height)
       Assert.assertEquals(vitalSignOverviewItem.weight, expectVitalSignItem.weight)
+      Assert.assertEquals(true, expectVitalSignItem.isValidWeightAndHeight())
       if (vitalSignOverviewItem.isWeightAndHeightAreInMetricUnit()) {
         Assert.assertEquals(
           vitalSignOverviewItem.bmi,

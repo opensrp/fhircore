@@ -41,6 +41,7 @@ import java.util.UUID
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
@@ -294,6 +295,24 @@ class ApplicationExtensionTest : RobolectricTest() {
     Assert.assertEquals(
       conditionData["#RefDateOnset"],
       condition.onsetDateTimeType.toHumanDisplay()
+    )
+  }
+
+  @Test
+  fun `FhirEngine#dateTimeTypeFormat()`() {
+    val dateTimeTypeObject = Calendar.getInstance()
+    dateTimeTypeObject.set(Calendar.YEAR, 2010)
+    dateTimeTypeObject.set(Calendar.MONTH, 1)
+    dateTimeTypeObject.set(Calendar.DAY_OF_YEAR, 1)
+    // dateTimeTypeObject.set(Calendar.HOUR, 1)
+    // dateTimeTypeObject.set(Calendar.MINUTE, 1)
+    // dateTimeTypeObject.set(Calendar.MILLISECOND, 1)
+    // dateTimeTypeObject.set(Calendar.ZONE_OFFSET, 1)
+    // dateTimeTypeObject.set(Calendar.DST_OFFSET, 1)
+    val expectedDateTimeFormat = "2010-01-01"
+    Assert.assertEquals(
+      expectedDateTimeFormat,
+      DateTimeType(dateTimeTypeObject).format().split("T")[0]
     )
   }
 }

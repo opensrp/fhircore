@@ -89,7 +89,7 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
 
       // Todo: confirm if BMI can be displayed from
       //  Add-Vitals height/weight if its of same Units
-      if (patientVitalItem.bmi.isEmpty() && patientVitalItem.isWeightAndHeightAreValid()) {
+      if (patientVitalItem.bmi.isEmpty() && patientVitalItem.isValidWeightAndHeight()) {
         when {
           patientVitalItem.isWeightAndHeightAreInMetricUnit() -> {
             patientVitalItem.bmi =
