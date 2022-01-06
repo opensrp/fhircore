@@ -7,8 +7,10 @@ import org.hl7.fhir.instance.model.api.ICompositeType;
 import org.hl7.fhir.r4.model.StringType;
 import org.hl7.fhir.r4.model.Type;
 
+import java.io.Serializable;
+
 @DatatypeDef(name = "user-bio")
-public class UserBioData extends Type implements ICompositeType {
+public class UserBioData extends Type implements ICompositeType, Serializable {
 
   @Child(
       name = "identifier",

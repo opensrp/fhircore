@@ -3,6 +3,8 @@ package org.smartregister.fhircore.engine.data.remote.model.response;
 import ca.uhn.fhir.model.api.annotation.Child;
 import ca.uhn.fhir.model.api.annotation.DatatypeDef;
 import ca.uhn.fhir.util.ElementUtil;
+
+import java.io.Serializable;
 import java.util.List;
 import org.hl7.fhir.instance.model.api.ICompositeType;
 import org.hl7.fhir.r4.model.StringType;
@@ -25,7 +27,7 @@ import org.hl7.fhir.r4.model.Type;
  */
 
 @DatatypeDef(name = "KeycloakUserDetails")
-public class KeycloakUserDetails extends Type implements ICompositeType {
+public class KeycloakUserDetails extends Type implements ICompositeType, Serializable {
   @Child(
       name = "user-bio",
       type = {StringType.class},
