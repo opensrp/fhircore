@@ -11,8 +11,11 @@ data class PatientDetailsViewConfiguration(
   override val classification: String,
   val clientInfo: String = "Patient name, F, 30",
   val contentTitle: String = "Responses",
-  val valuePrefix: String = "G6PD "
+  val valuePrefix: String = "G6PD ",
+  val contentItem: ContentItem? = null
 ) : Configuration
+
+@Stable @Serializable class ContentItem(val filters: List<Filter>? = null)
 
 @Stable
 fun patientDetailsViewConfigurationOf(
