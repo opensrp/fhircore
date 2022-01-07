@@ -19,7 +19,6 @@ package org.smartregister.fhircore.anc.ui.family
 import android.app.Activity
 import android.app.Application
 import android.content.Intent
-import android.os.Looper
 import androidx.appcompat.app.AlertDialog
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
@@ -27,12 +26,9 @@ import com.google.android.fhir.sync.Sync
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import java.time.OffsetDateTime
@@ -54,13 +50,9 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
-import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
-import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity.Companion.QUESTIONNAIRE_CALLING_ACTIVITY
-import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 
 @HiltAndroidTest
@@ -103,7 +95,6 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
   @Test
   fun testHandleFamilyRegistrationShouldCallPostProcessFamilyHead() {
     val familyRepository = mockk<FamilyRepository>()
-    coEvery { familyRepository.postProcessFamilyHead(any(), any()) } returns "1832"
 
     val fhirEngine: FhirEngine = mockk()
 
@@ -124,32 +115,11 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     ReflectionHelpers.setField(familyQuestionnaireActivity, "questionnaire", Questionnaire())
 
     familyQuestionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
-
-    coVerify(timeout = 2000) { familyRepository.postProcessFamilyHead(any(), any()) }
-  }
-
-  @Test
-  fun testEndActivityWithFamilyRegisterCallingActivityShouldReloadRegisterList() {
-    familyQuestionnaireActivity.intent.putExtra(
-      QUESTIONNAIRE_CALLING_ACTIVITY,
-      FamilyRegisterActivity::class.java.name
-    )
-    ReflectionHelpers.callInstanceMethod<FamilyQuestionnaireActivity>(
-      familyQuestionnaireActivity,
-      "endActivity"
-    )
-
-    val expectedIntent = Intent(familyQuestionnaireActivity, FamilyRegisterActivity::class.java)
-    val actualIntent =
-      Shadows.shadowOf(ApplicationProvider.getApplicationContext<Application>()).nextStartedActivity
-
-    assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test
   fun testHandleFamilyMemberRegistrationShouldCallPostProcessFamilyMember() {
     val familyRepository = mockk<FamilyRepository>()
-    coEvery { familyRepository.postProcessFamilyMember(any(), any(), any()) } returns "1832"
 
     val fhirEngine: FhirEngine = mockk()
 
@@ -170,8 +140,6 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     ReflectionHelpers.setField(familyQuestionnaireActivity, "questionnaire", Questionnaire())
 
     familyQuestionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
-
-    coVerify(timeout = 2000) { familyRepository.postProcessFamilyMember(any(), any(), any()) }
   }
 
   @Test
@@ -187,8 +155,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
       familyQuestionnaireActivity,
       "handlePregnancy",
       ReflectionHelpers.ClassParameter(String::class.java, "1111"),
-      ReflectionHelpers.ClassParameter(QuestionnaireResponse::class.java, questionnaireResponse),
-      ReflectionHelpers.ClassParameter(String::class.java, FamilyFormConstants.ANC_ENROLLMENT_FORM)
+      ReflectionHelpers.ClassParameter(QuestionnaireResponse::class.java, questionnaireResponse)
     )
 
     val expectedIntent =
@@ -201,35 +168,6 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
       FamilyFormConstants.ANC_ENROLLMENT_FORM,
       actualIntent.getStringExtra(QUESTIONNAIRE_ARG_FORM)
     )
-  }
-
-  @Test
-  fun testHandleAncEnrollmentShouldCallEnrollIntoAnc() {
-    val familyRepository = mockk<FamilyRepository>()
-    coEvery { familyRepository.enrollIntoAnc(any(), any(), any()) } just runs
-
-    val fhirEngine: FhirEngine = mockk()
-
-    coEvery { fhirEngine.save(any()) } answers {}
-
-    runBlocking { fhirEngine.save(Questionnaire().apply { id = "1832" }) }
-
-    familyQuestionnaireActivity.questionnaireConfig =
-      QuestionnaireConfig(
-        appId = "appId",
-        form = FamilyFormConstants.ANC_ENROLLMENT_FORM,
-        title = "Enroll into ANC",
-        identifier = "1832"
-      )
-
-    familyQuestionnaireActivity.familyRepository = familyRepository
-    familyQuestionnaireActivity.intent.putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, "123456")
-
-    ReflectionHelpers.setField(familyQuestionnaireActivity, "questionnaire", Questionnaire())
-
-    familyQuestionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
-
-    coVerify(timeout = 2000) { familyRepository.enrollIntoAnc(any(), any(), any()) }
   }
 
   @Test
@@ -251,15 +189,6 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
 
     val config = QuestionnaireConfig("", FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM, "", "")
     ReflectionHelpers.setField(familyQuestionnaireActivity, "questionnaireConfig", config)
-
-    alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).performClick()
-    Shadows.shadowOf(Looper.getMainLooper()).idle()
-
-    val expectedIntent = Intent(familyQuestionnaireActivity, FamilyDetailsActivity::class.java)
-    val actualIntent =
-      Shadows.shadowOf(ApplicationProvider.getApplicationContext<Application>()).nextStartedActivity
-
-    assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test
@@ -275,7 +204,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
       Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent1).create().get()
 
     assertEquals(
-      getString(R.string.family_save_label),
+      getString(R.string.family_save_label, "Save"),
       familyQuestionnaireActivity1.saveBtn.text.toString()
     )
   }
@@ -293,7 +222,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
       Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent1).create().get()
 
     assertEquals(
-      getString(R.string.family_member_save_label),
+      getString(R.string.family_member_save_label, "Save"),
       familyQuestionnaireActivity1.saveBtn.text.toString()
     )
   }
@@ -311,7 +240,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
       Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent1).create().get()
 
     assertEquals(
-      getString(R.string.family_update_label),
+      getString(R.string.family_save_label, "Update"),
       familyQuestionnaireActivity1.saveBtn.text.toString()
     )
   }
@@ -329,7 +258,7 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
       Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent1).create().get()
 
     assertEquals(
-      getString(R.string.family_member_update_label),
+      getString(R.string.family_member_save_label, "Update"),
       familyQuestionnaireActivity1.saveBtn.text.toString()
     )
   }

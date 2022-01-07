@@ -26,9 +26,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
@@ -36,7 +36,6 @@ import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asCodeableConcept
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
 import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
-import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.family.register.Family
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.util.RegisterType
@@ -63,8 +62,6 @@ constructor(
   private val registerConfig = context.loadRegisterConfig(RegisterType.FAMILY_REGISTER_ID)
 
   private val detailRepository = DefaultRepository(fhirEngine, dispatcherProvider)
-
-  private val resourceMapperExtended = ResourceMapperExtended(detailRepository)
 
   override suspend fun loadData(
     query: String,
@@ -114,29 +111,6 @@ constructor(
         if (it.deathDate != null) weight++ // 0 for alive
         weight
       }
-  }
-
-  suspend fun postProcessFamilyMember(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
-    relatedTo: String?
-  ): String {
-    val patientId = getUniqueId()
-    resourceMapperExtended.saveParsedResource(
-      questionnaireResponse,
-      questionnaire,
-      patientId,
-      relatedTo
-    )
-
-    return patientId
-  }
-
-  suspend fun postProcessFamilyHead(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
-  ): String {
-    return postProcessFamilyMember(questionnaire, questionnaireResponse, null)
   }
 
   /**
@@ -213,39 +187,11 @@ constructor(
         }
     }
 
-  suspend fun updateProcessFamilyHead(
-    patientId: String,
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
-  ) {
-    updateProcessFamilyMember(patientId, questionnaire, questionnaireResponse, null)
-  }
-
-  suspend fun updateProcessFamilyMember(
-    patientId: String,
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
-    relatedTo: String?
-  ) {
-    resourceMapperExtended.saveParsedResource(
-      questionnaireResponse,
-      questionnaire,
-      patientId,
-      relatedTo,
-      editForm = true
-    )
-  }
-
-  suspend fun enrollIntoAnc(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
-    patientId: String
-  ) {
-    resourceMapperExtended.saveParsedResource(questionnaireResponse, questionnaire, patientId, null)
-
+  // TODO move it to structure map for anc enrollment
+  suspend fun enrollIntoAnc(questionnaireResponse: QuestionnaireResponse, patientId: String) {
     val lmpItem = questionnaireResponse.find(LMP_KEY)
-    val lmp = lmpItem?.answer?.firstOrNull()?.valueDateType!!
-    ancPatientRepository.enrollIntoAnc(patientId, lmp)
+    val lmp = lmpItem?.answer?.firstOrNull()?.valueDateTimeType!!.value
+    ancPatientRepository.enrollIntoAnc(patientId, DateType(lmp))
   }
 
   companion object {

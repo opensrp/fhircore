@@ -1,0 +1,41 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "questionnaire": "Questionnaire/family-registration",
+  "subject": {
+    "reference": "Patient/1234"
+  },
+  "item": [
+    {
+      "linkId": "lmp",
+      "answer": [
+        {
+          "valueDateTime": "2021-07-02T00:00:00"
+        }
+      ]
+    },
+    {
+      "linkId": "edd",
+      "answer": [
+        {
+          "valueDateTime": "2021-12-02T00:00:00"
+        }
+      ]
+    },
+    {
+      "linkId": "previous_pregnancies",
+      "answer": [
+        {
+          "valueInteger": 5
+        }
+      ]
+    },
+    {
+      "linkId": "live_deliveries",
+      "answer": [
+        {
+          "valueInteger": 4
+        }
+      ]
+    }
+  ]
+}

@@ -59,7 +59,6 @@ class FamilyDetailsActivity : BaseMultiLanguageActivity() {
         { addNewMember ->
           if (addNewMember) {
             familyDetailsActivity.startFamilyMemberRegistration(familyId)
-            finish()
           }
         }
       )

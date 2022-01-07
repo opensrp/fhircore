@@ -1,0 +1,138 @@
+map "http://fhir.labs.smartregister.org/fhir/StructureMap/anc_service-enrollment" = 'ANCServiceEnrollment'
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+uses "http://hl7.org/fhir/StructureDefinition/Observation" as target
+
+group ANCServiceEnrollment(source src : QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.type = 'collection' "r_bun_type";
+    src -> bundle.entry as entry, entry.resource = create('Encounter') as encounter then
+        ExtractEncounter(src, encounter),
+        ExtractLmp(src, bundle, encounter),
+        ExtractEdd(src, bundle, encounter),
+        ExtractGravida(src, bundle, encounter),
+        ExtractLiveBirths(src, bundle, encounter) "r_bun_entries";
+}
+
+group ExtractEncounter(source src : QuestionnaireResponse, target encounter : Encounter) {
+    src -> encounter.id = uuid() "r_en_id";
+    src -> encounter.status = 'in-progress' "r_en_st";
+    src -> encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH", "home health") "r_en_cls";
+    src -> encounter.serviceType = create('CodeableConcept') as concept then {
+        src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/service-type", "249", "Antenatal") "r_en_st_coding";
+        src -> concept.text = "Antenatal" "r_en_st_text";
+    } "r_en_srv_typ";
+    src -> encounter.type = create('CodeableConcept') as concept then {
+        src -> concept.coding = c("http://example.org/CodeSystem/encounter-type", "anc-contact", "Antenatal care contact") "r_en_typ_coding";
+        src -> concept.text = "Antenatal care contact" "r_en_typ_text";
+    } "r_en_typ";
+    // TODO episode of care, participant info, condition, goal, careplan
+    src -> encounter.period = create('Period') as enPeriod then {
+        src -> enPeriod.start = evaluate(src, now()) "r_en_per_start";
+    } "r_en_per";
+    src.subject as subject -> encounter.subject = subject "r_en_sub";
+}
+
+group ExtractLmp(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
+    src.item as lmp_item where(linkId = 'lmp' and answer.count() > 0) then {
+        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+            src -> obs.id = uuid() "r_ob_id";
+            src -> obs.status = "registered" "r_ob_st";
+            src -> obs.code = create('CodeableConcept') as concept then {
+                src -> concept.coding = c("http://snomed.info/sct", "21840007") as coding then {
+                    src -> coding.display = 'Date of last menstrual period' "r_ob_cod_disp";
+                } "r_ob_cc_cod";
+                src -> concept.text = "LMP" "r_ob_cc_txt";
+            } "r_ob_cc";
+            src.subject as subject -> obs.subject = subject "r_ob_sub";
+            src -> obs.effective = create('Period') as period then {
+                src -> period.start = evaluate(period, now()) "r_ob_per_st";
+                src -> period.end = evaluate(period, now()) "r_ob_per_end";
+            } "r_ob_per";
+            src -> obs.value = evaluate(lmp_item, answer.value) "r_ob_val";
+            src -> obs.encounter = reference(encounter) "r_ob_en";
+            src -> obs.category = create('CodeableConcept') as concept then {
+                src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/observation-category", 'survey', "Survey") "r_ob_cat_coding";
+                src -> concept.text = 'Survey' "r_ob_cat_text";
+            } "r_ob_cat";
+        } "r_ob_lmp";
+    };
+}
+
+group ExtractEdd(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
+    src.item as edd_item where(linkId = 'edd' and answer.count() > 0) then {
+        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+            src -> obs.id = uuid() "r_ob_id";
+            src -> obs.status = "registered" "r_ob_st";
+            src -> obs.code = create('CodeableConcept') as concept then {
+                src -> concept.coding = c("http://snomed.info/sct", "161714006") as coding then {
+                    src -> coding.display = 'Estimated date of delivery' "r_ob_cod_disp";
+                } "r_ob_cc_cod";
+                src -> concept.text = "EDD" "r_ob_cc_txt";
+            } "r_ob_cc";
+            src.subject as subject -> obs.subject = subject "r_ob_sub";
+            src -> obs.effective = create('Period') as period then {
+                src -> period.start = evaluate(period, now()) "r_ob_per_st";
+                src -> period.end = evaluate(period, now()) "r_ob_per_end";
+            } "r_ob_per";
+            src -> obs.value = evaluate(edd_item, answer.value) "r_ob_val";
+            src -> obs.encounter = reference(encounter) "r_ob_en";
+            src -> obs.category = create('CodeableConcept') as concept then {
+                src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/observation-category", 'survey', "Survey") "r_ob_cat_coding";
+                src -> concept.text = 'Survey' "r_ob_cat_text";
+            } "r_ob_cat";
+        } "r_ob_edd";
+    };
+}
+
+group ExtractGravida(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
+    src.item as gravida_item where(linkId = 'previous_pregnancies' and answer.count() > 0) then {
+        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+            src -> obs.id = uuid() "r_ob_id";
+            src -> obs.status = "registered" "r_ob_st";
+            src -> obs.code = create('CodeableConcept') as concept then {
+                src -> concept.coding = c("http://snomed.info/sct", "246211005") as coding then {
+                    src -> coding.display = 'Number of previous pregnancies' "r_ob_cod_disp";
+                } "r_ob_cc_cod";
+                src -> concept.text = "Gravida" "r_ob_cc_txt";
+            } "r_ob_cc";
+            src.subject as subject -> obs.subject = subject "r_ob_sub";
+            src -> obs.effective = create('Period') as period then {
+                src -> period.start = evaluate(period, now()) "r_ob_per_st";
+                src -> period.end = evaluate(period, now()) "r_ob_per_end";
+            } "r_ob_per";
+            src -> obs.value = evaluate(gravida_item, answer.value) "r_ob_val";
+            src -> obs.encounter = reference(encounter) "r_ob_en";
+            src -> obs.category = create('CodeableConcept') as concept then {
+                src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/observation-category", 'survey', "Survey") "r_ob_cat_coding";
+                src -> concept.text = 'Survey' "r_ob_cat_text";
+            } "r_ob_cat";
+        } "r_ob_grav";
+    };
+}
+
+group ExtractLiveBirths(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
+    src.item as liv_del_item where(linkId = 'live_deliveries' and answer.count() > 0) then {
+        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+            src -> obs.id = uuid() "r_ob_id";
+            src -> obs.status = "registered" "r_ob_st";
+            src -> obs.code = create('CodeableConcept') as concept then {
+                src -> concept.coding = c("http://snomed.info/sct", "248991006") as coding then {
+                    src -> coding.display = 'Number of live deliveries' "r_ob_cod_disp";
+                } "r_ob_cc_cod";
+                src -> concept.text = "Live Deliveries" "r_ob_cc_txt";
+            } "r_ob_cc";
+            src.subject as subject -> obs.subject = subject "r_ob_sub";
+            src -> obs.effective = create('Period') as period then {
+                src -> period.start = evaluate(period, now()) "r_ob_per_st";
+                src -> period.end = evaluate(period, now()) "r_ob_per_end";
+            } "r_ob_per";
+            src -> obs.value = evaluate(liv_del_item, answer.value) "r_ob_val";
+            src -> obs.encounter = reference(encounter) "r_ob_en";
+            src -> obs.category = create('CodeableConcept') as concept then {
+                src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/observation-category", 'survey', "Survey") "r_ob_cat_coding";
+                src -> concept.text = 'Survey' "r_ob_cat_text";
+            } "r_ob_cat";
+        } "r_ob_liv_del";
+    };
+}

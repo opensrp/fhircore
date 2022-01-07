@@ -1,0 +1,110 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "questionnaire": "Questionnaire/1922",
+  "item": [
+    {
+      "linkId": "PR-address",
+      "item": [
+        {
+          "linkId": "PR-address-line",
+          "answer": [
+            {
+              "valueString": "45 y"
+            }
+          ]
+        },
+        {
+          "linkId": "PR-address-district",
+          "answer": [
+            {
+              "valueString": "baseerpur"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "bio",
+      "item": [
+        {
+          "linkId": "PR-name",
+          "item": [
+            {
+              "linkId": "PR-name-family",
+              "answer": [
+                {
+                  "valueString": "Rahi"
+                }
+              ]
+            },
+            {
+              "linkId": "PR-name-given",
+              "answer": [
+                {
+                  "valueString": "Arazi"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "PR-identifier-info",
+          "item": [
+            {
+              "linkId": "PR-identifier-nid",
+              "answer": [
+                {
+                  "valueString": "4578"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "PR-gender",
+          "answer": [
+            {
+              "valueCoding": {
+                "system": "http://hl7.org/fhir/administrative-gender",
+                "code": "female",
+                "display": "Female"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "PR-birth-date",
+          "answer": [
+            {
+              "valueDate": "1994-01-06"
+            }
+          ]
+        },
+        {
+          "linkId": "is_pregnant",
+          "answer": [
+            {
+              "valueBoolean": true
+            }
+          ]
+        },
+        {
+          "linkId": "PR-active",
+          "answer": [
+            {
+              "valueBoolean": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "family",
+      "answer": [
+        {
+          "valueBoolean": true
+        }
+      ]
+    }
+  ]
+}

@@ -246,7 +246,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       { result ->
         saveProcessingAlertDialog.dismiss()
         if (result) {
-          postSaveSuccessful()
+          postSaveSuccessful(questionnaireResponse)
         } else {
           Timber.e("An error occurred during extraction")
         }
@@ -254,7 +254,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     )
   }
 
-  open fun postSaveSuccessful() {
+  open fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
     finish()
   }
 
