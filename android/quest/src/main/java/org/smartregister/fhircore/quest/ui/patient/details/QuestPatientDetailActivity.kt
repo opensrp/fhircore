@@ -141,7 +141,8 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
   private fun onTestResultItemClickListener(questionnaireResponse: QuestionnaireResponse?) {
     if (questionnaireResponse != null) {
       if (questionnaireResponse.questionnaire != null) {
-        // TODO 1- handle via config/menu, 2- pass encounterId from quest details screen
+        // TODO https://github.com/opensrp/fhircore/issues/778
+        //  1- handle via config/menu, 2- pass encounterId from quest details screen
         if (configurationRegistry.appId == "g6pd") {
           val encounterId =
             questionnaireResponse.contained
