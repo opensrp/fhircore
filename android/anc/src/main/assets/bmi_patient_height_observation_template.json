@@ -1,11 +1,6 @@
 {
   "resourceType": "Observation",
   "id": "#Id",
-  "meta": {
-    "profile": [
-      "http://hl7.org/fhir/StructureDefinition/vitalsigns"
-    ]
-  },
   "status": "final",
   "category": [
     {
@@ -25,6 +20,16 @@
         "system": "http://loinc.org",
         "code": "8302-2",
         "display": "Body height"
+      },
+      {
+        "system": "http://loinc.org",
+        "code": "3137-7",
+        "display": "Body height Measured"
+      },
+      {
+        "system": "http://acme.org/devices/clinical-codes",
+        "code": "body-height",
+        "display": "Body Height"
       }
     ],
     "text": "Body height"
@@ -32,11 +37,14 @@
   "subject": {
     "reference": "#RefPatient"
   },
-  "effectiveDateTime": "#EffectiveDate",
+  "encounter": {
+    "reference": "#RefEncounter"
+  },
+  "effectiveDateTime": "#EffectiveDateTime",
   "valueQuantity": {
-    "value": "#ValueHeight",
-    "unit": "in",
+    "value": "#HeightValue",
+    "unit": "#HeightUnit",
     "system": "http://unitsofmeasure.org",
-    "code": "[in_i]"
+    "code": "#CodeHeightUnit"
   }
 }

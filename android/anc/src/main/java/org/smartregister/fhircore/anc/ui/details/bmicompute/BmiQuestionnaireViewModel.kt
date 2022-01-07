@@ -24,13 +24,12 @@ import android.text.style.ForegroundColorSpan
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
-import org.smartregister.fhircore.anc.util.computeBMIViaMetricUnits
-import org.smartregister.fhircore.anc.util.computeBMIViaStandardUnits
+import org.smartregister.fhircore.anc.util.computeBmiViaMetricUnits
+import org.smartregister.fhircore.anc.util.computeBmiViaUscUnits
 import org.smartregister.fhircore.engine.util.extension.find
 
 @HiltViewModel
@@ -51,9 +50,6 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
     const val KEY_HEIGHT_CM = "vital-signs-height_cm"
 
     const val HEIGHT_FEET_INCHES_MULTIPLIER = 12
-    const val HEIGHT_METER_CENTIMETER_MULTIPLIER = 100
-    const val HEIGHT_INCH_METER_MULTIPLIER = 39.3701
-    const val WEIGHT_POUND_KG_MULTIPLIER = 2.20462
 
     const val BMI_CATEGORY_UNDERWEIGHT_MAX_THRESHOLD = 18.5
     const val BMI_CATEGORY_NORMAL_MAX_THRESHOLD = 25
@@ -79,8 +75,7 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
     return if (isUnitModeMetric) {
       val heightCms = questionnaireResponse.find(KEY_HEIGHT_CM)
       val height = heightCms?.answer?.firstOrNull()?.valueDecimalType?.value?.toDouble() ?: 0.0
-      val heightInMeters = height.div(HEIGHT_METER_CENTIMETER_MULTIPLIER)
-      heightInMeters
+      height
     } else {
       val heightFeets = questionnaireResponse.find(KEY_HEIGHT_FT)
       val heightInches = questionnaireResponse.find(KEY_HEIGHT_INCH)
@@ -105,27 +100,11 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
     }
   }
 
-  fun getHeightAsPerSiUnit(inputHeight: Double, unitModeMetric: Boolean): Double {
-    return if (unitModeMetric) {
-      inputHeight * HEIGHT_INCH_METER_MULTIPLIER
-    } else {
-      inputHeight
-    }
-  }
-
-  fun getWeightAsPerSiUnit(inputWeight: Double, unitModeMetric: Boolean): Double {
-    return if (unitModeMetric) {
-      inputWeight * WEIGHT_POUND_KG_MULTIPLIER
-    } else {
-      inputWeight
-    }
-  }
-
   fun calculateBmi(height: Double, weight: Double, isUnitModeMetric: Boolean): Double {
     return if (height <= 0 || weight <= 0) -1.0
     else if (isUnitModeMetric)
-      computeBMIViaMetricUnits(heightInMeters = height, weightInKgs = weight)
-    else computeBMIViaStandardUnits(heightInInches = height, weightInPounds = weight)
+      computeBmiViaMetricUnits(heightInCentimeters = height, weightInKgs = weight)
+    else computeBmiViaUscUnits(heightInInches = height, weightInPounds = weight)
   }
 
   fun getBmiResult(computedBMI: Double, context: Context): SpannableString {
@@ -179,22 +158,20 @@ class BmiQuestionnaireViewModel @Inject constructor(val patientRepository: Patie
   }
 
   suspend fun saveComputedBmi(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
     patientId: String,
-    encounterID: String,
-    height: Double,
+    encounterId: String,
     weight: Double,
-    computedBMI: Double
+    height: Double,
+    computedBmi: Double,
+    isUnitModeMetric: Boolean
   ): Boolean {
     return patientRepository.recordComputedBmi(
-      questionnaire,
-      questionnaireResponse,
-      patientId,
-      encounterID,
-      height,
-      weight,
-      computedBMI
+      patientId = patientId,
+      encounterId = encounterId,
+      weight = weight,
+      height = height,
+      computedBmi = computedBmi,
+      isUnitModeMetric = isUnitModeMetric
     )
   }
 }
