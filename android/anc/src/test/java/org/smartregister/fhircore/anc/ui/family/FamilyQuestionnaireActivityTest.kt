@@ -22,24 +22,26 @@ import android.content.Intent
 import androidx.appcompat.app.AlertDialog
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.Sync
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkObject
+import io.mockk.runs
+import io.mockk.slot
 import io.mockk.spyk
-import io.mockk.unmockkObject
-import java.time.OffsetDateTime
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.BooleanType
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.junit.After
+import org.hl7.fhir.r4.model.Reference
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -51,113 +53,98 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants
+import org.smartregister.fhircore.anc.ui.family.form.FamilyFormConstants.FAMILY_EDIT_INFO
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
 
 @HiltAndroidTest
 internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
-  private lateinit var familyQuestionnaireActivity: FamilyQuestionnaireActivity
+  @BindValue
+  val questionnaireViewModel: QuestionnaireViewModel =
+    spyk(QuestionnaireViewModel(mockk(), mockk(), mockk(), mockk(), mockk(), mockk(), mockk()))
 
-  private lateinit var familyQuestionnaireActivitySpy: FamilyQuestionnaireActivity
+  @BindValue
+  val configurationRegistry: ConfigurationRegistry =
+    spyk(ConfigurationRegistry(mockk(), mockk(), mockk()))
+
+  private lateinit var familyQuestionnaireActivity: FamilyQuestionnaireActivity
+  private val patientId = "123"
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    mockkObject(Sync)
-    every { Sync.basicSyncJob(any()).stateFlow() } returns flowOf()
-    every { Sync.basicSyncJob(any()).lastSyncTimestamp() } returns OffsetDateTime.now()
-
-    val intent =
-      Intent().apply {
-        putExtra(QUESTIONNAIRE_ARG_FORM, FamilyFormConstants.FAMILY_REGISTER_FORM)
-        putExtra(FamilyQuestionnaireActivity.QUESTIONNAIRE_RELATED_TO_KEY, "Patient/1")
-      }
-
-    familyQuestionnaireActivity =
-      Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent).create().get()
-    familyQuestionnaireActivitySpy = spyk(objToCopy = familyQuestionnaireActivity)
-  }
-
-  @After
-  fun cleanup() {
-    unmockkObject(Sync)
   }
 
   @Test
   fun testActivityShouldNotNull() {
+    buildActivityFor(FamilyFormConstants.FAMILY_REGISTER_FORM, false)
     assertNotNull(familyQuestionnaireActivity)
   }
 
   @Test
-  fun testHandleFamilyRegistrationShouldCallPostProcessFamilyHead() {
-    val familyRepository = mockk<FamilyRepository>()
+  fun testPostSaveSuccessfulWithFamilyRegistrationShouldCallHandlePregnancyForPregnantClient() =
+      runBlockingTest {
+    buildActivityFor(FamilyFormConstants.FAMILY_REGISTER_FORM, false)
 
-    val fhirEngine: FhirEngine = mockk()
+    val questionnaireResponse = buildPregnantQuestionnaireResponse(true)
 
-    coEvery { fhirEngine.save(any()) } answers {}
+    familyQuestionnaireActivity.postSaveSuccessful(questionnaireResponse)
 
-    runBlocking { fhirEngine.save(Questionnaire().apply { id = "1832" }) }
-
-    familyQuestionnaireActivity.questionnaireConfig =
-      QuestionnaireConfig(
-        appId = "appId",
-        form = FamilyFormConstants.FAMILY_REGISTER_FORM,
-        title = "Add Family",
-        identifier = "1832"
-      )
-
-    familyQuestionnaireActivity.familyRepository = familyRepository
-
-    ReflectionHelpers.setField(familyQuestionnaireActivity, "questionnaire", Questionnaire())
-
-    familyQuestionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
+    assertAncEnrollmentQuestionnaireActivity()
   }
 
   @Test
-  fun testHandleFamilyMemberRegistrationShouldCallPostProcessFamilyMember() {
-    val familyRepository = mockk<FamilyRepository>()
+  fun testPostSaveSuccessfulWithFamilyMemberRegistration() = runBlockingTest {
+    buildActivityFor(FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM, false, "123")
 
-    val fhirEngine: FhirEngine = mockk()
+    val familyRepositoryMockk = mockk<FamilyRepository>()
+    val fhirEngineMockk = mockk<FhirEngine>()
+    familyQuestionnaireActivity.familyRepository = familyRepositoryMockk
 
-    coEvery { fhirEngine.save(any()) } answers {}
+    coEvery { familyRepositoryMockk.fhirEngine } returns fhirEngineMockk
+    coEvery { fhirEngineMockk.load(Patient::class.java, any()) } returns Patient()
+    coEvery { fhirEngineMockk.save(any()) } just runs
 
-    runBlocking { fhirEngine.save(Questionnaire().apply { id = "1832" }) }
+    val questionnaireResponse = buildPregnantQuestionnaireResponse(true)
 
-    familyQuestionnaireActivity.questionnaireConfig =
-      QuestionnaireConfig(
-        appId = "appId",
-        form = FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM,
-        title = "Add Family Member",
-        identifier = "1832"
-      )
+    familyQuestionnaireActivity.postSaveSuccessful(questionnaireResponse)
 
-    familyQuestionnaireActivity.familyRepository = familyRepository
+    assertAncEnrollmentQuestionnaireActivity()
 
-    ReflectionHelpers.setField(familyQuestionnaireActivity, "questionnaire", Questionnaire())
+    val patientSlot = slot<Patient>()
 
-    familyQuestionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
+    coVerify { fhirEngineMockk.load(Patient::class.java, patientId) }
+    coVerify { fhirEngineMockk.save(capture(patientSlot)) }
+
+    assertEquals("Patient/$patientId", patientSlot.captured.linkFirstRep.other.reference)
   }
 
   @Test
-  fun testHandlePregnancyWithPregnantShouldCallAncEnrollment() {
-    val questionnaireResponse =
-      QuestionnaireResponse().apply {
-        addItem().apply {
-          linkId = "is_pregnant"
-          addAnswer().apply { value = BooleanType(true) }
-        }
-      }
-    ReflectionHelpers.callInstanceMethod<FamilyQuestionnaireActivity>(
-      familyQuestionnaireActivity,
-      "handlePregnancy",
-      ReflectionHelpers.ClassParameter(String::class.java, "1111"),
-      ReflectionHelpers.ClassParameter(QuestionnaireResponse::class.java, questionnaireResponse)
-    )
+  fun testPostSaveSuccessfulWithAncServiceEnrollment() = runBlockingTest {
+    buildActivityFor(FamilyFormConstants.ANC_ENROLLMENT_FORM, false, "123")
 
+    val familyRepositoryMockk = mockk<FamilyRepository>()
+    val fhirEngineMockk = mockk<FhirEngine>()
+    familyQuestionnaireActivity.familyRepository = familyRepositoryMockk
+
+    coEvery { familyRepositoryMockk.enrollIntoAnc(any(), any()) } just runs
+
+    val questionnaireResponse = buildPregnantQuestionnaireResponse(true)
+
+    familyQuestionnaireActivity.postSaveSuccessful(questionnaireResponse)
+
+    coVerify { familyRepositoryMockk.enrollIntoAnc(any(), any()) }
+
+    assertTrue(familyQuestionnaireActivity.isFinishing)
+  }
+
+  private fun assertAncEnrollmentQuestionnaireActivity() {
     val expectedIntent =
       Intent(familyQuestionnaireActivity, FamilyQuestionnaireActivity::class.java)
     val actualIntent =
@@ -168,10 +155,13 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
       FamilyFormConstants.ANC_ENROLLMENT_FORM,
       actualIntent.getStringExtra(QUESTIONNAIRE_ARG_FORM)
     )
+    assertEquals(patientId, actualIntent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY))
   }
 
   @Test
   fun testOnBackPressedShouldCallConfirmationDialogue() {
+    buildActivityFor(FamilyFormConstants.FAMILY_REGISTER_FORM, false)
+
     familyQuestionnaireActivity.onBackPressed()
 
     val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestDialog())
@@ -186,113 +176,86 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
       getString(R.string.unsaved_changes_pos),
       alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
     )
-
-    val config = QuestionnaireConfig("", FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM, "", "")
-    ReflectionHelpers.setField(familyQuestionnaireActivity, "questionnaireConfig", config)
   }
 
   @Test
-  fun testTextOfSavedButtonForFamilyRegister() {
-
-    val intent1 =
-      Intent().apply {
-        putExtra(QUESTIONNAIRE_ARG_FORM, FamilyFormConstants.FAMILY_REGISTER_FORM)
-          .putExtra(FamilyFormConstants.FAMILY_EDIT_INFO, false)
-      }
-
-    val familyQuestionnaireActivity1 =
-      Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent1).create().get()
-
-    assertEquals(
-      getString(R.string.family_save_label, "Save"),
-      familyQuestionnaireActivity1.saveBtn.text.toString()
-    )
-  }
-
-  @Test
-  fun testTextOfSavedButtonForFamilyMemberRegister() {
-
-    val intent1 =
-      Intent().apply {
-        putExtra(QUESTIONNAIRE_ARG_FORM, FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM)
-          .putExtra(FamilyFormConstants.FAMILY_EDIT_INFO, false)
-      }
-
-    val familyQuestionnaireActivity1 =
-      Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent1).create().get()
+  fun testTextOfSaveButtonForFamilyMemberRegistration() {
+    buildActivityFor(FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM, false)
 
     assertEquals(
       getString(R.string.family_member_save_label, "Save"),
-      familyQuestionnaireActivity1.saveBtn.text.toString()
+      familyQuestionnaireActivity.saveBtn.text.toString()
     )
-  }
 
-  @Test
-  fun testTextOfSavedButtonForEditFamilyRegister() {
-
-    val intent1 =
-      Intent().apply {
-        putExtra(QUESTIONNAIRE_ARG_FORM, FamilyFormConstants.FAMILY_REGISTER_FORM)
-          .putExtra(FamilyFormConstants.FAMILY_EDIT_INFO, true)
-      }
-
-    val familyQuestionnaireActivity1 =
-      Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent1).create().get()
-
-    assertEquals(
-      getString(R.string.family_save_label, "Update"),
-      familyQuestionnaireActivity1.saveBtn.text.toString()
-    )
-  }
-
-  @Test
-  fun testTextOfSavedButtonForEditFamilyMemberRegister() {
-
-    val intent1 =
-      Intent().apply {
-        putExtra(QUESTIONNAIRE_ARG_FORM, FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM)
-          .putExtra(FamilyFormConstants.FAMILY_EDIT_INFO, true)
-      }
-
-    val familyQuestionnaireActivity1 =
-      Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent1).create().get()
+    buildActivityFor(FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM, true)
 
     assertEquals(
       getString(R.string.family_member_save_label, "Update"),
-      familyQuestionnaireActivity1.saveBtn.text.toString()
+      familyQuestionnaireActivity.saveBtn.text.toString()
+    )
+  }
+
+  @Test
+  fun testTextOfSaveButtonForFamilyRegistration() {
+    buildActivityFor(FamilyFormConstants.FAMILY_REGISTER_FORM, false)
+
+    assertEquals(
+      getString(R.string.family_save_label, "Save"),
+      familyQuestionnaireActivity.saveBtn.text.toString()
+    )
+
+    buildActivityFor(FamilyFormConstants.FAMILY_REGISTER_FORM, true)
+
+    assertEquals(
+      getString(R.string.family_save_label, "Update"),
+      familyQuestionnaireActivity.saveBtn.text.toString()
     )
   }
 
   @Test
   fun testTextOfSavedButtonForAncRegister() {
-
-    val intent1 =
-      Intent().apply {
-        putExtra(QUESTIONNAIRE_ARG_FORM, FamilyFormConstants.ANC_ENROLLMENT_FORM)
-          .putExtra(FamilyFormConstants.FAMILY_EDIT_INFO, false)
-      }
-
-    val familyQuestionnaireActivity1 =
-      Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent1).create().get()
-
-    val intent2 =
-      Intent().apply {
-        putExtra(QUESTIONNAIRE_ARG_FORM, FamilyFormConstants.ANC_ENROLLMENT_FORM)
-          .putExtra(FamilyFormConstants.FAMILY_EDIT_INFO, true)
-      }
-
-    val familyQuestionnaireActivity2 =
-      Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent2).create().get()
+    buildActivityFor(FamilyFormConstants.ANC_ENROLLMENT_FORM, false)
 
     assertEquals(
       getString(R.string.mark_as_anc_client),
-      familyQuestionnaireActivity1.saveBtn.text.toString()
+      familyQuestionnaireActivity.saveBtn.text.toString()
     )
+
+    buildActivityFor(FamilyFormConstants.ANC_ENROLLMENT_FORM, true)
 
     assertEquals(
       getString(R.string.mark_as_anc_client),
-      familyQuestionnaireActivity2.saveBtn.text.toString()
+      familyQuestionnaireActivity.saveBtn.text.toString()
     )
+  }
+
+  private fun buildActivityFor(form: String, editForm: Boolean, headId: String? = null) {
+    coEvery { questionnaireViewModel.loadQuestionnaire(any()) } returns
+      Questionnaire().apply {
+        name = form
+        title = form
+      }
+    every { configurationRegistry.appId } returns "anc"
+
+    val intent =
+      Intent().apply {
+        putExtra(QUESTIONNAIRE_ARG_FORM, form)
+        putExtra(FAMILY_EDIT_INFO, editForm)
+        putExtra(FamilyQuestionnaireActivity.QUESTIONNAIRE_RELATED_TO_KEY, headId)
+      }
+
+    familyQuestionnaireActivity =
+      Robolectric.buildActivity(FamilyQuestionnaireActivity::class.java, intent).create().get()
+  }
+
+  private fun buildPregnantQuestionnaireResponse(pregnant: Boolean): QuestionnaireResponse {
+    return QuestionnaireResponse().apply {
+      addItem().apply {
+        linkId = "is_pregnant"
+        subject = Reference().apply { reference = "Patient/$patientId" }
+        addAnswer().apply { value = BooleanType(pregnant) }
+      }
+    }
   }
 
   override fun getActivity(): Activity {
