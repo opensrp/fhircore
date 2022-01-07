@@ -23,7 +23,6 @@ import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.data.remote.model.response.KeycloakUserDetails
 import org.smartregister.fhircore.engine.data.remote.model.response.PractitionerDetails
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 
 @Singleton
@@ -68,9 +67,10 @@ class KeyclockUtils @Inject constructor(val sharedPreferences: SharedPreferences
   }
 
   fun retrieveKeyClockInfo(): KeycloakUserDetails {
-    val keycloakUserDetails =
-      sharedPreferences.read(KEY_CLOCK_INFO_SHARED_PREFERENCE_KEY, "")!!.decodeJson<
-        KeycloakUserDetails>()
-    return keycloakUserDetails
+    val keycloakUserDetailsString =
+      sharedPreferences.read(KEY_CLOCK_INFO_SHARED_PREFERENCE_KEY, "")!!
+    val gson = Gson()
+
+    return gson.fromJson(keycloakUserDetailsString, KeycloakUserDetails::class.java)
   }
 }
