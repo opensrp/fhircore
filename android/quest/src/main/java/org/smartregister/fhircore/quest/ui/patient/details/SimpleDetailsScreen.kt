@@ -57,7 +57,6 @@ import org.smartregister.fhircore.quest.configuration.view.Property
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItem
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItemCell
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItemRow
-import org.smartregister.fhircore.quest.util.getColor
 import timber.log.Timber
 
 private fun String?.value() = this ?: ""
@@ -156,6 +155,9 @@ fun TextView(
     fontSize = TextUnit(size, TextUnitType.Sp),
   )
 }
+
+private fun getColor(value: String, colors: List<DynamicColor>?) =
+  colors?.firstOrNull { it.valueEqual == value }?.useColor
 
 @ExcludeFromJacocoGeneratedReport
 @Composable
