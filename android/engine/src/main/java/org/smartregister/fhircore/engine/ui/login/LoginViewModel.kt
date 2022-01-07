@@ -48,9 +48,9 @@ import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.KeyclockUtils
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
+import org.smartregister.fhircore.engine.util.UserDetailsUtils
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import retrofit2.Call
@@ -116,7 +116,7 @@ constructor(
     viewModelScope.launch(dispatcher.io()) {
       val bundle = accountAuthenticator.getPractitionerDetails(userResponse.sub!!)
       bundle.entry.forEach {
-        val keyclockUtils = KeyclockUtils(sharedPreferences)
+        val keyclockUtils = UserDetailsUtils(sharedPreferences)
         keyclockUtils.updateUserDetailsFromPractitionerDetails(it.resource, userResponse)
         keyclockUtils.storeKeyClockInfo(it.resource)
         fhirEngine.save(it.resource)

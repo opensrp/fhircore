@@ -26,7 +26,7 @@ import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 
 @Singleton
-class KeyclockUtils @Inject constructor(val sharedPreferences: SharedPreferencesHelper) {
+class UserDetailsUtils @Inject constructor(val sharedPreferences: SharedPreferencesHelper) {
 
   private fun storeUserPreferences(userInfo: UserInfo) {
     sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, userInfo.encodeJson())
