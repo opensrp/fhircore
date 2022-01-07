@@ -53,7 +53,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
-import org.smartregister.fhircore.engine.util.extension.runOneTimeSync
 import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
@@ -175,20 +174,6 @@ constructor(
       password.value!!.trim().toCharArray()
     )
   }
-
-  fun runSync() =
-    viewModelScope.launch(dispatcher.io()) {
-      try {
-        fhirEngine.runOneTimeSync(
-          sharedSyncStatus = sharedSyncStatus,
-          syncJob = syncJob,
-          resourceSyncParams = configurationRegistry.configService.resourceSyncParams,
-          fhirResourceDataSource = fhirResourceDataSource
-        )
-      } catch (exception: Exception) {
-        Timber.e("Error syncing data", exception.stackTraceToString())
-      }
-    }
 
   private val _navigateToHome = MutableLiveData<Boolean>()
   val navigateToHome: LiveData<Boolean>
