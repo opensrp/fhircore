@@ -155,7 +155,8 @@ constructor(
   suspend fun fetchDemographicsWithAdditionalData(patientId: String): PatientItem {
     return withContext(dispatcherProvider.io()) {
       val patientItem = domainMapper.mapToDomainModel(fetchDemographics(patientId))
-      patientItem.additionalData = loadAdditionalData(patientItem.id, configurationRegistry, fhirEngine)
+      patientItem.additionalData =
+        loadAdditionalData(patientItem.id, configurationRegistry, fhirEngine)
       patientItem
     }
   }

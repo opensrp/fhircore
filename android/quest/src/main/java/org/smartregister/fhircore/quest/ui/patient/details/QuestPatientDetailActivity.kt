@@ -44,7 +44,8 @@ import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import timber.log.Timber
 
 @AndroidEntryPoint
-class QuestPatientDetailActivity : BaseMultiLanguageActivity(), ConfigurableComposableView<PatientDetailsViewConfiguration> {
+class QuestPatientDetailActivity :
+  BaseMultiLanguageActivity(), ConfigurableComposableView<PatientDetailsViewConfiguration> {
 
   private lateinit var patientId: String
 
@@ -67,17 +68,23 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity(), ConfigurableComp
       onFormTestResultClicked.observe(detailActivity, detailActivity::onTestResultItemClickListener)
     }
 
-    if(configurationRegistry.isAppIdInitialized()) {
-      configureViews(configurationRegistry.retrieveConfiguration<PatientDetailsViewConfiguration>(
-        configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
-      ))
+    if (configurationRegistry.isAppIdInitialized()) {
+      configureViews(
+        configurationRegistry.retrieveConfiguration<PatientDetailsViewConfiguration>(
+          configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
+        )
+      )
     }
     patientViewModel.run {
       getDemographicsWithAdditionalData(patientId)
       getAllResults(patientId)
-      getAllForms(this@QuestPatientDetailActivity, patientDetailsViewConfiguration = configurationRegistry.retrieveConfiguration<PatientDetailsViewConfiguration>(
-        configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
-      ))
+      getAllForms(
+        this@QuestPatientDetailActivity,
+        patientDetailsViewConfiguration =
+          configurationRegistry.retrieveConfiguration<PatientDetailsViewConfiguration>(
+            configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
+          )
+      )
     }
     setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
   }

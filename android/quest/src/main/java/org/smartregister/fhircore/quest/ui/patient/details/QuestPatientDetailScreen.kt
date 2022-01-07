@@ -66,7 +66,6 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
 
 const val TOOLBAR_TITLE = "toolbarTitle"
@@ -182,7 +181,8 @@ fun FormItem(
 
 @Composable
 fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailViewModel) {
-  val viewConfiguration by questPatientDetailViewModel.patientDetailsViewConfiguration.observeAsState(patientDetailsViewConfigurationOf())
+  val viewConfiguration by questPatientDetailViewModel.patientDetailsViewConfiguration
+    .observeAsState(patientDetailsViewConfigurationOf())
   val patientItem by questPatientDetailViewModel.patientItem.observeAsState(null)
   val forms by questPatientDetailViewModel.questionnaireConfigs.observeAsState(null)
   val testResults by questPatientDetailViewModel.testResults.observeAsState(null)

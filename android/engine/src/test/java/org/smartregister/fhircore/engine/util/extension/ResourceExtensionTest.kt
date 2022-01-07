@@ -32,8 +32,8 @@ import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Quantity
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
