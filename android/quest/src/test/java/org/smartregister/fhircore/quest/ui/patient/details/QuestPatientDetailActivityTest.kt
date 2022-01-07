@@ -100,8 +100,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   @Test
   fun testOnMenuItemClickListenerShouldStartQuestPatientTestResultActivity() {
     questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.test_results)
-    val expectedIntent =
-      Intent(questPatientDetailActivity, QuestPatientTestResultActivity::class.java)
+    val expectedIntent = Intent(questPatientDetailActivity, SimpleDetailsActivity::class.java)
     val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
@@ -169,6 +168,12 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnTestResultItemClickListenerShouldStartQuestionnaireActivity() {
+    questPatientDetailActivity.configurationRegistry.appId = "quest"
+    questPatientDetailActivity.configurationRegistry.configurationsMap.put(
+      "quest|patient_register",
+      RegisterViewConfiguration("", "", "", "", "", "", "")
+    )
+
     questPatientDetailActivity.patientViewModel.onTestResultItemClickListener(
       QuestionnaireResponse().apply { questionnaire = "Questionnaire/12345" }
     )
