@@ -48,9 +48,9 @@ class StructureMapTestUtilities : RobolectricTest() {
   @Test
   fun `perform immunization extraction`() {
     val immunizationQuestionnaireResponseString =
-      "structure-map-questionnaires/eir/immunization/questionnaire-response.json".readFile()
+      "structure-map-questionnaires/anc/bmi/questionnaire-response-standard.json".readFile()
     val immunizationStructureMap =
-      "structure-map-questionnaires/eir/immunization/structure-map.txt".readFile()
+      "structure-map-questionnaires/anc/bmi/structure-map.txt".readFile()
 
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     // Package name manually checked from
@@ -138,7 +138,8 @@ class StructureMapTestUtilities : RobolectricTest() {
       "structure-map-questionnaires/eir/patient-registration/structure-map.txt".readFile()
     val relatedPersonJson =
       "structure-map-questionnaires/eir/patient-registration/related-person.json".readFile()
-    val patientJson = "structure-map-questionnaires/eir/patient-registration/patient.json".readFile()
+    val patientJson =
+      "structure-map-questionnaires/eir/patient-registration/patient.json".readFile()
 
     val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val questionnaire =
@@ -180,7 +181,8 @@ class StructureMapTestUtilities : RobolectricTest() {
       "structure-map-questionnaires/eir/adverse-event/questionnaire.json".readFile()
     val adverseEventStructureMap =
       "structure-map-questionnaires/eir/adverse-event/structure-map.txt".readFile()
-    val immunizationJson = "structure-map-questionnaires/eir/adverse-event/immunization.json".readFile()
+    val immunizationJson =
+      "structure-map-questionnaires/eir/adverse-event/immunization.json".readFile()
 
     val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val questionnaire = iParser.parseResource(Questionnaire::class.java, adverseEventQuestionnaire)
