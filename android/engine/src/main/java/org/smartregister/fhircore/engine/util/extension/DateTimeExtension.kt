@@ -80,6 +80,11 @@ fun Date.plusYears(years: Int): Date {
 
 fun DateType.format(): String = SDF_YYYY_MM_DD.format(value)
 
+fun DateTimeType.format(): String =
+  SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(value).let {
+    StringBuilder(it).insert(it.length - 2, ":").toString()
+  }
+
 fun DateTimeType.plusDaysAsString(days: Int): String {
   val clone = this.copy()
   clone.add(Calendar.DATE, days)

@@ -10,7 +10,8 @@
           "code": "vital-signs",
           "display": "Vital Signs"
         }
-      ]
+      ],
+      "text": "Vital Signs"
     }
   ],
   "code": {
@@ -43,11 +44,11 @@
   "encounter": {
     "reference": "#RefEncounter"
   },
-  "effectiveDateTime": "#EffectiveDate",
+  "effectiveDateTime": "#EffectiveDateTime",
   "valueQuantity": {
-    "value": "#ValueWeight",
-    "unit": "lbs",
+    "value": "#WeightValue",
+    "unit": "#WeightUnit",
     "system": "http://unitsofmeasure.org",
-    "code": "[lb_av]"
+    "code": "#CodeWeightUnit"
   }
 }

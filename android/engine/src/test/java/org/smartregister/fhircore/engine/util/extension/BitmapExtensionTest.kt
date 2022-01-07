@@ -14,24 +14,20 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.anc.util
+package org.smartregister.fhircore.engine.util.extension
 
-import org.junit.Assert.assertEquals
+import android.graphics.Bitmap
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Test
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-class CalculationUtilsTest {
-
-  @Test
-  fun testBmiViaUSCUnitIsComputed() {
-    val expectedBmi = 22.96
-    val computedBmi = computeBmiViaUscUnits(70.0, 160.0)
-    assertEquals(expectedBmi, computedBmi, 0.1)
-  }
+class BitmapExtensionTest : RobolectricTest() {
 
   @Test
-  fun testBmiViaMetricIsComputed() {
-    val expectedBmi = 22.90
-    val computedBmi = computeBmiViaMetricUnits(178.0, 72.57)
-    assertEquals(expectedBmi, computedBmi, 0.1)
+  fun testEncodeToByteArrayShouldVerifyCall() {
+    val bitmap = mockk<Bitmap>(relaxed = true)
+    bitmap.encodeToByteArray()
+    verify { bitmap.compress(any(), any(), any()) }
   }
 }
