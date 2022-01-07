@@ -136,7 +136,7 @@ constructor(
   suspend fun searchPatientByLink(linkId: String): List<Patient> {
     return fhirEngine.search {
       filterByPatient(Patient.LINK, linkId)
-      filter(Patient.ACTIVE, true)
+      filter(Patient.ACTIVE, { value = of(true) })
     }
   }
 

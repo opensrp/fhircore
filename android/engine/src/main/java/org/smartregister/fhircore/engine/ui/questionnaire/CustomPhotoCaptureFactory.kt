@@ -139,10 +139,6 @@ class CustomPhotoCaptureFactory(
         }
       }
 
-      override fun setReadOnly(isReadOnly: Boolean) {
-        TODO("Not yet implemented")
-      }
-
       override fun bind(questionnaireItemViewItem: QuestionnaireItemViewItem) {
         if (!questionnaireItemViewItem.questionnaireItem.prefix.isNullOrEmpty()) {
           tvPrefix.apply {
@@ -170,7 +166,7 @@ class CustomPhotoCaptureFactory(
       // TODO -> Should use the overridden setReadOnly()
       // after upgrading Data Capture library to Beta
 
-      fun setReadOnly(isReadOnly: Boolean) {
+      override fun setReadOnly(isReadOnly: Boolean) {
         ivThumbnail.isEnabled = !isReadOnly
         btnTakePhoto.isEnabled = !isReadOnly
       }
