@@ -20,7 +20,6 @@ import androidx.compose.runtime.Stable
 import androidx.ui.core.Direction
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.Configuration
 
 @Stable
@@ -58,17 +57,24 @@ data class Properties(
   val labelDirection: Direction = Direction.LEFT
 )
 
-@Stable @Serializable data class Property(val color: String? = null, val textSize: Int? = null)
+@Stable
+@Serializable
+data class Property(
+  val color: String? = null,
+  val textSize: Int? = null,
+  val fontWeight: FontWeight? = FontWeight.NORMAL
+)
 
 @Stable @Serializable data class DynamicColor(val valueEqual: String, val useColor: String)
 
-/**
- * @param appId Set unique identifier for this configuration
- * @param classification set the classification
- * @param showG6pdStatus enable of disable the status
- */
-@Stable
-fun patientRegisterRowViewConfigurationOf(
-  appId: String = "quest",
-  classification: String = "patient_list_row"
-) = PatientRegisterRowViewConfiguration(appId = appId, classification = classification)
+enum class FontWeight {
+  LIGHT(300),
+  NORMAL(400),
+  BOLD(700);
+
+  val weight: Int
+
+  constructor(weight: Int) {
+    this.weight = weight
+  }
+}

@@ -513,13 +513,35 @@ class PatientRepositoryTest : RobolectricTest() {
     runBlocking {
       val result =
         repository.recordComputedBmi(
-          questionnaire = mockk(),
-          questionnaireResponse = mockk(),
           patientId = "patient_1",
-          encounterID = "encounter_1",
+          encounterId = "encounter_1",
           height = 1.6764,
           weight = 50.0,
-          computedBmi = 9.8
+          computedBmi = 9.8,
+          isUnitModeMetric = true
+        )
+
+      coVerify(exactly = 4) { fhirEngine.save(any()) }
+      Assert.assertTrue(result)
+    }
+  }
+
+  @Test
+  fun testRecordComputedBmiShouldExtractAndSaveResourcesInner() {
+    every { repository.resourceMapperExtended } returns
+      mockk { coEvery { saveParsedResource(any(), any(), any(), any()) } returns Unit }
+
+    coEvery { fhirEngine.save(any()) } returns Unit
+
+    runBlocking {
+      val result =
+        repository.recordBmi(
+          patientId = "patient_1",
+          formEncounterId = "encounter_1",
+          height = 1.6764,
+          weight = 50.0,
+          computedBmi = 9.8,
+          isUnitModeMetric = true
         )
 
       coVerify(exactly = 4) { fhirEngine.save(any()) }

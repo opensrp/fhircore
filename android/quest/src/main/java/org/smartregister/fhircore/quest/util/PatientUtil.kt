@@ -29,7 +29,6 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.quest.configuration.view.Code
-import org.smartregister.fhircore.quest.configuration.view.DynamicColor
 import org.smartregister.fhircore.quest.configuration.view.Filter
 import org.smartregister.fhircore.quest.configuration.view.PatientRegisterRowViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.Properties
@@ -49,24 +48,21 @@ suspend fun loadAdditionalData(
     )
 
   patientRegisterRowViewConfiguration.filters?.forEach { filter ->
-    when (filter.resourceType) {
-      Enumerations.ResourceType.CONDITION -> {
-        val conditions =
-          getSearchResults<Condition>("Patient/$patientId", Condition.SUBJECT, filter, fhirEngine)
+    if (filter.resourceType == Enumerations.ResourceType.CONDITION) {
+      val conditions = getSearchResults<Condition>("Patient/$patientId", Condition.SUBJECT, filter, fhirEngine)
 
-        val sortedByDescending = conditions.maxByOrNull { it.recordedDate }
-        sortedByDescending?.category?.forEach { cc ->
-          cc.coding.firstOrNull { c -> c.code == filter.valueCoding!!.code }?.let {
-            val status = sortedByDescending.code?.coding?.firstOrNull()?.display ?: ""
-            result.add(
-              AdditionalData(
-                label = filter.label,
-                value = status,
-                valuePrefix = filter.valuePrefix,
-                properties = propertiesMapping(status, filter)
-              )
+      val sortedByDescending = conditions.maxByOrNull { it.recordedDate }
+      sortedByDescending?.category?.forEach { cc ->
+        cc.coding.firstOrNull { c -> c.code == filter.valueCoding!!.code }?.let {
+          val status = sortedByDescending.code?.coding?.firstOrNull()?.display ?: ""
+          result.add(
+            AdditionalData(
+              label = filter.label,
+              value = status,
+              valuePrefix = filter.valuePrefix,
+              properties = propertiesMapping(status, filter)
             )
-          }
+          )
         }
       }
     }
@@ -82,17 +78,24 @@ suspend inline fun <reified T : Resource> getSearchResults(
   fhirEngine: FhirEngine
 ): List<T> {
   return fhirEngine.search {
-    filterByReference(referenceParam, reference)
+      filterByReference(referenceParam, reference)
 
     when (filter.valueType) {
       Enumerations.DataType.CODEABLECONCEPT -> {
-        filter(TokenClientParam(filter.key), filter.valueCoding!!.asCodeableConcept())
+        filter(
+          TokenClientParam(filter.key),
+          CodeableConcept().addCoding(filter.valueCoding!!.asCoding())
+        )
       }
-      Enumerations.DataType.CODING -> {
+      else -> {
         filter(TokenClientParam(filter.key), filter.valueCoding!!.asCoding())
       }
     }
   }
+}
+
+fun Search.filterByReference(referenceParam: ReferenceClientParam, reference: String) {
+    filter(referenceParam) { this.value = reference }
 }
 
 fun propertiesMapping(value: String, filter: Filter): Properties {
@@ -100,24 +103,12 @@ fun propertiesMapping(value: String, filter: Filter): Properties {
     label = filter.properties?.label,
     value =
       Property(
-        color = getColor(value, filter.dynamicColors) ?: filter.properties?.value?.color,
-        textSize = filter.properties?.value?.textSize
+        color = filter.dynamicColors?.firstOrNull { it.valueEqual == value }?.useColor
+            ?: filter.properties?.value?.color,
+        textSize = filter.properties?.value?.textSize,
+        fontWeight = filter.properties?.value?.fontWeight
       )
   )
 }
 
-fun getColor(value: String, dynamicColors: List<DynamicColor>?): String? {
-  return dynamicColors?.firstOrNull { it.valueEqual == value }?.useColor
-}
-
-fun Search.filterByReference(referenceParam: ReferenceClientParam, reference: String) {
-  filter(referenceParam) { this.value = reference }
-}
-
-fun Code.asCoding(): Coding {
-  return Coding(system, code, display)
-}
-
-fun Code.asCodeableConcept(): CodeableConcept {
-  return CodeableConcept().addCoding(this.asCoding())
-}
+fun Code.asCoding() = Coding(system, code, display)
