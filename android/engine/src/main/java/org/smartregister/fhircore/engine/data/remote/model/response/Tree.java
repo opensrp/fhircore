@@ -15,7 +15,7 @@
  */
 package org.smartregister.fhircore.engine.data.remote.model.response;
 
-import static org.smartregister.fhircore.engine.util.Constants.SLASH_UNDERSCORE;
+import static org.smartregister.fhircore.engine.data.remote.model.response.Constants.SLASH_UNDERSCORE;
 
 import ca.uhn.fhir.model.api.annotation.Child;
 import ca.uhn.fhir.model.api.annotation.DatatypeDef;
