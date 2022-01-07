@@ -92,7 +92,7 @@ class SimpleDetailsScreenTest : RobolectricTest() {
   }
 
   @Test
-  fun testScreenShouldHaveDynamicData() {
+  fun testScreen2ShouldHaveDynamicData() {
     composeRule.setContent { simpleDetailsScreenView2() }
 
     val rows = composeRule.onAllNodesWithTag(DETAILS_DATA_ROW, true)
@@ -104,6 +104,29 @@ class SimpleDetailsScreenTest : RobolectricTest() {
     rows[1].onChildren().assertCountEquals(0)
     rows[2].onChildAt(0).assert(hasText("Label 1"))
     rows[2].onChildAt(1).assert(hasText("Value of Magenta"))
+  }
+
+  @Test
+  fun testScreen1ShouldHaveDynamicData() {
+    composeRule.setContent { simpleDetailsScreenView1() }
+
+    val rows = composeRule.onAllNodesWithTag(DETAILS_DATA_ROW, true)
+    rows.assertCountEquals(4)
+    rows[0].onChildAt(0).assert(hasText("Sample Label 1"))
+    rows[0].onChildAt(1).assert(hasText("Val 1"))
+    rows[0].onChildAt(2).assert(hasText("Sample Label Two"))
+    rows[0].onChildAt(3).assert(hasText("Val 2"))
+    rows[1].onChildren().assertCountEquals(0)
+    rows[2].onChildAt(0).assert(hasText("Label 1"))
+    rows[2].onChildAt(1).assert(hasText("Value of Yellow"))
+  }
+
+  @Test
+  fun testScreenWithEmptyDataShouldHaveEmptyViews() {
+    composeRule.setContent { emptyView() }
+
+    val rows = composeRule.onAllNodesWithTag(DETAILS_DATA_ROW, true)
+    rows.assertCountEquals(0)
   }
 
   @Test
