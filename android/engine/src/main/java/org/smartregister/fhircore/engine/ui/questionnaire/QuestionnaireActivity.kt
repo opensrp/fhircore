@@ -283,6 +283,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     questionnaireViewModel.extractAndSaveResources(
+      context = this,
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
       resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
