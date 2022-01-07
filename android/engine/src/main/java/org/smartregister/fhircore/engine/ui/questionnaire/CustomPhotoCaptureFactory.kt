@@ -139,6 +139,10 @@ class CustomPhotoCaptureFactory(
         }
       }
 
+      override fun setReadOnly(isReadOnly: Boolean) {
+        TODO("Not yet implemented")
+      }
+
       override fun bind(questionnaireItemViewItem: QuestionnaireItemViewItem) {
         if (!questionnaireItemViewItem.questionnaireItem.prefix.isNullOrEmpty()) {
           tvPrefix.apply {
