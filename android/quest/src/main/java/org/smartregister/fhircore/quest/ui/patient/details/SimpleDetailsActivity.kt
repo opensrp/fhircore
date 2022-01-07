@@ -33,12 +33,16 @@ class SimpleDetailsActivity : BaseMultiLanguageActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    encounterId = intent.extras?.getString("RECORD_ID")!!
+    encounterId = intent.extras?.getString(RECORD_ID_ARG)!!
 
     viewModel.onBackPressClicked.observe(this, { if (it) finish() })
 
     viewModel.loadData(encounterId)
 
     setContent { AppTheme { SimpleDetailsScreen(viewModel) } }
+  }
+
+  companion object {
+    const val RECORD_ID_ARG = "RECORD_ID"
   }
 }

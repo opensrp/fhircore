@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.quest.ui.patient.details
 
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -36,11 +38,12 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.quest.configuration.view.Properties
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
-class SimpleDetailsModelTest : RobolectricTest() {
+class SimpleDetailsViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
@@ -78,6 +81,41 @@ class SimpleDetailsModelTest : RobolectricTest() {
     coVerify { patientRepository.loadEncounter(any()) }
     coVerify { viewModel.getCondition(any(), any()) }
     coVerify { viewModel.getObservation(any(), any()) }
+  }
+
+  @Test
+  fun testGetConditionShouldReturnValidCondition() = runBlockingTest {
+    val fhirEngine = mockk<FhirEngine>()
+    coEvery { patientRepository.fhirEngine } returns fhirEngine
+    coEvery { fhirEngine.search<Condition>(any()) } returns listOf(Condition().apply { id = "c1" })
+
+    val result =
+      viewModel.getCondition(
+        Encounter().apply { id = "123" },
+        filterOf("code", "Code", Properties())
+      )
+
+    coVerify { fhirEngine.search<Condition>(any()) }
+
+    Assert.assertEquals("c1", result!!.logicalId)
+  }
+
+  @Test
+  fun testGetObservationShouldReturnValidObservation() = runBlockingTest {
+    val fhirEngine = mockk<FhirEngine>()
+    coEvery { patientRepository.fhirEngine } returns fhirEngine
+    coEvery { fhirEngine.search<Observation>(any()) } returns
+      listOf(Observation().apply { id = "o1" })
+
+    val result =
+      viewModel.getObservation(
+        Encounter().apply { id = "123" },
+        filterOf("code", "Code", Properties())
+      )
+
+    coVerify { fhirEngine.search<Observation>(any()) }
+
+    Assert.assertEquals("o1", result!!.logicalId)
   }
 
   @Test

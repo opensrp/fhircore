@@ -38,6 +38,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.patient.details.SimpleDetailsActivity.Companion.RECORD_ID_ARG
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import timber.log.Timber
 
@@ -152,7 +153,7 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
           else
             startActivity(
               Intent(this, SimpleDetailsActivity::class.java).apply {
-                putExtra("RECORD_ID", encounterId.replace("#", ""))
+                putExtra(RECORD_ID_ARG, encounterId.replace("#", ""))
               }
             )
         } else {
