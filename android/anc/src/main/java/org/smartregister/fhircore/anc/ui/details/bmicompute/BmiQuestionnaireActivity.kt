@@ -71,7 +71,7 @@ class BmiQuestionnaireActivity : QuestionnaireActivity() {
       .setTitle(title)
       .setMessage(message)
       .setCancelable(true)
-      .setPositiveButton("OK") { dialogInterface, _ ->
+      .setPositiveButton(R.string.ok) { dialogInterface, _ ->
         dialogInterface.dismiss()
         resumeForm()
       }
