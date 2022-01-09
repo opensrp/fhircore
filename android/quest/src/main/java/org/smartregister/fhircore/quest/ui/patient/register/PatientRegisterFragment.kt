@@ -17,8 +17,16 @@
 package org.smartregister.fhircore.quest.ui.patient.register
 
 import android.content.Intent
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.LazyPagingItems
 import dagger.hilt.android.AndroidEntryPoint
@@ -49,11 +57,17 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
 
   @Composable
   override fun ConstructRegisterList(pagingItems: LazyPagingItems<PatientItem>) {
-    PatientRegisterList(
-      pagingItems = pagingItems,
-      modifier = Modifier,
-      clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
-    )
+    val configuration = LocalConfiguration.current
+    val expectedRegistListHeight = (configuration.screenHeightDp * 0.55) .dp
+    Box(
+      modifier = Modifier.fillMaxWidth().height(expectedRegistListHeight)
+    ) {
+      PatientRegisterList(
+        pagingItems = pagingItems,
+        modifier = Modifier,
+        clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
+      )
+    }
   }
 
   override fun onItemClicked(listenerIntent: ListenerIntent, data: PatientItem) {
