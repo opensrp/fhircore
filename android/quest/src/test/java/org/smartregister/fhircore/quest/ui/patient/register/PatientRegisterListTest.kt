@@ -23,6 +23,7 @@ import androidx.compose.ui.test.hasAnyChild
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.paging.LoadState
 import io.mockk.every
@@ -34,6 +35,7 @@ import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.components.PATIENT_BIO
 import org.smartregister.fhircore.quest.ui.patient.register.components.PatientRegisterList
+import org.smartregister.fhircore.quest.ui.patient.register.components.PatientRegisterListForQuest
 import org.smartregister.fhircore.quest.ui.patient.register.components.dummyPatientPagingList
 
 class PatientRegisterListTest : RobolectricTest() {
@@ -93,6 +95,31 @@ class PatientRegisterListTest : RobolectricTest() {
 
       Assert.assertEquals("John Doe", clickedItemList[0].name)
       Assert.assertEquals("Jane Doe", clickedItemList[1].name)
+    }
+  }
+
+  @Test
+  fun testPatientRegisterListForQuestShouldExist() {
+    val clickedItemList = mutableListOf<PatientItem>()
+
+    composeRule.runOnIdle {
+      composeRule.setContent {
+        val pagingItemsSpy = spyk(dummyPatientPagingList())
+
+        every { pagingItemsSpy.loadState.append } returns LoadState.NotLoading(true)
+        every { pagingItemsSpy.loadState.refresh } returns LoadState.NotLoading(true)
+
+        PatientRegisterListForQuest(
+          pagingItems = pagingItemsSpy,
+          clickListener = { i, p ->
+            // click intent should be open profile
+            Assert.assertEquals(OpenPatientProfile, i)
+            clickedItemList.add(p)
+          }
+        )
+      }
+
+      composeRule.onNodeWithTag("PatientRegisterListForQuest").assertExists()
     }
   }
 }
