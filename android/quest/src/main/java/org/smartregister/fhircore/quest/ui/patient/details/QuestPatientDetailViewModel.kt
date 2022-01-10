@@ -49,7 +49,7 @@ constructor(
   val patientRepository: PatientRepository,
   val defaultRepository: DefaultRepository,
   val patientItemMapper: PatientItemMapper,
-  val libraryEvaluator: LibraryEvaluator,
+  val libraryEvaluator: LibraryEvaluator
 ) : ViewModel() {
 
   val patientItem = MutableLiveData<PatientItem>()
