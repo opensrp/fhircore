@@ -21,6 +21,7 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -147,9 +148,9 @@ constructor(
     onBackPressClicked.value = backPressed
   }
 
-  fun fetchResultItemLabel(testResult: Pair<QuestionnaireResponse, Questionnaire>): String? {
+  fun fetchResultItemLabel(testResult: Pair<QuestionnaireResponse, Questionnaire>): String {
     return testResult.second.name?.let { name -> name }
-      ?: testResult.second.title?.let { title -> title }
+      ?: testResult.second.title?.let { title -> title } ?: testResult.second.logicalId
   }
 
   companion object {
