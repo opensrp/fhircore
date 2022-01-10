@@ -2,11 +2,15 @@
   "resourceType": "Questionnaire",
   "id": "3440",
   "meta": {
-    "versionId": "30",
-    "lastUpdated": "2021-12-03T10:19:05.771+00:00",
-    "source": "#2857996ec5156bd8"
+    "versionId": "31",
+    "lastUpdated": "2021-12-14T00:32:08.720+00:00",
+    "source": "#161c3d17c58686e0"
   },
   "language": "en",
+  "extension": [ {
+    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+    "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/5875"
+  } ],
   "name": "G6PD Test Photo Result",
   "title": "G6PD Test Photo Result",
   "status": "active",
@@ -28,7 +32,10 @@
   "extension": [ {
     "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
     "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/5875"
-  } ],
+  }, {
+    "url": "http://hl7.org/fhir/StructureDefinition/cqf-library",
+    "valueCanonical": "Library/4575"
+  }],
   "item": [ {
     "extension": [ {
       "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/cpg-itemImage",

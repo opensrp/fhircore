@@ -14,6 +14,36 @@
         "resource": "LoginViewConfiguration",
         "classification": "login",
         "description": "Configurations for login"
+      },
+      {
+        "workflowPoint": "patient_register_row",
+        "resource": "PatientRegisterRowViewConfiguration",
+        "classification": "patient_register_row",
+        "description": "Configurations for Patient Row"
+      }
+    ]
+  },
+  {
+    "appId": "g6pd",
+    "title": "G6PD app workflow",
+    "mapping": [
+      {
+        "workflowPoint": "registration",
+        "resource": "RegisterViewConfiguration",
+        "classification": "patient_register",
+        "description": "Configurations for patient register"
+      },
+      {
+        "workflowPoint": "login",
+        "resource": "LoginViewConfiguration",
+        "classification": "login",
+        "description": "Configurations for login"
+      },
+      {
+        "workflowPoint": "patient_register_row",
+        "resource": "PatientRegisterRowViewConfiguration",
+        "classification": "patient_register_row",
+        "description": "Configurations for Patient Row"
       }
     ]
   }

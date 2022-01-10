@@ -17,11 +17,13 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import java.text.SimpleDateFormat
+import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 
@@ -36,6 +38,10 @@ fun Date.asDdMmmYyyy(): String {
   return SDF_DD_MMM_YYYY.format(this)
 }
 
+fun Date.asYyyyMmDd(): String {
+  return SDF_YYYY_MM_DD.format(this)
+}
+
 fun Date.toHumanDisplay(): String =
   SimpleDateFormat("MMM d, yyyy h:mm:ss a", Locale.getDefault()).format(this)
 
@@ -45,6 +51,13 @@ fun Date?.makeItReadable(): String {
     SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault()).run { format(this@makeItReadable) }
   }
 }
+
+fun Date.daysPassed() =
+  TimeUnit.DAYS.convert(Instant.now().toEpochMilli() - this.time, TimeUnit.MILLISECONDS)
+
+fun Date.yearsPassed() = this.daysPassed().div(365).toInt()
+
+fun Date?.toAgeDisplay() = if (this == null) "" else getAgeStringFromDays(this.daysPassed())
 
 fun DateType.plusWeeksAsString(weeks: Int): String {
   val clone = this.copy()
@@ -58,7 +71,19 @@ fun DateType.plusMonthsAsString(months: Int): String {
   return clone.format()
 }
 
+fun Date.plusYears(years: Int): Date {
+  val date = this
+  val clone = Calendar.getInstance().apply { time = date }
+  clone.add(Calendar.YEAR, years)
+  return clone.time
+}
+
 fun DateType.format(): String = SDF_YYYY_MM_DD.format(value)
+
+fun DateTimeType.format(): String =
+  SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(value).let {
+    StringBuilder(it).insert(it.length - 2, ":").toString()
+  }
 
 fun DateTimeType.plusDaysAsString(days: Int): String {
   val clone = this.copy()

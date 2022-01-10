@@ -33,6 +33,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Surface
@@ -42,11 +44,17 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.TaskAlt
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,7 +65,12 @@ import androidx.compose.ui.unit.sp
 import org.hl7.fhir.r4.model.Encounter
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
+import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
+
+const val TOOLBAR_MENU = "toolbarMenuTag"
+const val TOOLBAR_MENU_BUTTON = "toolbarMenuButtonTag"
+const val TOOLBAR_TITLE = "toolbarTitle"
 
 @Composable
 fun FamilyDetailScreen(familyDetailViewModel: FamilyDetailViewModel) {
@@ -65,13 +78,35 @@ fun FamilyDetailScreen(familyDetailViewModel: FamilyDetailViewModel) {
     !familyDetailViewModel.familyCarePlans.observeAsState().value.isNullOrEmpty()
   val patient = familyDetailViewModel.demographics.observeAsState()
 
+  var showMenu by remember { mutableStateOf(false) }
+
   Surface(color = colorResource(id = R.color.white_smoke)) {
     Column {
       TopAppBar(
-        title = { Text(text = stringResource(id = R.string.all_families)) },
+        title = {
+          Text(text = stringResource(id = R.string.all_families), Modifier.testTag(TOOLBAR_TITLE))
+        },
         navigationIcon = {
           IconButton(onClick = familyDetailViewModel::onAppBackClick) {
             Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")
+          }
+        },
+        actions = {
+          IconButton(
+            onClick = { showMenu = !showMenu },
+            modifier = Modifier.testTag(TOOLBAR_MENU_BUTTON)
+          ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null) }
+          DropdownMenu(
+            expanded = showMenu,
+            onDismissRequest = { showMenu = false },
+            Modifier.testTag(TOOLBAR_MENU)
+          ) {
+            DropdownMenuItem(
+              onClick = {
+                showMenu = false
+                familyDetailViewModel.onRemoveFamilyMenuItemClicked()
+              }
+            ) { Text(text = stringResource(id = R.string.remove_family)) }
           }
         }
       )
@@ -91,9 +126,9 @@ fun FamilyDetailScreen(familyDetailViewModel: FamilyDetailViewModel) {
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
-          text = patient.value?.address?.firstOrNull()?.city.toString(),
+          text = patient.value?.extractAddress() ?: "",
           color = colorResource(id = R.color.white),
-          fontSize = 25.sp
+          fontSize = 20.sp
         )
       }
 
@@ -112,7 +147,10 @@ fun FamilyDetailScreen(familyDetailViewModel: FamilyDetailViewModel) {
 
         Spacer(Modifier.height(12.dp))
 
-        MemberHeading(familyDetailViewModel::onAddMemberItemClicked)
+        MemberHeading(
+          familyDetailViewModel::onAddMemberItemClicked,
+          familyDetailViewModel::onChangeHeadClicked
+        )
         familyDetailViewModel.familyMembers.observeAsState().value?.run {
           MembersList(this, familyDetailViewModel::onMemberItemClick)
         }
@@ -131,7 +169,7 @@ fun FamilyDetailScreen(familyDetailViewModel: FamilyDetailViewModel) {
 }
 
 @Composable
-fun MemberHeading(onAddMemberItemClicked: () -> Unit) {
+fun MemberHeading(onAddMemberItemClicked: () -> Unit, onChangeHeadClicked: () -> Unit) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -144,9 +182,18 @@ fun MemberHeading(onAddMemberItemClicked: () -> Unit) {
       textAlign = TextAlign.Start,
       fontSize = 16.sp,
     )
+    TextButton(contentPadding = PaddingValues(0.dp), onClick = { onChangeHeadClicked() }) {
+      Text(
+        text = stringResource(id = R.string.change_head).uppercase(),
+        color = colorResource(id = R.color.colorPrimaryLight),
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Start
+      )
+    }
     TextButton(contentPadding = PaddingValues(0.dp), onClick = { onAddMemberItemClicked() }) {
       Text(
-        text = stringResource(id = R.string.add).uppercase() + "+",
+        text = stringResource(id = R.string.add_member).uppercase() + "+",
         color = colorResource(id = R.color.colorPrimaryLight),
         fontSize = 16.sp,
         fontWeight = FontWeight.Bold,
@@ -172,7 +219,10 @@ fun MembersList(
       val totalMemberCount = members.count()
       members.forEachIndexed { index, item ->
         Column(
-          modifier = Modifier.fillMaxWidth().clickable { onMemberItemClick(item) },
+          modifier =
+            Modifier.fillMaxWidth().clickable(enabled = item.deathDate == null) {
+              onMemberItemClick(item)
+            },
         ) {
           Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -186,6 +236,16 @@ fun MembersList(
               textAlign = TextAlign.Start,
               modifier = Modifier.padding(end = 12.dp)
             )
+
+            item.deathDate?.let {
+              Text(
+                text = "Deceased(${item.deathDate.makeItReadable()})",
+                color = colorResource(id = R.color.status_gray),
+                fontSize = 14.sp,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.padding(end = 12.dp)
+              )
+            }
 
             Image(
               painter = painterResource(id = R.drawable.ic_forward_arrow),
@@ -211,7 +271,7 @@ fun MembersList(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
           ) {
-            if (item.pregnant) {
+            if (item.pregnant == true) {
               Image(
                 painter = painterResource(R.drawable.ic_pregnant),
                 contentDescription = stringResource(id = R.string.pregnant_woman),

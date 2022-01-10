@@ -16,9 +16,11 @@
 
 package org.smartregister.fhircore.anc.ui.family.details
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -27,6 +29,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.family.FamilyDetailRepository
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
+import timber.log.Timber
 
 @HiltViewModel
 class FamilyDetailViewModel
@@ -35,7 +38,13 @@ constructor(
   val repository: FamilyDetailRepository,
 ) : ViewModel() {
 
+  var isRemoveFamily = MutableLiveData(false)
+
+  var isRemoveFamilyMenuItemClicked = MutableLiveData(false)
+
   val addNewMember = MutableLiveData(false)
+
+  val changeHead = MutableLiveData(false)
 
   val backClicked = MutableLiveData(false)
 
@@ -50,6 +59,9 @@ constructor(
   val encounters = MutableLiveData<List<Encounter>>()
 
   val familyCarePlans = MutableLiveData<List<CarePlan>>()
+
+  fun MutableLiveData<List<FamilyMemberItem>>.othersEligibleForHead() =
+    this.value?.filter { it.deathDate == null && !it.houseHoldHead }
 
   fun fetchDemographics(familyId: String) {
     viewModelScope.launch { demographics.postValue(repository.fetchDemographics(familyId)) }
@@ -67,6 +79,31 @@ constructor(
     viewModelScope.launch { encounters.postValue(repository.fetchEncounters(familyId)) }
   }
 
+  fun removeFamily(familyId: String) {
+
+    viewModelScope.launch {
+      try {
+        val family: Patient =
+          repository.loadResource(familyId)
+            ?: throw ResourceNotFoundException("Family resource for that ID NOT Found")
+
+        repository.delete(family)
+        isRemoveFamily.postValue(true)
+      } catch (e: Exception) {
+        Timber.e(e)
+      }
+    }
+  }
+
+  fun changeFamilyHead(currentHead: String, newHead: String): LiveData<Boolean> {
+    val changed = MutableLiveData(false)
+    viewModelScope.launch {
+      repository.familyRepository.changeFamilyHead(currentHead, newHead)
+      changed.postValue(true)
+    }
+    return changed
+  }
+
   fun onMemberItemClick(familyMemberItem: FamilyMemberItem) {
     memberItemClicked.value = familyMemberItem
   }
@@ -77,6 +114,14 @@ constructor(
 
   fun onAddMemberItemClicked() {
     addNewMember.value = true
+  }
+
+  fun onChangeHeadClicked() {
+    changeHead.value = true
+  }
+
+  fun onRemoveFamilyMenuItemClicked() {
+    isRemoveFamilyMenuItemClicked.value = true
   }
 
   fun onSeeAllEncountersListener() {}

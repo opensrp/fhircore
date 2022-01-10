@@ -54,6 +54,7 @@ import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.shared.AncItemMapper
 import org.smartregister.fhircore.anc.ui.details.PatientDetailsActivity
 import org.smartregister.fhircore.engine.HiltActivityForTest
+import org.smartregister.fhircore.engine.util.extension.plusYears
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -85,7 +86,12 @@ internal class VitalSignsDetailsFragmentTest : RobolectricTest() {
       runs
     patientRepository.setAncItemMapperType(AncItemMapper.AncItemMapperType.DETAILS)
     every { ancPatientDetailItem.patientDetails } returns
-      PatientItem(patientIdentifier = patientId, name = "Mandela Nelson", gender = "M", age = "26")
+      PatientItem(
+        patientIdentifier = patientId,
+        name = "Mandela Nelson",
+        gender = "M",
+        birthDate = Date().plusYears(-26)
+      )
     every { ancPatientDetailItem.patientDetailsHead } returns PatientItem()
     coEvery { patientRepository.fetchDemographics(patientId) } returns ancPatientDetailItem
 
@@ -164,20 +170,22 @@ internal class VitalSignsDetailsFragmentTest : RobolectricTest() {
       ReflectionHelpers.ClassParameter(
         PatientVitalItem::class.java,
         PatientVitalItem(
-          "40",
-          "kg",
-          "34",
-          "in",
-          "86",
-          "%",
-          "45",
-          "bgunit",
-          "23",
-          "bpunit",
-          "23",
-          "bpunit",
-          "23",
-          "pulseunit"
+          weight = "40",
+          weightUnit = "kg",
+          height = "34",
+          heightUnit = "in",
+          spO2 = "86",
+          spO2Unit = "%",
+          bg = "45",
+          bgUnit = "bgunit",
+          bps = "23",
+          bpsUnit = "bpunit",
+          bpds = "23",
+          bpdsUnit = "bpunit",
+          pulse = "23",
+          pulseUnit = "pulseunit",
+          bmi = "22.5",
+          bmiUnit = "kg/m2"
         )
       )
     )
@@ -195,6 +203,8 @@ internal class VitalSignsDetailsFragmentTest : RobolectricTest() {
       Assert.assertEquals("bpunit", txtViewBpUnit.text.toString())
       Assert.assertEquals("23", txtViewPulseValue.text.toString())
       Assert.assertEquals("pulseunit", txtViewPulseUnit.text.toString())
+      Assert.assertEquals("22.5", txtViewBmiValue.text.toString())
+      Assert.assertEquals("kg/m2", txtViewBmiUnit.text.toString())
     }
 
     ReflectionHelpers.callInstanceMethod<Any>(

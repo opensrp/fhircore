@@ -16,26 +16,18 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import io.mockk.mockkStatic
+import android.graphics.Bitmap
+import io.mockk.mockk
 import io.mockk.verify
-import java.io.File
-import java.io.FileOutputStream
 import org.junit.Test
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-class FileExtensionTest {
+class BitmapExtensionTest : RobolectricTest() {
 
   @Test
-  fun testFileShouldReturnBase64Encoded() {
-    mockkStatic(File::encodeToBase64)
-
-    val file = File.createTempFile("sample_file", ".txt")
-    val writer = FileOutputStream(file)
-    writer.write("file".toByteArray())
-
-    file.encodeToBase64()
-
-    verify { file.encodeToBase64() }
-
-    file.delete()
+  fun testEncodeToByteArrayShouldVerifyCall() {
+    val bitmap = mockk<Bitmap>(relaxed = true)
+    bitmap.encodeToByteArray()
+    verify { bitmap.compress(any(), any(), any()) }
   }
 }

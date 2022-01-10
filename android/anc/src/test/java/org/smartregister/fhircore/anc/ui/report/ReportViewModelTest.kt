@@ -35,6 +35,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
@@ -59,6 +60,8 @@ internal class ReportViewModelTest {
   @get:Rule var instantTaskExecutorRule = InstantTaskExecutorRule()
   private val testReportItem = ReportItem(title = "TestReportItem")
   private val patientSelectionType = MutableLiveData("All")
+  private val selectedPatient =
+    MutableLiveData(PatientItem(patientIdentifier = "Select Patient", name = "Select Patient"))
   private val isChangingStartDate = MutableLiveData(true)
   private val isChangingEndDate = MutableLiveData(true)
   private val resultForIndividual =
@@ -87,6 +90,7 @@ internal class ReportViewModelTest {
       this@ReportViewModelTest.resultForIndividual
     every { reportViewModel.resultForPopulation } returns
       this@ReportViewModelTest.resultForPopulation
+    every { reportViewModel.selectedPatientItem } returns this@ReportViewModelTest.selectedPatient
   }
 
   @Test
@@ -96,7 +100,7 @@ internal class ReportViewModelTest {
   }
 
   @Test
-  fun testFetchCQLLibraryData() {
+  fun testFetchCqlLibraryData() {
     val auxCQLLibraryData = "Library JSON"
     coroutinesTestRule.runBlockingTest {
       coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
@@ -105,59 +109,59 @@ internal class ReportViewModelTest {
       coEvery { parser.encodeResourceToString(resource) } returns auxCQLLibraryData
     }
     val libraryDataLiveData: String =
-      reportViewModel.fetchCQLLibraryData(parser, fhirResourceDataSource, "").value!!
+      reportViewModel.fetchCqlLibraryData(parser, fhirResourceDataSource, "").value!!
     Assert.assertEquals(auxCQLLibraryData, libraryDataLiveData)
   }
 
   @Test
-  fun testFetchCQLFhirHelperData() {
-    val auxCQLHelperData = "Helper JSON"
+  fun testFetchCqlFhirHelperData() {
+    val auxCqlHelperData = "Helper JSON"
     coroutinesTestRule.runBlockingTest {
       coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
       coEvery { bundle.entry } returns entryList
       coEvery { entryList[0].resource } returns resource
-      coEvery { parser.encodeResourceToString(resource) } returns auxCQLHelperData
+      coEvery { parser.encodeResourceToString(resource) } returns auxCqlHelperData
     }
     val libraryDataLiveData: String =
-      reportViewModel.fetchCQLFhirHelperData(parser, fhirResourceDataSource, "").value!!
-    Assert.assertEquals(auxCQLHelperData, libraryDataLiveData)
+      reportViewModel.fetchCqlFhirHelperData(parser, fhirResourceDataSource, "").value!!
+    Assert.assertEquals(auxCqlHelperData, libraryDataLiveData)
   }
 
   @Test
-  fun testFetchCQLValueSetData() {
-    val auxCQLValueSetData = "ValueSet JSON"
+  fun testFetchCqlValueSetData() {
+    val auxCqlValueSetData = "ValueSet JSON"
     coroutinesTestRule.runBlockingTest {
       coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
-      coEvery { parser.encodeResourceToString(bundle) } returns auxCQLValueSetData
+      coEvery { parser.encodeResourceToString(bundle) } returns auxCqlValueSetData
     }
     val libraryDataLiveData: String =
-      reportViewModel.fetchCQLValueSetData(parser, fhirResourceDataSource, "").value!!
-    Assert.assertEquals(auxCQLValueSetData, libraryDataLiveData)
+      reportViewModel.fetchCqlValueSetData(parser, fhirResourceDataSource, "").value!!
+    Assert.assertEquals(auxCqlValueSetData, libraryDataLiveData)
   }
 
   @Test
-  fun testFetchCQLPatientData() {
-    val auxCQLValueSetData = "Patient Data JSON"
+  fun testFetchCqlPatientData() {
+    val auxCqlValueSetData = "Patient Data JSON"
     coroutinesTestRule.runBlockingTest {
       coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
-      coEvery { parser.encodeResourceToString(bundle) } returns auxCQLValueSetData
+      coEvery { parser.encodeResourceToString(bundle) } returns auxCqlValueSetData
     }
     val libraryDataLiveData: String =
-      reportViewModel.fetchCQLPatientData(parser, fhirResourceDataSource, "1").value!!
-    Assert.assertEquals(auxCQLValueSetData, libraryDataLiveData)
+      reportViewModel.fetchCqlPatientData(parser, fhirResourceDataSource, "1").value!!
+    Assert.assertEquals(auxCqlValueSetData, libraryDataLiveData)
   }
 
   @Test
-  fun testFetchCQLMeasureEvaluateLibraryAndValueSets() {
-    val auxCQLLibraryAndValueSetData = "{\"parameters\":\"parameters\"}"
+  fun testFetchCqlMeasureEvaluateLibraryAndValueSets() {
+    val auxCqlLibraryAndValueSetData = "{\"parameters\":\"parameters\"}"
     coroutinesTestRule.runBlockingTest {
       coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
       coEvery { bundle.entry } returns entryList
       coEvery { entryList[0].resource } returns resource
-      coEvery { parser.encodeResourceToString(resource) } returns auxCQLLibraryAndValueSetData
+      coEvery { parser.encodeResourceToString(resource) } returns auxCqlLibraryAndValueSetData
     }
     val libraryDataLiveData: String =
-      reportViewModel.fetchCQLMeasureEvaluateLibraryAndValueSets(
+      reportViewModel.fetchCqlMeasureEvaluateLibraryAndValueSets(
           parser,
           fhirResourceDataSource,
           "https://hapi.fhir.org/baseR4/Library?_id=ANCDataElements,WHOCommon,ANCConcepts,ANCContactDataElements,FHIRHelpers,ANCStratifiers,ANCIND01,ANCCommon,ANCBaseDataElements,FHIRCommon,ANCBaseConcepts",
@@ -283,5 +287,26 @@ internal class ReportViewModelTest {
   fun testReportResultForPopulation() {
     val expectedResult = listOf(ResultItemPopulation(title = "resultForPopulation"))
     Assert.assertEquals(expectedResult, reportViewModel.resultForPopulation.value)
+  }
+
+  @Test
+  fun testGetSelectedPatient() {
+    Assert.assertNotNull(reportViewModel.getSelectedPatient().value)
+  }
+
+  @Test
+  fun auxGenerateReportTest() {
+    every { reportViewModel.selectedPatientItem.value } returns null
+    reportViewModel.onPatientSelectionTypeChanged("All")
+    reportViewModel.auxGenerateReport()
+    Assert.assertEquals(true, reportViewModel.processGenerateReport.value)
+  }
+
+  @Test
+  fun auxGenerateReportTestForIndividual() {
+    every { reportViewModel.selectedPatientItem } returns this@ReportViewModelTest.selectedPatient
+    reportViewModel.onPatientSelectionTypeChanged("test-patient-id")
+    reportViewModel.auxGenerateReport()
+    Assert.assertEquals(true, reportViewModel.processGenerateReport.value)
   }
 }

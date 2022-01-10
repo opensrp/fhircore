@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.ui.appsetting
 
 import android.app.Activity
 import android.content.Context
+import android.widget.Toast
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -28,6 +29,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
@@ -68,6 +70,16 @@ class AppSettingActivityTest : ActivityRobolectricTest() {
     Assert.assertEquals("AppTheme", applicationConfiguration.theme)
     Assert.assertTrue(applicationConfiguration.languages.containsAll(listOf("en", "sw")))
     Assert.assertTrue(appSettingActivity.isFinishing)
+  }
+
+  @Test
+  fun testThatConfigsAreNotLoadedAndToastNotificationDisplayed() {
+    appSettingActivity.appSettingViewModel.run {
+      onApplicationIdChanged("fakeAppId")
+      loadConfigurations(true)
+    }
+    val latestToast = ShadowToast.getLatestToast()
+    Assert.assertEquals(Toast.LENGTH_LONG, latestToast.duration)
   }
 
   override fun getActivity(): Activity = appSettingActivity

@@ -18,11 +18,13 @@ package org.smartregister.fhircore.anc.ui.details
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Looper
 import android.view.MenuInflater
 import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -31,7 +33,11 @@ import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.spyk
+import io.mockk.unmockkObject
+import io.mockk.verify
+import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert
 import org.junit.Before
@@ -49,6 +55,7 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.patient.DeletionReason
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.details.AncDetailsViewModel
@@ -56,7 +63,10 @@ import org.smartregister.fhircore.anc.ui.anccare.encounters.EncounterListActivit
 import org.smartregister.fhircore.anc.ui.details.bmicompute.BmiQuestionnaireActivity
 import org.smartregister.fhircore.anc.ui.details.form.FormConfig
 import org.smartregister.fhircore.anc.ui.family.form.FamilyQuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.extension.plusYears
+import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -192,6 +202,92 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testOnClickedLogDeathShouldShowDialog() {
+    mockkObject(AlertDialogue)
+    every {
+      AlertDialogue.showDatePickerAlert(
+        any(),
+        any(),
+        getString(R.string.log_death_button_title),
+        any(),
+        any(),
+        getString(R.string.log_death_confirm_message),
+        true
+      )
+    } returns mockk()
+
+    val menuItem = RoboMenuItem(R.id.log_death)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+
+    verify {
+      AlertDialogue.showDatePickerAlert(
+        any(),
+        any(),
+        getString(R.string.log_death_button_title),
+        any(),
+        any(),
+        getString(R.string.log_death_confirm_message),
+        true
+      )
+    }
+
+    unmockkObject(AlertDialogue)
+  }
+
+  @Test
+  fun testOnClickedRemovePersonShouldShowDialog() {
+    mockkObject(AlertDialogue)
+    every {
+      AlertDialogue.showConfirmAlert(
+        any(),
+        R.string.remove_this_person_confirm_message,
+        R.string.remove_this_person_confirm_title,
+        any(),
+        R.string.remove_this_person_button_title,
+        any()
+      )
+    } returns mockk()
+
+    val menuItem = RoboMenuItem(R.id.remove_this_person)
+    patientDetailsActivity.onOptionsItemSelected(menuItem)
+
+    verify {
+      AlertDialogue.showConfirmAlert(
+        any(),
+        R.string.remove_this_person_confirm_message,
+        R.string.remove_this_person_confirm_title,
+        any(),
+        R.string.remove_this_person_button_title,
+        any()
+      )
+    }
+
+    unmockkObject(AlertDialogue)
+  }
+
+  @Test
+  fun testPrepareOptionsMenuShouldShowRelevantOptions() {
+    val menu = RoboMenu()
+    menu.add(0, R.id.add_vitals, 1, R.string.add_vitals)
+    menu.add(0, R.id.log_death, 2, R.string.log_death)
+    menu.add(0, R.id.anc_enrollment, 3, R.string.mark_as_anc_client)
+    menu.add(0, R.id.remove_this_person, 4, R.string.remove_this_person)
+    menu.add(0, R.id.pregnancy_outcome, 5, R.string.pregnancy_outcome)
+
+    patientDetailsActivity.patient =
+      MutableLiveData(
+        PatientItem(birthDate = Date().plusYears(-21), gender = "Female", isPregnant = true)
+      )
+    patientDetailsActivity.onPrepareOptionsMenu(menu)
+
+    Assert.assertTrue(menu.findMenuItem(getString(R.string.add_vitals)).isVisible)
+    Assert.assertTrue(menu.findMenuItemContaining(getString(R.string.log_death)).isVisible)
+    Assert.assertFalse(menu.findMenuItem(getString(R.string.mark_as_anc_client)).isVisible)
+    Assert.assertTrue(menu.findMenuItemContaining(getString(R.string.remove_this_person)).isVisible)
+    Assert.assertTrue(menu.findMenuItem(getString(R.string.pregnancy_outcome)).isVisible)
+  }
+
+  @Test
   fun testHandlePatientDemographics() {
 
     var patientDetailItem =
@@ -200,7 +296,6 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
         PatientItem(patientId, "Mandela Nelson", "Male", "26")
       )
 
-    ReflectionHelpers.setField(patientDetailsActivity, "isMale", true)
     ReflectionHelpers.callInstanceMethod<Any>(
       patientDetailsActivity,
       "handlePatientDemographics",
@@ -212,7 +307,7 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
         ", " +
         patientDetailItem.patientDetails.gender +
         ", " +
-        patientDetailItem.patientDetails.age
+        patientDetailItem.patientDetails.birthDate.toAgeDisplay()
     val patientId =
       patientDetailItem.patientDetails.address +
         " " +
@@ -237,14 +332,13 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
         PatientItem(
           patientId,
           "Mandela Nelson",
+          "fam",
           "Male",
-          "26",
-          demographics = "NK",
+          Date().plusYears(-26),
           isHouseHoldHead = false
         ),
-        PatientItem(patientId, "Mandela Nelson", "Male", "26")
+        PatientItem(patientId, "Mandela Nelson", "fam", "Male", Date().plusYears(-26))
       )
-    ReflectionHelpers.setField(patientDetailsActivity, "isMale", false)
     ReflectionHelpers.callInstanceMethod<Any>(
       patientDetailsActivity,
       "handlePatientDemographics",
@@ -252,32 +346,30 @@ internal class PatientDetailsActivityTest : ActivityRobolectricTest() {
     )
 
     Assert.assertEquals(
-      "Mandela Nelson, Male, 26",
+      "Mandela Nelson, Male, 26y",
       patientDetailsActivity.findViewById<TextView>(R.id.txtView_patientDetails).text.toString()
     )
     Assert.assertEquals(
-      "NK · ID:  · ID: samplePatientId · Head of household · ",
+      " · ID:  · ID: samplePatientId · Head of household · ",
       patientDetailsActivity.findViewById<TextView>(R.id.txtView_patientId).text.toString()
     )
   }
 
   @Test
-  fun testOnPrepareOptionsMenuShouldVerifySpannableString() {
-    val menu = RoboMenu(appContext)
-    menu.add(0, R.id.remove_this_person, 0, "remove this person")
-    menu.add(0, R.id.anc_enrollment, 0, "anc enrollment")
-    menu.add(0, R.id.pregnancy_outcome, 0, "pregnancy outcome")
+  fun testOnDeleteFamilyMemberRequested() {
+    var dialog = mockk<AlertDialog>()
 
-    ReflectionHelpers.setField(patientDetailsActivity, "isMale", true)
+    every { patientDetailsActivitySpy.getSelectedKey(any()) } returns DeletionReason.MOVED_OUT.name
+    coEvery { patientDetailsActivitySpy.ancDetailsViewModel.deletePatient(any(), any()) } returns
+      MutableLiveData(true)
 
-    patientDetailsActivity.onPrepareOptionsMenu(menu)
-
-    Assert.assertEquals(
-      "remove this person",
-      menu.findItem(R.id.remove_this_person).title.toString()
+    ReflectionHelpers.callInstanceMethod<Any>(
+      patientDetailsActivitySpy,
+      "onDeleteFamilyMemberRequested",
+      ReflectionHelpers.ClassParameter(DialogInterface::class.java, dialog)
     )
-    Assert.assertFalse(menu.findItem(R.id.pregnancy_outcome).isVisible)
-    Assert.assertFalse(menu.findItem(R.id.anc_enrollment).isVisible)
+
+    verify { patientDetailsActivitySpy.ancDetailsViewModel.deletePatient(any(), any()) }
   }
 
   @Test

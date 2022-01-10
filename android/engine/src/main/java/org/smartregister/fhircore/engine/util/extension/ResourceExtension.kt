@@ -21,16 +21,22 @@ import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.logicalId
 import java.util.Date
 import java.util.UUID
+import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StringType
 import org.json.JSONException
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.ui.questionnaire.FhirCoreQuestionnaireFragment
+import timber.log.Timber
 
 fun Resource.toJson(parser: IParser = FhirContext.forR4().newJsonParser()): String =
   parser.encodeResourceToString(this)
@@ -61,7 +67,7 @@ fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
       val setOfTags = mutableSetOf<Coding>()
       setOfTags.addAll(meta.tag)
       setOfTags.addAll(metaUpdateForm.tag)
-      this.meta.tag = setOfTags.distinct()
+      this.meta.tag = setOfTags.distinctBy { it.code + it.system }
     }
     if (this is Patient && this@updateFrom is Patient && updatedResource is Patient) {
       if (extension.isEmpty()) {
@@ -101,19 +107,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrE
   forEach { item ->
     if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
       item.readOnly = readOnly
-      item.extension =
-        listOf(
-          Extension().apply {
-            url =
-              "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression"
-            setValue(
-              Expression().apply {
-                language = "text/fhirpath"
-                expression = "$path.where(linkId = '${item.linkId}').answer.value"
-              }
-            )
-          }
-        )
+      item.createCustomExtensionsIfExist(path)
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').answer.item",
         readOnly
@@ -124,6 +118,46 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrE
         readOnly
       )
     }
+  }
+}
+
+private fun Questionnaire.QuestionnaireItemComponent.createCustomExtensionsIfExist(path: String) {
+  val list = mutableListOf<Extension>()
+  list.add(
+    Extension().apply {
+      url = "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression"
+      setValue(
+        Expression().apply {
+          language = "text/fhirpath"
+          expression =
+            "$path.where(linkId = '${this@createCustomExtensionsIfExist.linkId}').answer.value"
+        }
+      )
+    }
+  )
+  this.getExtensionByUrl(FhirCoreQuestionnaireFragment.BARCODE_URL)?.let {
+    list.add(
+      createCustomExtension(
+        FhirCoreQuestionnaireFragment.BARCODE_URL,
+        FhirCoreQuestionnaireFragment.BARCODE_NAME
+      )
+    )
+  }
+  this.getExtensionByUrl(FhirCoreQuestionnaireFragment.PHOTO_CAPTURE_URL)?.let {
+    list.add(
+      createCustomExtension(
+        FhirCoreQuestionnaireFragment.PHOTO_CAPTURE_URL,
+        FhirCoreQuestionnaireFragment.PHOTO_CAPTURE_NAME
+      )
+    )
+  }
+  this.extension = list
+}
+
+private fun createCustomExtension(url: String, name: String): Extension {
+  return Extension().apply {
+    this.url = url
+    setValue(StringType().apply { value = name })
   }
 }
 
@@ -145,6 +179,23 @@ fun QuestionnaireResponse.retainMetadata(questionnaireResponse: QuestionnaireRes
   }
 }
 
+fun QuestionnaireResponse.assertSubject() {
+  if (!this.hasSubject() || !this.subject.hasReference())
+    throw IllegalStateException("QuestionnaireResponse must have a subject reference assigned")
+}
+
 fun Resource.generateMissingId() {
   if (logicalId.isBlank()) id = UUID.randomUUID().toString()
 }
+
+fun Resource.isPatient(patientId: String) =
+  this.resourceType == ResourceType.Patient && this.logicalId == patientId
+
+fun Resource.asReference(): Reference {
+  val referenceValue = "${fhirType()}/$logicalId"
+
+  return Reference().apply { this.reference = referenceValue }
+}
+
+fun Resource.setPropertySafely(name: String, value: Base) =
+  kotlin.runCatching { this.setProperty(name, value) }.onFailure { Timber.w(it) }.getOrNull()

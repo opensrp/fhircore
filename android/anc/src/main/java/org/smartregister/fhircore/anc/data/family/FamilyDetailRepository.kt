@@ -26,37 +26,23 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 class FamilyDetailRepository
 @Inject
 constructor(
-  val fhirEngine: FhirEngine,
+  override val fhirEngine: FhirEngine,
   val familyItemMapper: FamilyItemMapper,
-  val dispatcherProvider: DispatcherProvider,
-  val ancPatientRepository: PatientRepository
-) {
-
+  override val dispatcherProvider: DispatcherProvider,
+  val ancPatientRepository: PatientRepository,
+  val familyRepository: FamilyRepository
+) : DefaultRepository(fhirEngine, dispatcherProvider) {
   suspend fun fetchDemographics(familyId: String): Patient =
     withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, familyId) }
 
   suspend fun fetchFamilyMembers(familyId: String): List<FamilyMemberItem> =
-    withContext(dispatcherProvider.io()) {
-      val members =
-        fhirEngine
-          .search<Patient> { filter(Patient.LINK) { this.value = "Patient/$familyId" } }
-          .map { familyItemMapper.toFamilyMemberItem(it, familyId) }
-
-      val householdHead =
-        familyItemMapper.toFamilyMemberItem(
-          fhirEngine.load(Patient::class.java, familyId),
-          familyId
-        )
-      ArrayList<FamilyMemberItem>().apply {
-        add(householdHead)
-        addAll(members)
-      }
-    }
+    withContext(dispatcherProvider.io()) { familyRepository.searchFamilyMembers(familyId) }
 
   suspend fun fetchEncounters(familyId: String): List<Encounter> =
     withContext(dispatcherProvider.io()) {

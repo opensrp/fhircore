@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.ui.details.vitalsigns
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.MutableLiveData
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -25,7 +26,9 @@ import io.mockk.mockk
 import io.mockk.spyk
 import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Encounter
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Period
 import org.junit.Assert
 import org.junit.Before
@@ -33,8 +36,11 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.anc.app.fakes.FakeModel
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.anc.data.model.PatientVitalItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.anc.util.computeBmiViaMetricUnits
+import org.smartregister.fhircore.anc.util.computeBmiViaUscUnits
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -53,7 +59,6 @@ class VitalSignsDetailsViewModelTest : RobolectricTest() {
     hiltRule.inject()
     fhirEngine = mockk(relaxed = true)
     patientRepository = mockk()
-
     patientDetailsViewModel =
       spyk(VitalSignsDetailsViewModel(patientRepository, coroutinesTestRule.testDispatcherProvider))
   }
@@ -97,6 +102,8 @@ class VitalSignsDetailsViewModelTest : RobolectricTest() {
       FakeModel.getObservationQuantity(testValue = 1.0)
     coEvery { patientRepository.fetchVitalSigns(any(), "spO2") } returns
       FakeModel.getObservationQuantity(testValue = 1.0)
+    coEvery { patientRepository.fetchVitalSigns(any(), "bmi") } returns
+      FakeModel.getObservationQuantity(testValue = 1.0)
 
     val patientVitalItem = patientDetailsViewModel.fetchVitalSigns("").value
 
@@ -108,6 +115,116 @@ class VitalSignsDetailsViewModelTest : RobolectricTest() {
       Assert.assertEquals("1.0", this?.pulse)
       Assert.assertEquals("1.0", this?.spO2)
       Assert.assertEquals("1.0", this?.bg)
+      Assert.assertEquals("N/A", this?.bmi)
+    }
+  }
+
+  @Test
+  fun testFetchVitalSignsForBmiViaMetricUnit() {
+    coroutinesTestRule.runBlockingTest {
+      val testObservation = getTestObservation()
+      coEvery {
+        hint(Observation::class)
+        fhirEngine.search<Observation>(any())
+      } returns listOf(testObservation)
+      coEvery { patientDetailsViewModel.fetchVitalSigns(any()) } returns
+        MutableLiveData(getTestVitalOverviewItemForMetricUnit())
+      coEvery { patientRepository.fetchObservations(any(), any()) } returns testObservation
+      val vitalSignOverviewItem = patientDetailsViewModel.fetchVitalSigns("").value!!
+      val expectVitalSignItem = getTestVitalOverviewItemForMetricUnit()
+      Assert.assertNotNull(vitalSignOverviewItem)
+      Assert.assertEquals(vitalSignOverviewItem.height, expectVitalSignItem.height)
+      Assert.assertEquals(vitalSignOverviewItem.weight, expectVitalSignItem.weight)
+      if (vitalSignOverviewItem.isWeightAndHeightAreInMetricUnit()) {
+        Assert.assertEquals(
+          vitalSignOverviewItem.bmi,
+          computeBmiViaMetricUnits(
+              vitalSignOverviewItem.height.toDouble(),
+              vitalSignOverviewItem.weight.toDouble()
+            )
+            .toString()
+        )
+      } else {
+        Assert.assertEquals(
+          vitalSignOverviewItem.bmi,
+          computeBmiViaUscUnits(
+              vitalSignOverviewItem.height.toDouble(),
+              vitalSignOverviewItem.weight.toDouble()
+            )
+            .toString()
+        )
+      }
+      Assert.assertEquals(vitalSignOverviewItem.heightUnit, expectVitalSignItem.heightUnit)
+      Assert.assertEquals(vitalSignOverviewItem.weightUnit, expectVitalSignItem.weightUnit)
+      Assert.assertEquals(vitalSignOverviewItem.bmiUnit, expectVitalSignItem.bmiUnit)
+    }
+  }
+
+  @Test
+  fun testFetchVitalSignsForBmiViaUscUnit() {
+    coroutinesTestRule.runBlockingTest {
+      val testObservation = getTestObservation()
+      coEvery {
+        hint(Observation::class)
+        fhirEngine.search<Observation>(any())
+      } returns listOf(testObservation)
+      coEvery { patientDetailsViewModel.fetchVitalSigns(any()) } returns
+        MutableLiveData(getTestVitalOverviewItemForUscUnit())
+      coEvery { patientRepository.fetchObservations(any(), any()) } returns testObservation
+      val vitalSignOverviewItem = patientDetailsViewModel.fetchVitalSigns("").value!!
+      val expectVitalSignItem = getTestVitalOverviewItemForUscUnit()
+      Assert.assertNotNull(vitalSignOverviewItem)
+      Assert.assertEquals(vitalSignOverviewItem.height, expectVitalSignItem.height)
+      Assert.assertEquals(vitalSignOverviewItem.weight, expectVitalSignItem.weight)
+      Assert.assertEquals(true, expectVitalSignItem.isValidWeightAndHeight())
+      if (vitalSignOverviewItem.isWeightAndHeightAreInMetricUnit()) {
+        Assert.assertEquals(
+          vitalSignOverviewItem.bmi,
+          computeBmiViaMetricUnits(
+              vitalSignOverviewItem.height.toDouble(),
+              vitalSignOverviewItem.weight.toDouble()
+            )
+            .toString()
+        )
+      } else {
+        Assert.assertEquals(
+          vitalSignOverviewItem.bmi,
+          computeBmiViaUscUnits(
+              vitalSignOverviewItem.height.toDouble(),
+              vitalSignOverviewItem.weight.toDouble()
+            )
+            .toString()
+        )
+      }
+      Assert.assertEquals(vitalSignOverviewItem.heightUnit, expectVitalSignItem.heightUnit)
+      Assert.assertEquals(vitalSignOverviewItem.weightUnit, expectVitalSignItem.weightUnit)
+      Assert.assertEquals(vitalSignOverviewItem.bmiUnit, expectVitalSignItem.bmiUnit)
+    }
+  }
+
+  private fun getTestObservation(): Observation {
+    return Observation().apply { id = "2" }
+  }
+
+  private fun getTestVitalOverviewItemForMetricUnit(): PatientVitalItem {
+    return PatientVitalItem().apply {
+      height = "178"
+      heightUnit = "cm"
+      weight = "72.57"
+      weightUnit = "kg"
+      bmi = "22.91"
+      bmiUnit = "kg/m2"
+    }
+  }
+
+  private fun getTestVitalOverviewItemForUscUnit(): PatientVitalItem {
+    return PatientVitalItem().apply {
+      height = "70"
+      heightUnit = "in"
+      weight = "160"
+      weightUnit = "lb"
+      bmi = "22.96"
+      bmiUnit = "kg/m2"
     }
   }
 }

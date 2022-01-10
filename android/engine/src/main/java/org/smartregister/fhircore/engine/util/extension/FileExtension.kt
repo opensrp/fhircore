@@ -16,17 +16,11 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.util.Base64
-import android.util.Base64OutputStream
-import java.io.ByteArrayOutputStream
+import android.content.Context
+import android.net.Uri
+import androidx.core.content.FileProvider
 import java.io.File
-import java.io.FileInputStream
 
-fun File.encodeToBase64(): ByteArray {
-  return ByteArrayOutputStream().use { byteStream ->
-    Base64OutputStream(byteStream, Base64.DEFAULT).use { base64Stream ->
-      FileInputStream(this).copyTo(base64Stream)
-    }
-    return@use byteStream.toByteArray()
-  }
+fun File.toUri(context: Context, authority: String): Uri {
+  return FileProvider.getUriForFile(context, authority, this)
 }

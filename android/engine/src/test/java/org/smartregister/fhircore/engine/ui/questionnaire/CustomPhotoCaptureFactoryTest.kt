@@ -16,99 +16,107 @@
 
 package org.smartregister.fhircore.engine.ui.questionnaire
 
-import android.app.Activity
-import android.content.Intent
-import android.graphics.Bitmap
+import android.app.Application
+import android.net.Uri
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.datacapture.views.QuestionnaireItemViewItem
 import com.google.android.material.button.MaterialButton
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import java.io.File
 import org.hl7.fhir.r4.model.Attachment
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.junit.Assert.assertEquals
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
+@HiltAndroidTest
 class CustomPhotoCaptureFactoryTest : RobolectricTest() {
 
-  @Test
-  fun testCameraResultLauncherShouldBeRegistered() {
-    val fragment = spyk<FhirCoreQuestionnaireFragment>()
-    val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
-    val callback = slot<ActivityResultCallback<ActivityResult>>()
+  @get:Rule var hiltRule = HiltAndroidRule(this)
+  private val context: Application = ApplicationProvider.getApplicationContext()
 
+  @Before
+  fun setUp() {
+    hiltRule.inject()
+  }
+
+  @Test
+  fun testCameraLauncherShouldBeRegistered() {
+    val fragment = spyk<FhirCoreQuestionnaireFragment>()
+    every { fragment.requireContext() } returns context
+
+    val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
+    val file = mockk<File>(relaxed = true)
+    every { file.delete() } returns true
+    every { photoCaptureFactory.imageFile } returns file
+
+    val callback = slot<ActivityResultCallback<Boolean>>()
     every {
       fragment.registerForActivityResult(
-        any<ActivityResultContract<Intent, ActivityResult>>(),
+        any<ActivityResultContract<Uri, Boolean>>(),
         capture(callback)
       )
     } returns mockk()
 
-    every { photoCaptureFactory.loadThumbnail(any(), any()) } returns Unit
+    photoCaptureFactory.registerCameraLauncher()
+    photoCaptureFactory.loadThumbnail(mockk())
+    photoCaptureFactory.populateQuestionnaireResponse("text".encodeToByteArray())
 
-    photoCaptureFactory.registerCameraResultLauncher(fragment)
+    callback.captured.onActivityResult(true)
+    callback.captured.onActivityResult(false)
 
-    val bitmap = mockk<Bitmap>()
-    val result = ActivityResult(Activity.RESULT_OK, Intent().putExtra("data", bitmap))
-    callback.captured.onActivityResult(result)
-
-    verify { photoCaptureFactory.loadThumbnail(fragment, bitmap) }
-    verify { photoCaptureFactory.populateCameraResponse(fragment, bitmap, any()) }
-  }
-
-  @Test
-  fun testPopulateQuestionnaireResponseShouldMatch() {
-    val fragment = spyk<FhirCoreQuestionnaireFragment>()
-    val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
-    val base64 = "file".toByteArray()
-
-    photoCaptureFactory.populateQuestionnaireResponse(base64)
-
-    assertEquals(photoCaptureFactory.questionnaireResponse.valueAttachment.data, base64)
-
+    verify { photoCaptureFactory.loadThumbnail(any()) }
     verify { photoCaptureFactory.populateQuestionnaireResponse(any()) }
   }
 
   @Test
-  fun testQuestionnaireResponseShouldReturnAttachmentTypeValue() {
-    val fragment = FhirCoreQuestionnaireFragment()
+  fun testQuestionnaireResponseShouldMatch() {
+    val fragment = spyk<FhirCoreQuestionnaireFragment>()
+    every { fragment.requireContext() } returns context
+
     val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
-    val file = "file".toByteArray()
+    val imageBytes = "file".encodeToByteArray()
 
-    every { photoCaptureFactory.questionnaireResponse } returns
-      QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
-        value =
-          Attachment().apply {
-            contentType = "image/jpg"
-            data = file
-          }
-      }
+    photoCaptureFactory.populateQuestionnaireResponse(imageBytes)
 
-    val response = photoCaptureFactory.questionnaireResponse
-    assertEquals("image/jpg", response.valueAttachment.contentType)
-    assertEquals(file, response.valueAttachment.data)
+    Assert.assertTrue(photoCaptureFactory.questionnaireResponse.hasValueAttachment())
+    Assert.assertEquals(
+      CustomPhotoCaptureFactory.CONTENT_TYPE,
+      photoCaptureFactory.questionnaireResponse.valueAttachment.contentType
+    )
+    Assert.assertEquals(imageBytes, photoCaptureFactory.questionnaireResponse.valueAttachment.data)
   }
 
   @Test
   fun testQuestionnaireItemShouldBindWhenPrefixIsNotNull() {
-    val fragment = FhirCoreQuestionnaireFragment()
+    val fragment = spyk<FhirCoreQuestionnaireFragment>()
+    every { fragment.requireContext() } returns context
+
     val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
     val questionnaireItemViewItem =
       QuestionnaireItemViewItem(
         Questionnaire.QuestionnaireItemComponent().apply {
           prefix = "1."
           text = "Photo of device"
+          readOnly = true
         },
-        QuestionnaireResponse.QuestionnaireResponseItemComponent()
+        QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+          addAnswer().value = Attachment().apply { data = "image".encodeToByteArray() }
+        }
       ) {}
 
     val tvPrefix = mockk<TextView>(relaxed = true)
@@ -117,11 +125,21 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
     val tvHeader = mockk<TextView>(relaxed = true)
     every { photoCaptureFactory.tvHeader } returns tvHeader
 
+    val ivThumbnail = mockk<ImageView>(relaxed = true)
+    every { photoCaptureFactory.ivThumbnail } returns ivThumbnail
+
     val btnTakePhoto = mockk<MaterialButton>(relaxed = true)
     every { photoCaptureFactory.btnTakePhoto } returns btnTakePhoto
 
+    val callback = slot<View.OnClickListener>()
+    every { btnTakePhoto.setOnClickListener(capture(callback)) } answers { callback.captured }
+    every { photoCaptureFactory.launchCamera() } returns Unit
+
     photoCaptureFactory.getQuestionnaireItemViewHolderDelegate().bind(questionnaireItemViewItem)
 
+    callback.captured.onClick(btnTakePhoto)
+
+    verify { photoCaptureFactory.createImageFile() }
     verify { tvPrefix.text = "1." }
     verify { tvPrefix.visibility = View.VISIBLE }
     verify { tvHeader.text = "Photo of device" }
@@ -129,12 +147,20 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
 
   @Test
   fun testQuestionnaireItemShouldBindWhenPrefixIsNull() {
-    val fragment = FhirCoreQuestionnaireFragment()
+    val fragment = spyk<FhirCoreQuestionnaireFragment>()
+    every { fragment.requireContext() } returns context
+
     val photoCaptureFactory = spyk(CustomPhotoCaptureFactory(fragment))
+
     val questionnaireItemViewItem =
       QuestionnaireItemViewItem(
-        Questionnaire.QuestionnaireItemComponent().apply { text = "Photo of device" },
-        QuestionnaireResponse.QuestionnaireResponseItemComponent()
+        Questionnaire.QuestionnaireItemComponent().apply {
+          text = "Photo of device"
+          readOnly = false
+        },
+        QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+          addAnswer().value = Attachment().apply { data = "image".encodeToByteArray() }
+        }
       ) {}
 
     val tvPrefix = mockk<TextView>(relaxed = true)
@@ -143,11 +169,21 @@ class CustomPhotoCaptureFactoryTest : RobolectricTest() {
     val tvHeader = mockk<TextView>(relaxed = true)
     every { photoCaptureFactory.tvHeader } returns tvHeader
 
+    val ivThumbnail = mockk<ImageView>(relaxed = true)
+    every { photoCaptureFactory.ivThumbnail } returns ivThumbnail
+
     val btnTakePhoto = mockk<MaterialButton>(relaxed = true)
     every { photoCaptureFactory.btnTakePhoto } returns btnTakePhoto
 
+    val callback = slot<View.OnClickListener>()
+    every { btnTakePhoto.setOnClickListener(capture(callback)) } answers { callback.captured }
+    every { photoCaptureFactory.launchCamera() } returns Unit
+
     photoCaptureFactory.getQuestionnaireItemViewHolderDelegate().bind(questionnaireItemViewItem)
 
+    callback.captured.onClick(btnTakePhoto)
+
+    verify { photoCaptureFactory.createImageFile() }
     verify { tvPrefix.visibility = View.GONE }
     verify { tvHeader.text = "Photo of device" }
   }

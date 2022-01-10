@@ -35,6 +35,8 @@ import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
@@ -135,6 +137,19 @@ class DefaultRepositoryTest : RobolectricTest() {
     runBlocking { defaultRepository.loadPatientImmunizations(patientId) }
 
     coVerify { fhirEngine.loadPatientImmunizations(patientId) }
+  }
+
+  @Test
+  fun `loadQuestionnaireResponse() should call FhirEngine#load`() {
+    val fhirEngine: FhirEngine = mockk()
+    coEvery { fhirEngine.search<QuestionnaireResponse>(any()) } returns listOf()
+
+    val defaultRepository =
+      DefaultRepository(fhirEngine = fhirEngine, dispatcherProvider = dispatcherProvider)
+
+    runBlocking { defaultRepository.loadQuestionnaireResponses("1234", Questionnaire()) }
+
+    coVerify { fhirEngine.search<QuestionnaireResponse>(any()) }
   }
 
   @Test

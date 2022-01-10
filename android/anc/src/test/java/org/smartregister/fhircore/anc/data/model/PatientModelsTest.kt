@@ -25,6 +25,7 @@ import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.plusYears
 
 class PatientModelsTest : RobolectricTest() {
 
@@ -37,6 +38,7 @@ class PatientModelsTest : RobolectricTest() {
   private lateinit var reportItem: ReportItem
   private lateinit var resulttItem: ResultItem
   private lateinit var resulttItemPopulation: ResultItemPopulation
+  private lateinit var patientVitalItem: PatientVitalItem
 
   @Before
   fun setUp() {
@@ -44,17 +46,27 @@ class PatientModelsTest : RobolectricTest() {
       PatientItem(
         "111",
         "anb",
+        "fam",
         "M",
-        "25",
-        "PD",
+        Date().plusYears(-25),
         "none",
         "xyz",
         true,
         VisitStatus.PLANNED,
-        "TestFamily"
+        false
       )
     patientItemHead =
-      PatientItem("111", "anb", "M", "25", "PD", "none", "xyz", false, VisitStatus.PLANNED)
+      PatientItem(
+        "111",
+        "anb",
+        "fam",
+        "M",
+        Date().plusYears(-25),
+        "none",
+        "xyz",
+        false,
+        VisitStatus.PLANNED
+      )
     encounterItem = EncounterItem("111", status = Encounter.EncounterStatus.ARRIVED, "abc", Date())
     upcomingServiceItem = UpcomingServiceItem("111", "1bc", "2020-02-12")
     patientDetailItem = PatientDetailItem(patientItem, patientItemHead)
@@ -63,6 +75,15 @@ class PatientModelsTest : RobolectricTest() {
     resulttItem = ResultItem("True", true, "Test description")
     resulttItemPopulation =
       ResultItemPopulation(title = "testTitlePopulation", dataList = emptyList())
+    patientVitalItem =
+      PatientVitalItem(
+        height = "160",
+        weight = "60",
+        bmi = "22",
+        heightUnit = "cm",
+        weightUnit = "kg",
+        bmiUnit = "kg/m2"
+      )
   }
 
   @Test
@@ -70,11 +91,10 @@ class PatientModelsTest : RobolectricTest() {
     Assert.assertEquals("111", patientItem.patientIdentifier)
     Assert.assertEquals("anb", patientItem.name)
     Assert.assertEquals("M", patientItem.gender)
-    Assert.assertEquals("PD", patientItem.demographics)
     Assert.assertEquals("none", patientItem.atRisk)
     Assert.assertEquals("xyz", patientItem.address)
     Assert.assertEquals(VisitStatus.PLANNED, patientItem.visitStatus)
-    Assert.assertEquals("TestFamily", patientItem.familyName)
+    Assert.assertEquals("fam", patientItem.familyName)
   }
 
   @Test
@@ -96,14 +116,14 @@ class PatientModelsTest : RobolectricTest() {
     Assert.assertEquals("111", patientDetailItem.patientDetails.patientIdentifier)
     Assert.assertEquals("anb", patientDetailItem.patientDetails.name)
     Assert.assertEquals("M", patientDetailItem.patientDetails.gender)
-    Assert.assertEquals("PD", patientDetailItem.patientDetails.demographics)
+    Assert.assertEquals("anb, M, 25y", patientDetailItem.patientDetails.demographics())
     Assert.assertEquals("none", patientDetailItem.patientDetails.atRisk)
     Assert.assertEquals("xyz", patientDetailItem.patientDetails.address)
     Assert.assertEquals(VisitStatus.PLANNED, patientDetailItem.patientDetails.visitStatus)
     Assert.assertEquals("111", patientDetailItem.patientDetailsHead.patientIdentifier)
     Assert.assertEquals("anb", patientDetailItem.patientDetailsHead.name)
     Assert.assertEquals("M", patientDetailItem.patientDetailsHead.gender)
-    Assert.assertEquals("PD", patientDetailItem.patientDetailsHead.demographics)
+    Assert.assertEquals("anb, M, 25y", patientDetailItem.patientDetailsHead.demographics())
     Assert.assertEquals("none", patientDetailItem.patientDetailsHead.atRisk)
     Assert.assertEquals("xyz", patientDetailItem.patientDetailsHead.address)
     Assert.assertEquals(VisitStatus.PLANNED, patientDetailItem.patientDetailsHead.visitStatus)
@@ -137,5 +157,18 @@ class PatientModelsTest : RobolectricTest() {
   fun testResultItemPopulation() {
     Assert.assertEquals("testTitlePopulation", resulttItemPopulation.title)
     Assert.assertNotNull(resulttItemPopulation.dataList)
+  }
+
+  @Test
+  fun testPatientVitalItem() {
+    Assert.assertEquals("160", patientVitalItem.height)
+    Assert.assertEquals("cm", patientVitalItem.heightUnit)
+    Assert.assertEquals("60", patientVitalItem.weight)
+    Assert.assertEquals("kg", patientVitalItem.weightUnit)
+    Assert.assertEquals("22", patientVitalItem.bmi)
+    Assert.assertEquals("kg/m2", patientVitalItem.bmiUnit)
+    Assert.assertEquals(true, patientVitalItem.isValidWeightAndHeight())
+    Assert.assertEquals(true, patientVitalItem.isWeightAndHeightAreInMetricUnit())
+    Assert.assertEquals(false, patientVitalItem.isWeightAndHeightAreInUscUnit())
   }
 }

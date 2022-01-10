@@ -45,6 +45,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.R
@@ -65,6 +66,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
   val application = ApplicationProvider.getApplicationContext<Application>()
 
   val patientRepository: PatientRepository = mockk()
+  val defaultRepository: DefaultRepository = mockk()
 
   lateinit var questPatientDetailViewModel: QuestPatientDetailViewModel
 
@@ -78,6 +80,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       spyk(
         QuestPatientDetailViewModel(
           patientRepository = patientRepository,
+          defaultRepository = defaultRepository,
           patientItemMapper = patientItemMapper,
           mockk()
         )
@@ -101,7 +104,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
     composeRule.onNodeWithTag(TOOLBAR_MENU).assertIsDisplayed()
     composeRule
       .onNodeWithTag(TOOLBAR_MENU)
-      .onChildAt(0)
+      .onChildAt(1)
       .assertTextEquals(application.getString(R.string.test_results))
       .assertHasClickAction()
   }
@@ -117,7 +120,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       .assertExists()
       .assertIsDisplayed()
       .onChildren()
-      .assertCountEquals(2)
+      .assertCountEquals(3)
 
     composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
     composeRule.onNodeWithTag(TOOLBAR_MENU).assertDoesNotExist()
@@ -127,15 +130,23 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
   fun testToolbarTestResultsMenuItemShouldCallMenuItemClickListener() {
     initMocks()
     composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
-    composeRule.onNodeWithTag(TOOLBAR_MENU).onChildAt(0).performClick()
+    composeRule.onNodeWithTag(TOOLBAR_MENU).onChildAt(1).performClick()
     verify { questPatientDetailViewModel.onMenuItemClickListener(R.string.test_results) }
+  }
+
+  @Test
+  fun testToolbarEditInfoMenuItemShouldCallMenuItemClickListener() {
+    initMocks()
+    composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
+    composeRule.onNodeWithTag(TOOLBAR_MENU).onChildAt(0).performClick()
+    verify { questPatientDetailViewModel.onMenuItemClickListener(R.string.edit_patient_info) }
   }
 
   @Test
   fun testToolbarRunCqlMenuItemShouldCallMenuItemClickListener() {
     initMocks()
     composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
-    composeRule.onNodeWithTag(TOOLBAR_MENU).onChildAt(1).performClick()
+    composeRule.onNodeWithTag(TOOLBAR_MENU).onChildAt(2).performClick()
     verify { questPatientDetailViewModel.onMenuItemClickListener(R.string.run_cql) }
   }
 
@@ -153,7 +164,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       .onNodeWithTag(PATIENT_NAME)
       .assertExists()
       .assertIsDisplayed()
-      .assertTextEquals("John Doe, M, 21y")
+      .assertTextEquals("John Doe, M, 22y")
   }
 
   @Test
@@ -239,6 +250,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       spyk(
         QuestPatientDetailViewModel(
           patientRepository = patientRepository,
+          defaultRepository = defaultRepository,
           patientItemMapper = patientItemMapper,
           mockk()
         )
@@ -260,6 +272,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       spyk(
         QuestPatientDetailViewModel(
           patientRepository = patientRepository,
+          defaultRepository = defaultRepository,
           patientItemMapper = patientItemMapper,
           mockk()
         )

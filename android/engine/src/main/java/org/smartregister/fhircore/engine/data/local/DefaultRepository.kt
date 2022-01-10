@@ -19,10 +19,13 @@ package org.smartregister.fhircore.engine.data.local
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -33,9 +36,9 @@ import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 
 @Singleton
-class DefaultRepository
+open class DefaultRepository
 @Inject
-constructor(val fhirEngine: FhirEngine, val dispatcherProvider: DispatcherProvider) {
+constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: DispatcherProvider) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
@@ -52,6 +55,14 @@ constructor(val fhirEngine: FhirEngine, val dispatcherProvider: DispatcherProvid
   suspend fun loadImmunization(immunizationId: String): Immunization? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(immunizationId) }
   }
+
+  suspend fun loadQuestionnaireResponses(patientId: String, questionnaire: Questionnaire) =
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.search<QuestionnaireResponse> {
+        filter(QuestionnaireResponse.SUBJECT) { value = "Patient/$patientId" }
+        filter(QuestionnaireResponse.QUESTIONNAIRE) { value = "Questionnaire/${questionnaire.id}" }
+      }
+    }
 
   suspend fun save(resource: Resource) {
     return withContext(dispatcherProvider.io()) {

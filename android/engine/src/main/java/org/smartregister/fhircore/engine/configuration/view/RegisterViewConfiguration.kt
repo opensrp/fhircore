@@ -34,7 +34,6 @@ data class RegisterViewConfiguration(
   var newClientButtonStyle: String,
   var showSearchBar: Boolean = true,
   var showFilter: Boolean = true,
-  var switchLanguages: Boolean = true,
   var showScanQRCode: Boolean = true,
   var showNewClientButton: Boolean = true,
   var registrationForm: String = "patient-registration",
@@ -59,7 +58,6 @@ data class SearchFilter(val key: String, val code: String, val system: String)
  * @param newClientButtonText Sets the text on the register client button
  * @param showSearchBar Hides or shows the search bar
  * @param showFilter Hides or shows the filter view
- * @param switchLanguages Hides or shows the language picker menu option
  * @param showScanQRCode Hides or shows the scan QR code button
  * @param showNewClientButton Hides or shows the button for register new client
  * @param registrationForm Name of questionnaire form used for registration
@@ -77,7 +75,6 @@ fun Context.registerViewConfigurationOf(
   newClientButtonStyle: String = "",
   showSearchBar: Boolean = true,
   showFilter: Boolean = true,
-  switchLanguages: Boolean = true,
   showScanQRCode: Boolean = true,
   showNewClientButton: Boolean = true,
   registrationForm: String = "patient-registration",
@@ -94,7 +91,6 @@ fun Context.registerViewConfigurationOf(
     newClientButtonStyle = newClientButtonStyle,
     showSearchBar = showSearchBar,
     showFilter = showFilter,
-    switchLanguages = switchLanguages,
     showScanQRCode = showScanQRCode,
     showNewClientButton = showNewClientButton,
     registrationForm = registrationForm,
