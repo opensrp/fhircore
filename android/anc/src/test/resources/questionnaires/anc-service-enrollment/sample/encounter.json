@@ -1,0 +1,59 @@
+{
+  "resourceType" : "Encounter",
+  "id": "#UID",
+  "status" : "in-progress",
+  "class" : {
+    "system" : "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+    "code" : "HH",
+    "display" : "home health"
+  },
+  "type" : [
+    {
+      "coding" : [
+        {
+          "system" : "http://example.org/CodeSystem/encounter-type",
+          "code" : "anc-contact",
+          "display" : "Antenatal care contact"
+        }
+      ],
+      "text" : "Antenatal care contact"
+    }
+  ],
+  "subject" : {
+    "reference" : "Patient/TEST_PATIENT"
+  },
+  "episodeOfCare" : [
+    {
+      "reference" : "EpisodeOfCare/TEST_EPISODE_OF_CARE"
+    }
+  ],
+  "participant" : [
+    {
+      "type" : [
+        {
+          "coding" : [
+            {
+              "system" : "http://terminology.hl7.org/CodeSystem/v3-ParticipationType",
+              "code" : "PPRF",
+              "display" : "primary performer"
+            }
+          ]
+        }
+      ],
+      "individual" : {
+        "reference" : "Practitioner/TEST_PRACTITIONER"
+      }
+    }
+  ],
+  "period" : {
+    "start" : "#NOW"
+  },
+  "diagnosis" : [
+    {
+      "condition" : {
+        "reference" : "Condition/TEST_CONDITION"
+      },
+      "rank" : 1
+    }
+  ]
+}

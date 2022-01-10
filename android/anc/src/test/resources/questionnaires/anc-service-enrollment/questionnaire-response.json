@@ -2,7 +2,7 @@
   "resourceType": "QuestionnaireResponse",
   "questionnaire": "Questionnaire/family-registration",
   "subject": {
-    "reference": "Patient/1234"
+    "reference": "Patient/TEST_PATIENT"
   },
   "item": [
     {

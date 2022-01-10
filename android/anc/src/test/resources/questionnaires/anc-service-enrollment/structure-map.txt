@@ -2,35 +2,99 @@ map "http://fhir.labs.smartregister.org/fhir/StructureMap/anc_service-enrollment
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
-uses "http://hl7.org/fhir/StructureDefinition/Observation" as target
 
 group ANCServiceEnrollment(source src : QuestionnaireResponse, target bundle: Bundle) {
     src -> bundle.type = 'collection' "r_bun_type";
-    src -> bundle.entry as entry, entry.resource = create('Encounter') as encounter then
-        ExtractEncounter(src, encounter),
-        ExtractLmp(src, bundle, encounter),
-        ExtractEdd(src, bundle, encounter),
-        ExtractGravida(src, bundle, encounter),
-        ExtractLiveBirths(src, bundle, encounter) "r_bun_entries";
+    src -> bundle.entry as entry, entry.resource = create('Condition') as condition then
+        ExtractCondition(src, condition),
+        ExtractEpisodeOfCare(src, bundle, condition) "r_bun_entries_1";
+
+    src -> evaluate(bundle, $this.entry.resource.where($this.is(EpisodeOfCare))) as episode then
+        ExtractEncounter(src, bundle, episode) "r_bun_entries_2";
+        // ExtractLmp(src, bundle, encounter),
+        // ExtractEdd(src, bundle, encounter),
+        // ExtractGravida(src, bundle, encounter),
+        // ExtractLiveBirths(src, bundle, encounter)
 }
 
-group ExtractEncounter(source src : QuestionnaireResponse, target encounter : Encounter) {
-    src -> encounter.id = uuid() "r_en_id";
-    src -> encounter.status = 'in-progress' "r_en_st";
-    src -> encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH", "home health") "r_en_cls";
-    src -> encounter.serviceType = create('CodeableConcept') as concept then {
-        src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/service-type", "249", "Antenatal") "r_en_st_coding";
-        src -> concept.text = "Antenatal" "r_en_st_text";
-    } "r_en_srv_typ";
-    src -> encounter.type = create('CodeableConcept') as concept then {
-        src -> concept.coding = c("http://example.org/CodeSystem/encounter-type", "anc-contact", "Antenatal care contact") "r_en_typ_coding";
-        src -> concept.text = "Antenatal care contact" "r_en_typ_text";
-    } "r_en_typ";
     // TODO episode of care, participant info, condition, goal, careplan
-    src -> encounter.period = create('Period') as enPeriod then {
-        src -> enPeriod.start = evaluate(src, now()) "r_en_per_start";
-    } "r_en_per";
-    src.subject as subject -> encounter.subject = subject "r_en_sub";
+group ExtractCondition(source src : QuestionnaireResponse, target condition : Condition) {
+    src -> condition.id = uuid() "r_c_id";
+    src -> condition.recordedDate = evaluate(src, now()) "r_c_rec_date";
+    src -> condition.clinicalStatus = create('CodeableConcept') as concept then {
+        src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") as coding then {
+            src -> coding.display = 'Active' "r_c_ct_cod_disp";
+        } "r_c_ct_coding";
+        src -> concept.text = "Active" "r_c_ct_text";
+    } "r_c_ct";
+    src -> condition.verificationStatus = create('CodeableConcept') as concept then {
+        src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") as coding then {
+            src -> coding.display = 'Confirmed' "r_c_vs_cod_disp";
+        } "r_c_vs_coding";
+        src -> concept.text = "Confirmed" "r_c_vs_text";
+    } "r_c_vs";
+    src -> condition.category = create('CodeableConcept') as concept then {
+        src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/condition-category", "problem-list-item") as coding then {
+            src -> coding.display = 'Problem List Item' "r_c_cod_disp";
+        } "r_c_cc_cod";
+        src -> concept.text = "Problem List Item" "r_c_cc_txt";
+    } "r_c_cat";
+    src.subject as subject -> condition.subject = subject "r_c_sub";
+    src -> condition.onset = evaluate(src, now()) "r_c_onset";
+    src -> condition.code = create('CodeableConcept') as concept then {
+      src -> concept.coding = c("http://loinc.org", "LA15173-0") as coding then {
+          src -> coding.display = 'Pregnant' "r_c_cod_disp";
+      } "r_c_cc_cod";
+      src -> concept.text = "Pregnant" "r_c_cod_text";
+   } "r_c_code";
+}
+
+group ExtractEpisodeOfCare(source src : QuestionnaireResponse, target bundle : Bundle, target condition : Condition) {
+    src -> bundle.entry as entry, entry.resource = create('EpisodeOfCare') as episode then {
+        src -> episode.id = uuid() "r_ep_id";
+        src -> episode.status = 'active' "r_ep_st";
+        src -> episode.type = create('CodeableConcept') as concept then {
+            src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/episodeofcare-type", "hacc") as coding then {
+                src -> coding.display = 'Home and Community Care' "r_ep_cod_disp";
+            } "r_ep_cc_cod";
+            src -> concept.text = "Home and Community Care" "r_ep_typ_text";
+        } "r_ep_typ";
+        src -> episode.diagnosis = create('EpisodeOfCare_Diagnosis') as diag then {
+            src -> diag.condition = reference(condition) "r_ep_diag_condition";
+            src -> diag.rank = create('positiveInt') as posInt then {
+               src -> posInt.value = "1" "r_sp_diag_rank_val";
+            } "r_ep_diag_rank";
+            src -> diag.role = create('CodeableConcept') as concept then {
+               src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/diagnosis-role", "CC") as coding then {
+                   src -> coding.display = 'Chief complaint' "r_ep_cod_disp";
+               } "r_ep_cc_cod";
+               src -> concept.text = "Chief complaint" "r_ep_typ_text";
+            } "r_ep_diag_role";
+        } "r_ep_diag";
+        src -> episode.period = create('Period') as enPeriod then {
+            src -> enPeriod.start = evaluate(src, now()) "r_ep_per_start";
+        } "r_ep_per";
+        src.subject as subject -> episode.patient = subject "r_ep_sub";
+    } "r_ep";
+}
+
+group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle, target episode : EpisodeOfCare) {
+    src -> bundle.entry as entry, entry.resource = create('Encounter') as encounter then {
+        src -> encounter.id = uuid() "r_en_id";
+        src -> encounter.status = 'in-progress' "r_en_st";
+        src -> encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH", "home health") "r_en_cls";
+        src -> encounter.type = create('CodeableConcept') as concept then {
+            src -> concept.coding = c("http://example.org/CodeSystem/encounter-type", "anc-contact") as coding then {
+                src -> coding.display = 'Antenatal care contact' "r_en_cod_disp";
+            } "r_en_cc_cod";
+            src -> concept.text = "Antenatal care contact" "r_en_typ_text";
+        } "r_en_typ";
+        // TODO episode of care, participant info, condition, goal, careplan
+        src -> encounter.period = create('Period') as enPeriod then {
+            src -> enPeriod.start = evaluate(src, now()) "r_en_per_start";
+        } "r_en_per";
+        src.subject as subject -> encounter.subject = subject "r_en_sub";
+    } "r_en";
 }
 
 group ExtractLmp(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {

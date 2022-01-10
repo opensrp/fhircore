@@ -21,8 +21,22 @@ import android.os.Looper
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.clearAllMocks
+import org.hl7.fhir.instance.model.api.IBaseResource
+import org.hl7.fhir.r4.context.IWorkerContext
+import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.DateType
+import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.utils.StructureMapUtilities
+import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
+import org.hl7.fhir.utilities.npm.ToolsVersion
 import java.io.File
 import java.io.FileReader
 import java.util.concurrent.CountDownLatch
@@ -34,8 +48,12 @@ import org.junit.Rule
 import org.junit.runner.RunWith
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.engine.util.extension.asYyyyMmDd
+import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.app.fakes.FakeKeyStore
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
+import java.util.Date
 
 @RunWith(FhircoreTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
@@ -67,6 +85,63 @@ abstract class RobolectricTest {
     val file = File("$ASSET_BASE_PATH/$this")
     val charArray = CharArray(file.length().toInt()).apply { FileReader(file).read(this) }
     return String(charArray)
+  }
+
+  fun String.parseSampleResource(): IBaseResource = this.readFile().let {
+      it.replace("#TODAY", Date().asYyyyMmDd())
+        .replace("#NOW", DateTimeType.now().valueAsString)
+    }
+      .let {
+        FhirContext.forR4().newJsonParser().parseResource(it)
+      }
+
+  fun Resource.convertToString(trimTime: Boolean) =
+    FhirContext.forR4Cached().newJsonParser().encodeResourceToString(this).let {
+      // replace time part 11:11:11+05:00 with xx:xx:xx+xx:xx
+      if (trimTime) it.replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}"), "xx:xx:xx+xx:xx")
+      else it
+    }
+
+  fun buildStructureMapUtils(): StructureMapUtilities {
+    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    // Package name manually checked from
+    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
+    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+
+    contextR4.setExpansionProfile(Parameters())
+    contextR4.isCanRunWithoutTerminology = true
+
+    val transformSupportServices = TransformSupportServices(contextR4)
+
+    return StructureMapUtilities(contextR4, transformSupportServices)
+  }
+
+  fun StructureMapUtilities.worker(): IWorkerContext =
+    ReflectionHelpers.getField(this, "worker")
+
+  fun transform(
+    scu: StructureMapUtilities,
+    structureMapJson: String,
+    responseJson: String,
+    sourceGroup: String
+  ): Bundle {
+    val map = scu.parse(structureMapJson, sourceGroup)
+
+    val iParser: IParser = FhirContext.forR4().newJsonParser()
+
+    println(iParser.encodeResourceToString(map))
+
+    val targetResource = Bundle()
+
+    val source = iParser.parseResource(QuestionnaireResponse::class.java, responseJson)
+
+    kotlin.runCatching { scu.transform(scu.worker(), source, map, targetResource) }.onFailure {
+      println(it.stackTraceToString())
+    }
+
+    println(iParser.encodeResourceToString(targetResource))
+
+    return targetResource
   }
 
   @After

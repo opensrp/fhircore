@@ -22,6 +22,7 @@ import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.ResourceFactory
 import org.hl7.fhir.r4.model.RiskAssessment.RiskAssessmentPredictionComponent
@@ -54,6 +55,7 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "RiskAssessment_Prediction" -> RiskAssessmentPredictionComponent()
       "Immunization_VaccinationProtocol" -> Immunization.ImmunizationProtocolAppliedComponent()
       "Immunization_Reaction" -> Immunization.ImmunizationReactionComponent()
+      "EpisodeOfCare_Diagnosis" -> EpisodeOfCare.DiagnosisComponent()
       else -> ResourceFactory.createResourceOrType(name)
     }
   }

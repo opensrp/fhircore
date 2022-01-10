@@ -23,17 +23,23 @@ import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import java.util.Date
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.utils.StructureMapUtilities
+import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
+import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 
 class RegisterUtilsTest : RobolectricTest() {
 
@@ -118,7 +124,21 @@ class RegisterUtilsTest : RobolectricTest() {
 
     assertEquals(5, targetResource.entry.size)
 
+    val condition = targetResource.entry[0].resource as Condition
+    val sampleCondition = "questionnaires/anc-service-enrollment/sample/condition.json".parseSampleResource() as Condition
+
+    assertResourceContent(sampleCondition, condition)
+
+    val episode = targetResource.entry[0].resource as EpisodeOfCare
+    val sampleEpisode = "questionnaires/anc-service-enrollment/sample/episode.json".parseSampleResource() as EpisodeOfCare
+
+    assertResourceContent(sampleEpisode, episode)
+
     val encounter = targetResource.entry[0].resource as Encounter
+    val sampleEncounter = "questionnaires/anc-service-enrollment/sample/encounter.json".parseSampleResource() as Encounter
+
+    assertResourceContent(sampleEncounter, encounter)
+
     assertEquals(Encounter.EncounterStatus.INPROGRESS, encounter.status)
     assertEquals("HH", encounter.class_.code)
     assertEquals("home health", encounter.class_.display)
@@ -131,7 +151,7 @@ class RegisterUtilsTest : RobolectricTest() {
 
     val lmp = targetResource.entry[1].resource as Observation
 
-    validateObsBasic(lmp, encounter)
+  //  validateObsBasic(lmp, encounter)
 
     assertEquals("LMP", lmp.code.text)
     assertEquals("21840007", lmp.code.codingFirstRep.code)
@@ -140,7 +160,7 @@ class RegisterUtilsTest : RobolectricTest() {
 
     val edd = targetResource.entry[2].resource as Observation
 
-    validateObsBasic(edd, encounter)
+   // validateObsBasic(edd, encounter)
 
     assertEquals("EDD", edd.code.text)
     assertEquals("161714006", edd.code.codingFirstRep.code)
@@ -149,7 +169,7 @@ class RegisterUtilsTest : RobolectricTest() {
 
     val gravida = targetResource.entry[3].resource as Observation
 
-    validateObsBasic(gravida, encounter)
+   // validateObsBasic(gravida, encounter)
 
     assertEquals("Gravida", gravida.code.text)
     assertEquals("246211005", gravida.code.codingFirstRep.code)
@@ -158,7 +178,7 @@ class RegisterUtilsTest : RobolectricTest() {
 
     val liveDelivery = targetResource.entry[4].resource as Observation
 
-    validateObsBasic(liveDelivery, encounter)
+  //  validateObsBasic(liveDelivery, encounter)
 
     assertEquals("Live Deliveries", liveDelivery.code.text)
     assertEquals("248991006", liveDelivery.code.codingFirstRep.code)
@@ -166,37 +186,19 @@ class RegisterUtilsTest : RobolectricTest() {
     assertEquals(4, liveDelivery.valueIntegerType.value)
   }
 
-  fun validateObsBasic(obs: Observation, encounter: Encounter) {
-    assertEquals(encounter.subject.reference, obs.subject.reference)
-    assertEquals("Encounter/${encounter.id}", obs.encounter.reference)
-    assertEquals(Observation.ObservationStatus.REGISTERED, obs.status)
-    assertEquals(Date().makeItReadable(), obs.effectivePeriod.start.makeItReadable())
-    assertEquals("Survey", obs.categoryFirstRep.text)
-    assertEquals("survey", obs.categoryFirstRep.codingFirstRep.code)
-  }
+  fun assertResourceContent(expected: Resource, actual: Resource){
+    // replace properties generating dynamically
+    actual.setPropertySafely("id", expected.idElement)
 
-  private fun transform(
-    scu: StructureMapUtilities,
-    structureMapJson: String,
-    responseJson: String,
-    sourceGroup: String
-  ): Bundle {
-    val map = scu.parse(structureMapJson, sourceGroup)
+    if (expected.resourceType == ResourceType.Observation)
+      actual.setPropertySafely("encounter", expected.getNamedProperty("encounter").values[0])
 
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val expectedStr = expected.convertToString(true)
+    val actualStr = actual.convertToString(true)
 
-    println(iParser.encodeResourceToString(map))
+    System.out.println(expectedStr)
+    System.out.println(actualStr)
 
-    val targetResource = Bundle()
-
-    val source = iParser.parseResource(QuestionnaireResponse::class.java, responseJson)
-
-    kotlin.runCatching { scu.transform(scu.worker(), source, map, targetResource) }.onFailure {
-      println(it.stackTraceToString())
-    }
-
-    println(iParser.encodeResourceToString(targetResource))
-
-    return targetResource
+    assertEquals(expectedStr, actualStr)
   }
 }
