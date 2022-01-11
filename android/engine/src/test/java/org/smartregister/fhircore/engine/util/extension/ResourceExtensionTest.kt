@@ -486,6 +486,34 @@ class ResourceExtensionTest : RobolectricTest() {
   }
 
   @Test
+  fun `Type#valueToString() should return string representation`() {
+    Assert.assertEquals("12345", StringType("12345").valueToString())
+    Assert.assertEquals("true", BooleanType(true).valueToString())
+    Assert.assertEquals(Date().makeItReadable(), DateTimeType(Date()).valueToString())
+    Assert.assertEquals("d", Coding("s", "c", "d").valueToString())
+    Assert.assertEquals(
+      "d",
+      CodeableConcept().apply { addCoding(Coding("s", "c", "d")) }.valueToString()
+    )
+    Assert.assertEquals(
+      "3.4",
+      Quantity()
+        .apply {
+          this.value = BigDecimal.valueOf(3.4)
+          this.unit = "G"
+        }
+        .valueToString()
+    )
+  }
+
+  @Test
+  fun `Resource#generateReferenceValue() should return correct reference`() {
+    val resource = Patient().apply { id = "123456" }
+
+    Assert.assertEquals("Patient/123456", resource.referenceValue())
+  }
+
+  @Test
   fun `Questionnaire#prepareQuestionsForReadingOrEditing should retain custom extension`() {
     val questionnaire = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
     questionnaire.add(

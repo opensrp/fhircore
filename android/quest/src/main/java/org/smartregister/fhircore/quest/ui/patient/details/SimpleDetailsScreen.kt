@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
+import android.widget.TextView
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -138,7 +139,7 @@ fun TextView(
   valueFormatter: Map<String, String>?
 ) {
   val valueStr = value.valueToString()
-  val dynamicColor = colors?.firstOrNull { it.valueEqual == valueStr }?.useColor
+  val dynamicColor = getColor(valueStr, colors)
   val color =
     when {
       dynamicColor?.isNotBlank() == true -> dynamicColor
@@ -154,6 +155,9 @@ fun TextView(
     fontSize = TextUnit(size, TextUnitType.Sp),
   )
 }
+
+private fun getColor(value: String, colors: List<DynamicColor>?) =
+  colors?.firstOrNull { it.valueEqual == value }?.useColor
 
 @ExcludeFromJacocoGeneratedReport
 @Composable

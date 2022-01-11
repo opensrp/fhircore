@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import android.content.Intent
+import android.content.InTEST_RESULT_DETAIL_VIEWtent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
+import org.smartregister.fhircore.quest.ui.patient.details.SimpleDetailsActivity.Companion.RECORD_ID_ARG
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import timber.log.Timber
 
@@ -155,7 +156,8 @@ class QuestPatientDetailActivity :
   private fun onTestResultItemClickListener(questionnaireResponse: QuestionnaireResponse?) {
     if (questionnaireResponse != null) {
       if (questionnaireResponse.questionnaire != null) {
-        // TODO 1- handle via config/menu, 2- pass encounterId from quest details screen
+        // TODO https://github.com/opensrp/fhircore/issues/778
+        //  1- handle via config/menu, 2- pass encounterId from quest details screen
         if (configurationRegistry.appId == "g6pd") {
           val encounterId =
             questionnaireResponse.contained
@@ -165,7 +167,7 @@ class QuestPatientDetailActivity :
           else
             startActivity(
               Intent(this, SimpleDetailsActivity::class.java).apply {
-                putExtra("RECORD_ID", encounterId.replace("#", ""))
+                putExtra(RECORD_ID_ARG, encounterId.replace("#", ""))
               }
             )
         } else {
