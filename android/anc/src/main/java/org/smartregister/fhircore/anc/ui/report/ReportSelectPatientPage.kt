@@ -140,6 +140,7 @@ fun SearchView(state: MutableState<TextFieldValue>, viewModel: ReportViewModel) 
       trailingIcon = {
         if (state.value != TextFieldValue("")) {
           IconButton(
+            modifier = Modifier.testTag(REPORT_SEARCH_PATIENT_CANCEL),
             onClick = {
               // Remove text from TextField when you press the 'X' icon
               state.value = TextFieldValue("")

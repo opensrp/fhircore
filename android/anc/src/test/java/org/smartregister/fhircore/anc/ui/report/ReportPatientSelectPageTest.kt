@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.MutableLiveData
@@ -51,6 +52,7 @@ class ReportPatientSelectPageTest : RobolectricTest() {
   private val testMeasureReportItem = MutableLiveData(ReportItem(title = "Test Report Title"))
   private val selectedPatient = MutableLiveData(PatientItem(name = "Test Patient Name"))
   private val searchTextState = mutableStateOf(TextFieldValue(""))
+  private val searchTextStateWithText = mutableStateOf(TextFieldValue("hello"))
 
   private val listenerObjectSpy =
     spyk(
@@ -103,6 +105,12 @@ class ReportPatientSelectPageTest : RobolectricTest() {
     composeRule.setContent { SearchView(searchTextState, viewModel = viewModel) }
     composeRule.onNodeWithTag(REPORT_SEARCH_PATIENT).assertExists().assertTextContains("")
     composeRule.onNodeWithTag(REPORT_SEARCH_PATIENT).assertExists().performTextInput("input")
+  }
+
+  @Test
+  fun testReportSelectPatientSearchViewWithText() {
+    composeRule.setContent { SearchView(searchTextStateWithText, viewModel = viewModel) }
+    composeRule.onNodeWithTag(REPORT_SEARCH_PATIENT_CANCEL).assertExists().performClick()
   }
 
   @Test
