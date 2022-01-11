@@ -29,10 +29,8 @@ import java.time.ZoneId
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.test.runBlockingTest
-import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -121,13 +119,11 @@ class PatientRepositoryTest : RobolectricTest() {
       val yesterday =
         Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
 
-      coEvery { fhirEngine.load(Questionnaire::class.java, "1") } returns Questionnaire().apply {
-        name = "First Questionnaire"
-      }
+      coEvery { fhirEngine.load(Questionnaire::class.java, "1") } returns
+        Questionnaire().apply { name = "First Questionnaire" }
 
-      coEvery { fhirEngine.load(Questionnaire::class.java, "2") } returns Questionnaire().apply {
-        name = "Second Questionnaire"
-      }
+      coEvery { fhirEngine.load(Questionnaire::class.java, "2") } returns
+        Questionnaire().apply { name = "Second Questionnaire" }
 
       coEvery { fhirEngine.search<QuestionnaireResponse>(any()) } returns
         listOf(
@@ -141,7 +137,8 @@ class PatientRepositoryTest : RobolectricTest() {
           }
         )
 
-      val results = repository.fetchTestResults("1", listOf(), patientDetailsViewConfigurationOf(), null)
+      val results =
+        repository.fetchTestResults("1", listOf(), patientDetailsViewConfigurationOf(), null)
 
       Assert.assertEquals("First Questionnaire", results.first().data.first()[0].value)
       Assert.assertEquals(today.time, results.first().data.first()[1].value)

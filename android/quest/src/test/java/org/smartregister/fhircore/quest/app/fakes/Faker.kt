@@ -102,26 +102,32 @@ object Faker {
 
     coEvery { patientRepository.fetchTestResults(any(), any(), any(), any()) } returns
       listOf(
-        ResultItem(Pair(
-          QuestionnaireResponse().apply {
-            meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Order" }) }
-            authored = Date()
-          },
-          Questionnaire().apply {
-            name = "Sample Order"
-            title = "Sample Order"
-          }
-        ), listOf()),
-        ResultItem(Pair(
-          QuestionnaireResponse().apply {
-            meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Test" }) }
-            authored = Date()
-          },
-          Questionnaire().apply {
-            name = "Sample Test"
-            title = "Sample Test"
-          }
-        ), listOf())
+        ResultItem(
+          Pair(
+            QuestionnaireResponse().apply {
+              meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Order" }) }
+              authored = Date()
+            },
+            Questionnaire().apply {
+              name = "Sample Order"
+              title = "Sample Order"
+            }
+          ),
+          listOf()
+        ),
+        ResultItem(
+          Pair(
+            QuestionnaireResponse().apply {
+              meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Test" }) }
+              authored = Date()
+            },
+            Questionnaire().apply {
+              name = "Sample Test"
+              title = "Sample Test"
+            }
+          ),
+          listOf()
+        )
       )
   }
 

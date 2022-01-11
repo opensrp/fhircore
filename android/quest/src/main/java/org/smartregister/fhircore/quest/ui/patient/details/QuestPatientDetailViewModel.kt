@@ -84,16 +84,10 @@ constructor(
     }
   }
 
-  fun getAllForms(
-    profileConfig: ProfileConfig,
-    patientDetailsViewConfiguration: PatientDetailsViewConfiguration
-  ) {
+  fun getAllForms(profileConfig: ProfileConfig) {
     viewModelScope.launch {
       questionnaireConfigs.postValue(
-        patientRepository.fetchTestForms(
-          profileConfig.profileQuestionnaireFilter,
-          patientDetailsViewConfiguration.appId
-        )
+        patientRepository.fetchTestForms(profileConfig.profileQuestionnaireFilter)
       )
     }
   }
@@ -105,11 +99,7 @@ constructor(
     parser: DetailConfigParser?
   ) {
     viewModelScope.launch {
-      val forms =
-        patientRepository.fetchTestForms(
-          profileConfig.profileQuestionnaireFilter,
-          patientDetailsViewConfiguration.appId
-        )
+      val forms = patientRepository.fetchTestForms(profileConfig.profileQuestionnaireFilter)
 
       testResults.postValue(
         patientRepository.fetchTestResults(

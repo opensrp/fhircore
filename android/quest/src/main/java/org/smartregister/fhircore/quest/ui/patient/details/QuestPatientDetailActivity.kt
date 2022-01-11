@@ -85,7 +85,7 @@ class QuestPatientDetailActivity :
     patientViewModel.run {
       getDemographicsWithAdditionalData(patientId, patientDetailConfig)
       getAllResults(patientId, profileConfig, patientDetailConfig, parser)
-      getAllForms(profileConfig, patientDetailsViewConfiguration = patientDetailConfig)
+      getAllForms(profileConfig)
     }
     setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
   }
