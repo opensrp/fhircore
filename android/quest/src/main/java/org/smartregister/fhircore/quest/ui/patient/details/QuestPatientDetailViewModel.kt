@@ -40,7 +40,6 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.extension.isPatient
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
-import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
@@ -55,8 +54,7 @@ constructor(
   val libraryEvaluator: LibraryEvaluator,
 ) : ViewModel() {
 
-  private val _patientDetailsViewConfiguration =
-    MutableLiveData<PatientDetailsViewConfiguration>()
+  private val _patientDetailsViewConfiguration = MutableLiveData<PatientDetailsViewConfiguration>()
   val patientDetailsViewConfiguration: LiveData<PatientDetailsViewConfiguration>
     get() = _patientDetailsViewConfiguration
 
@@ -68,7 +66,10 @@ constructor(
   val onFormItemClicked = MutableLiveData<QuestionnaireConfig>(null)
   val onFormTestResultClicked = MutableLiveData<QuestionnaireResponse>(null)
 
-  fun getDemographicsWithAdditionalData(patientId: String, patientDetailsViewConfiguration: PatientDetailsViewConfiguration) {
+  fun getDemographicsWithAdditionalData(
+    patientId: String,
+    patientDetailsViewConfiguration: PatientDetailsViewConfiguration
+  ) {
     viewModelScope.launch {
       val demographic = patientRepository.fetchDemographicsWithAdditionalData(patientId)
       demographic.additionalData?.forEach {
