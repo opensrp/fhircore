@@ -204,19 +204,20 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testFetchResultNullNameTitleShouldReturnNull() {
+  fun testFetchResultNullNameTitleShouldReturnId() {
     val result =
       questPatientDetailViewModel.fetchResultItemLabel(
         testResult =
           Pair(
             QuestionnaireResponse(),
             Questionnaire().apply {
+              id = "1234"
               name = null
               title = null
             }
           )
       )
 
-    Assert.assertNull(result)
+    Assert.assertEquals("1234", result)
   }
 }
