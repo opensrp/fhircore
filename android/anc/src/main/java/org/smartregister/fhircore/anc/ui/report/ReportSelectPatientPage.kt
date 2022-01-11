@@ -120,7 +120,7 @@ fun SearchView(state: MutableState<TextFieldValue>, viewModel: ReportViewModel) 
       value = state.value,
       onValueChange = { value ->
         state.value = value
-        viewModel.filterValue.postValue(Pair(RegisterFilterType.SEARCH_FILTER, value))
+        viewModel.filterValue.postValue(Pair(RegisterFilterType.SEARCH_FILTER, value.text))
         viewModel.reportState.currentScreen = ReportViewModel.ReportScreen.PICK_PATIENT
       },
       modifier = Modifier.fillMaxWidth().testTag(REPORT_SEARCH_PATIENT),
@@ -143,7 +143,9 @@ fun SearchView(state: MutableState<TextFieldValue>, viewModel: ReportViewModel) 
             onClick = {
               // Remove text from TextField when you press the 'X' icon
               state.value = TextFieldValue("")
-              viewModel.filterValue.postValue(Pair(RegisterFilterType.SEARCH_FILTER, state.value))
+              viewModel.filterValue.postValue(
+                Pair(RegisterFilterType.SEARCH_FILTER, state.value.text)
+              )
               viewModel.reportState.currentScreen = ReportViewModel.ReportScreen.PICK_PATIENT
             }
           ) {
