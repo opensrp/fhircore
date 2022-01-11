@@ -28,10 +28,9 @@ data class PatientDetailsViewConfiguration(
   val clientInfo: String = "Patient name, F, 30",
   val contentTitle: String = "Responses",
   val valuePrefix: String = "G6PD ",
-  val contentItem: ContentItem? = null
+  val parser: String,
+  val rows: List<List<Filter>>? = null
 ) : Configuration
-
-@Stable @Serializable class ContentItem(val filters: List<Filter>? = null)
 
 @Stable
 fun patientDetailsViewConfigurationOf(
@@ -46,5 +45,6 @@ fun patientDetailsViewConfigurationOf(
     classification = classification,
     clientInfo = clientInfo,
     contentTitle = contentTitle,
-    valuePrefix = valuePrefix
+    valuePrefix = valuePrefix,
+    parser = "G6PDDetailConfigParser"
   )

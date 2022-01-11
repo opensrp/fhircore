@@ -35,7 +35,10 @@ import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
+import org.smartregister.fhircore.quest.configuration.parser.DetailConfigParser
+import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
+import org.smartregister.fhircore.quest.data.patient.model.ResultItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.quest.util.loadAdditionalData
 import timber.log.Timber
@@ -85,16 +88,24 @@ constructor(
     withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, patientId) }
 
   suspend fun fetchTestResults(
-    patientId: String
-  ): List<Pair<QuestionnaireResponse, Questionnaire>> {
+    patientId: String,
+    forms: List<QuestionnaireConfig>,
+    patientDetailsViewConfiguration: PatientDetailsViewConfiguration,
+    parser: DetailConfigParser?
+  ): List<ResultItem> {
     return withContext(dispatcherProvider.io()) {
-      val questionnaireResponses = searchQuestionnaireResponses(patientId)
+      val testResults = mutableListOf<ResultItem>()
 
-      val testResults = mutableListOf<Pair<QuestionnaireResponse, Questionnaire>>()
-      questionnaireResponses.forEach {
-        val questionnaire = getQuestionnaire(it)
-        testResults.add(Pair(it, questionnaire))
+      parser?.let { p ->
+        val questionnaireResponses =
+          searchQuestionnaireResponses(patientId, forms).sortedByDescending { it.authored }
+        questionnaireResponses.forEach {
+          val questionnaire = getQuestionnaire(it)
+          testResults.add(p.getResultItem(questionnaire, it, patientDetailsViewConfiguration))
+        }
       }
+        ?: run { Timber.w("Getting null parser") }
+
       testResults
     }
   }
@@ -121,8 +132,16 @@ constructor(
   suspend fun loadEncounter(id: String): Encounter =
     withContext(dispatcherProvider.io()) { fhirEngine.load(Encounter::class.java, id) }
 
-  private suspend fun searchQuestionnaireResponses(patientId: String): List<QuestionnaireResponse> =
-    fhirEngine.search { filter(QuestionnaireResponse.SUBJECT) { value = "Patient/$patientId" } }
+  private suspend fun searchQuestionnaireResponses(
+    patientId: String,
+    forms: List<QuestionnaireConfig>
+  ): List<QuestionnaireResponse> =
+    fhirEngine.search {
+      filter(QuestionnaireResponse.SUBJECT) { value = "Patient/$patientId" }
+      forms.forEach { config ->
+        filter(QuestionnaireResponse.QUESTIONNAIRE) { value = "Questionnaire/${config.identifier}" }
+      }
+    }
 
   suspend fun fetchTestForms(
     filter: SearchFilter,
@@ -145,8 +164,8 @@ constructor(
       result.map {
         QuestionnaireConfig(
           appId = appId,
-          form = it.name,
-          title = it.title,
+          form = it.name ?: it.logicalId,
+          title = it.title ?: it.logicalId,
           identifier = it.logicalId
         )
       }

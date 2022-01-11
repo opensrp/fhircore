@@ -61,12 +61,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
+import org.smartregister.fhircore.quest.data.patient.model.ResultItem
 
 const val TOOLBAR_TITLE = "toolbarTitle"
 const val TOOLBAR_BACK_ARROW = "toolbarBackArrow"
@@ -126,27 +124,49 @@ fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
 }
 
 @Composable
-fun ResultItem(
-  testResult: Pair<QuestionnaireResponse, Questionnaire>,
-  questPatientDetailViewModel: QuestPatientDetailViewModel
-) {
+fun ResultItem(testResult: ResultItem, questPatientDetailViewModel: QuestPatientDetailViewModel) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween,
     modifier =
-      Modifier.fillMaxWidth()
+      Modifier.background(Color.White)
+        .fillMaxWidth()
         .padding(12.dp)
-        .clickable { questPatientDetailViewModel.onTestResultItemClickListener(testResult.first) }
+        .clickable { questPatientDetailViewModel.onTestResultItemClickListener(testResult) }
         .testTag(RESULT_ITEM)
   ) {
-    Text(
-      text = (questPatientDetailViewModel.fetchResultItemLabel(testResult)
-          ?: "") + " (${testResult.first.authored?.asDdMmmYyyy() ?: ""}) ",
-      color = colorResource(id = R.color.black),
-      fontSize = 17.sp,
-      textAlign = TextAlign.Start,
-      modifier = Modifier.padding(end = 12.dp)
-    )
+    Column(verticalArrangement = Arrangement.Center) {
+      testResult.data.forEach { dataList ->
+        Row(modifier = Modifier.padding(end = 12.dp)) {
+          dataList.forEach { item ->
+            item.label?.let {
+              Text(
+                text = item.label,
+                color =
+                  Color(
+                    android.graphics.Color.parseColor(item.properties?.label?.color ?: "#000000")
+                  ),
+                fontSize = item.properties?.label?.textSize?.sp ?: 17.sp,
+                fontWeight =
+                  FontWeight(item.properties?.label?.fontWeight?.weight ?: FontWeight.Normal.weight)
+              )
+            }
+
+            Text(
+              text = (item.valuePrefix ?: "") + item.value,
+              color =
+                Color(
+                  android.graphics.Color.parseColor(item.properties?.value?.color ?: "#000000")
+                ),
+              fontSize = item.properties?.value?.textSize?.sp ?: 17.sp,
+              textAlign = TextAlign.Start,
+              fontWeight =
+                FontWeight(item.properties?.value?.fontWeight?.weight ?: FontWeight.Normal.weight)
+            )
+          }
+        }
+      }
+    }
 
     Image(
       painter = painterResource(id = R.drawable.ic_forward_arrow),
