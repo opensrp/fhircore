@@ -33,6 +33,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
+import org.smartregister.fhircore.quest.data.patient.model.ResultItem
 
 object Faker {
 
@@ -99,9 +100,9 @@ object Faker {
         )
       )
 
-    coEvery { patientRepository.fetchTestResults(any()) } returns
+    coEvery { patientRepository.fetchTestResults(any(), any(), any(), any()) } returns
       listOf(
-        Pair(
+        ResultItem(Pair(
           QuestionnaireResponse().apply {
             meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Order" }) }
             authored = Date()
@@ -110,8 +111,8 @@ object Faker {
             name = "Sample Order"
             title = "Sample Order"
           }
-        ),
-        Pair(
+        ), listOf()),
+        ResultItem(Pair(
           QuestionnaireResponse().apply {
             meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Test" }) }
             authored = Date()
@@ -120,7 +121,7 @@ object Faker {
             name = "Sample Test"
             title = "Sample Test"
           }
-        )
+        ), listOf())
       )
   }
 
@@ -128,6 +129,6 @@ object Faker {
 
     coEvery { patientRepository.fetchDemographics(any()) } returns Patient()
     coEvery { patientRepository.fetchTestForms(any(), any()) } returns emptyList()
-    coEvery { patientRepository.fetchTestResults(any()) } returns emptyList()
+    coEvery { patientRepository.fetchTestResults(any(), any(), any(), any()) } returns emptyList()
   }
 }

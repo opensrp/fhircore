@@ -44,6 +44,7 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.quest.app.fakes.Faker.buildPatient
+import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.genderFull
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -120,25 +121,33 @@ class PatientRepositoryTest : RobolectricTest() {
       val yesterday =
         Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant())
 
+      coEvery { fhirEngine.load(Questionnaire::class.java, "1") } returns Questionnaire().apply {
+        name = "First Questionnaire"
+      }
+
+      coEvery { fhirEngine.load(Questionnaire::class.java, "2") } returns Questionnaire().apply {
+        name = "Second Questionnaire"
+      }
+
       coEvery { fhirEngine.search<QuestionnaireResponse>(any()) } returns
         listOf(
           QuestionnaireResponse().apply {
-            meta = Meta().apply { tag = listOf(Coding().apply { display = "Cell Count" }) }
             authored = today
+            questionnaire = "Questionnaire/1"
           },
           QuestionnaireResponse().apply {
-            meta = Meta().apply { tag = listOf(Coding().apply { display = "Blood Count" }) }
             authored = yesterday
+            questionnaire = "Questionnaire/2"
           }
         )
 
-      val results = repository.fetchTestResults("1")
+      val results = repository.fetchTestResults("1", listOf(), patientDetailsViewConfigurationOf(), null)
 
-      Assert.assertEquals("Cell Count", results.first().first.meta?.tagFirstRep?.display)
-      Assert.assertEquals(today.time, results.first().first.authored?.time)
+      Assert.assertEquals("First Questionnaire", results.first().data.first()[0].value)
+      Assert.assertEquals(today.time, results.first().data.first()[1].value)
 
-      Assert.assertEquals("Blood Count", results.last().first.meta?.tagFirstRep?.display)
-      Assert.assertEquals(yesterday.time, results.last().first.authored?.time)
+      Assert.assertEquals("First Questionnaire", results.first().data.first()[0].value)
+      Assert.assertEquals(today.time, results.first().data.first()[1].value)
     }
 
   @Test
