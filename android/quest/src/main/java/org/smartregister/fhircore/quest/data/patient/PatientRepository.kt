@@ -143,10 +143,7 @@ constructor(
       }
     }
 
-  suspend fun fetchTestForms(
-    filter: SearchFilter,
-    appId: String = "quest"
-  ): List<QuestionnaireConfig> =
+  suspend fun fetchTestForms(filter: SearchFilter): List<QuestionnaireConfig> =
     withContext(dispatcherProvider.io()) {
       val result =
         fhirEngine.search<Questionnaire> {
@@ -163,9 +160,9 @@ constructor(
 
       result.map {
         QuestionnaireConfig(
-          appId = appId,
+          appId = configurationRegistry.appId,
           form = it.name ?: it.logicalId,
-          title = it.title ?: it.logicalId,
+          title = it.title ?: it.name ?: it.logicalId,
           identifier = it.logicalId
         )
       }

@@ -216,4 +216,36 @@ class PatientRepositoryTest : RobolectricTest() {
         Assert.assertEquals("G6PD Test", title)
       }
     }
+
+  @Test
+  fun testFetchTestFormShouldHandleNullNameAndTitle() =
+    coroutineTestRule.runBlockingTest {
+      coEvery { fhirEngine.search<Questionnaire>(any()) } returns
+        listOf(Questionnaire().apply { id = "1234" })
+
+      val results = repository.fetchTestForms(SearchFilter("", "abc", "cde"))
+
+      with(results.first()) {
+        Assert.assertEquals("1234", form)
+        Assert.assertEquals("1234", title)
+      }
+    }
+
+  @Test
+  fun testFetchTestFormShouldHandleNullTitle() =
+    coroutineTestRule.runBlockingTest {
+      coEvery { fhirEngine.search<Questionnaire>(any()) } returns
+        listOf(
+          Questionnaire().apply {
+            id = "1234"
+            name = "Form name"
+          }
+        )
+
+      val results = repository.fetchTestForms(SearchFilter("", "abc", "cde"))
+      with(results.first()) {
+        Assert.assertEquals("Form name", form)
+        Assert.assertEquals("Form name", title)
+      }
+    }
 }
