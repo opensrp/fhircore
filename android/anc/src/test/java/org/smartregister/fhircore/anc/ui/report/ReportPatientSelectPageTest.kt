@@ -17,8 +17,10 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.PagingData
@@ -37,6 +39,7 @@ import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.anc.ui.anccare.register.components.AncRow
+import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 
 @ExperimentalCoroutinesApi
 class ReportPatientSelectPageTest : RobolectricTest() {
@@ -70,6 +73,8 @@ class ReportPatientSelectPageTest : RobolectricTest() {
         every { isReadyToGenerateReport } returns MutableLiveData(true)
         every { startDate } returns MutableLiveData("")
         every { endDate } returns MutableLiveData("")
+        every { filterValue } returns MutableLiveData<Pair<RegisterFilterType, Any?>>()
+        every { reportState } returns ReportViewModel.ReportState()
         every { patientSelectionType } returns this@ReportPatientSelectPageTest.patientSelectionType
         every { selectedPatientItem } returns this@ReportPatientSelectPageTest.selectedPatient
         every { searchTextState } returns this@ReportPatientSelectPageTest.searchTextState
@@ -96,7 +101,8 @@ class ReportPatientSelectPageTest : RobolectricTest() {
   @Test
   fun testReportSelectPatientSearchView() {
     composeRule.setContent { SearchView(searchTextState, viewModel = viewModel) }
-    composeRule.onNodeWithTag(REPORT_SEARCH_PATIENT).assertExists()
+    composeRule.onNodeWithTag(REPORT_SEARCH_PATIENT).assertExists().assertTextContains("")
+    composeRule.onNodeWithTag(REPORT_SEARCH_PATIENT).assertExists().performTextInput("input")
   }
 
   @Test
