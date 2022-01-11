@@ -32,6 +32,7 @@ class UserDetailsUtils @Inject constructor(val sharedPreferences: SharedPreferen
     sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, userInfo.encodeJson())
   }
 
+  // use a domain mapper
   fun updateUserDetailsFromPractitionerDetails(resource: Resource, userResponse: UserInfo) {
     val practitionerDetails = resource as PractitionerDetails
     val userData = practitionerDetails.userDetail.userBioData
