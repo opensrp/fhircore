@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.patient.details
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -68,22 +69,18 @@ class QuestPatientDetailActivity :
       onFormTestResultClicked.observe(detailActivity, detailActivity::onTestResultItemClickListener)
     }
 
+    val patientDetailConfig = configurationRegistry.retrieveConfiguration<PatientDetailsViewConfiguration>(
+      configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
+    )
     if (configurationRegistry.isAppIdInitialized()) {
-      configureViews(
-        configurationRegistry.retrieveConfiguration<PatientDetailsViewConfiguration>(
-          configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
-        )
-      )
+      configureViews(patientDetailConfig)
     }
     patientViewModel.run {
-      getDemographicsWithAdditionalData(patientId)
+      getDemographicsWithAdditionalData(patientId, patientDetailConfig)
       getAllResults(patientId)
       getAllForms(
         this@QuestPatientDetailActivity,
-        patientDetailsViewConfiguration =
-          configurationRegistry.retrieveConfiguration<PatientDetailsViewConfiguration>(
-            configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
-          )
+        patientDetailsViewConfiguration = patientDetailConfig
       )
     }
     setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }

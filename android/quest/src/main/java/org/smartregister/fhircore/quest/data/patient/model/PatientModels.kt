@@ -34,7 +34,7 @@ data class PatientItem(
 data class AdditionalData(
   val label: String? = null,
   val value: String,
-  val valuePrefix: String? = null,
+  var valuePrefix: String? = null,
   val properties: Properties? = null
 )
 

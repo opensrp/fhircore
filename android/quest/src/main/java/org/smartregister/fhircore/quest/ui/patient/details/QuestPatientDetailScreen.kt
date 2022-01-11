@@ -219,20 +219,8 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
               )
             }
 
-            it.valuePrefix?.let { prefix ->
-              Text(
-                text = viewConfiguration.valuePrefix,
-                color =
-                  Color(
-                    android.graphics.Color.parseColor(it.properties?.value?.color ?: "#000000")
-                  ),
-                fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,
-                modifier = Modifier.wrapContentWidth()
-              )
-            }
-
             Text(
-              text = it.value,
+              text = (it.valuePrefix ?: "") + it.value,
               color =
                 Color(android.graphics.Color.parseColor(it.properties?.value?.color ?: "#000000")),
               fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,

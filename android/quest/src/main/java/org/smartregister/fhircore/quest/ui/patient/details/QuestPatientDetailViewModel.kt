@@ -56,7 +56,7 @@ constructor(
 ) : ViewModel() {
 
   private val _patientDetailsViewConfiguration =
-    MutableLiveData<PatientDetailsViewConfiguration>(patientDetailsViewConfigurationOf())
+    MutableLiveData<PatientDetailsViewConfiguration>()
   val patientDetailsViewConfiguration: LiveData<PatientDetailsViewConfiguration>
     get() = _patientDetailsViewConfiguration
 
@@ -68,9 +68,13 @@ constructor(
   val onFormItemClicked = MutableLiveData<QuestionnaireConfig>(null)
   val onFormTestResultClicked = MutableLiveData<QuestionnaireResponse>(null)
 
-  fun getDemographicsWithAdditionalData(patientId: String) {
+  fun getDemographicsWithAdditionalData(patientId: String, patientDetailsViewConfiguration: PatientDetailsViewConfiguration) {
     viewModelScope.launch {
-      patientItem.postValue(patientRepository.fetchDemographicsWithAdditionalData(patientId))
+      val demographic = patientRepository.fetchDemographicsWithAdditionalData(patientId)
+      demographic.additionalData?.forEach {
+        it.valuePrefix = patientDetailsViewConfiguration.valuePrefix
+      }
+      patientItem.postValue(demographic)
     }
   }
 
