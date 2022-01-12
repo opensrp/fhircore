@@ -33,7 +33,7 @@ import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
-import org.smartregister.fhircore.quest.ui.patient.register.components.PatientRegisterListForQuest
+import org.smartregister.fhircore.quest.ui.patient.register.components.PatientRegisterList
 
 @AndroidEntryPoint
 class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() {
@@ -48,10 +48,13 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
   }
 
   @Composable
-  override fun ConstructRegisterList(pagingItems: LazyPagingItems<PatientItem>) {
-    PatientRegisterListForQuest(
+  override fun ConstructRegisterList(
+    pagingItems: LazyPagingItems<PatientItem>,
+    modifier: Modifier
+  ) {
+    PatientRegisterList(
       pagingItems = pagingItems,
-      modifier = Modifier,
+      modifier = modifier,
       clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
     )
   }

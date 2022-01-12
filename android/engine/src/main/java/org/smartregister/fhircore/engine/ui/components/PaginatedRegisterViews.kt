@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.Icon
@@ -39,6 +40,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.paging.LoadState
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
@@ -178,32 +181,67 @@ fun PaginatedRegister(
   nextButtonClickListener: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  Column(modifier = modifier.fillMaxSize()) {
-    if (showResultsCount) {
-      SearchHeader(resultCount = resultCount)
-    }
-    Box(
-      contentAlignment = Alignment.TopCenter,
-      modifier = modifier.weight(1f).padding(4.dp).fillMaxSize()
-    ) {
-      if (loadState == LoadState.Loading) {
-        CircularProgressBar()
-      } else {
-        if (resultCount == 0 && showResultsCount) {
-          NoResults(modifier = modifier)
+  Column {
+    ConstraintLayout(modifier = Modifier.fillMaxSize()) {
+      val (_top, _body, _bottom, _b2) = createRefs()
+      Column(
+        modifier =
+          modifier.constrainAs(_top) {
+            width = Dimension.wrapContent
+            height = Dimension.value(4.dp)
+            start.linkTo(parent.start)
+            top.linkTo(parent.top)
+            end.linkTo(parent.end)
+          }
+      ) { Text(text = "hidden") }
+      Column(
+        modifier =
+          modifier.constrainAs(_bottom) {
+            width = Dimension.fillToConstraints
+            height = Dimension.value(4.dp)
+            start.linkTo(parent.start)
+            bottom.linkTo(parent.bottom)
+            end.linkTo(parent.end)
+          }
+      ) { Text(text = "hidden", color = MaterialTheme.colors.primary) }
+      if (showResultsCount) {
+        SearchHeader(resultCount = resultCount)
+      }
+      Box(
+        contentAlignment = Alignment.TopCenter,
+        modifier =
+          modifier
+            .padding(top = 25.dp, bottom = 4.dp, start = 4.dp, end = 4.dp)
+            .fillMaxSize()
+            .constrainAs(_body) {
+              height = Dimension.fillToConstraints
+              start.linkTo(parent.start)
+              top.linkTo(_top.bottom)
+              end.linkTo(parent.end)
+              bottom.linkTo(_bottom.top)
+            }
+      ) {
+        if (loadState == LoadState.Loading) {
+          CircularProgressBar()
         } else {
-          body()
+          if (resultCount == 0 && showResultsCount) {
+            NoResults(modifier = modifier)
+          } else {
+            body()
+          }
         }
       }
-    }
-    if (!showResultsCount) {
-      SearchFooter(
-        resultCount = resultCount,
-        currentPage = currentPage,
-        pageNumbers = pagesCount,
-        previousButtonClickListener = previousButtonClickListener,
-        nextButtonClickListener = nextButtonClickListener
-      )
+      if (!showResultsCount) {
+        Box(modifier = Modifier.constrainAs(_b2) { bottom.linkTo(parent.bottom) }) {
+          SearchFooter(
+            resultCount = resultCount,
+            currentPage = currentPage,
+            pageNumbers = pagesCount,
+            previousButtonClickListener = previousButtonClickListener,
+            nextButtonClickListener = nextButtonClickListener
+          )
+        }
+      }
     }
   }
 }
