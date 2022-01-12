@@ -16,15 +16,10 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register.components
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
@@ -105,25 +100,4 @@ fun dummyPatientPagingList(): LazyPagingItems<PatientItem> {
       )
     )
   return listFlow.collectAsLazyPagingItems()
-}
-
-@Composable
-fun PatientRegisterListForQuest(
-  pagingItems: LazyPagingItems<PatientItem>,
-  modifier: Modifier = Modifier,
-  clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit
-) {
-  val expectedRegisterListHeight = (LocalConfiguration.current.screenHeightDp * 0.55).dp
-  Box(
-    modifier =
-      Modifier.fillMaxWidth()
-        .height(expectedRegisterListHeight)
-        .testTag("PatientRegisterListForQuest")
-  ) {
-    PatientRegisterList(
-      pagingItems = pagingItems,
-      modifier = modifier,
-      clickListener = clickListener
-    )
-  }
 }
