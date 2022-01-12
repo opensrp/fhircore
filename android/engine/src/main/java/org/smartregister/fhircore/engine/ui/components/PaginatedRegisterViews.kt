@@ -183,10 +183,10 @@ fun PaginatedRegister(
 ) {
   Column(modifier = modifier.fillMaxWidth().height(200.dp)) {
     ConstraintLayout(modifier = Modifier.fillMaxSize()) {
-      val (_top, _body, _bottom, _b2) = createRefs()
+      val (topRef, bodyRef, bottomRef, searchFooterRef) = createRefs()
       Column(
         modifier =
-          modifier.constrainAs(_top) {
+          modifier.constrainAs(topRef) {
             width = Dimension.wrapContent
             height = Dimension.value(4.dp)
             start.linkTo(parent.start)
@@ -196,7 +196,7 @@ fun PaginatedRegister(
       ) { Text(text = "hidden") }
       Column(
         modifier =
-          modifier.constrainAs(_bottom) {
+          modifier.constrainAs(bottomRef) {
             width = Dimension.fillToConstraints
             height = Dimension.value(4.dp)
             start.linkTo(parent.start)
@@ -204,32 +204,33 @@ fun PaginatedRegister(
             end.linkTo(parent.end)
           }
       ) { Text(text = "hidden", color = MaterialTheme.colors.primary) }
-      if (showResultsCount) {
-        SearchHeader(resultCount = resultCount)
-      }
-      Box(
-        contentAlignment = Alignment.TopCenter,
+      Column(
         modifier =
-          modifier.padding(vertical = 25.dp, horizontal = 4.dp).fillMaxSize().constrainAs(_body) {
+          modifier.padding(bottom = 25.dp).fillMaxSize().constrainAs(bodyRef) {
             height = Dimension.fillToConstraints
             start.linkTo(parent.start)
-            top.linkTo(_top.bottom)
+            top.linkTo(topRef.bottom)
             end.linkTo(parent.end)
-            bottom.linkTo(_bottom.top)
+            bottom.linkTo(bottomRef.top)
           }
       ) {
-        if (loadState == LoadState.Loading) {
-          CircularProgressBar()
-        } else {
-          if (resultCount == 0 && showResultsCount) {
-            NoResults(modifier = modifier)
+        if (showResultsCount) {
+          SearchHeader(resultCount = resultCount)
+        }
+        Box(contentAlignment = Alignment.TopCenter, modifier = modifier.fillMaxSize()) {
+          if (loadState == LoadState.Loading) {
+            CircularProgressBar()
           } else {
-            body()
+            if (resultCount == 0 && showResultsCount) {
+              NoResults(modifier = modifier)
+            } else {
+              body()
+            }
           }
         }
       }
       if (!showResultsCount) {
-        Box(modifier = Modifier.constrainAs(_b2) { bottom.linkTo(parent.bottom) }) {
+        Box(modifier = Modifier.constrainAs(searchFooterRef) { bottom.linkTo(parent.bottom) }) {
           SearchFooter(
             resultCount = resultCount,
             currentPage = currentPage,
