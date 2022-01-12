@@ -211,7 +211,7 @@ fun PaginatedRegister(
         contentAlignment = Alignment.TopCenter,
         modifier =
           modifier
-            .padding(top = 25.dp, bottom = 4.dp, start = 4.dp, end = 4.dp)
+            .padding(top = 25.dp, bottom = 25.dp, start = 4.dp, end = 4.dp)
             .fillMaxSize()
             .constrainAs(_body) {
               height = Dimension.fillToConstraints
