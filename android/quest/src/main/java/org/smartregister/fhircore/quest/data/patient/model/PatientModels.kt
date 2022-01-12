@@ -49,7 +49,7 @@ fun PatientItem.genderFull(): String {
 }
 
 @Stable
-data class ResultItem(
+data class QuestResultItem(
   val source: Pair<QuestionnaireResponse, Questionnaire>,
   val data: List<List<AdditionalData>>
 )

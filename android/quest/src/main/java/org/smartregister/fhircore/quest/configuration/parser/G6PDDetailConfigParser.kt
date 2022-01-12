@@ -35,7 +35,7 @@ import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewCon
 import org.smartregister.fhircore.quest.configuration.view.Properties
 import org.smartregister.fhircore.quest.configuration.view.Property
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
-import org.smartregister.fhircore.quest.data.patient.model.ResultItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.ui.patient.details.SimpleDetailsActivity
 
 class G6PDDetailConfigParser(fhirEngine: FhirEngine) : DetailConfigParser(fhirEngine) {
@@ -44,7 +44,7 @@ class G6PDDetailConfigParser(fhirEngine: FhirEngine) : DetailConfigParser(fhirEn
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     patientDetailsViewConfiguration: PatientDetailsViewConfiguration
-  ): ResultItem {
+  ): QuestResultItem {
 
     val encounterId = getEncounterId(questionnaireResponse)
     val condition = getCondition(encounterId)
@@ -63,10 +63,14 @@ class G6PDDetailConfigParser(fhirEngine: FhirEngine) : DetailConfigParser(fhirEn
         )
       )
 
-    return ResultItem(Pair(questionnaireResponse, questionnaire), data)
+    return QuestResultItem(Pair(questionnaireResponse, questionnaire), data)
   }
 
-  override fun onResultItemClicked(resultItem: ResultItem, context: Context, patientId: String) {
+  override fun onResultItemClicked(
+    resultItem: QuestResultItem,
+    context: Context,
+    patientId: String
+  ) {
 
     val questionnaireResponse = resultItem.source.first
 

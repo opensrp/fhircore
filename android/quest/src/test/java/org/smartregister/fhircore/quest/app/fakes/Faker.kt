@@ -32,8 +32,11 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
+import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
-import org.smartregister.fhircore.quest.data.patient.model.ResultItem
+import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
+import org.smartregister.fhircore.quest.data.patient.model.PatientItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 
 object Faker {
 
@@ -62,6 +65,12 @@ object Faker {
   }
 
   fun initPatientRepositoryMocks(patientRepository: PatientRepository) {
+
+    coEvery { patientRepository.fetchDemographicsWithAdditionalData(any()) } answers
+      {
+        PatientItem(id = firstArg(), name = "John Doe", gender = "M", age = "22y")
+      }
+
     coEvery { patientRepository.fetchDemographics(any()) } returns
       Patient().apply {
         name =
@@ -84,7 +93,7 @@ object Faker {
         identifier = listOf(Identifier().apply { value = "12345" })
       }
 
-    coEvery { patientRepository.fetchTestForms(any(), any()) } returns
+    coEvery { patientRepository.fetchTestForms(any()) } returns
       listOf(
         QuestionnaireConfig(
           appId = "quest",
@@ -102,7 +111,7 @@ object Faker {
 
     coEvery { patientRepository.fetchTestResults(any(), any(), any(), any()) } returns
       listOf(
-        ResultItem(
+        QuestResultItem(
           Pair(
             QuestionnaireResponse().apply {
               meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Order" }) }
@@ -113,9 +122,14 @@ object Faker {
               title = "Sample Order"
             }
           ),
-          listOf()
+          listOf(
+            listOf(
+              AdditionalData(value = "Sample Order"),
+              AdditionalData(value = "(${Date().asDdMmmYyyy()})")
+            )
+          )
         ),
-        ResultItem(
+        QuestResultItem(
           Pair(
             QuestionnaireResponse().apply {
               meta = Meta().apply { tag = listOf(Coding().apply { display = "Sample Test" }) }
@@ -126,7 +140,12 @@ object Faker {
               title = "Sample Test"
             }
           ),
-          listOf()
+          listOf(
+            listOf(
+              AdditionalData(value = "Sample Test"),
+              AdditionalData(value = "(${Date().asDdMmmYyyy()})")
+            )
+          )
         )
       )
   }
@@ -134,7 +153,7 @@ object Faker {
   fun initPatientRepositoryEmptyMocks(patientRepository: PatientRepository) {
 
     coEvery { patientRepository.fetchDemographics(any()) } returns Patient()
-    coEvery { patientRepository.fetchTestForms(any(), any()) } returns emptyList()
+    coEvery { patientRepository.fetchTestForms(any()) } returns emptyList()
     coEvery { patientRepository.fetchTestResults(any(), any(), any(), any()) } returns emptyList()
   }
 }

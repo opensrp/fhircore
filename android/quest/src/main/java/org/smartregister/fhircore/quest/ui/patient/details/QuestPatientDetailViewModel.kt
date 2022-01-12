@@ -45,7 +45,7 @@ import org.smartregister.fhircore.quest.configuration.parser.DetailConfigParser
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
-import org.smartregister.fhircore.quest.data.patient.model.ResultItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 
 @HiltViewModel
@@ -65,11 +65,11 @@ constructor(
 
   val patientItem = MutableLiveData<PatientItem>()
   val questionnaireConfigs = MutableLiveData<List<QuestionnaireConfig>>()
-  val testResults = MutableLiveData<List<ResultItem>>()
+  val testResults = MutableLiveData<List<QuestResultItem>>()
   val onBackPressClicked = MutableLiveData(false)
   val onMenuItemClicked = MutableLiveData(-1)
   val onFormItemClicked = MutableLiveData<QuestionnaireConfig>(null)
-  val onFormTestResultClicked = MutableLiveData<ResultItem?>(null)
+  val onFormTestResultClicked = MutableLiveData<QuestResultItem?>(null)
 
   fun getDemographicsWithAdditionalData(
     patientId: String,
@@ -168,7 +168,7 @@ constructor(
     onFormItemClicked.value = questionnaireConfig
   }
 
-  fun onTestResultItemClickListener(resultItem: ResultItem?) {
+  fun onTestResultItemClickListener(resultItem: QuestResultItem?) {
     onFormTestResultClicked.value = resultItem
   }
 

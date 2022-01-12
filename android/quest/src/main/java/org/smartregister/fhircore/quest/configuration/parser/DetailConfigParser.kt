@@ -21,7 +21,7 @@ import com.google.android.fhir.FhirEngine
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
-import org.smartregister.fhircore.quest.data.patient.model.ResultItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 
 abstract class DetailConfigParser(val fhirEngine: FhirEngine) {
 
@@ -29,6 +29,6 @@ abstract class DetailConfigParser(val fhirEngine: FhirEngine) {
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     patientDetailsViewConfiguration: PatientDetailsViewConfiguration
-  ): ResultItem
-  abstract fun onResultItemClicked(resultItem: ResultItem, context: Context, patientId: String)
+  ): QuestResultItem
+  abstract fun onResultItemClicked(resultItem: QuestResultItem, context: Context, patientId: String)
 }

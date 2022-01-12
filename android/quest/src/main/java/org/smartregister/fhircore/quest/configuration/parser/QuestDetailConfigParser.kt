@@ -27,7 +27,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
-import org.smartregister.fhircore.quest.data.patient.model.ResultItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 
 class QuestDetailConfigParser(fhirEngine: FhirEngine) : DetailConfigParser(fhirEngine) {
 
@@ -35,7 +35,7 @@ class QuestDetailConfigParser(fhirEngine: FhirEngine) : DetailConfigParser(fhirE
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     patientDetailsViewConfiguration: PatientDetailsViewConfiguration
-  ): ResultItem {
+  ): QuestResultItem {
 
     val data =
       listOf(
@@ -45,10 +45,14 @@ class QuestDetailConfigParser(fhirEngine: FhirEngine) : DetailConfigParser(fhirE
         )
       )
 
-    return ResultItem(Pair(questionnaireResponse, questionnaire), data)
+    return QuestResultItem(Pair(questionnaireResponse, questionnaire), data)
   }
 
-  override fun onResultItemClicked(resultItem: ResultItem, context: Context, patientId: String) {
+  override fun onResultItemClicked(
+    resultItem: QuestResultItem,
+    context: Context,
+    patientId: String
+  ) {
 
     val questionnaireResponse = resultItem.source.first
 

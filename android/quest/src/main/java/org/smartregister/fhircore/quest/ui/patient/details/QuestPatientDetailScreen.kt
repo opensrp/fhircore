@@ -64,7 +64,7 @@ import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
-import org.smartregister.fhircore.quest.data.patient.model.ResultItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 
 const val TOOLBAR_TITLE = "toolbarTitle"
 const val TOOLBAR_BACK_ARROW = "toolbarBackArrow"
@@ -124,7 +124,10 @@ fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
 }
 
 @Composable
-fun ResultItem(testResult: ResultItem, questPatientDetailViewModel: QuestPatientDetailViewModel) {
+fun ResultItem(
+  testResult: QuestResultItem,
+  questPatientDetailViewModel: QuestPatientDetailViewModel
+) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween,

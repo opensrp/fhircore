@@ -41,7 +41,9 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
+import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.app.fakes.Faker.buildPatient
+import org.smartregister.fhircore.quest.configuration.parser.QuestDetailConfigParser
 import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.genderFull
@@ -137,14 +139,16 @@ class PatientRepositoryTest : RobolectricTest() {
           }
         )
 
+      val parser = QuestDetailConfigParser(fhirEngine)
+
       val results =
-        repository.fetchTestResults("1", listOf(), patientDetailsViewConfigurationOf(), null)
+        repository.fetchTestResults("1", listOf(), patientDetailsViewConfigurationOf(), parser)
 
-      Assert.assertEquals("First Questionnaire", results.first().data.first()[0].value)
-      Assert.assertEquals(today.time, results.first().data.first()[1].value)
+      Assert.assertEquals("First Questionnaire", results[0].data[0][0].value)
+      Assert.assertEquals(" (${today.asDdMmmYyyy()})", results[0].data[0][1].value)
 
-      Assert.assertEquals("First Questionnaire", results.first().data.first()[0].value)
-      Assert.assertEquals(today.time, results.first().data.first()[1].value)
+      Assert.assertEquals("Second Questionnaire", results[1].data[0][0].value)
+      Assert.assertEquals(" (${yesterday.asDdMmmYyyy()})", results[1].data[0][1].value)
     }
 
   @Test

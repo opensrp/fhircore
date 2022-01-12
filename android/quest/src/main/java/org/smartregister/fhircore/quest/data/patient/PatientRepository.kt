@@ -38,7 +38,7 @@ import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.quest.configuration.parser.DetailConfigParser
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
-import org.smartregister.fhircore.quest.data.patient.model.ResultItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 import org.smartregister.fhircore.quest.util.loadAdditionalData
 import timber.log.Timber
@@ -92,9 +92,9 @@ constructor(
     forms: List<QuestionnaireConfig>,
     patientDetailsViewConfiguration: PatientDetailsViewConfiguration,
     parser: DetailConfigParser?
-  ): List<ResultItem> {
+  ): List<QuestResultItem> {
     return withContext(dispatcherProvider.io()) {
-      val testResults = mutableListOf<ResultItem>()
+      val testResults = mutableListOf<QuestResultItem>()
 
       parser?.let { p ->
         val questionnaireResponses =

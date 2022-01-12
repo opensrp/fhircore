@@ -36,7 +36,7 @@ import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.configuration.parser.DetailConfigParser
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
-import org.smartregister.fhircore.quest.data.patient.model.ResultItem
+import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @AndroidEntryPoint
@@ -156,7 +156,7 @@ class QuestPatientDetailActivity :
     }
   }
 
-  private fun onTestResultItemClickListener(resultItem: ResultItem?) {
+  private fun onTestResultItemClickListener(resultItem: QuestResultItem?) {
     resultItem?.let { parser?.onResultItemClicked(resultItem, this, patientId) }
   }
 

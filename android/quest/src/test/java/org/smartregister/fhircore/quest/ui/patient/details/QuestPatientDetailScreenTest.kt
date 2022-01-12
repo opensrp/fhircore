@@ -32,6 +32,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
@@ -40,19 +41,25 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.util.Date
 import javax.inject.Inject
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
+import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
+import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
+import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
+import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @HiltAndroidTest
 class QuestPatientDetailScreenTest : RobolectricTest() {
@@ -62,6 +69,8 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
   @get:Rule(order = 1) val composeRule = createComposeRule()
 
   @Inject lateinit var patientItemMapper: PatientItemMapper
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   val application = ApplicationProvider.getApplicationContext<Application>()
 
@@ -69,12 +78,17 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
   val defaultRepository: DefaultRepository = mockk()
 
   lateinit var questPatientDetailViewModel: QuestPatientDetailViewModel
+  lateinit var patientDetailsViewConfig: PatientDetailsViewConfiguration
+  lateinit var profileConfig: QuestPatientDetailViewModel.ProfileConfig
+  lateinit var fhirEngine: FhirEngine
 
   private val patientId = "5583145"
 
   @Before
   fun setUp() {
     hiltRule.inject()
+    fhirEngine = mockk()
+    configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
     Faker.initPatientRepositoryMocks(patientRepository)
     questPatientDetailViewModel =
       spyk(
@@ -82,14 +96,24 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
           patientRepository = patientRepository,
           defaultRepository = defaultRepository,
           patientItemMapper = patientItemMapper,
-          mockk()
+          mockk(),
+          fhirEngine
         )
       )
+
+    patientDetailsViewConfig =
+      configurationRegistry.retrieveConfiguration(
+        configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
+      )
+
+    profileConfig =
+      AssetUtil.decodeAsset(fileName = QuestPatientDetailViewModel.PROFILE_CONFIG, application)
+
     // Simulate retrieval of data from repository
     questPatientDetailViewModel.run {
-      getDemographicsWithAdditionalData(patientId)
-      getAllResults(patientId)
-      getAllForms(application)
+      getDemographicsWithAdditionalData(patientId, patientDetailsViewConfig)
+      getAllResults(patientId, profileConfig, patientDetailsViewConfig, null)
+      getAllForms(profileConfig)
     }
   }
 
@@ -203,21 +227,23 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
 
     // verify test result item(s) count and item title
     composeRule.onAllNodesWithTag(RESULT_ITEM).assertCountEquals(2)
+    composeRule.onAllNodesWithTag(RESULT_ITEM, true)[0].assert(hasAnyChild(hasText("Sample Order")))
     composeRule.onAllNodesWithTag(RESULT_ITEM, true)[0].assert(
-      hasAnyChild(hasText("Sample Order (${Date().asDdMmmYyyy()}) "))
+      hasAnyChild(hasText("(${Date().asDdMmmYyyy()})"))
     )
+    composeRule.onAllNodesWithTag(RESULT_ITEM, true)[1].assert(hasAnyChild(hasText("Sample Test")))
     composeRule.onAllNodesWithTag(RESULT_ITEM, true)[1].assert(
-      hasAnyChild(hasText("Sample Test (${Date().asDdMmmYyyy()}) "))
+      hasAnyChild(hasText("(${Date().asDdMmmYyyy()})"))
     )
   }
 
   @Test
   fun testResultsListItemShouldCallResultItemListener() {
     initMocks()
-    val resultItemClicks = mutableListOf<QuestionnaireResponse>()
+    val resultItemClicks = mutableListOf<QuestResultItem>()
     every { questPatientDetailViewModel.onTestResultItemClickListener(any()) } answers
       {
-        resultItemClicks.add(this.invocation.args[0] as QuestionnaireResponse)
+        resultItemClicks.add(this.invocation.args[0] as QuestResultItem)
       }
 
     composeRule.onAllNodesWithTag(RESULT_ITEM).assertCountEquals(2)
@@ -226,8 +252,8 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
 
     verify { questPatientDetailViewModel.onTestResultItemClickListener(any()) }
 
-    assertEquals("Sample Order", resultItemClicks[0].meta.tagFirstRep.display)
-    assertEquals("Sample Test", resultItemClicks[1].meta.tagFirstRep.display)
+    assertEquals("Sample Order", resultItemClicks[0].data[0][0].value)
+    assertEquals("Sample Test", resultItemClicks[1].data[0][0].value)
   }
 
   @Test
@@ -252,14 +278,16 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
           patientRepository = patientRepository,
           defaultRepository = defaultRepository,
           patientItemMapper = patientItemMapper,
-          mockk()
+          mockk(),
+          fhirEngine
         )
       )
     // Simulate retrieval of data from repository
     questPatientDetailViewModel.run {
-      getDemographicsWithAdditionalData(patientId)
-      getAllResults(patientId)
-      getAllForms(application)
+      updateViewConfigurations(patientDetailsViewConfigurationOf(contentTitle = "RESPONSES"))
+      getDemographicsWithAdditionalData(patientId, patientDetailsViewConfig)
+      getAllResults(patientId, profileConfig, patientDetailsViewConfig, mockk())
+      getAllForms(profileConfig)
     }
 
     composeRule.setContent { QuestPatientDetailScreen(questPatientDetailViewModel) }
@@ -274,7 +302,8 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
           patientRepository = patientRepository,
           defaultRepository = defaultRepository,
           patientItemMapper = patientItemMapper,
-          mockk()
+          mockk(),
+          fhirEngine
         )
       )
     composeRule.setContent { QuestPatientDetailScreen(questPatientDetailViewModel) }
