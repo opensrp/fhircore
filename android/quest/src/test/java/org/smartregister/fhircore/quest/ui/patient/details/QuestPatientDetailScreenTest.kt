@@ -189,6 +189,9 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       .assertExists()
       .assertIsDisplayed()
       .assertTextEquals("John Doe, M, 22y")
+
+    composeRule.onNodeWithText("G6PD").assertExists().assertIsDisplayed()
+    composeRule.onNodeWithText("G6PD Normal").assertExists().assertIsDisplayed()
   }
 
   @Test
@@ -227,6 +230,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
 
     // verify test result item(s) count and item title
     composeRule.onAllNodesWithTag(RESULT_ITEM).assertCountEquals(2)
+    composeRule.onAllNodesWithTag(RESULT_ITEM, true)[0].assert(hasAnyChild(hasText("Label")))
     composeRule.onAllNodesWithTag(RESULT_ITEM, true)[0].assert(hasAnyChild(hasText("Sample Order")))
     composeRule.onAllNodesWithTag(RESULT_ITEM, true)[0].assert(
       hasAnyChild(hasText("(${Date().asDdMmmYyyy()})"))

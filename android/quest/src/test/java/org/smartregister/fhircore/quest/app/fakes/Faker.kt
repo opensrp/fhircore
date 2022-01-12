@@ -68,7 +68,13 @@ object Faker {
 
     coEvery { patientRepository.fetchDemographicsWithAdditionalData(any()) } answers
       {
-        PatientItem(id = firstArg(), name = "John Doe", gender = "M", age = "22y")
+        PatientItem(
+          id = firstArg(),
+          name = "John Doe",
+          gender = "M",
+          age = "22y",
+          additionalData = listOf(AdditionalData(label = "G6PD", value = "Normal"))
+        )
       }
 
     coEvery { patientRepository.fetchDemographics(any()) } returns
@@ -124,7 +130,7 @@ object Faker {
           ),
           listOf(
             listOf(
-              AdditionalData(value = "Sample Order"),
+              AdditionalData(value = "Sample Order", label = "Label"),
               AdditionalData(value = "(${Date().asDdMmmYyyy()})")
             )
           )
