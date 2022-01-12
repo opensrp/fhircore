@@ -17,9 +17,16 @@
 package org.smartregister.fhircore.quest
 
 import android.app.Application
+import ca.uhn.fhir.context.FhirContext
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.DataCaptureConfig
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Questionnaire
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import timber.log.Timber
 
 @HiltAndroidApp
@@ -27,11 +34,34 @@ class QuestApplication : Application() {
 
   @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
 
+  @Inject lateinit var fhirEngine: FhirEngine
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   override fun onCreate() {
     super.onCreate()
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
     DataCaptureConfig.attachmentResolver = referenceAttachmentResolver
+
+    loadLocalDevWfpCodaFiles()
+  }
+
+  fun loadLocalDevWfpCodaFiles() {
+
+    val files = listOf("wfp-coda/anthro-following-visit.json")
+
+    files.forEach { fileName ->
+
+      val jsonString = assets.open(fileName).bufferedReader().readText()
+      val questionnaire =
+        FhirContext.forR4()
+          .newJsonParser()
+          .parseResource(Questionnaire::class.java, jsonString)
+
+      GlobalScope.launch {
+        DefaultRepository(fhirEngine, dispatcherProvider).addOrUpdate(questionnaire)
+      }
+    }
   }
 }
