@@ -181,7 +181,7 @@ fun PaginatedRegister(
   nextButtonClickListener: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  Column {
+  Column(modifier = modifier.fillMaxWidth().height(200.dp)) {
     ConstraintLayout(modifier = Modifier.fillMaxSize()) {
       val (_top, _body, _bottom, _b2) = createRefs()
       Column(
@@ -210,16 +210,13 @@ fun PaginatedRegister(
       Box(
         contentAlignment = Alignment.TopCenter,
         modifier =
-          modifier
-            .padding(top = 25.dp, bottom = 25.dp, start = 4.dp, end = 4.dp)
-            .fillMaxSize()
-            .constrainAs(_body) {
-              height = Dimension.fillToConstraints
-              start.linkTo(parent.start)
-              top.linkTo(_top.bottom)
-              end.linkTo(parent.end)
-              bottom.linkTo(_bottom.top)
-            }
+          modifier.padding(vertical = 25.dp, horizontal = 4.dp).fillMaxSize().constrainAs(_body) {
+            height = Dimension.fillToConstraints
+            start.linkTo(parent.start)
+            top.linkTo(_top.bottom)
+            end.linkTo(parent.end)
+            bottom.linkTo(_bottom.top)
+          }
       ) {
         if (loadState == LoadState.Loading) {
           CircularProgressBar()
