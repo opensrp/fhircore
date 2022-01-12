@@ -23,6 +23,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
@@ -116,7 +117,9 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
 
   @Test
   fun testGetAllForms() {
-    questPatientDetailViewModel.getAllForms(mockk())
+    questPatientDetailViewModel.getAllForms(
+      mockk { every { profileQuestionnaireFilter } returns mockk() }
+    )
     Assert.assertNotNull(questPatientDetailViewModel.questionnaireConfigs.value)
     Assert.assertEquals(2, questPatientDetailViewModel.questionnaireConfigs.value!!.size)
     Assert.assertEquals(
