@@ -145,7 +145,7 @@ constructor(
   suspend fun searchPatientByLink(linkId: String): List<Patient> {
     return fhirEngine.search {
       filterByPatient(Patient.LINK, linkId)
-      filter(Patient.ACTIVE, true)
+      filter(Patient.ACTIVE, { value = of(true) })
     }
   }
 
@@ -261,7 +261,8 @@ constructor(
 
   suspend fun fetchActiveFlag(patientId: String, flagCode: Coding): Flag? {
     return fhirEngine.search<Flag> { filterByPatient(Flag.PATIENT, patientId) }.firstOrNull {
-      it.status == Flag.FlagStatus.ACTIVE && it.code.coding.any { it.code == flagCode.code }
+      it.status == Flag.FlagStatus.ACTIVE &&
+        it.code.coding.any { coding -> coding.code == flagCode.code }
     }
   }
 
@@ -270,7 +271,7 @@ constructor(
 
   suspend fun fetchCarePlan(patientId: String): List<CarePlan> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search { filter(CarePlan.SUBJECT) { value = "Patient/$patientId" } }
+      fhirEngine.search { filter(CarePlan.SUBJECT, { value = "Patient/$patientId" }) }
     }
 
   suspend fun fetchObservations(patientId: String, searchFilterString: String): Observation {
@@ -329,7 +330,7 @@ constructor(
 
   suspend fun fetchEncounters(patientId: String): List<Encounter> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search { filter(Encounter.SUBJECT) { value = "Patient/$patientId" } }
+      fhirEngine.search { filter(Encounter.SUBJECT, { value = "Patient/$patientId" }) }
     }
 
   suspend fun markDeceased(patientId: String, deathDate: Date) {
@@ -466,9 +467,8 @@ constructor(
       listCarePlanList.forEach {
         var task: Task
         withContext(dispatcherProvider.io()) {
-          val carePlanId = it.logicalId
-          var tasks =
-            fhirEngine.search<Task> { filter(Task.FOCUS) { value = "CarePlan/$carePlanId" } }
+          val tasks =
+            fhirEngine.search<Task> { filter(Task.FOCUS, { value = "CarePlan/${it.logicalId}" }) }
           if (!tasks.isNullOrEmpty()) {
             task = tasks[0]
             listCarePlan.add(

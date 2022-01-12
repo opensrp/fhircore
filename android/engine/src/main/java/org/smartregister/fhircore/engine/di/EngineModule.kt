@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.di
 
 import android.accounts.AccountManager
 import android.content.Context
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.sync.Sync
 import dagger.Module
@@ -30,12 +31,12 @@ import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 
 @InstallIn(SingletonComponent::class)
-@Module(includes = [NetworkModule::class, DispatcherModule::class])
+@Module(includes = [NetworkModule::class, DispatcherModule::class, CqlModule::class])
 class EngineModule {
 
   @Singleton
   @Provides
-  fun provideFhirEngine(@ApplicationContext context: Context) =
+  fun provideFhirEngine(@ApplicationContext context: Context): FhirEngine =
     FhirEngineProvider.getInstance(context)
 
   @Singleton

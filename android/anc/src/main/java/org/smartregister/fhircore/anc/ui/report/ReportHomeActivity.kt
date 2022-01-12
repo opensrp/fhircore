@@ -27,31 +27,24 @@ import androidx.compose.ui.res.colorResource
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
-import ca.uhn.fhir.parser.IParser
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.common.collect.Lists
 import dagger.hilt.android.AndroidEntryPoint
-import java.io.ByteArrayInputStream
-import java.io.File
-import java.io.InputStream
-import java.text.SimpleDateFormat
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.hl7.fhir.instance.model.api.IBaseBundle
-import org.hl7.fhir.instance.model.api.IBaseResource
+import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.MeasureReport
+import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.anc.ui.report.ReportViewModel.ReportScreen
-import org.smartregister.fhircore.engine.cql.LibraryEvaluator
-import org.smartregister.fhircore.engine.cql.MeasureEvaluator
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
@@ -59,8 +52,10 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.FileUtil
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
+import timber.log.Timber
 
 @AndroidEntryPoint
 class ReportHomeActivity : BaseMultiLanguageActivity() {
@@ -69,51 +64,22 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var patientRepository: PatientRepository
 
-  lateinit var parser: IParser
-  lateinit var fhirContext: FhirContext
-  lateinit var libraryEvaluator: LibraryEvaluator
-  lateinit var measureEvaluator: MeasureEvaluator
-  lateinit var libraryResources: List<IBaseResource>
-  var libraryData: String = ""
-  var helperData: String = ""
-  var valueSetData: String = ""
-  val evaluatorId = "ANCRecommendationA2"
-  val contextCql = "patient"
-  val contextLabel = "mom-with-anemia"
-  var cqlBaseUrl = ""
-  var libraryUrl = ""
-  var measureEvaluateLibraryUrl = ""
-  var measureTypeUrl = ""
-  var cqlMeasureReportUrl = ""
-  var cqlMeasureReportStartDate = ""
-  var cqlMeasureReportEndDate = ""
-  var cqlMeasureReportReportType = ""
-  var cqlMeasureReportLibInitialString = ""
-  var cqlMeasureReportSubject = ""
-  var cqlHelperUrl = ""
-  var valueSetUrl = ""
-  var patientUrl = ""
-  val cqlConfigFileName = "configs/cql_configs.properties"
-  lateinit var dir: File
-  lateinit var libraryMeasure: IBaseBundle
-  var measureEvaluateLibraryData: String = ""
-  lateinit var valueSetBundle: IBaseBundle
-  val dirCqlDirRoot = "cql_libraries"
-  val fileNameMainLibraryCql = "main_library_cql"
-  val fileNameHelperLibraryCql = "helper_library_cql"
-  val fileNameValueSetLibraryCql = "value_set_library_cql"
-  val fileNameMeasureLibraryCql = "measure_library_cql"
-  var patientResourcesIBase = ArrayList<IBaseResource>()
-  lateinit var patientDataIBase: IBaseBundle
+  @Inject lateinit var fhirOperator: FhirOperator
+
+  @Inject lateinit var fhirEngine: FhirEngine
+
+  @Inject lateinit var fhirContext: FhirContext
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
+
   lateinit var patientId: String
+
   val reportViewModel by viewModels<ReportViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    libraryEvaluator = LibraryEvaluator()
-    measureEvaluator = MeasureEvaluator()
-    fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
-    parser = fhirContext.newJsonParser()
 
     val patientId =
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
@@ -123,10 +89,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         initializeRegisterDataViewModel(this@ReportHomeActivity.patientRepository)
     }
 
-    reportViewModel.registerDataViewModel.currentPage.observe(
-      this,
-      { reportViewModel.registerDataViewModel.loadPageData(it) }
-    )
+    registerDataViewModel.currentPage.observe(this, { registerDataViewModel.loadPageData(it) })
 
     reportViewModel.backPress.observe(
       this,
@@ -150,14 +113,91 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       this,
       {
         if (it) {
-          // Todo: for Davison, update params for All patient selection
-          generateMeasureReport(
-            startDate = reportViewModel.startDate.value ?: "",
-            endDate = reportViewModel.endDate.value ?: "",
-            reportType = reportViewModel.selectedMeasureReportItem.value?.reportType ?: "",
-            patientId = reportViewModel.selectedPatientItem.value?.patientIdentifier ?: "",
-            subject = reportViewModel.selectedPatientItem.value?.familyName ?: ""
-          )
+          lifecycleScope.launch {
+            withContext(dispatcherProvider.io()) {
+
+              // TODO Load all patient's data and bundle
+
+              fhirEngine.loadCqlLibraryBundle(
+                context = this@ReportHomeActivity,
+                fhirOperator = fhirOperator,
+                jsonParser = fhirContext.newJsonParser(),
+                libraryBundlePath = "ANCIND01-bundle.json"
+              )
+
+              // Save patient
+              fhirEngine.save(
+                FhirContext.forR4()
+                  .newJsonParser()
+                  .parseResource(
+                    """
+                {
+                  "resourceType": "Patient",
+                  "id": "charity-otala-1",
+                  "meta": {
+                    "profile": [ "http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-patient" ]
+                  },
+                  "extension": [ {
+                    "url": "http://fhir.org/guides/who/anc-cds/StructureDefinition/educationlevel",
+                    "valueCodeableConcept": {
+                      "coding": [ {
+                        "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
+                        "code": "ANC.B6.DE4",
+                        "display": "Primary school"
+                      } ]
+                    }
+                  }, {
+                    "url": "http://fhir.org/guides/who/anc-cds/StructureDefinition/occupation",
+                    "valueCodeableConcept": {
+                      "coding": [ {
+                        "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
+                        "code": "ANC.B6.DE12",
+                        "display": "Informal employment (other)"
+                      } ]
+                    }
+                  } ],
+                  "identifier": [ {
+                    "use": "official",
+                    "system": "http://example.org/identifier",
+                    "value": "charity-otala-1"
+                  } ],
+                  "name": [ {
+                    "use": "official",
+                    "family": "Otala",
+                    "given": [ "Charity" ],
+                    "text": "Charity Otala"
+                  } ],
+                  "telecom": [ {
+                    "system": "phone",
+                    "value": "555-555-2003",
+                    "use": "mobile"
+                  } ],
+                  "birthDate": "1994-07-01",
+                  "address": [ {
+                    "use": "home",
+                    "text": "2222 Home Street"
+                  } ],
+                  "generalPractitioner": [ {
+                    "reference": "PractitionerRole/anc-practitionerrole-example"
+                  } ]
+                }
+
+              """.trimIndent()
+                  ) as
+                  Patient
+              )
+
+              val measureReport: MeasureReport =
+                fhirOperator.evaluateMeasure(
+                  url = "http://fhir.org/guides/who/anc-cds/Measure/ANCIND01",
+                  start = "2020-01-01",
+                  end = "2020-01-31",
+                  reportType = "subject",
+                  subject = "charity-otala-1"
+                )
+              Timber.i(FhirContext.forR4().newJsonParser().encodeResourceToString(measureReport))
+            }
+          }
         }
       }
     )
@@ -175,43 +215,11 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       }
     )
 
-    cqlBaseUrl =
-      this.let { FileUtil.getProperty("smart_register_base_url", it, cqlConfigFileName) }!!
-
-    libraryUrl =
-      cqlBaseUrl + this.let { FileUtil.getProperty("cql_library_url", it, cqlConfigFileName) }
-
-    cqlHelperUrl =
-      cqlBaseUrl +
-        this.let { FileUtil.getProperty("cql_helper_library_url", it, cqlConfigFileName) }
-
-    valueSetUrl =
-      cqlBaseUrl + this.let { FileUtil.getProperty("cql_value_set_url", it, cqlConfigFileName) }
-
-    patientUrl =
-      cqlBaseUrl + this.let { FileUtil.getProperty("cql_patient_url", it, cqlConfigFileName) }
-
-    measureEvaluateLibraryUrl =
-      this.let {
-        FileUtil.getProperty("cql_measure_report_library_value_sets_url", it, cqlConfigFileName)
-      }!!
-
-    measureTypeUrl =
-      this.let { FileUtil.getProperty("cql_measure_report_resource_url", it, cqlConfigFileName) }!!
-
-    cqlMeasureReportUrl =
-      this.let { FileUtil.getProperty("cql_measure_report_url", it, cqlConfigFileName) }!!
-
-    cqlMeasureReportLibInitialString =
-      this.let {
-        FileUtil.getProperty("cql_measure_report_lib_initial_string", it, cqlConfigFileName)
-      }!!
-
     reportViewModel.patientSelectionType.observe(
       this,
       {
         if (it.equals("Individual", true)) {
-          reportViewModel.filterValue.postValue(kotlin.Pair(RegisterFilterType.SEARCH_FILTER, ""))
+          reportViewModel.filterValue.postValue(Pair(RegisterFilterType.SEARCH_FILTER, ""))
           reportViewModel.reportState.currentScreen = ReportScreen.PICK_PATIENT
         }
       }
@@ -228,7 +236,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         lifecycleScope.launch(Dispatchers.Main) {
           val (registerFilterType, value) = it
           if ((value as String).isNotEmpty()) {
-            reportViewModel.registerDataViewModel.run {
+            registerDataViewModel.run {
               showResultsCount(true)
               filterRegisterData(
                 registerFilterType = registerFilterType,
@@ -238,7 +246,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
               reportViewModel.reportState.currentScreen = ReportScreen.PICK_PATIENT
             }
           } else {
-            reportViewModel.registerDataViewModel.run {
+            registerDataViewModel.run {
               showResultsCount(false)
               reloadCurrentPageData()
             }
@@ -252,215 +260,14 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       AppTheme {
         Surface(color = colorResource(id = R.color.white)) {
           Column {
-            ReportView(reportViewModel)
-            loadMeasureEvaluateLibrary()
+            ReportView(
+              reportViewModel = reportViewModel,
+              registerDataViewModel = registerDataViewModel
+            )
           }
         }
       }
     }
-  }
-
-  fun loadCqlLibraryData() {
-    dir = File(this.filesDir, "$dirCqlDirRoot/$fileNameMainLibraryCql")
-    if (dir.exists()) {
-      libraryData =
-        this.let { FileUtil.readFileFromInternalStorage(it, fileNameMainLibraryCql, dirCqlDirRoot) }
-          .toString()
-      loadCqlHelperData()
-    } else {
-      reportViewModel
-        .fetchCqlLibraryData(parser, fhirResourceDataSource, libraryUrl)
-        .observe(this, this::handleCqlLibraryData)
-    }
-    reportViewModel.reportState.currentScreen = ReportScreen.PREHOMElOADING
-  }
-
-  fun loadCqlHelperData() {
-    dir = File(this.filesDir, "$dirCqlDirRoot/$fileNameHelperLibraryCql")
-    if (dir.exists()) {
-      helperData =
-        this.let {
-            FileUtil.readFileFromInternalStorage(it, fileNameHelperLibraryCql, dirCqlDirRoot)
-          }
-          .toString()
-      loadCqlLibrarySources()
-      loadCqlValueSetData()
-    } else {
-      reportViewModel
-        .fetchCqlFhirHelperData(parser, fhirResourceDataSource, cqlHelperUrl)
-        .observe(this, this::handleCqlHelperData)
-    }
-  }
-
-  fun loadCqlValueSetData() {
-    dir = File(this.filesDir, "$dirCqlDirRoot/$fileNameValueSetLibraryCql")
-    if (dir.exists()) {
-      valueSetData =
-        this.let {
-            FileUtil.readFileFromInternalStorage(it, fileNameValueSetLibraryCql, dirCqlDirRoot)
-          }
-          .toString()
-      postValueSetData(valueSetData)
-    } else {
-      reportViewModel
-        .fetchCqlValueSetData(parser, fhirResourceDataSource, valueSetUrl)
-        .observe(this, this::handleCqlValueSetData)
-    }
-  }
-
-  fun postValueSetData(valueSetData: String) {
-    val valueSetStream: InputStream = ByteArrayInputStream(valueSetData.toByteArray())
-    valueSetBundle = parser.parseResource(valueSetStream) as IBaseBundle
-  }
-
-  fun loadMeasureEvaluateLibrary() {
-    reportViewModel.reportState.currentScreen = ReportScreen.PREHOMElOADING
-    dir = File(this.filesDir, "$dirCqlDirRoot/$fileNameMeasureLibraryCql")
-    if (dir.exists()) {
-      measureEvaluateLibraryData =
-        this.let {
-            FileUtil.readFileFromInternalStorage(it, fileNameMeasureLibraryCql, dirCqlDirRoot)
-          }
-          .toString()
-      val libraryStreamMeasure: InputStream =
-        ByteArrayInputStream(measureEvaluateLibraryData.toByteArray())
-      libraryMeasure = parser.parseResource(libraryStreamMeasure) as IBaseBundle
-      reportViewModel.reportState.currentScreen = ReportScreen.HOME
-    } else {
-      reportViewModel
-        .fetchCqlMeasureEvaluateLibraryAndValueSets(
-          parser,
-          fhirResourceDataSource,
-          measureEvaluateLibraryUrl,
-          measureTypeUrl,
-          cqlMeasureReportLibInitialString
-        )
-        .observe(this, this::handleMeasureEvaluateLibrary)
-    }
-  }
-
-  fun handleCqlLibraryData(auxLibraryData: String) {
-    libraryData = auxLibraryData
-    this.let {
-      FileUtil.writeFileOnInternalStorage(it, fileNameMainLibraryCql, libraryData, dirCqlDirRoot)
-    }
-    loadCqlHelperData()
-  }
-
-  fun loadCqlLibrarySources() {
-    val libraryStream: InputStream = ByteArrayInputStream(libraryData.toByteArray())
-    val fhirHelpersStream: InputStream = ByteArrayInputStream(helperData.toByteArray())
-    val library = parser.parseResource(libraryStream)
-    val fhirHelpersLibrary = parser.parseResource(fhirHelpersStream)
-    libraryResources = Lists.newArrayList(library, fhirHelpersLibrary)
-  }
-
-  fun handleCqlHelperData(auxHelperData: String) {
-    helperData = auxHelperData
-    this.let {
-      FileUtil.writeFileOnInternalStorage(it, fileNameHelperLibraryCql, helperData, dirCqlDirRoot)
-    }
-    loadCqlLibrarySources()
-    loadCqlValueSetData()
-  }
-
-  fun handleCqlValueSetData(auxValueSetData: String) {
-    valueSetData = auxValueSetData
-    this.let {
-      FileUtil.writeFileOnInternalStorage(
-        it,
-        fileNameValueSetLibraryCql,
-        valueSetData,
-        dirCqlDirRoot
-      )
-    }
-    postValueSetData(valueSetData)
-  }
-
-  fun handleCql(): String {
-    return libraryEvaluator.runCql(
-      libraryResources,
-      valueSetBundle,
-      patientDataIBase,
-      fhirContext,
-      evaluatorId,
-      contextCql,
-      contextLabel
-    )
-  }
-
-  fun handleMeasureEvaluate() {
-    val parameters =
-      measureEvaluator.runMeasureEvaluate(
-        patientResourcesIBase,
-        libraryMeasure,
-        fhirContext,
-        cqlMeasureReportUrl,
-        cqlMeasureReportStartDate,
-        cqlMeasureReportEndDate,
-        cqlMeasureReportReportType,
-        cqlMeasureReportSubject
-      )
-    var resultItem = ResultItem("True", true, "", "100", "100")
-    reportViewModel.resultForIndividual.value = resultItem
-    reportViewModel.reportState.currentScreen = ReportScreen.RESULT
-  }
-
-  fun handleMeasureEvaluateLibrary(auxMeasureEvaluateLibData: String) {
-    measureEvaluateLibraryData = auxMeasureEvaluateLibData
-    this.let {
-      FileUtil.writeFileOnInternalStorage(
-        it,
-        fileNameMeasureLibraryCql,
-        measureEvaluateLibraryData,
-        dirCqlDirRoot
-      )
-    }
-    val libraryStreamMeasure: InputStream =
-      ByteArrayInputStream(measureEvaluateLibraryData.toByteArray())
-    libraryMeasure = parser.parseResource(libraryStreamMeasure) as IBaseBundle
-    reportViewModel.reportState.currentScreen = ReportScreen.HOME
-  }
-
-  fun loadCqlMeasurePatientData() {
-    reportViewModel
-      .fetchCqlPatientData(parser, fhirResourceDataSource, "$patientUrl$patientId/\$everything")
-      .observe(this, this::handleCqlMeasureLoadPatient)
-  }
-
-  fun handleCqlMeasureLoadPatient(auxPatientData: String) {
-    if (auxPatientData.isNotEmpty()) {
-      val testData = libraryEvaluator.processCqlPatientBundle(auxPatientData)
-      val patientDataStream: InputStream = ByteArrayInputStream(testData.toByteArray())
-      patientDataIBase = parser.parseResource(patientDataStream) as IBaseBundle
-      patientResourcesIBase.add(patientDataIBase)
-      handleMeasureEvaluate()
-    } else {
-      // Todo: for Davison update result item when empty response for loadPatient Api
-      reportViewModel.resultForIndividual.value =
-        ResultItem(isMatchedIndicator = false, status = "Failed")
-      reportViewModel.reportState.currentScreen = ReportScreen.RESULT
-    }
-  }
-
-  fun generateMeasureReport(
-    startDate: String,
-    endDate: String,
-    reportType: String,
-    patientId: String,
-    subject: String,
-  ) {
-    val pattern = "yyyy-MM-dd"
-    val simpleDateFormat = SimpleDateFormat(pattern)
-
-    cqlMeasureReportStartDate = simpleDateFormat.format(Date(startDate))
-    cqlMeasureReportEndDate = simpleDateFormat.format(Date(endDate))
-    this.patientId = patientId
-    cqlMeasureReportSubject = subject
-    cqlMeasureReportReportType = reportType
-
-    reportViewModel.reportState.currentScreen = ReportScreen.PREHOMElOADING
-    loadCqlMeasurePatientData()
   }
 
   private fun performFilter(

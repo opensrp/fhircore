@@ -152,27 +152,6 @@ internal class ReportViewModelTest {
   }
 
   @Test
-  fun testFetchCqlMeasureEvaluateLibraryAndValueSets() {
-    val auxCqlLibraryAndValueSetData = "{\"parameters\":\"parameters\"}"
-    coroutinesTestRule.runBlockingTest {
-      coEvery { fhirResourceDataSource.loadData(any()) } returns bundle
-      coEvery { bundle.entry } returns entryList
-      coEvery { entryList[0].resource } returns resource
-      coEvery { parser.encodeResourceToString(resource) } returns auxCqlLibraryAndValueSetData
-    }
-    val libraryDataLiveData: String =
-      reportViewModel.fetchCqlMeasureEvaluateLibraryAndValueSets(
-          parser,
-          fhirResourceDataSource,
-          "https://hapi.fhir.org/baseR4/Library?_id=ANCDataElements,WHOCommon,ANCConcepts,ANCContactDataElements,FHIRHelpers,ANCStratifiers,ANCIND01,ANCCommon,ANCBaseDataElements,FHIRCommon,ANCBaseConcepts",
-          "https://hapi.fhir.org/baseR4/Measure?_id=ANCIND01",
-          ""
-        )
-        .value!!
-    Assert.assertNotNull(libraryDataLiveData)
-  }
-
-  @Test
   fun testShouldVerifyStartDatePressListener() {
     reportViewModel.onStartDatePress()
     Assert.assertEquals(true, reportViewModel.isChangingStartDate.value)

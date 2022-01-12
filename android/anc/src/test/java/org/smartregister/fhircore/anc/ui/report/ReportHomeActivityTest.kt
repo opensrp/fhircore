@@ -228,32 +228,6 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testLoadMeasureEvaluateLibrary() {
-    every { reportHomeActivitySpy.dir.exists() } returns true
-    every { FileUtil.readFileFromInternalStorage(any(), any(), any()) } returns valueSetData
-    reportHomeActivitySpy.loadMeasureEvaluateLibrary()
-    Assert.assertNotNull(reportHomeActivitySpy.libraryMeasure)
-
-    every { reportHomeActivitySpy.dir.exists() } returns false
-    val auxCQLMeasureEvaluateData = "loadMeasureEvaluateLibraryData"
-    val libraMeasureEvaluateData = MutableLiveData<String>()
-    libraMeasureEvaluateData.value = auxCQLMeasureEvaluateData
-    coEvery {
-      reportViewModel.fetchCqlMeasureEvaluateLibraryAndValueSets(
-        parser,
-        fhirResourceDataSource,
-        any(),
-        any(),
-        any()
-      )
-    } returns libraMeasureEvaluateData
-
-    reportHomeActivitySpy.loadMeasureEvaluateLibrary()
-    Assert.assertNotNull(libraMeasureEvaluateData.value)
-    Assert.assertEquals(auxCQLMeasureEvaluateData, libraMeasureEvaluateData.value)
-  }
-
-  @Test
   fun testLoadCqlHelperData() {
 
     every { reportHomeActivitySpy.dir.exists() } returns true

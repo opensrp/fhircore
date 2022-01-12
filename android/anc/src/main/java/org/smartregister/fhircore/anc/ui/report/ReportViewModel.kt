@@ -65,8 +65,6 @@ constructor(
 
   lateinit var patientId: String
 
-  lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
-
   val backPress: MutableLiveData<Boolean> = MutableLiveData(false)
   val showDatePicker: MutableLiveData<Boolean> = MutableLiveData(false)
   val processGenerateReport: MutableLiveData<Boolean> = MutableLiveData(false)
@@ -195,17 +193,17 @@ constructor(
 
   fun getSelectionDate(): Long {
     val sdf = SimpleDateFormat(simpleDateFormatPattern, Locale.ENGLISH)
-    try {
+    return try {
       var mDate = sdf.parse(_endDate.value!!)
       if (isChangingStartDate.value != false) {
         mDate = sdf.parse(_startDate.value!!)
       }
       val timeInMilliseconds = mDate?.time
       println("Date in milli :: $timeInMilliseconds")
-      return timeInMilliseconds!!
-    } catch (e: ParseException) {
-      e.printStackTrace()
-      return Date().time
+      timeInMilliseconds!!
+    } catch (parseException: ParseException) {
+      Timber.e(parseException)
+      Date().time
     }
   }
 
@@ -299,49 +297,6 @@ constructor(
       }
     }
     return patientData
-  }
-
-  fun fetchCqlMeasureEvaluateLibraryAndValueSets(
-    parser: IParser,
-    fhirResourceDataSource: FhirResourceDataSource,
-    libAndValueSetURL: String,
-    measureURL: String,
-    cqlMeasureReportLibInitialString: String
-  ): LiveData<String> {
-    val valueSetData = MutableLiveData<String>()
-    val equalsIndexUrl: Int = libAndValueSetURL.indexOf("=")
-
-    val libStrAfterEquals = libAndValueSetURL.substring(libAndValueSetURL.lastIndexOf("=") + 1)
-    val libList = libStrAfterEquals.split(",").map { it.trim() }
-
-    val libURLStrBeforeEquals = libAndValueSetURL.substring(0, equalsIndexUrl) + "="
-    val fullResourceString = StringBuilder(cqlMeasureReportLibInitialString)
-
-    viewModelScope.launch(dispatcher.io()) {
-      val measureObject =
-        parser.encodeResourceToString(fhirResourceDataSource.loadData(measureURL).entry[0].resource)
-
-      fullResourceString.append("{\"resource\":")
-      fullResourceString.append(measureObject)
-      fullResourceString.append("}")
-
-      var auxCQLValueSetData: String
-      for (lib in libList) {
-        auxCQLValueSetData =
-          parser.encodeResourceToString(
-            fhirResourceDataSource.loadData(libURLStrBeforeEquals + lib).entry[0].resource
-          )
-
-        fullResourceString.append(",")
-        fullResourceString.append("{\"resource\":")
-        fullResourceString.append(auxCQLValueSetData)
-        fullResourceString.append("}")
-      }
-      fullResourceString.deleteCharAt(fullResourceString.length - 1)
-      fullResourceString.append("}]}")
-      valueSetData.postValue(fullResourceString.toString())
-    }
-    return valueSetData
   }
 
   class ReportState {

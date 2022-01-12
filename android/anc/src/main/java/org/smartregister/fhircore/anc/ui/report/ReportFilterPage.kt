@@ -89,7 +89,6 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
   val selectedPatient by remember { mutableStateOf(viewModel.getSelectedPatient().value) }
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
-  val homeActivity = LocalContext.current
 
   ReportFilterPage(
     topBarTitle = reportMeasureItem?.title ?: "",

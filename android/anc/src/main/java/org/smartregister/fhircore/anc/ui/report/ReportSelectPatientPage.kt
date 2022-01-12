@@ -59,19 +59,24 @@ import kotlinx.coroutines.flow.emptyFlow
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.ui.anccare.register.components.AncPatientList
+import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.engine.ui.components.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.PaginatedRegister
+import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 
 @Composable
-fun ReportSelectPatientScreen(viewModel: ReportViewModel) {
+fun ReportSelectPatientScreen(
+  viewModel: ReportViewModel,
+  registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
+) {
 
-  val registerData = viewModel.registerDataViewModel.registerData.collectAsState(emptyFlow())
+  val registerData = registerDataViewModel.registerData.collectAsState(emptyFlow())
   val pagingItems = registerData.value.collectAsLazyPagingItems()
-  val showResultsCount by viewModel.registerDataViewModel.showResultsCount.observeAsState(false)
-  val showLoader by viewModel.registerDataViewModel.showLoader.observeAsState(false)
+  val showResultsCount by registerDataViewModel.showResultsCount.observeAsState(false)
+  val showLoader by registerDataViewModel.showLoader.observeAsState(false)
 
   if (showLoader) LoaderDialog(modifier = Modifier)
   Column(modifier = Modifier.testTag(REPORT_SELECT_PATIENT_LIST)) {
@@ -91,10 +96,10 @@ fun ReportSelectPatientScreen(viewModel: ReportViewModel) {
       showResultsCount = showResultsCount,
       resultCount = pagingItems.itemCount,
       body = { ConstructPatientSelectList(pagingItems, viewModel) },
-      currentPage = viewModel.registerDataViewModel.currentPage(),
-      pagesCount = viewModel.registerDataViewModel.countPages(),
-      previousButtonClickListener = { viewModel.registerDataViewModel.previousPage() },
-      nextButtonClickListener = { viewModel.registerDataViewModel.nextPage() }
+      currentPage = registerDataViewModel.currentPage(),
+      pagesCount = registerDataViewModel.countPages(),
+      previousButtonClickListener = { registerDataViewModel.previousPage() },
+      nextButtonClickListener = { registerDataViewModel.nextPage() }
     )
   }
 }

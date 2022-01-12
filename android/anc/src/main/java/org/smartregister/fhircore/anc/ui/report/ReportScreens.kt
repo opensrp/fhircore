@@ -60,6 +60,8 @@ import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
+import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
+import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
@@ -93,12 +95,19 @@ const val REPORT_RESULT_POPULATION_ITEM = "reportResultPopulationItem"
 const val INDICATOR_STATUS = "indicatorStatus"
 
 @Composable
-fun ReportView(reportViewModel: ReportViewModel) {
+fun ReportView(
+  reportViewModel: ReportViewModel,
+  registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>,
+) {
   // Choose which screen to show based on the value in the ReportScreen from ReportState
   when (reportViewModel.reportState.currentScreen) {
     ReportViewModel.ReportScreen.HOME -> ReportHomeScreen(reportViewModel)
     ReportViewModel.ReportScreen.FILTER -> ReportFilterScreen(reportViewModel)
-    ReportViewModel.ReportScreen.PICK_PATIENT -> ReportSelectPatientScreen(reportViewModel)
+    ReportViewModel.ReportScreen.PICK_PATIENT ->
+      ReportSelectPatientScreen(
+        viewModel = reportViewModel,
+        registerDataViewModel = registerDataViewModel
+      )
     ReportViewModel.ReportScreen.RESULT -> ReportResultScreen(reportViewModel)
     ReportViewModel.ReportScreen.PREHOMElOADING -> ReportPreLoadingHomeScreen(reportViewModel)
   }

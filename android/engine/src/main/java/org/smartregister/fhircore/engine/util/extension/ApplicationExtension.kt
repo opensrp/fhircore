@@ -17,7 +17,9 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.content.Context
+import android.content.res.AssetManager
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Order
@@ -27,12 +29,16 @@ import com.google.android.fhir.search.search
 import com.google.android.fhir.sync.ResourceSyncParams
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJob
+import com.google.android.fhir.workflow.FhirOperator
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableSharedFlow
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 
@@ -69,12 +75,15 @@ suspend fun FhirEngine.searchActivePatients(
   loadAll: Boolean = false
 ) =
   this.search<Patient> {
-    filter(Patient.ACTIVE, true)
+    filter(Patient.ACTIVE, { value = of(true) })
     if (query.isNotBlank()) {
-      filter(Patient.NAME) {
-        modifier = StringFilterModifier.CONTAINS
-        value = query.trim()
-      }
+      filter(
+        stringParameter = Patient.NAME,
+        {
+          modifier = StringFilterModifier.CONTAINS
+          value = query.trim()
+        }
+      )
     }
     sort(Patient.NAME, Order.ASCENDING)
     count =
@@ -84,7 +93,7 @@ suspend fun FhirEngine.searchActivePatients(
   }
 
 suspend fun FhirEngine.countActivePatients(): Long =
-  this.count<Patient> { filter(Patient.ACTIVE, true) }
+  this.count<Patient> { filter(Patient.ACTIVE, { value = of(true) }) }
 
 suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
   return try {
@@ -97,7 +106,7 @@ suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: St
 suspend fun FhirEngine.loadRelatedPersons(patientId: String): List<RelatedPerson>? {
   return try {
     this@loadRelatedPersons.search {
-      filter(RelatedPerson.PATIENT) { value = "Patient/$patientId" }
+      filter(RelatedPerson.PATIENT, { value = "Patient/$patientId" })
     }
   } catch (resourceNotFoundException: ResourceNotFoundException) {
     null
@@ -107,9 +116,27 @@ suspend fun FhirEngine.loadRelatedPersons(patientId: String): List<RelatedPerson
 suspend fun FhirEngine.loadPatientImmunizations(patientId: String): List<Immunization>? {
   return try {
     this@loadPatientImmunizations.search {
-      filter(Immunization.PATIENT) { value = "Patient/$patientId" }
+      filter(Immunization.PATIENT, { value = "Patient/$patientId" })
     }
   } catch (resourceNotFoundException: ResourceNotFoundException) {
     null
+  }
+}
+
+suspend fun FhirEngine.loadCqlLibraryBundle(
+  context: Context,
+  fhirOperator: FhirOperator,
+  jsonParser: IParser,
+  libraryBundlePath: String
+) {
+  context.assets.open(libraryBundlePath, AssetManager.ACCESS_RANDOM).bufferedReader().use {
+    val bundle = jsonParser.parseResource(it) as Bundle
+    for (entry in bundle.entry) {
+      if (entry.resource.resourceType == ResourceType.Library) {
+        fhirOperator.loadLib(entry.resource as Library)
+      } else {
+        save(entry.resource)
+      }
+    }
   }
 }
