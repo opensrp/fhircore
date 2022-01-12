@@ -68,13 +68,7 @@ object Faker {
 
     coEvery { patientRepository.fetchDemographicsWithAdditionalData(any()) } answers
       {
-        PatientItem(
-          id = firstArg(),
-          name = "John Doe",
-          gender = "M",
-          age = "22y",
-          additionalData = listOf(AdditionalData(label = "G6PD", value = "Normal"))
-        )
+        PatientItem(id = firstArg(), name = "John Doe", gender = "M", age = "22y")
       }
 
     coEvery { patientRepository.fetchDemographics(any()) } returns

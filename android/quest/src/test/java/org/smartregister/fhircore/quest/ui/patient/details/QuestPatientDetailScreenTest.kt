@@ -35,6 +35,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -56,6 +57,8 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
+import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
+import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
@@ -183,7 +186,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
 
   @Test
   fun testPatientDetailsCardShouldHaveCorrectData() {
-    initMocks()
+    initMocks(true)
     composeRule
       .onNodeWithTag(PATIENT_NAME)
       .assertExists()
@@ -274,7 +277,7 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       .assert(hasAnyChild(hasText("Loading responses ...")))
   }
 
-  private fun initMocks() {
+  private fun initMocks(shouldLoadAdditionalData: Boolean = false) {
     Faker.initPatientRepositoryMocks(patientRepository)
     questPatientDetailViewModel =
       spyk(
@@ -286,6 +289,20 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
           fhirEngine
         )
       )
+
+    if (shouldLoadAdditionalData) {
+      coEvery { patientRepository.fetchDemographicsWithAdditionalData(any()) } answers
+        {
+          PatientItem(
+            id = firstArg(),
+            name = "John Doe",
+            gender = "M",
+            age = "22y",
+            additionalData = listOf(AdditionalData(label = "G6PD", value = "Normal"))
+          )
+        }
+    }
+
     // Simulate retrieval of data from repository
     questPatientDetailViewModel.run {
       updateViewConfigurations(patientDetailsViewConfigurationOf(contentTitle = "RESPONSES"))
