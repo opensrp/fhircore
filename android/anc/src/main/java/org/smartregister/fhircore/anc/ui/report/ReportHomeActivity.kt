@@ -227,7 +227,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       {
         lifecycleScope.launch(Dispatchers.Main) {
           val (registerFilterType, value) = it
-          if (value != null) {
+          if ((value as String).isNotEmpty()) {
             reportViewModel.registerDataViewModel.run {
               showResultsCount(true)
               filterRegisterData(
