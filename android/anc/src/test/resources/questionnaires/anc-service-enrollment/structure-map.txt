@@ -233,3 +233,63 @@ group ExtractLiveBirths(source src : QuestionnaireResponse, target bundle : Bund
         } "r_ob_liv_del";
     };
 }
+
+group ExtractGravida(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
+    src.item as gravida_item where(linkId = 'previous_pregnancies' and answer.count() > 0) then {
+        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+            src -> obs.id = uuid() "r_ob_id";
+            src -> obs.status = "registered" "r_ob_st";
+            src -> obs.code = create('CodeableConcept') as concept then {
+                src -> concept.coding = c("http://snomed.info/sct", "246211005") as coding then {
+                    src -> coding.display = 'Number of previous pregnancies' "r_ob_cod_disp";
+                } "r_ob_cc_cod";
+                src -> concept.text = "Gravida" "r_ob_cc_txt";
+            } "r_ob_cc";
+            src.subject as subject -> obs.subject = subject "r_ob_sub";
+            src -> obs.effective = create('Period') as period then {
+                src -> period.start = evaluate(period, now()) "r_ob_per_st";
+                src -> period.end = evaluate(period, now()) "r_ob_per_end";
+            } "r_ob_per";
+            src -> obs.value = evaluate(gravida_item, answer.value) "r_ob_val";
+            src -> obs.encounter = reference(encounter) "r_ob_en";
+            src -> obs.category = create('CodeableConcept') as concept then {
+                src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/observation-category", 'survey', "Survey") "r_ob_cat_coding";
+                src -> concept.text = 'Survey' "r_ob_cat_text";
+            } "r_ob_cat";
+        } "r_ob_grav";
+    };
+}
+
+group ExtractCareplan(source src : QuestionnaireResponse, target bundle : Bundle,
+target condition : Condition, target goal : Goal, target episode : EpisodeOfCare, target encounter : Encounter) {
+    src -> bundle.entry as entry, entry.resource = create('CarePlan') as cp then {
+        src -> cp.id = uuid() "r_cp_id";
+        src -> cp.extension = create('Extension') as epis then {
+            src -> epis.url = 'http://fhir.org/guides/who/anc-cds/StructureDefinition/careplan-episodeOfCare' "r_ext_url";
+            src -> epis.value = reference(episode) "r_ext_val";
+        } "r_cp_epis";
+        src -> cp.instantiatesCanonical = 'http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact-schedule' "r_cp_inst_can";
+        src -> cp.status = 'acive' "r_cp_status";
+        src -> cp.intent = 'plan' "r_cp_intent";
+        src.subject as subject -> cp.subject = subject "r_cp_sub";
+        src.item as lmp_item check(linkId = 'lmp' and answer.count() > 0) then cp.period = create('Period') as period then {
+            src -> period.start = evaluate(lmp_item, answer.value) "r_cp_per_st";
+            src -> period.end = evaluate(lmp_item, answer.value + 9 'months') "r_cp_per_end";
+        } "r_cp_per";
+        // TODO src -> cp.careteam = ??
+        src -> cp.addresses = reference(condition) "r_cp_condition";
+        src -> cp.goal = reference(goal) "r_cp_goal";???????????
+        src -> cp.code = create('CodeableConcept') as concept then {
+            src -> concept.coding = c("http://snomed.info/sct", "248991006") as coding then {
+                src -> coding.display = 'Number of live deliveries' "r_cp_cod_disp";
+            } "r_cp_cc_cod";
+            src -> concept.text = "Live Deliveries" "r_cp_cc_txt";
+        } "r_cp_cc";
+        src -> cp.value = evaluate(liv_del_item, answer.value) "r_cp_val";
+        src -> cp.encounter = reference(encounter) "r_cp_en";
+        src -> cp.category = create('CodeableConcept') as concept then {
+            src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/cpservation-category", 'survey', "Survey") "r_cp_cat_coding";
+            src -> concept.text = 'Survey' "r_cp_cat_text";
+        } "r_cp_cat";
+    } "r_cp_liv_del";
+}
