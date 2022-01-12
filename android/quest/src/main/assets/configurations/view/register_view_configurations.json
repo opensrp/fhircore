@@ -41,5 +41,26 @@
       "system": "http://fhir.ona.io",
       "code": "000003"
     }
+  },
+  {
+    "appId": "wfp-coda",
+    "classification": "patient_register",
+    "appTitle": "Beneficiaries",
+    "filterText": "Show overdue",
+    "searchBarHint": "Search for ID or beneficiary name",
+    "newClientButtonText": "Register new beneficiary",
+    "newClientButtonStyle": "rounded_corner",
+    "showSearchBar": true,
+    "showFilter": false,
+    "showScanQRCode": false,
+    "showNewClientButton": true,
+    "showSideMenu": false,
+    "showBottomMenu": true,
+    "registrationForm": "3435",
+    "primaryFilter": {
+      "key": "_tag",
+      "system": "http://fhir.ona.io",
+      "code": "000100"
+    }
   }
 ]

@@ -10,5 +10,11 @@
     "classification": "application",
     "theme": "QuestDefault",
     "languages": ["en", "sw"]
+  },
+  {
+    "appId": "wfp-coda",
+    "classification": "application",
+    "theme": "QuestDefault",
+    "languages": ["en", "sw"]
   }
 ]

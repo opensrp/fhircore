@@ -2,7 +2,7 @@
   "id": "default-profile",
   "profileQuestionnaireFilter": {
     "key": "context",
-    "code": "000002",
+    "code": "000100",
     "system": "http://fhir.ona.io"
   },
   "cqlHelperLibraryFilter": {

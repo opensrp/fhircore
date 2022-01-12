@@ -33,5 +33,10 @@
         ]
       }
     ]
+  },
+  {
+    "appId": "wfp-coda",
+    "classification": "patient_register_row",
+    "filters": []
   }
 ]

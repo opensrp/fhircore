@@ -14,5 +14,13 @@
     "applicationVersion": "0.0.1",
     "darkMode": false,
     "showLogo": true
+  },
+  {
+    "appId": "wfp-coda",
+    "classification": "login",
+    "applicationName": "WFP Coda",
+    "applicationVersion": "0.0.1",
+    "darkMode": false,
+    "showLogo": false
   }
 ]
