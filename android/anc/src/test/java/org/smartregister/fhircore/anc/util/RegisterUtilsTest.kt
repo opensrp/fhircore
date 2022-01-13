@@ -58,8 +58,9 @@ class RegisterUtilsTest : RobolectricTest() {
 
   @Test
   fun testFamilyRegistrationStructureMapExtraction() {
-    val structureMap = "questionnaires/family-registration/structure-map.txt".readFile()
-    val response = "questionnaires/family-registration/questionnaire-response.json".readFile()
+    val formResourcesDir = "questionnaires/family-registration"
+    val structureMap = "$formResourcesDir/structure-map.txt".readFile()
+    val response = "$formResourcesDir/questionnaire-response.json".readFile()
     val scu = buildStructureMapUtils()
 
     val targetResource = transform(scu, structureMap, response, "PatientRegistration")
@@ -90,9 +91,9 @@ class RegisterUtilsTest : RobolectricTest() {
 
   @Test
   fun testFamilyMemberRegistrationStructureMapExtraction() {
-    val structureMap = "questionnaires/family-member-registration/structure-map.txt".readFile()
-    val response =
-      "questionnaires/family-member-registration/questionnaire-response.json".readFile()
+    val formResourcesDir = "questionnaires/family-member-registration"
+    val structureMap = "$formResourcesDir/structure-map.txt".readFile()
+    val response = "$formResourcesDir/questionnaire-response.json".readFile()
     val scu = buildStructureMapUtils()
 
     val targetResource = transform(scu, structureMap, response, "PatientRegistration")
@@ -112,8 +113,9 @@ class RegisterUtilsTest : RobolectricTest() {
 
   @Test
   fun testAncServiceEnrollmentStructureMapExtraction() {
-    val structureMap = "questionnaires/anc-service-enrollment/structure-map.txt".readFile()
-    val response = "questionnaires/anc-service-enrollment/questionnaire-response.json".readFile()
+    val formResourcesDir = "questionnaires/anc-service-enrollment"
+    val structureMap = "$formResourcesDir/structure-map.txt".readFile()
+    val response = "$formResourcesDir/questionnaire-response.json".readFile()
     val scu = buildStructureMapUtils()
 
     val targetResource = transform(scu, structureMap, response, "ANCServiceEnrollment")
@@ -121,22 +123,19 @@ class RegisterUtilsTest : RobolectricTest() {
     assertEquals(9, targetResource.entry.size)
 
     val goal = targetResource.entry[0].resource as Goal
-    val sampleGoal =
-      "questionnaires/anc-service-enrollment/sample/goal.json".parseSampleResource() as Goal
+    val sampleGoal = "$formResourcesDir/sample/goal.json".parseSampleResource() as Goal
 
     assertResourceContent(sampleGoal, goal)
 
     val condition = targetResource.entry[1].resource as Condition
     val sampleCondition =
-      "questionnaires/anc-service-enrollment/sample/condition.json".parseSampleResource() as
-        Condition
+      "$formResourcesDir/sample/condition.json".parseSampleResource() as Condition
 
     assertResourceContent(sampleCondition, condition)
 
     val episode = targetResource.entry[2].resource as EpisodeOfCare
     val sampleEpisode =
-      "questionnaires/anc-service-enrollment/sample/episode.json".parseSampleResource() as
-        EpisodeOfCare
+      "$formResourcesDir/sample/episode.json".parseSampleResource() as EpisodeOfCare
 
     assertEquals(condition.asReference().reference, episode.diagnosisFirstRep.condition.reference)
     // replace with inline generated condition id to compare text
@@ -146,8 +145,7 @@ class RegisterUtilsTest : RobolectricTest() {
 
     val encounter = targetResource.entry[3].resource as Encounter
     val sampleEncounter =
-      "questionnaires/anc-service-enrollment/sample/encounter.json".parseSampleResource() as
-        Encounter
+      "$formResourcesDir/sample/encounter.json".parseSampleResource() as Encounter
 
     assertEquals(condition.asReference().reference, encounter.diagnosisFirstRep.condition.reference)
     assertEquals(episode.asReference().reference, encounter.episodeOfCareFirstRep.reference)
@@ -158,9 +156,7 @@ class RegisterUtilsTest : RobolectricTest() {
     assertResourceContent(sampleEncounter, encounter)
 
     val lmp = targetResource.entry[4].resource as Observation
-    val sampleLmp =
-      "questionnaires/anc-service-enrollment/sample/obs_lmp.json".parseSampleResource() as
-        Observation
+    val sampleLmp = "$formResourcesDir/sample/obs_lmp.json".parseSampleResource() as Observation
 
     assertEquals(encounter.asReference().reference, lmp.encounter.reference)
     // replace with inline generated encounter id to compare text
@@ -169,9 +165,7 @@ class RegisterUtilsTest : RobolectricTest() {
     assertResourceContent(sampleLmp, lmp)
 
     val edd = targetResource.entry[5].resource as Observation
-    val sampleEdd =
-      "questionnaires/anc-service-enrollment/sample/obs_edd.json".parseSampleResource() as
-        Observation
+    val sampleEdd = "$formResourcesDir/sample/obs_edd.json".parseSampleResource() as Observation
 
     assertEquals(encounter.asReference().reference, edd.encounter.reference)
     // replace with inline generated encounter id to compare text
@@ -181,8 +175,7 @@ class RegisterUtilsTest : RobolectricTest() {
 
     val gravida = targetResource.entry[6].resource as Observation
     val sampleGravida =
-      "questionnaires/anc-service-enrollment/sample/obs_gravida.json".parseSampleResource() as
-        Observation
+      "$formResourcesDir/sample/obs_gravida.json".parseSampleResource() as Observation
 
     assertEquals(encounter.asReference().reference, gravida.encounter.reference)
     // replace with inline generated encounter id to compare text
@@ -192,8 +185,7 @@ class RegisterUtilsTest : RobolectricTest() {
 
     val liveDel = targetResource.entry[7].resource as Observation
     val sampleLiveDel =
-      "questionnaires/anc-service-enrollment/sample/obs_live_del.json".parseSampleResource() as
-        Observation
+      "$formResourcesDir/sample/obs_live_del.json".parseSampleResource() as Observation
 
     assertEquals(encounter.asReference().reference, liveDel.encounter.reference)
     // replace with inline generated encounter id to compare text
@@ -202,8 +194,7 @@ class RegisterUtilsTest : RobolectricTest() {
     assertResourceContent(sampleLiveDel, liveDel)
 
     val careplan = targetResource.entry[8].resource as CarePlan
-    val sampleCareplan =
-      "questionnaires/anc-service-enrollment/sample/careplan.json".parseSampleResource() as CarePlan
+    val sampleCareplan = "$formResourcesDir/sample/careplan.json".parseSampleResource() as CarePlan
 
     assertEquals(goal.asReference().reference, careplan.goalFirstRep.reference)
     assertEquals(condition.asReference().reference, careplan.addressesFirstRep.reference)
