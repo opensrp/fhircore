@@ -48,7 +48,7 @@ class FamilyRegisterFragment : ComposeRegisterFragment<Family, FamilyItem>() {
   }
 
   @Composable
-  override fun ConstructRegisterList(pagingItems: LazyPagingItems<FamilyItem>) {
+  override fun ConstructRegisterList(pagingItems: LazyPagingItems<FamilyItem>, modifier: Modifier) {
     FamilyList(
       pagingItems = pagingItems,
       modifier = Modifier,
