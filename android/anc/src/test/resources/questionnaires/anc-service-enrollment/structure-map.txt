@@ -18,7 +18,13 @@ group ANCServiceEnrollment(source src : QuestionnaireResponse, target bundle: Bu
              ExtractEdd(src, bundle, encounter),
              ExtractGravida(src, bundle, encounter),
              ExtractLiveBirths(src, bundle, encounter) "r_bun_entries_o";
-    } "r_bun_entries_eeoc";
+    } "r_bun_entries_eeo";
+
+    src -> evaluate(bundle, $this.entry.resource.where($this.is(Condition))) as condition,
+        evaluate(bundle, $this.entry.resource.where($this.is(Goal))) as goal,
+        evaluate(bundle, $this.entry.resource.where($this.is(EpisodeOfCare))) as episode,
+        evaluate(bundle, $this.entry.resource.where($this.is(Encounter))) as encounter then
+            ExtractCarePlan(src, bundle, condition, goal, episode, encounter) "r_bun_entries_cp";
 }
 
 group ExtractGoal(source src : QuestionnaireResponse, target bundle : Bundle) {
@@ -33,7 +39,6 @@ group ExtractGoal(source src : QuestionnaireResponse, target bundle : Bundle) {
 group ExtractCondition(source src : QuestionnaireResponse, target bundle : Bundle) {
     src -> bundle.entry as entry, entry.resource = create('Condition') as condition then {
         src -> condition.id = uuid() "r_c_id";
-        src -> condition.recordedDate = evaluate(src, now()) "r_c_rec_date";
         src -> condition.clinicalStatus = create('CodeableConcept') as concept then {
             src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") as coding then {
                 src -> coding.display = 'Active' "r_c_ct_cod_disp";
@@ -119,7 +124,7 @@ group ExtractEncounter(source src : QuestionnaireResponse, target bundle: Bundle
                 src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/v3-ParticipationType", "PPRF") as coding then {
                     src -> coding.display = 'primary performer' "r_cc_cod_disp";
                 } "r_cc_cod";
-                src -> concept.text = "Primary Performer" "r_cc_text";
+                src -> concept.text = 'Primary Performer' "r_cc_text";
             } "r_en_part_typ";
             // TODO https://github.com/opensrp/fhircore/issues/560 part.individual = ??
         } "r_en_part";
@@ -149,7 +154,9 @@ group ExtractLmp(source src : QuestionnaireResponse, target bundle : Bundle, tar
             src -> obs.value = evaluate(lmp_item, answer.value) "r_ob_val";
             src -> obs.encounter = reference(encounter) "r_ob_en";
             src -> obs.category = create('CodeableConcept') as concept then {
-                src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/observation-category", 'survey', "Survey") "r_ob_cat_coding";
+                src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/observation-category", 'survey') as coding then {
+                    src -> coding.display = 'Survey' "r_ob_cod_disp";
+                } "r_ob_cc_cod";
                 src -> concept.text = 'Survey' "r_ob_cat_text";
             } "r_ob_cat";
         } "r_ob_lmp";
@@ -175,7 +182,9 @@ group ExtractEdd(source src : QuestionnaireResponse, target bundle : Bundle, tar
             src -> obs.value = evaluate(edd_item, answer.value) "r_ob_val";
             src -> obs.encounter = reference(encounter) "r_ob_en";
             src -> obs.category = create('CodeableConcept') as concept then {
-                src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/observation-category", 'survey', "Survey") "r_ob_cat_coding";
+                src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/observation-category", 'survey') as coding then {
+                    src -> coding.display = 'Survey' "r_ob_cod_disp";
+                } "r_ob_cc_cod";
                 src -> concept.text = 'Survey' "r_ob_cat_text";
             } "r_ob_cat";
         } "r_ob_edd";
@@ -201,7 +210,9 @@ group ExtractGravida(source src : QuestionnaireResponse, target bundle : Bundle,
             src -> obs.value = evaluate(gravida_item, answer.value) "r_ob_val";
             src -> obs.encounter = reference(encounter) "r_ob_en";
             src -> obs.category = create('CodeableConcept') as concept then {
-                src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/observation-category", 'survey', "Survey") "r_ob_cat_coding";
+                src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/observation-category", 'survey') as coding then {
+                    src -> coding.display = 'Survey' "r_ob_cod_disp";
+                } "r_ob_cc_cod";
                 src -> concept.text = 'Survey' "r_ob_cat_text";
             } "r_ob_cat";
         } "r_ob_grav";
@@ -227,40 +238,16 @@ group ExtractLiveBirths(source src : QuestionnaireResponse, target bundle : Bund
             src -> obs.value = evaluate(liv_del_item, answer.value) "r_ob_val";
             src -> obs.encounter = reference(encounter) "r_ob_en";
             src -> obs.category = create('CodeableConcept') as concept then {
-                src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/observation-category", 'survey', "Survey") "r_ob_cat_coding";
+                src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/observation-category", 'survey') as coding then {
+                    src -> coding.display = 'Survey' "r_ob_cod_disp";
+                } "r_ob_cc_cod";
                 src -> concept.text = 'Survey' "r_ob_cat_text";
             } "r_ob_cat";
         } "r_ob_liv_del";
     };
 }
 
-group ExtractGravida(source src : QuestionnaireResponse, target bundle : Bundle, target encounter : Encounter) {
-    src.item as gravida_item where(linkId = 'previous_pregnancies' and answer.count() > 0) then {
-        src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
-            src -> obs.id = uuid() "r_ob_id";
-            src -> obs.status = "registered" "r_ob_st";
-            src -> obs.code = create('CodeableConcept') as concept then {
-                src -> concept.coding = c("http://snomed.info/sct", "246211005") as coding then {
-                    src -> coding.display = 'Number of previous pregnancies' "r_ob_cod_disp";
-                } "r_ob_cc_cod";
-                src -> concept.text = "Gravida" "r_ob_cc_txt";
-            } "r_ob_cc";
-            src.subject as subject -> obs.subject = subject "r_ob_sub";
-            src -> obs.effective = create('Period') as period then {
-                src -> period.start = evaluate(period, now()) "r_ob_per_st";
-                src -> period.end = evaluate(period, now()) "r_ob_per_end";
-            } "r_ob_per";
-            src -> obs.value = evaluate(gravida_item, answer.value) "r_ob_val";
-            src -> obs.encounter = reference(encounter) "r_ob_en";
-            src -> obs.category = create('CodeableConcept') as concept then {
-                src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/observation-category", 'survey', "Survey") "r_ob_cat_coding";
-                src -> concept.text = 'Survey' "r_ob_cat_text";
-            } "r_ob_cat";
-        } "r_ob_grav";
-    };
-}
-
-group ExtractCareplan(source src : QuestionnaireResponse, target bundle : Bundle,
+group ExtractCarePlan(source src : QuestionnaireResponse, target bundle : Bundle,
 target condition : Condition, target goal : Goal, target episode : EpisodeOfCare, target encounter : Encounter) {
     src -> bundle.entry as entry, entry.resource = create('CarePlan') as cp then {
         src -> cp.id = uuid() "r_cp_id";
@@ -269,27 +256,181 @@ target condition : Condition, target goal : Goal, target episode : EpisodeOfCare
             src -> epis.value = reference(episode) "r_ext_val";
         } "r_cp_epis";
         src -> cp.instantiatesCanonical = 'http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact-schedule' "r_cp_inst_can";
-        src -> cp.status = 'acive' "r_cp_status";
+        src -> cp.status = 'active' "r_cp_status";
         src -> cp.intent = 'plan' "r_cp_intent";
         src.subject as subject -> cp.subject = subject "r_cp_sub";
-        src.item as lmp_item check(linkId = 'lmp' and answer.count() > 0) then cp.period = create('Period') as period then {
+        src.item as lmp_item where(linkId = 'lmp') -> cp.period = create('Period') as period then {
             src -> period.start = evaluate(lmp_item, answer.value) "r_cp_per_st";
             src -> period.end = evaluate(lmp_item, answer.value + 9 'months') "r_cp_per_end";
         } "r_cp_per";
         // TODO src -> cp.careteam = ??
         src -> cp.addresses = reference(condition) "r_cp_condition";
-        src -> cp.goal = reference(goal) "r_cp_goal";???????????
-        src -> cp.code = create('CodeableConcept') as concept then {
-            src -> concept.coding = c("http://snomed.info/sct", "248991006") as coding then {
-                src -> coding.display = 'Number of live deliveries' "r_cp_cod_disp";
-            } "r_cp_cc_cod";
-            src -> concept.text = "Live Deliveries" "r_cp_cc_txt";
-        } "r_cp_cc";
-        src -> cp.value = evaluate(liv_del_item, answer.value) "r_cp_val";
-        src -> cp.encounter = reference(encounter) "r_cp_en";
-        src -> cp.category = create('CodeableConcept') as concept then {
-            src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/cpservation-category", 'survey', "Survey") "r_cp_cat_coding";
-            src -> concept.text = 'Survey' "r_cp_cat_text";
-        } "r_cp_cat";
-    } "r_cp_liv_del";
+        src -> cp.goal = reference(goal) "r_cp_goal";
+
+        src -> create('CodeableConcept') as concept,
+                create('Period') as period,
+                copy('in-progress') as status,
+                copy('First antenatal care contact') as description then
+            ExtractAncContactCode(src, concept),
+            ExtractFirstActivityDetail(src, status, concept, description, encounter, cp) "r_cp_acti_det_1";
+        src -> create('CodeableConcept') as concept,
+                create('Period') as period,
+                copy('scheduled') as status,
+                copy('Second contact to occur at 20 weeks of gestational age') as description then
+            ExtractAncContactCode(src, concept),
+            ExtractLmpPeriod_20_26(src, period),
+            ExtractActivityDetail(src, status, concept, description, period, cp) "r_cp_acti_det_2";
+        src -> create('CodeableConcept') as concept,
+                create('Period') as period,
+                copy('not-started') as status,
+                copy('Third contact to occur at 26 weeks of gestational age') as description then
+            ExtractAncContactCode(src, concept),
+            ExtractLmpPeriod_26_30(src, period),
+            ExtractActivityDetail(src, status, concept, description, period, cp) "r_cp_acti_det_3";
+        src -> create('CodeableConcept') as concept,
+                create('Period') as period,
+                copy('not-started') as status,
+                copy('Fourth contact to occur at 30 weeks of gestational age') as description then
+            ExtractAncContactCode(src, concept),
+            ExtractLmpPeriod_30_34(src, period),
+            ExtractActivityDetail(src, status, concept, description, period, cp) "r_cp_acti_det_4";
+        src -> create('CodeableConcept') as concept,
+                create('Period') as period,
+                copy('not-started') as status,
+                copy('Fifth contact to occur at 34 weeks of gestational age') as description then
+            ExtractAncContactCode(src, concept),
+            ExtractLmpPeriod_34_36(src, period),
+            ExtractActivityDetail(src, status, concept, description, period, cp) "r_cp_acti_det_5";
+        src -> create('CodeableConcept') as concept,
+                create('Period') as period,
+                copy('not-started') as status,
+                copy('Sixth contact to occur at 36 weeks of gestational age') as description then
+            ExtractAncContactCode(src, concept),
+            ExtractLmpPeriod_36_38(src, period),
+            ExtractActivityDetail(src, status, concept, description, period, cp) "r_cp_acti_det_6";
+        src -> create('CodeableConcept') as concept,
+                create('Period') as period,
+                copy('not-started') as status,
+                copy('Seventh contact to occur at 38 weeks of gestational age') as description then
+            ExtractAncContactCode(src, concept),
+            ExtractLmpPeriod_38_40(src, period),
+            ExtractActivityDetail(src, status, concept, description, period, cp) "r_cp_acti_det_7";
+        src -> create('CodeableConcept') as concept,
+                create('Period') as period,
+                copy('not-started') as status,
+                copy('Eighth contact to occur at 40 weeks of gestational age') as description then
+            ExtractAncContactCode(src, concept),
+            ExtractLmpPeriod_40_42(src, period),
+            ExtractActivityDetail(src, status, concept, description, period, cp) "r_cp_acti_det_8";
+        src -> create('CodeableConcept') as concept,
+                create('Period') as period,
+                copy('not-started') as status,
+                copy('Delivery') as description then
+            ExtractAncDeliveryCode(src, concept),
+            ExtractLmpPeriod_40_42(src, period),
+            ExtractActivityDetail(src, status, concept, description, period, cp) "r_cp_acti_det_9";
+
+    } "r_cp";
 }
+
+group ExtractAncContactCode(source src : QuestionnaireResponse, target concept: CodeableConcept){
+    src -> concept.coding = c("http://example.org/CodeSystem/encounter-type", "anc-contact") as coding then {
+        src -> coding.display = 'Antenatal care contact' "r_cp_cod_disp";
+    } "r_cp_cc_cod";
+    src -> concept.text = "Antenatal care contact" "r_cp_cc_txt";
+}
+
+group ExtractAncDeliveryCode(source src : QuestionnaireResponse, target concept: CodeableConcept){
+    src -> concept.coding = c("http://example.org/mySystem", "del") as coding then {
+        src -> coding.display = 'Delivery' "r_cp_cod_disp";
+    } "r_cp_cc_cod";
+    src -> concept.text = "Delivery" "r_cp_cc_txt";
+}
+
+group ExtractLmpPeriod_20_26(source src : QuestionnaireResponse, target period: Period){
+    src.item as lmp_item where(linkId = 'lmp') then {
+        src -> period.start = evaluate(lmp_item, answer.value + 20 weeks) "r_per_st";
+        src -> period.end = evaluate(lmp_item, answer.value + 26 weeks) "r_per_end";
+    } "r_period";
+}
+
+group ExtractLmpPeriod_26_30(source src : QuestionnaireResponse, target period: Period){
+    src.item as lmp_item where(linkId = 'lmp') then {
+        src -> period.start = evaluate(lmp_item, answer.value + 26 weeks) "r_per_st";
+        src -> period.end = evaluate(lmp_item, answer.value + 30 weeks) "r_per_end";
+    } "r_period";
+}
+
+group ExtractLmpPeriod_30_34(source src : QuestionnaireResponse, target period: Period){
+    src.item as lmp_item where(linkId = 'lmp') then {
+        src -> period.start = evaluate(lmp_item, answer.value + 30 weeks) "r_per_st";
+        src -> period.end = evaluate(lmp_item, answer.value + 34 weeks) "r_per_end";
+    } "r_period";
+}
+
+group ExtractLmpPeriod_34_36(source src : QuestionnaireResponse, target period: Period){
+    src.item as lmp_item where(linkId = 'lmp') then {
+        src -> period.start = evaluate(lmp_item, answer.value + 34 weeks) "r_per_st";
+        src -> period.end = evaluate(lmp_item, answer.value + 36 weeks) "r_per_end";
+    } "r_period";
+}
+
+group ExtractLmpPeriod_36_38(source src : QuestionnaireResponse, target period: Period){
+    src.item as lmp_item where(linkId = 'lmp') then {
+        src -> period.start = evaluate(lmp_item, answer.value + 36 weeks) "r_per_st";
+        src -> period.end = evaluate(lmp_item, answer.value + 38 weeks) "r_per_end";
+    } "r_period";
+}
+
+group ExtractLmpPeriod_38_40(source src : QuestionnaireResponse, target period: Period){
+    src.item as lmp_item where(linkId = 'lmp') then {
+        src -> period.start = evaluate(lmp_item, answer.value + 38 weeks) "r_per_st";
+        src -> period.end = evaluate(lmp_item, answer.value + 40 weeks) "r_per_end";
+    } "r_period";
+}
+
+group ExtractLmpPeriod_40_42(source src : QuestionnaireResponse, target period: Period){
+    src.item as lmp_item where(linkId = 'lmp') then {
+        src -> period.start = evaluate(lmp_item, answer.value + 40 weeks) "r_per_st";
+        src -> period.end = evaluate(lmp_item, answer.value + 42 weeks) "r_per_end";
+    } "r_period";
+}
+
+group ExtractFirstActivityDetail(source src : QuestionnaireResponse,
+    source status: code,
+    source detailCode: CodeableConcept,
+    source description: string,
+    source encounter: Encounter,
+    target careplan : CarePlan){
+    src -> careplan.activity = create('CarePlan_Activity') as activity then {
+        src -> activity.outcomeReference = reference(encounter) "r_cp_en_ref";
+        src -> activity.detail = create('CarePlan_ActivityDetail') as det then {
+            src -> det.kind = 'ServiceRequest' "r_act_det_kind";
+            src -> det.instantiatesCanonical = 'http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact' "r_act_det_inst_can";
+            src -> det.code = detailCode "r_act_det_cod";
+            src -> det.status = status "r_act_det_st";
+            // TODO det.performer = ??
+            src -> det.description = description "r_act_det_desc";
+        } "r_act_det";
+    } "r_cp_acti";
+}
+
+group ExtractActivityDetail(source src : QuestionnaireResponse,
+    source status: code,
+    source detailCode: CodeableConcept,
+    source description: string,
+    source period: Period,
+    target careplan : CarePlan){
+    src -> careplan.activity = create('CarePlan_Activity') as activity then {
+        src -> activity.detail = create('CarePlan_ActivityDetail') as det then {
+            src -> det.kind = 'ServiceRequest' "r_act_det_kind";
+            detailCode as cod where(text != 'Delivery') -> det.instantiatesCanonical = 'http://fhir.org/guides/who/anc-cds/PlanDefinition/anc-contact' "r_act_det_inst_can";
+            src -> det.code = detailCode "r_act_det_cod";
+            src -> det.status = status "r_act_det_st";
+            src -> det.scheduled = period "r_act_det_period";
+            // TODO det.performer = ??
+            src -> det.description = description "r_act_det_desc";
+        } "r_act_det";
+    } "r_cp_acti";
+}
+

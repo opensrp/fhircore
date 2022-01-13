@@ -18,26 +18,22 @@ package org.smartregister.fhircore.anc.util
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import java.util.Date
-import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Flag
+import org.hl7.fhir.r4.model.Goal
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.utils.StructureMapUtilities
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 
@@ -122,76 +118,116 @@ class RegisterUtilsTest : RobolectricTest() {
 
     val targetResource = transform(scu, structureMap, response, "ANCServiceEnrollment")
 
-    assertEquals(5, targetResource.entry.size)
+    assertEquals(9, targetResource.entry.size)
 
-    val condition = targetResource.entry[0].resource as Condition
-    val sampleCondition = "questionnaires/anc-service-enrollment/sample/condition.json".parseSampleResource() as Condition
+    val goal = targetResource.entry[0].resource as Goal
+    val sampleGoal =
+      "questionnaires/anc-service-enrollment/sample/goal.json".parseSampleResource() as Goal
+
+    assertResourceContent(sampleGoal, goal)
+
+    val condition = targetResource.entry[1].resource as Condition
+    val sampleCondition =
+      "questionnaires/anc-service-enrollment/sample/condition.json".parseSampleResource() as
+        Condition
 
     assertResourceContent(sampleCondition, condition)
 
-    val episode = targetResource.entry[0].resource as EpisodeOfCare
-    val sampleEpisode = "questionnaires/anc-service-enrollment/sample/episode.json".parseSampleResource() as EpisodeOfCare
+    val episode = targetResource.entry[2].resource as EpisodeOfCare
+    val sampleEpisode =
+      "questionnaires/anc-service-enrollment/sample/episode.json".parseSampleResource() as
+        EpisodeOfCare
+
+    assertEquals(condition.asReference().reference, episode.diagnosisFirstRep.condition.reference)
+    // replace with inline generated condition id to compare text
+    sampleEpisode.diagnosisFirstRep.condition = episode.diagnosisFirstRep.condition
 
     assertResourceContent(sampleEpisode, episode)
 
-    val encounter = targetResource.entry[0].resource as Encounter
-    val sampleEncounter = "questionnaires/anc-service-enrollment/sample/encounter.json".parseSampleResource() as Encounter
+    val encounter = targetResource.entry[3].resource as Encounter
+    val sampleEncounter =
+      "questionnaires/anc-service-enrollment/sample/encounter.json".parseSampleResource() as
+        Encounter
+
+    assertEquals(condition.asReference().reference, encounter.diagnosisFirstRep.condition.reference)
+    assertEquals(episode.asReference().reference, encounter.episodeOfCareFirstRep.reference)
+    // replace with inline generated condition, episode id to compare text
+    sampleEncounter.diagnosisFirstRep.condition = encounter.diagnosisFirstRep.condition
+    sampleEncounter.episodeOfCare = encounter.episodeOfCare
 
     assertResourceContent(sampleEncounter, encounter)
 
-    assertEquals(Encounter.EncounterStatus.INPROGRESS, encounter.status)
-    assertEquals("HH", encounter.class_.code)
-    assertEquals("home health", encounter.class_.display)
-    assertEquals("Antenatal", encounter.serviceType.text)
-    assertEquals("249", encounter.serviceType.codingFirstRep.code)
-    assertEquals("Antenatal care contact", encounter.typeFirstRep.text)
-    assertEquals("anc-contact", encounter.typeFirstRep.codingFirstRep.code)
-    assertEquals(Date().makeItReadable(), encounter.period.start.makeItReadable())
-    assertEquals("Patient/1234", encounter.subject.reference)
+    val lmp = targetResource.entry[4].resource as Observation
+    val sampleLmp =
+      "questionnaires/anc-service-enrollment/sample/obs_lmp.json".parseSampleResource() as
+        Observation
 
-    val lmp = targetResource.entry[1].resource as Observation
+    assertEquals(encounter.asReference().reference, lmp.encounter.reference)
+    // replace with inline generated encounter id to compare text
+    sampleLmp.encounter = lmp.encounter
 
-  //  validateObsBasic(lmp, encounter)
+    assertResourceContent(sampleLmp, lmp)
 
-    assertEquals("LMP", lmp.code.text)
-    assertEquals("21840007", lmp.code.codingFirstRep.code)
-    assertEquals("Date of last menstrual period", lmp.code.codingFirstRep.display)
-    assertEquals("02-Jul-2021", lmp.valueDateTimeType.value.makeItReadable())
+    val edd = targetResource.entry[5].resource as Observation
+    val sampleEdd =
+      "questionnaires/anc-service-enrollment/sample/obs_edd.json".parseSampleResource() as
+        Observation
 
-    val edd = targetResource.entry[2].resource as Observation
+    assertEquals(encounter.asReference().reference, edd.encounter.reference)
+    // replace with inline generated encounter id to compare text
+    sampleEdd.encounter = edd.encounter
 
-   // validateObsBasic(edd, encounter)
+    assertResourceContent(sampleEdd, edd)
 
-    assertEquals("EDD", edd.code.text)
-    assertEquals("161714006", edd.code.codingFirstRep.code)
-    assertEquals("Estimated date of delivery", edd.code.codingFirstRep.display)
-    assertEquals("02-Dec-2021", edd.valueDateTimeType.value.makeItReadable())
+    val gravida = targetResource.entry[6].resource as Observation
+    val sampleGravida =
+      "questionnaires/anc-service-enrollment/sample/obs_gravida.json".parseSampleResource() as
+        Observation
 
-    val gravida = targetResource.entry[3].resource as Observation
+    assertEquals(encounter.asReference().reference, gravida.encounter.reference)
+    // replace with inline generated encounter id to compare text
+    sampleGravida.encounter = gravida.encounter
 
-   // validateObsBasic(gravida, encounter)
+    assertResourceContent(sampleGravida, gravida)
 
-    assertEquals("Gravida", gravida.code.text)
-    assertEquals("246211005", gravida.code.codingFirstRep.code)
-    assertEquals("Number of previous pregnancies", gravida.code.codingFirstRep.display)
-    assertEquals(5, gravida.valueIntegerType.value)
+    val liveDel = targetResource.entry[7].resource as Observation
+    val sampleLiveDel =
+      "questionnaires/anc-service-enrollment/sample/obs_live_del.json".parseSampleResource() as
+        Observation
 
-    val liveDelivery = targetResource.entry[4].resource as Observation
+    assertEquals(encounter.asReference().reference, liveDel.encounter.reference)
+    // replace with inline generated encounter id to compare text
+    sampleLiveDel.encounter = liveDel.encounter
 
-  //  validateObsBasic(liveDelivery, encounter)
+    assertResourceContent(sampleLiveDel, liveDel)
 
-    assertEquals("Live Deliveries", liveDelivery.code.text)
-    assertEquals("248991006", liveDelivery.code.codingFirstRep.code)
-    assertEquals("Number of live deliveries", liveDelivery.code.codingFirstRep.display)
-    assertEquals(4, liveDelivery.valueIntegerType.value)
+    val careplan = targetResource.entry[8].resource as CarePlan
+    val sampleCareplan =
+      "questionnaires/anc-service-enrollment/sample/careplan.json".parseSampleResource() as CarePlan
+
+    assertEquals(goal.asReference().reference, careplan.goalFirstRep.reference)
+    assertEquals(condition.asReference().reference, careplan.addressesFirstRep.reference)
+    assertEquals(
+      episode.asReference().reference,
+      careplan.extension[0].value.let { it.castToReference(it) }.reference
+    )
+    assertEquals(
+      encounter.asReference().reference,
+      careplan.activityFirstRep.outcomeReference.first().reference
+    )
+    // replace with inline generated goal, condition, episode, encounter id to compare text
+    sampleCareplan.goal[0] = careplan.goal[0]
+    sampleCareplan.addresses[0] = careplan.addresses[0]
+    sampleCareplan.extension[0] = careplan.extension[0]
+    sampleCareplan.activityFirstRep.outcomeReferenceFirstRep.reference =
+      careplan.activityFirstRep.outcomeReferenceFirstRep.reference
+
+    assertResourceContent(sampleCareplan, careplan)
   }
 
-  fun assertResourceContent(expected: Resource, actual: Resource){
+  fun assertResourceContent(expected: Resource, actual: Resource) {
     // replace properties generating dynamically
-    actual.setPropertySafely("id", expected.idElement)
-
-    if (expected.resourceType == ResourceType.Observation)
-      actual.setPropertySafely("encounter", expected.getNamedProperty("encounter").values[0])
+    expected.setPropertySafely("id", actual.idElement)
 
     val expectedStr = expected.convertToString(true)
     val actualStr = actual.convertToString(true)

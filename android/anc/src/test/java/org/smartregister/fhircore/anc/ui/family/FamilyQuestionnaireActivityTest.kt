@@ -130,16 +130,11 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
     buildActivityFor(FamilyFormConstants.ANC_ENROLLMENT_FORM, false, "123")
 
     val familyRepositoryMockk = mockk<FamilyRepository>()
-    val fhirEngineMockk = mockk<FhirEngine>()
     familyQuestionnaireActivity.familyRepository = familyRepositoryMockk
-
-    coEvery { familyRepositoryMockk.enrollIntoAnc(any(), any()) } just runs
 
     val questionnaireResponse = buildPregnantQuestionnaireResponse(true)
 
     familyQuestionnaireActivity.postSaveSuccessful(questionnaireResponse)
-
-    coVerify { familyRepositoryMockk.enrollIntoAnc(any(), any()) }
 
     assertTrue(familyQuestionnaireActivity.isFinishing)
   }

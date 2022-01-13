@@ -23,20 +23,16 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.spyk
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
@@ -45,11 +41,11 @@ import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.util.RegisterConfiguration
 import org.smartregister.fhircore.anc.util.SearchFilter
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
 @HiltAndroidTest
@@ -106,23 +102,6 @@ class FamilyRepositoryTest : RobolectricTest() {
       Assert.assertEquals("Given2 Family2", families[1].name)
       Assert.assertEquals("2222", families[1].id)
     }
-  }
-
-  @Test
-  fun postEnrollIntoAncShouldExtractEntitiesAndCallAncRepository() = runBlockingTest {
-    coEvery { ancPatientRepository.enrollIntoAnc("1111", any()) } just runs
-
-    val questionnaireResponse =
-      QuestionnaireResponse().apply {
-        addItem().apply {
-          linkId = "lmp"
-          addAnswer().apply { this.value = DateTimeType() }
-        }
-      }
-
-    repository.enrollIntoAnc(questionnaireResponse, "1111")
-
-    coVerify { ancPatientRepository.enrollIntoAnc("1111", any()) }
   }
 
   @Test

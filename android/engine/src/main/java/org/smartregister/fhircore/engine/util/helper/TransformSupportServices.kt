@@ -21,6 +21,7 @@ import javax.inject.Singleton
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.EpisodeOfCare
@@ -59,6 +60,8 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "EpisodeOfCare_Diagnosis" -> EpisodeOfCare.DiagnosisComponent()
       "Encounter_Diagnosis" -> Encounter.DiagnosisComponent()
       "Encounter_Participant" -> Encounter.EncounterParticipantComponent()
+      "CarePlan_Activity" -> CarePlan.CarePlanActivityComponent()
+      "CarePlan_ActivityDetail" -> CarePlan.CarePlanActivityDetailComponent()
       else -> ResourceFactory.createResourceOrType(name)
     }
   }

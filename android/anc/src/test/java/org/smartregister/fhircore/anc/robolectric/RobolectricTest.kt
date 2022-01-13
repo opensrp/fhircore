@@ -23,11 +23,12 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.clearAllMocks
-import org.hl7.fhir.instance.model.api.IBaseResource
 import java.io.File
 import java.io.FileReader
+import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
@@ -46,7 +47,6 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.app.fakes.FakeKeyStore
 import org.smartregister.fhircore.engine.util.extension.asYyyyMmDd
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
-import java.util.Date
 
 @RunWith(FhircoreTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
@@ -89,21 +89,22 @@ abstract class RobolectricTest {
     return StructureMapUtilities(contextR4, transformSupportServices)
   }
 
-  fun StructureMapUtilities.worker(): IWorkerContext =
-    ReflectionHelpers.getField(this, "worker")
+  fun StructureMapUtilities.worker(): IWorkerContext = ReflectionHelpers.getField(this, "worker")
 
-  fun String.parseSampleResource(): IBaseResource = this.readFile().let {
-    it.replace("#TODAY", Date().asYyyyMmDd())
-      .replace("#NOW", DateTimeType.now().valueAsString)
-  }
-    .let {
-      FhirContext.forR4().newJsonParser().parseResource(it)
-    }
+  fun String.parseSampleResource(): IBaseResource =
+    this.readFile()
+      .let {
+        it.replace("#TODAY", Date().asYyyyMmDd()).replace("#NOW", DateTimeType.now().valueAsString)
+      }
+      .let { FhirContext.forR4().newJsonParser().parseResource(it) }
 
   fun Resource.convertToString(trimTime: Boolean) =
     FhirContext.forR4Cached().newJsonParser().encodeResourceToString(this).let {
       // replace time part 11:11:11+05:00 with xx:xx:xx+xx:xx
-      if (trimTime) it.replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}"), "xx:xx:xx+xx:xx")
+      // replace time part 11:11:11 with xx:xx:xx
+      if (trimTime)
+        it.replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}"), "xx:xx:xx+xx:xx")
+          .replace(Regex("\\d{2}:\\d{2}:\\d{2}"), "xx:xx:xx")
       else it
     }
 
@@ -123,9 +124,10 @@ abstract class RobolectricTest {
 
     val source = iParser.parseResource(QuestionnaireResponse::class.java, responseJson)
 
-    kotlin.runCatching { scu.transform(scu.worker(), source, map, targetResource) }.onFailure {
-      println(it.stackTraceToString())
-    }
+    kotlin
+      .runCatching { scu.transform(scu.worker(), source, map, targetResource) }
+      .onFailure { println(it.stackTraceToString()) }
+      .getOrThrow()
 
     println(iParser.encodeResourceToString(targetResource))
 

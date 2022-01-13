@@ -16,20 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
 import javax.inject.Inject
-import org.hl7.fhir.r4.context.SimpleWorkerContext
-import org.hl7.fhir.r4.model.Base
-import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Parameters
-import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
-import org.hl7.fhir.utilities.npm.ToolsVersion
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -38,7 +29,6 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest

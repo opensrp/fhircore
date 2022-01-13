@@ -37,12 +37,10 @@
               "code" : "PPRF",
               "display" : "primary performer"
             }
-          ]
+          ],
+          "text": "Primary Performer"
         }
-      ],
-      "individual" : {
-        "reference" : "Practitioner/TEST_PRACTITIONER"
-      }
+      ]
     }
   ],
   "period" : {

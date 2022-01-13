@@ -15,32 +15,27 @@
   "status": "active",
   "intent": "plan",
   "subject": {
-    "reference": "#RefPatient"
+    "reference": "Patient/TEST_PATIENT"
   },
   "period": {
-    "start": "#RefDateStart",
-    "end": "#RefDateEnd"
+    "start": "2021-07-02T00:00:00+00:00",
+    "end": "2022-04-02T00:00:00+00:00"
   },
-  "careTeam": [
-    {
-      "reference": "#RefCareTeam"
-    }
-  ],
   "addresses": [
     {
-      "reference": "#RefCondition"
+      "reference": "Condition/TEST_CONDITION"
     }
   ],
   "goal": [
     {
-      "reference": "#RefGoal"
+      "reference": "Goal/TEST_GOAL"
     }
   ],
   "activity": [
     {
       "outcomeReference": [
         {
-          "reference": "#RefEncounter"
+          "reference": "Encounter/TEST_ENCOUNTER"
         }
       ],
       "detail": {
@@ -59,11 +54,6 @@
           "text": "Antenatal care contact"
         },
         "status": "in-progress",
-        "performer": [
-          {
-            "reference": "#RefPractitioner"
-          }
-        ],
         "description": "First antenatal care contact"
       }
     },
@@ -85,14 +75,9 @@
         },
         "status": "scheduled",
         "scheduledPeriod": {
-          "start": "#RefDate20w",
-          "end": "#RefDate26w"
+          "start": "2021-11-19T00:00:00+00:00",
+          "end": "2021-12-31T00:00:00+00:00"
         },
-        "performer": [
-          {
-            "reference": "#RefPractitioner"
-          }
-        ],
         "description": "Second contact to occur at 20 weeks of gestational age"
       }
     },
@@ -114,14 +99,9 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "#RefDate26w",
-          "end": "#RefDate30w"
+          "start": "2021-12-31T00:00:00+00:00",
+          "end": "2022-01-28T00:00:00+00:00"
         },
-        "performer": [
-          {
-            "reference": "#RefPractitioner"
-          }
-        ],
         "description": "Third contact to occur at 26 weeks of gestational age"
       }
     },
@@ -143,14 +123,9 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "#RefDate30w",
-          "end": "#RefDate34w"
+          "start": "2022-01-28T00:00:00+00:00",
+          "end": "2022-02-25T00:00:00+00:00"
         },
-        "performer": [
-          {
-            "reference": "#RefPractitioner"
-          }
-        ],
         "description": "Fourth contact to occur at 30 weeks of gestational age"
       }
     },
@@ -172,14 +147,9 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "#RefDate34w",
-          "end": "#RefDate36w"
+          "start": "2022-02-25T00:00:00+00:00",
+          "end": "2022-03-11T00:00:00+00:00"
         },
-        "performer": [
-          {
-            "reference": "#RefPractitioner"
-          }
-        ],
         "description": "Fifth contact to occur at 34 weeks of gestational age"
       }
     },
@@ -201,14 +171,9 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "#RefDate36w",
-          "end": "#RefDate38w"
+          "start": "2022-03-11T00:00:00+00:00",
+          "end": "2022-03-25T00:00:00+00:00"
         },
-        "performer": [
-          {
-            "reference": "#RefPractitioner"
-          }
-        ],
         "description": "Sixth contact to occur at 36 weeks of gestational age"
       }
     },
@@ -230,14 +195,9 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "#RefDate38w",
-          "end": "#RefDate40w"
+          "start": "2022-03-25T00:00:00+00:00",
+          "end": "2022-04-08T00:00:00+00:00"
         },
-        "performer": [
-          {
-            "reference": "#RefPractitioner"
-          }
-        ],
         "description": "Seventh contact to occur at 38 weeks of gestational age"
       }
     },
@@ -259,14 +219,9 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "#RefDate40w",
-          "end": "#RefDateDeliveryEnd"
+          "start": "2022-04-08T00:00:00+00:00",
+          "end": "2022-04-22T00:00:00+00:00"
         },
-        "performer": [
-          {
-            "reference": "#RefPractitioner"
-          }
-        ],
         "description": "Eighth contact to occur at 40 weeks of gestational age"
       }
     },
@@ -277,21 +232,17 @@
           "coding": [
             {
               "system": "http://example.org/mySystem",
-              "code": "del"
+              "code": "del",
+              "display" : "Delivery"
             }
           ],
           "text": "Delivery"
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "#RefDateDeliveryStart",
-          "end": "#RefDateDeliveryEnd"
+          "start": "2022-04-08T00:00:00+00:00",
+          "end": "2022-04-22T00:00:00+00:00"
         },
-        "performer": [
-          {
-            "reference": "#RefPractitioner"
-          }
-        ],
         "description": "Delivery"
       }
     }

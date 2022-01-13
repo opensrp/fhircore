@@ -199,3 +199,5 @@ fun Resource.asReference(): Reference {
 
 fun Resource.setPropertySafely(name: String, value: Base) =
   kotlin.runCatching { this.setProperty(name, value) }.onFailure { Timber.w(it) }.getOrNull()
+
+fun ResourceType.generateUniqueId() = UUID.randomUUID().toString()

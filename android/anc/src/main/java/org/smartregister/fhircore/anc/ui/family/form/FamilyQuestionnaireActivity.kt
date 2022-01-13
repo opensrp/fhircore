@@ -25,9 +25,9 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
-import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils
 import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -78,7 +78,6 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
 
       when (questionnaireConfig.form) {
         FamilyFormConstants.ANC_ENROLLMENT_FORM -> {
-          familyRepository.enrollIntoAnc(questionnaireResponse, patientId)
           finish()
         }
         FamilyFormConstants.FAMILY_REGISTER_FORM -> {
@@ -97,7 +96,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     familyRepository.fhirEngine.load(Patient::class.java, response.subject.extractId()).run {
       val link =
         Patient.PatientLinkComponent().apply {
-          this.other = QuestionnaireUtils.asPatientReference(headId)
+          this.other = Reference().apply { reference = "Patient/$headId" }
           this.type = Patient.LinkType.REFER
         }
       this.addLink(link)

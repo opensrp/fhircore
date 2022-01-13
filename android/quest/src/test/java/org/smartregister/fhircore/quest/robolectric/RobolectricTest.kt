@@ -25,22 +25,22 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.clearAllMocks
+import java.io.File
+import java.io.FileReader
+import java.util.Date
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
 import org.hl7.fhir.utilities.npm.ToolsVersion
-import java.io.File
-import java.io.FileReader
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import org.junit.After
 import org.junit.AfterClass
 import org.junit.BeforeClass
@@ -53,7 +53,6 @@ import org.smartregister.fhircore.engine.util.extension.asYyyyMmDd
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.app.fakes.FakeKeyStore
 import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
-import java.util.Date
 
 @RunWith(FhircoreTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
@@ -87,13 +86,12 @@ abstract class RobolectricTest {
     return String(charArray)
   }
 
-  fun String.parseSampleResource(): IBaseResource = this.readFile().let {
-      it.replace("#TODAY", Date().asYyyyMmDd())
-        .replace("#NOW", DateTimeType.now().valueAsString)
-    }
+  fun String.parseSampleResource(): IBaseResource =
+    this.readFile()
       .let {
-        FhirContext.forR4().newJsonParser().parseResource(it)
+        it.replace("#TODAY", Date().asYyyyMmDd()).replace("#NOW", DateTimeType.now().valueAsString)
       }
+      .let { FhirContext.forR4().newJsonParser().parseResource(it) }
 
   fun Resource.convertToString(trimTime: Boolean) =
     FhirContext.forR4Cached().newJsonParser().encodeResourceToString(this).let {
@@ -116,8 +114,7 @@ abstract class RobolectricTest {
     return StructureMapUtilities(contextR4, transformSupportServices)
   }
 
-  fun StructureMapUtilities.worker(): IWorkerContext =
-    ReflectionHelpers.getField(this, "worker")
+  fun StructureMapUtilities.worker(): IWorkerContext = ReflectionHelpers.getField(this, "worker")
 
   fun transform(
     scu: StructureMapUtilities,
