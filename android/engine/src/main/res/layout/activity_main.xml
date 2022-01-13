@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="org.smartregister.fhircore.engine.nfc.MainNfcActivity"
+    android:padding="8dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Record file"
+        app:layout_constraintBottom_toBottomOf="@+id/switchMaterial"
+        app:layout_constraintEnd_toStartOf="@+id/switchMaterial"
+        app:layout_constraintTop_toTopOf="@+id/switchMaterial" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Binary file"
+        app:layout_constraintBottom_toBottomOf="@+id/switchMaterial"
+        app:layout_constraintStart_toEndOf="@+id/switchMaterial"
+        app:layout_constraintTop_toTopOf="@+id/switchMaterial" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switchMaterial"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewProto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scrollbars="vertical"
+        app:layout_constrainedHeight="true"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toTopOf="@+id/proto_btn"
+        app:layout_constraintEnd_toStartOf="@+id/view"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/switchMaterial"
+        tools:text="TextView" />
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="1dp"
+        android:layout_height="wrap_content"
+        android:background="@android:color/darker_gray"
+        app:layout_constrainedHeight="true"
+        app:layout_constraintBottom_toTopOf="@id/proto_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/switchMaterial" />
+
+    <TextView
+        android:id="@+id/textViewResult"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scrollbars="vertical"
+        app:layout_constrainedWidth="true"
+        app:layout_constrainedHeight="true"
+        app:layout_constraintBottom_toTopOf="@+id/proto_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/view"
+        app:layout_constraintTop_toBottomOf="@+id/switchMaterial"
+        tools:text="TextView" />
+
+    <Button
+        android:id="@+id/proto_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Generate Proto File"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewConnectionState"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/textViewCardState"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/proto_btn"
+        tools:text="Hello World!" />
+
+    <TextView
+        android:id="@+id/textViewCardState"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/write_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewConnectionState"
+        tools:text="Hello World!" />
+
+    <Button
+        android:id="@+id/init_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="INIT"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <Button
+        android:id="@+id/read_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="READ"
+        app:layout_constrainedWidth="true"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/init_btn"
+        app:layout_constraintEnd_toStartOf="@+id/read_intent_btn"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/read_intent_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="READ INTENT"
+        app:layout_constrainedWidth="true"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/init_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/read_btn" />
+
+    <Button
+        android:id="@+id/write_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="WRITE"
+        app:layout_constrainedWidth="true"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/read_btn"
+        app:layout_constraintEnd_toStartOf="@+id/write_intent_btn"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/write_intent_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="WRITE INTENT"
+        app:layout_constrainedWidth="true"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/read_intent_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/write_btn" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

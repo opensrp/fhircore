@@ -6,6 +6,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.famoco.desfireservicelib.DESFireServiceAccess
 import kotlinx.coroutines.Job
+import org.smartregister.fhircore.engine.databinding.ActivityMainBinding
+import org.smartregister.fhircore.engine.nfc.read.ReadNfcActivity
+import org.smartregister.fhircore.engine.nfc.write.WriteNfcActivity
+import android.os.Bundle
+import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.collect
 
 class MainNfcActivity : AppCompatActivity()  {
 

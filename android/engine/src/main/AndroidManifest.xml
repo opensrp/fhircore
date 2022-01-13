@@ -19,5 +19,16 @@
 
     <application>
         <activity android:name=".HiltActivityForTest" android:theme="@style/AppTheme" />
+        <activity
+            android:name="org.smartregister.fhircore.engine.nfc.read.ReadNfcActivity"
+            android:exported="false" />
+        <activity
+            android:name="org.smartregister.fhircore.engine.nfc.write.WriteNfcActivity"
+            android:exported="false" />
+        <activity
+            android:name="org.smartregister.fhircore.engine.nfc.MainNfcActivity"
+            android:exported="false">
+        </activity>
     </application>
+
 </manifest>
