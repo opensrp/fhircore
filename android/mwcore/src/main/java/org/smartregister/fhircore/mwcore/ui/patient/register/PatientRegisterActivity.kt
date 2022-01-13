@@ -29,6 +29,8 @@ import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.mwcore.R
+import org.smartregister.fhircore.mwcore.ui.fragments.AppointmentsFragment
+import org.smartregister.fhircore.mwcore.ui.fragments.TracingFragment
 import org.smartregister.fhircore.mwcore.util.MwCoreConfigClassification
 
 @AndroidEntryPoint
@@ -49,9 +51,19 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> {
     return listOf(
       NavigationMenuOption(
-        id = R.id.menu_item_clients,
-        title = getString(R.string.menu_clients),
+        id = R.id.menu_item_register,
+        title = getString(R.string.menu_register),
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_users)!!
+      ),
+      NavigationMenuOption(
+        id = R.id.menu_item_appointments,
+        title = getString(R.string.menu_appointments),
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_appoinments)!!
+      ),
+      NavigationMenuOption(
+        id = R.id.menu_item_tracing,
+        title = getString(R.string.menu_tracing),
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_tracing)!!
       ),
       NavigationMenuOption(
         id = R.id.menu_item_settings,
@@ -63,7 +75,19 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   override fun onNavigationOptionItemSelected(item: MenuItem): Boolean {
     when (item.itemId) {
-      R.id.menu_item_clients -> switchFragment(mainFragmentTag())
+      R.id.menu_item_register -> switchFragment(mainFragmentTag())
+      R.id.menu_item_appointments ->
+        switchFragment(
+          tag = AppointmentsFragment.TAG,
+          isRegisterFragment = false,
+          toolbarTitle = getString(R.string.menu_appointments)
+        )
+      R.id.menu_item_tracing ->
+        switchFragment(
+          tag = TracingFragment.TAG,
+          isRegisterFragment = false,
+          toolbarTitle = getString(R.string.menu_tracing)
+        )
       R.id.menu_item_settings ->
         switchFragment(
           tag = UserProfileFragment.TAG,
@@ -79,6 +103,8 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   override fun supportedFragments(): Map<String, Fragment> =
     mapOf(
       Pair(PatientRegisterFragment.TAG, PatientRegisterFragment()),
+      Pair(AppointmentsFragment.TAG, AppointmentsFragment()),
+      Pair(TracingFragment.TAG, TracingFragment()),
       Pair(UserProfileFragment.TAG, UserProfileFragment())
     )
 
