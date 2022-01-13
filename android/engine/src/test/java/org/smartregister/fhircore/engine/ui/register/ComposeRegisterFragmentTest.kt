@@ -161,7 +161,7 @@ class ComposeRegisterFragmentTest : RobolectricTest() {
       }
 
     @Composable
-    override fun ConstructRegisterList(pagingItems: LazyPagingItems<String>) {
+    override fun ConstructRegisterList(pagingItems: LazyPagingItems<String>, modifier: Modifier) {
       LazyColumn(modifier = Modifier) {
         items(pagingItems, key = { it }) {
           Text(text = it!!)
