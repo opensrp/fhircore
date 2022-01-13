@@ -98,6 +98,9 @@ dependencies {
 
     //Configure famoco sdk
     implementation fileTree(include: ['*.aar'], dir: 'libs')
+    compileOnly files('libs/desfireservice-lib-1.0.1-debug.aar')
+    compileOnly files('libs/famocodialog-1.1.0-release.aar')
+
     //Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0"
