@@ -21,21 +21,28 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 @AndroidEntryPoint
-class QuestPatientTestResultActivity : BaseMultiLanguageActivity() {
+class SimpleDetailsActivity : BaseMultiLanguageActivity() {
 
-  private lateinit var patientId: String
+  private lateinit var encounterId: String
 
-  val patientViewModel by viewModels<QuestPatientDetailViewModel>()
+  val viewModel by viewModels<SimpleDetailsViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: "1"
-    patientViewModel.onBackPressClicked.observe(this, { finish() })
-    patientViewModel.getDemographics(patientId)
-    setContent { AppTheme { QuestPatientTestResultScreen(patientViewModel) } }
+
+    encounterId = intent.extras?.getString(RECORD_ID_ARG)!!
+
+    viewModel.onBackPressClicked.observe(this, { if (it) finish() })
+
+    viewModel.loadData(encounterId)
+
+    setContent { AppTheme { SimpleDetailsScreen(viewModel) } }
+  }
+
+  companion object {
+    const val RECORD_ID_ARG = "RECORD_ID"
   }
 }
