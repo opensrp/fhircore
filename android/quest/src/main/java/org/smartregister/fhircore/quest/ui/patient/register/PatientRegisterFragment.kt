@@ -24,6 +24,8 @@ import androidx.paging.compose.LazyPagingItems
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Patient
+import org.smartregister.fhircore.engine.nfc.MainNfcActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.register.ComposeRegisterFragment
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
@@ -57,10 +59,13 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
   }
 
   override fun onItemClicked(listenerIntent: ListenerIntent, data: PatientItem) {
-    when (listenerIntent) {
+  /*  when (listenerIntent) {
       OpenPatientProfile -> navigateToDetails(data.id)
       else -> throw UnsupportedOperationException("Given ListenerIntent is not supported")
-    }
+    }*/
+    startActivity(
+      Intent(requireActivity(), MainNfcActivity::class.java)
+    )
   }
 
   override fun performFilter(
