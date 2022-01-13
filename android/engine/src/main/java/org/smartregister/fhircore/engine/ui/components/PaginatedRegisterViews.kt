@@ -181,6 +181,7 @@ fun PaginatedRegister(
   nextButtonClickListener: () -> Unit,
   modifier: Modifier = Modifier
 ) {
+  val bottomPadding = if (showResultsCount) 4.dp else 40.dp
   Column(modifier = modifier.fillMaxWidth().height(200.dp)) {
     ConstraintLayout(modifier = Modifier.fillMaxSize()) {
       val (topRef, bodyRef, bottomRef, searchFooterRef) = createRefs()
@@ -206,7 +207,7 @@ fun PaginatedRegister(
       ) { Text(text = "hidden", color = MaterialTheme.colors.primary) }
       Column(
         modifier =
-          modifier.padding(bottom = 25.dp).fillMaxSize().constrainAs(bodyRef) {
+          modifier.padding(bottom = bottomPadding).fillMaxSize().constrainAs(bodyRef) {
             height = Dimension.fillToConstraints
             start.linkTo(parent.start)
             top.linkTo(topRef.bottom)
