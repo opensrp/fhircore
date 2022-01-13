@@ -95,10 +95,12 @@ class ReportPatientSelectPageTest : RobolectricTest() {
 
   @Test
   fun testReportSelectPatientListPage() {
-    composeRule.setContent { ReportSelectPatientScreen(
+    composeRule.setContent {
+      ReportSelectPatientScreen(
         viewModel = viewModel,
         registerDataViewModel = registerDataViewModel
-    ) }
+      )
+    }
     composeRule.onNodeWithTag(REPORT_SELECT_PATIENT_LIST).assertExists()
     composeRule.onNodeWithTag(REPORT_SEARCH_PATIENT).assertExists()
   }

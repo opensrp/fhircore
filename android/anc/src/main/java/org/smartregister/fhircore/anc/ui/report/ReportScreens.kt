@@ -67,7 +67,6 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 
 const val TOOLBAR_TITLE = "toolbarTitle"
 const val TOOLBAR_BACK_ARROW = "toolbarBackArrow"
-const val REPORT_HOME_PRELOAD = "reportHomePreLoad"
 const val REPORT_MEASURE_LIST = "reportMeasureList"
 const val REPORT_MEASURE_ITEM = "reportMeasureItem"
 const val REPORT_FILTER_PAGE = "reportFiltertPage"
@@ -100,7 +99,7 @@ fun ReportView(
   registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>,
 ) {
   // Choose which screen to show based on the value in the ReportScreen from ReportState
-  when (reportViewModel.reportState.currentScreen) {
+  when (reportViewModel.currentScreen) {
     ReportViewModel.ReportScreen.HOME -> ReportHomeScreen(reportViewModel)
     ReportViewModel.ReportScreen.FILTER -> ReportFilterScreen(reportViewModel)
     ReportViewModel.ReportScreen.PICK_PATIENT ->
@@ -109,7 +108,6 @@ fun ReportView(
         registerDataViewModel = registerDataViewModel
       )
     ReportViewModel.ReportScreen.RESULT -> ReportResultScreen(reportViewModel)
-    ReportViewModel.ReportScreen.PREHOMElOADING -> ReportPreLoadingHomeScreen(reportViewModel)
   }
 }
 
@@ -190,7 +188,7 @@ fun DateSelectionBox(
       fontSize = 18.sp,
       modifier = Modifier.wrapContentWidth()
     )
-    Spacer(modifier = Modifier.height(4.dp))
+    Spacer(modifier = Modifier.height(16.dp))
     Row(
       horizontalArrangement = Arrangement.SpaceAround,
       verticalAlignment = Alignment.CenterVertically

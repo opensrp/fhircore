@@ -24,7 +24,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.engine.util.AssetUtil
-import org.smartregister.fhircore.engine.util.extension.decodeJson
 
 class ReportRepository
 @Inject

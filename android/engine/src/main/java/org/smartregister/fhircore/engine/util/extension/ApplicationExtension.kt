@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.util.extension
 import android.content.Context
 import android.content.res.AssetManager
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Order
@@ -41,6 +40,8 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import timber.log.Timber
 
 suspend fun FhirEngine.runOneTimeSync(
   sharedSyncStatus: MutableSharedFlow<State>,
@@ -125,18 +126,29 @@ suspend fun FhirEngine.loadPatientImmunizations(patientId: String): List<Immuniz
 
 suspend fun FhirEngine.loadCqlLibraryBundle(
   context: Context,
+  sharedPreferencesHelper: SharedPreferencesHelper,
   fhirOperator: FhirOperator,
-  jsonParser: IParser,
-  libraryBundlePath: String
+  resourcesBundlePath: String
 ) {
-  context.assets.open(libraryBundlePath, AssetManager.ACCESS_RANDOM).bufferedReader().use {
-    val bundle = jsonParser.parseResource(it) as Bundle
-    for (entry in bundle.entry) {
-      if (entry.resource.resourceType == ResourceType.Library) {
-        fhirOperator.loadLib(entry.resource as Library)
-      } else {
-        save(entry.resource)
+  try {
+    val jsonParser = FhirContext.forR4().newJsonParser()
+
+    val savedResources =
+      sharedPreferencesHelper.read(SharedPreferencesHelper.MEASURE_RESOURCES_LOADED, "false")
+    context.assets.open(resourcesBundlePath, AssetManager.ACCESS_RANDOM).bufferedReader().use {
+      val bundle = jsonParser.parseResource(it) as Bundle
+      for (entry in bundle.entry) {
+        if (entry.resource.resourceType == ResourceType.Library) {
+          fhirOperator.loadLib(entry.resource as Library)
+        } else {
+          if (!savedResources!!.toBooleanStrict()) {
+            save(entry.resource)
+          }
+        }
       }
+      sharedPreferencesHelper.write(SharedPreferencesHelper.MEASURE_RESOURCES_LOADED, "true")
     }
+  } catch (exception: Exception) {
+    Timber.e(exception)
   }
 }

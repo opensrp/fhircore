@@ -45,10 +45,8 @@ import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.anc.ui.anccare.register.AncRowClickListenerIntent
 import org.smartregister.fhircore.anc.ui.anccare.register.OpenPatientProfile
-import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.ListenerIntent
@@ -100,7 +98,7 @@ constructor(
   val filterValue
     get() = _filterValue
 
-  private val _isReadyToGenerateReport = MutableLiveData(true)
+  private val _isReadyToGenerateReport = MutableLiveData(false)
   val isReadyToGenerateReport: LiveData<Boolean>
     get() = _isReadyToGenerateReport
 
@@ -119,7 +117,7 @@ constructor(
     )
   }
 
-  var reportState: ReportState = ReportState()
+  var currentScreen by mutableStateOf(ReportScreen.HOME)
 
   fun getReportsTypeList(): Flow<PagingData<ReportItem>> {
     return Pager(PagingConfig(pageSize = PaginationUtil.DEFAULT_PAGE_SIZE)) { repository }.flow
@@ -135,13 +133,13 @@ constructor(
 
   fun updateSelectedPatient(patient: PatientItem) {
     selectedPatientItem.value = patient
-    reportState.currentScreen = ReportScreen.FILTER
+    currentScreen = ReportScreen.FILTER
   }
 
   fun onReportMeasureItemClicked(item: ReportItem) {
     setDefaultDates()
     selectedMeasureReportItem.value = item
-    reportState.currentScreen = ReportScreen.FILTER
+    currentScreen = ReportScreen.FILTER
   }
 
   private fun setDefaultDates() {
@@ -180,15 +178,15 @@ constructor(
   }
 
   fun onBackPressFromFilter() {
-    reportState.currentScreen = ReportScreen.HOME
+    currentScreen = ReportScreen.HOME
   }
 
   fun onBackPressFromPatientSearch() {
-    reportState.currentScreen = ReportScreen.FILTER
+    currentScreen = ReportScreen.FILTER
   }
 
   fun onBackPressFromResult() {
-    reportState.currentScreen = ReportScreen.FILTER
+    currentScreen = ReportScreen.FILTER
   }
 
   fun getSelectionDate(): Long {
@@ -222,7 +220,7 @@ constructor(
   }
 
   fun onGenerateReportPress() {
-    reportState.currentScreen = ReportScreen.RESULT
+    currentScreen = ReportScreen.RESULT
   }
 
   fun auxGenerateReport() {
@@ -248,8 +246,7 @@ constructor(
       endDateTimeMillis.value = endDate.time
       _endDate.value = formattedEndDate
     }
-    _isReadyToGenerateReport.value = true
-    reportState.currentScreen = ReportScreen.FILTER
+    currentScreen = ReportScreen.FILTER
   }
 
   fun fetchCqlFhirHelperData(
@@ -299,16 +296,11 @@ constructor(
     return patientData
   }
 
-  class ReportState {
-    var currentScreen by mutableStateOf(ReportScreen.PREHOMElOADING)
-  }
-
   enum class ReportScreen {
     HOME,
     FILTER,
     PICK_PATIENT,
     RESULT,
-    PREHOMElOADING
   }
 
   object PatientSelectionType {

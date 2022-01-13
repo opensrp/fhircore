@@ -32,13 +32,11 @@ import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.MeasureReport
-import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
@@ -104,7 +102,17 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       this,
       {
         if (it) {
-          showDatePicker()
+          MaterialDatePicker.Builder.dateRangePicker().apply {
+            setTitleText("Select dates")
+            setSelection(
+                androidx.core.util.Pair(
+                  MaterialDatePicker.thisMonthInUtcMilliseconds(),
+                  MaterialDatePicker.todayInUtcMilliseconds()
+                )
+              )
+              .build()
+              .show(supportFragmentManager, "DatePickerDialog")
+          }
         }
       }
     )
@@ -121,70 +129,8 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
               fhirEngine.loadCqlLibraryBundle(
                 context = this@ReportHomeActivity,
                 fhirOperator = fhirOperator,
-                jsonParser = fhirContext.newJsonParser(),
-                libraryBundlePath = "ANCIND01-bundle.json"
-              )
-
-              // Save patient
-              fhirEngine.save(
-                FhirContext.forR4()
-                  .newJsonParser()
-                  .parseResource(
-                    """
-                {
-                  "resourceType": "Patient",
-                  "id": "charity-otala-1",
-                  "meta": {
-                    "profile": [ "http://fhir.org/guides/who/anc-cds/StructureDefinition/anc-patient" ]
-                  },
-                  "extension": [ {
-                    "url": "http://fhir.org/guides/who/anc-cds/StructureDefinition/educationlevel",
-                    "valueCodeableConcept": {
-                      "coding": [ {
-                        "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
-                        "code": "ANC.B6.DE4",
-                        "display": "Primary school"
-                      } ]
-                    }
-                  }, {
-                    "url": "http://fhir.org/guides/who/anc-cds/StructureDefinition/occupation",
-                    "valueCodeableConcept": {
-                      "coding": [ {
-                        "system": "http://fhir.org/guides/who/anc-cds/CodeSystem/anc-custom-codes",
-                        "code": "ANC.B6.DE12",
-                        "display": "Informal employment (other)"
-                      } ]
-                    }
-                  } ],
-                  "identifier": [ {
-                    "use": "official",
-                    "system": "http://example.org/identifier",
-                    "value": "charity-otala-1"
-                  } ],
-                  "name": [ {
-                    "use": "official",
-                    "family": "Otala",
-                    "given": [ "Charity" ],
-                    "text": "Charity Otala"
-                  } ],
-                  "telecom": [ {
-                    "system": "phone",
-                    "value": "555-555-2003",
-                    "use": "mobile"
-                  } ],
-                  "birthDate": "1994-07-01",
-                  "address": [ {
-                    "use": "home",
-                    "text": "2222 Home Street"
-                  } ],
-                  "generalPractitioner": [ {
-                    "reference": "PractitionerRole/anc-practitionerrole-example"
-                  } ]
-                }
-
-              """.trimIndent()
-                  ) as
-                  Patient
+                sharedPreferencesHelper = sharedPreferencesHelper,
+                resourcesBundlePath = "measure/ANCIND01-bundle.json"
               )
 
               val measureReport: MeasureReport =
@@ -193,7 +139,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
                   start = "2020-01-01",
                   end = "2020-01-31",
                   reportType = "subject",
-                  subject = "charity-otala-1"
+                  subject = patientId
                 )
               Timber.i(FhirContext.forR4().newJsonParser().encodeResourceToString(measureReport))
             }
@@ -220,14 +166,9 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       {
         if (it.equals("Individual", true)) {
           reportViewModel.filterValue.postValue(Pair(RegisterFilterType.SEARCH_FILTER, ""))
-          reportViewModel.reportState.currentScreen = ReportScreen.PICK_PATIENT
+          reportViewModel.currentScreen = ReportScreen.PICK_PATIENT
         }
       }
-    )
-
-    reportViewModel.isReadyToGenerateReport.observe(
-      this,
-      { reportViewModel.reportState.currentScreen = ReportScreen.FILTER }
     )
 
     reportViewModel.filterValue.observe(
@@ -243,14 +184,14 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
                 filterValue = value,
                 registerFilter = this@ReportHomeActivity::performFilter
               )
-              reportViewModel.reportState.currentScreen = ReportScreen.PICK_PATIENT
+              reportViewModel.currentScreen = ReportScreen.PICK_PATIENT
             }
           } else {
             registerDataViewModel.run {
               showResultsCount(false)
               reloadCurrentPageData()
             }
-            reportViewModel.reportState.currentScreen = ReportScreen.PICK_PATIENT
+            reportViewModel.currentScreen = ReportScreen.PICK_PATIENT
           }
         }
       }
@@ -288,19 +229,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     }
   }
 
-  fun showDatePicker() {
-    MaterialDatePicker.Builder.datePicker().apply {
-      setSelection(reportViewModel.getSelectionDate())
-      val startDateMillis = reportViewModel.startDateTimeMillis.value ?: Date().time
-      val endDateMillis = reportViewModel.endDateTimeMillis.value ?: Date().time
-      val forStartOnly = if (reportViewModel.isChangingStartDate.value != false) 1L else 0L
-      setCalendarConstraints(limitRange(forStartOnly, startDateMillis, endDateMillis).build())
-      with(this.build()) {
-        show(supportFragmentManager, this.toString())
-        addOnPositiveButtonClickListener(reportViewModel::onDatePicked)
-      }
-    }
-  }
+  fun showDatePicker() {}
 
   /*  Limit selectable range to start and end Date provided */
   fun limitRange(

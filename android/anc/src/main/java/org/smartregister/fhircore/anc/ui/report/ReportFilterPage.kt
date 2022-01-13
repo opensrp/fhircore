@@ -34,10 +34,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -57,17 +57,30 @@ fun ReportFilterPage(
   onEndDatePress: () -> Unit,
   patientSelectionText: String,
   onPatientSelectionTypeChanged: (String) -> Unit,
-  generateReportEnabled: Boolean,
   onGenerateReportPress: () -> Unit,
   selectedPatient: PatientItem?
 ) {
+  var generateReportEnabled by remember { mutableStateOf(false) }
+
   Surface(color = colorResource(id = R.color.white)) {
     Column(modifier = Modifier.fillMaxSize().testTag(REPORT_FILTER_PAGE)) {
       TopBarBox(topBarTitle, onBackPress)
       Box(modifier = Modifier.padding(16.dp)) {
         Column {
-          DateSelectionBox(startDate, endDate, true, onStartDatePress, onEndDatePress)
-          Spacer(modifier = Modifier.size(16.dp))
+          DateSelectionBox(
+            startDate = startDate,
+            endDate = endDate,
+            canChange = true,
+            onStartDatePress = {
+              onStartDatePress()
+              generateReportEnabled = startDate.isNotEmpty() && endDate.isNotEmpty()
+            },
+            onEndDatePress = {
+              onEndDatePress()
+              generateReportEnabled = startDate.isNotEmpty() && endDate.isNotEmpty()
+            }
+          )
+          Spacer(modifier = Modifier.size(32.dp))
           PatientSelectionBox(patientSelectionText, selectedPatient, onPatientSelectionTypeChanged)
           Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Bottom) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
@@ -82,10 +95,8 @@ fun ReportFilterPage(
 
 @Composable
 fun ReportFilterScreen(viewModel: ReportViewModel) {
-
   val reportMeasureItem by remember { mutableStateOf(viewModel.selectedMeasureReportItem.value) }
   val patientSelectionType by remember { mutableStateOf(viewModel.patientSelectionType.value) }
-  val generateReportEnabled by remember { mutableStateOf(viewModel.isReadyToGenerateReport.value) }
   val selectedPatient by remember { mutableStateOf(viewModel.getSelectedPatient().value) }
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
@@ -99,7 +110,6 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
     onEndDatePress = viewModel::onEndDatePress,
     patientSelectionText = patientSelectionType ?: "All",
     onPatientSelectionTypeChanged = viewModel::onPatientSelectionTypeChanged,
-    generateReportEnabled = generateReportEnabled ?: true,
     onGenerateReportPress = viewModel::auxGenerateReport,
     selectedPatient = selectedPatient
   )
@@ -140,7 +150,6 @@ fun ReportFilterPreview() {
     onEndDatePress = {},
     patientSelectionText = "ALL",
     onPatientSelectionTypeChanged = {},
-    generateReportEnabled = false,
     onGenerateReportPress = {},
     selectedPatient = PatientItem()
   )

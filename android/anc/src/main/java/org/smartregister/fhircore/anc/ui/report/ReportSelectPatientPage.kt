@@ -126,7 +126,7 @@ fun SearchView(state: MutableState<TextFieldValue>, viewModel: ReportViewModel) 
       onValueChange = { value ->
         state.value = value
         viewModel.filterValue.postValue(Pair(RegisterFilterType.SEARCH_FILTER, value.text))
-        viewModel.reportState.currentScreen = ReportViewModel.ReportScreen.PICK_PATIENT
+        viewModel.currentScreen = ReportViewModel.ReportScreen.PICK_PATIENT
       },
       modifier = Modifier.fillMaxWidth().testTag(REPORT_SEARCH_PATIENT),
       textStyle = TextStyle(fontSize = 18.sp),
@@ -152,7 +152,7 @@ fun SearchView(state: MutableState<TextFieldValue>, viewModel: ReportViewModel) 
               viewModel.filterValue.postValue(
                 Pair(RegisterFilterType.SEARCH_FILTER, state.value.text)
               )
-              viewModel.reportState.currentScreen = ReportViewModel.ReportScreen.PICK_PATIENT
+              viewModel.currentScreen = ReportViewModel.ReportScreen.PICK_PATIENT
             }
           ) {
             Icon(
