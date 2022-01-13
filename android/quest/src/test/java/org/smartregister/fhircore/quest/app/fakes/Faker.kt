@@ -83,7 +83,7 @@ object Faker {
         identifier = listOf(Identifier().apply { value = "12345" })
       }
 
-    coEvery { patientRepository.fetchTestForms(any(), any()) } returns
+    coEvery { patientRepository.fetchTestForms(any()) } returns
       listOf(
         QuestionnaireConfig(
           appId = "quest",
@@ -127,7 +127,7 @@ object Faker {
   fun initPatientRepositoryEmptyMocks(patientRepository: PatientRepository) {
 
     coEvery { patientRepository.fetchDemographics(any()) } returns Patient()
-    coEvery { patientRepository.fetchTestForms(any(), any()) } returns emptyList()
+    coEvery { patientRepository.fetchTestForms(any()) } returns emptyList()
     coEvery { patientRepository.fetchTestResults(any()) } returns emptyList()
   }
 }
