@@ -478,10 +478,14 @@ class ResourceExtensionTest : RobolectricTest() {
   @Test
   fun `Resource#generateMissingId() should generate Id if empty`() {
     val resource = Patient()
+    resource.id = "1"
 
-    Assert.assertTrue(resource.logicalId.isEmpty())
     resource.generateMissingId()
+    Assert.assertEquals("1", resource.logicalId)
 
+    resource.id = null
+    resource.generateMissingId()
+    Assert.assertNotEquals("1", resource.logicalId)
     Assert.assertFalse(resource.logicalId.isEmpty())
   }
 
@@ -587,5 +591,14 @@ class ResourceExtensionTest : RobolectricTest() {
     val resource = Patient().apply { id = "123456" }
 
     Assert.assertEquals("Patient/123456", resource.referenceValue())
+  }
+
+  @Test
+  fun `Resource#isPatient() should return true if resource is valid`() {
+    val resource = Patient()
+    Assert.assertFalse(resource.isPatient("1"))
+
+    resource.id = "1"
+    Assert.assertTrue(resource.isPatient("1"))
   }
 }
