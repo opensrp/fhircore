@@ -24,6 +24,7 @@ import com.google.android.fhir.search.search
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -117,13 +118,13 @@ constructor(
       fhirEngine.load(Questionnaire::class.java, questionnaireId)
     }
 
+  suspend fun loadEncounter(id: String): Encounter =
+    withContext(dispatcherProvider.io()) { fhirEngine.load(Encounter::class.java, id) }
+
   private suspend fun searchQuestionnaireResponses(patientId: String): List<QuestionnaireResponse> =
     fhirEngine.search { filter(QuestionnaireResponse.SUBJECT) { value = "Patient/$patientId" } }
 
-  suspend fun fetchTestForms(
-    filter: SearchFilter,
-    appId: String = "quest"
-  ): List<QuestionnaireConfig> =
+  suspend fun fetchTestForms(filter: SearchFilter): List<QuestionnaireConfig> =
     withContext(dispatcherProvider.io()) {
       val result =
         fhirEngine.search<Questionnaire> {
@@ -140,9 +141,9 @@ constructor(
 
       result.map {
         QuestionnaireConfig(
-          appId = appId,
-          form = it.name,
-          title = it.title,
+          appId = configurationRegistry.appId,
+          form = it.name ?: it.logicalId,
+          title = it.title ?: it.name ?: it.logicalId,
           identifier = it.logicalId
         )
       }
