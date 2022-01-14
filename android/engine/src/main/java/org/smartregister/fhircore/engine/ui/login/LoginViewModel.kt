@@ -44,6 +44,7 @@ import org.smartregister.fhircore.engine.configuration.view.LoginViewConfigurati
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
+import org.smartregister.fhircore.engine.data.remote.model.response.PractitionerDetails
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseCallback
 import org.smartregister.fhircore.engine.data.remote.shared.ResponseHandler
@@ -115,12 +116,11 @@ constructor(
   private fun callPractitionerDetails(userResponse: UserInfo) {
     viewModelScope.launch(dispatcher.io()) {
       val bundle = accountAuthenticator.getPractitionerDetails(userResponse.sub!!)
-      bundle.entry.forEach {
-        val keyclockUtils = UserDetailsUtils(sharedPreferences)
-        keyclockUtils.updateUserDetailsFromPractitionerDetails(it.resource, userResponse)
-        keyclockUtils.storeKeyClockInfo(it.resource)
-        fhirEngine.save(it.resource)
-      }
+      val practitionerDetails = bundle.entry[0].resource as PractitionerDetails
+      val keyclockUtils = UserDetailsUtils(sharedPreferences)
+      keyclockUtils.updateUserDetailsFromPractitionerDetails(practitionerDetails, userResponse)
+      keyclockUtils.storeKeyClockInfo(practitionerDetails)
+      fhirEngine.save(practitionerDetails)
     }
   }
 

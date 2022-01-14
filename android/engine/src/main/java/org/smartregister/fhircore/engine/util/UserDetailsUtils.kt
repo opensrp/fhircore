@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.util
 import com.google.gson.Gson
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.data.remote.model.response.KeycloakUserDetails
 import org.smartregister.fhircore.engine.data.remote.model.response.PractitionerDetails
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
@@ -32,35 +31,17 @@ class UserDetailsUtils @Inject constructor(val sharedPreferences: SharedPreferen
     sharedPreferences.write(USER_INFO_SHARED_PREFERENCE_KEY, userInfo.encodeJson())
   }
 
-  // use a domain mapper
-  fun updateUserDetailsFromPractitionerDetails(resource: Resource, userResponse: UserInfo) {
-    val practitionerDetails = resource as PractitionerDetails
-    val userData = practitionerDetails.userDetail.userBioData
-    val location =
-      if (practitionerDetails.fhirPractitionerDetails.locationHierarchyList == null) ""
-      else practitionerDetails.fhirPractitionerDetails.locationHierarchyList.joinToString()
-    val familyName = if (userData.familyName == null) "" else userData.familyName.valueAsString
-    val givenName = if (userData.givenName == null) "" else userData.givenName.valueAsString
-    val name = if (userData.userName == null) "" else userData.userName.valueAsString
-    val preferredUsername =
-      if (userData.preferredName == null) "" else userData.preferredName.valueAsString
-
-    val userInfo =
-      UserInfo(
-        questionnairePublisher = userResponse.questionnairePublisher,
-        organization = userResponse.organization,
-        location = location,
-        familyName = familyName,
-        givenName = givenName,
-        name = name,
-        preferredUsername = preferredUsername,
-        sub = userResponse.sub
-      )
-    storeUserPreferences(userInfo = userInfo)
+  fun updateUserDetailsFromPractitionerDetails(
+    practitionerDetails: PractitionerDetails,
+    userResponse: UserInfo
+  ) {
+    storeUserPreferences(
+      userInfo =
+        UserInfoItemMapper.mapToDomainModel(practitionerDetails, domainModelSource = userResponse)
+    )
   }
 
-  fun storeKeyClockInfo(resource: Resource) {
-    val practitionerDetails = resource as PractitionerDetails
+  fun storeKeyClockInfo(practitionerDetails: PractitionerDetails) {
     val userData = practitionerDetails.userDetail as KeycloakUserDetails
     val gson = Gson()
     val json = gson.toJson(userData)
