@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Remove Family feature
 - ANC | Integrate Hilt Dependency Injection
 - ANC | Patient details show vital signs
+- ANC | Patient details show height, weight and BMI post computing BMI
 
 - Quest | Add the ability to search for patients by id
 - Quest | Add ability to view previous QuestionnaireResponse
@@ -53,7 +54,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Fixed forms loading smoothly
 - Quest | Fixed multiple entries of same test results on quest patient detail screen
 - Quest | Fixed mislabeling of questionnaire responses on quest patient detail screen
-
+- Quest | Fix patient registration with estimated age/dob
+- Engine | Fixed app crash when wrong appId is provided
+- Engine | Fixed login error message
 
 ### Changed
 - EIR | Updated overdue trigger flow for Vaccine Due date

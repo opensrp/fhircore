@@ -18,22 +18,43 @@ package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
+import com.google.android.fhir.datacapture.common.datatype.asStringValue
 import com.google.android.fhir.logicalId
 import java.util.Date
 import java.util.UUID
 import org.hl7.fhir.r4.model.Base
+import org.hl7.fhir.r4.model.BaseDateTimeType
+import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.PrimitiveType
+import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.Type
 import org.json.JSONException
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.ui.questionnaire.FhirCoreQuestionnaireFragment
 import timber.log.Timber
+
+fun Type?.valueToString(): String {
+  return if (this == null) ""
+  else if (this.isDateTime) (this as BaseDateTimeType).value.makeItReadable()
+  else if (this.isPrimitive) (this as PrimitiveType<*>).asStringValue()
+  else if (this is Coding) this.display ?: code
+  else if (this is CodeableConcept) this.stringValue()
+  else if (this is Quantity) this.value.toPlainString() else this.asStringValue()
+}
+
+fun CodeableConcept.stringValue(): String =
+  this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
 
 fun Resource.toJson(parser: IParser = FhirContext.forR4().newJsonParser()): String =
   parser.encodeResourceToString(this)
@@ -104,19 +125,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrE
   forEach { item ->
     if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
       item.readOnly = readOnly
-      item.extension =
-        listOf(
-          Extension().apply {
-            url =
-              "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression"
-            setValue(
-              Expression().apply {
-                language = "text/fhirpath"
-                expression = "$path.where(linkId = '${item.linkId}').answer.value"
-              }
-            )
-          }
-        )
+      item.createCustomExtensionsIfExist(path)
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').answer.item",
         readOnly
@@ -127,6 +136,46 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrE
         readOnly
       )
     }
+  }
+}
+
+private fun Questionnaire.QuestionnaireItemComponent.createCustomExtensionsIfExist(path: String) {
+  val list = mutableListOf<Extension>()
+  list.add(
+    Extension().apply {
+      url = "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression"
+      setValue(
+        Expression().apply {
+          language = "text/fhirpath"
+          expression =
+            "$path.where(linkId = '${this@createCustomExtensionsIfExist.linkId}').answer.value"
+        }
+      )
+    }
+  )
+  this.getExtensionByUrl(FhirCoreQuestionnaireFragment.BARCODE_URL)?.let {
+    list.add(
+      createCustomExtension(
+        FhirCoreQuestionnaireFragment.BARCODE_URL,
+        FhirCoreQuestionnaireFragment.BARCODE_NAME
+      )
+    )
+  }
+  this.getExtensionByUrl(FhirCoreQuestionnaireFragment.PHOTO_CAPTURE_URL)?.let {
+    list.add(
+      createCustomExtension(
+        FhirCoreQuestionnaireFragment.PHOTO_CAPTURE_URL,
+        FhirCoreQuestionnaireFragment.PHOTO_CAPTURE_NAME
+      )
+    )
+  }
+  this.extension = list
+}
+
+private fun createCustomExtension(url: String, name: String): Extension {
+  return Extension().apply {
+    this.url = url
+    setValue(StringType().apply { value = name })
   }
 }
 
@@ -157,11 +206,16 @@ fun Resource.generateMissingId() {
   if (logicalId.isBlank()) id = UUID.randomUUID().toString()
 }
 
+fun Resource.isPatient(patientId: String) =
+  this.resourceType == ResourceType.Patient && this.logicalId == patientId
+
 fun Resource.asReference(): Reference {
   val referenceValue = "${fhirType()}/$logicalId"
 
   return Reference().apply { this.reference = referenceValue }
 }
+
+fun Resource.referenceValue(): String = "${fhirType()}/$logicalId"
 
 fun Resource.setPropertySafely(name: String, value: Base) =
   kotlin.runCatching { this.setProperty(name, value) }.onFailure { Timber.w(it) }.getOrNull()

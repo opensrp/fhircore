@@ -22,18 +22,23 @@ import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
+import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.cql.LibraryEvaluator.Companion.OUTPUT_PARAMETER_KEY
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.patient.details.SimpleDetailsActivity.Companion.RECORD_ID_ARG
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import timber.log.Timber
 
@@ -48,7 +53,7 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: "1"
+    patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)!!
 
     patientViewModel.apply {
       val detailActivity = this@QuestPatientDetailActivity
@@ -72,7 +77,7 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
     when (id) {
       R.string.test_results ->
         startActivity(
-          Intent(this, QuestPatientTestResultActivity::class.java).apply {
+          Intent(this, SimpleDetailsActivity::class.java).apply {
             putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
           }
         )
@@ -109,7 +114,11 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
           if (it?.isNotBlank() == true) {
             progress.dismiss()
 
-            AlertDialogue.showInfoAlert(this@QuestPatientDetailActivity, message = it)
+            AlertDialogue.showInfoAlert(this, it, getString(R.string.run_cql_log))
+            // show separate alert for output resources generated
+            it.substringAfter(OUTPUT_PARAMETER_KEY, "").takeIf { it.isNotBlank() }?.let {
+              AlertDialogue.showInfoAlert(this, it, getString(R.string.run_cql_output))
+            }
           }
         }
       )
@@ -133,19 +142,35 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
   private fun onTestResultItemClickListener(questionnaireResponse: QuestionnaireResponse?) {
     if (questionnaireResponse != null) {
       if (questionnaireResponse.questionnaire != null) {
-        val questionnaireId = questionnaireResponse.questionnaire.split("/")[1]
-        val populationResources = ArrayList<Resource>().apply { add(questionnaireResponse) }
-        startActivity(
-          Intent(this, QuestionnaireActivity::class.java)
-            .putExtras(
-              QuestionnaireActivity.intentArgs(
-                clientIdentifier = patientId,
-                formName = questionnaireId,
-                readOnly = true,
-                populationResources = populationResources
-              )
+        // TODO https://github.com/opensrp/fhircore/issues/778
+        //  1- handle via config/menu, 2- pass encounterId from quest details screen
+        if (configurationRegistry.appId == "g6pd") {
+          val encounterId =
+            questionnaireResponse.contained
+              ?.find { it.resourceType == ResourceType.Encounter }
+              ?.logicalId
+          if (encounterId == null) showToast("Missing linked encounter. Invalid data")
+          else
+            startActivity(
+              Intent(this, SimpleDetailsActivity::class.java).apply {
+                putExtra(RECORD_ID_ARG, encounterId.replace("#", ""))
+              }
             )
-        )
+        } else {
+          val questionnaireId = questionnaireResponse.questionnaire.split("/")[1]
+          val populationResources = ArrayList<Resource>().apply { add(questionnaireResponse) }
+          startActivity(
+            Intent(this, QuestionnaireActivity::class.java)
+              .putExtras(
+                QuestionnaireActivity.intentArgs(
+                  clientIdentifier = patientId,
+                  formName = questionnaireId,
+                  readOnly = true,
+                  populationResources = populationResources
+                )
+              )
+          )
+        }
       } else {
         Toast.makeText(
             this,

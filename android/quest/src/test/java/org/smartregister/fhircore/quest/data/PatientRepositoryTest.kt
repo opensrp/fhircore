@@ -22,12 +22,15 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
@@ -37,12 +40,15 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.quest.app.fakes.Faker.buildPatient
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.genderFull
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
+import org.smartregister.fhircore.quest.util.loadAdditionalData
 
 @HiltAndroidTest
 class PatientRepositoryTest : RobolectricTest() {
@@ -50,6 +56,8 @@ class PatientRepositoryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var patientItemMapper: PatientItemMapper
+  @Inject lateinit var accountAuthenticator: AccountAuthenticator
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   private val fhirEngine: FhirEngine = mockk()
 
@@ -58,8 +66,14 @@ class PatientRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    configurationRegistry.loadAppConfigurations("g6pd", accountAuthenticator) {}
     repository =
-      PatientRepository(fhirEngine, patientItemMapper, coroutineTestRule.testDispatcherProvider)
+      PatientRepository(
+        fhirEngine,
+        patientItemMapper,
+        coroutineTestRule.testDispatcherProvider,
+        configurationRegistry
+      )
   }
 
   @Test
@@ -75,6 +89,8 @@ class PatientRepositoryTest : RobolectricTest() {
 
   @Test
   fun testLoadDataShouldReturnPatientItemList() = runBlockingTest {
+    mockkStatic(::loadAdditionalData)
+    coEvery { loadAdditionalData(any(), any(), any()) } returns listOf()
     coEvery { fhirEngine.search<Patient>(any()) } returns
       listOf(buildPatient("1234", "Doe", "John", 1, Enumerations.AdministrativeGender.FEMALE))
     coEvery { fhirEngine.count(any()) } returns 1
@@ -87,6 +103,7 @@ class PatientRepositoryTest : RobolectricTest() {
     Assert.assertEquals("Female", data[0].genderFull())
 
     coVerify { fhirEngine.search<Patient>(any()) }
+    unmockkStatic(::loadAdditionalData)
   }
 
   @Test
@@ -146,6 +163,20 @@ class PatientRepositoryTest : RobolectricTest() {
   }
 
   @Test
+  fun testLoadEncounterShouldReturnNonEmptyEncounter() = runBlockingTest {
+    coEvery { fhirEngine.load(Encounter::class.java, any()) } returns
+      Encounter().apply {
+        id = "1"
+        status = Encounter.EncounterStatus.INPROGRESS
+      }
+
+    val result = repository.loadEncounter("1")
+
+    Assert.assertEquals("1", result.id)
+    Assert.assertEquals(Encounter.EncounterStatus.INPROGRESS, result.status)
+  }
+
+  @Test
   fun testGetQuestionnaireOfQuestionnaireResponseShouldReturnEmptyQuestionnaire() {
     coroutineTestRule.runBlockingTest {
       coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns Questionnaire()
@@ -174,6 +205,38 @@ class PatientRepositoryTest : RobolectricTest() {
       with(results.first()) {
         Assert.assertEquals("g6pd-test", form)
         Assert.assertEquals("G6PD Test", title)
+      }
+    }
+
+  @Test
+  fun testFetchTestFormShouldHandleNullNameAndTitle() =
+    coroutineTestRule.runBlockingTest {
+      coEvery { fhirEngine.search<Questionnaire>(any()) } returns
+        listOf(Questionnaire().apply { id = "1234" })
+
+      val results = repository.fetchTestForms(SearchFilter("", "abc", "cde"))
+
+      with(results.first()) {
+        Assert.assertEquals("1234", form)
+        Assert.assertEquals("1234", title)
+      }
+    }
+
+  @Test
+  fun testFetchTestFormShouldHandleNullTitle() =
+    coroutineTestRule.runBlockingTest {
+      coEvery { fhirEngine.search<Questionnaire>(any()) } returns
+        listOf(
+          Questionnaire().apply {
+            id = "1234"
+            name = "Form name"
+          }
+        )
+
+      val results = repository.fetchTestForms(SearchFilter("", "abc", "cde"))
+      with(results.first()) {
+        Assert.assertEquals("Form name", form)
+        Assert.assertEquals("Form name", title)
       }
     }
 }

@@ -58,6 +58,7 @@ class RecordVaccineActivity : QuestionnaireActivity() {
 
           // method below triggers save success automatically
           questionnaireViewModel.saveBundleResources(bundle)
+          questionnaireViewModel.extractionProgress.postValue(true)
         } else dismissSaveProcessing()
       } else handleExtractionError(questionnaireResponse)
     }

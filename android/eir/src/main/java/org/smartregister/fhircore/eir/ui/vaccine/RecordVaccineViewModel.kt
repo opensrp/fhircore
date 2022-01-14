@@ -26,6 +26,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.eir.data.PatientRepository
 import org.smartregister.fhircore.eir.data.model.PatientVaccineSummary
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireViewModel
@@ -43,7 +44,8 @@ constructor(
   transformSupportServices: TransformSupportServices,
   val patientRepository: PatientRepository,
   dispatcherProvider: DispatcherProvider,
-  sharedPreferencesHelper: SharedPreferencesHelper
+  sharedPreferencesHelper: SharedPreferencesHelper,
+  libraryEvaluator: LibraryEvaluator
 ) :
   QuestionnaireViewModel(
     fhirEngine,
@@ -51,7 +53,8 @@ constructor(
     configurationRegistry,
     transformSupportServices,
     dispatcherProvider,
-    sharedPreferencesHelper
+    sharedPreferencesHelper,
+    libraryEvaluator
   ) {
 
   suspend fun loadLatestVaccine(patientId: String): PatientVaccineSummary? {

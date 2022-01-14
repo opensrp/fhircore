@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import java.io.ByteArrayOutputStream
 
 fun Bitmap.encodeToByteArray(): ByteArray {
@@ -24,4 +25,8 @@ fun Bitmap.encodeToByteArray(): ByteArray {
     this.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
     return outputStream.toByteArray()
   }
+}
+
+fun ByteArray.decodeToBitmap(offset: Int = 0): Bitmap {
+  return BitmapFactory.decodeByteArray(this, offset, this.size)
 }

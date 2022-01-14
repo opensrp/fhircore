@@ -27,13 +27,13 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
-import io.mockk.verify
 import kotlinx.coroutines.test.runBlockingTest
-import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -79,8 +79,10 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
     hiltRule.inject()
     Faker.initPatientRepositoryMocks(patientRepository)
 
+    val intent =
+      Intent().apply { this.putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "123") }
     questPatientDetailActivityController =
-      Robolectric.buildActivity(QuestPatientDetailActivity::class.java)
+      Robolectric.buildActivity(QuestPatientDetailActivity::class.java, intent)
     questPatientDetailActivity = spyk(questPatientDetailActivityController.create().resume().get())
   }
 
@@ -99,8 +101,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   @Test
   fun testOnMenuItemClickListenerShouldStartQuestPatientTestResultActivity() {
     questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.test_results)
-    val expectedIntent =
-      Intent(questPatientDetailActivity, QuestPatientTestResultActivity::class.java)
+    val expectedIntent = Intent(questPatientDetailActivity, SimpleDetailsActivity::class.java)
     val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
@@ -126,19 +127,18 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
     val fhirEngineMockk = mockk<FhirEngine>()
     every { patientRepository.fhirEngine } returns fhirEngineMockk
-    coEvery { fhirEngineMockk.load(Patient::class.java, any()) } returns Patient()
+    coEvery { fhirEngineMockk.load(Patient::class.java, any()) } returns
+      Patient().apply { id = "123" }
     coEvery { fhirEngineMockk.load(Library::class.java, any()) } returns Library()
     coEvery { fhirEngineMockk.search<Condition>(any()) } returns listOf()
     coEvery { fhirEngineMockk.search<Observation>(any()) } returns listOf()
-    every { libraryEvaluator.createBundle(any()) } returns Bundle()
-    every { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) } returns listOf("1", "2")
+    coEvery { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) } returns listOf("1", "2")
 
     questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.run_cql)
 
     Assert.assertNotNull(ShadowAlertDialog.getLatestAlertDialog())
 
-    verify { libraryEvaluator.createBundle(any()) }
-    verify { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) }
+    coVerify { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) }
 
     val lastAlert = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
 
@@ -169,6 +169,12 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnTestResultItemClickListenerShouldStartQuestionnaireActivity() {
+    questPatientDetailActivity.configurationRegistry.appId = "quest"
+    questPatientDetailActivity.configurationRegistry.configurationsMap.put(
+      "quest|patient_register",
+      RegisterViewConfiguration("", "", "", "", "", "", "")
+    )
+
     questPatientDetailActivity.patientViewModel.onTestResultItemClickListener(
       QuestionnaireResponse().apply { questionnaire = "Questionnaire/12345" }
     )
@@ -179,6 +185,28 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
     Assert.assertEquals("12345", actualIntent.getStringExtra(QUESTIONNAIRE_ARG_FORM))
     Assert.assertEquals(true, actualIntent.getBooleanExtra(QUESTIONNAIRE_READ_ONLY, false))
+  }
+
+  // TODO https://github.com/opensrp/fhircore/issues/778
+  @Test
+  fun testOnTestResultItemClickListenerShouldStartSimpleDetailsActivityForG6pd() {
+    questPatientDetailActivity.configurationRegistry.appId = "g6pd"
+    questPatientDetailActivity.configurationRegistry.configurationsMap.put(
+      "g6pd|patient_register",
+      RegisterViewConfiguration("g6pd", "", "", "", "", "", "")
+    )
+
+    questPatientDetailActivity.patientViewModel.onTestResultItemClickListener(
+      QuestionnaireResponse().apply {
+        questionnaire = "Questionnaire/12345"
+        contained.add(Encounter().apply { id = "12345" })
+      }
+    )
+
+    val expectedIntent = Intent(questPatientDetailActivity, SimpleDetailsActivity::class.java)
+    val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test
