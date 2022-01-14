@@ -55,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | Fixed multiple entries of same test results on quest patient detail screen
 - Quest | Fixed mislabeling of questionnaire responses on quest patient detail screen
 - Quest | Fix patient registration with estimated age/dob
+- Quest | Fix patient register data list items display
 - Engine | Fixed app crash when wrong appId is provided
 - Engine | Fixed login error message
 

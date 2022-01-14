@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
+import android.content.Intent
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.testing.BindValue
@@ -42,11 +43,12 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.patient.details.SimpleDetailsActivity.Companion.RECORD_ID_ARG
 
 @HiltAndroidTest
-class QuestPatientTestResultActivityTest : RobolectricTest() {
+class SimpleDetailsActivityTest : RobolectricTest() {
 
-  private lateinit var questPatientTestResultActivity: QuestPatientTestResultActivity
+  private lateinit var simpleDetailsActivity: SimpleDetailsActivity
 
   @BindValue val patientRepository: PatientRepository = mockk()
 
@@ -61,20 +63,22 @@ class QuestPatientTestResultActivityTest : RobolectricTest() {
     hiltRule.inject()
     configurationRegistry.loadAppConfigurations("quest", accountAuthenticator) {}
     Faker.initPatientRepositoryMocks(patientRepository)
-    questPatientTestResultActivity =
-      Robolectric.buildActivity(QuestPatientTestResultActivity::class.java).create().resume().get()
+
+    val intent = Intent().putExtra(RECORD_ID_ARG, "1234")
+    simpleDetailsActivity =
+      Robolectric.buildActivity(SimpleDetailsActivity::class.java, intent).create().resume().get()
   }
 
   @After
   override fun tearDown() {
     super.tearDown()
-    questPatientTestResultActivity.finish()
+    simpleDetailsActivity.finish()
   }
 
   @Test
   fun testOnBackPressListenerShouldCallFinishActivity() {
-    questPatientTestResultActivity.patientViewModel.onBackPressed(true)
-    Assert.assertTrue(questPatientTestResultActivity.isFinishing)
+    simpleDetailsActivity.viewModel.onBackPressed(true)
+    Assert.assertTrue(simpleDetailsActivity.isFinishing)
   }
 
   @Test

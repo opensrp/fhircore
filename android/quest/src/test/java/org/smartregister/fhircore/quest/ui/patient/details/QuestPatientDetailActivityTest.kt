@@ -33,6 +33,7 @@ import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -100,8 +101,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   @Test
   fun testOnMenuItemClickListenerShouldStartQuestPatientTestResultActivity() {
     questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.test_results)
-    val expectedIntent =
-      Intent(questPatientDetailActivity, QuestPatientTestResultActivity::class.java)
+    val expectedIntent = Intent(questPatientDetailActivity, SimpleDetailsActivity::class.java)
     val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
@@ -169,6 +169,12 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
 
   @Test
   fun testOnTestResultItemClickListenerShouldStartQuestionnaireActivity() {
+    questPatientDetailActivity.configurationRegistry.appId = "quest"
+    questPatientDetailActivity.configurationRegistry.configurationsMap.put(
+      "quest|patient_register",
+      RegisterViewConfiguration("", "", "", "", "", "", "")
+    )
+
     questPatientDetailActivity.patientViewModel.onTestResultItemClickListener(
       QuestionnaireResponse().apply { questionnaire = "Questionnaire/12345" }
     )
@@ -179,6 +185,28 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
     Assert.assertEquals("12345", actualIntent.getStringExtra(QUESTIONNAIRE_ARG_FORM))
     Assert.assertEquals(true, actualIntent.getBooleanExtra(QUESTIONNAIRE_READ_ONLY, false))
+  }
+
+  // TODO https://github.com/opensrp/fhircore/issues/778
+  @Test
+  fun testOnTestResultItemClickListenerShouldStartSimpleDetailsActivityForG6pd() {
+    questPatientDetailActivity.configurationRegistry.appId = "g6pd"
+    questPatientDetailActivity.configurationRegistry.configurationsMap.put(
+      "g6pd|patient_register",
+      RegisterViewConfiguration("g6pd", "", "", "", "", "", "")
+    )
+
+    questPatientDetailActivity.patientViewModel.onTestResultItemClickListener(
+      QuestionnaireResponse().apply {
+        questionnaire = "Questionnaire/12345"
+        contained.add(Encounter().apply { id = "12345" })
+      }
+    )
+
+    val expectedIntent = Intent(questPatientDetailActivity, SimpleDetailsActivity::class.java)
+    val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
+
+    Assert.assertEquals(expectedIntent.component, actualIntent.component)
   }
 
   @Test
