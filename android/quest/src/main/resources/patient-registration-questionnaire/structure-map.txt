@@ -63,8 +63,18 @@ group ExtractPregnancyCondition(source src : QuestionnaireResponse, target bundl
         	src -> bundle.entry as entry, entry.resource = create('Condition') as cnd then {
     	    	src -> cnd.id = uuid() "r_c_id";
     	    	src -> cnd.recordedDate = evaluate(src, now()) "r_c_rec_date";
-    	    	src -> cnd.clinicalStatus = cc("http://terminology.hl7.org/CodeSystem/condition-clinical", 'active') "r_c_clinical_st";
-    	    	src -> cnd.verificationStatus = cc("http://terminology.hl7.org/CodeSystem/condition-ver-status", 'confirmed') "r_c_verif_st";
+    	    	src -> cnd.clinicalStatus = create('CodeableConcept') as concept then {
+                    src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/condition-clinical", "active") as coding then {
+                        src -> coding.display = 'Active' "r_c_ct_cod_disp";
+                    } "r_c_ct_coding";
+                    src -> concept.text = "Active" "r_c_ct_text";
+                } "r_c_ct";
+    	    	src -> cnd.verificationStatus = create('CodeableConcept') as concept then {
+                    src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/condition-ver-status", "confirmed") as coding then {
+                        src -> coding.display = 'Confirmed' "r_c_vs_cod_disp";
+                    } "r_c_vs_coding";
+                    src -> concept.text = "Confirmed" "r_c_vs_text";
+                } "r_c_vs";
     	    	src -> cnd.subject = reference(patient) "r_c_sub";
     	    	src -> cnd.code = create('CodeableConcept') as ccPreg then {
                   src -> ccPreg.coding = evaluate(item_preg, $this.answer.value) "r_c_cod_cod";

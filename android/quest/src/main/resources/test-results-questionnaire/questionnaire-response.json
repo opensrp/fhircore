@@ -17,7 +17,7 @@
   },
   "questionnaire": "Questionnaire/3440",
   "subject": {
-    "reference": "Patient/7c0ae762-1abb-4aa5-b9f1-611300a3d2b3"
+    "reference": "Patient/TEST_PATIENT"
   },
   "authored": "2021-12-02T14:26:40+07:00",
   "item": [ {
@@ -26,7 +26,7 @@
     "linkId": "result_type",
     "answer": [ {
       "valueCoding": {
-        "system": "https://www.snomed.org",
+        "system": "http://snomed.info/sct",
         "code": "410680006",
         "display": "Number"
       }

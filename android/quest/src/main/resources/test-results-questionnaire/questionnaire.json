@@ -64,19 +64,19 @@
     "required": true,
     "answerOption": [ {
       "valueCoding": {
-        "system": "https://www.snomed.org",
+        "system": "http://snomed.info/sct",
         "code": "410680006",
         "display": "Number"
       }
     }, {
       "valueCoding": {
-        "system": "https://www.snomed.org",
+        "system": "http://snomed.info/sct",
         "code": "405358009",
         "display": "Error"
       }
     }, {
       "valueCoding": {
-        "system": "https://www.snomed.org",
+        "system": "http://snomed.info/sct",
         "code": "385432009",
         "display": "N/A"
       }
@@ -88,7 +88,7 @@
     } ],
     "linkId": "haemoglobin_level",
     "code": [ {
-      "system": "https://www.snomed.org",
+      "system": "http://snomed.info/sct",
       "code": "104142005",
       "display": "Plasma haemoglobin level"
     } ],
@@ -98,19 +98,19 @@
       "question": "result_type",
       "operator": "=",
       "answerCoding": {
-        "system": "https://www.snomed.org",
+        "system": "http://snomed.info/sct",
         "code": "385432009"
       }
     } ],
     "answerOption": [ {
       "valueCoding": {
-        "system": "https://www.snomed.org",
+        "system": "http://snomed.info/sct",
         "code": "75540009",
         "display": "High"
       }
     }, {
       "valueCoding": {
-        "system": "https://www.snomed.org",
+        "system": "http://snomed.info/sct",
         "code": "62482003",
         "display": "Low"
       }
@@ -138,14 +138,14 @@
       "question": "result_type",
       "operator": "=",
       "answerCoding": {
-        "system": "https://www.snomed.org",
+        "system": "http://snomed.info/sct",
         "code": "410680006"
       }
     }, {
       "question": "result_type",
       "operator": "=",
       "answerCoding": {
-        "system": "https://www.snomed.org",
+        "system": "http://snomed.info/sct",
         "code": "385432009"
       }
     } ],
@@ -174,14 +174,14 @@
       "question": "result_type",
       "operator": "=",
       "answerCoding": {
-        "system": "https://www.snomed.org",
+        "system": "http://snomed.info/sct",
         "code": "410680006"
       }
     }, {
       "question": "result_type",
       "operator": "=",
       "answerCoding": {
-        "system": "https://www.snomed.org",
+        "system": "http://snomed.info/sct",
         "code": "385432009"
       }
     } ],
@@ -199,14 +199,14 @@
       "question": "result_type",
       "operator": "=",
       "answerCoding": {
-        "system": "https://www.snomed.org",
+        "system": "http://snomed.info/sct",
         "code": "410680006"
       }
     }, {
       "question": "result_type",
       "operator": "=",
       "answerCoding": {
-        "system": "https://www.snomed.org",
+        "system": "http://snomed.info/sct",
         "code": "385432009"
       }
     } ],
