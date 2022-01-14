@@ -14,8 +14,9 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColorSecondary">@color/white</item>
         <item name="android:listDivider">@color/white_slightly_opaque</item>
-        <item name="questionnaire_theme">@style/Theme.MaterialComponents.Light.DarkActionBar</item>
-        <item name="groupHeaderTextAppearance">@style/TextAppearance.MaterialComponents.Subtitle2
+        <!--<item name="questionnaire_theme">@style/Theme.MaterialComponents.Light.DarkActionBar</item>-->
+        <item name="questionnaire_theme">@style/FhirCoreQuestionnaireTheme</item>
+        <item name="groupHeaderTextAppearanceQuestionnaire">@style/TextAppearance.MaterialComponents.Subtitle2
         </item>
     </style>
 
@@ -23,6 +24,8 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
+
+    <style name="FhirCoreQuestionnaireTheme" parent="Theme.Questionnaire"></style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 

@@ -56,12 +56,15 @@ constructor(
     return withContext(dispatcherProvider.io()) {
       val patients =
         fhirEngine.search<Patient> {
-          filter(Patient.ACTIVE, true)
+          filter(Patient.ACTIVE, { value = of(true) })
           if (query.isNotBlank()) {
-            filter(Patient.NAME) {
-              modifier = StringFilterModifier.CONTAINS
-              value = query.trim()
-            }
+            filter(
+              Patient.NAME,
+              {
+                modifier = StringFilterModifier.CONTAINS
+                value = query.trim()
+              }
+            )
           }
           sort(Patient.NAME, Order.ASCENDING)
           count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
@@ -118,7 +121,7 @@ constructor(
     }
 
   private suspend fun searchQuestionnaireResponses(patientId: String): List<QuestionnaireResponse> =
-    fhirEngine.search { filter(QuestionnaireResponse.SUBJECT) { value = "Patient/$patientId" } }
+    fhirEngine.search { filter(QuestionnaireResponse.SUBJECT, { value = "Patient/$patientId" }) }
 
   suspend fun fetchTestForms(filter: SearchFilter): List<QuestionnaireConfig> =
     withContext(dispatcherProvider.io()) {
@@ -126,11 +129,13 @@ constructor(
         fhirEngine.search<Questionnaire> {
           filter(
             Questionnaire.CONTEXT,
-            CodeableConcept().apply {
-              addCoding().apply {
-                this.code = filter.code
-                this.system = filter.system
-              }
+            {
+              value = of(CodeableConcept().apply {
+                addCoding().apply {
+                  this.code = filter.code
+                  this.system = filter.system
+                }
+              })
             }
           )
         }

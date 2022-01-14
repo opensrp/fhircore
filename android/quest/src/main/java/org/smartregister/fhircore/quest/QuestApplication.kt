@@ -30,26 +30,32 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import timber.log.Timber
 
 @HiltAndroidApp
-class QuestApplication : Application() {
+class QuestApplication : Application(), DataCaptureConfig.Provider  {
 
   @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
 
   @Inject lateinit var fhirEngine: FhirEngine
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
+  private lateinit var dataCaptureConfig : DataCaptureConfig
+
   override fun onCreate() {
     super.onCreate()
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
-    DataCaptureConfig.attachmentResolver = referenceAttachmentResolver
+
+    dataCaptureConfig = DataCaptureConfig(attachmentResolver = referenceAttachmentResolver)
 
     loadLocalDevWfpCodaFiles()
   }
 
   fun loadLocalDevWfpCodaFiles() {
 
-    val files = listOf("wfp-coda/anthro-following-visit.json")
+    val files = listOf("fhir-questionnaires/CODA/anthro-following-visit.json",
+      "fhir-questionnaires/CODA/assistance-visit.json",
+      "fhir-questionnaires/CODA/coda-child-registration.json",
+    )
 
     files.forEach { fileName ->
 
@@ -64,4 +70,6 @@ class QuestApplication : Application() {
       }
     }
   }
+
+  override fun getDataCaptureConfig(): DataCaptureConfig = dataCaptureConfig
 }
