@@ -155,6 +155,7 @@ class PatientDetailsActivity : BaseMultiLanguageActivity() {
               )
             )
             .putExtra(FamilyFormConstants.FAMILY_EDIT_INFO, true)
+            .putExtra(FamilyQuestionnaireActivity.HEAD_RECORD_ID_KEY, patient.value?.headId)
         )
         true
       }

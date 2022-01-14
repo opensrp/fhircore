@@ -28,27 +28,23 @@ import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.anc.data.family.model.FamilyItem
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
-import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asCodeableConcept
-import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
-import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
-import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.family.register.Family
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.util.RegisterType
+import org.smartregister.fhircore.anc.util.asCodeableConcept
 import org.smartregister.fhircore.anc.util.filterBy
 import org.smartregister.fhircore.anc.util.filterByPatientName
 import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractFamilyTag
-import org.smartregister.fhircore.engine.util.extension.find
+import org.smartregister.fhircore.engine.util.extension.generateUniqueId
 
 class FamilyRepository
 @Inject
@@ -61,10 +57,6 @@ constructor(
 ) : RegisterRepository<Family, FamilyItem> {
 
   private val registerConfig = context.loadRegisterConfig(RegisterType.FAMILY_REGISTER_ID)
-
-  private val detailRepository = DefaultRepository(fhirEngine, dispatcherProvider)
-
-  private val resourceMapperExtended = ResourceMapperExtended(detailRepository)
 
   override suspend fun loadData(
     query: String,
@@ -116,29 +108,6 @@ constructor(
       }
   }
 
-  suspend fun postProcessFamilyMember(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
-    relatedTo: String?
-  ): String {
-    val patientId = getUniqueId()
-    resourceMapperExtended.saveParsedResource(
-      questionnaireResponse,
-      questionnaire,
-      patientId,
-      relatedTo
-    )
-
-    return patientId
-  }
-
-  suspend fun postProcessFamilyHead(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
-  ): String {
-    return postProcessFamilyMember(questionnaire, questionnaireResponse, null)
-  }
-
   /**
    * - Assign family tag to new head
    * - Remove family tag from older head
@@ -171,7 +140,7 @@ constructor(
       newHead.link.clear()
 
       val newHeadFlag = Flag()
-      newHeadFlag.id = getUniqueId()
+      newHeadFlag.id = ResourceType.Flag.generateUniqueId()
       newHeadFlag.status = Flag.FlagStatus.ACTIVE
       newHeadFlag.subject = newHead.asReference()
       newHeadFlag.code = familyTag.asCodeableConcept()
@@ -212,43 +181,4 @@ constructor(
           fhirEngine.save(member)
         }
     }
-
-  suspend fun updateProcessFamilyHead(
-    patientId: String,
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
-  ) {
-    updateProcessFamilyMember(patientId, questionnaire, questionnaireResponse, null)
-  }
-
-  suspend fun updateProcessFamilyMember(
-    patientId: String,
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
-    relatedTo: String?
-  ) {
-    resourceMapperExtended.saveParsedResource(
-      questionnaireResponse,
-      questionnaire,
-      patientId,
-      relatedTo,
-      editForm = true
-    )
-  }
-
-  suspend fun enrollIntoAnc(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
-    patientId: String
-  ) {
-    resourceMapperExtended.saveParsedResource(questionnaireResponse, questionnaire, patientId, null)
-
-    val lmpItem = questionnaireResponse.find(LMP_KEY)
-    val lmp = lmpItem?.answer?.firstOrNull()?.valueDateType!!
-    ancPatientRepository.enrollIntoAnc(patientId, lmp)
-  }
-
-  companion object {
-    const val LMP_KEY = "lmp"
-  }
 }

@@ -23,21 +23,16 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.spyk
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.junit.Assert
 import org.junit.Before
@@ -46,14 +41,11 @@ import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
-import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
-import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.family.register.FamilyItemMapper
 import org.smartregister.fhircore.anc.util.RegisterConfiguration
 import org.smartregister.fhircore.anc.util.SearchFilter
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 
 @HiltAndroidTest
@@ -110,117 +102,6 @@ class FamilyRepositoryTest : RobolectricTest() {
       Assert.assertEquals("Given2 Family2", families[1].name)
       Assert.assertEquals("2222", families[1].id)
     }
-  }
-
-  @Test
-  fun postProcessFamilyMemberShouldExtractEntities() = runBlockingTest {
-    val resourceMapperExtended = mockk<ResourceMapperExtended>()
-
-    coEvery { resourceMapperExtended.saveParsedResource(any(), any(), any(), "1111") } just runs
-
-    ReflectionHelpers.setField(repository, "resourceMapperExtended", resourceMapperExtended)
-
-    repository.postProcessFamilyMember(Questionnaire(), QuestionnaireResponse(), "1111")
-
-    coVerify { resourceMapperExtended.saveParsedResource(any(), any(), any(), "1111") }
-  }
-
-  @Test
-  fun postProcessFamilyHeadShouldExtractEntities() = runBlockingTest {
-    val resourceMapperExtended = mockk<ResourceMapperExtended>()
-
-    coEvery { resourceMapperExtended.saveParsedResource(any(), any(), any(), null) } just runs
-
-    ReflectionHelpers.setField(repository, "resourceMapperExtended", resourceMapperExtended)
-
-    repository.postProcessFamilyHead(Questionnaire(), QuestionnaireResponse())
-
-    coVerify { resourceMapperExtended.saveParsedResource(any(), any(), any(), null) }
-  }
-
-  @Test
-  fun updateProcessFamilyMemberShouldCallSaveParsedResourceWithEditBooleanAsTrue() =
-      runBlockingTest {
-    val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
-
-    val resourceMapperExtended = spyk(ResourceMapperExtended(defaultRepository))
-
-    coEvery { resourceMapperExtended.saveParsedResource(any(), any(), any(), "1111") } just runs
-
-    ReflectionHelpers.setField(repository, "resourceMapperExtended", resourceMapperExtended)
-
-    val questionnaire = Questionnaire()
-    val questionnaireResponse = QuestionnaireResponse()
-
-    repository.updateProcessFamilyMember(
-      "1111",
-      questionnaire = questionnaire,
-      questionnaireResponse = questionnaireResponse,
-      "1111"
-    )
-
-    coVerify {
-      resourceMapperExtended.saveParsedResource(
-        questionnaireResponse = questionnaireResponse,
-        questionnaire = questionnaire,
-        any(),
-        "1111",
-        eq(true)
-      )
-    }
-  }
-
-  @Test
-  fun updateProcessFamilyHeadShouldCallSaveParsedResourceWithEditBooleanAsTrue() = runBlockingTest {
-    val defaultRepository = spyk(DefaultRepository(fhirEngine, DefaultDispatcherProvider()))
-    val resourceMapperExtended = spyk(ResourceMapperExtended(defaultRepository))
-
-    coEvery { resourceMapperExtended.saveParsedResource(any(), any(), any(), null) } just runs
-
-    ReflectionHelpers.setField(repository, "resourceMapperExtended", resourceMapperExtended)
-
-    val questionnaire = Questionnaire()
-    val questionnaireResponse = QuestionnaireResponse()
-
-    repository.updateProcessFamilyHead(
-      "1111",
-      questionnaire = questionnaire,
-      questionnaireResponse = questionnaireResponse
-    )
-
-    coVerify {
-      resourceMapperExtended.saveParsedResource(
-        questionnaireResponse = questionnaireResponse,
-        questionnaire = questionnaire,
-        any(),
-        null,
-        eq(true)
-      )
-    }
-  }
-
-  @Test
-  fun postEnrollIntoAncShouldExtractEntitiesAndCallAncRepository() = runBlockingTest {
-    val resourceMapperExtended = mockk<ResourceMapperExtended>()
-
-    coEvery { ancPatientRepository.enrollIntoAnc("1111", any()) } just runs
-    coEvery { resourceMapperExtended.saveParsedResource(any(), any(), "1111", null) } just runs
-
-    ReflectionHelpers.setField(repository, "resourceMapperExtended", resourceMapperExtended)
-
-    val questionnaireResponse =
-      QuestionnaireResponse().apply {
-        addItem().apply {
-          linkId = "lmp"
-          addAnswer().apply { this.value = DateType() }
-        }
-      }
-
-    repository.enrollIntoAnc(Questionnaire(), questionnaireResponse, "1111")
-
-    coVerify { resourceMapperExtended.saveParsedResource(any(), any(), "1111", null) }
-
-    coVerify { ancPatientRepository.enrollIntoAnc("1111", any()) }
   }
 
   @Test

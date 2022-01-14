@@ -34,12 +34,11 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Flag
-import org.hl7.fhir.r4.model.Goal
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
@@ -48,10 +47,6 @@ import org.smartregister.fhircore.anc.data.model.PatientDetailItem
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.UnitConstants
 import org.smartregister.fhircore.anc.data.model.UpcomingServiceItem
-import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asPatientReference
-import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asReference
-import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.getUniqueId
-import org.smartregister.fhircore.anc.sdk.ResourceMapperExtended
 import org.smartregister.fhircore.anc.ui.anccare.details.CarePlanItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
 import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
@@ -65,7 +60,6 @@ import org.smartregister.fhircore.anc.util.loadRegisterConfig
 import org.smartregister.fhircore.anc.util.loadRegisterConfigAnc
 import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.due
 import org.smartregister.fhircore.engine.util.extension.extractAddress
@@ -73,13 +67,12 @@ import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.format
+import org.smartregister.fhircore.engine.util.extension.generateUniqueId
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.isFamilyHead
 import org.smartregister.fhircore.engine.util.extension.loadResourceTemplate
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.overdue
-import org.smartregister.fhircore.engine.util.extension.plusMonthsAsString
-import org.smartregister.fhircore.engine.util.extension.plusWeeksAsString
 
 enum class DeletionReason(@StringRes val label: Int) {
   ENTRY_IN_ERROR(R.string.remove_this_person_reason_error_entry),
@@ -99,10 +92,6 @@ constructor(
 
   private val ancOverviewConfig = context.loadRegisterConfigAnc(AncOverviewType.ANC_OVERVIEW_ID)
   private val vitalSignsConfig = context.loadRegisterConfigAnc(AncOverviewType.VITAL_SIGNS)
-
-  private val detailRepository = DefaultRepository(fhirEngine, dispatcherProvider)
-
-  val resourceMapperExtended = ResourceMapperExtended(detailRepository)
 
   override suspend fun loadData(
     query: String,
@@ -374,88 +363,12 @@ constructor(
     }
   }
 
-  suspend fun enrollIntoAnc(patientId: String, lmp: DateType) {
-    val conditionData = buildConfigData(patientId = patientId, lmp = lmp)
-
-    val pregnancyCondition =
-      loadConfig(Template.PREGNANCY_CONDITION, Condition::class.java, conditionData)
-    fhirEngine.save(pregnancyCondition)
-
-    val episodeData =
-      buildConfigData(patientId = patientId, pregnancyCondition = pregnancyCondition, lmp = lmp)
-    val pregnancyEpisodeOfCase =
-      loadConfig(Template.PREGNANCY_EPISODE_OF_CARE, EpisodeOfCare::class.java, episodeData)
-    fhirEngine.save(pregnancyEpisodeOfCase)
-
-    val encounterData =
-      buildConfigData(
-        patientId = patientId,
-        pregnancyCondition = pregnancyCondition,
-        pregnancyEpisodeOfCase = pregnancyEpisodeOfCase,
-        lmp = lmp
-      )
-    val pregnancyEncounter =
-      loadConfig(Template.PREGNANCY_FIRST_ENCOUNTER, Encounter::class.java, encounterData)
-    fhirEngine.save(pregnancyEncounter)
-
-    val goalData = buildConfigData(patientId)
-    val pregnancyGoal = loadConfig(Template.PREGNANCY_GOAL, Goal::class.java, goalData)
-    fhirEngine.save(pregnancyGoal)
-
-    val careplanData =
-      buildConfigData(
-        patientId = patientId,
-        pregnancyCondition = pregnancyCondition,
-        pregnancyEpisodeOfCase = pregnancyEpisodeOfCase,
-        pregnancyEncounter = pregnancyEncounter,
-        pregnancyGoal = pregnancyGoal,
-        lmp = lmp
-      )
-    val pregnancyCarePlan =
-      loadConfig(Template.PREGNANCY_CARE_PLAN, CarePlan::class.java, careplanData)
-    fhirEngine.save(pregnancyCarePlan)
-  }
-
   private fun <T : Resource> loadConfig(
     id: String,
     clazz: Class<T>,
     data: Map<String, String?> = emptyMap()
   ): T {
     return context.loadResourceTemplate(id, clazz, data)
-  }
-
-  private fun buildConfigData(
-    patientId: String,
-    pregnancyCondition: Condition? = null,
-    pregnancyEpisodeOfCase: EpisodeOfCare? = null,
-    pregnancyEncounter: Encounter? = null,
-    pregnancyGoal: Goal? = null,
-    lmp: DateType? = null
-  ): Map<String, String?> {
-    return mapOf(
-      "#Id" to getUniqueId(),
-      "#RefPatient" to asPatientReference(patientId).reference,
-      "#RefCondition" to pregnancyCondition?.id,
-      "#RefEpisodeOfCare" to pregnancyEpisodeOfCase?.id,
-      "#RefEncounter" to pregnancyEncounter?.id,
-      "#RefGoal" to pregnancyGoal?.asReference()?.reference,
-      // TODO https://github.com/opensrp/fhircore/issues/560
-      // add careteam and practitioner ref when available into all entities below where required
-      "#RefCareTeam" to "CareTeam/325",
-      "#RefPractitioner" to "Practitioner/399",
-      "#RefDateOnset" to lmp?.format(),
-      "#RefDateStart" to lmp?.format(),
-      "#RefDateEnd" to lmp?.plusMonthsAsString(9),
-      "#RefDate20w" to lmp?.plusWeeksAsString(20),
-      "#RefDate26w" to lmp?.plusWeeksAsString(26),
-      "#RefDate30w" to lmp?.plusWeeksAsString(30),
-      "#RefDate34w" to lmp?.plusWeeksAsString(34),
-      "#RefDate36w" to lmp?.plusWeeksAsString(36),
-      "#RefDate38w" to lmp?.plusWeeksAsString(38),
-      "#RefDate40w" to lmp?.plusWeeksAsString(40),
-      "#RefDateDeliveryStart" to lmp?.plusWeeksAsString(40),
-      "#RefDateDeliveryEnd" to lmp?.plusWeeksAsString(42),
-    )
   }
 
   suspend fun fetchUpcomingServiceItem(carePlan: List<CarePlan>): List<UpcomingServiceItem> {
@@ -538,7 +451,7 @@ constructor(
     val bmiEncounter = loadConfig(Template.BMI_ENCOUNTER, Encounter::class.java, bmiEncounterData)
     fhirEngine.save(bmiEncounter)
 
-    val bmiWeightObservationRecordId = getUniqueId()
+    val bmiWeightObservationRecordId = ResourceType.Observation.generateUniqueId()
     val bmiWeightObservationData =
       buildBmiConfigData(
         patientId = patientId,
@@ -552,7 +465,7 @@ constructor(
       loadConfig(Template.BMI_PATIENT_WEIGHT, Observation::class.java, bmiWeightObservationData)
     fhirEngine.save(bmiWeightObservation)
 
-    val bmiHeightObservationRecordId = getUniqueId()
+    val bmiHeightObservationRecordId = ResourceType.Observation.generateUniqueId()
     val bmiHeightObservationData =
       buildBmiConfigData(
         patientId = patientId,
@@ -566,7 +479,7 @@ constructor(
       loadConfig(Template.BMI_PATIENT_HEIGHT, Observation::class.java, bmiHeightObservationData)
     fhirEngine.save(bmiHeightObservation)
 
-    val bmiObservationRecordId = getUniqueId()
+    val bmiObservationRecordId = ResourceType.Observation.generateUniqueId()
     val bmiObservationData =
       buildBmiConfigData(
         patientId = patientId,
@@ -600,7 +513,7 @@ constructor(
   ): Map<String, String?> {
     return mapOf(
       "#Id" to recordId,
-      "#RefPatient" to asPatientReference(patientId).reference,
+      "#RefPatient" to "Patient/$patientId",
       "#RefEncounter" to bmiEncounter?.id,
       "#RefPractitioner" to "Practitioner/399",
       "#RefDateStart" to DateType(Date()).format(),
@@ -624,11 +537,6 @@ constructor(
 
   companion object {
     object Template {
-      const val PREGNANCY_CONDITION = "pregnancy_condition_template.json"
-      const val PREGNANCY_EPISODE_OF_CARE = "pregnancy_episode_of_care_template.json"
-      const val PREGNANCY_FIRST_ENCOUNTER = "pregnancy_first_encounter_template.json"
-      const val PREGNANCY_GOAL = "pregnancy_goal_template.json"
-      const val PREGNANCY_CARE_PLAN = "pregnancy_careplan_template.json"
       const val BMI_ENCOUNTER = "bmi_patient_encounter_template.json"
       const val BMI_PATIENT_WEIGHT = "bmi_patient_weight_observation_template.json"
       const val BMI_PATIENT_HEIGHT = "bmi_patient_height_observation_template.json"
