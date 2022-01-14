@@ -1,12 +1,22 @@
 {
   "resourceType": "Questionnaire",
-  "id": "1922",
+  "id": "32822",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2022-01-14T18:16:52.132+00:00"
+  },
   "language": "en",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/12057"
+    }
+  ],
   "status": "active",
-  "publisher": "ONA",
   "subjectType": [
     "Patient"
   ],
+  "publisher": "ONA",
   "code": [
     {
       "system": "https://www.snomed.org",
@@ -14,22 +24,14 @@
       "display": "Family"
     }
   ],
-  "extension": [{
-    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
-    "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/12057"
-  }],
   "item": [
     {
       "linkId": "PR-address",
-      "type": "group",
-      "text": "Location",
       "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.address",
+      "text": "Location",
+      "type": "group",
       "item": [
         {
-          "linkId": "PR-address-line",
-          "text": "House Number and Street",
-          "type": "string",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.address.line",
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
@@ -38,13 +40,13 @@
                 "expression": "Patient.address.line[0]"
               }
             }
-          ]
+          ],
+          "linkId": "PR-address-line",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.address.line",
+          "text": "House Number and Street",
+          "type": "string"
         },
         {
-          "linkId": "PR-address-district",
-          "text": "Village or Town",
-          "type": "string",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.address.district",
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
@@ -53,7 +55,11 @@
                 "expression": "Patient.address.district"
               }
             }
-          ]
+          ],
+          "linkId": "PR-address-district",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.address.district",
+          "text": "Village or Town",
+          "type": "string"
         }
       ]
     },
@@ -63,13 +69,11 @@
       "item": [
         {
           "linkId": "PR-name",
-          "type": "group",
-          "text": "Family Head Information",
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name",
+          "text": "Family Head Information",
+          "type": "group",
           "item": [
             {
-              "linkId": "PR-name-family",
-              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.family",
               "extension": [
                 {
                   "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
@@ -79,13 +83,13 @@
                   }
                 }
               ],
+              "linkId": "PR-name-family",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.family",
+              "text": "Surname",
               "type": "string",
-              "required": true,
-              "text": "Surname"
+              "required": true
             },
             {
-              "linkId": "PR-name-given",
-              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.given",
               "extension": [
                 {
                   "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
@@ -95,9 +99,11 @@
                   }
                 }
               ],
+              "linkId": "PR-name-given",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name.given",
+              "text": "First Name",
               "type": "string",
-              "required": true,
-              "text": "First Name"
+              "required": true
             }
           ]
         },
@@ -107,8 +113,6 @@
           "type": "group",
           "item": [
             {
-              "linkId": "PR-identifier-nid",
-              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value",
               "extension": [
                 {
                   "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
@@ -118,18 +122,15 @@
                   }
                 }
               ],
+              "linkId": "PR-identifier-nid",
+              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value",
+              "text": "National ID Number",
               "type": "string",
-              "required": true,
-              "text": "National ID Number"
+              "required": true
             }
           ]
         },
         {
-          "linkId": "PR-gender",
-          "type": "choice",
-          "required": true,
-          "text": "Sex",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
@@ -143,17 +144,22 @@
               "valueCode": "horizontal"
             }
           ],
+          "linkId": "PR-gender",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
+          "text": "Sex",
+          "type": "choice",
+          "required": true,
           "answerOption": [
             {
               "valueCoding": {
-                "system":"http://hl7.org/fhir/administrative-gender",
+                "system": "http://hl7.org/fhir/administrative-gender",
                 "code": "female",
                 "display": "Female"
               }
             },
             {
               "valueCoding": {
-                "system":"http://hl7.org/fhir/administrative-gender",
+                "system": "http://hl7.org/fhir/administrative-gender",
                 "code": "male",
                 "display": "Male"
               }
@@ -161,8 +167,65 @@
           ]
         },
         {
-          "linkId": "PR-birth-date",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            }
+          ],
+          "linkId": "birth_date_selection",
+          "text": "Date of Birth",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "date",
+                "display": "Date"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "age",
+                "display": "Age"
+              }
+            }
+          ],
+          "initial": [
+            {
+              "valueCoding": {
+                "code": "date",
+                "display": "Date"
+              }
+            }
+          ]
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.age",
+              "valueExpression": {
+                "language": "text/fhirpath",
+                "expression": "Patient.age"
+              }
+            }
+          ],
+          "linkId": "PR-age",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.age",
+          "text": "Age (years)",
+          "type": "decimal",
+          "enableWhen": [
+            {
+              "question": "birth_date_selection",
+              "operator": "=",
+              "answerCoding": {
+                "code": "age"
+              }
+            }
+          ],
+          "required": true
+        },
+        {
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
@@ -172,14 +235,23 @@
               }
             }
           ],
+          "linkId": "PR-birth-date",
+          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
+          "text": "Date of Birth",
           "type": "date",
-          "required": true,
-          "text": "Date of Birth"
+          "enableWhen": [
+            {
+              "question": "birth_date_selection",
+              "operator": "=",
+              "answerCoding": {
+                "code": "date"
+              }
+            }
+          ],
+          "required": true
         },
         {
           "linkId": "is_pregnant",
-          "type": "boolean",
-          "text": "Is Pregnant?",
           "code": [
             {
               "system": "https://www.snomed.org",
@@ -187,13 +259,15 @@
               "display": "Possible pregnancy"
             }
           ],
+          "text": "Is Pregnant?",
+          "type": "boolean",
           "enableWhen": [
             {
               "question": "PR-gender",
               "operator": "=",
               "answerCoding": {
-                "code": "female",
-                "system":"http://hl7.org/fhir/administrative-gender"
+                "system": "http://hl7.org/fhir/administrative-gender",
+                "code": "female"
               }
             }
           ]
@@ -216,22 +290,28 @@
           "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.active",
           "text": "Is Active?",
           "type": "boolean",
-          "initial": [ {
-            "valueBoolean": true
-          } ]
+          "initial": [
+            {
+              "valueBoolean": true
+            }
+          ]
         }
       ]
     },
     {
-      "linkId": "family",
-      "type": "boolean",
-      "extension": [{
+      "extension": [
+        {
           "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
           "valueBoolean": true
-      }],
-      "initial": [ {
-        "valueBoolean": true
-      } ]
+        }
+      ],
+      "linkId": "family",
+      "type": "boolean",
+      "initial": [
+        {
+          "valueBoolean": true
+        }
+      ]
     }
   ]
 }

@@ -9,7 +9,7 @@
     "appId": "anc",
     "form": "family-member-registration",
     "title": "Add Family Member",
-    "identifier": "1832"
+    "identifier": "32821"
   },
   {
     "appId": "anc",
@@ -27,7 +27,7 @@
     "appId": "anc",
     "form": "family-registration",
     "title": "Add Family",
-    "identifier": "1922"
+    "identifier": "32822"
   },
   {
     "appId": "anc",
@@ -45,7 +45,7 @@
     "appId": "ecbis",
     "form": "family-member-registration",
     "title": "Add Family Member",
-    "identifier": "1832"
+    "identifier": "32821"
   },
   {
     "appId": "ecbis",
@@ -63,7 +63,7 @@
     "appId": "ecbis",
     "form": "family-registration",
     "title": "Add Family",
-    "identifier": "1922"
+    "identifier": "32822"
   },
   {
     "appId": "ecbis",

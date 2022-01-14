@@ -349,49 +349,49 @@ group ExtractAncDeliveryCode(source src : QuestionnaireResponse, target concept:
 }
 
 group ExtractLmpPeriod_0_40(source lmp : DateType, target period: Period){
-    lmp -> copy(lmp) as start, evaluate(lmp, $this + 40 'weeks') as end then
+    lmp -> copy(lmp) as start, evaluate(lmp, $this + 40 "weeks") as end then
         ExtractPeriod(start, end, period) "r_period";
 }
 
 group ExtractLmpPeriod_20_26(source lmp : DateType, target period: Period){
-    lmp -> evaluate(lmp, $this + 20 'weeks') as start,
-        evaluate(lmp, $this + 26 'weeks') as end then
+    lmp -> evaluate(lmp, $this + 20 "weeks") as start,
+        evaluate(lmp, $this + 26 "weeks") as end then
         ExtractPeriod(start, end, period) "r_period";
 }
 
 group ExtractLmpPeriod_26_30(source lmp : DateType, target period: Period){
-    lmp -> evaluate(lmp, $this + 26 'weeks') as start,
-        evaluate(lmp, $this + 30 'weeks') as end then
+    lmp -> evaluate(lmp, $this + 26 "weeks") as start,
+        evaluate(lmp, $this + 30 "weeks") as end then
         ExtractPeriod(start, end, period) "r_period";
 }
 
 group ExtractLmpPeriod_30_34(source lmp : DateType, target period: Period){
-    lmp -> evaluate(lmp, $this + 30 'weeks') as start,
-        evaluate(lmp, $this + 34 'weeks') as end then
+    lmp -> evaluate(lmp, $this + 30 "weeks") as start,
+        evaluate(lmp, $this + 34 "weeks") as end then
         ExtractPeriod(start, end, period) "r_period";
 }
 
 group ExtractLmpPeriod_34_36(source lmp : DateType, target period: Period){
-    lmp -> evaluate(lmp, $this + 34 'weeks') as start,
-        evaluate(lmp, $this + 36 'weeks') as end then
+    lmp -> evaluate(lmp, $this + 34 "weeks") as start,
+        evaluate(lmp, $this + 36 "weeks") as end then
         ExtractPeriod(start, end, period) "r_period";
 }
 
 group ExtractLmpPeriod_36_38(source lmp : DateType, target period: Period){
-    lmp -> evaluate(lmp, $this + 36 'weeks') as start,
-        evaluate(lmp, $this + 38 'weeks') as end then
+    lmp -> evaluate(lmp, $this + 36 "weeks") as start,
+        evaluate(lmp, $this + 38 "weeks") as end then
         ExtractPeriod(start, end, period) "r_period";
 }
 
 group ExtractLmpPeriod_38_40(source lmp : DateType, target period: Period){
-    lmp -> evaluate(lmp, $this + 38 'weeks') as start,
-        evaluate(lmp, $this + 40 'weeks') as end then
+    lmp -> evaluate(lmp, $this + 38 "weeks") as start,
+        evaluate(lmp, $this + 40 "weeks") as end then
         ExtractPeriod(start, end, period) "r_period";
 }
 
 group ExtractLmpPeriod_40_42(source lmp : DateType, target period: Period){
-    lmp -> evaluate(lmp, $this + 40 'weeks') as start,
-        evaluate(lmp, $this + 42 'weeks') as end then
+    lmp -> evaluate(lmp, $this + 40 "weeks") as start,
+        evaluate(lmp, $this + 42 "weeks") as end then
         ExtractPeriod(start, end, period) "r_period";
 }
 
