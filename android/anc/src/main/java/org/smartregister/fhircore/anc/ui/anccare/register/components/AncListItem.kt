@@ -60,6 +60,8 @@ import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.plusYears
 
+const val ANC_ROW_ITEM_TAG = "ancRowItemTag"
+
 @Composable
 fun AncRow(
   patientItem: PatientItem,
@@ -84,7 +86,7 @@ fun AncRow(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
     modifier =
-      modifier.fillMaxWidth().height(IntrinsicSize.Min).clickable {
+      modifier.fillMaxWidth().height(IntrinsicSize.Min).testTag(ANC_ROW_ITEM_TAG).clickable {
         clickListener(OpenPatientProfile, patientItem)
       }
   ) {
