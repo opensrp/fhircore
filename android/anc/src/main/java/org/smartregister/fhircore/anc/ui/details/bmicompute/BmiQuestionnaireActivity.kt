@@ -22,23 +22,22 @@ import android.widget.Button
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
+import java.util.UUID
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.anc.R
-import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 
 class BmiQuestionnaireActivity : QuestionnaireActivity() {
 
   val bmiQuestionnaireViewModel by viewModels<BmiQuestionnaireViewModel>()
-  private var encounterId = QuestionnaireUtils.getUniqueId()
+  private var encounterId = UUID.randomUUID().toString()
   private lateinit var saveBtn: Button
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
     saveBtn.text = getString(R.string.compute_bmi)
-    encounterId = QuestionnaireUtils.getUniqueId()
   }
 
   override fun onClick(view: View) {

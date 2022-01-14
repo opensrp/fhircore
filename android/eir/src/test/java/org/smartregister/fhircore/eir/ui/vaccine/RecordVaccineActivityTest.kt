@@ -40,6 +40,7 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -154,7 +155,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
     ReflectionHelpers.setField(recordVaccineActivity, "savedImmunization", savedImmunization)
 
-    recordVaccineActivity.postSaveSuccessful()
+    recordVaccineActivity.postSaveSuccessful(QuestionnaireResponse())
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
 
@@ -173,7 +174,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
     ReflectionHelpers.setField(recordVaccineActivity, "savedImmunization", savedImmunization)
 
-    recordVaccineActivity.postSaveSuccessful()
+    recordVaccineActivity.postSaveSuccessful(QuestionnaireResponse())
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
 

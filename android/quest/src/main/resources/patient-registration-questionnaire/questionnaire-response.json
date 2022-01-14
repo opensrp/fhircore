@@ -1,62 +1,8 @@
 {
   "resourceType": "QuestionnaireResponse",
-  "contained": [
-    {
-      "resourceType": "Patient",
-      "id": "1",
-      "meta": {
-        "tag": [
-          {
-            "system": "http://fhir.ona.io",
-            "code": "000003",
-            "display": "G6PD Patient"
-          }
-        ]
-      },
-      "identifier": [
-        {
-          "value": "45678"
-        }
-      ],
-      "active": true,
-      "name": [
-        {
-          "family": "Razi",
-          "given": [
-            "Amreen"
-          ]
-        }
-      ],
-      "telecom": [
-        {
-          "value": "356777888"
-        }
-      ],
-      "gender": "female",
-      "birthDate": "1991-12-14",
-      "address": [
-        {
-          "city": "NAIROBI",
-          "country": "Kenya"
-        }
-      ],
-      "maritalStatus": {
-        "coding": [
-          {
-            "code": "married",
-            "display": "Married"
-          }
-        ],
-        "text": "Married"
-      },
-      "managingOrganization": {
-        "reference": "Organization/105"
-      }
-    }
-  ],
   "questionnaire": "Questionnaire/3435",
   "subject": {
-    "reference": "Patient/12345"
+    "reference": "Patient/TEST_PATIENT"
   },
   "item": [
     {
@@ -69,7 +15,7 @@
               "linkId": "PR-name-family",
               "answer": [
                 {
-                  "valueString": "Razi"
+                  "valueString": "Hadi"
                 }
               ]
             },
@@ -77,7 +23,7 @@
               "linkId": "PR-name-given",
               "answer": [
                 {
-                  "valueString": "Amreen"
+                  "valueString": "Bareera"
                 }
               ]
             }
@@ -90,7 +36,7 @@
               "linkId": "PR-identifier-nid",
               "answer": [
                 {
-                  "valueString": "45678"
+                  "valueString": "3456"
                 }
               ]
             }
@@ -108,21 +54,10 @@
           ]
         },
         {
-          "linkId": "birth_date_selection",
-          "answer": [
-            {
-              "valueCoding": {
-                "code": "date",
-                "display": "Date"
-              }
-            }
-          ]
-        },
-        {
           "linkId": "PR-birth-date",
           "answer": [
             {
-              "valueDate": "1991-12-14"
+              "valueDate": "1998-12-14"
             }
           ]
         },
@@ -141,7 +76,11 @@
           "linkId": "is_pregnant",
           "answer": [
             {
-              "valueBoolean": true
+              "valueCoding": {
+                "system": "http://snomed.info/sct",
+                "code": "77386006",
+                "display": "Pregnant"
+              }
             }
           ]
         },
@@ -152,7 +91,7 @@
               "linkId": "PR-telecom-value",
               "answer": [
                 {
-                  "valueString": "356777888"
+                  "valueString": "4688755"
                 }
               ]
             }
