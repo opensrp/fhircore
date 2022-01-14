@@ -56,7 +56,7 @@
     "showNewClientButton": true,
     "showSideMenu": false,
     "showBottomMenu": true,
-    "registrationForm": "3435",
+    "registrationForm": "wfp-coda-poc-child-registration",
     "primaryFilter": {
       "key": "_tag",
       "system": "http://fhir.ona.io",
