@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util
+package org.smartregister.fhircore.quest.ui.patient.details
 
-import org.smartregister.fhircore.engine.configuration.ConfigClassification
+import androidx.lifecycle.LiveData
+import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItem
 
-enum class QuestConfigClassification : ConfigClassification {
-  PATIENT_REGISTER,
-  PATIENT_REGISTER_ROW,
-  TEST_RESULT_DETAIL_VIEW;
-  override val classification: String = name.lowercase()
+interface SimpleDetailsDataProvider {
+  val detailsViewItem: LiveData<DetailsViewItem>
+  val onBackPressClicked: LiveData<Boolean>
+
+  fun onBackPressed(back: Boolean)
 }
