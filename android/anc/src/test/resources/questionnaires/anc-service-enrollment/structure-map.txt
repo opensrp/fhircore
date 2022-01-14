@@ -1,4 +1,4 @@
-map "http://fhir.labs.smartregister.org/fhir/StructureMap/anc_service-enrollment" = 'ANCServiceEnrollment'
+map "http://fhir.labs.smartregister.org/fhir/StructureMap/12074" = 'ANCServiceEnrollment'
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
@@ -151,7 +151,9 @@ group ExtractLmp(source src : QuestionnaireResponse, target bundle : Bundle, tar
                 src -> period.start = evaluate(period, now()) "r_ob_per_st";
                 src -> period.end = evaluate(period, now()) "r_ob_per_end";
             } "r_ob_per";
-            src -> obs.value = evaluate(lmp_item, answer.value) "r_ob_val";
+            src -> obs.value = create('dateTime') as dt then {
+               src -> dt.value = evaluate(lmp_item, answer.value.substring(0,10) + 'T00:00:00') "r_ob_value";
+            } "r_ob_val";
             src -> obs.encounter = reference(encounter) "r_ob_en";
             src -> obs.category = create('CodeableConcept') as concept then {
                 src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/observation-category", 'survey') as coding then {
@@ -179,7 +181,9 @@ group ExtractEdd(source src : QuestionnaireResponse, target bundle : Bundle, tar
                 src -> period.start = evaluate(period, now()) "r_ob_per_st";
                 src -> period.end = evaluate(period, now()) "r_ob_per_end";
             } "r_ob_per";
-            src -> obs.value = evaluate(edd_item, answer.value) "r_ob_val";
+            src -> obs.value = create('dateTime') as dt then {
+              src -> dt.value = evaluate(edd_item, answer.value.substring(0,10) + 'T00:00:00') "r_ob_value";
+            } "r_ob_val";
             src -> obs.encounter = reference(encounter) "r_ob_en";
             src -> obs.category = create('CodeableConcept') as concept then {
                 src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/observation-category", 'survey') as coding then {
@@ -249,7 +253,7 @@ group ExtractLiveBirths(source src : QuestionnaireResponse, target bundle : Bund
 
 group ExtractCarePlan(source src : QuestionnaireResponse, target bundle : Bundle,
 target condition : Condition, target goal : Goal, target episode : EpisodeOfCare, target encounter : Encounter) {
-    src -> bundle.entry as entry, entry.resource = create('CarePlan') as cp then {
+    src.item as lmp_item where(linkId = 'lmp') -> evaluate(lmp_item, answer.value) as lmp, bundle.entry as entry, entry.resource = create('CarePlan') as cp then {
         src -> cp.id = uuid() "r_cp_id";
         src -> cp.extension = create('Extension') as epis then {
             src -> epis.url = 'http://fhir.org/guides/who/anc-cds/StructureDefinition/careplan-episodeOfCare' "r_ext_url";
@@ -259,14 +263,11 @@ target condition : Condition, target goal : Goal, target episode : EpisodeOfCare
         src -> cp.status = 'active' "r_cp_status";
         src -> cp.intent = 'plan' "r_cp_intent";
         src.subject as subject -> cp.subject = subject "r_cp_sub";
-        src.item as lmp_item where(linkId = 'lmp') -> cp.period = create('Period') as period then {
-            src -> period.start = evaluate(lmp_item, answer.value) "r_cp_per_st";
-            src -> period.end = evaluate(lmp_item, answer.value + 9 'months') "r_cp_per_end";
-        } "r_cp_per";
         // TODO src -> cp.careteam = ??
         src -> cp.addresses = reference(condition) "r_cp_condition";
         src -> cp.goal = reference(goal) "r_cp_goal";
-
+        src -> cp.period = create('Period') as period then
+            ExtractLmpPeriod_0_40(lmp, period) "r_cp_per";
         src -> create('CodeableConcept') as concept,
                 create('Period') as period,
                 copy('in-progress') as status,
@@ -278,56 +279,56 @@ target condition : Condition, target goal : Goal, target episode : EpisodeOfCare
                 copy('scheduled') as status,
                 copy('Second contact to occur at 20 weeks of gestational age') as description then
             ExtractAncContactCode(src, concept),
-            ExtractLmpPeriod_20_26(src, period),
+            ExtractLmpPeriod_20_26(lmp, period),
             ExtractActivityDetail(src, status, concept, description, period, cp) "r_cp_acti_det_2";
         src -> create('CodeableConcept') as concept,
                 create('Period') as period,
                 copy('not-started') as status,
                 copy('Third contact to occur at 26 weeks of gestational age') as description then
             ExtractAncContactCode(src, concept),
-            ExtractLmpPeriod_26_30(src, period),
+            ExtractLmpPeriod_26_30(lmp, period),
             ExtractActivityDetail(src, status, concept, description, period, cp) "r_cp_acti_det_3";
         src -> create('CodeableConcept') as concept,
                 create('Period') as period,
                 copy('not-started') as status,
                 copy('Fourth contact to occur at 30 weeks of gestational age') as description then
             ExtractAncContactCode(src, concept),
-            ExtractLmpPeriod_30_34(src, period),
+            ExtractLmpPeriod_30_34(lmp, period),
             ExtractActivityDetail(src, status, concept, description, period, cp) "r_cp_acti_det_4";
         src -> create('CodeableConcept') as concept,
                 create('Period') as period,
                 copy('not-started') as status,
                 copy('Fifth contact to occur at 34 weeks of gestational age') as description then
             ExtractAncContactCode(src, concept),
-            ExtractLmpPeriod_34_36(src, period),
+            ExtractLmpPeriod_34_36(lmp, period),
             ExtractActivityDetail(src, status, concept, description, period, cp) "r_cp_acti_det_5";
         src -> create('CodeableConcept') as concept,
                 create('Period') as period,
                 copy('not-started') as status,
                 copy('Sixth contact to occur at 36 weeks of gestational age') as description then
             ExtractAncContactCode(src, concept),
-            ExtractLmpPeriod_36_38(src, period),
+            ExtractLmpPeriod_36_38(lmp, period),
             ExtractActivityDetail(src, status, concept, description, period, cp) "r_cp_acti_det_6";
         src -> create('CodeableConcept') as concept,
                 create('Period') as period,
                 copy('not-started') as status,
                 copy('Seventh contact to occur at 38 weeks of gestational age') as description then
             ExtractAncContactCode(src, concept),
-            ExtractLmpPeriod_38_40(src, period),
+            ExtractLmpPeriod_38_40(lmp, period),
             ExtractActivityDetail(src, status, concept, description, period, cp) "r_cp_acti_det_7";
         src -> create('CodeableConcept') as concept,
                 create('Period') as period,
                 copy('not-started') as status,
                 copy('Eighth contact to occur at 40 weeks of gestational age') as description then
             ExtractAncContactCode(src, concept),
-            ExtractLmpPeriod_40_42(src, period),
+            ExtractLmpPeriod_40_42(lmp, period),
             ExtractActivityDetail(src, status, concept, description, period, cp) "r_cp_acti_det_8";
         src -> create('CodeableConcept') as concept,
                 create('Period') as period,
                 copy('not-started') as status,
                 copy('Delivery') as description then
             ExtractAncDeliveryCode(src, concept),
-            ExtractLmpPeriod_40_42(src, period),
+            ExtractLmpPeriod_40_42(lmp, period),
             ExtractActivityDetail(src, status, concept, description, period, cp) "r_cp_acti_det_9";
 
     } "r_cp";
@@ -347,53 +348,60 @@ group ExtractAncDeliveryCode(source src : QuestionnaireResponse, target concept:
     src -> concept.text = "Delivery" "r_cp_cc_txt";
 }
 
-group ExtractLmpPeriod_20_26(source src : QuestionnaireResponse, target period: Period){
-    src.item as lmp_item where(linkId = 'lmp') then {
-        src -> period.start = evaluate(lmp_item, answer.value + 20 weeks) "r_per_st";
-        src -> period.end = evaluate(lmp_item, answer.value + 26 weeks) "r_per_end";
-    } "r_period";
+group ExtractLmpPeriod_0_40(source lmp : DateType, target period: Period){
+    lmp -> copy(lmp) as start, evaluate(lmp, $this + 40 'weeks') as end then
+        ExtractPeriod(start, end, period) "r_period";
 }
 
-group ExtractLmpPeriod_26_30(source src : QuestionnaireResponse, target period: Period){
-    src.item as lmp_item where(linkId = 'lmp') then {
-        src -> period.start = evaluate(lmp_item, answer.value + 26 weeks) "r_per_st";
-        src -> period.end = evaluate(lmp_item, answer.value + 30 weeks) "r_per_end";
-    } "r_period";
+group ExtractLmpPeriod_20_26(source lmp : DateType, target period: Period){
+    lmp -> evaluate(lmp, $this + 20 'weeks') as start,
+        evaluate(lmp, $this + 26 'weeks') as end then
+        ExtractPeriod(start, end, period) "r_period";
 }
 
-group ExtractLmpPeriod_30_34(source src : QuestionnaireResponse, target period: Period){
-    src.item as lmp_item where(linkId = 'lmp') then {
-        src -> period.start = evaluate(lmp_item, answer.value + 30 weeks) "r_per_st";
-        src -> period.end = evaluate(lmp_item, answer.value + 34 weeks) "r_per_end";
-    } "r_period";
+group ExtractLmpPeriod_26_30(source lmp : DateType, target period: Period){
+    lmp -> evaluate(lmp, $this + 26 'weeks') as start,
+        evaluate(lmp, $this + 30 'weeks') as end then
+        ExtractPeriod(start, end, period) "r_period";
 }
 
-group ExtractLmpPeriod_34_36(source src : QuestionnaireResponse, target period: Period){
-    src.item as lmp_item where(linkId = 'lmp') then {
-        src -> period.start = evaluate(lmp_item, answer.value + 34 weeks) "r_per_st";
-        src -> period.end = evaluate(lmp_item, answer.value + 36 weeks) "r_per_end";
-    } "r_period";
+group ExtractLmpPeriod_30_34(source lmp : DateType, target period: Period){
+    lmp -> evaluate(lmp, $this + 30 'weeks') as start,
+        evaluate(lmp, $this + 34 'weeks') as end then
+        ExtractPeriod(start, end, period) "r_period";
 }
 
-group ExtractLmpPeriod_36_38(source src : QuestionnaireResponse, target period: Period){
-    src.item as lmp_item where(linkId = 'lmp') then {
-        src -> period.start = evaluate(lmp_item, answer.value + 36 weeks) "r_per_st";
-        src -> period.end = evaluate(lmp_item, answer.value + 38 weeks) "r_per_end";
-    } "r_period";
+group ExtractLmpPeriod_34_36(source lmp : DateType, target period: Period){
+    lmp -> evaluate(lmp, $this + 34 'weeks') as start,
+        evaluate(lmp, $this + 36 'weeks') as end then
+        ExtractPeriod(start, end, period) "r_period";
 }
 
-group ExtractLmpPeriod_38_40(source src : QuestionnaireResponse, target period: Period){
-    src.item as lmp_item where(linkId = 'lmp') then {
-        src -> period.start = evaluate(lmp_item, answer.value + 38 weeks) "r_per_st";
-        src -> period.end = evaluate(lmp_item, answer.value + 40 weeks) "r_per_end";
-    } "r_period";
+group ExtractLmpPeriod_36_38(source lmp : DateType, target period: Period){
+    lmp -> evaluate(lmp, $this + 36 'weeks') as start,
+        evaluate(lmp, $this + 38 'weeks') as end then
+        ExtractPeriod(start, end, period) "r_period";
 }
 
-group ExtractLmpPeriod_40_42(source src : QuestionnaireResponse, target period: Period){
-    src.item as lmp_item where(linkId = 'lmp') then {
-        src -> period.start = evaluate(lmp_item, answer.value + 40 weeks) "r_per_st";
-        src -> period.end = evaluate(lmp_item, answer.value + 42 weeks) "r_per_end";
-    } "r_period";
+group ExtractLmpPeriod_38_40(source lmp : DateType, target period: Period){
+    lmp -> evaluate(lmp, $this + 38 'weeks') as start,
+        evaluate(lmp, $this + 40 'weeks') as end then
+        ExtractPeriod(start, end, period) "r_period";
+}
+
+group ExtractLmpPeriod_40_42(source lmp : DateType, target period: Period){
+    lmp -> evaluate(lmp, $this + 40 'weeks') as start,
+        evaluate(lmp, $this + 42 'weeks') as end then
+        ExtractPeriod(start, end, period) "r_period";
+}
+
+group ExtractPeriod(source start: DateType, source end: DateType, target period: Period) {
+    start -> period.start = create('dateTime') as dt then {
+        start -> dt.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00') "r_period_start_value";
+    } "r_per_start";
+    end as end -> period.end = create('dateTime') as dt then {
+       end -> dt.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00') "r_period_end_value";
+   } "r_per_end";
 }
 
 group ExtractFirstActivityDetail(source src : QuestionnaireResponse,

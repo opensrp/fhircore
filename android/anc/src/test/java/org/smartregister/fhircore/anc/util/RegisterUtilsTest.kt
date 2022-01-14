@@ -18,8 +18,6 @@ package org.smartregister.fhircore.anc.util
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.datacapture.common.datatype.asStringValue
-import java.util.Date
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
@@ -34,7 +32,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.setPropertySafely
 
 class RegisterUtilsTest : RobolectricTest() {
@@ -68,25 +65,18 @@ class RegisterUtilsTest : RobolectricTest() {
     assertEquals(2, targetResource.entry.size)
 
     val patient = targetResource.entry[0].resource as Patient
+    val samplePatient = "$formResourcesDir/sample/patient.json".parseSampleResource() as Patient
 
-    assertEquals("Arazi", patient.nameFirstRep.given.first().value)
-    assertEquals("Rahi", patient.nameFirstRep.family)
-    assertEquals("06-Jan-1994", patient.birthDate.makeItReadable())
-    assertEquals("45 y", patient.addressFirstRep.line.first().value)
-    assertEquals("4578", patient.identifierFirstRep.value)
-    assertEquals(Enumerations.AdministrativeGender.FEMALE, patient.gender)
-    assertEquals(true, patient.active)
-    assertEquals("35359004", patient.meta.tagFirstRep.code)
-    assertEquals("Family", patient.meta.tagFirstRep.display)
-    assertEquals("http://hl7.org/fhir/StructureDefinition/flag-detail", patient.extension[0].url)
-    assertEquals("Family", patient.extension[0].value.asStringValue())
+    assertResourceContent(samplePatient, patient)
 
     val flag = targetResource.entry[1].resource as Flag
-    assertEquals(Flag.FlagStatus.ACTIVE, flag.status)
-    assertEquals(Date().makeItReadable(), flag.period.start.makeItReadable())
-    assertEquals("Patient/${patient.id}", flag.subject.reference)
-    assertEquals("35359004", flag.code.codingFirstRep.code)
-    assertEquals("Family", flag.code.codingFirstRep.display)
+    val sampleFlag = "$formResourcesDir/sample/flag.json".parseSampleResource() as Flag
+
+    assertEquals(patient.asReference().reference, flag.subject.reference)
+    // replace with inline generated patient id to compare text
+    sampleFlag.subject.reference = flag.subject.reference
+
+    assertResourceContent(sampleFlag, flag)
   }
 
   @Test
@@ -101,14 +91,9 @@ class RegisterUtilsTest : RobolectricTest() {
     assertEquals(1, targetResource.entry.size)
 
     val patient = targetResource.entry[0].resource as Patient
+    val samplePatient = "$formResourcesDir/sample/patient.json".parseSampleResource() as Patient
 
-    assertEquals("Reem", patient.nameFirstRep.given.first().value)
-    assertEquals("Hayat", patient.nameFirstRep.family)
-    assertEquals("02-Nov-2021", patient.birthDate.makeItReadable())
-    assertEquals(Enumerations.AdministrativeGender.FEMALE, patient.gender)
-    assertEquals(true, patient.active)
-    assertEquals(0, patient.meta.tag.size)
-    assertEquals(0, patient.extension.size)
+    assertResourceContent(samplePatient, patient)
   }
 
   @Test

@@ -1,4 +1,4 @@
-map "http://hl7.org/fhir/StructureMap/PatientRegistration" = 'PatientRegistration'
+map "http://hl7.org/fhir/StructureMap/12057" = 'PatientRegistration'
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target

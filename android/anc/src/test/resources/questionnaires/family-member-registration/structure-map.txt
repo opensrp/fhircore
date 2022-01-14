@@ -1,4 +1,4 @@
-map "http://hl7.org/fhir/StructureMap/PatientRegistration" = 'PatientRegistration'
+map "http://hl7.org/fhir/StructureMap/12057" = 'PatientRegistration'
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
@@ -35,6 +35,13 @@ group ExtractPatient(source src : QuestionnaireResponse, target patient : Patien
       src -> patientAddress.use = "home" "r_p_add_use";
       src -> patientAddress.type = "physical" "r_p_add_typ";
    } "r_p_addr";
+
+   src.item as item_head where (linkId = 'head_record_id') -> patient.link = create('Patient_Link') as link then {
+       src -> link.type = 'refer' "r_p_link_typ";
+       src -> link.other = create('Reference') as other then {
+           src -> other.reference = evaluate(item_head, 'Patient/' + answer.value) "r_p_link_ref";
+       } "r_p_link_other";
+   } "r_p_link";
 }
 
 group ExtractFamilyFlag(source src : QuestionnaireResponse, target bundle : Bundle, target patient : Patient) {

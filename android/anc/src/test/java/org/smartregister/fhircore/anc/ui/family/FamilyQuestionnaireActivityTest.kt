@@ -21,21 +21,15 @@ import android.app.Application
 import android.content.Intent
 import androidx.appcompat.app.AlertDialog
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.slot
 import io.mockk.spyk
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.BooleanType
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
@@ -100,29 +94,15 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testPostSaveSuccessfulWithFamilyMemberRegistration() = runBlockingTest {
+  fun testPostSaveSuccessfulWithFamilyMemberRegistrationShouldCallHandlePregnancyForPregnantClient() =
+      runBlockingTest {
     buildActivityFor(FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM, false, "123")
-
-    val familyRepositoryMockk = mockk<FamilyRepository>()
-    val fhirEngineMockk = mockk<FhirEngine>()
-    familyQuestionnaireActivity.familyRepository = familyRepositoryMockk
-
-    coEvery { familyRepositoryMockk.fhirEngine } returns fhirEngineMockk
-    coEvery { fhirEngineMockk.load(Patient::class.java, any()) } returns Patient()
-    coEvery { fhirEngineMockk.save(any()) } just runs
 
     val questionnaireResponse = buildPregnantQuestionnaireResponse(true)
 
     familyQuestionnaireActivity.postSaveSuccessful(questionnaireResponse)
 
     assertAncEnrollmentQuestionnaireActivity()
-
-    val patientSlot = slot<Patient>()
-
-    coVerify { fhirEngineMockk.load(Patient::class.java, patientId) }
-    coVerify { fhirEngineMockk.save(capture(patientSlot)) }
-
-    assertEquals("Patient/$patientId", patientSlot.captured.linkFirstRep.other.reference)
   }
 
   @Test
@@ -229,6 +209,8 @@ internal class FamilyQuestionnaireActivityTest : ActivityRobolectricTest() {
       Questionnaire().apply {
         name = form
         title = form
+        if (form == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM)
+          addItem().linkId = FamilyQuestionnaireActivity.HEAD_RECORD_ID_KEY
       }
     every { configurationRegistry.appId } returns "anc"
 

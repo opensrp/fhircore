@@ -20,7 +20,7 @@
   "item": [
     {
       "linkId": "lmp",
-      "type": "dateTime",
+      "type": "date",
       "required": true,
       "text": "Last Menstrual Period Date (LMP)",
       "code": [
@@ -33,7 +33,7 @@
     },
     {
       "linkId": "edd",
-      "type": "dateTime",
+      "type": "date",
       "required": true,
       "text": "Estimated date of delivery (EDD)",
       "code": [

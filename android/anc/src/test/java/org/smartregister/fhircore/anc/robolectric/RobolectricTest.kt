@@ -110,11 +110,11 @@ abstract class RobolectricTest {
 
   fun transform(
     scu: StructureMapUtilities,
-    structureMapJson: String,
+    structureMapText: String,
     responseJson: String,
     sourceGroup: String
   ): Bundle {
-    val map = scu.parse(structureMapJson, sourceGroup)
+    val map = scu.parse(structureMapText, sourceGroup)
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
 

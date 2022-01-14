@@ -182,6 +182,27 @@
           } ]
         }
       ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Patient.link.other.reference"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "head_record_id",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.link.other.reference",
+      "type": "string",
+      "initial": [ {
+        "valueString": "#HEAD_RECORD_ID"
+      } ]
     }
   ]
 }

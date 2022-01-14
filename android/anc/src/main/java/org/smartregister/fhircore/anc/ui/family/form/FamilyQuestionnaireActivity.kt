@@ -23,9 +23,9 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
 import org.smartregister.fhircore.anc.util.startAncEnrollment
@@ -72,35 +72,22 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     )
   }
 
+  override fun populateInitialValues(questionnaire: Questionnaire) {
+    if (questionnaireConfig.form == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
+      questionnaire.find(HEAD_RECORD_ID_KEY)!!.initialFirstRep.value =
+        StringType(intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!)
+    }
+  }
+
   override fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
     lifecycleScope.launch {
       val patientId = questionnaireResponse.subject.extractId()
 
-      when (questionnaireConfig.form) {
-        FamilyFormConstants.ANC_ENROLLMENT_FORM -> {
-          finish()
-        }
-        FamilyFormConstants.FAMILY_REGISTER_FORM -> {
-          handlePregnancy(patientId, questionnaireResponse)
-        }
-        FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM -> {
-          val relatedTo = intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!
-          addLinkToHead(relatedTo, questionnaireResponse)
-          handlePregnancy(patientId, questionnaireResponse)
-        }
+      if (questionnaireConfig.form == FamilyFormConstants.ANC_ENROLLMENT_FORM) {
+        finish()
+      } else {
+        handlePregnancy(patientId, questionnaireResponse)
       }
-    }
-  }
-
-  suspend fun addLinkToHead(headId: String, response: QuestionnaireResponse) {
-    familyRepository.fhirEngine.load(Patient::class.java, response.subject.extractId()).run {
-      val link =
-        Patient.PatientLinkComponent().apply {
-          this.other = Reference().apply { reference = "Patient/$headId" }
-          this.type = Patient.LinkType.REFER
-        }
-      this.addLink(link)
-      familyRepository.fhirEngine.save(this)
     }
   }
 
@@ -137,5 +124,6 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     const val QUESTIONNAIRE_RELATED_TO_KEY = "questionnaire-related-to"
     const val QUESTIONNAIRE_CALLING_ACTIVITY = "questionnaire-calling-activity"
     const val IS_PREGNANT_KEY = "is_pregnant"
+    const val HEAD_RECORD_ID_KEY = "head_record_id"
   }
 }

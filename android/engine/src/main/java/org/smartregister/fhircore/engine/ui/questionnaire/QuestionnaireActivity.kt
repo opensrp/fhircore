@@ -149,6 +149,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   private suspend fun renderFragment() {
     fragment =
       FhirCoreQuestionnaireFragment().apply {
+        populateInitialValues(questionnaire)
+
         val questionnaireString = parser.encodeResourceToString(questionnaire)
 
         // Generate Fragment bundle arguments. This is the Questionnaire & QuestionnaireResponse
@@ -253,6 +255,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       }
     )
   }
+
+  open fun populateInitialValues(questionnaire: Questionnaire) = Unit
 
   open fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
     finish()

@@ -18,8 +18,8 @@
     "reference": "Patient/TEST_PATIENT"
   },
   "period": {
-    "start": "2021-07-02T00:00:00+00:00",
-    "end": "2022-04-02T00:00:00+00:00"
+    "start": "2021-07-02T00:00:00",
+    "end": "2022-04-08T00:00:00"
   },
   "addresses": [
     {
@@ -75,8 +75,8 @@
         },
         "status": "scheduled",
         "scheduledPeriod": {
-          "start": "2021-11-19T00:00:00+00:00",
-          "end": "2021-12-31T00:00:00+00:00"
+          "start": "2021-11-19T00:00:00",
+          "end": "2021-12-31T00:00:00"
         },
         "description": "Second contact to occur at 20 weeks of gestational age"
       }
@@ -99,8 +99,8 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "2021-12-31T00:00:00+00:00",
-          "end": "2022-01-28T00:00:00+00:00"
+          "start": "2021-12-31T00:00:00",
+          "end": "2022-01-28T00:00:00"
         },
         "description": "Third contact to occur at 26 weeks of gestational age"
       }
@@ -123,8 +123,8 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "2022-01-28T00:00:00+00:00",
-          "end": "2022-02-25T00:00:00+00:00"
+          "start": "2022-01-28T00:00:00",
+          "end": "2022-02-25T00:00:00"
         },
         "description": "Fourth contact to occur at 30 weeks of gestational age"
       }
@@ -147,8 +147,8 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "2022-02-25T00:00:00+00:00",
-          "end": "2022-03-11T00:00:00+00:00"
+          "start": "2022-02-25T00:00:00",
+          "end": "2022-03-11T00:00:00"
         },
         "description": "Fifth contact to occur at 34 weeks of gestational age"
       }
@@ -171,8 +171,8 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "2022-03-11T00:00:00+00:00",
-          "end": "2022-03-25T00:00:00+00:00"
+          "start": "2022-03-11T00:00:00",
+          "end": "2022-03-25T00:00:00"
         },
         "description": "Sixth contact to occur at 36 weeks of gestational age"
       }
@@ -195,8 +195,8 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "2022-03-25T00:00:00+00:00",
-          "end": "2022-04-08T00:00:00+00:00"
+          "start": "2022-03-25T00:00:00",
+          "end": "2022-04-08T00:00:00"
         },
         "description": "Seventh contact to occur at 38 weeks of gestational age"
       }
@@ -219,8 +219,8 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "2022-04-08T00:00:00+00:00",
-          "end": "2022-04-22T00:00:00+00:00"
+          "start": "2022-04-08T00:00:00",
+          "end": "2022-04-22T00:00:00"
         },
         "description": "Eighth contact to occur at 40 weeks of gestational age"
       }
@@ -240,8 +240,8 @@
         },
         "status": "not-started",
         "scheduledPeriod": {
-          "start": "2022-04-08T00:00:00+00:00",
-          "end": "2022-04-22T00:00:00+00:00"
+          "start": "2022-04-08T00:00:00",
+          "end": "2022-04-22T00:00:00"
         },
         "description": "Delivery"
       }

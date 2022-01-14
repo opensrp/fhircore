@@ -61,6 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - EIR | Updated overdue trigger flow for Vaccine Due date
 - EIR | Updated on save vaccine received alert dialogue
+- ANC | Removed custom extraction handling and moved Family/ANC forms to structure map
 
 - Quest | Updated Sync to sync user specific fhir resources using Search Parameters from assets
 
