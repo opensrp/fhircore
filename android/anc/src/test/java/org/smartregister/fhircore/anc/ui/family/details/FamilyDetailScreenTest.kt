@@ -35,6 +35,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.text.SimpleDateFormat
 import java.util.Date
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
@@ -86,9 +87,12 @@ class FamilyDetailScreenTest : RobolectricTest() {
                 addGiven("Doe")
               }
             }
+
+          coEvery { fetchFamilyCarePlans(any()) } returns listOf(CarePlan())
         }
       )
     viewModel.fetchDemographics("")
+    viewModel.fetchCarePlans("")
 
     composeRule.setContent { FamilyDetailScreen(viewModel) }
 

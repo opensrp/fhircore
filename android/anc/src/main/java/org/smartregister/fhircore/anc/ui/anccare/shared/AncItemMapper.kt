@@ -29,6 +29,7 @@ import org.smartregister.fhircore.engine.data.domain.util.DomainMapper
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGender
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.milestonesDue
@@ -63,7 +64,8 @@ class AncItemMapper @Inject constructor(@ApplicationContext val context: Context
       address = patient.extractAddress().ifEmpty { dto.head?.extractAddress() } ?: "",
       isPregnant = dto.conditions?.hasActivePregnancy(),
       visitStatus = visitStatus,
-      familyName = patient.extractFamilyName()
+      familyName = patient.extractFamilyName(),
+      headId = if (patient.hasLink()) patient.linkFirstRep.other.extractId() else null
     )
   }
 

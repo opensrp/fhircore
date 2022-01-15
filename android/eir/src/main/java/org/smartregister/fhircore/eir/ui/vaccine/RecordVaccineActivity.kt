@@ -75,7 +75,7 @@ class RecordVaccineActivity : QuestionnaireActivity() {
     }
   }
 
-  override fun postSaveSuccessful() {
+  override fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
     val nextVaccineDate = savedImmunization.nextDueDateFmt()
     val currentDose = savedImmunization.protocolAppliedFirstRep.doseNumberPositiveIntType.value
 

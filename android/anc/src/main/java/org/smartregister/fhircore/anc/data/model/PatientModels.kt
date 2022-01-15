@@ -39,7 +39,8 @@ data class PatientItem(
   val address: String = "",
   val isPregnant: Boolean? = null,
   val visitStatus: VisitStatus = VisitStatus.PLANNED,
-  val isHouseHoldHead: Boolean? = null
+  val isHouseHoldHead: Boolean? = null,
+  val headId: String? = null
 )
 
 fun PatientItem.demographics() = "$name, $gender, ${birthDate.toAgeDisplay()}"
