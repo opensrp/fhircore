@@ -210,7 +210,7 @@ constructor(
    * Sets questionnaireResponse subject with proper subject-type defined in questionnaire with an
    * existing resourceId or if null generate a new one
    */
-  fun handleQuestionnaireResponseSubject(
+  private fun handleQuestionnaireResponseSubject(
     resourceId: String?,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse

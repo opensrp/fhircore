@@ -20,7 +20,6 @@ import android.content.Context
 import androidx.annotation.StringRes
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.getQuery
 import com.google.android.fhir.search.search
@@ -40,7 +39,6 @@ import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
@@ -261,11 +259,7 @@ constructor(
 
   suspend fun fetchCarePlan(patientId: String): List<CarePlan> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        Search(ResourceType.CarePlan).apply {
-          filter(CarePlan.SUBJECT, { value = "Patient/$patientId" })
-        }
-      }
+      fhirEngine.search { apply { filter(CarePlan.SUBJECT, { value = "Patient/$patientId" }) } }
     }
 
   suspend fun fetchObservations(patientId: String, searchFilterString: String): Observation {
@@ -325,9 +319,7 @@ constructor(
   suspend fun fetchEncounters(patientId: String): List<Encounter> =
     withContext(dispatcherProvider.io()) {
       fhirEngine.search {
-        Search(ResourceType.Encounter)
-          .apply { filter(Encounter.SUBJECT, { value = "Patient/$patientId" }) }
-          .getQuery()
+        apply { filter(Encounter.SUBJECT, { value = "Patient/$patientId" }) }.getQuery()
       }
     }
 
@@ -392,9 +384,7 @@ constructor(
           val carePlanId = it.logicalId
           var tasks =
             fhirEngine.search<Task> {
-              Search(ResourceType.Task)
-                .apply { filter(Task.FOCUS, { value = "CarePlan/$carePlanId" }) }
-                .getQuery()
+              apply { filter(Task.FOCUS, { value = "CarePlan/$carePlanId" }) }.getQuery()
             }
           if (!tasks.isNullOrEmpty()) {
             task = tasks[0]

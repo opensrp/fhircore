@@ -18,14 +18,12 @@ package org.smartregister.fhircore.eir.data
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.eir.data.model.PatientItem
 import org.smartregister.fhircore.eir.ui.patient.details.AdverseEventItem
 import org.smartregister.fhircore.eir.ui.patient.register.PatientItemMapper
@@ -66,11 +64,7 @@ constructor(
 
   suspend fun getPatientImmunizations(patientId: String): List<Immunization> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        Search(ResourceType.Immunization).apply {
-          filter(Immunization.PATIENT, { value = "Patient/$patientId" })
-        }
-      }
+      fhirEngine.search { filter(Immunization.PATIENT, { value = "Patient/$patientId" }) }
     }
 
   suspend fun fetchDemographics(patientId: String): Patient =

@@ -156,6 +156,7 @@ dependencies {
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
         exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
         exclude group: 'com.sun.activation', module: 'javax.activation'
+        exclude group: 'com.google.android.fhir', module: 'common'
     }
 
     api('org.smartregister:common:0.1.0-alpha01-preview3-SNAPSHOT') {
@@ -172,6 +173,7 @@ dependencies {
         exclude group: 'org.opencds.cqf.cql', module: 'evaluator'
         exclude group: 'org.opencds.cqf.cql', module: 'evaluator.builder'
         exclude group: 'org.opencds.cqf.cql', module: 'evaluator.dagger'
+        exclude group: 'com.google.android.fhir', module: 'common'
     }
 
     def hapiFhirVersion = "5.4.2"

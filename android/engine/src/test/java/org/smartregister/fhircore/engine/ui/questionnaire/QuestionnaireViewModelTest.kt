@@ -369,7 +369,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coEvery { fhirEngine.load(Patient::class.java, any()) } returns Patient()
     coEvery { fhirEngine.load(StructureMap::class.java, any()) } returns StructureMap()
-    coEvery { ResourceMapper.extract(any(), any(), any(), any()) } returns
+    coEvery { ResourceMapper.extract(any(), any(), any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { this.resource = patient } }
 
     val questionnaire =
@@ -396,7 +396,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
       coVerify { defaultRepo.addOrUpdate(patient) }
       coVerify { defaultRepo.addOrUpdate(questionnaireResponse) }
-      coVerify(timeout = 10000) { ResourceMapper.extract(any(), any(), any(), any()) }
+      coVerify(timeout = 10000) { ResourceMapper.extract(any(), any(), any(), any(), any()) }
 
       unmockkObject(ResourceMapper)
     }
@@ -469,7 +469,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testExtractAndSaveResourcesWithEditModeShouldSaveQuestionnaireResponse() {
     mockkObject(ResourceMapper)
 
-    coEvery { ResourceMapper.extract(any(), any(), any(), any()) } returns
+    coEvery { ResourceMapper.extract(any(), any(), any(), any(), any()) } returns
       Bundle().apply { addEntry().resource = Patient().apply { id = "12345" } }
 
     coEvery { fhirEngine.load(Patient::class.java, "12345") } returns Patient()
@@ -658,7 +658,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     coEvery { fhirEngine.load(Patient::class.java, any()) } returns Patient()
     coEvery { fhirEngine.load(StructureMap::class.java, any()) } returns StructureMap()
-    coEvery { ResourceMapper.extract(any(), any(), any(), any()) } returns
+    coEvery { ResourceMapper.extract(any(), any(), any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { this.resource = patient } }
 
     val questionnaire =
