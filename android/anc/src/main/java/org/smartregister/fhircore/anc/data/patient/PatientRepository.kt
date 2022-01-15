@@ -39,6 +39,7 @@ import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.CarePlanItem
