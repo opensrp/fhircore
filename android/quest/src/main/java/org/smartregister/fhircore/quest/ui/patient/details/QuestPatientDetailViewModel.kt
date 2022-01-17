@@ -92,9 +92,7 @@ constructor(
         filter(Observation.SUBJECT, { value = "Patient/$patientId" })
       }
     val conditions =
-      fhirEngine.search<Condition> {
-        filter(Condition.SUBJECT, { value = "Patient/$patientId" })
-      }
+      fhirEngine.search<Condition> { filter(Condition.SUBJECT, { value = "Patient/$patientId" }) }
 
     return mutableListOf<Resource>().apply {
       add(patient)

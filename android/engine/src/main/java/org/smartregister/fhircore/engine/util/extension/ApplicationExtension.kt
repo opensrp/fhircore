@@ -71,10 +71,13 @@ suspend fun FhirEngine.searchActivePatients(
   this.search<Patient> {
     filter(Patient.ACTIVE, { value = of(true) })
     if (query.isNotBlank()) {
-      filter(Patient.NAME, {
-        modifier = StringFilterModifier.CONTAINS
-        value = query.trim()
-      })
+      filter(
+        Patient.NAME,
+        {
+          modifier = StringFilterModifier.CONTAINS
+          value = query.trim()
+        }
+      )
     }
     sort(Patient.NAME, Order.ASCENDING)
     count =

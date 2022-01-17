@@ -164,7 +164,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             }
             clientIdentifier != null -> {
               try {
-                FhirEngineProvider.getInstance(this@QuestionnaireActivity).load(Patient::class.java, clientIdentifier!!)
+                FhirEngineProvider.getInstance(this@QuestionnaireActivity)
+                  .load(Patient::class.java, clientIdentifier!!)
               } catch (e: ResourceNotFoundException) {
                 setBarcode(questionnaire, clientIdentifier!!, true)
               }
@@ -297,9 +298,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     deepFlat(q.item, qr, qItems, qrItems)
 
-    return QuestionnaireResponseValidator.validateQuestionnaireResponseAnswers(qItems, qrItems, this).values.flatten().all {
-      it.isValid
-    }
+    return QuestionnaireResponseValidator.validateQuestionnaireResponseAnswers(
+        qItems,
+        qrItems,
+        this
+      )
+      .values
+      .flatten()
+      .all { it.isValid }
   }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {

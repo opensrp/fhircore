@@ -19,8 +19,6 @@ package org.smartregister.fhircore.engine.data.local
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Operation
-import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton

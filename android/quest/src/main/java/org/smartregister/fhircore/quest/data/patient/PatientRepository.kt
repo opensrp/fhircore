@@ -130,12 +130,15 @@ constructor(
           filter(
             Questionnaire.CONTEXT,
             {
-              value = of(CodeableConcept().apply {
-                addCoding().apply {
-                  this.code = filter.code
-                  this.system = filter.system
-                }
-              })
+              value =
+                of(
+                  CodeableConcept().apply {
+                    addCoding().apply {
+                      this.code = filter.code
+                      this.system = filter.system
+                    }
+                  }
+                )
             }
           )
         }

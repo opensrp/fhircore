@@ -30,14 +30,14 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import timber.log.Timber
 
 @HiltAndroidApp
-class QuestApplication : Application(), DataCaptureConfig.Provider  {
+class QuestApplication : Application(), DataCaptureConfig.Provider {
 
   @Inject lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
 
   @Inject lateinit var fhirEngine: FhirEngine
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  private lateinit var dataCaptureConfig : DataCaptureConfig
+  private lateinit var dataCaptureConfig: DataCaptureConfig
 
   override fun onCreate() {
     super.onCreate()
@@ -52,18 +52,17 @@ class QuestApplication : Application(), DataCaptureConfig.Provider  {
 
   fun loadLocalDevWfpCodaFiles() {
 
-    val files = listOf("fhir-questionnaires/CODA/anthro-following-visit.json",
-      "fhir-questionnaires/CODA/assistance-visit.json",
-      "fhir-questionnaires/CODA/coda-child-registration.json",
-    )
+    val files =
+      listOf(
+        "fhir-questionnaires/CODA/anthro-following-visit.json",
+        "fhir-questionnaires/CODA/assistance-visit.json",
+        "fhir-questionnaires/CODA/coda-child-registration.json",
+      )
 
     files.forEach { fileName ->
-
       val jsonString = assets.open(fileName).bufferedReader().readText()
       val questionnaire =
-        FhirContext.forR4()
-          .newJsonParser()
-          .parseResource(Questionnaire::class.java, jsonString)
+        FhirContext.forR4().newJsonParser().parseResource(Questionnaire::class.java, jsonString)
 
       GlobalScope.launch {
         DefaultRepository(fhirEngine, dispatcherProvider).addOrUpdate(questionnaire)
