@@ -42,13 +42,7 @@ class EncounterRepository @Inject constructor(val fhirEngine: FhirEngine) :
 
       val encounters =
         fhirEngine.search<Encounter> {
-          apply {
-              filter(
-                Encounter.SUBJECT,
-                { value = "Patient/$patientId" } // "Patient/$patientId"
-              )
-            }
-            .getQuery()
+          apply { filter(Encounter.SUBJECT, { value = "Patient/$patientId" }) }.getQuery()
           from = nextPage * PaginationUtil.DEFAULT_PAGE_SIZE
           count = PaginationUtil.DEFAULT_PAGE_SIZE
         }
