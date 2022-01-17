@@ -135,7 +135,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           text = context.getString(R.string.done)
         } else if (editMode) {
           text = getString(R.string.edit)
-        }
+        } else if (questionnaire.experimental) text = context.getString(R.string.done)
       }
 
       // Only add the fragment once, when the activity is first created.
@@ -248,11 +248,26 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       { result ->
         saveProcessingAlertDialog.dismiss()
         if (result) {
-          postSaveSuccessful(questionnaireResponse)
+          val message = questionnaireViewModel.extractionProgressMessage.value
+          if (message?.isNotBlank() == true)
+            AlertDialogue.showInfoAlert(
+              this,
+              message,
+              getString(R.string.done),
+              {
+                it.dismiss()
+                postSaveSuccessful(questionnaireResponse)
+              }
+            )
+          else postSaveSuccessful(questionnaireResponse)
         } else {
           Timber.e("An error occurred during extraction")
         }
       }
+    )
+    questionnaireViewModel.extractionProgressMessage.observe(
+      this,
+      { if (it.isNotEmpty()) AlertDialogue.showInfoAlert(this, it, getString(R.string.done)) }
     )
   }
 

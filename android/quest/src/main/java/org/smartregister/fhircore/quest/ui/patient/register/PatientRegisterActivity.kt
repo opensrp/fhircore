@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
@@ -24,6 +25,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
@@ -57,6 +59,11 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         id = R.id.menu_item_settings,
         title = getString(R.string.menu_settings),
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_settings)!!
+      ),
+      NavigationMenuOption(
+        id = R.id.menu_item_control_test,
+        title = getString(R.string.menu_control_test),
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_reports)!!
       )
     )
   }
@@ -69,6 +76,15 @@ class PatientRegisterActivity : BaseRegisterActivity() {
           tag = UserProfileFragment.TAG,
           isRegisterFragment = false,
           toolbarTitle = getString(R.string.settings)
+        )
+      R.id.menu_item_control_test ->
+        startActivity(
+          Intent(this, QuestionnaireActivity::class.java)
+            .putExtras(
+              QuestionnaireActivity.intentArgs(
+                formName = "14222",
+              )
+            )
         )
     }
     return true

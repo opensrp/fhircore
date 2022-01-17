@@ -199,7 +199,7 @@ class LibraryEvaluator @Inject constructor() {
 
   suspend fun runCqlLibrary(
     libraryId: String,
-    patient: Patient,
+    patient: Patient?,
     resources: List<Resource>,
     // TODO refactor class by modular and single responsibility principle
     repository: DefaultRepository
@@ -220,13 +220,13 @@ class LibraryEvaluator @Inject constructor() {
       library,
       helpers,
       Bundle(),
-      createBundle(listOf(patient, *resources.toTypedArray()))
+      createBundle(listOfNotNull(patient, *resources.toTypedArray()))
     )
 
     val result =
       libEvaluator!!.evaluate(
         VersionedIdentifier().withId(library.name).withVersion(library.version),
-        Pair.of("Patient", patient.logicalId),
+        if (patient != null) Pair.of("Patient", patient.logicalId) else null,
         null,
         null
       ) as
@@ -235,12 +235,14 @@ class LibraryEvaluator @Inject constructor() {
     parser.setPrettyPrint(false)
     return result.parameter.mapNotNull { p ->
       (p.value ?: p.resource)?.let {
-        if (p.name.equals(OUTPUT_PARAMETER_KEY) && it.isResource) {
-          repository.save(it as Resource)
+        if (p.name.equals(OUTPUT_PARAMETER_KEY)) {
+          if (it.isResource) {
+            repository.save(it as Resource)
 
-          // display full resource log only if it is OUTPUT
-          "${p.name} -> ${parser.encodeResourceToString(it)}"
-        } else "${p.name} -> $it"
+            // display full resource log only if it is OUTPUT
+            "${p.name} -> ${parser.encodeResourceToString(it)}"
+          } else "${p.name} -> $it"
+        } else null
       }
     }
   }
