@@ -104,8 +104,8 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
     composeRule.onNodeWithTag(TOOLBAR_MENU).assertIsDisplayed()
     composeRule
       .onNodeWithTag(TOOLBAR_MENU)
-      .onChildAt(1)
-      .assertTextEquals(application.getString(R.string.test_results))
+      .onChildAt(0)
+      .assertTextEquals(application.getString(R.string.edit_patient_info))
       .assertHasClickAction()
   }
 
@@ -120,18 +120,10 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
       .assertExists()
       .assertIsDisplayed()
       .onChildren()
-      .assertCountEquals(3)
+      .assertCountEquals(1)
 
     composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
     composeRule.onNodeWithTag(TOOLBAR_MENU).assertDoesNotExist()
-  }
-
-  @Test
-  fun testToolbarTestResultsMenuItemShouldCallMenuItemClickListener() {
-    initMocks()
-    composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
-    composeRule.onNodeWithTag(TOOLBAR_MENU).onChildAt(1).performClick()
-    verify { questPatientDetailViewModel.onMenuItemClickListener(R.string.test_results) }
   }
 
   @Test
@@ -140,14 +132,6 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
     composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
     composeRule.onNodeWithTag(TOOLBAR_MENU).onChildAt(0).performClick()
     verify { questPatientDetailViewModel.onMenuItemClickListener(R.string.edit_patient_info) }
-  }
-
-  @Test
-  fun testToolbarRunCqlMenuItemShouldCallMenuItemClickListener() {
-    initMocks()
-    composeRule.onNodeWithTag(TOOLBAR_MENU_BUTTON).performClick()
-    composeRule.onNodeWithTag(TOOLBAR_MENU).onChildAt(2).performClick()
-    verify { questPatientDetailViewModel.onMenuItemClickListener(R.string.run_cql) }
   }
 
   @Test

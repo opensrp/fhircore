@@ -96,7 +96,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val questionnaireConfig = QuestionnaireConfig("appId", "form", "title", "form-id")
     coEvery { questionnaireViewModel.getQuestionnaireConfig(any(), any()) } returns
       questionnaireConfig
-    coEvery { questionnaireViewModel.loadQuestionnaire(any()) } returns mockk()
+    coEvery { questionnaireViewModel.loadQuestionnaire(any()) } returns Questionnaire()
 
     val questionnaireFragment = spyk<QuestionnaireFragment>()
     every { questionnaireFragment.getQuestionnaireResponse() } returns QuestionnaireResponse()
@@ -236,7 +236,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
 
     Assert.assertEquals(
-      getString(R.string.saving_registration),
+      getString(R.string.form_progress_message),
       alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
     )
 
@@ -267,6 +267,12 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnClickSaveButtonShouldShowSubmitConfirmationAlert() {
+    ReflectionHelpers.setField(
+      questionnaireActivity,
+      "questionnaire",
+      Questionnaire().apply { experimental = false }
+    )
+
     questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).performClick()
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())

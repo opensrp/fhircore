@@ -144,7 +144,8 @@ class LibraryEvaluatorTest {
         dataBundle.entry.filter { it.resource.resourceType != ResourceType.Patient }.map {
           it.resource
         },
-        defaultRepository
+        defaultRepository,
+        true
       )
     }
 

@@ -202,7 +202,8 @@ class LibraryEvaluator @Inject constructor() {
     patient: Patient?,
     resources: List<Resource>,
     // TODO refactor class by modular and single responsibility principle
-    repository: DefaultRepository
+    repository: DefaultRepository,
+    outputLog: Boolean = false
   ): List<String> {
     val library = repository.fhirEngine.load(org.hl7.fhir.r4.model.Library::class.java, libraryId)
 
@@ -242,7 +243,7 @@ class LibraryEvaluator @Inject constructor() {
             // display full resource log only if it is OUTPUT
             "${p.name} -> ${parser.encodeResourceToString(it)}"
           } else "${p.name} -> $it"
-        } else null
+        } else if (outputLog) "${p.name} -> $it" else null
       }
     }
   }

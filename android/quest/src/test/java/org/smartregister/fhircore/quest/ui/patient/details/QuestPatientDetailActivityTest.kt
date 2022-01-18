@@ -17,26 +17,15 @@
 package org.smartregister.fhircore.quest.ui.patient.details
 
 import android.content.Intent
-import android.view.View
-import android.widget.TextView
 import android.widget.Toast
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
-import kotlinx.coroutines.test.runBlockingTest
-import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
-import org.hl7.fhir.r4.model.Library
-import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.After
 import org.junit.Assert
@@ -46,7 +35,6 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
-import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
@@ -99,14 +87,6 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnMenuItemClickListenerShouldStartQuestPatientTestResultActivity() {
-    questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.test_results)
-    val expectedIntent = Intent(questPatientDetailActivity, SimpleDetailsActivity::class.java)
-    val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
-    Assert.assertEquals(expectedIntent.component, actualIntent.component)
-  }
-
-  @Test
   fun testOnMenuItemClickListenerShouldStartQuestionnaireActivity() {
     questPatientDetailActivity.configurationRegistry.appId = "quest"
     questPatientDetailActivity.configurationRegistry.configurationsMap.put(
@@ -119,41 +99,6 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
     val expectedIntent = Intent(questPatientDetailActivity, QuestionnaireActivity::class.java)
     val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
-  }
-
-  @Test
-  fun testOnMenuItemClickListenerShouldShowProgressAlert() = runBlockingTest {
-    Assert.assertNull(ShadowAlertDialog.getLatestAlertDialog())
-
-    val fhirEngineMockk = mockk<FhirEngine>()
-    every { patientRepository.fhirEngine } returns fhirEngineMockk
-    coEvery { fhirEngineMockk.load(Patient::class.java, any()) } returns
-      Patient().apply { id = "123" }
-    coEvery { fhirEngineMockk.load(Library::class.java, any()) } returns Library()
-    coEvery { fhirEngineMockk.search<Condition>(any()) } returns listOf()
-    coEvery { fhirEngineMockk.search<Observation>(any()) } returns listOf()
-    coEvery { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) } returns listOf("1", "2")
-
-    questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.run_cql)
-
-    Assert.assertNotNull(ShadowAlertDialog.getLatestAlertDialog())
-
-    coVerify { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) }
-
-    val lastAlert = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
-
-    Assert.assertNotNull(
-      lastAlert.view.findViewById<TextView>(
-          org.smartregister.fhircore.engine.R.id.tv_alert_message
-        )!!
-        .text
-    )
-
-    Assert.assertEquals(
-      View.GONE,
-      lastAlert.view.findViewById<View>(org.smartregister.fhircore.engine.R.id.pr_circular)!!
-        .visibility
-    )
   }
 
   @Test
