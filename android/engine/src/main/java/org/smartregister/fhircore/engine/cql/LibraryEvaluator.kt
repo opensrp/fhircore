@@ -31,10 +31,12 @@ import org.cqframework.cql.elm.execution.Library
 import org.cqframework.cql.elm.execution.VersionedIdentifier
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
+import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.Type
 import org.json.JSONArray
 import org.json.JSONObject
 import org.opencds.cqf.cql.engine.data.CompositeDataProvider
@@ -236,17 +238,18 @@ class LibraryEvaluator @Inject constructor() {
     parser.setPrettyPrint(false)
     return result.parameter.mapNotNull { p ->
       (p.value ?: p.resource)?.let {
-        if (p.name.equals(OUTPUT_PARAMETER_KEY)) {
-          if (it.isResource) {
-            repository.save(it as Resource)
-
-            // display full resource log only if it is OUTPUT
-            "${p.name} -> ${parser.encodeResourceToString(it)}"
-          } else "${p.name} -> $it"
-        } else if (outputLog) "${p.name} -> $it" else null
+        when {
+          p.name.equals(OUTPUT_PARAMETER_KEY) -> "-> ${getStringValue(it)}"
+          outputLog -> "${p.name} -> $it"
+          else -> null
+        }
       }
     }
   }
+
+  fun getStringValue(base: Base) =
+    if (base.isResource) parser.encodeResourceToString(base as Resource)
+    else base.toString()
 
   private fun loadConfigs(
     library: org.hl7.fhir.r4.model.Library,

@@ -30,7 +30,9 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
@@ -285,6 +287,25 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testOnClickSaveWithExperimentalButtonShouldShowTestOnlyConfirmationAlert() {
+    ReflectionHelpers.setField(
+      questionnaireActivity,
+      "questionnaire",
+      Questionnaire().apply { experimental = true }
+    )
+
+    questionnaireActivity.findViewById<Button>(R.id.btn_save_client_info).performClick()
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+
+    Assert.assertEquals(
+      getString(R.string.questionnaire_alert_test_only_message),
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+    )
+  }
+
+  @Test
   fun testValidQuestionnaireResponseShouldReturnTrueForValidData() {
     val questionnaire = buildQuestionnaireWithConstraints()
 
@@ -315,6 +336,13 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val result = questionnaireActivity.validQuestionnaireResponse(questionnaireResponse)
 
     Assert.assertFalse(result)
+  }
+
+  @Test
+  fun testPostSaveSuccessfulShouldFinishActivity() {
+    questionnaireActivity.postSaveSuccessful(QuestionnaireResponse())
+
+    Assert.assertTrue(questionnaireActivity.isFinishing)
   }
 
   private fun buildQuestionnaireWithConstraints(): Questionnaire {

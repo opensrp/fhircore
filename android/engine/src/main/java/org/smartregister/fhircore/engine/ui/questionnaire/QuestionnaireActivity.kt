@@ -263,18 +263,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       { result ->
         saveProcessingAlertDialog.dismiss()
         if (result) {
-          val message = questionnaireViewModel.extractionProgressMessage.value
-          if (message?.isNotBlank() == true)
-            AlertDialogue.showInfoAlert(
-              this,
-              message,
-              getString(R.string.done),
-              {
-                it.dismiss()
-                postSaveSuccessful(questionnaireResponse)
-              }
-            )
-          else postSaveSuccessful(questionnaireResponse)
+          postSaveSuccessful(questionnaireResponse)
         } else {
           Timber.e("An error occurred during extraction")
         }
@@ -282,10 +271,36 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     )
   }
 
+  fun postSuccessfulExtraction(questionnaireResponse: QuestionnaireResponse){
+    val message = questionnaireViewModel.extractionProgressMessage.value
+    if (message?.isNotBlank() == true)
+      AlertDialogue.showInfoAlert(
+        this,
+        message,
+        getString(R.string.done),
+        {
+          it.dismiss()
+          postSaveSuccessful(questionnaireResponse)
+        }
+      )
+    else postSaveSuccessful(questionnaireResponse)
+  }
+
   open fun populateInitialValues(questionnaire: Questionnaire) = Unit
 
   open fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
-    finish()
+    val message = questionnaireViewModel.extractionProgressMessage.value
+    if (message?.isNotBlank() == true)
+      AlertDialogue.showInfoAlert(
+        this,
+        message,
+        getString(R.string.done),
+        {
+          it.dismiss()
+          finish()
+        }
+      )
+    else finish()
   }
 
   fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
