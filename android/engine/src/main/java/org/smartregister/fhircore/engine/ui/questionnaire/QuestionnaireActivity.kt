@@ -207,7 +207,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  fun showFormSubmissionConfirmAlert(){
+  fun showFormSubmissionConfirmAlert() {
     if (questionnaire.experimental)
       showConfirmAlert(
         context = this,

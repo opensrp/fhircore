@@ -125,7 +125,9 @@ fun ResultItem(
         .testTag(RESULT_ITEM)
   ) {
     Text(
-      text = questPatientDetailViewModel.fetchResultItemLabel(testResult) + " (${testResult.first.authored?.asDdMmmYyyy() ?: ""}) ",
+      text =
+        questPatientDetailViewModel.fetchResultItemLabel(testResult) +
+          " (${testResult.first.authored?.asDdMmmYyyy() ?: ""}) ",
       color = colorResource(id = R.color.black),
       fontSize = 17.sp,
       textAlign = TextAlign.Start,

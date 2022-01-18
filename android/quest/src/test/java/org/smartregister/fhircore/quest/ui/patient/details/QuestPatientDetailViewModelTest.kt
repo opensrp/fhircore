@@ -17,19 +17,12 @@
 package org.smartregister.fhircore.quest.ui.patient.details
 
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
-import kotlinx.coroutines.test.runBlockingTest
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Library
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
