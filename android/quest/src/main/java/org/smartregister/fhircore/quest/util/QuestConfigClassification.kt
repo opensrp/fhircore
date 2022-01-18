@@ -21,6 +21,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigClassification
 enum class QuestConfigClassification : ConfigClassification {
   PATIENT_REGISTER,
   PATIENT_REGISTER_ROW,
-  TEST_RESULT_DETAIL_VIEW;
+  TEST_RESULT_DETAIL_VIEW,
+  REGISTER_NAVIGATION;
   override val classification: String = name.lowercase()
 }

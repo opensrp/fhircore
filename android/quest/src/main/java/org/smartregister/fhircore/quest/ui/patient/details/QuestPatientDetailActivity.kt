@@ -75,13 +75,6 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
 
   private fun launchTestResults(@StringRes id: Int) {
     when (id) {
-      R.string.test_results ->
-        startActivity(
-          Intent(this, SimpleDetailsActivity::class.java).apply {
-            putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
-          }
-        )
-      R.string.run_cql -> runCql()
       R.string.edit_patient_info ->
         startActivity(
           Intent(this, QuestionnaireActivity::class.java)
@@ -101,27 +94,6 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
         configClassification = QuestConfigClassification.PATIENT_REGISTER
       )
       .registrationForm
-  }
-
-  fun runCql() {
-    val progress = AlertDialogue.showProgressAlert(this, R.string.loading)
-
-    patientViewModel
-      .runCqlFor(patientId, this)
-      .observe(
-        this,
-        {
-          if (it?.isNotBlank() == true) {
-            progress.dismiss()
-
-            AlertDialogue.showInfoAlert(this, it, getString(R.string.run_cql_log))
-            // show separate alert for output resources generated
-            it.substringAfter(OUTPUT_PARAMETER_KEY, "").takeIf { it.isNotBlank() }?.let {
-              AlertDialogue.showInfoAlert(this, it, getString(R.string.run_cql_output))
-            }
-          }
-        }
-      )
   }
 
   private fun launchQuestionnaireForm(questionnaireConfig: QuestionnaireConfig?) {

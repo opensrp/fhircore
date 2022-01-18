@@ -26,6 +26,12 @@
         "resource": "DetailViewConfiguration",
         "classification": "test_result_detail_view",
         "description": "Configurations for Test Results Details"
+      },
+      {
+        "workflowPoint": "register_navigation",
+        "resource": "NavigationConfiguration",
+        "classification": "register_navigation",
+        "description": "Configurations for Custom Navigation"
       }
     ]
   },
@@ -56,6 +62,12 @@
         "resource": "DetailViewConfiguration",
         "classification": "test_result_detail_view",
         "description": "Configurations for Test Results Details"
+      },
+      {
+        "workflowPoint": "register_navigation",
+        "resource": "NavigationConfiguration",
+        "classification": "register_navigation",
+        "description": "Configurations for Custom Navigation"
       }
     ]
   }

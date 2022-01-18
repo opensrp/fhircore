@@ -1,0 +1,19 @@
+[
+  {
+    "appId": "quest",
+    "classification": "register_navigation",
+    "navigationOptions": []
+  },
+  {
+    "appId": "g6pd",
+    "classification": "register_navigation",
+    "navigationOptions": [
+      {
+        "id": "control_test",
+        "label": "Control Test",
+        "icon" : "ic_reports",
+        "action": "QUESTIONNAIRE"
+      }
+    ]
+  }
+]

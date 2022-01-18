@@ -22,6 +22,7 @@ import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import dagger.hilt.android.AndroidEntryPoint
+import org.smartregister.fhircore.engine.configuration.ConfigClassification
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
@@ -30,7 +31,9 @@ import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
+import org.smartregister.fhircore.engine.util.extension.getDrawable
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.configuration.view.NavigationConfiguration
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @AndroidEntryPoint
@@ -59,12 +62,14 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         id = R.id.menu_item_settings,
         title = getString(R.string.menu_settings),
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_settings)!!
-      ),
-      NavigationMenuOption(
-        id = R.id.menu_item_control_test,
-        title = getString(R.string.menu_control_test),
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_reports)!!
       )
+    ).plus(getCustomNavigationOptions().navigationOptions.map {
+        NavigationMenuOption(
+          id = it.id.hashCode(),
+          title = it.title,
+          iconResource = this.getDrawable(it.icon)
+        )
+      }
     )
   }
 
@@ -106,4 +111,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         isSelected = true
       )
     )
+
+  fun getCustomNavigationOptions() =
+    configurationRegistry.retrieveConfiguration<NavigationConfiguration>(QuestConfigClassification.REGISTER_NAVIGATION)
 }
