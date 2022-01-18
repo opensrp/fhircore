@@ -95,10 +95,13 @@ class G6PDDetailConfigParser(fhirEngine: FhirEngine) : DetailConfigParser(fhirEn
     val condition =
       fhirEngine
         .search<Condition> {
-          filter(Condition.ENCOUNTER) { value = "Encounter/$encounterId" }
+          filter(Condition.ENCOUNTER, { value = "Encounter/$encounterId" })
           filter(
             TokenClientParam("category"),
-            CodeableConcept().addCoding(Coding("http://snomed.info/sct", "9024005", null))
+            {
+              value =
+                of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "9024005", null)))
+            }
           )
         }
         .firstOrNull()
@@ -121,8 +124,11 @@ class G6PDDetailConfigParser(fhirEngine: FhirEngine) : DetailConfigParser(fhirEn
 
     return fhirEngine
       .search<Observation> {
-        filter(Observation.ENCOUNTER) { value = "Encounter/$encounterId" }
-        filter(TokenClientParam("code"), CodeableConcept().addCoding(Coding(system, code, null)))
+        filter(Observation.ENCOUNTER, { value = "Encounter/$encounterId" })
+        filter(
+          TokenClientParam("code"),
+          { value = of(CodeableConcept().addCoding(Coding(system, code, null))) }
+        )
       }
       .firstOrNull()
   }
