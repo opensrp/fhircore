@@ -124,7 +124,7 @@ class ReportScreensTest : RobolectricTest() {
       PatientSelectionBox(
         patientSelectionText = "All",
         selectedPatient = null,
-        onPatientSelectionChange = {
+        onReportTypeSelected = {
           listenerObjectSpy.onPatientSelectionChanged(ReportViewModel.PatientSelectionType.ALL)
         }
       )
@@ -138,7 +138,7 @@ class ReportScreensTest : RobolectricTest() {
       PatientSelectionBox(
         patientSelectionText = "Individual",
         selectedPatient = PatientItem(),
-        onPatientSelectionChange = {
+        onReportTypeSelected = {
           listenerObjectSpy.onPatientSelectionChanged(
             ReportViewModel.PatientSelectionType.INDIVIDUAL
           )
@@ -155,7 +155,7 @@ class ReportScreensTest : RobolectricTest() {
       PatientSelectionBox(
         patientSelectionText = "Individual",
         selectedPatient = PatientItem(),
-        onPatientSelectionChange = {
+        onReportTypeSelected = {
           listenerObjectSpy.onPatientSelectionChanged(
             ReportViewModel.PatientSelectionType.INDIVIDUAL
           )

@@ -34,7 +34,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -53,14 +52,13 @@ fun ReportFilterPage(
   onBackPress: () -> Unit,
   startDate: String,
   endDate: String,
-  onStartDatePress: () -> Unit,
-  onEndDatePress: () -> Unit,
-  patientSelectionText: String,
-  onPatientSelectionTypeChanged: (String) -> Unit,
-  onGenerateReportPress: () -> Unit,
-  selectedPatient: PatientItem?
+  onDateRangeClick: () -> Unit,
+  selectedPatient: PatientItem?,
+  reportType: String,
+  onReportTypeSelected: (String, Boolean) -> Unit,
+  generateReport: Boolean,
+  onGenerateReportClicked: () -> Unit
 ) {
-  var generateReportEnabled by remember { mutableStateOf(false) }
 
   Surface(color = colorResource(id = R.color.white)) {
     Column(modifier = Modifier.fillMaxSize().testTag(REPORT_FILTER_PAGE)) {
@@ -71,20 +69,25 @@ fun ReportFilterPage(
             startDate = startDate,
             endDate = endDate,
             canChange = true,
-            onStartDatePress = {
-              onStartDatePress()
-              generateReportEnabled = startDate.isNotEmpty() && endDate.isNotEmpty()
-            },
-            onEndDatePress = {
-              onEndDatePress()
-              generateReportEnabled = startDate.isNotEmpty() && endDate.isNotEmpty()
-            }
+            onDateRangeClick = onDateRangeClick,
           )
           Spacer(modifier = Modifier.size(32.dp))
-          PatientSelectionBox(patientSelectionText, selectedPatient, onPatientSelectionTypeChanged)
+          PatientSelectionBox(
+            radioOptions =
+              listOf(
+                Pair(stringResource(R.string.all), false),
+                Pair(stringResource(R.string.individual), true)
+              ),
+            selectedPatient = selectedPatient,
+            reportType = reportType,
+            onReportTypeSelected = onReportTypeSelected
+          )
           Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Bottom) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-              GenerateReportButton(generateReportEnabled, onGenerateReportPress)
+              GenerateReportButton(
+                generateReportEnabled = generateReport,
+                onGenerateReportClicked = onGenerateReportClicked
+              )
             }
           }
         }
@@ -96,22 +99,23 @@ fun ReportFilterPage(
 @Composable
 fun ReportFilterScreen(viewModel: ReportViewModel) {
   val reportMeasureItem by remember { mutableStateOf(viewModel.selectedMeasureReportItem.value) }
-  val patientSelectionType by remember { mutableStateOf(viewModel.patientSelectionType.value) }
   val selectedPatient by remember { mutableStateOf(viewModel.getSelectedPatient().value) }
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
+  val reportType by viewModel.currentReportType.observeAsState("")
+  val generateReport by viewModel.generateReport.observeAsState(false)
 
   ReportFilterPage(
     topBarTitle = reportMeasureItem?.title ?: "",
     onBackPress = viewModel::onBackPressFromFilter,
     startDate = startDate,
     endDate = endDate,
-    onStartDatePress = viewModel::onStartDatePress,
-    onEndDatePress = viewModel::onEndDatePress,
-    patientSelectionText = patientSelectionType ?: "All",
-    onPatientSelectionTypeChanged = viewModel::onPatientSelectionTypeChanged,
-    onGenerateReportPress = viewModel::auxGenerateReport,
-    selectedPatient = selectedPatient
+    onDateRangeClick = viewModel::onDateRangeClick,
+    selectedPatient = selectedPatient,
+    generateReport = generateReport,
+    onGenerateReportClicked = viewModel::onGenerateReportClicked,
+    reportType = reportType,
+    onReportTypeSelected = viewModel::onReportTypeSelected
   )
 }
 
@@ -120,9 +124,14 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
 @ExcludeFromJacocoGeneratedReport
 fun PreviewPatientSelectionAll() {
   PatientSelectionBox(
-    patientSelectionText = ReportViewModel.PatientSelectionType.ALL,
-    onPatientSelectionChange = {},
-    selectedPatient = PatientItem()
+    radioOptions =
+      listOf(
+        Pair(stringResource(R.string.all), false),
+        Pair(stringResource(R.string.individual), true)
+      ),
+    reportType = "Individual",
+    onReportTypeSelected = { _, _ -> },
+    selectedPatient = null
   )
 }
 
@@ -131,8 +140,13 @@ fun PreviewPatientSelectionAll() {
 @ExcludeFromJacocoGeneratedReport
 fun PreviewPatientSelectionIndividual() {
   PatientSelectionBox(
-    patientSelectionText = ReportViewModel.PatientSelectionType.INDIVIDUAL,
-    onPatientSelectionChange = {},
+    radioOptions =
+      listOf(
+        Pair(stringResource(R.string.all), false),
+        Pair(stringResource(R.string.individual), true)
+      ),
+    reportType = "All",
+    onReportTypeSelected = { _, _ -> },
     selectedPatient = PatientItem(name = "Ind Patient Item")
   )
 }
@@ -146,12 +160,12 @@ fun ReportFilterPreview() {
     onBackPress = {},
     startDate = "StartDate",
     endDate = "EndDate",
-    onStartDatePress = {},
-    onEndDatePress = {},
-    patientSelectionText = "ALL",
-    onPatientSelectionTypeChanged = {},
-    onGenerateReportPress = {},
-    selectedPatient = PatientItem()
+    onDateRangeClick = {},
+    selectedPatient = PatientItem(),
+    generateReport = true,
+    onGenerateReportClicked = {},
+    onReportTypeSelected = { _, _ -> },
+    reportType = "All"
   )
 }
 

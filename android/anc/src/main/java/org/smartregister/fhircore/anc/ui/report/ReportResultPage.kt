@@ -89,7 +89,6 @@ fun PreviewIndividualReportResult() {
       ),
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
-    isAllPatientSelection = false,
     selectedPatient =
       PatientItem(name = "Test Selected Patient", gender = "F", birthDate = Date().plusYears(28)),
     ResultItem(
@@ -116,7 +115,6 @@ fun PreviewAllPatientReportResult() {
       ),
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
-    isAllPatientSelection = true,
     selectedPatient =
       PatientItem(name = "Test Selected Patient", gender = "F", birthDate = Date().plusYears(27)),
     resultForIndividual = ResultItem(),
@@ -133,11 +131,9 @@ fun PreviewAllPatientReportResult() {
 fun ReportResultScreen(viewModel: ReportViewModel) {
 
   val reportMeasureItem by remember { mutableStateOf(viewModel.selectedMeasureReportItem.value) }
-  val patientSelectionType by remember { mutableStateOf(viewModel.patientSelectionType.value) }
   val selectedPatient by remember { mutableStateOf(viewModel.getSelectedPatient().value) }
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
-  val isAllPatientSelected = patientSelectionType == "All"
   val resultForIndividual by viewModel.resultForIndividual.observeAsState(ResultItem())
   val resultForPopulation by viewModel.resultForPopulation.observeAsState(emptyList())
 
@@ -147,7 +143,6 @@ fun ReportResultScreen(viewModel: ReportViewModel) {
     reportMeasureItem = reportMeasureItem ?: ReportItem(title = "Measure Report Missing"),
     startDate = startDate,
     endDate = endDate,
-    isAllPatientSelection = isAllPatientSelected,
     selectedPatient = selectedPatient!!,
     resultForIndividual = resultForIndividual,
     resultItemPopulation = resultForPopulation
@@ -161,7 +156,6 @@ fun ReportResultPage(
   reportMeasureItem: ReportItem,
   startDate: String,
   endDate: String,
-  isAllPatientSelection: Boolean,
   selectedPatient: PatientItem,
   resultForIndividual: ResultItem?,
   resultItemPopulation: List<ResultItemPopulation>?
@@ -187,18 +181,23 @@ fun ReportResultPage(
           Text(text = reportMeasureItem.description, textAlign = TextAlign.Start, fontSize = 16.sp)
         }
         Spacer(modifier = Modifier.height(16.dp))
-        DateSelectionBox(startDate = startDate, endDate = endDate, canChange = false)
+        DateSelectionBox(
+          startDate = startDate,
+          endDate = endDate,
+          canChange = false,
+          showDateRangePicker = false,
+          onDateRangeClick = {}
+        )
         Spacer(modifier = Modifier.height(16.dp))
-        if (isAllPatientSelection) {
-          ResultForPopulation(resultItemPopulation!!)
-        } else {
-          ResultItemIndividual(
-            selectedPatient = selectedPatient,
-            isMatchedIndicator = resultForIndividual!!.isMatchedIndicator,
-            indicatorStatus = resultForIndividual.status,
-            indicatorDescription = resultForIndividual.description
-          )
-        }
+
+        //        ResultForPopulation(resultItemPopulation!!)
+        //
+        //        ResultItemIndividual(
+        //          selectedPatient = selectedPatient,
+        //          isMatchedIndicator = resultForIndividual!!.isMatchedIndicator,
+        //          indicatorStatus = resultForIndividual.status,
+        //          indicatorDescription = resultForIndividual.description
+        //        )
       }
     }
   }

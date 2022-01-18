@@ -35,8 +35,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.MeasureReport
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
@@ -52,8 +50,6 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.createFactory
-import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
-import timber.log.Timber
 
 @AndroidEntryPoint
 class ReportHomeActivity : BaseMultiLanguageActivity() {
@@ -81,11 +77,14 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
 
     val patientId =
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-    reportViewModel.apply {
-      this.patientId = patientId
-      registerDataViewModel =
-        initializeRegisterDataViewModel(this@ReportHomeActivity.patientRepository)
-    }
+
+    registerDataViewModel =
+      initializeRegisterDataViewModel(this@ReportHomeActivity.patientRepository)
+
+    reportViewModel.setStartEndDate(
+      startDate = getString(R.string.start_date),
+      endDate = getString(R.string.end_date)
+    )
 
     registerDataViewModel.currentPage.observe(this, { registerDataViewModel.loadPageData(it) })
 
@@ -102,48 +101,18 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       this,
       {
         if (it) {
-          MaterialDatePicker.Builder.dateRangePicker().apply {
-            setTitleText("Select dates")
-            setSelection(
-                androidx.core.util.Pair(
-                  MaterialDatePicker.thisMonthInUtcMilliseconds(),
-                  MaterialDatePicker.todayInUtcMilliseconds()
-                )
-              )
-              .build()
-              .show(supportFragmentManager, "DatePickerDialog")
-          }
-        }
-      }
-    )
-
-    reportViewModel.processGenerateReport.observe(
-      this,
-      {
-        if (it) {
-          lifecycleScope.launch {
-            withContext(dispatcherProvider.io()) {
-
-              // TODO Load all patient's data and bundle
-
-              fhirEngine.loadCqlLibraryBundle(
-                context = this@ReportHomeActivity,
-                fhirOperator = fhirOperator,
-                sharedPreferencesHelper = sharedPreferencesHelper,
-                resourcesBundlePath = "measure/ANCIND01-bundle.json"
-              )
-
-              val measureReport: MeasureReport =
-                fhirOperator.evaluateMeasure(
-                  url = "http://fhir.org/guides/who/anc-cds/Measure/ANCIND01",
-                  start = "2020-01-01",
-                  end = "2020-01-31",
-                  reportType = "subject",
-                  subject = patientId
-                )
-              Timber.i(FhirContext.forR4().newJsonParser().encodeResourceToString(measureReport))
+          MaterialDatePicker.Builder.dateRangePicker()
+            .apply {
+              setTitleText("Select dates")
+              setSelection(reportViewModel.dateRange.value!!)
             }
-          }
+            .build()
+            .run {
+              addOnPositiveButtonClickListener { selectedDateRange ->
+                reportViewModel.setDateRange(selectedDateRange)
+              }
+              show(supportFragmentManager, DATE_PICKER_DIALOG_TAG)
+            }
         }
       }
     )
@@ -157,16 +126,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
             message = getString(R.string.select_patient),
             title = getString(R.string.invalid_selection)
           )
-        }
-      }
-    )
-
-    reportViewModel.patientSelectionType.observe(
-      this,
-      {
-        if (it.equals("Individual", true)) {
-          reportViewModel.filterValue.postValue(Pair(RegisterFilterType.SEARCH_FILTER, ""))
-          reportViewModel.currentScreen = ReportScreen.PICK_PATIENT
         }
       }
     )
@@ -229,8 +188,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     }
   }
 
-  fun showDatePicker() {}
-
   /*  Limit selectable range to start and end Date provided */
   fun limitRange(
     forStartDateOnly: Long,
@@ -284,5 +241,9 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         .createFactory()
     )[RegisterDataViewModel::class.java] as
       RegisterDataViewModel<Anc, PatientItem>
+  }
+
+  companion object {
+    const val DATE_PICKER_DIALOG_TAG = "DatePickerDialogTag"
   }
 }

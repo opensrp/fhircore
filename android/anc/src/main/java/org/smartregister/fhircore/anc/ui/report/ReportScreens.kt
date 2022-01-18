@@ -39,10 +39,9 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -69,7 +68,7 @@ const val TOOLBAR_TITLE = "toolbarTitle"
 const val TOOLBAR_BACK_ARROW = "toolbarBackArrow"
 const val REPORT_MEASURE_LIST = "reportMeasureList"
 const val REPORT_MEASURE_ITEM = "reportMeasureItem"
-const val REPORT_FILTER_PAGE = "reportFiltertPage"
+const val REPORT_FILTER_PAGE = "reportFilterPage"
 const val REPORT_DATE_RANGE_SELECTION = "reportDateRangeSelection"
 const val REPORT_DATE_SELECT_ITEM = "reportDateSelectItem"
 const val REPORT_PATIENT_SELECTION = "reportPatientSelection"
@@ -90,7 +89,6 @@ const val REPORT_RESULT_PATIENT_DATA = "reportResultPatientData"
 const val REPORT_RESULT_POPULATION_DATA = "reportResultPopulationData"
 const val REPORT_RESULT_POPULATION_BOX = "reportResultPopulationBox"
 const val REPORT_RESULT_POPULATION_ITEM = "reportResultPopulationItem"
-
 const val INDICATOR_STATUS = "indicatorStatus"
 
 @Composable
@@ -159,26 +157,37 @@ fun LoadingItem() {
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun PreviewDateSelection() {
-  DateSelectionBox(startDate = "Start date", endDate = "End date", canChange = true)
+  DateSelectionBox(
+    startDate = "Start date",
+    endDate = "End date",
+    canChange = true,
+    onDateRangeClick = {}
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun PreviewDateRangeSelected() {
-  DateSelectionBox(startDate = "Start date", endDate = "End date", canChange = false)
+  DateSelectionBox(
+    startDate = "Start date",
+    endDate = "End date",
+    canChange = false,
+    onDateRangeClick = {}
+  )
 }
 
 @Composable
 fun DateSelectionBox(
+  modifier: Modifier = Modifier,
   startDate: String = "",
   endDate: String = "",
   canChange: Boolean = false,
-  onStartDatePress: () -> Unit = {},
-  onEndDatePress: () -> Unit = {}
+  showDateRangePicker: Boolean = true,
+  onDateRangeClick: () -> Unit
 ) {
   Column(
-    modifier = Modifier.wrapContentWidth().testTag(REPORT_DATE_RANGE_SELECTION),
+    modifier = modifier.wrapContentWidth().testTag(REPORT_DATE_RANGE_SELECTION),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.Start
   ) {
@@ -186,42 +195,41 @@ fun DateSelectionBox(
       text = stringResource(id = R.string.date_range),
       fontWeight = FontWeight.Bold,
       fontSize = 18.sp,
-      modifier = Modifier.wrapContentWidth()
+      modifier = modifier.wrapContentWidth()
     )
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = modifier.height(16.dp))
     Row(
       horizontalArrangement = Arrangement.SpaceAround,
       verticalAlignment = Alignment.CenterVertically
     ) {
-      DateRangeItem(text = startDate, canChange = canChange, clickListener = onStartDatePress)
-      Text("-", fontSize = 18.sp, modifier = Modifier.padding(horizontal = 8.dp))
-      DateRangeItem(text = endDate, canChange = canChange, clickListener = onEndDatePress)
+      DateRangeItem(text = startDate, canChange = canChange)
+      Text("-", fontSize = 18.sp, modifier = modifier.padding(horizontal = 8.dp))
+      DateRangeItem(text = endDate, canChange = canChange)
+      if (showDateRangePicker) {
+        Icon(
+          Icons.Filled.CalendarToday,
+          stringResource(R.string.date_range),
+          modifier = modifier.clickable { onDateRangeClick() }.padding(8.dp)
+        )
+      }
     }
   }
 }
 
 @Composable
-fun DateRangeItem(
-  text: String,
-  canChange: Boolean,
-  clickListener: () -> Unit,
-  modifier: Modifier = Modifier
-) {
-  var newClickListener = {}
+fun DateRangeItem(text: String, canChange: Boolean, modifier: Modifier = Modifier) {
   var newBackGroundColor = colorResource(id = R.color.transparent)
   var textPaddingHorizontal = 0.dp
   var textPaddingVertical = 0.dp
 
   if (canChange) {
-    newClickListener = clickListener
     newBackGroundColor = colorResource(id = R.color.light)
     textPaddingHorizontal = 12.dp
     textPaddingVertical = 4.dp
   }
 
   Row(
-    modifier =
-      modifier.wrapContentWidth().clickable { newClickListener() }.testTag(REPORT_DATE_SELECT_ITEM),
+    modifier = modifier.wrapContentWidth().testTag(REPORT_DATE_SELECT_ITEM),
     horizontalArrangement = Arrangement.SpaceBetween
   ) {
     Box(
@@ -238,60 +246,50 @@ fun DateRangeItem(
 
 @Composable
 fun PatientSelectionBox(
-  patientSelectionText: String,
+  radioOptions: List<Pair<String, Boolean>>,
   selectedPatient: PatientItem?,
-  onPatientSelectionChange: (String) -> Unit,
+  reportType: String,
+  onReportTypeSelected: (String, Boolean) -> Unit,
 ) {
   Column(
     modifier = Modifier.wrapContentWidth().testTag(REPORT_PATIENT_SELECTION),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.Start
   ) {
-    val patientSelection = remember { mutableStateOf(patientSelectionText) }
     Text(
       text = stringResource(id = R.string.patient),
       fontSize = 18.sp,
       fontWeight = FontWeight.Bold
     )
-    Spacer(modifier = Modifier.size(8.dp))
-    Row {
-      RadioButton(
-        selected = patientSelection.value == ReportViewModel.PatientSelectionType.ALL,
-        onClick = {
-          patientSelection.value = ReportViewModel.PatientSelectionType.ALL
-          onPatientSelectionChange(patientSelection.value)
-        }
-      )
-      Spacer(modifier = Modifier.size(16.dp))
-      Text(ReportViewModel.PatientSelectionType.ALL, fontSize = 16.sp)
-    }
-    Spacer(modifier = Modifier.size(8.dp))
-    Row {
-      RadioButton(
-        selected = patientSelection.value == ReportViewModel.PatientSelectionType.INDIVIDUAL,
-        onClick = {
-          patientSelection.value = ReportViewModel.PatientSelectionType.INDIVIDUAL
-          onPatientSelectionChange(patientSelection.value)
-        }
-      )
-      Spacer(modifier = Modifier.size(16.dp))
-      Text(ReportViewModel.PatientSelectionType.INDIVIDUAL, fontSize = 16.sp)
+
+    radioOptions.forEach { optionPair ->
+      Row {
+        RadioButton(
+          selected = reportType == optionPair.first,
+          onClick = {
+            if (optionPair.second) onReportTypeSelected(optionPair.first, true)
+            else onReportTypeSelected(optionPair.first, false)
+          }
+        )
+        Spacer(modifier = Modifier.size(16.dp))
+        Text(
+          text = optionPair.first,
+          fontSize = 16.sp,
+        )
+      }
+      Spacer(modifier = Modifier.size(8.dp))
     }
 
-    if (patientSelection.value == ReportViewModel.PatientSelectionType.INDIVIDUAL) {
+    if (reportType.equals(stringResource(id = R.string.individual), ignoreCase = true) &&
+        selectedPatient != null
+    ) {
       Row(modifier = Modifier.padding(start = 24.dp)) {
         Spacer(modifier = Modifier.size(8.dp))
-        selectedPatient?.let {
-          SelectedPatientItem(
-            selectedPatient = selectedPatient,
-            onCancelSelectedPatient = {
-              onPatientSelectionChange(ReportViewModel.PatientSelectionType.ALL)
-            },
-            onChangeClickListener = {
-              onPatientSelectionChange(ReportViewModel.PatientSelectionType.INDIVIDUAL)
-            }
-          )
-        }
+        SelectedPatientItem(
+          selectedPatient = selectedPatient,
+          onCancelSelectedPatient = { onReportTypeSelected(reportType, true) },
+          onChangeClickListener = { onReportTypeSelected(reportType, true) }
+        )
       }
     }
   }

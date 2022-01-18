@@ -222,7 +222,7 @@ internal class ReportViewModelTest {
 
   @Test
   fun testShouldVerifyGenerateReportClickListener() {
-    reportViewModel.onGenerateReportPress()
+    reportViewModel.onGenerateReportClicked()
     Assert.assertEquals(
       ReportViewModel.ReportScreen.RESULT,
       reportViewModel.reportState.currentScreen
