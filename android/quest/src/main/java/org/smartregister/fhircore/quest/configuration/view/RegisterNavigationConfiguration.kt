@@ -19,13 +19,17 @@ package org.smartregister.fhircore.quest.configuration.view
 import android.graphics.drawable.Drawable
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Stable
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 
-enum class NavigationAction {
-  QUESTIONNAIRE
-}
+@Serializable
+sealed class NavigationAction
+
+@Serializable
+@SerialName("questionnaire")
+data class QuestionnaireNavigationAction(val form: String): NavigationAction()
 
 @Serializable
 class NavigationConfiguration(

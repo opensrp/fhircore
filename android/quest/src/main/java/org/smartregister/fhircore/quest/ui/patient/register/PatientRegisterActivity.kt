@@ -33,7 +33,10 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.engine.util.extension.getDrawable
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.configuration.view.NavigationAction
 import org.smartregister.fhircore.quest.configuration.view.NavigationConfiguration
+import org.smartregister.fhircore.quest.configuration.view.NavigationOption
+import org.smartregister.fhircore.quest.configuration.view.QuestionnaireNavigationAction
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @AndroidEntryPoint
@@ -82,15 +85,11 @@ class PatientRegisterActivity : BaseRegisterActivity() {
           isRegisterFragment = false,
           toolbarTitle = getString(R.string.settings)
         )
-      R.id.menu_item_control_test ->
-        startActivity(
-          Intent(this, QuestionnaireActivity::class.java)
-            .putExtras(
-              QuestionnaireActivity.intentArgs(
-                formName = "14222",
-              )
-            )
-        )
+      else -> getCustomNavigationOptions().navigationOptions.forEach {
+        if (item.itemId == it.id.hashCode()) {
+          handleCustomNavigation(it)
+        }
+      }
     }
     return true
   }
@@ -114,4 +113,17 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   fun getCustomNavigationOptions() =
     configurationRegistry.retrieveConfiguration<NavigationConfiguration>(QuestConfigClassification.REGISTER_NAVIGATION)
+
+  fun handleCustomNavigation(navigationOption: NavigationOption){
+    when (navigationOption.action) {
+      is QuestionnaireNavigationAction -> startActivity(
+        Intent(this, QuestionnaireActivity::class.java)
+          .putExtras(
+            QuestionnaireActivity.intentArgs(
+              formName = navigationOption.action.form,
+            )
+          )
+      )
+    }
+  }
 }

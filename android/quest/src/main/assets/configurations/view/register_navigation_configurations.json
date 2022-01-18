@@ -10,9 +10,12 @@
     "navigationOptions": [
       {
         "id": "control_test",
-        "label": "Control Test",
+        "title": "Control Test",
         "icon" : "ic_reports",
-        "action": "QUESTIONNAIRE"
+        "action": {
+          "type": "questionnaire",
+          "form" : "14222"
+        }
       }
     ]
   }

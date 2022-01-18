@@ -200,17 +200,30 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       if (readOnly) {
         finish()
       } else {
-        showConfirmAlert(
-          context = this,
-          message = R.string.questionnaire_alert_submit_message,
-          title = R.string.questionnaire_alert_submit_title,
-          confirmButtonListener = { handleQuestionnaireSubmit() },
-          confirmButtonText = R.string.questionnaire_alert_submit_button_title
-        )
+        showFormSubmissionConfirmAlert()
       }
     } else {
       showToast(getString(R.string.error_saving_form))
     }
+  }
+
+  fun showFormSubmissionConfirmAlert(){
+    if (questionnaire.experimental)
+      showConfirmAlert(
+        context = this,
+        message = R.string.questionnaire_alert_test_only_message,
+        title = R.string.questionnaire_alert_test_only_title,
+        confirmButtonListener = { handleQuestionnaireSubmit() },
+        confirmButtonText = R.string.questionnaire_alert_test_only_button_title
+      )
+    else
+      showConfirmAlert(
+        context = this,
+        message = R.string.questionnaire_alert_submit_message,
+        title = R.string.questionnaire_alert_submit_title,
+        confirmButtonListener = { handleQuestionnaireSubmit() },
+        confirmButtonText = R.string.questionnaire_alert_submit_button_title
+      )
   }
 
   fun getQuestionnaireResponse(): QuestionnaireResponse {
@@ -227,7 +240,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   open fun handleQuestionnaireSubmit() {
-    saveProcessingAlertDialog = showProgressAlert(this, R.string.saving_registration)
+    saveProcessingAlertDialog = showProgressAlert(this, R.string.form_progress_message)
 
     val questionnaireResponse = getQuestionnaireResponse()
     if (!validQuestionnaireResponse(questionnaireResponse)) {
@@ -264,10 +277,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           Timber.e("An error occurred during extraction")
         }
       }
-    )
-    questionnaireViewModel.extractionProgressMessage.observe(
-      this,
-      { if (it.isNotEmpty()) AlertDialogue.showInfoAlert(this, it, getString(R.string.done)) }
     )
   }
 

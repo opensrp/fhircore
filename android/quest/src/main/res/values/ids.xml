@@ -2,5 +2,4 @@
 <resources>
     <item name="menu_item_clients" type="id" />
     <item name="menu_item_settings" type="id" />
-    <item name="menu_item_control_test" type="id" />
 </resources>
