@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.data
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -41,6 +42,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.app.fakes.Faker.buildPatient
 import org.smartregister.fhircore.quest.configuration.parser.QuestDetailConfigParser
@@ -127,7 +129,12 @@ class PatientRepositoryTest : RobolectricTest() {
       coEvery { fhirEngine.load(Questionnaire::class.java, "2") } returns
         Questionnaire().apply { name = "Second Questionnaire" }
 
-      coEvery { fhirEngine.search<QuestionnaireResponse>(any()) } returns
+      coEvery {
+        fhirEngine.search<QuestionnaireResponse> {
+          filter(QuestionnaireResponse.SUBJECT, { value = "Patient/1" })
+          filter(QuestionnaireResponse.QUESTIONNAIRE, { value = "Questionnaire/1" })
+        }
+      } returns
         listOf(
           QuestionnaireResponse().apply {
             authored = today
@@ -142,7 +149,12 @@ class PatientRepositoryTest : RobolectricTest() {
       val parser = QuestDetailConfigParser(fhirEngine)
 
       val results =
-        repository.fetchTestResults("1", listOf(), patientDetailsViewConfigurationOf(), parser)
+        repository.fetchTestResults(
+          "1",
+          listOf(QuestionnaireConfig("quest", "form", "title", "1")),
+          patientDetailsViewConfigurationOf(),
+          parser
+        )
 
       Assert.assertEquals("First Questionnaire", results[0].data[0][0].value)
       Assert.assertEquals(" (${today.asDdMmmYyyy()})", results[0].data[0][1].value)
