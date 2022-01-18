@@ -135,7 +135,7 @@ fun SearchView(
       textStyle = TextStyle(fontSize = 18.sp),
       leadingIcon = {
         IconButton(
-          onClick = viewModel::onBackPressFromPatientSearch,
+          onClick = { viewModel.onBackPress(ReportViewModel.ReportScreen.FILTER) },
           modifier.testTag(TOOLBAR_BACK_ARROW)
         ) {
           Icon(

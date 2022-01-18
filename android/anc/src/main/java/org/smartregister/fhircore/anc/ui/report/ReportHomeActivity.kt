@@ -25,46 +25,27 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Surface
 import androidx.compose.ui.res.colorResource
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import ca.uhn.fhir.context.FhirContext
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.anc.ui.report.ReportViewModel.ReportScreen
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.createFactory
 
 @AndroidEntryPoint
 class ReportHomeActivity : BaseMultiLanguageActivity() {
 
-  @Inject lateinit var fhirResourceDataSource: FhirResourceDataSource
-
   @Inject lateinit var patientRepository: PatientRepository
-
-  @Inject lateinit var fhirOperator: FhirOperator
-
-  @Inject lateinit var fhirEngine: FhirEngine
-
-  @Inject lateinit var fhirContext: FhirContext
-
-  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
 
@@ -78,83 +59,54 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     val patientId =
       intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
 
+    val currentActivity = this@ReportHomeActivity
+
     registerDataViewModel =
-      initializeRegisterDataViewModel(this@ReportHomeActivity.patientRepository)
-
-    reportViewModel.setStartEndDate(
-      startDate = getString(R.string.start_date),
-      endDate = getString(R.string.end_date)
-    )
-
-    registerDataViewModel.currentPage.observe(this, { registerDataViewModel.loadPageData(it) })
-
-    reportViewModel.backPress.observe(
-      this,
-      {
-        if (it) {
-          finish()
-        }
+      initializeRegisterDataViewModel(currentActivity.patientRepository).also { dataViewModel ->
+        dataViewModel.currentPage.observe(currentActivity, { dataViewModel.loadPageData(it) })
       }
-    )
 
-    reportViewModel.showDatePicker.observe(
-      this,
-      {
-        if (it) {
-          MaterialDatePicker.Builder.dateRangePicker()
-            .apply {
-              setTitleText("Select dates")
-              setSelection(reportViewModel.dateRange.value!!)
-            }
-            .build()
-            .run {
-              addOnPositiveButtonClickListener { selectedDateRange ->
-                reportViewModel.setDateRange(selectedDateRange)
-              }
-              show(supportFragmentManager, DATE_PICKER_DIALOG_TAG)
-            }
-        }
-      }
-    )
-
-    reportViewModel.alertSelectPatient.observe(
-      this,
-      {
-        if (it) {
-          AlertDialogue.showErrorAlert(
-            context = this,
-            message = getString(R.string.select_patient),
-            title = getString(R.string.invalid_selection)
-          )
-        }
-      }
-    )
-
-    reportViewModel.filterValue.observe(
-      this,
-      {
-        lifecycleScope.launch(Dispatchers.Main) {
-          val (registerFilterType, value) = it
-          if ((value as String).isNotEmpty()) {
-            registerDataViewModel.run {
-              showResultsCount(true)
-              filterRegisterData(
-                registerFilterType = registerFilterType,
-                filterValue = value,
-                registerFilter = this@ReportHomeActivity::performFilter
-              )
-              reportViewModel.currentScreen = ReportScreen.PICK_PATIENT
-            }
-          } else {
-            registerDataViewModel.run {
-              showResultsCount(false)
-              reloadCurrentPageData()
-            }
-            reportViewModel.currentScreen = ReportScreen.PICK_PATIENT
+    reportViewModel.apply {
+      setStartEndDate(
+        startDate = getString(R.string.start_date),
+        endDate = getString(R.string.end_date)
+      )
+      backPress.observe(
+        currentActivity,
+        {
+          if (it) {
+            finish()
           }
         }
-      }
-    )
+      )
+      showDatePicker.observe(
+        currentActivity,
+        {
+          if (it) {
+            showDateRangePicker()
+          }
+        }
+      )
+      filterValue.observe(
+        currentActivity,
+        {
+          val (registerFilterType, value) = it
+          filterRegisterData(value, registerFilterType, currentActivity)
+        }
+      )
+      onGenerateReportClicked.observe(
+        currentActivity,
+        {
+          if (it) {
+            reportViewModel.evaluateMeasure(
+              context = currentActivity,
+              patientId = patientId,
+              measureUrl = "http://fhir.org/guides/who/anc-cds/Measure/ANCIND01"
+            )
+          }
+        }
+      )
+    }
 
     setContent {
       AppTheme {
@@ -168,6 +120,45 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
         }
       }
     }
+  }
+
+  private fun filterRegisterData(
+    value: Any?,
+    registerFilterType: RegisterFilterType,
+    reportHomeActivity: ReportHomeActivity
+  ) {
+    if ((value as String).isNotEmpty()) {
+      registerDataViewModel.run {
+        showResultsCount(true)
+        filterRegisterData(
+          registerFilterType = registerFilterType,
+          filterValue = value,
+          registerFilter = reportHomeActivity::performFilter
+        )
+        reportViewModel.currentScreen = ReportScreen.PICK_PATIENT
+      }
+    } else {
+      registerDataViewModel.run {
+        showResultsCount(false)
+        reloadCurrentPageData()
+      }
+      reportViewModel.currentScreen = ReportScreen.PICK_PATIENT
+    }
+  }
+
+  private fun showDateRangePicker() {
+    MaterialDatePicker.Builder.dateRangePicker()
+      .apply {
+        setTitleText("Select dates")
+        setSelection(reportViewModel.dateRange.value!!)
+      }
+      .build()
+      .run {
+        addOnPositiveButtonClickListener { selectedDateRange ->
+          reportViewModel.setDateRange(selectedDateRange)
+        }
+        show(supportFragmentManager, DATE_PICKER_DIALOG_TAG)
+      }
   }
 
   private fun performFilter(

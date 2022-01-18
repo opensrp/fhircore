@@ -49,7 +49,7 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 @Composable
 fun ReportFilterPage(
   topBarTitle: String,
-  onBackPress: () -> Unit,
+  onBackPress: (ReportViewModel.ReportScreen) -> Unit,
   startDate: String,
   endDate: String,
   onDateRangeClick: () -> Unit,
@@ -62,7 +62,7 @@ fun ReportFilterPage(
 
   Surface(color = colorResource(id = R.color.white)) {
     Column(modifier = Modifier.fillMaxSize().testTag(REPORT_FILTER_PAGE)) {
-      TopBarBox(topBarTitle, onBackPress)
+      TopBarBox(topBarTitle) { onBackPress(ReportViewModel.ReportScreen.HOME) }
       Box(modifier = Modifier.padding(16.dp)) {
         Column {
           DateSelectionBox(
@@ -107,7 +107,7 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
 
   ReportFilterPage(
     topBarTitle = reportMeasureItem?.title ?: "",
-    onBackPress = viewModel::onBackPressFromFilter,
+    onBackPress = viewModel::onBackPress,
     startDate = startDate,
     endDate = endDate,
     onDateRangeClick = viewModel::onDateRangeClick,

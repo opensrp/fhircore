@@ -395,7 +395,6 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
     coEvery { reportViewModel.patientSelectionType.value } returns "not-all"
     coEvery { reportViewModel.selectedPatientItem.value } returns null
     reportViewModel.auxGenerateReport()
-    Assert.assertEquals(true, reportViewModel.alertSelectPatient.value)
 
     AlertDialogue.showErrorAlert(
       context = reportHomeActivity,

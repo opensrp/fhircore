@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -23,9 +24,13 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import ca.uhn.fhir.context.FhirContext
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
@@ -33,6 +38,8 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
@@ -45,6 +52,8 @@ import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.ListenerIntent
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import timber.log.Timber
 
 @HiltViewModel
@@ -54,13 +63,16 @@ constructor(
   val repository: ReportRepository,
   val dispatcher: DispatcherProvider,
   val patientRepository: PatientRepository,
+  val fhirEngine: FhirEngine,
+  val fhirOperator: FhirOperator,
+  val sharedPreferencesHelper: SharedPreferencesHelper
 ) : ViewModel() {
 
   val backPress: MutableLiveData<Boolean> = MutableLiveData(false)
 
-  val showDatePicker: MutableLiveData<Boolean> = MutableLiveData(false)
+  val onGenerateReportClicked: MutableLiveData<Boolean> = MutableLiveData(false)
 
-  val alertSelectPatient: MutableLiveData<Boolean> = MutableLiveData(false)
+  val showDatePicker: MutableLiveData<Boolean> = MutableLiveData(false)
 
   val isChangingStartDate: MutableLiveData<Boolean> = MutableLiveData(false)
 
@@ -86,6 +98,11 @@ constructor(
   var searchTextState = mutableStateOf(TextFieldValue(""))
 
   private val regex = Regex(".*\\d.*")
+
+  private val dateRangeDateFormatter = SimpleDateFormat(DATE_RANGE_DATE_FORMAT, Locale.getDefault())
+
+  private val measureReportDateFormatter =
+    SimpleDateFormat(MEASURE_REPORT_DATE_FORMAT, Locale.getDefault())
 
   private val _dateRange =
     MutableLiveData(
@@ -154,24 +171,48 @@ constructor(
     backPress.value = true
   }
 
-  fun onBackPressFromFilter() {
-    currentScreen = ReportScreen.HOME
+  fun onBackPress(reportScreen: ReportScreen) {
+    currentScreen = reportScreen
     currentReportType.value = ""
-  }
-
-  fun onBackPressFromPatientSearch() {
-    currentScreen = ReportScreen.FILTER
-    currentReportType.value = ""
-  }
-
-  fun onBackPressFromResult() {
-    currentScreen = ReportScreen.FILTER
-    currentReportType.value = ""
+    updateGenerateReport()
   }
 
   // TODO Run measure evaluate and open result screen depending on user selection
   fun onGenerateReportClicked() {
-    currentScreen = ReportScreen.RESULT
+    onGenerateReportClicked.value = true
+  }
+
+  fun evaluateMeasure(
+    context: Context,
+    patientId: String,
+    measureUrl: String,
+    measureResourceBundleUrl: String = "measure/ANCIND01-bundle.json",
+    reportType: String = "subject"
+  ) {
+    viewModelScope.launch(dispatcher.io()) {
+      val startDateFormatted =
+        measureReportDateFormatter.format(dateRangeDateFormatter.parse(startDate.value!!)!!)
+      val endDateFormatted =
+        measureReportDateFormatter.format(dateRangeDateFormatter.parse(endDate.value!!)!!)
+      val measureReport =
+        withContext(dispatcher.io()) {
+          fhirEngine.loadCqlLibraryBundle(
+            context = context,
+            fhirOperator = fhirOperator,
+            sharedPreferencesHelper = sharedPreferencesHelper,
+            resourcesBundlePath = measureResourceBundleUrl
+          )
+          fhirOperator.evaluateMeasure(
+            url = measureUrl,
+            start = startDateFormatted,
+            end = endDateFormatted,
+            reportType = reportType,
+            subject = patientId
+          )
+        }
+      //      currentScreen = ReportScreen.RESULT
+      Timber.i(FhirContext.forR4().newJsonParser().encodeResourceToString(measureReport))
+    }
   }
 
   fun onReportTypeSelected(reportType: String, launchPatientList: Boolean = false) {
@@ -187,11 +228,10 @@ constructor(
   fun setDateRange(dateRange: androidx.core.util.Pair<Long, Long>) {
     this._dateRange.value = dateRange
     // Format displayed date e.g 16 Nov, 2020 - 29 Oct, 2021
-    val simpleDateFormat = SimpleDateFormat(DATE_RANGE_DATE_FORMAT, Locale.getDefault())
     try {
       setStartEndDate(
-        startDate = simpleDateFormat.format(Date(dateRange.first)),
-        endDate = simpleDateFormat.format(Date(dateRange.second))
+        startDate = dateRangeDateFormatter.format(Date(dateRange.first)),
+        endDate = dateRangeDateFormatter.format(Date(dateRange.second))
       )
     } catch (illegalArgumentException: IllegalArgumentException) {
       Timber.e(illegalArgumentException)
@@ -220,5 +260,6 @@ constructor(
 
   companion object {
     const val DATE_RANGE_DATE_FORMAT = "d MMM, yyyy"
+    const val MEASURE_REPORT_DATE_FORMAT = "yyyy-MM-dd"
   }
 }

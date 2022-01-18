@@ -139,7 +139,7 @@ fun ReportResultScreen(viewModel: ReportViewModel) {
 
   ReportResultPage(
     topBarTitle = reportMeasureItem?.title ?: "",
-    onBackPress = viewModel::onBackPressFromResult,
+    onBackPress = viewModel::onBackPress,
     reportMeasureItem = reportMeasureItem ?: ReportItem(title = "Measure Report Missing"),
     startDate = startDate,
     endDate = endDate,
@@ -152,7 +152,7 @@ fun ReportResultScreen(viewModel: ReportViewModel) {
 @Composable
 fun ReportResultPage(
   topBarTitle: String,
-  onBackPress: () -> Unit,
+  onBackPress: (ReportViewModel.ReportScreen) -> Unit,
   reportMeasureItem: ReportItem,
   startDate: String,
   endDate: String,
@@ -167,7 +167,10 @@ fun ReportResultPage(
           .fillMaxSize()
           .testTag(REPORT_RESULT_PAGE)
     ) {
-      TopBarBox(topBarTitle = topBarTitle, onBackPress = onBackPress)
+      TopBarBox(
+        topBarTitle = topBarTitle,
+        onBackPress = { onBackPress(ReportViewModel.ReportScreen.FILTER) }
+      )
       Column(modifier = Modifier.padding(16.dp)) {
         Box(
           modifier =
