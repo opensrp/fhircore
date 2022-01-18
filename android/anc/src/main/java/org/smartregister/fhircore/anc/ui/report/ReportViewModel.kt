@@ -74,6 +74,8 @@ constructor(
 
   val showDatePicker: MutableLiveData<Boolean> = MutableLiveData(false)
 
+  val showProgressIndicator: MutableLiveData<Boolean> = MutableLiveData(false)
+
   val selectedMeasureReportItem: MutableLiveData<ReportItem> = MutableLiveData(null)
 
   val selectedPatientItem: MutableLiveData<PatientItem?> = MutableLiveData(null)
@@ -184,6 +186,7 @@ constructor(
     reportType: String = "subject"
   ) {
     viewModelScope.launch {
+      showProgressIndicator.value = true
       if (selectedPatientItem.value != null && individualEvaluation) {
         val startDateFormatted =
           measureReportDateFormatter.format(dateRangeDateFormatter.parse(startDate.value!!)!!)
@@ -213,11 +216,13 @@ constructor(
           resultForIndividual.postValue(
             ResultItem(status = if (population != null && population.count > 0) "True" else "False")
           )
+          showProgressIndicator.postValue(false)
           currentScreen = ReportScreen.RESULT
         }
       } else if (selectedPatientItem.value == null && !individualEvaluation) {
         // TODO extract data from population MeasureReport
-        resultForPopulation.value = loadPopulationResult()
+        resultForPopulation.postValue(loadPopulationResult())
+        showProgressIndicator.postValue(false)
         currentScreen = ReportScreen.RESULT
       }
     }

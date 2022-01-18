@@ -23,7 +23,6 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.lang.IllegalStateException
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.withContext

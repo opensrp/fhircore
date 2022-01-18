@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -40,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.smartregister.fhircore.anc.R
@@ -57,37 +59,52 @@ fun ReportFilterPage(
   reportType: String,
   onReportTypeSelected: (String, Boolean) -> Unit,
   generateReport: Boolean,
-  onGenerateReportClicked: () -> Unit
+  onGenerateReportClicked: () -> Unit,
+  showProgressIndicator: Boolean = false
 ) {
 
   Surface(color = colorResource(id = R.color.white)) {
     Column(modifier = Modifier.fillMaxSize().testTag(REPORT_FILTER_PAGE)) {
       TopBarBox(topBarTitle) { onBackPress(ReportViewModel.ReportScreen.HOME) }
-      Box(modifier = Modifier.padding(16.dp)) {
-        Column {
-          DateSelectionBox(
-            startDate = startDate,
-            endDate = endDate,
-            canChange = true,
-            onDateRangeClick = onDateRangeClick,
-          )
-          Spacer(modifier = Modifier.size(32.dp))
-          PatientSelectionBox(
-            radioOptions =
-              listOf(
-                Pair(stringResource(R.string.all), false),
-                Pair(stringResource(R.string.individual), true)
-              ),
-            selectedPatient = selectedPatient,
-            reportType = reportType,
-            onReportTypeSelected = onReportTypeSelected
-          )
-          Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Bottom) {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-              GenerateReportButton(
-                generateReportEnabled = generateReport,
-                onGenerateReportClicked = onGenerateReportClicked
-              )
+      Box(modifier = Modifier.padding(16.dp).fillMaxSize(), contentAlignment = Alignment.Center) {
+        if (showProgressIndicator) {
+          Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+          ) {
+            CircularProgressIndicator(modifier = Modifier.size(40.dp), strokeWidth = 2.dp)
+            Text(
+              text = stringResource(R.string.please_wait),
+              textAlign = TextAlign.Center,
+              modifier = Modifier.padding(vertical = 16.dp)
+            )
+          }
+        } else {
+          Column {
+            DateSelectionBox(
+              startDate = startDate,
+              endDate = endDate,
+              canChange = true,
+              onDateRangeClick = onDateRangeClick,
+            )
+            Spacer(modifier = Modifier.size(32.dp))
+            PatientSelectionBox(
+              radioOptions =
+                listOf(
+                  Pair(stringResource(R.string.all), false),
+                  Pair(stringResource(R.string.individual), true)
+                ),
+              selectedPatient = selectedPatient,
+              reportType = reportType,
+              onReportTypeSelected = onReportTypeSelected
+            )
+            Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Bottom) {
+              Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
+                GenerateReportButton(
+                  generateReportEnabled = generateReport,
+                  onGenerateReportClicked = onGenerateReportClicked
+                )
+              }
             }
           }
         }
@@ -104,6 +121,7 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
   val endDate by viewModel.endDate.observeAsState("")
   val reportType by viewModel.currentReportType.observeAsState("")
   val generateReport by viewModel.generateReport.observeAsState(false)
+  val showProgressIndicator by viewModel.showProgressIndicator.observeAsState(false)
 
   ReportFilterPage(
     topBarTitle = reportMeasureItem?.title ?: "",
@@ -115,7 +133,8 @@ fun ReportFilterScreen(viewModel: ReportViewModel) {
     generateReport = generateReport,
     onGenerateReportClicked = viewModel::onGenerateReportClicked,
     reportType = reportType,
-    onReportTypeSelected = viewModel::onReportTypeSelected
+    onReportTypeSelected = viewModel::onReportTypeSelected,
+    showProgressIndicator = showProgressIndicator
   )
 }
 
@@ -165,7 +184,8 @@ fun ReportFilterPreview() {
     generateReport = true,
     onGenerateReportClicked = {},
     onReportTypeSelected = { _, _ -> },
-    reportType = "All"
+    reportType = "All",
+    showProgressIndicator = false
   )
 }
 

@@ -63,7 +63,6 @@ import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.paging.compose.items
 import java.util.Date
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem

@@ -19,7 +19,6 @@ package org.smartregister.fhircore.anc.ui.report
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Surface
 import androidx.compose.ui.res.colorResource
 import androidx.lifecycle.ViewModelProvider
@@ -125,12 +124,10 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     setContent {
       AppTheme {
         Surface(color = colorResource(id = R.color.white)) {
-          Column {
-            ReportView(
-              reportViewModel = reportViewModel,
-              registerDataViewModel = registerDataViewModel
-            )
-          }
+          ReportView(
+            reportViewModel = reportViewModel,
+            registerDataViewModel = registerDataViewModel
+          )
         }
       }
     }
