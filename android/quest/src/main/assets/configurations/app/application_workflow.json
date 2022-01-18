@@ -29,7 +29,7 @@
       },
       {
         "workflowPoint": "register_navigation",
-        "resource": "NavigationConfiguration",
+        "resource": "RegisterNavigationConfiguration",
         "classification": "register_navigation",
         "description": "Configurations for Custom Navigation"
       }
@@ -65,7 +65,7 @@
       },
       {
         "workflowPoint": "register_navigation",
-        "resource": "NavigationConfiguration",
+        "resource": "RegisterNavigationConfiguration",
         "classification": "register_navigation",
         "description": "Configurations for Custom Navigation"
       }
