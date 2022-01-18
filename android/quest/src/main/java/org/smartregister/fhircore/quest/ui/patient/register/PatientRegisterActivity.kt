@@ -18,12 +18,19 @@ package org.smartregister.fhircore.quest.ui.patient.register
 
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.famoco.desfireservicelib.DESFireServiceAccess
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collect
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.nfc.MainViewModel
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
@@ -36,6 +43,10 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
+  private val mainViewModel: MainViewModel by viewModels()
+
+  private lateinit var eventJob: Job
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
@@ -44,6 +55,11 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         configClassification = QuestConfigClassification.PATIENT_REGISTER
       )
     configureViews(registerViewConfiguration)
+    // Connect to DES service
+    mainViewModel.connectService(this)
+
+    // Add DES service listeners
+    addDesServiceListeners()
   }
 
   override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> {
@@ -65,11 +81,12 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     when (item.itemId) {
       R.id.menu_item_clients -> switchFragment(mainFragmentTag())
       R.id.menu_item_settings ->
-        switchFragment(
+        /*        switchFragment(
           tag = UserProfileFragment.TAG,
           isRegisterFragment = false,
           toolbarTitle = getString(R.string.settings)
-        )
+        )*/
+        initializeNfc()
     }
     return true
   }
@@ -90,4 +107,56 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         isSelected = true
       )
     )
+
+  override fun onResume() {
+    super.onResume()
+    // Event that prompt only once to be able to know what has just happen with the card reader
+    // This consumption will be used if the end-user want to use the Read/Write Activities
+    // from the DESFire Service, so that the event can be consume inside the end-user app.
+    eventJob =
+      lifecycleScope.launchWhenStarted {
+        DESFireServiceAccess.eventFlow.collect { event ->
+          Toast.makeText(baseContext, event.name, Toast.LENGTH_SHORT).show()
+        }
+      }
+    eventJob.start()
+  }
+
+  override fun onPause() {
+    super.onPause()
+    // In order to consume the event in ReadNfcActivity or WriteNfcActivity,
+    // we need to cancel this eventJob before leaving the MainActivity,
+    // because the event will be consumed only once
+    eventJob.cancel()
+  }
+
+  private fun initializeNfc() {
+
+    mainViewModel.generateProtoFile()
+    // InitializeSAM
+    mainViewModel.initSAM()
+    // Perform Read action with the UI given by the Service
+    mainViewModel.readSerialized()
+  }
+
+  private fun addDesServiceListeners() {
+    // Check state connection with the service
+    DESFireServiceAccess.DESFireServiceConnectionState.observe(this) {
+      val state = it.name
+    }
+
+    // Check if card interaction status
+    DESFireServiceAccess.cardReaderState.observe(this) {
+      val cardReaderState = it.name
+    }
+
+    // After reading the card, the end-user will need the content that has been read on the card
+    DESFireServiceAccess.readResult.observe(this) { result ->
+      if (!result.isNullOrEmpty()) {
+        val stringBuilder = StringBuilder().append("Here is the result after reading the card :\n")
+        result.forEach { stringBuilder.append(it).append("\n") }
+        val readResult = stringBuilder.toString()
+      }
+    }
+  }
 }
