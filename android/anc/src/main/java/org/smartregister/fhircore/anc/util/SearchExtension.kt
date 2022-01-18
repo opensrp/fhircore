@@ -34,15 +34,18 @@ fun Coding.asCodeableConcept() =
   }
 
 fun Search.filterByPatient(reference: ReferenceClientParam, patientId: String) {
-  filter(reference) { this.value = "${ResourceType.Patient.name}/$patientId" }
+  filter(reference, { value = "${ResourceType.Patient.name}/$patientId" })
 }
 
 fun Search.filterByPatientName(name: String?) {
   if (name?.isNotBlank() == true) {
-    filter(Patient.NAME) {
-      value = name.trim()
-      modifier = StringFilterModifier.CONTAINS
-    }
+    filter(
+      Patient.NAME,
+      {
+        modifier = StringFilterModifier.CONTAINS
+        value = name.trim()
+      }
+    )
   }
 }
 
@@ -50,10 +53,13 @@ fun Search.filterBy(filter: SearchFilter) {
   when (filter.filterType) {
     Enumerations.SearchParamType.TOKEN -> filterToken(filter)
     Enumerations.SearchParamType.STRING ->
-      filter(StringClientParam(filter.key)) {
-        this.modifier = StringFilterModifier.MATCHES_EXACTLY
-        this.value = filter.valueString!!
-      }
+      filter(
+        StringClientParam(filter.key),
+        {
+          modifier = StringFilterModifier.MATCHES_EXACTLY
+          value = filter.valueString!!
+        }
+      )
     else ->
       throw UnsupportedOperationException("Can not apply ${filter.filterType} as search filter")
   }
@@ -62,9 +68,13 @@ fun Search.filterBy(filter: SearchFilter) {
 fun Search.filterToken(filter: SearchFilter) {
   // TODO TokenFilter in SDK is not fully implemented and ignores all types but Coding
   when (filter.valueType) {
-    Enumerations.DataType.CODING -> filter(TokenClientParam(filter.key), filter.valueCoding!!)
+    Enumerations.DataType.CODING ->
+      filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!) })
     Enumerations.DataType.CODEABLECONCEPT ->
-      filter(TokenClientParam(filter.key), filter.valueCoding!!.asCodeableConcept()!!)
+      filter(
+        TokenClientParam(filter.key),
+        { value = of(filter.valueCoding!!.asCodeableConcept()!!) }
+      )
     else ->
       throw UnsupportedOperationException("SDK does not support value type ${filter.valueType}")
   }

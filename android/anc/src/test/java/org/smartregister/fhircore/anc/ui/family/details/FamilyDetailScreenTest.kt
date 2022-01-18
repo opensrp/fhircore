@@ -83,8 +83,8 @@ class FamilyDetailScreenTest : RobolectricTest() {
           coEvery { fetchDemographics(any()) } returns
             Patient().apply {
               addName().apply {
-                family = "John"
-                addGiven("Doe")
+                family = "Doe"
+                addGiven("John")
               }
             }
 
@@ -101,8 +101,8 @@ class FamilyDetailScreenTest : RobolectricTest() {
     composeRule.onNodeWithText("All Families").assertIsDisplayed()
 
     // Family name given is displayed
-    composeRule.onNodeWithText("John Doe").assertExists()
-    composeRule.onNodeWithText("John Doe").assertIsDisplayed()
+    composeRule.onNodeWithText("Doe Family").assertExists()
+    composeRule.onNodeWithText("Doe Family").assertIsDisplayed()
   }
 
   @Test

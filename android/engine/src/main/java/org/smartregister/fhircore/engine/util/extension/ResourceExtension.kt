@@ -185,11 +185,11 @@ suspend fun QuestionnaireResponse.deleteRelatedResources(defaultRepository: Defa
 }
 
 fun QuestionnaireResponse.retainMetadata(questionnaireResponse: QuestionnaireResponse) {
-  author = questionnaireResponse!!.author
-  authored = questionnaireResponse!!.authored
-  id = questionnaireResponse!!.logicalId
+  author = questionnaireResponse.author
+  authored = questionnaireResponse.authored
+  id = questionnaireResponse.logicalId
 
-  val versionId = Integer.parseInt(questionnaireResponse!!.meta.versionId ?: "1") + 1
+  val versionId = Integer.parseInt(questionnaireResponse.meta.versionId ?: "1") + 1
 
   questionnaireResponse.meta.apply {
     lastUpdated = Date()

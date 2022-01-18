@@ -296,7 +296,7 @@ class PatientRepositoryTest : RobolectricTest() {
   @Test
   fun testFetchCarePlanShouldReturnExpectedCarePlan() {
     coEvery {
-      fhirEngine.search<CarePlan> { filter(CarePlan.SUBJECT) { value = "Patient/$PATIENT_ID_1" } }
+      fhirEngine.search<CarePlan> { filter(CarePlan.SUBJECT, { value = "Patient/$PATIENT_ID_1" }) }
     } returns listOf(buildCarePlanWithActive(PATIENT_ID_1))
 
     val carePlans = runBlocking { repository.fetchCarePlan(PATIENT_ID_1) }

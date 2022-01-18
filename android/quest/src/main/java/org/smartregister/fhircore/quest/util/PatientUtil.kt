@@ -85,18 +85,18 @@ suspend inline fun <reified T : Resource> getSearchResults(
       Enumerations.DataType.CODEABLECONCEPT -> {
         filter(
           TokenClientParam(filter.key),
-          CodeableConcept().addCoding(filter.valueCoding!!.asCoding())
+          { value = of(CodeableConcept().addCoding(filter.valueCoding!!.asCoding())) }
         )
       }
       else -> {
-        filter(TokenClientParam(filter.key), filter.valueCoding!!.asCoding())
+        filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!.asCoding()) })
       }
     }
   }
 }
 
 fun Search.filterByReference(referenceParam: ReferenceClientParam, reference: String) {
-  filter(referenceParam) { this.value = reference }
+  filter(referenceParam, { this.value = reference })
 }
 
 fun propertiesMapping(value: String, filter: Filter): Properties {
