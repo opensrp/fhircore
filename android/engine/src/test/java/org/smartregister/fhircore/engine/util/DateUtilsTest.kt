@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util
 
+import org.hl7.fhir.r4.model.DateTimeType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.DateUtils.getDate
@@ -36,6 +37,20 @@ class DateUtilsTest {
       DateUtils.addDays("2020-03-10 01:23:00 AM", 12, dateTimeFormat = "yyyy-MM-dd h:mm:ss a")
 
     Assert.assertEquals("3-22-2020", finalDate)
+  }
+
+  @Test
+  fun `addDays() should return same date when given initialDate and pattern`() {
+    val finalDate =
+      DateUtils.addDays("2020-03-10 01:23:00 AM", dateTimeFormat = "yyyy-MM-dd h:mm:ss a")
+    Assert.assertEquals("3-10-2020", finalDate)
+  }
+
+  @Test
+  fun `hasPastDays should return true when given initialDate and days`() {
+    val initialDate = DateTimeType("2022-01-11T15:30:10.222")
+    val hasPastDays = DateUtils.hasPastDays(initialDate, -3)
+    Assert.assertTrue(hasPastDays)
   }
 
   @Test
