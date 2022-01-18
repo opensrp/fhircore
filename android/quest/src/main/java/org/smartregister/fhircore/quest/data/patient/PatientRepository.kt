@@ -24,6 +24,7 @@ import com.google.android.fhir.search.search
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -44,7 +45,7 @@ class PatientRepository
 constructor(
   override val fhirEngine: FhirEngine,
   override val domainMapper: PatientItemMapper,
-  val dispatcherProvider: DispatcherProvider,
+  private val dispatcherProvider: DispatcherProvider,
   val configurationRegistry: ConfigurationRegistry
 ) : RegisterRepository<Patient, PatientItem> {
 
@@ -56,12 +57,15 @@ constructor(
     return withContext(dispatcherProvider.io()) {
       val patients =
         fhirEngine.search<Patient> {
-          filter(Patient.ACTIVE, true)
+          filter(Patient.ACTIVE, { value = of(true) })
           if (query.isNotBlank()) {
-            filter(Patient.NAME) {
-              modifier = StringFilterModifier.CONTAINS
-              value = query.trim()
-            }
+            filter(
+              Patient.NAME,
+              {
+                modifier = StringFilterModifier.CONTAINS
+                value = query.trim()
+              }
+            )
           }
           sort(Patient.NAME, Order.ASCENDING)
           count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
@@ -117,8 +121,11 @@ constructor(
       fhirEngine.load(Questionnaire::class.java, questionnaireId)
     }
 
+  suspend fun loadEncounter(id: String): Encounter =
+    withContext(dispatcherProvider.io()) { fhirEngine.load(Encounter::class.java, id) }
+
   private suspend fun searchQuestionnaireResponses(patientId: String): List<QuestionnaireResponse> =
-    fhirEngine.search { filter(QuestionnaireResponse.SUBJECT) { value = "Patient/$patientId" } }
+    fhirEngine.search { filter(QuestionnaireResponse.SUBJECT, { value = "Patient/$patientId" }) }
 
   suspend fun fetchTestForms(filter: SearchFilter): List<QuestionnaireConfig> =
     withContext(dispatcherProvider.io()) {
@@ -126,11 +133,16 @@ constructor(
         fhirEngine.search<Questionnaire> {
           filter(
             Questionnaire.CONTEXT,
-            CodeableConcept().apply {
-              addCoding().apply {
-                this.code = filter.code
-                this.system = filter.system
-              }
+            {
+              value =
+                of(
+                  CodeableConcept().apply {
+                    addCoding().apply {
+                      this.code = filter.code
+                      this.system = filter.system
+                    }
+                  }
+                )
             }
           )
         }

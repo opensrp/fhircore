@@ -30,6 +30,7 @@ import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
@@ -159,6 +160,20 @@ class PatientRepositoryTest : RobolectricTest() {
       Assert.assertEquals("Sample Questionnaire name", questionnaire.name)
       Assert.assertEquals("Sample Questionnaire title", questionnaire.title)
     }
+  }
+
+  @Test
+  fun testLoadEncounterShouldReturnNonEmptyEncounter() = runBlockingTest {
+    coEvery { fhirEngine.load(Encounter::class.java, any()) } returns
+      Encounter().apply {
+        id = "1"
+        status = Encounter.EncounterStatus.INPROGRESS
+      }
+
+    val result = repository.loadEncounter("1")
+
+    Assert.assertEquals("1", result.id)
+    Assert.assertEquals(Encounter.EncounterStatus.INPROGRESS, result.status)
   }
 
   @Test
