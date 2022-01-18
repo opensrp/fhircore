@@ -82,11 +82,9 @@ constructor(
 
   val generateReport = MutableLiveData(false)
 
-  val resultForPopulation: MutableLiveData<List<ResultItemPopulation>> =
-    MutableLiveData(loadDummyResultForPopulation())
+  val resultForPopulation: MutableLiveData<List<ResultItemPopulation>?> = MutableLiveData(null)
 
-  val resultForIndividual: MutableLiveData<ResultItem> =
-    MutableLiveData(ResultItem(status = "True", isMatchedIndicator = true))
+  val resultForIndividual: MutableLiveData<ResultItem?> = MutableLiveData(null)
 
   val dateRange: LiveData<androidx.core.util.Pair<Long, Long>>
     get() = _dateRange
@@ -134,15 +132,6 @@ constructor(
     return if (selectedPatientItem.value != null) selectedPatientItem else MutableLiveData(null)
   }
 
-  fun loadDummyResultForPopulation(): List<ResultItemPopulation>? {
-    val testResultItem1 = ResultItem(title = "10 - 15 years", percentage = "10%", count = "1/10")
-    val testResultItem2 = ResultItem(title = "16 - 20 years", percentage = "50%", count = "30/60")
-    return listOf(
-      ResultItemPopulation(title = "Age Range", listOf(testResultItem1, testResultItem2)),
-      ResultItemPopulation(title = "Education Level", listOf(testResultItem1, testResultItem2))
-    )
-  }
-
   fun getReportsTypeList(): Flow<PagingData<ReportItem>> {
     return Pager(PagingConfig(pageSize = PaginationUtil.DEFAULT_PAGE_SIZE)) { repository }.flow
   }
@@ -167,15 +156,22 @@ constructor(
 
   fun onBackPress() {
     backPress.value = true
+    resetValues()
   }
 
   fun onBackPress(reportScreen: ReportScreen) {
     currentScreen = reportScreen
-    currentReportType.value = ""
+    resetValues()
     updateGenerateReport()
   }
 
-  // TODO Run measure evaluate and open result screen depending on user selection
+  private fun resetValues() {
+    currentReportType.value = ""
+    selectedPatientItem.value = null
+    resultForIndividual.value = null
+    resultForPopulation.value = null
+  }
+
   fun onGenerateReportClicked() {
     onGenerateReportClicked.value = true
   }
@@ -187,12 +183,13 @@ constructor(
     measureResourceBundleUrl: String = "measure/ANCIND01-bundle.json",
     reportType: String = "subject"
   ) {
-    viewModelScope.launch(dispatcher.io()) {
+    viewModelScope.launch {
       if (selectedPatientItem.value != null && individualEvaluation) {
         val startDateFormatted =
           measureReportDateFormatter.format(dateRangeDateFormatter.parse(startDate.value!!)!!)
         val endDateFormatted =
           measureReportDateFormatter.format(dateRangeDateFormatter.parse(endDate.value!!)!!)
+
         val measureReport =
           withContext(dispatcher.io()) {
             fhirEngine.loadCqlLibraryBundle(
@@ -213,13 +210,27 @@ constructor(
         if (measureReport.type == MeasureReport.MeasureReportType.INDIVIDUAL) {
           val population: MeasureReport.MeasureReportGroupPopulationComponent? =
             measureReport.group.first().population.find { it.id == NUMERATOR }
-          resultForIndividual.value =
+          resultForIndividual.postValue(
             ResultItem(status = if (population != null && population.count > 0) "True" else "False")
+          )
           currentScreen = ReportScreen.RESULT
         }
+      } else if (selectedPatientItem.value == null && !individualEvaluation) {
+        // TODO extract data from population MeasureReport
+        resultForPopulation.value = loadPopulationResult()
+        currentScreen = ReportScreen.RESULT
       }
-      // TODO run measure evaluate for population in else block
     }
+  }
+
+  // TODO Replace with actual data - i.e convert evaluated MeasureReport for population
+  fun loadPopulationResult(): List<ResultItemPopulation> {
+    val testResultItem1 = ResultItem(title = "10 - 15 years", percentage = "10", count = "1/10")
+    val testResultItem2 = ResultItem(title = "16 - 20 years", percentage = "50", count = "30/60")
+    return listOf(
+      ResultItemPopulation(title = "Age Range", listOf(testResultItem1, testResultItem2)),
+      ResultItemPopulation(title = "Education Level", listOf(testResultItem1, testResultItem2))
+    )
   }
 
   fun onReportTypeSelected(reportType: String, launchPatientList: Boolean = false) {

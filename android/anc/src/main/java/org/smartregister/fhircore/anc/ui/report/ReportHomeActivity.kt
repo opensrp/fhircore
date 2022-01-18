@@ -35,7 +35,6 @@ import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
 import org.smartregister.fhircore.anc.ui.report.ReportViewModel.ReportScreen
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -49,16 +48,10 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
 
   lateinit var registerDataViewModel: RegisterDataViewModel<Anc, PatientItem>
 
-  lateinit var patientId: String
-
   val reportViewModel by viewModels<ReportViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
-    val patientId =
-      intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY) ?: ""
-
     val currentActivity = this@ReportHomeActivity
 
     registerDataViewModel =
@@ -97,11 +90,21 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       onGenerateReportClicked.observe(
         currentActivity,
         { generateReport ->
-          if (generateReport &&
-              reportViewModel.selectedPatientItem.value!!.patientIdentifier == "charity-otala-1"
-          ) {
+          if (generateReport) {
             if (reportViewModel.currentReportType.value!!.equals(
                 other = getString(R.string.individual),
+                ignoreCase = true
+              ) &&
+                // TODO remove charity-otala-1 check; also provide measureUrl dynamically
+                reportViewModel.selectedPatientItem.value!!.patientIdentifier == "charity-otala-1"
+            ) {
+              reportViewModel.evaluateMeasure(
+                context = currentActivity,
+                measureUrl = "http://fhir.org/guides/who/anc-cds/Measure/ANCIND01",
+                individualEvaluation = true
+              )
+            } else if (reportViewModel.currentReportType.value!!.equals(
+                other = getString(R.string.all),
                 ignoreCase = true
               )
             ) {
@@ -110,11 +113,10 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
                 measureUrl = "http://fhir.org/guides/who/anc-cds/Measure/ANCIND01",
                 individualEvaluation = false
               )
+            } else {
+              showToast("Test measure reporting with sample data")
             }
-            // TODO Run measure evaluate for population in the else block
-          } else {
-            // TODO remove this work with data dynamically
-            showToast("Test Measure evaluate using sample data")
+            // TODO Remove static patient id; implement population measure evaluate
           }
         }
       )

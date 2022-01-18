@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.anc.ui.report
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,9 +29,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -42,10 +47,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
@@ -53,6 +63,7 @@ import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.paging.compose.items
 import java.util.Date
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
@@ -61,6 +72,7 @@ import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.ui.theme.ProgressBarBlueColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.plusYears
@@ -93,11 +105,7 @@ fun PreviewIndividualReportResult() {
     endDate = "29 Nov, 2021",
     selectedPatient =
       PatientItem(name = "Jacky Coughlin", gender = "F", birthDate = Date().plusYears(28)),
-    ResultItem(
-      status = "True",
-      isMatchedIndicator = true,
-      description = ""
-    ),
+    ResultItem(status = "True", isMatchedIndicator = true, description = ""),
     null
   )
 }
@@ -106,10 +114,10 @@ fun PreviewIndividualReportResult() {
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun PreviewAllPatientReportResult() {
-  val testResultItem1 = ResultItem(title = "10 - 15 years", percentage = "10%", count = "1/10")
-  val testResultItem2 = ResultItem(title = "16 - 20 years", percentage = "50%", count = "30/60")
+  val testResultItem1 = ResultItem(title = "10 - 15 years", percentage = "10", count = "1/10")
+  val testResultItem2 = ResultItem(title = "16 - 20 years", percentage = "50", count = "30/60")
   ReportResultPage(
-    topBarTitle = "PageTitle",
+    topBarTitle = "First ANC",
     onBackPress = {},
     reportMeasureItem =
       ReportItem(
@@ -118,8 +126,8 @@ fun PreviewAllPatientReportResult() {
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
     selectedPatient =
-      PatientItem(name = "Test Selected Patient", gender = "F", birthDate = Date().plusYears(27)),
-    resultForIndividual = ResultItem(),
+      PatientItem(name = "Jacky Coughlin", gender = "F", birthDate = Date().plusYears(27)),
+    resultForIndividual = null,
     resultItemPopulation =
       listOf(
         ResultItemPopulation(title = "Age Range", listOf(testResultItem1, testResultItem2)),
@@ -163,54 +171,48 @@ fun ReportResultPage(
   resultForIndividual: ResultItem?,
   resultItemPopulation: List<ResultItemPopulation>?
 ) {
-  if (selectedPatient != null) {
-    Surface(color = colorResource(id = R.color.white)) {
-      Column(
-        modifier =
-          Modifier.background(color = colorResource(id = R.color.backgroundGray))
-            .fillMaxSize()
-            .testTag(REPORT_RESULT_PAGE)
-      ) {
-        TopBarBox(
-          topBarTitle = topBarTitle,
-          onBackPress = { onBackPress(ReportViewModel.ReportScreen.FILTER) }
+  Surface(color = colorResource(id = R.color.white)) {
+    Column(
+      modifier =
+        Modifier.background(color = colorResource(id = R.color.backgroundGray))
+          .fillMaxSize()
+          .testTag(REPORT_RESULT_PAGE)
+    ) {
+      TopBarBox(
+        topBarTitle = topBarTitle,
+        onBackPress = { onBackPress(ReportViewModel.ReportScreen.FILTER) }
+      )
+      Column(modifier = Modifier.padding(16.dp)) {
+        Box(
+          modifier =
+            Modifier.clip(RoundedCornerShape(8.dp))
+              .background(color = colorResource(id = R.color.light_gray_background))
+              .padding(12.dp)
+              .wrapContentWidth()
+              .testTag(REPORT_RESULT_MEASURE_DESCRIPTION),
+          contentAlignment = Alignment.Center
+        ) {
+          Text(text = reportMeasureItem.description, textAlign = TextAlign.Start, fontSize = 16.sp)
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        DateSelectionBox(
+          startDate = startDate,
+          endDate = endDate,
+          canChange = false,
+          showDateRangePicker = false,
+          onDateRangeClick = {}
         )
-        Column(modifier = Modifier.padding(16.dp)) {
-          Box(
-            modifier =
-              Modifier.clip(RoundedCornerShape(8.dp))
-                .background(color = colorResource(id = R.color.light_gray))
-                .padding(12.dp)
-                .wrapContentWidth()
-                .testTag(REPORT_RESULT_MEASURE_DESCRIPTION),
-            contentAlignment = Alignment.Center
-          ) {
-            Text(
-              text = reportMeasureItem.description,
-              textAlign = TextAlign.Start,
-              fontSize = 16.sp
-            )
-          }
-          Spacer(modifier = Modifier.height(16.dp))
-          DateSelectionBox(
-            startDate = startDate,
-            endDate = endDate,
-            canChange = false,
-            showDateRangePicker = false,
-            onDateRangeClick = {}
+        Spacer(modifier = Modifier.height(16.dp))
+        if (resultForIndividual != null && selectedPatient != null) {
+          ResultItemIndividual(
+            selectedPatient = selectedPatient,
+            isMatchedIndicator = resultForIndividual.isMatchedIndicator,
+            indicatorStatus = resultForIndividual.status,
+            indicatorDescription = resultForIndividual.description
           )
-          Spacer(modifier = Modifier.height(16.dp))
-          if (resultForIndividual != null) {
-            ResultItemIndividual(
-              selectedPatient = selectedPatient,
-              isMatchedIndicator = resultForIndividual.isMatchedIndicator,
-              indicatorStatus = resultForIndividual.status,
-              indicatorDescription = resultForIndividual.description
-            )
-          }
-          if (resultItemPopulation != null) {
-            ResultForPopulation(resultItemPopulation)
-          }
+        }
+        if (resultItemPopulation != null) {
+          ResultForPopulation(resultItemPopulation)
         }
       }
     }
@@ -301,7 +303,7 @@ fun ResultPopulationBox(
       modifier =
         Modifier.clip(RoundedCornerShape(8.dp))
           .background(color = colorResource(id = R.color.white))
-          .padding(12.dp)
+          .padding(16.dp)
           .fillMaxWidth()
     ) {
       Column {
@@ -311,9 +313,7 @@ fun ResultPopulationBox(
           fontSize = 16.sp,
           modifier = modifier.wrapContentWidth()
         )
-        Spacer(modifier = modifier.height(6.dp))
-        Divider(color = DividerColor)
-        Spacer(modifier = modifier.height(6.dp))
+        Divider(color = DividerColor, modifier = modifier.padding(vertical = 20.dp))
         resultItem.dataList.forEach { item -> ResultPopulationItem(item) }
       }
     }
@@ -328,22 +328,34 @@ fun ResultPopulationItem(
   Row(
     modifier =
       Modifier.fillMaxWidth().padding(vertical = 4.dp).testTag(REPORT_RESULT_POPULATION_ITEM),
-    horizontalArrangement = Arrangement.SpaceBetween
+    horizontalArrangement = Arrangement.SpaceBetween,
+    verticalAlignment = Alignment.CenterVertically
   ) {
-    Text(
-      text = resultItem.title,
-      fontSize = 16.sp,
-      fontWeight = FontWeight.Bold,
-      modifier = modifier.wrapContentWidth()
-    )
-    Row(modifier = Modifier.wrapContentWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    Row(
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      CircularPercentageIndicator(percentage = resultItem.percentage)
+
       Text(
-        text = resultItem.percentage,
+        text = resultItem.title,
         fontSize = 16.sp,
         fontWeight = FontWeight.Bold,
+        modifier = modifier.wrapContentWidth().padding(horizontal = 20.dp),
+      )
+    }
+
+    Column(
+      modifier = Modifier.wrapContentWidth(),
+      verticalArrangement = Arrangement.SpaceBetween,
+      horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+      Text(
+        text = "${resultItem.percentage}%",
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Normal,
         modifier = modifier.wrapContentWidth()
       )
-      Spacer(modifier = modifier.width(12.dp))
       Text(
         text = resultItem.count,
         fontSize = 16.sp,
@@ -355,8 +367,54 @@ fun ResultPopulationItem(
 }
 
 @Composable
+fun CircularPercentageIndicator(
+  modifier: Modifier = Modifier,
+  percentage: String,
+) {
+  Box(
+    modifier = Modifier.size(60.dp).padding(2.dp).clip(CircleShape).background(Color.Transparent),
+    contentAlignment = Alignment.Center
+  ) {
+    Canvas(
+      modifier = modifier.fillMaxSize(),
+      onDraw = {
+        drawCircle(
+          Brush.linearGradient(colors = listOf(Color.LightGray, Color.LightGray)),
+          radius = size.width / 2,
+          center = center,
+          style = Stroke(width = size.width * 0.075f)
+        )
+      }
+    )
+    CircularProgressIndicator(
+      progress = percentage.toFloat() / 100,
+      modifier = modifier.fillMaxSize(),
+      strokeWidth = 2.4.dp,
+      color = ProgressBarBlueColor
+    )
+    Text(
+      text =
+        buildAnnotatedString {
+          pushStyle(SpanStyle(fontSize = 20.sp))
+          append(percentage)
+          pushStyle(SpanStyle(fontSize = 14.sp))
+          append(stringResource(R.string.percentage))
+        },
+      textAlign = TextAlign.Center
+    )
+  }
+}
+
+@Composable
+@Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
+fun CircularPercentageIndicatorPreview() {
+  CircularPercentageIndicator(percentage = "10")
+}
+
+@Composable
 fun ResultForPopulation(dataList: List<ResultItemPopulation>) {
-  Column(modifier = Modifier.testTag(REPORT_RESULT_POPULATION_DATA)) {
-    dataList.forEach { message -> ResultPopulationBox(message) }
+  LazyColumn(modifier = Modifier.testTag(REPORT_RESULT_POPULATION_DATA)) {
+    items(dataList, key = { it.title }) { item -> ResultPopulationBox(item) }
   }
 }

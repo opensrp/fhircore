@@ -199,7 +199,7 @@ internal class ReportViewModelTest {
 
   @Test
   fun testLoadDummyResultData() {
-    Assert.assertNotNull(reportViewModel.loadDummyResultForPopulation())
+    Assert.assertNotNull(reportViewModel.loadPopulationResult())
   }
 
   @Test

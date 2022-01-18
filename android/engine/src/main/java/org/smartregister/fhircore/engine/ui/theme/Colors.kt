@@ -35,6 +35,7 @@ val LoginButtonColor = Color(0xFF006EB8)
 val BlueTextColor = Color(0xFF006EB8)
 val DueLightColor = Color(0xFFC1E1EC)
 val LighterBlue = Color(0xFFE0F0FF)
+val ProgressBarBlueColor = Color(0xFF0075EB)
 
 private val PrimaryColor = Color(0xFF005084)
 private val PrimaryVariantColor = Color(0xFF003D66)

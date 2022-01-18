@@ -131,4 +131,5 @@
     <string name="bullet_character">\u00b7</string>
     <string name="overdue">Overdue</string>
     <string name="missing_measure_report">Measure Report Missing</string>
+    <string name="percentage">%</string>
 </resources>

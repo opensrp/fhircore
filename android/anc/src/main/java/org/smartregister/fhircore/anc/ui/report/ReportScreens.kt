@@ -240,7 +240,14 @@ fun DateRangeItem(text: String, canChange: Boolean, modifier: Modifier = Modifie
           .wrapContentWidth()
           .padding(horizontal = textPaddingHorizontal, vertical = textPaddingVertical),
       contentAlignment = Alignment.Center
-    ) { Text(text = text, textAlign = TextAlign.Start, fontSize = 16.sp) }
+    ) {
+      Text(
+        text = text,
+        textAlign = TextAlign.Start,
+        fontSize = 16.sp,
+        color = colorResource(id = R.color.darkGrayText)
+      )
+    }
   }
 }
 
