@@ -67,7 +67,7 @@ constructor(
       val patients =
         fhirEngine.search<Patient> {
           filterBy(registerConfig.primaryFilter!!)
-          filter(Patient.ACTIVE, true)
+          filter(Patient.ACTIVE, { value = of(true) })
           filterByPatientName(query)
 
           sort(Patient.NAME, Order.ASCENDING)
@@ -87,7 +87,7 @@ constructor(
   override suspend fun countAll(): Long {
     return fhirEngine.count<Patient> {
       filterBy(registerConfig.primaryFilter!!)
-      filter(Patient.ACTIVE, true)
+      filter(Patient.ACTIVE, { value = of(true) })
     }
   }
 

@@ -117,11 +117,11 @@ constructor(
     val patient = fhirEngine.load(Patient::class.java, patientId)
     val observations =
       fhirEngine.search<Observation> {
-        filter(Observation.SUBJECT) { this.value = "Patient/$patientId" }
+        filter(Observation.SUBJECT, { this.value = "Patient/$patientId" })
       }
     val conditions =
       fhirEngine.search<Condition> {
-        filter(Condition.SUBJECT) { this.value = "Patient/$patientId" }
+        filter(Condition.SUBJECT, { this.value = "Patient/$patientId" })
       }
 
     return mutableListOf<Resource>().apply {

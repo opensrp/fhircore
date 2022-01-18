@@ -17,11 +17,12 @@
 package org.smartregister.fhircore.anc.util
 
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
-import com.google.android.fhir.search.ReferenceFilter
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.StringFilter
 import com.google.android.fhir.search.StringFilterModifier
-import com.google.android.fhir.search.TokenFilter
+import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
+import com.google.android.fhir.search.filter.StringParamFilterCriterion
+import com.google.android.fhir.search.filter.TokenFilterValue
+import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
@@ -46,11 +47,21 @@ class SearchExtensionTest {
 
     search.filterBy(filter)
 
-    val tokenFilters = ReflectionHelpers.getField<List<TokenFilter>>(search, "tokenFilters")
+    val tokenFilterParamCriterion: MutableList<Any> =
+      ReflectionHelpers.getField(search, "tokenFilterCriteria")
+    val tokenFilters: MutableList<TokenParamFilterCriterion> =
+      ReflectionHelpers.getField(tokenFilterParamCriterion[0], "filters")
+
+    val tokenValue =
+      ReflectionHelpers.getField<List<TokenFilterValue>>(tokenFilters[0].value, "tokenFilters")
+    val tokenMap =
+      getParametersMap(
+        tokenValue.toString().substringAfter("(").substringBefore(")").filter { !it.isWhitespace() }
+      )
 
     assertEquals(1, tokenFilters.size)
-    assertEquals("http://snomed.com", tokenFilters[0].uri)
-    assertEquals("123456", tokenFilters[0].code)
+    assertEquals("http://snomed.com", tokenMap["uri"])
+    assertEquals("123456", tokenMap["code"])
     assertEquals("_tag", tokenFilters[0].parameter?.paramName)
   }
 
@@ -68,11 +79,21 @@ class SearchExtensionTest {
 
     search.filterBy(filter)
 
-    val tokenFilters = ReflectionHelpers.getField<List<TokenFilter>>(search, "tokenFilters")
+    val tokenFilterParamCriterion: MutableList<Any> =
+      ReflectionHelpers.getField(search, "tokenFilterCriteria")
+    val tokenFilters: MutableList<TokenParamFilterCriterion> =
+      ReflectionHelpers.getField(tokenFilterParamCriterion[0], "filters")
+
+    val tokenValue =
+      ReflectionHelpers.getField<List<TokenFilterValue>>(tokenFilters[0].value, "tokenFilters")
+    val tokenMap =
+      getParametersMap(
+        tokenValue.toString().substringAfter("(").substringBefore(")").filter { !it.isWhitespace() }
+      )
 
     assertEquals(1, tokenFilters.size)
-    assertEquals("http://snomed.com", tokenFilters[0].uri)
-    assertEquals("123456", tokenFilters[0].code)
+    assertEquals("http://snomed.com", tokenMap["uri"])
+    assertEquals("123456", tokenMap["code"])
     assertEquals("code", tokenFilters[0].parameter?.paramName)
   }
 
@@ -90,7 +111,10 @@ class SearchExtensionTest {
 
     search.filterBy(filter)
 
-    val stringFilters = ReflectionHelpers.getField<List<StringFilter>>(search, "stringFilters")
+    val stringFilterParamCriterion: MutableList<Any> =
+      ReflectionHelpers.getField(search, "stringFilterCriteria")
+    val stringFilters: MutableList<StringParamFilterCriterion> =
+      ReflectionHelpers.getField(stringFilterParamCriterion[0], "filters")
 
     assertEquals(1, stringFilters.size)
     assertEquals("NAIROBI", stringFilters[0].value)
@@ -129,8 +153,10 @@ class SearchExtensionTest {
 
     search.filterByPatient(ReferenceClientParam("link"), "123344")
 
-    val referenceFilters =
-      ReflectionHelpers.getField<List<ReferenceFilter>>(search, "referenceFilters")
+    val referenceFilterParamCriterion: MutableList<Any> =
+      ReflectionHelpers.getField(search, "referenceFilterCriteria")
+    val referenceFilters: MutableList<ReferenceParamFilterCriterion> =
+      ReflectionHelpers.getField(referenceFilterParamCriterion[0], "filters")
 
     assertEquals(1, referenceFilters.size)
     assertEquals("Patient/123344", referenceFilters[0].value)
@@ -142,10 +168,19 @@ class SearchExtensionTest {
     val search = Search(ResourceType.Patient)
     search.filterByPatientName("John")
 
-    val stringFilters = ReflectionHelpers.getField<List<StringFilter>>(search, "stringFilters")
+    val stringFilterParamCriterion: MutableList<Any> =
+      ReflectionHelpers.getField(search, "stringFilterCriteria")
+    val stringFilters: MutableList<StringParamFilterCriterion> =
+      ReflectionHelpers.getField(stringFilterParamCriterion[0], "filters")
 
     assertEquals(1, stringFilters.size)
     assertEquals("John", stringFilters[0].value)
     assertEquals(StringFilterModifier.CONTAINS, stringFilters[0].modifier)
   }
+
+  private fun getParametersMap(mapAsString: String) =
+    mapAsString.substringAfter("(").substringBefore(")").split(",").associateTo(HashMap()) {
+      val (left, right) = it.split("=")
+      left to right
+    }
 }
