@@ -136,10 +136,14 @@ constructor(
     patientId: String,
     forms: List<QuestionnaireConfig>
   ): List<QuestionnaireResponse> =
-    fhirEngine.search {
-      filter(QuestionnaireResponse.SUBJECT) { value = "Patient/$patientId" }
-      forms.forEach { config ->
-        filter(QuestionnaireResponse.QUESTIONNAIRE) { value = "Questionnaire/${config.identifier}" }
+    mutableListOf<QuestionnaireResponse>().also { result ->
+      forms.forEach {
+        result.addAll(
+          fhirEngine.search {
+            filter(QuestionnaireResponse.SUBJECT) { value = "Patient/$patientId" }
+            filter(QuestionnaireResponse.QUESTIONNAIRE) { value = "Questionnaire/${it.identifier}" }
+          }
+        )
       }
     }
 
