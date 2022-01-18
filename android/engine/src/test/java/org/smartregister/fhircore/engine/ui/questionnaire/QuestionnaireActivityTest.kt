@@ -345,6 +345,20 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     Assert.assertTrue(questionnaireActivity.isFinishing)
   }
 
+  @Test
+  fun testPostSaveSuccessfulWithExtractionMessageShouldShowAlert() {
+    questionnaireActivity.questionnaireViewModel.extractionProgressMessage.postValue("ABC")
+    questionnaireActivity.postSaveSuccessful(QuestionnaireResponse())
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+
+    Assert.assertEquals(
+      "ABC",
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+    )
+  }
+
   private fun buildQuestionnaireWithConstraints(): Questionnaire {
     return Questionnaire().apply {
       addItem().apply {
