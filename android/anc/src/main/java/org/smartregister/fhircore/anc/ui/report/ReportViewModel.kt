@@ -28,7 +28,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -40,6 +39,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.MeasureReport
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
@@ -73,8 +73,6 @@ constructor(
   val onGenerateReportClicked: MutableLiveData<Boolean> = MutableLiveData(false)
 
   val showDatePicker: MutableLiveData<Boolean> = MutableLiveData(false)
-
-  val isChangingStartDate: MutableLiveData<Boolean> = MutableLiveData(false)
 
   val selectedMeasureReportItem: MutableLiveData<ReportItem> = MutableLiveData(null)
 
@@ -184,34 +182,43 @@ constructor(
 
   fun evaluateMeasure(
     context: Context,
-    patientId: String,
     measureUrl: String,
+    individualEvaluation: Boolean,
     measureResourceBundleUrl: String = "measure/ANCIND01-bundle.json",
     reportType: String = "subject"
   ) {
     viewModelScope.launch(dispatcher.io()) {
-      val startDateFormatted =
-        measureReportDateFormatter.format(dateRangeDateFormatter.parse(startDate.value!!)!!)
-      val endDateFormatted =
-        measureReportDateFormatter.format(dateRangeDateFormatter.parse(endDate.value!!)!!)
-      val measureReport =
-        withContext(dispatcher.io()) {
-          fhirEngine.loadCqlLibraryBundle(
-            context = context,
-            fhirOperator = fhirOperator,
-            sharedPreferencesHelper = sharedPreferencesHelper,
-            resourcesBundlePath = measureResourceBundleUrl
-          )
-          fhirOperator.evaluateMeasure(
-            url = measureUrl,
-            start = startDateFormatted,
-            end = endDateFormatted,
-            reportType = reportType,
-            subject = patientId
-          )
+      if (selectedPatientItem.value != null && individualEvaluation) {
+        val startDateFormatted =
+          measureReportDateFormatter.format(dateRangeDateFormatter.parse(startDate.value!!)!!)
+        val endDateFormatted =
+          measureReportDateFormatter.format(dateRangeDateFormatter.parse(endDate.value!!)!!)
+        val measureReport =
+          withContext(dispatcher.io()) {
+            fhirEngine.loadCqlLibraryBundle(
+              context = context,
+              fhirOperator = fhirOperator,
+              sharedPreferencesHelper = sharedPreferencesHelper,
+              resourcesBundlePath = measureResourceBundleUrl
+            )
+            fhirOperator.evaluateMeasure(
+              url = measureUrl,
+              start = startDateFormatted,
+              end = endDateFormatted,
+              reportType = reportType,
+              subject = selectedPatientItem.value!!.patientIdentifier
+            )
+          }
+
+        if (measureReport.type == MeasureReport.MeasureReportType.INDIVIDUAL) {
+          val population: MeasureReport.MeasureReportGroupPopulationComponent? =
+            measureReport.group.first().population.find { it.id == NUMERATOR }
+          resultForIndividual.value =
+            ResultItem(status = if (population != null && population.count > 0) "True" else "False")
+          currentScreen = ReportScreen.RESULT
         }
-      //      currentScreen = ReportScreen.RESULT
-      Timber.i(FhirContext.forR4().newJsonParser().encodeResourceToString(measureReport))
+      }
+      // TODO run measure evaluate for population in else block
     }
   }
 
@@ -261,5 +268,6 @@ constructor(
   companion object {
     const val DATE_RANGE_DATE_FORMAT = "d MMM, yyyy"
     const val MEASURE_REPORT_DATE_FORMAT = "yyyy-MM-dd"
+    const val NUMERATOR = "numerator"
   }
 }

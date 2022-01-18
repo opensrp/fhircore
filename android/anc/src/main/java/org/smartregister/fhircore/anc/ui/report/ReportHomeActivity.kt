@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import android.os.Bundle
-import android.os.Parcel
-import android.os.Parcelable
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
@@ -26,6 +24,7 @@ import androidx.compose.material.Surface
 import androidx.compose.ui.res.colorResource
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -73,8 +72,8 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       )
       backPress.observe(
         currentActivity,
-        {
-          if (it) {
+        { backPressed ->
+          if (backPressed) {
             finish()
           }
         }
@@ -96,13 +95,20 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       )
       onGenerateReportClicked.observe(
         currentActivity,
-        {
-          if (it) {
-            reportViewModel.evaluateMeasure(
-              context = currentActivity,
-              patientId = patientId,
-              measureUrl = "http://fhir.org/guides/who/anc-cds/Measure/ANCIND01"
-            )
+        { generateReport ->
+          if (generateReport) {
+            if (reportViewModel.currentReportType.value!!.equals(
+                other = getString(R.string.individual),
+                ignoreCase = true
+              )
+            ) {
+              reportViewModel.evaluateMeasure(
+                context = currentActivity,
+                measureUrl = "http://fhir.org/guides/who/anc-cds/Measure/ANCIND01",
+                individualEvaluation = false
+              )
+            }
+            // TODO Run measure evaluate for population in the else block
           }
         }
       )
@@ -147,8 +153,11 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   }
 
   private fun showDateRangePicker() {
+    val constraintsBuilder =
+      CalendarConstraints.Builder().setValidator(DateValidatorPointBackward.now()).build()
     MaterialDatePicker.Builder.dateRangePicker()
       .apply {
+        setCalendarConstraints(constraintsBuilder)
         setTitleText("Select dates")
         setSelection(reportViewModel.dateRange.value!!)
       }
@@ -175,49 +184,6 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       }
       RegisterFilterType.OVERDUE_FILTER -> {
         return data.visitStatus == VisitStatus.OVERDUE
-      }
-    }
-  }
-
-  /*  Limit selectable range to start and end Date provided */
-  fun limitRange(
-    forStartDateOnly: Long,
-    startDateMillis: Long,
-    endDateMillis: Long
-  ): CalendarConstraints.Builder {
-    val constraintsBuilderRange = CalendarConstraints.Builder()
-    if (forStartDateOnly == 1L) constraintsBuilderRange.setEnd(endDateMillis)
-    else constraintsBuilderRange.setStart(startDateMillis)
-    constraintsBuilderRange.setValidator(
-      RangeValidator(forStartDateOnly, startDateMillis, endDateMillis)
-    )
-    return constraintsBuilderRange
-  }
-
-  class RangeValidator(
-    private val forStartDateOnly: Long,
-    private val minDate: Long,
-    private val maxDate: Long
-  ) : CalendarConstraints.DateValidator {
-    constructor(parcel: Parcel) : this(parcel.readLong(), parcel.readLong(), parcel.readLong())
-
-    override fun writeToParcel(dest: Parcel?, flags: Int) {}
-
-    override fun describeContents(): Int {
-      TODO("nothing to implement")
-    }
-
-    override fun isValid(date: Long): Boolean {
-      return if (forStartDateOnly == 1L) maxDate >= date else minDate <= date
-    }
-
-    companion object CREATOR : Parcelable.Creator<RangeValidator> {
-      override fun createFromParcel(parcel: Parcel): RangeValidator {
-        return RangeValidator(parcel)
-      }
-
-      override fun newArray(size: Int): Array<RangeValidator?> {
-        return arrayOfNulls(size)
       }
     }
   }

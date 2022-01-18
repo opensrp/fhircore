@@ -45,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
@@ -55,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import java.util.Date
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
+import org.smartregister.fhircore.anc.data.model.demographics
 import org.smartregister.fhircore.anc.data.report.model.ReportItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItem
 import org.smartregister.fhircore.anc.data.report.model.ResultItemPopulation
@@ -72,7 +74,7 @@ fun PreviewResultItemIndividual() {
       PatientItem(name = "Jacky Coughlin", gender = "F", birthDate = Date().plusYears(27)),
     isMatchedIndicator = true,
     indicatorStatus = "True",
-    indicatorDescription = "Jacky Got her first ANC contact"
+    indicatorDescription = ""
   )
 }
 
@@ -81,7 +83,7 @@ fun PreviewResultItemIndividual() {
 @ExcludeFromJacocoGeneratedReport
 fun PreviewIndividualReportResult() {
   ReportResultPage(
-    topBarTitle = "PageTitle",
+    topBarTitle = "First ANC",
     onBackPress = {},
     reportMeasureItem =
       ReportItem(
@@ -90,11 +92,11 @@ fun PreviewIndividualReportResult() {
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
     selectedPatient =
-      PatientItem(name = "Test Selected Patient", gender = "F", birthDate = Date().plusYears(28)),
+      PatientItem(name = "Jacky Coughlin", gender = "F", birthDate = Date().plusYears(28)),
     ResultItem(
       status = "True",
       isMatchedIndicator = true,
-      description = "Jacky Got her first ANC contact"
+      description = ""
     ),
     null
   )
@@ -140,10 +142,11 @@ fun ReportResultScreen(viewModel: ReportViewModel) {
   ReportResultPage(
     topBarTitle = reportMeasureItem?.title ?: "",
     onBackPress = viewModel::onBackPress,
-    reportMeasureItem = reportMeasureItem ?: ReportItem(title = "Measure Report Missing"),
+    reportMeasureItem = reportMeasureItem
+        ?: ReportItem(title = stringResource(R.string.missing_measure_report)),
     startDate = startDate,
     endDate = endDate,
-    selectedPatient = selectedPatient!!,
+    selectedPatient = selectedPatient,
     resultForIndividual = resultForIndividual,
     resultItemPopulation = resultForPopulation
   )
@@ -156,51 +159,59 @@ fun ReportResultPage(
   reportMeasureItem: ReportItem,
   startDate: String,
   endDate: String,
-  selectedPatient: PatientItem,
+  selectedPatient: PatientItem?,
   resultForIndividual: ResultItem?,
   resultItemPopulation: List<ResultItemPopulation>?
 ) {
-  Surface(color = colorResource(id = R.color.white)) {
-    Column(
-      modifier =
-        Modifier.background(color = colorResource(id = R.color.backgroundGray))
-          .fillMaxSize()
-          .testTag(REPORT_RESULT_PAGE)
-    ) {
-      TopBarBox(
-        topBarTitle = topBarTitle,
-        onBackPress = { onBackPress(ReportViewModel.ReportScreen.FILTER) }
-      )
-      Column(modifier = Modifier.padding(16.dp)) {
-        Box(
-          modifier =
-            Modifier.clip(RoundedCornerShape(8.dp))
-              .background(color = colorResource(id = R.color.light_gray))
-              .padding(12.dp)
-              .wrapContentWidth()
-              .testTag(REPORT_RESULT_MEASURE_DESCRIPTION),
-          contentAlignment = Alignment.Center
-        ) {
-          Text(text = reportMeasureItem.description, textAlign = TextAlign.Start, fontSize = 16.sp)
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        DateSelectionBox(
-          startDate = startDate,
-          endDate = endDate,
-          canChange = false,
-          showDateRangePicker = false,
-          onDateRangeClick = {}
+  if (selectedPatient != null) {
+    Surface(color = colorResource(id = R.color.white)) {
+      Column(
+        modifier =
+          Modifier.background(color = colorResource(id = R.color.backgroundGray))
+            .fillMaxSize()
+            .testTag(REPORT_RESULT_PAGE)
+      ) {
+        TopBarBox(
+          topBarTitle = topBarTitle,
+          onBackPress = { onBackPress(ReportViewModel.ReportScreen.FILTER) }
         )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        //        ResultForPopulation(resultItemPopulation!!)
-        //
-        //        ResultItemIndividual(
-        //          selectedPatient = selectedPatient,
-        //          isMatchedIndicator = resultForIndividual!!.isMatchedIndicator,
-        //          indicatorStatus = resultForIndividual.status,
-        //          indicatorDescription = resultForIndividual.description
-        //        )
+        Column(modifier = Modifier.padding(16.dp)) {
+          Box(
+            modifier =
+              Modifier.clip(RoundedCornerShape(8.dp))
+                .background(color = colorResource(id = R.color.light_gray))
+                .padding(12.dp)
+                .wrapContentWidth()
+                .testTag(REPORT_RESULT_MEASURE_DESCRIPTION),
+            contentAlignment = Alignment.Center
+          ) {
+            Text(
+              text = reportMeasureItem.description,
+              textAlign = TextAlign.Start,
+              fontSize = 16.sp
+            )
+          }
+          Spacer(modifier = Modifier.height(16.dp))
+          DateSelectionBox(
+            startDate = startDate,
+            endDate = endDate,
+            canChange = false,
+            showDateRangePicker = false,
+            onDateRangeClick = {}
+          )
+          Spacer(modifier = Modifier.height(16.dp))
+          if (resultForIndividual != null) {
+            ResultItemIndividual(
+              selectedPatient = selectedPatient,
+              isMatchedIndicator = resultForIndividual.isMatchedIndicator,
+              indicatorStatus = resultForIndividual.status,
+              indicatorDescription = resultForIndividual.description
+            )
+          }
+          if (resultItemPopulation != null) {
+            ResultForPopulation(resultItemPopulation)
+          }
+        }
       }
     }
   }
@@ -208,11 +219,11 @@ fun ReportResultPage(
 
 @Composable
 fun ResultItemIndividual(
+  modifier: Modifier = Modifier,
   selectedPatient: PatientItem,
   isMatchedIndicator: Boolean = true,
   indicatorStatus: String = "",
-  indicatorDescription: String = "",
-  modifier: Modifier = Modifier
+  indicatorDescription: String = ""
 ) {
   Box(
     modifier =
@@ -230,7 +241,7 @@ fun ResultItemIndividual(
     ) {
       Text(
         color = SubtitleTextColor,
-        text = selectedPatient.address,
+        text = selectedPatient.demographics(),
         fontSize = 16.sp,
         modifier = Modifier.wrapContentWidth().testTag(REPORT_RESULT_PATIENT_DATA)
       )
@@ -266,12 +277,14 @@ fun ResultItemIndividual(
             modifier = Modifier.wrapContentWidth()
           )
           Spacer(modifier = Modifier.height(4.dp))
-          Text(
-            color = SubtitleTextColor,
-            text = indicatorDescription,
-            fontSize = 14.sp,
-            modifier = modifier.wrapContentWidth()
-          )
+          if (indicatorDescription.isNotEmpty()) {
+            Text(
+              color = SubtitleTextColor,
+              text = indicatorDescription,
+              fontSize = 14.sp,
+              modifier = modifier.wrapContentWidth()
+            )
+          }
         }
       }
     }
