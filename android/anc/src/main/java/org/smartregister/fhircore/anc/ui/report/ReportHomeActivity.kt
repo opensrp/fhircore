@@ -40,6 +40,7 @@ import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.createFactory
+import org.smartregister.fhircore.engine.util.extension.showToast
 
 @AndroidEntryPoint
 class ReportHomeActivity : BaseMultiLanguageActivity() {
@@ -96,7 +97,9 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
       onGenerateReportClicked.observe(
         currentActivity,
         { generateReport ->
-          if (generateReport) {
+          if (generateReport &&
+              reportViewModel.selectedPatientItem.value!!.patientIdentifier == "charity-otala-1"
+          ) {
             if (reportViewModel.currentReportType.value!!.equals(
                 other = getString(R.string.individual),
                 ignoreCase = true
@@ -109,6 +112,9 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
               )
             }
             // TODO Run measure evaluate for population in the else block
+          } else {
+            // TODO remove this work with data dynamically
+            showToast("Test Measure evaluate using sample data")
           }
         }
       )
