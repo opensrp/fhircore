@@ -15,8 +15,6 @@
         <item name="android:textColorSecondary">@color/white</item>
         <item name="android:listDivider">@color/white_slightly_opaque</item>
         <item name="questionnaire_theme">@style/Theme.MaterialComponents.Light.DarkActionBar</item>
-        <item name="groupHeaderTextAppearance">@style/TextAppearance.MaterialComponents.Subtitle2
-        </item>
     </style>
 
     <style name="AppTheme.NoActionBar">

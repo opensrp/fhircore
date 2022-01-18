@@ -24,8 +24,8 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.StringFilter
-import com.google.android.fhir.search.TokenFilter
+import com.google.android.fhir.search.filter.StringParamFilterCriterion
+import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.sync.ResourceSyncParams
 import com.google.android.fhir.sync.State
 import com.google.android.fhir.sync.SyncJobImpl
@@ -131,7 +131,10 @@ class ApplicationExtensionTest : RobolectricTest() {
 
     coVerify { fhirEngine.count(any()) }
     val search = captureSlot.captured
-    val tokenFilters: MutableList<TokenFilter> = ReflectionHelpers.getField(search, "tokenFilters")
+    val tokenFilterParamCriterion: MutableList<Any> =
+      ReflectionHelpers.getField(search, "tokenFilterCriteria")
+    val tokenFilters: MutableList<TokenParamFilterCriterion> =
+      ReflectionHelpers.getField(tokenFilterParamCriterion[0], "filters")
     Assert.assertEquals(Patient.ACTIVE, tokenFilters[0].parameter)
     Assert.assertEquals(expectedPatientCount, patientsCount)
   }
@@ -150,7 +153,10 @@ class ApplicationExtensionTest : RobolectricTest() {
 
     coVerify { fhirEngine.search<Patient>(any()) }
     val search = captureSlot.captured
-    val tokenFilters: MutableList<TokenFilter> = ReflectionHelpers.getField(search, "tokenFilters")
+    val tokenFilterParamCriterion: MutableList<Any> =
+      ReflectionHelpers.getField(search, "tokenFilterCriteria")
+    val tokenFilters: MutableList<TokenParamFilterCriterion> =
+      ReflectionHelpers.getField(tokenFilterParamCriterion[0], "filters")
     Assert.assertEquals(Patient.ACTIVE, tokenFilters[0].parameter)
     Assert.assertEquals(expectedPatientList, patientsList)
   }
@@ -181,8 +187,10 @@ class ApplicationExtensionTest : RobolectricTest() {
 
     coVerify { fhirEngine.search<Patient>(any()) }
     val search = captureSlot.captured
-    val stringFilters =
-      ReflectionHelpers.getField<MutableList<StringFilter>>(search, "stringFilters")
+    val stringFilterParamCriterion: MutableList<Any> =
+      ReflectionHelpers.getField(search, "stringFilterCriteria")
+    val stringFilters: MutableList<StringParamFilterCriterion> =
+      ReflectionHelpers.getField(stringFilterParamCriterion[0], "filters")
     Assert.assertEquals(Patient.NAME, stringFilters[0].parameter)
     Assert.assertEquals("be", stringFilters[0].value)
   }
@@ -235,7 +243,10 @@ class ApplicationExtensionTest : RobolectricTest() {
     coVerify { fhirEngine.search<Patient>(any()) }
     coVerify { fhirEngine.countActivePatients() }
     val search = captureSlot.captured
-    val tokenFilters: MutableList<TokenFilter> = ReflectionHelpers.getField(search, "tokenFilters")
+    val tokenFilterParamCriterion: MutableList<Any> =
+      ReflectionHelpers.getField(search, "tokenFilterCriteria")
+    val tokenFilters: MutableList<TokenParamFilterCriterion> =
+      ReflectionHelpers.getField(tokenFilterParamCriterion[0], "filters")
     Assert.assertEquals(Patient.ACTIVE, tokenFilters[0].parameter)
     Assert.assertEquals(expectedPatientList, patientsList)
 

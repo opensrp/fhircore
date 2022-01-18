@@ -16,10 +16,10 @@
 
 package org.smartregister.fhircore.quest.util
 
-import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.ReferenceFilter
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
+import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -73,15 +73,20 @@ class PatientUtilTest : RobolectricTest() {
     val data = runBlocking { loadAdditionalData("", configurationRegistry, fhirEngine) }
 
     Assert.assertNotNull(searchSlot.captured)
-    Assert.assertEquals(
-      1,
-      ReflectionHelpers.getField<List<ReferenceFilter>>(searchSlot.captured, "referenceFilters")
-        .size
-    )
-    Assert.assertEquals(
-      1,
-      ReflectionHelpers.getField<List<TokenClientParam>>(searchSlot.captured, "tokenFilters").size
-    )
+
+    val referenceFilterParamCriterion: MutableList<Any> =
+      ReflectionHelpers.getField(searchSlot.captured, "referenceFilterCriteria")
+    val referenceFilters: MutableList<ReferenceParamFilterCriterion> =
+      ReflectionHelpers.getField(referenceFilterParamCriterion[0], "filters")
+
+    Assert.assertEquals(1, referenceFilters.size)
+
+    val tokenFilterParamCriterion: MutableList<Any> =
+      ReflectionHelpers.getField(searchSlot.captured, "tokenFilterCriteria")
+    val tokenFilters: MutableList<TokenParamFilterCriterion> =
+      ReflectionHelpers.getField(tokenFilterParamCriterion[0], "filters")
+
+    Assert.assertEquals(1, tokenFilters.size)
 
     Assert.assertEquals(1, data.size)
     with(data[0]) {

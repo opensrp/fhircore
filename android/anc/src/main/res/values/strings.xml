@@ -130,4 +130,5 @@
     <string name="confirm_remove_family_title">Remove Family</string>
     <string name="bullet_character">\u00b7</string>
     <string name="overdue">Overdue</string>
+    <string name="so_and_so_family">%1$s Family</string>
 </resources>
