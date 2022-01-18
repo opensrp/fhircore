@@ -198,6 +198,19 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
   }
 
   @Test
+  fun testPatientDetailsCardShouldNotShowAdditionalData() {
+    initMocks()
+    composeRule
+      .onNodeWithTag(PATIENT_NAME)
+      .assertExists()
+      .assertIsDisplayed()
+      .assertTextEquals("John Doe, M, 22y")
+
+    composeRule.onNodeWithText("G6PD").assertDoesNotExist()
+    composeRule.onNodeWithText("G6PD Normal").assertDoesNotExist()
+  }
+
+  @Test
   fun testFormsListShouldDisplayAllFormWithCorrectData() {
     initMocks()
     composeRule.onAllNodesWithTag(FORM_ITEM).assertCountEquals(2)
