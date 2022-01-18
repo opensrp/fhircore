@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.util
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -48,7 +49,8 @@ suspend fun loadAdditionalData(
 
   patientRegisterRowViewConfiguration.filters?.forEach { filter ->
     if (filter.resourceType == Enumerations.ResourceType.CONDITION) {
-      val conditions = getSearchResults<Condition>(patientId, Condition.SUBJECT, filter, fhirEngine)
+      val conditions =
+        getSearchResults<Condition>("Patient/$patientId", Condition.SUBJECT, filter, fhirEngine)
 
       val sortedByDescending = conditions.maxByOrNull { it.recordedDate }
       sortedByDescending?.category?.forEach { cc ->
@@ -70,14 +72,14 @@ suspend fun loadAdditionalData(
   return result
 }
 
-private suspend inline fun <reified T : Resource> getSearchResults(
-  patientId: String,
-  reference: ReferenceClientParam,
+suspend inline fun <reified T : Resource> getSearchResults(
+  reference: String,
+  referenceParam: ReferenceClientParam,
   filter: Filter,
   fhirEngine: FhirEngine
 ): List<T> {
   return fhirEngine.search {
-    filter(reference) { this.value = "${ResourceType.Patient.name}/$patientId" }
+    filterByReference(referenceParam, reference)
 
     when (filter.valueType) {
       Enumerations.DataType.CODEABLECONCEPT -> {
@@ -91,6 +93,10 @@ private suspend inline fun <reified T : Resource> getSearchResults(
       }
     }
   }
+}
+
+fun Search.filterByReference(referenceParam: ReferenceClientParam, reference: String) {
+  filter(referenceParam) { this.value = reference }
 }
 
 fun propertiesMapping(value: String, filter: Filter): Properties {

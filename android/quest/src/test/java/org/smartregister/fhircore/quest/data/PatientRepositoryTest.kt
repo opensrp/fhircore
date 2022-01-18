@@ -30,6 +30,7 @@ import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.test.runBlockingTest
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
@@ -162,6 +163,20 @@ class PatientRepositoryTest : RobolectricTest() {
   }
 
   @Test
+  fun testLoadEncounterShouldReturnNonEmptyEncounter() = runBlockingTest {
+    coEvery { fhirEngine.load(Encounter::class.java, any()) } returns
+      Encounter().apply {
+        id = "1"
+        status = Encounter.EncounterStatus.INPROGRESS
+      }
+
+    val result = repository.loadEncounter("1")
+
+    Assert.assertEquals("1", result.id)
+    Assert.assertEquals(Encounter.EncounterStatus.INPROGRESS, result.status)
+  }
+
+  @Test
   fun testGetQuestionnaireOfQuestionnaireResponseShouldReturnEmptyQuestionnaire() {
     coroutineTestRule.runBlockingTest {
       coEvery { fhirEngine.load(Questionnaire::class.java, any()) } returns Questionnaire()
@@ -190,6 +205,38 @@ class PatientRepositoryTest : RobolectricTest() {
       with(results.first()) {
         Assert.assertEquals("g6pd-test", form)
         Assert.assertEquals("G6PD Test", title)
+      }
+    }
+
+  @Test
+  fun testFetchTestFormShouldHandleNullNameAndTitle() =
+    coroutineTestRule.runBlockingTest {
+      coEvery { fhirEngine.search<Questionnaire>(any()) } returns
+        listOf(Questionnaire().apply { id = "1234" })
+
+      val results = repository.fetchTestForms(SearchFilter("", "abc", "cde"))
+
+      with(results.first()) {
+        Assert.assertEquals("1234", form)
+        Assert.assertEquals("1234", title)
+      }
+    }
+
+  @Test
+  fun testFetchTestFormShouldHandleNullTitle() =
+    coroutineTestRule.runBlockingTest {
+      coEvery { fhirEngine.search<Questionnaire>(any()) } returns
+        listOf(
+          Questionnaire().apply {
+            id = "1234"
+            name = "Form name"
+          }
+        )
+
+      val results = repository.fetchTestForms(SearchFilter("", "abc", "cde"))
+      with(results.first()) {
+        Assert.assertEquals("Form name", form)
+        Assert.assertEquals("Form name", title)
       }
     }
 }

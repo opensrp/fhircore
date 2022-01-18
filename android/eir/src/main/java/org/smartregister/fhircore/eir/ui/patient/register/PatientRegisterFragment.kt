@@ -50,7 +50,10 @@ class PatientRegisterFragment :
   }
 
   @Composable
-  override fun ConstructRegisterList(pagingItems: LazyPagingItems<PatientItem>) {
+  override fun ConstructRegisterList(
+    pagingItems: LazyPagingItems<PatientItem>,
+    modifier: Modifier
+  ) {
     PatientRegisterList(
       pagingItems = pagingItems,
       modifier = Modifier,
