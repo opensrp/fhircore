@@ -3,13 +3,71 @@
     "appId": "quest",
     "classification": "patient_details_view",
     "contentTitle": "Responses",
-    "parser": "QuestDetailConfigParser"
+    "rows": []
   },
   {
     "appId": "g6pd",
     "classification": "patient_details_view",
     "valuePrefix": "G6PD ",
     "contentTitle": "TEST RESULTS",
-    "parser": "G6PDDetailConfigParser"
+    "rows": [
+      {
+        "filters": [
+          {
+            "resourceType": "CONDITION",
+            "key": "category",
+            "valueType": "CODEABLECONCEPT",
+            "valueCoding": {
+              "system": "http://snomed.info/sct",
+              "code": "9024005"
+            }
+          }
+        ]
+      },
+      {
+        "filters": [
+          {
+            "resourceType": "OBSERVATION",
+            "key": "code",
+            "valueType": "CODEABLECONCEPT",
+            "label": "G6PD: ",
+            "valueCoding": {
+              "system": "http://snomed.info/sct",
+              "code": "86859003"
+            },
+            "properties": {
+              "label": {
+                "color": "#74787A",
+                "textSize": 16
+              },
+              "value": {
+                "color": "#74787A",
+                "textSize": 16
+              }
+            }
+          },
+          {
+            "resourceType": "OBSERVATION",
+            "key": "code",
+            "valueType": "CODEABLECONCEPT",
+            "label": " - Hb: ",
+            "valueCoding": {
+              "system": "http://snomed.info/sct",
+              "code": "259695003"
+            },
+            "properties": {
+              "label": {
+                "color": "#74787A",
+                "textSize": 16
+              },
+              "value": {
+                "color": "#74787A",
+                "textSize": 16
+              }
+            }
+          }
+        ]
+      }
+    ]
   }
 ]

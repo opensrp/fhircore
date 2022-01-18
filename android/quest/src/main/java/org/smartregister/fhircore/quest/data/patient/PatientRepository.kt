@@ -93,7 +93,7 @@ constructor(
   suspend fun fetchTestResults(
     patientId: String,
     forms: List<QuestionnaireConfig>,
-    patientDetailsViewConfiguration: PatientDetailsViewConfiguration,
+    config: PatientDetailsViewConfiguration,
     parser: DetailConfigParser?
   ): List<QuestResultItem> {
     return withContext(dispatcherProvider.io()) {
@@ -104,7 +104,7 @@ constructor(
           searchQuestionnaireResponses(patientId, forms).sortedByDescending { it.authored }
         questionnaireResponses.forEach {
           val questionnaire = getQuestionnaire(it)
-          testResults.add(p.getResultItem(questionnaire, it, patientDetailsViewConfiguration))
+          testResults.add(p.getResultItem(questionnaire, it, config))
         }
       }
         ?: run { Timber.w("Getting null parser") }

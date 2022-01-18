@@ -35,6 +35,7 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.configuration.parser.DetailConfigParser
+import org.smartregister.fhircore.quest.configuration.parser.QuestDetailConfigParser
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
@@ -44,7 +45,7 @@ class QuestPatientDetailActivity :
   BaseMultiLanguageActivity(), ConfigurableComposableView<PatientDetailsViewConfiguration> {
 
   private lateinit var patientId: String
-  private var parser: DetailConfigParser? = null
+  @Inject lateinit var parser: QuestDetailConfigParser
 
   val patientViewModel by viewModels<QuestPatientDetailViewModel>()
 
@@ -69,8 +70,6 @@ class QuestPatientDetailActivity :
       configurationRegistry.retrieveConfiguration<PatientDetailsViewConfiguration>(
         configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
       )
-
-    parser = patientViewModel.loadParser(packageName, patientDetailConfig)
 
     // TODO Load binary resources
     val profileConfig =

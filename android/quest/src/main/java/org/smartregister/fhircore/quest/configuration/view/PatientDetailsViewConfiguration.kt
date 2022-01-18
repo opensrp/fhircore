@@ -18,7 +18,10 @@ package org.smartregister.fhircore.quest.configuration.view
 
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.Type
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
+import org.smartregister.fhircore.quest.data.patient.model.QuestResultItemRow
 
 @Stable
 @Serializable
@@ -27,20 +30,23 @@ data class PatientDetailsViewConfiguration(
   override val classification: String,
   val contentTitle: String = "Responses",
   val valuePrefix: String = "G6PD ",
-  val parser: String
+  val rows: List<PatientDetailsViewRowConfiguration>
 ) : Configuration
+
+@Stable @Serializable class PatientDetailsViewRowConfiguration(val filters: List<Filter>)
 
 @Stable
 fun patientDetailsViewConfigurationOf(
   appId: String = "quest",
   classification: String = "patient_details",
   contentTitle: String = "Responses",
-  valuePrefix: String = "G6PD "
+  valuePrefix: String = "G6PD ",
+  rows: List<PatientDetailsViewRowConfiguration> = mutableListOf()
 ) =
   PatientDetailsViewConfiguration(
     appId = appId,
     classification = classification,
     contentTitle = contentTitle,
     valuePrefix = valuePrefix,
-    parser = "G6PDDetailConfigParser"
+    rows = rows
   )

@@ -184,18 +184,6 @@ constructor(
     _patientDetailsViewConfiguration.value = patientDetailsViewConfiguration
   }
 
-  fun loadParser(
-    packageName: String,
-    patientDetailsViewConfiguration: PatientDetailsViewConfiguration
-  ): DetailConfigParser {
-    return Class.forName(
-        "$packageName.configuration.parser.${patientDetailsViewConfiguration.parser}"
-      )
-      .getConstructor(FhirEngine::class.java)
-      .newInstance(fhirEngine) as
-      DetailConfigParser
-  }
-
   companion object {
     const val PROFILE_CONFIG = "configurations/form/profile_config.json"
   }
