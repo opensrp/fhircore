@@ -118,7 +118,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testHandleQuestionnaireResponseWithDose2ShouldShowAlert() = runBlockingTest {
-    coEvery { recordVaccineViewModel.performExtraction(any(), any()) } returns
+    coEvery { recordVaccineViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
     coEvery { recordVaccineViewModel.loadLatestVaccine(any()) } returns
@@ -137,7 +137,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testHandleQuestionnaireResponseShouldCallSaveBundleResources() = runBlockingTest {
-    coEvery { recordVaccineViewModel.performExtraction(any(), any()) } returns
+    coEvery { recordVaccineViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
     coEvery { recordVaccineViewModel.loadLatestVaccine(any()) } returns
@@ -188,7 +188,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testVerifyRecordedVaccineSavedDialogProperty() = runBlockingTest {
-    coEvery { recordVaccineViewModel.performExtraction(any(), any()) } returns
+    coEvery { recordVaccineViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
     coEvery { recordVaccineViewModel.loadLatestVaccine(any()) } returns
@@ -222,7 +222,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testShowVaccineRecordDialogShouldShowNextDue() {
-    coEvery { recordVaccineViewModel.performExtraction(any(), any()) } returns
+    coEvery { recordVaccineViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
     coEvery { recordVaccineViewModel.loadLatestVaccine(any()) } returns
@@ -246,7 +246,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
   @Test
   fun testShowVaccineRecordDialogShouldShowFullyVaccinated() {
 
-    coEvery { recordVaccineViewModel.performExtraction(any(), any()) } returns
+    coEvery { recordVaccineViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
     coEvery { recordVaccineViewModel.loadLatestVaccine(any()) } returns
