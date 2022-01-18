@@ -96,7 +96,7 @@ android {
 
 dependencies {
 
-    implementation 'androidx.preference:preference:1.1.1'
+    implementation 'androidx.preference:preference-ktx:1.1.1'
     coreLibraryDesugaring deps.desugar
 
     implementation 'androidx.core:core-ktx:1.6.0'
@@ -150,15 +150,20 @@ dependencies {
     def coroutineVersion = '1.5.1'
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
-    api('org.smartregister:data-capture:0.1.0-alpha05-preview-8-SNAPSHOT') {
+    api('org.smartregister:data-capture:0.1.0-beta02-preview-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
         exclude group: 'com.sun.xml.bind', module: 'jaxb-core'
         exclude group: 'com.sun.activation', module: 'javax.activation'
+        exclude group: 'com.google.android.fhir', module: 'common'
     }
 
-    api('org.smartregister:engine:0.1.0-alpha04-preview-2-SNAPSHOT') {
+    api('org.smartregister:common:0.1.0-alpha01-preview3-SNAPSHOT') {
+        transitive = true
+    }
+
+    api('org.smartregister:engine:0.1.0-alpha06-preview-SNAPSHOT') {
         transitive = true
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
         exclude group: 'javax.xml.bind', module: 'jaxb-api'
@@ -168,6 +173,7 @@ dependencies {
         exclude group: 'org.opencds.cqf.cql', module: 'evaluator'
         exclude group: 'org.opencds.cqf.cql', module: 'evaluator.builder'
         exclude group: 'org.opencds.cqf.cql', module: 'evaluator.dagger'
+        exclude group: 'com.google.android.fhir', module: 'common'
     }
 
     def hapiFhirVersion = "5.4.2"

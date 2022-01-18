@@ -65,6 +65,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     saveBtn.hide(false)
 
     questionnaireViewModel.extractAndSaveResources(
+      this,
       intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
       questionnaire,
       questionnaireResponse,

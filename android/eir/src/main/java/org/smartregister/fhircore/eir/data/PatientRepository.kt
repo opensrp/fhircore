@@ -64,7 +64,7 @@ constructor(
 
   suspend fun getPatientImmunizations(patientId: String): List<Immunization> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search { filter(Immunization.PATIENT) { value = "Patient/$patientId" } }
+      fhirEngine.search { filter(Immunization.PATIENT, { value = "Patient/$patientId" }) }
     }
 
   suspend fun fetchDemographics(patientId: String): Patient =
