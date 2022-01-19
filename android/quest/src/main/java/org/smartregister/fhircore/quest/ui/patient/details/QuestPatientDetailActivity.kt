@@ -73,6 +73,16 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
     setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
   }
 
+  override fun onResume() {
+    super.onResume()
+
+    patientViewModel.run {
+      getDemographics(patientId)
+      getAllResults(patientId)
+      getAllForms(this@QuestPatientDetailActivity)
+    }
+  }
+
   private fun launchTestResults(@StringRes id: Int) {
     when (id) {
       R.string.test_results ->

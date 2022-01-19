@@ -22,10 +22,13 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.common.collect.Lists
 import io.mockk.coEvery
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
+import java.util.Base64
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
@@ -39,6 +42,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FileUtil
 import timber.log.Timber
 
@@ -109,9 +113,12 @@ class LibraryEvaluatorTest {
   fun runCqlLibraryTestForG6pd() {
     val fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
     val parser = fhirContext.newJsonParser()!!
+    val cqlElm = FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/library-elm.json")
+
     val cqlLibrary =
       parser.parseResource(
         FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/library.json")
+          .replace("#library-elm.json", Base64.getEncoder().encodeToString(cqlElm.toByteArray()))
       ) as
         Library
     val fhirHelpersLibrary =
@@ -131,11 +138,12 @@ class LibraryEvaluatorTest {
         Patient
 
     val fhirEngine = mockk<FhirEngine>()
-    val defaultRepository = DefaultRepository(fhirEngine, mockk())
+    val defaultRepository = DefaultRepository(fhirEngine, DefaultDispatcherProvider())
 
     coEvery { fhirEngine.load(Library::class.java, cqlLibrary.logicalId) } returns cqlLibrary
     coEvery { fhirEngine.load(Library::class.java, fhirHelpersLibrary.logicalId) } returns
       fhirHelpersLibrary
+    coEvery { fhirEngine.save(any()) } just runs
 
     val result = runBlocking {
       evaluator!!.runCqlLibrary(
@@ -153,8 +161,7 @@ class LibraryEvaluatorTest {
     Assert.assertTrue(result.contains("AgeRange -> BooleanType[true]"))
     Assert.assertTrue(result.contains("Female -> BooleanType[true]"))
     Assert.assertTrue(result.contains("is Pregnant -> BooleanType[true]"))
-    Assert.assertTrue(result.contains("What is the Haemoglobin value ? -> DecimalType[13.0]"))
-    Assert.assertTrue(result.contains("What is the G6PD reading value ? -> DecimalType[4.0]"))
+    Assert.assertTrue(result.contains("Abnormal Haemoglobin -> BooleanType[false]"))
   }
 
   @Test
