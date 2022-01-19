@@ -35,6 +35,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
@@ -258,7 +259,12 @@ constructor(
 
   suspend fun saveBundleResources(bundle: Bundle) {
     if (!bundle.isEmpty) {
-      bundle.entry.forEach { bundleEntry -> defaultRepository.addOrUpdate(bundleEntry.resource) }
+      bundle.entry.forEach { bundleEntry ->
+        val resource = bundleEntry.resource
+        resource.meta.tag =
+          listOf(Coding("https://smartregister.org/appId", configurationRegistry.appId, ""))
+        defaultRepository.addOrUpdate(bundleEntry.resource)
+      }
     }
   }
 
