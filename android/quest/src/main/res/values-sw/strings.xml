@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name" translatable="false">Quest</string>
+    <string name="authenticator_account_type" translatable="false">org.smartregister.fhircore.quest</string>
+
+    <string name="back_to_clients">Rudi kwa orodha ya wateja</string>
+    <string name="test_results">Matokeo</string>
+    <string name="run_cql">Run CQL</string>
+    <string name="run_cql_log">CQL FULL LOG</string>
+    <string name="run_cql_output">CQL OUTPUT DATA</string>
+
+    <string name="edit_patient_info">Hariri</string>
+
+    <string name="menu_clients">Wateja</string>
+    <string name="menu_settings">Mipangilio</string>
+    <string name="cannot_find_parent_questionnaire">Haijapata Hojaji asili</string>
+
+    <string name="loading_forms">Fomu inapakia ...</string>
+    <string name="loading_responses">Majibu yanapakia...</string>
+    <string name="no_test_results_found">Hakuna matokeo yaliyopatikana</string>
+    <string name="patient_test_results">Matokeo</string>
+
+</resources>
