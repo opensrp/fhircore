@@ -142,7 +142,7 @@ constructor(
     }
   }
 
-  fun workflowPointName(classification: String) = "$appId|$classification"
+  fun workflowPointName(key: String) = "$appId|$key"
 
   fun isAppIdInitialized() = this::appId.isInitialized
 

@@ -23,6 +23,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
@@ -42,6 +43,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
+import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 
@@ -59,23 +61,29 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
   private val patientId = "5583145"
 
   private lateinit var questPatientDetailViewModel: QuestPatientDetailViewModel
+  private lateinit var fhirEngine: FhirEngine
 
   @Before
   fun setUp() {
     hiltRule.inject()
+    fhirEngine = mockk()
     Faker.initPatientRepositoryMocks(patientRepository)
     questPatientDetailViewModel =
       QuestPatientDetailViewModel(
         patientRepository = patientRepository,
         defaultRepository = defaultRepository,
         patientItemMapper = patientItemMapper,
-        libraryEvaluator = libraryEvaluator
+        libraryEvaluator = libraryEvaluator,
+        fhirEngine = fhirEngine
       )
   }
 
   @Test
   fun testGetDemographicsShouldFetchPatient() {
-    questPatientDetailViewModel.getDemographics(patientId)
+    questPatientDetailViewModel.getDemographicsWithAdditionalData(
+      patientId,
+      mockk { every { valuePrefix } returns "" }
+    )
     val patient = questPatientDetailViewModel.patientItem.value
     Assert.assertNotNull(patient)
     Assert.assertEquals(patientId, patient!!.id)
@@ -104,18 +112,17 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
 
   @Test
   fun testOnTestResultItemClickListener() {
-    val questionnaireResponse = mockk<QuestionnaireResponse>()
-    questPatientDetailViewModel.onTestResultItemClickListener(questionnaireResponse)
+    val resultItem = mockk<QuestResultItem>()
+    questPatientDetailViewModel.onTestResultItemClickListener(resultItem)
     Assert.assertNotNull(questPatientDetailViewModel.onFormTestResultClicked.value)
-    Assert.assertEquals(
-      questionnaireResponse,
-      questPatientDetailViewModel.onFormTestResultClicked.value!!
-    )
+    Assert.assertEquals(resultItem, questPatientDetailViewModel.onFormTestResultClicked.value!!)
   }
 
   @Test
   fun testGetAllForms() {
-    questPatientDetailViewModel.getAllForms(ApplicationProvider.getApplicationContext())
+    questPatientDetailViewModel.getAllForms(
+      mockk { every { profileQuestionnaireFilter } returns mockk() }
+    )
     Assert.assertNotNull(questPatientDetailViewModel.questionnaireConfigs.value)
     Assert.assertEquals(2, questPatientDetailViewModel.questionnaireConfigs.value!!.size)
     Assert.assertEquals(
