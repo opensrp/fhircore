@@ -207,7 +207,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           message = R.string.questionnaire_alert_submit_message,
           title = R.string.questionnaire_alert_submit_title,
           confirmButtonListener = { handleQuestionnaireSubmit() },
-          confirmButtonText = R.string.questionnaire_alert_submit_button_title
+          confirmButtonText = R.string.str_save
         )
       }
     } else {
