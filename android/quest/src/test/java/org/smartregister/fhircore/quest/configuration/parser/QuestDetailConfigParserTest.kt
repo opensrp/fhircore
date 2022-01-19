@@ -50,7 +50,7 @@ class QuestDetailConfigParserTest : RobolectricTest() {
   }
 
   @Test
-  fun testGetResultItem() {
+  fun testGetResultItemShouldReturnCorrectData() {
     val today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
 
     val questionnaire =
@@ -78,6 +78,66 @@ class QuestDetailConfigParserTest : RobolectricTest() {
     }
     with(data.data[0]) {
       Assert.assertEquals("Questionnaire Name", this[0].value)
+      Assert.assertEquals(" (${today.asDdMmmYyyy()})", this[1].value)
+    }
+  }
+
+  @Test
+  fun testGetResultItemWithNullNameTitleShouldReturnCorrectData() {
+    val today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
+
+    val questionnaire = Questionnaire().apply { this.id = "1" }
+
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        this.id = "1"
+        this.questionnaire = "Questionnaire/1"
+        this.authored = today
+      }
+
+    val patientDetailsViewConfiguration = patientDetailsViewConfigurationOf()
+
+    val data = runBlocking {
+      questDetailConfigParser.getResultItem(
+        questionnaire,
+        questionnaireResponse,
+        patientDetailsViewConfiguration
+      )
+    }
+    with(data.data[0]) {
+      Assert.assertEquals("1", this[0].value)
+      Assert.assertEquals(" (${today.asDdMmmYyyy()})", this[1].value)
+    }
+  }
+
+  @Test
+  fun testGetResultItemWithNullNameShouldReturnCorrectData() {
+    val today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant())
+
+    val questionnaire =
+      Questionnaire().apply {
+        this.id = "1"
+        this.title = "Questionnaire Title"
+      }
+
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        this.id = "1"
+        this.questionnaire = "Questionnaire/1"
+        this.authored = today
+      }
+
+    val patientDetailsViewConfiguration = patientDetailsViewConfigurationOf()
+
+    val data = runBlocking {
+      questDetailConfigParser.getResultItem(
+        questionnaire,
+        questionnaireResponse,
+        patientDetailsViewConfiguration
+      )
+    }
+    with(data.data[0]) {
+      Assert.assertEquals("Questionnaire Title", this[0].value)
       Assert.assertEquals(" (${today.asDdMmmYyyy()})", this[1].value)
     }
   }
