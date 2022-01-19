@@ -191,12 +191,18 @@ constructor(
 
         if (questionnaireResponse.subject.reference.startsWith("Patient/"))
           questionnaire.cqfLibraryId()?.run {
-            libraryEvaluator.runCqlLibrary(
-              this,
-              loadPatient(questionnaireResponse.subject.extractId())!!,
-              bundle.entry.map { it.resource },
-              defaultRepository
-            )
+            // TODO: This work needs some updated code and cql is directly downloaded from server
+            kotlin
+              .runCatching {
+                libraryEvaluator.runCqlLibrary(
+                  this,
+                  loadPatient(questionnaireResponse.subject.extractId())!!,
+                  bundle.entry.map { it.resource },
+                  defaultRepository
+                )
+              }
+              .onFailure { Timber.e(it.stackTraceToString()) }
+              .getOrNull()
           }
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
