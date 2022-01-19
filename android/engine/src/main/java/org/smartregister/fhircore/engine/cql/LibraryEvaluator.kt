@@ -238,9 +238,12 @@ class LibraryEvaluator @Inject constructor() {
     parser.setPrettyPrint(false)
     return result.parameter.mapNotNull { p ->
       (p.value ?: p.resource)?.let {
+        if (p.name.equals(OUTPUT_PARAMETER_KEY) && it.isResource)
+          repository.save(it as Resource)
+
         when {
-          p.name.equals(OUTPUT_PARAMETER_KEY) -> "-> ${getStringValue(it)}"
-          outputLog -> "${p.name} -> $it"
+          outputLog -> "${p.name} -> ${getStringValue(it)}"
+          p.name.equals(OUTPUT_PARAMETER_KEY) && !it.isResource -> "-> ${getStringValue(it)}"
           else -> null
         }
       }
