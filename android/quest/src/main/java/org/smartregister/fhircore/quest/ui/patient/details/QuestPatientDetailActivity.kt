@@ -50,6 +50,9 @@ class QuestPatientDetailActivity :
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
+  lateinit var patientDetailConfig: PatientDetailsViewConfiguration
+  lateinit var profileConfig: QuestPatientDetailViewModel.ProfileConfig
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     patientId = intent.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)!!
@@ -65,7 +68,7 @@ class QuestPatientDetailActivity :
       onFormTestResultClicked.observe(detailActivity, detailActivity::onTestResultItemClickListener)
     }
 
-    val patientDetailConfig =
+    patientDetailConfig =
       configurationRegistry.retrieveConfiguration<PatientDetailsViewConfiguration>(
         configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
       )
@@ -73,7 +76,7 @@ class QuestPatientDetailActivity :
     parser = patientViewModel.loadParser(packageName, patientDetailConfig)
 
     // TODO Load binary resources
-    val profileConfig =
+    profileConfig =
       AssetUtil.decodeAsset<QuestPatientDetailViewModel.ProfileConfig>(
         fileName = QuestPatientDetailViewModel.PROFILE_CONFIG,
         this
@@ -94,9 +97,9 @@ class QuestPatientDetailActivity :
     super.onResume()
 
     patientViewModel.run {
-      getDemographics(patientId)
-      getAllResults(patientId)
-      getAllForms(this@QuestPatientDetailActivity)
+      getDemographicsWithAdditionalData(patientId, patientDetailConfig)
+      getAllResults(patientId, profileConfig, patientDetailConfig, parser)
+      getAllForms(profileConfig)
     }
   }
 
