@@ -32,7 +32,6 @@ import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.data.model.VisitStatus
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
-import org.smartregister.fhircore.anc.ui.report.ReportViewModel.ReportScreen
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
@@ -54,7 +53,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     val currentActivity = this@ReportHomeActivity
 
     registerDataViewModel =
-      initializeRegisterDataViewModel(currentActivity.patientRepository).also { dataViewModel ->
+      initializeRegisterDataViewModel().also { dataViewModel ->
         dataViewModel.currentPage.observe(currentActivity, { dataViewModel.loadPageData(it) })
       }
 
@@ -138,7 +137,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     registerFilterType: RegisterFilterType,
     reportHomeActivity: ReportHomeActivity
   ) {
-    if ((value as String).isNotEmpty()) {
+    if (value != null) {
       registerDataViewModel.run {
         showResultsCount(true)
         filterRegisterData(
@@ -146,14 +145,12 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
           filterValue = value,
           registerFilter = reportHomeActivity::performFilter
         )
-        reportViewModel.currentScreen = ReportScreen.PICK_PATIENT
       }
     } else {
       registerDataViewModel.run {
         showResultsCount(false)
         reloadCurrentPageData()
       }
-      reportViewModel.currentScreen = ReportScreen.PICK_PATIENT
     }
   }
 
@@ -194,12 +191,10 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
   }
 
   @Suppress("UNCHECKED_CAST")
-  fun initializeRegisterDataViewModel(
-    ancPatientRepository: PatientRepository
-  ): RegisterDataViewModel<Anc, PatientItem> {
+  fun initializeRegisterDataViewModel(): RegisterDataViewModel<Anc, PatientItem> {
     return ViewModelProvider(
       viewModelStore,
-      RegisterDataViewModel(application = application, registerRepository = ancPatientRepository)
+      RegisterDataViewModel(application = application, registerRepository = patientRepository)
         .createFactory()
     )[RegisterDataViewModel::class.java] as
       RegisterDataViewModel<Anc, PatientItem>

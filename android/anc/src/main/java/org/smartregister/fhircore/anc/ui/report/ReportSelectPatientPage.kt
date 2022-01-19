@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -60,7 +61,6 @@ import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.model.PatientItem
 import org.smartregister.fhircore.anc.ui.anccare.register.components.AncPatientList
 import org.smartregister.fhircore.anc.ui.anccare.shared.Anc
-import org.smartregister.fhircore.engine.ui.components.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.PaginatedRegister
 import org.smartregister.fhircore.engine.ui.register.RegisterDataViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
@@ -76,10 +76,8 @@ fun ReportSelectPatientScreen(
   val registerData = registerDataViewModel.registerData.collectAsState(emptyFlow())
   val pagingItems = registerData.value.collectAsLazyPagingItems()
   val showResultsCount by registerDataViewModel.showResultsCount.observeAsState(false)
-  val showLoader by registerDataViewModel.showLoader.observeAsState(false)
 
-  if (showLoader) LoaderDialog(modifier = Modifier)
-  Column(modifier = Modifier.testTag(REPORT_SELECT_PATIENT_LIST)) {
+  Column(modifier = Modifier.fillMaxHeight().fillMaxWidth().testTag(REPORT_SELECT_PATIENT_LIST)) {
     SearchView(state = viewModel.searchTextState, viewModel)
     Divider(color = DividerColor)
     Spacer(modifier = Modifier.height(16.dp))
@@ -129,7 +127,6 @@ fun SearchView(
       onValueChange = { value ->
         state.value = value
         viewModel.filterValue.postValue(Pair(RegisterFilterType.SEARCH_FILTER, value.text))
-        viewModel.currentScreen = ReportViewModel.ReportScreen.PICK_PATIENT
       },
       modifier = modifier.fillMaxWidth().testTag(REPORT_SEARCH_PATIENT),
       textStyle = TextStyle(fontSize = 18.sp),
@@ -155,7 +152,6 @@ fun SearchView(
               viewModel.filterValue.postValue(
                 Pair(RegisterFilterType.SEARCH_FILTER, state.value.text)
               )
-              viewModel.currentScreen = ReportViewModel.ReportScreen.PICK_PATIENT
             }
           ) {
             Icon(

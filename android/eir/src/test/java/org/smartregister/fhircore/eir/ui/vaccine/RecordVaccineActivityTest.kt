@@ -40,6 +40,7 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -117,7 +118,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testHandleQuestionnaireResponseWithDose2ShouldShowAlert() = runBlockingTest {
-    coEvery { recordVaccineViewModel.performExtraction(any(), any()) } returns
+    coEvery { recordVaccineViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
     coEvery { recordVaccineViewModel.loadLatestVaccine(any()) } returns
@@ -136,7 +137,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testHandleQuestionnaireResponseShouldCallSaveBundleResources() = runBlockingTest {
-    coEvery { recordVaccineViewModel.performExtraction(any(), any()) } returns
+    coEvery { recordVaccineViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
     coEvery { recordVaccineViewModel.loadLatestVaccine(any()) } returns
@@ -154,7 +155,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
     ReflectionHelpers.setField(recordVaccineActivity, "savedImmunization", savedImmunization)
 
-    recordVaccineActivity.postSaveSuccessful()
+    recordVaccineActivity.postSaveSuccessful(QuestionnaireResponse())
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
 
@@ -173,7 +174,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
     ReflectionHelpers.setField(recordVaccineActivity, "savedImmunization", savedImmunization)
 
-    recordVaccineActivity.postSaveSuccessful()
+    recordVaccineActivity.postSaveSuccessful(QuestionnaireResponse())
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
 
@@ -187,7 +188,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testVerifyRecordedVaccineSavedDialogProperty() = runBlockingTest {
-    coEvery { recordVaccineViewModel.performExtraction(any(), any()) } returns
+    coEvery { recordVaccineViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
     coEvery { recordVaccineViewModel.loadLatestVaccine(any()) } returns
@@ -221,7 +222,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testShowVaccineRecordDialogShouldShowNextDue() {
-    coEvery { recordVaccineViewModel.performExtraction(any(), any()) } returns
+    coEvery { recordVaccineViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
     coEvery { recordVaccineViewModel.loadLatestVaccine(any()) } returns
@@ -245,7 +246,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
   @Test
   fun testShowVaccineRecordDialogShouldShowFullyVaccinated() {
 
-    coEvery { recordVaccineViewModel.performExtraction(any(), any()) } returns
+    coEvery { recordVaccineViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
     coEvery { recordVaccineViewModel.loadLatestVaccine(any()) } returns

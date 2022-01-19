@@ -21,10 +21,17 @@ import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.anc.sdk.QuestionnaireUtils.asCodeableConcept
+
+fun Coding.asCodeableConcept() =
+  CodeableConcept().apply {
+    addCoding(this@asCodeableConcept)
+    text = this@asCodeableConcept.display
+  }
 
 fun Search.filterByPatient(reference: ReferenceClientParam, patientId: String) {
   filter(reference, { this.value = "${ResourceType.Patient.name}/$patientId" })
@@ -35,8 +42,8 @@ fun Search.filterByPatientName(name: String?) {
     filter(
       Patient.NAME,
       {
-        value = name.trim()
         modifier = StringFilterModifier.CONTAINS
+        value = name.trim()
       }
     )
   }

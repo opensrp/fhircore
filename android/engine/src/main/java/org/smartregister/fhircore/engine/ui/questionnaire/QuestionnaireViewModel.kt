@@ -134,6 +134,7 @@ constructor(
   }
 
   fun extractAndSaveResources(
+    context: Context,
     resourceId: String?,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
@@ -144,7 +145,7 @@ constructor(
       handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
 
       if (questionnaire.isExtractionCandidate()) {
-        val bundle = performExtraction(questionnaire, questionnaireResponse)
+        val bundle = performExtraction(context, questionnaire, questionnaireResponse)
 
         bundle.entry.forEach { bun ->
           // add organization to entities representing individuals in registration questionnaire
@@ -209,7 +210,7 @@ constructor(
    * Sets questionnaireResponse subject with proper subject-type defined in questionnaire with an
    * existing resourceId or if null generate a new one
    */
-  fun handleQuestionnaireResponseSubject(
+  private fun handleQuestionnaireResponseSubject(
     resourceId: String?,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
@@ -241,11 +242,13 @@ constructor(
   }
 
   suspend fun performExtraction(
+    context: Context,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ): Bundle {
 
     return ResourceMapper.extract(
+      context = context,
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
       structureMapProvider = retrieveStructureMapProvider(),
