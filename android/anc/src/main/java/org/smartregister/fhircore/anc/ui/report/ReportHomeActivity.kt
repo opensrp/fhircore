@@ -154,7 +154,7 @@ class ReportHomeActivity : BaseMultiLanguageActivity() {
     }
   }
 
-  private fun showDateRangePicker() {
+  fun showDateRangePicker() {
     val constraintsBuilder =
       CalendarConstraints.Builder().setValidator(DateValidatorPointBackward.now()).build()
     MaterialDatePicker.Builder.dateRangePicker()
