@@ -91,4 +91,7 @@
     <string name="application_not_supported">Application %1$s not found</string>
     <string name="eCBIS_app_name" translatable="false">eCBIS</string>
     <string name="invalid_login_credentials">username or password is invalid</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+    <string name="required_constraint_validation_error_msg">There is no response to the required field.</string>
 </resources>
