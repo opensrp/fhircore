@@ -40,21 +40,28 @@ class DateUtilsTest {
   }
 
   @Test
-  fun `addDays() should return same date when given initialDate and pattern`() {
+  fun `addDays() should return same date when given initialDate, has default 0 daysToAdd and pattern`() {
     val finalDate =
       DateUtils.addDays("2020-03-10 01:23:00 AM", dateTimeFormat = "yyyy-MM-dd h:mm:ss a")
     Assert.assertEquals("3-10-2020", finalDate)
   }
 
   @Test
-  fun `hasPastDays should return true when given initialDate and days`() {
+  fun `hasPastDays() should return true when given valid initialDate is 3 days in the past`() {
     val initialDate = DateTimeType("2022-01-11T15:30:10.222")
     val hasPastDays = DateUtils.hasPastDays(initialDate, -3)
     Assert.assertTrue(hasPastDays)
   }
 
   @Test
+  fun `hasPastDays() should return true when given valid initialDate and has default 0 days`() {
+    val initialDate = DateTimeType("2022-01-11T15:30:10.222")
+    val hasPastDays = DateUtils.hasPastDays(initialDate)
+    Assert.assertTrue(hasPastDays)
+  }
+
+  @Test
   fun `String#getDate() should return correct date when given string format expected`() {
-    Assert.assertEquals("2020-03-10".getDate("yyyy-MM-dd").makeItReadable(), "10-Mar-2020")
+    Assert.assertEquals("10-Mar-2020", "2020-03-10".getDate("yyyy-MM-dd").makeItReadable())
   }
 }
