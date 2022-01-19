@@ -1,0 +1,3 @@
+[submodule "android/quest/src/main/assets/fhir-questionnaires"]
+	path = android/quest/src/main/assets/fhir-questionnaires
+	url = git@github.com:onaio/fhir-questionnaires.git

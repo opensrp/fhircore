@@ -153,11 +153,11 @@ constructor(
   val navigateToHome: LiveData<Boolean>
     get() = _navigateToHome
 
-  private val _username = MutableLiveData<String>()
+  private val _username = MutableLiveData<String>("codademo")
   val username: LiveData<String>
     get() = _username
 
-  private val _password = MutableLiveData<String>()
+  private val _password = MutableLiveData<String>("Amani123")
   val password: LiveData<String>
     get() = _password
 
