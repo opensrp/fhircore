@@ -16,8 +16,13 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.os.Bundle
+import android.text.InputType
 import android.view.MenuItem
+import android.widget.EditText
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import ca.uhn.fhir.context.FhirContext
@@ -115,4 +120,40 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         isSelected = true
       )
     )
+
+  override fun registerClient(clientIdentifier: String?) {
+    showAgeDialog({ super.registerClient(clientIdentifier) }, { dialog, which -> dialog.dismiss() })
+  }
+
+  fun showAgeDialog(
+    okClickListener: () -> Unit,
+    cancelClickListener: DialogInterface.OnClickListener
+  ) {
+    val input =
+      EditText(this).apply {
+        setHint(getString(R.string.enter_age_in_months))
+        inputType = InputType.TYPE_CLASS_NUMBER
+      }
+
+    AlertDialog.Builder(this)
+      .setTitle(getString(R.string.enter_beneficiary_age))
+      .setView(input)
+      .setPositiveButton(android.R.string.ok) { dialog, which ->
+        val age = input.text.toString()
+
+        if (age.isNotEmpty() && age.toInt() in (6..59)) {
+          okClickListener()
+        } else {
+          Toast.makeText(
+              this,
+              getString(R.string.beneficiary_not_eligible_for_program),
+              Toast.LENGTH_LONG
+            )
+            .show()
+        }
+        dialog.dismiss()
+      }
+      .setNegativeButton(R.string.cancel, cancelClickListener)
+      .show()
+  }
 }
