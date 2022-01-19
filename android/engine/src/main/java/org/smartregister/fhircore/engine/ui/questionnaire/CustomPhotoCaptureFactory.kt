@@ -166,7 +166,7 @@ class CustomPhotoCaptureFactory(
       // TODO -> Should use the overridden setReadOnly()
       // after upgrading Data Capture library to Beta
 
-      fun setReadOnly(isReadOnly: Boolean) {
+      override fun setReadOnly(isReadOnly: Boolean) {
         ivThumbnail.isEnabled = !isReadOnly
         btnTakePhoto.isEnabled = !isReadOnly
       }

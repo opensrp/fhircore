@@ -77,17 +77,17 @@ private suspend inline fun <reified T : Resource> getSearchResults(
   fhirEngine: FhirEngine
 ): List<T> {
   return fhirEngine.search {
-    filter(reference) { this.value = "${ResourceType.Patient.name}/$patientId" }
+    filter(reference, { value = "${ResourceType.Patient.name}/$patientId" })
 
     when (filter.valueType) {
       Enumerations.DataType.CODEABLECONCEPT -> {
         filter(
           TokenClientParam(filter.key),
-          CodeableConcept().addCoding(filter.valueCoding!!.asCoding())
+          { value = of(CodeableConcept().addCoding(filter.valueCoding!!.asCoding())) }
         )
       }
       else -> {
-        filter(TokenClientParam(filter.key), filter.valueCoding!!.asCoding())
+        filter(TokenClientParam(filter.key), { value = of(filter.valueCoding!!.asCoding()) })
       }
     }
   }
