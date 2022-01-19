@@ -125,8 +125,6 @@ class QuestDetailConfigParserTest : RobolectricTest() {
       Assert.assertEquals(today, first.authored)
 
       Assert.assertEquals("1", second.id)
-      Assert.assertEquals("Questionnaire Name", second.name)
-      Assert.assertEquals("Questionnaire Title", second.title)
     }
   }
 
@@ -167,7 +165,6 @@ class QuestDetailConfigParserTest : RobolectricTest() {
       Assert.assertEquals(today, first.authored)
 
       Assert.assertEquals("1", second.id)
-      Assert.assertEquals("Questionnaire Name", second.name)
       Assert.assertEquals("Questionnaire Title", second.title)
     }
   }
