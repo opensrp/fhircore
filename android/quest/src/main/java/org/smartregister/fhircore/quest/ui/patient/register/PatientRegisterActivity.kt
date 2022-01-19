@@ -20,10 +20,15 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import ca.uhn.fhir.context.FhirContext
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
@@ -35,6 +40,7 @@ import org.smartregister.fhircore.quest.util.QuestConfigClassification
 class PatientRegisterActivity : BaseRegisterActivity() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var defaultRepository: DefaultRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -44,6 +50,25 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         configClassification = QuestConfigClassification.PATIENT_REGISTER
       )
     configureViews(registerViewConfiguration)
+
+    loadLocalDevWfpCodaFiles()
+  }
+
+  fun loadLocalDevWfpCodaFiles() {
+    val files =
+      listOf(
+        "fhir-questionnaires/CODA/anthro-following-visit.json",
+        "fhir-questionnaires/CODA/assistance-visit.json",
+        "fhir-questionnaires/CODA/coda-child-registration.json",
+        "fhir-questionnaires/CODA/coda-child-structure-map.json",
+      )
+
+    files.forEach { fileName ->
+      val jsonString = assets.open(fileName).bufferedReader().readText()
+      val questionnaire = FhirContext.forR4().newJsonParser().parseResource(jsonString)
+
+      GlobalScope.launch { defaultRepository.addOrUpdate(questionnaire as Resource) }
+    }
   }
 
   override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> {

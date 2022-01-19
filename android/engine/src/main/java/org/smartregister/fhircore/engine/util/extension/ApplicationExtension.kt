@@ -21,6 +21,7 @@ import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
@@ -86,8 +87,11 @@ suspend fun FhirEngine.searchActivePatients(
     from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
   }
 
-suspend fun FhirEngine.countActivePatients(): Long =
-  this.count<Patient> { filter(Patient.ACTIVE, { value = of(true) }) }
+suspend fun FhirEngine.countActivePatients(filters: ((Search) -> Unit)? = null): Long =
+  this.count<Patient> {
+    activePatientFilter()
+    filters?.invoke(this)
+  }
 
 suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
   return try {
