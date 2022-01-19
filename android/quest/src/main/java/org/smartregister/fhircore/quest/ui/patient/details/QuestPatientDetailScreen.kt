@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
@@ -50,6 +51,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
@@ -59,11 +61,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.hl7.fhir.r4.model.Questionnaire
-import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
+import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 
 const val TOOLBAR_TITLE = "toolbarTitle"
 const val TOOLBAR_BACK_ARROW = "toolbarBackArrow"
@@ -124,26 +125,51 @@ fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
 
 @Composable
 fun ResultItem(
-  testResult: Pair<QuestionnaireResponse, Questionnaire>,
+  testResult: QuestResultItem,
   questPatientDetailViewModel: QuestPatientDetailViewModel
 ) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween,
     modifier =
-      Modifier.fillMaxWidth()
+      Modifier.background(Color.White)
+        .fillMaxWidth()
         .padding(12.dp)
-        .clickable { questPatientDetailViewModel.onTestResultItemClickListener(testResult.first) }
+        .clickable { questPatientDetailViewModel.onTestResultItemClickListener(testResult) }
         .testTag(RESULT_ITEM)
   ) {
-    Text(
-      text = (questPatientDetailViewModel.fetchResultItemLabel(testResult)
-          ?: "") + " (${testResult.first.authored?.asDdMmmYyyy() ?: ""}) ",
-      color = colorResource(id = R.color.black),
-      fontSize = 17.sp,
-      textAlign = TextAlign.Start,
-      modifier = Modifier.padding(end = 12.dp)
-    )
+    Column(verticalArrangement = Arrangement.Center) {
+      testResult.data.forEach { dataList ->
+        Row(modifier = Modifier.padding(end = 12.dp)) {
+          dataList.forEach { item ->
+            item.label?.let {
+              Text(
+                text = item.label,
+                color =
+                  Color(
+                    android.graphics.Color.parseColor(item.properties?.label?.color ?: "#000000")
+                  ),
+                fontSize = item.properties?.label?.textSize?.sp ?: 17.sp,
+                fontWeight =
+                  FontWeight(item.properties?.label?.fontWeight?.weight ?: FontWeight.Normal.weight)
+              )
+            }
+
+            Text(
+              text = (item.valuePrefix ?: "") + item.value,
+              color =
+                Color(
+                  android.graphics.Color.parseColor(item.properties?.value?.color ?: "#000000")
+                ),
+              fontSize = item.properties?.value?.textSize?.sp ?: 17.sp,
+              textAlign = TextAlign.Start,
+              fontWeight =
+                FontWeight(item.properties?.value?.fontWeight?.weight ?: FontWeight.Normal.weight)
+            )
+          }
+        }
+      }
+    }
 
     Image(
       painter = painterResource(id = R.drawable.ic_forward_arrow),
@@ -178,6 +204,8 @@ fun FormItem(
 
 @Composable
 fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailViewModel) {
+  val viewConfiguration by questPatientDetailViewModel.patientDetailsViewConfiguration
+    .observeAsState(patientDetailsViewConfigurationOf())
   val patientItem by questPatientDetailViewModel.patientItem.observeAsState(null)
   val forms by questPatientDetailViewModel.questionnaireConfigs.observeAsState(null)
   val testResults by questPatientDetailViewModel.testResults.observeAsState(null)
@@ -199,6 +227,30 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
           fontWeight = FontWeight.Bold,
           modifier = Modifier.testTag(PATIENT_NAME)
         )
+        // Adding Additional Data i.e, G6PD Status etc.
+        patientItem?.additionalData?.forEach {
+          Row {
+            it.label?.let { label ->
+              Text(
+                text = label,
+                color =
+                  Color(
+                    android.graphics.Color.parseColor(it.properties?.label?.color ?: "#000000")
+                  ),
+                fontSize = it.properties?.label?.textSize?.sp ?: 16.sp,
+                modifier = Modifier.wrapContentWidth()
+              )
+            }
+
+            Text(
+              text = (it.valuePrefix ?: "") + it.value,
+              color =
+                Color(android.graphics.Color.parseColor(it.properties?.value?.color ?: "#000000")),
+              fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,
+              modifier = Modifier.wrapContentWidth()
+            )
+          }
+        }
       }
 
       // Forms section
@@ -231,7 +283,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
 
         // Responses section
         Text(
-          text = "RESPONSES (${testResults?.size?.toString() ?: ""})",
+          text = "${viewConfiguration.contentTitle} (${testResults?.size?.toString() ?: ""})",
           color = colorResource(id = R.color.grayText),
           fontSize = 16.sp,
           fontWeight = FontWeight.Bold
