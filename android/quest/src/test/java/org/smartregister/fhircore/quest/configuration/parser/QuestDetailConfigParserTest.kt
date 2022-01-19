@@ -80,6 +80,16 @@ class QuestDetailConfigParserTest : RobolectricTest() {
       Assert.assertEquals("Questionnaire Name", this[0].value)
       Assert.assertEquals(" (${today.asDdMmmYyyy()})", this[1].value)
     }
+
+    with(data.source) {
+      Assert.assertEquals("1", first.id)
+      Assert.assertEquals("Questionnaire/1", first.questionnaire)
+      Assert.assertEquals(today, first.authored)
+
+      Assert.assertEquals("1", second.id)
+      Assert.assertEquals("Questionnaire Name", second.name)
+      Assert.assertEquals("Questionnaire Title", second.title)
+    }
   }
 
   @Test
@@ -107,6 +117,16 @@ class QuestDetailConfigParserTest : RobolectricTest() {
     with(data.data[0]) {
       Assert.assertEquals("1", this[0].value)
       Assert.assertEquals(" (${today.asDdMmmYyyy()})", this[1].value)
+    }
+
+    with(data.source) {
+      Assert.assertEquals("1", first.id)
+      Assert.assertEquals("Questionnaire/1", first.questionnaire)
+      Assert.assertEquals(today, first.authored)
+
+      Assert.assertEquals("1", second.id)
+      Assert.assertEquals("Questionnaire Name", second.name)
+      Assert.assertEquals("Questionnaire Title", second.title)
     }
   }
 
@@ -139,6 +159,16 @@ class QuestDetailConfigParserTest : RobolectricTest() {
     with(data.data[0]) {
       Assert.assertEquals("Questionnaire Title", this[0].value)
       Assert.assertEquals(" (${today.asDdMmmYyyy()})", this[1].value)
+    }
+
+    with(data.source) {
+      Assert.assertEquals("1", first.id)
+      Assert.assertEquals("Questionnaire/1", first.questionnaire)
+      Assert.assertEquals(today, first.authored)
+
+      Assert.assertEquals("1", second.id)
+      Assert.assertEquals("Questionnaire Name", second.name)
+      Assert.assertEquals("Questionnaire Title", second.title)
     }
   }
 }
