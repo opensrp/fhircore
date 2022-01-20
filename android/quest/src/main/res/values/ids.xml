@@ -2,4 +2,6 @@
 <resources>
     <item name="menu_item_clients" type="id" />
     <item name="menu_item_settings" type="id" />
+    <item name="write_to_card" type="id" />
+    <item name="read_from_card" type="id" />
 </resources>

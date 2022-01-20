@@ -22,5 +22,7 @@
     <string name="enter_beneficiary_age">Enter the beneficiary\'s age</string>
     <string name="enter_age_in_months">Enter age in months</string>
     <string name="beneficiary_not_eligible_for_program">Beneficiary is not eligible for the program</string>
+    <string name="write_to_card">Write to card</string>
+    <string name="read_from_card">Read from card</string>
 
 </resources>
