@@ -46,7 +46,7 @@ import org.smartregister.fhircore.engine.ui.questionnaire.FhirCoreQuestionnaireF
 import timber.log.Timber
 
 fun Base?.valueToString(): String {
-  return if (this == null) ""
+  return if (this == null) return ""
   else if (this.isDateTime) (this as BaseDateTimeType).value.makeItReadable()
   else if (this.isPrimitive) (this as PrimitiveType<*>).asStringValue()
   else if (this is Coding) this.display ?: code
