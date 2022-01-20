@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.configuration.view.getString
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
@@ -116,7 +117,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     listOf(
       RegisterItem(
         uniqueTag = PatientRegisterFragment.TAG,
-        title = getString(R.string.clients),
+        title = registerViewModel.registerViewConfiguration.value?.appTitle_lang?.getString(this) ?: getString(R.string.clients),
         isSelected = true
       )
     )

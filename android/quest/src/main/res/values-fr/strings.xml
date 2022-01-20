@@ -16,4 +16,8 @@
     <string name="no_test_results_found">Aucun résultat trouvé</string>
     <string name="patient_test_results">Résultat du test</string>
 
+    <string name="enter_beneficiary_age">Entrer l’âge du bénéficiaire</string>
+    <string name="enter_age_in_months">Entrer l’âge en mois</string>
+    <string name="beneficiary_not_eligible_for_program">Bénéficiaire non admissible au programme</string>
+
 </resources>
