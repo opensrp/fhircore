@@ -112,54 +112,6 @@ constructor(
     }
   }
 
-  suspend fun getAllDataFor(patientId: String): List<Resource> {
-    val fhirEngine = patientRepository.fhirEngine
-    val patient = fhirEngine.load(Patient::class.java, patientId)
-    val observations =
-      fhirEngine.search<Observation> {
-        filter(Observation.SUBJECT, { this.value = "Patient/$patientId" })
-      }
-    val conditions =
-      fhirEngine.search<Condition> {
-        filter(Condition.SUBJECT, { this.value = "Patient/$patientId" })
-      }
-
-    return mutableListOf<Resource>().apply {
-      add(patient)
-      addAll(observations)
-      addAll(conditions)
-    }
-  }
-
-  fun runCqlFor(patientId: String, context: Context): MutableLiveData<String?> {
-    val result = MutableLiveData("")
-    viewModelScope.launch {
-      val dataBundle = getAllDataFor(patientId)
-      val config =
-        AssetUtil.decodeAsset<ProfileConfig>(fileName = PROFILE_CONFIG, context = context)
-
-      val patient = dataBundle.first { it.isPatient(patientId) }
-      val otherResources = dataBundle.filterNot { it.isPatient(patientId) }
-
-      val data =
-        kotlin
-          .runCatching {
-            libraryEvaluator
-              .runCqlLibrary(
-                libraryId = config.cqlProfileLibraryFilter.code,
-                patient = patient as Patient,
-                resources = otherResources,
-                repository = defaultRepository
-              )
-              .joinToString("\n")
-          }
-          .onFailure { result.postValue(it.stackTraceToString()) }
-          .getOrNull()
-      result.postValue(data)
-    }
-    return result
-  }
-
   fun onMenuItemClickListener(@StringRes id: Int) {
     onMenuItemClicked.value = id
   }

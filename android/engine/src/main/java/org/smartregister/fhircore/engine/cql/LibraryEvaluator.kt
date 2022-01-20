@@ -31,10 +31,12 @@ import org.cqframework.cql.elm.execution.Library
 import org.cqframework.cql.elm.execution.VersionedIdentifier
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
+import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.Type
 import org.json.JSONArray
 import org.json.JSONObject
 import org.opencds.cqf.cql.engine.data.CompositeDataProvider
@@ -199,10 +201,11 @@ class LibraryEvaluator @Inject constructor() {
 
   suspend fun runCqlLibrary(
     libraryId: String,
-    patient: Patient,
+    patient: Patient?,
     resources: List<Resource>,
     // TODO refactor class by modular and single responsibility principle
-    repository: DefaultRepository
+    repository: DefaultRepository,
+    outputLog: Boolean = false
   ): List<String> {
     val library = repository.fhirEngine.load(org.hl7.fhir.r4.model.Library::class.java, libraryId)
 
@@ -220,13 +223,13 @@ class LibraryEvaluator @Inject constructor() {
       library,
       helpers,
       Bundle(),
-      createBundle(listOf(patient, *resources.toTypedArray()))
+      createBundle(listOfNotNull(patient, *resources.toTypedArray()))
     )
 
     val result =
       libEvaluator!!.evaluate(
         VersionedIdentifier().withId(library.name).withVersion(library.version),
-        Pair.of("Patient", patient.logicalId),
+        if (patient != null) Pair.of("Patient", patient.logicalId) else null,
         null,
         null
       ) as
@@ -235,15 +238,21 @@ class LibraryEvaluator @Inject constructor() {
     parser.setPrettyPrint(false)
     return result.parameter.mapNotNull { p ->
       (p.value ?: p.resource)?.let {
-        if (p.name.equals(OUTPUT_PARAMETER_KEY) && it.isResource) {
+        if (p.name.equals(OUTPUT_PARAMETER_KEY) && it.isResource)
           repository.save(it as Resource)
 
-          // display full resource log only if it is OUTPUT
-          "${p.name} -> ${parser.encodeResourceToString(it)}"
-        } else "${p.name} -> $it"
+        when {
+          outputLog -> "${p.name} -> ${getStringValue(it)}"
+          p.name.equals(OUTPUT_PARAMETER_KEY) && !it.isResource -> "-> ${getStringValue(it)}"
+          else -> null
+        }
       }
     }
   }
+
+  fun getStringValue(base: Base) =
+    if (base.isResource) parser.encodeResourceToString(base as Resource)
+    else base.toString()
 
   private fun loadConfigs(
     library: org.hl7.fhir.r4.model.Library,

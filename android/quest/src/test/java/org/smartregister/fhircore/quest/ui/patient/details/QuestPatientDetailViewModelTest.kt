@@ -135,46 +135,6 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
     )
   }
 
-  @Test
-  fun testGetAllDataFor() = runBlockingTest {
-    val fhirEngineMock = mockk<FhirEngine>()
-    coEvery { patientRepository.fhirEngine } returns fhirEngineMock
-    coEvery { fhirEngineMock.load(Patient::class.java, "1111") } returns
-      Patient().apply { id = "1111" }
-
-    coEvery {
-      hint(Condition::class)
-      fhirEngineMock.search<Condition>(any())
-    } returns listOf(Condition().apply { id = "c1" })
-
-    val result = questPatientDetailViewModel.getAllDataFor("1111")
-
-    Assert.assertNotNull(result.first())
-    Assert.assertEquals("1111", result[0].id)
-    Assert.assertEquals("c1", result[1].id)
-  }
-
-  @Test
-  fun testRunCqlFor() = runBlockingTest {
-    val fhirEngineMock = mockk<FhirEngine>()
-    coEvery { patientRepository.fhirEngine } returns fhirEngineMock
-    coEvery { fhirEngineMock.load(Library::class.java, any()) } returns Library()
-
-    coEvery { fhirEngineMock.load(Patient::class.java, "1111") } returns
-      Patient().apply { id = "1111" }
-
-    coEvery {
-      hint(Condition::class)
-      fhirEngineMock.search<Condition>(any())
-    } returns listOf(Condition().apply { id = "c1" })
-
-    coEvery { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) } returns listOf("1", "2")
-
-    questPatientDetailViewModel.runCqlFor("1111", ApplicationProvider.getApplicationContext())
-
-    coVerify { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) }
-  }
-
   fun testFetchResultNonNullNameShouldReturnNameValue() {
     val result =
       questPatientDetailViewModel.fetchResultItemLabel(

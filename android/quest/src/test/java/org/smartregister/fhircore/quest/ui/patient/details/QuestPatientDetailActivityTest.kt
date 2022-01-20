@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.patient.details
 import android.content.Intent
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.BindValue
@@ -106,14 +107,6 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnMenuItemClickListenerShouldStartQuestPatientTestResultActivity() {
-    questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.test_results)
-    val expectedIntent = Intent(questPatientDetailActivity, SimpleDetailsActivity::class.java)
-    val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
-    Assert.assertEquals(expectedIntent.component, actualIntent.component)
-  }
-
-  @Test
   fun testOnMenuItemClickListenerShouldStartQuestionnaireActivity() {
     questPatientDetailActivity.configurationRegistry.appId = "quest"
     questPatientDetailActivity.configurationRegistry.configurationsMap.put(
@@ -126,41 +119,6 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
     val expectedIntent = Intent(questPatientDetailActivity, QuestionnaireActivity::class.java)
     val actualIntent = shadowOf(hiltTestApplication).nextStartedActivity
     Assert.assertEquals(expectedIntent.component, actualIntent.component)
-  }
-
-  @Test
-  fun testOnMenuItemClickListenerShouldShowProgressAlert() = runBlockingTest {
-    Assert.assertNull(ShadowAlertDialog.getLatestAlertDialog())
-
-    val fhirEngineMockk = mockk<FhirEngine>()
-    every { patientRepository.fhirEngine } returns fhirEngineMockk
-    coEvery { fhirEngineMockk.load(Patient::class.java, any()) } returns
-      Patient().apply { id = "123" }
-    coEvery { fhirEngineMockk.load(Library::class.java, any()) } returns Library()
-    coEvery { fhirEngineMockk.search<Condition>(any()) } returns listOf()
-    coEvery { fhirEngineMockk.search<Observation>(any()) } returns listOf()
-    coEvery { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) } returns listOf("1", "2")
-
-    questPatientDetailActivity.patientViewModel.onMenuItemClickListener(R.string.run_cql)
-
-    Assert.assertNotNull(ShadowAlertDialog.getLatestAlertDialog())
-
-    coVerify { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) }
-
-    val lastAlert = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
-
-    Assert.assertNotNull(
-      lastAlert.view.findViewById<TextView>(
-          org.smartregister.fhircore.engine.R.id.tv_alert_message
-        )!!
-        .text
-    )
-
-    Assert.assertEquals(
-      View.GONE,
-      lastAlert.view.findViewById<View>(org.smartregister.fhircore.engine.R.id.pr_circular)!!
-        .visibility
-    )
   }
 
   @Test

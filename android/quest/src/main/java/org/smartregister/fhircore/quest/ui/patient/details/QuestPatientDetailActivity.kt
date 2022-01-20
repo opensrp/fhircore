@@ -19,15 +19,17 @@ package org.smartregister.fhircore.quest.ui.patient.details
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
-import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.ResourceType
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
@@ -112,13 +114,6 @@ class QuestPatientDetailActivity :
 
   private fun launchTestResults(@StringRes id: Int) {
     when (id) {
-      R.string.test_results ->
-        startActivity(
-          Intent(this, SimpleDetailsActivity::class.java).apply {
-            putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
-          }
-        )
-      R.string.run_cql -> runCql()
       R.string.edit_patient_info ->
         startActivity(
           Intent(this, QuestionnaireActivity::class.java)
@@ -138,27 +133,6 @@ class QuestPatientDetailActivity :
         configClassification = QuestConfigClassification.PATIENT_REGISTER
       )
       .registrationForm
-  }
-
-  fun runCql() {
-    val progress = AlertDialogue.showProgressAlert(this, R.string.loading)
-
-    patientViewModel
-      .runCqlFor(patientId, this)
-      .observe(
-        this,
-        {
-          if (it?.isNotBlank() == true) {
-            progress.dismiss()
-
-            AlertDialogue.showInfoAlert(this, it, getString(R.string.run_cql_log))
-            // show separate alert for output resources generated
-            it.substringAfter(OUTPUT_PARAMETER_KEY, "").takeIf { it.isNotBlank() }?.let {
-              AlertDialogue.showInfoAlert(this, it, getString(R.string.run_cql_output))
-            }
-          }
-        }
-      )
   }
 
   // TODO https://github.com/opensrp/fhircore/issues/961
