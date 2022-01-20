@@ -29,6 +29,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.famoco.desfireservicelib.DESFireServiceAccess
 import ca.uhn.fhir.context.FhirContext
+import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -40,6 +41,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.nfc.MainViewModel
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.nfc.main.PatientNfcItem
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
@@ -102,6 +104,16 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         id = R.id.menu_item_settings,
         title = getString(R.string.menu_settings),
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_settings)!!
+      ),
+      NavigationMenuOption(
+        id = R.id.write_to_card,
+        title = getString(R.string.write_to_card),
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_settings)!!
+      ),
+      NavigationMenuOption(
+        id = R.id.read_from_card,
+        title = getString(R.string.read_from_card),
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_settings)!!
       )
     )
   }
@@ -110,12 +122,13 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     when (item.itemId) {
       R.id.menu_item_clients -> switchFragment(mainFragmentTag())
       R.id.menu_item_settings ->
-        /*        switchFragment(
+        switchFragment(
           tag = UserProfileFragment.TAG,
           isRegisterFragment = false,
           toolbarTitle = getString(R.string.settings)
-        )*/
-        initializeNfc()
+        )
+      R.id.read_from_card -> readFromCard()
+      R.id.write_to_card -> writeToCard()
     }
     return true
   }
@@ -159,7 +172,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     eventJob.cancel()
   }
 
-  private fun initializeNfc() {
+  private fun readFromCard() {
 
     mainViewModel.generateProtoFile()
     // InitializeSAM
@@ -189,7 +202,34 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     }
   }
 
-  override fun registerClient(clientIdentifier: String?) {
+  private fun writeToCard() {
+    mainViewModel.generateProtoFile()
+    // InitializeSAM
+    mainViewModel.initSAM()
+    // Perform Write action with the UI given by the Service
+    val patient = PatientNfcItem(
+      patientId = "222222222",
+      firstName = "222222222",
+      lastName = "222222222",
+      middleName = "222222222",
+      age = "222222222",
+      birthDate = "222222222",
+      gender = "222222222",
+      caretakerName = "222222222",
+      caretakerRelationship = "222222222",
+      village = "222222222",
+      healthCenter = "222222222",
+      beneficiaryGroup = "222222222",
+      registrationDate = "222222222",
+      creationDate = "222222222"
+    )
+    val json = Gson().toJson(patient)
+    mainViewModel.writeSerialized(json)
+  }
+
+
+
+override fun registerClient(clientIdentifier: String?) {
     showAgeDialog({ super.registerClient(clientIdentifier) }, { dialog, which -> dialog.dismiss() })
   }
 
