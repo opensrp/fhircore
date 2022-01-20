@@ -75,7 +75,10 @@ class PatientUtilTest : RobolectricTest() {
     Assert.assertNotNull(searchSlot.captured)
     Assert.assertEquals(
       1,
-      ReflectionHelpers.getField<List<ReferenceParamFilterCriterion>>(searchSlot.captured, "ReferenceParamFilterCriterions")
+      ReflectionHelpers.getField<List<ReferenceParamFilterCriterion>>(
+          searchSlot.captured,
+          "ReferenceParamFilterCriterions"
+        )
         .size
     )
     Assert.assertEquals(
