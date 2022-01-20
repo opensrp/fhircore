@@ -159,6 +159,7 @@ fun LoginPage(
           val logoDrawable =
             when (viewConfiguration.appId) {
               "g6pd" -> R.drawable.ic_logo_g6pd
+              "mw-core" -> R.drawable.ic_malawi
               else -> R.drawable.ic_liberia
             }
           Image(
