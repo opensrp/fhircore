@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.data.patient
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
 import javax.inject.Inject
@@ -33,6 +34,8 @@ import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.activePatientFilter
+import org.smartregister.fhircore.engine.util.extension.appTagFilter
 import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
@@ -56,7 +59,8 @@ constructor(
     return withContext(dispatcherProvider.io()) {
       val patients =
         fhirEngine.search<Patient> {
-          filter(Patient.ACTIVE, { value = of(true) })
+          activePatientFilter()
+          runPatientSearchFilters(this)
           if (query.isNotBlank()) {
             filter(
               Patient.NAME,
@@ -80,8 +84,14 @@ constructor(
     }
   }
 
+  fun runPatientSearchFilters(search: Search) {
+    search.appTagFilter(configurationRegistry.appId)
+  }
+
   override suspend fun countAll(): Long =
-    withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
+    withContext(dispatcherProvider.io()) {
+      fhirEngine.countActivePatients(::runPatientSearchFilters)
+    }
 
   suspend fun fetchDemographics(patientId: String): Patient =
     withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, patientId) }
@@ -121,12 +131,16 @@ constructor(
     }
 
   private suspend fun searchQuestionnaireResponses(patientId: String): List<QuestionnaireResponse> =
-    fhirEngine.search { filter(QuestionnaireResponse.SUBJECT, { value = "Patient/$patientId" }) }
+    fhirEngine.search {
+      filter(QuestionnaireResponse.SUBJECT, { value = "Patient/$patientId" })
+      appTagFilter(configurationRegistry.appId)
+    }
 
   suspend fun fetchTestForms(filter: SearchFilter): List<QuestionnaireConfig> =
     withContext(dispatcherProvider.io()) {
       val result =
         fhirEngine.search<Questionnaire> {
+          appTagFilter(configurationRegistry.appId)
           filter(
             Questionnaire.CONTEXT,
             {

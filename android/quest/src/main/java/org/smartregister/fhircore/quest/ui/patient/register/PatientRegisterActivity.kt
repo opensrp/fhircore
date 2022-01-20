@@ -16,21 +16,30 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.os.Bundle
+import android.text.InputType
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.activity.viewModels
+import android.widget.EditText
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.famoco.desfireservicelib.DESFireServiceAccess
+import ca.uhn.fhir.context.FhirContext
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.nfc.MainViewModel
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
@@ -42,6 +51,7 @@ import org.smartregister.fhircore.quest.util.QuestConfigClassification
 class PatientRegisterActivity : BaseRegisterActivity() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+  @Inject lateinit var defaultRepository: DefaultRepository
 
   private val mainViewModel: MainViewModel by viewModels()
 
@@ -60,6 +70,25 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
     // Add DES service listeners
     addDesServiceListeners()
+
+    loadLocalDevWfpCodaFiles()
+  }
+
+  fun loadLocalDevWfpCodaFiles() {
+    val files =
+      listOf(
+        "fhir-questionnaires/CODA/anthro-following-visit.json",
+        "fhir-questionnaires/CODA/assistance-visit.json",
+        "fhir-questionnaires/CODA/coda-child-registration.json",
+        "fhir-questionnaires/CODA/coda-child-structure-map.json",
+      )
+
+    files.forEach { fileName ->
+      val jsonString = assets.open(fileName).bufferedReader().readText()
+      val questionnaire = FhirContext.forR4().newJsonParser().parseResource(jsonString)
+
+      GlobalScope.launch { defaultRepository.addOrUpdate(questionnaire as Resource) }
+    }
   }
 
   override fun bottomNavigationMenuOptions(): List<NavigationMenuOption> {
@@ -158,5 +187,41 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         val readResult = stringBuilder.toString()
       }
     }
+  }
+
+  override fun registerClient(clientIdentifier: String?) {
+    showAgeDialog({ super.registerClient(clientIdentifier) }, { dialog, which -> dialog.dismiss() })
+  }
+
+  fun showAgeDialog(
+    okClickListener: () -> Unit,
+    cancelClickListener: DialogInterface.OnClickListener
+  ) {
+    val input =
+      EditText(this).apply {
+        setHint(getString(R.string.enter_age_in_months))
+        inputType = InputType.TYPE_CLASS_NUMBER
+      }
+
+    AlertDialog.Builder(this)
+      .setTitle(getString(R.string.enter_beneficiary_age))
+      .setView(input)
+      .setPositiveButton(android.R.string.ok) { dialog, which ->
+        val age = input.text.toString()
+
+        if (age.isNotEmpty() && age.toInt() in (6..59)) {
+          okClickListener()
+        } else {
+          Toast.makeText(
+              this,
+              getString(R.string.beneficiary_not_eligible_for_program),
+              Toast.LENGTH_LONG
+            )
+            .show()
+        }
+        dialog.dismiss()
+      }
+      .setNegativeButton(R.string.cancel, cancelClickListener)
+      .show()
   }
 }

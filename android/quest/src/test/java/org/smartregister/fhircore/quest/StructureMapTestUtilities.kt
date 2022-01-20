@@ -36,8 +36,8 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
 import org.hl7.fhir.utilities.npm.ToolsVersion
 import org.junit.Test
-import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 /**
  * Provides a playground for quickly testing and authoring questionnaire.json and the respective
@@ -140,7 +140,8 @@ class StructureMapTestUtilities : RobolectricTest() {
       "structure-map-questionnaires/patient-registration/structure-map.txt".readResourceFile()
     val relatedPersonJson =
       "structure-map-questionnaires/patient-registration/related-person.json".readResourceFile()
-    val patientJson = "structure-map-questionnaires/patient-registration/patient.json".readResourceFile()
+    val patientJson =
+      "structure-map-questionnaires/patient-registration/patient.json".readResourceFile()
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val questionnaire =
@@ -182,7 +183,8 @@ class StructureMapTestUtilities : RobolectricTest() {
       "structure-map-questionnaires/adverse-event/questionnaire.json".readResourceFile()
     val adverseEventStructureMap =
       "structure-map-questionnaires/adverse-event/structure-map.txt".readResourceFile()
-    val immunizationJson = "structure-map-questionnaires/adverse-event/immunization.json".readResourceFile()
+    val immunizationJson =
+      "structure-map-questionnaires/adverse-event/immunization.json".readResourceFile()
 
     val iParser: IParser = FhirContext.forR4().newJsonParser()
     val questionnaire = iParser.parseResource(Questionnaire::class.java, adverseEventQuestionnaire)
@@ -386,7 +388,12 @@ class StructureMapTestUtilities : RobolectricTest() {
     return String(charArray)
   }
 
-  fun String.readAsset() : String = ApplicationProvider.getApplicationContext<HiltTestApplication>().assets.open(this).bufferedReader().readText()
+  fun String.readAsset(): String =
+    ApplicationProvider.getApplicationContext<HiltTestApplication>()
+      .assets
+      .open(this)
+      .bufferedReader()
+      .readText()
 
   companion object {
     val ASSET_BASE_PATH =

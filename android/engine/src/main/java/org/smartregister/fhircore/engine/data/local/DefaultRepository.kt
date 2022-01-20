@@ -28,7 +28,9 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.appTag
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
 import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
@@ -38,7 +40,11 @@ import org.smartregister.fhircore.engine.util.extension.updateFrom
 @Singleton
 open class DefaultRepository
 @Inject
-constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: DispatcherProvider) {
+constructor(
+  open val fhirEngine: FhirEngine,
+  open val dispatcherProvider: DispatcherProvider,
+  open val configurationRegistry: ConfigurationRegistry
+) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
     return withContext(dispatcherProvider.io()) { fhirEngine.loadResource(resourceId) }
@@ -85,6 +91,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         resource.generateMissingId()
+        resource.meta.tag = listOf(appTag(configurationRegistry.appId))
         fhirEngine.save(resource)
       }
     }

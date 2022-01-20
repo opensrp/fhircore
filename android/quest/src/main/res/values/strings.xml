@@ -19,5 +19,8 @@
     <string name="no_test_results_found">No test results found</string>
     <string name="patient_test_results">TEST RESULTS</string>
     <string name="sample_nfc_screen">Sample Nfc screen</string>
+    <string name="enter_beneficiary_age">Enter the beneficiary\'s age</string>
+    <string name="enter_age_in_months">Enter age in months</string>
+    <string name="beneficiary_not_eligible_for_program">Beneficiary is not eligible for the program</string>
 
 </resources>
