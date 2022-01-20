@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import android.content.Context
 import androidx.annotation.StringRes
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -24,23 +23,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.engine.util.AssetUtil
-import org.smartregister.fhircore.engine.util.extension.isPatient
 import org.smartregister.fhircore.quest.configuration.parser.DetailConfigParser
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.PatientRepository

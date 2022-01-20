@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.patient.details
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
@@ -28,15 +27,13 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
-import org.smartregister.fhircore.engine.cql.LibraryEvaluator.Companion.OUTPUT_PARAMETER_KEY
-import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_RESPONSE
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -143,14 +140,17 @@ class QuestPatientDetailActivity :
     if (resultCode == Activity.RESULT_OK)
       if (configurationRegistry.appId == "g6pd") {
         data?.getStringExtra(QUESTIONNAIRE_RESPONSE)?.let {
-          val response = FhirContext.forR4().newJsonParser().parseResource(it) as QuestionnaireResponse
-          response.contained.find { it.resourceType == ResourceType.Encounter }?.logicalId?.let {
-            startActivity(
-              Intent(this, SimpleDetailsActivity::class.java).apply {
-                putExtra(RECORD_ID_ARG, it.replace("#", ""))
-              }
-            )
-          }
+          val response =
+            FhirContext.forR4().newJsonParser().parseResource(it) as QuestionnaireResponse
+          // TODO replace with proper implementation
+          if (data.getStringExtra(QUESTIONNAIRE_ARG_FORM)?.equals("14222") == false)
+            response.contained.find { it.resourceType == ResourceType.Encounter }?.logicalId?.let {
+              startActivity(
+                Intent(this, SimpleDetailsActivity::class.java).apply {
+                  putExtra(RECORD_ID_ARG, it.replace("#", ""))
+                }
+              )
+            }
         }
       }
   }

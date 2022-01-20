@@ -17,25 +17,13 @@
 package org.smartregister.fhircore.quest.ui.patient.details
 
 import android.content.Intent
-import android.view.View
-import android.widget.TextView
-import android.widget.Toast
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import javax.inject.Inject
-import kotlinx.coroutines.test.runBlockingTest
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Library
-import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.After
 import org.junit.Assert
@@ -45,7 +33,6 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
-import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry

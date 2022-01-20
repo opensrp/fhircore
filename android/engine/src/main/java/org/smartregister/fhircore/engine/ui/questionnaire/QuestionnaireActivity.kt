@@ -289,11 +289,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     else finishActivity(questionnaireResponse)
   }
 
-  fun finishActivity(questionnaireResponse: QuestionnaireResponse){
+  fun finishActivity(questionnaireResponse: QuestionnaireResponse) {
     setResult(
       Activity.RESULT_OK,
       Intent().apply {
         putExtra(QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(questionnaireResponse))
+        putExtra(QUESTIONNAIRE_ARG_FORM, questionnaire.logicalId)
       }
     )
     finish()

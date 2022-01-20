@@ -36,7 +36,6 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.Type
 import org.json.JSONArray
 import org.json.JSONObject
 import org.opencds.cqf.cql.engine.data.CompositeDataProvider
@@ -238,8 +237,7 @@ class LibraryEvaluator @Inject constructor() {
     parser.setPrettyPrint(false)
     return result.parameter.mapNotNull { p ->
       (p.value ?: p.resource)?.let {
-        if (p.name.equals(OUTPUT_PARAMETER_KEY) && it.isResource)
-          repository.save(it as Resource)
+        if (p.name.equals(OUTPUT_PARAMETER_KEY) && it.isResource) repository.save(it as Resource)
 
         when {
           outputLog -> "${p.name} -> ${getStringValue(it)}"
@@ -251,8 +249,7 @@ class LibraryEvaluator @Inject constructor() {
   }
 
   fun getStringValue(base: Base) =
-    if (base.isResource) parser.encodeResourceToString(base as Resource)
-    else base.toString()
+    if (base.isResource) parser.encodeResourceToString(base as Resource) else base.toString()
 
   private fun loadConfigs(
     library: org.hl7.fhir.r4.model.Library,

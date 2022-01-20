@@ -621,21 +621,23 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testExtractAndSaveResourcesWithExperimentalQuestionnaireShouldNotSave() {
     mockkObject(ResourceMapper)
 
-    coEvery { ResourceMapper.extract(any(), any(), any(), any()) } returns Bundle().apply {
-      addEntry().apply {
-        resource = Patient()
-      }
-    }
+    coEvery { ResourceMapper.extract(any(), any(), any(), any()) } returns
+      Bundle().apply { addEntry().apply { resource = Patient() } }
 
-    val questionnaire = Questionnaire().apply {
-      experimental = true
-      addExtension().url = "sdc-questionnaire-itemExtractionContext"
-    }
+    val questionnaire =
+      Questionnaire().apply {
+        experimental = true
+        addExtension().url = "sdc-questionnaire-itemExtractionContext"
+      }
     val questionnaireResponse = QuestionnaireResponse()
 
     runBlocking {
-      questionnaireViewModel.extractAndSaveResources(ApplicationProvider.getApplicationContext(),
-        null, questionnaire, questionnaireResponse)
+      questionnaireViewModel.extractAndSaveResources(
+        ApplicationProvider.getApplicationContext(),
+        null,
+        questionnaire,
+        questionnaireResponse
+      )
     }
 
     coVerify { ResourceMapper.extract(any(), any(), any(), any()) }
