@@ -14,7 +14,7 @@
     "showNewClientButton": true,
     "showSideMenu": false,
     "showBottomMenu": true,
-    "registrationForm": "client-questionnaire",
+    "registrationForm": "client-questionnaire-v2",
     "primaryFilter": {
       "key": "_tag",
       "system": "http://fhir.ona.io",
