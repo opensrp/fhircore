@@ -48,10 +48,10 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
   }
 
   @Composable
-  override fun ConstructRegisterList(pagingItems: LazyPagingItems<PatientItem>) {
+  override fun ConstructRegisterList(pagingItems: LazyPagingItems<PatientItem>, modifier: Modifier) {
     PatientRegisterList(
       pagingItems = pagingItems,
-      modifier = Modifier,
+      modifier = modifier,
       clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
     )
   }
