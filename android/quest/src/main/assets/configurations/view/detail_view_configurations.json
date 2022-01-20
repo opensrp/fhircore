@@ -126,6 +126,9 @@
             },
             "properties": {
               "labelDirection": "UP",
+              "valueFormatter": {
+                "missing": "N/A"
+              },
               "value": {
                 "textSize": 45
               }
@@ -149,7 +152,8 @@
               "labelDirection": "UP",
               "valueFormatter": {
                 "8.0": "People with G6PD status Deficient or Intermediate are given 8 Weeks regimen",
-                "2.0": "People with G6PD status Normal are given 2 Weeks regimen"
+                "2.0": "People with G6PD status Normal are given 2 Weeks regimen",
+                "missing": "The following persons do not qualify for Treatment Regimen :  Persons below 16yrs of Age, Have an Hemoglobin level <9.0  , or are Pregnant"
               },
               "value": {
                 "textSize": 16

@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.questionnaire
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -261,6 +262,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   open fun populateInitialValues(questionnaire: Questionnaire) = Unit
 
   open fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
+    setResult(
+      Activity.RESULT_OK,
+      Intent().apply {
+        putExtra(QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(questionnaireResponse))
+      }
+    )
     finish()
   }
 
@@ -348,7 +355,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       editMode: Boolean = false,
       questionnaireResponse: QuestionnaireResponse? = null,
       immunizationId: String? = null,
-      populationResources: ArrayList<Resource> = ArrayList()
+      populationResources: ArrayList<Resource> = ArrayList(),
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),

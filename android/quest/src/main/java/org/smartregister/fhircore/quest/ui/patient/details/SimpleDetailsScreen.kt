@@ -113,12 +113,7 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
 fun DetailsViewCell(cell: DetailsViewItemCell) {
   with(cell.filter) {
     this.label?.let {
-      TextView(
-        this.properties?.label,
-        StringType(this.label),
-        this.dynamicColors,
-        this.properties?.valueFormatter
-      )
+      TextView(this.properties?.label, StringType(this.label), this.dynamicColors, null)
     }
 
     TextView(
@@ -147,10 +142,11 @@ fun TextView(
       else -> "FF888888"
     }
 
-  val formattedValue = valueFormatter?.get(valueStr) ?: valueStr
+  val formattedValue =
+    if (valueStr.isBlank()) valueFormatter?.get("missing") else valueFormatter?.get(valueStr)
   val size = property?.textSize?.toFloat() ?: 16f
   Text(
-    text = formattedValue,
+    text = formattedValue ?: valueStr,
     color = Color(color.toLong(radix = 16)),
     fontSize = TextUnit(size, TextUnitType.Sp),
   )
