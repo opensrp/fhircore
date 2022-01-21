@@ -59,13 +59,11 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
   }
 
   override fun onItemClicked(listenerIntent: ListenerIntent, data: PatientItem) {
-  /*  when (listenerIntent) {
+    when (listenerIntent) {
       OpenPatientProfile -> navigateToDetails(data.id)
       else -> throw UnsupportedOperationException("Given ListenerIntent is not supported")
-    }*/
-    startActivity(
-      Intent(requireActivity(), MainNfcActivity::class.java)
-    )
+    }
+
   }
 
   override fun performFilter(

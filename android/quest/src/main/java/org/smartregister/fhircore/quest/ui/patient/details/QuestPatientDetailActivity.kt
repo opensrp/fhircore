@@ -22,6 +22,7 @@ import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
+import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -29,12 +30,15 @@ import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator.Companion.OUTPUT_PARAMETER_KEY
+import org.smartregister.fhircore.engine.nfc.MainViewModel
+import org.smartregister.fhircore.engine.nfc.main.PatientNfcItem
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.data.patient.model.PatientItem
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import timber.log.Timber
 
@@ -44,6 +48,8 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
   private lateinit var patientId: String
 
   val patientViewModel by viewModels<QuestPatientDetailViewModel>()
+
+  private val mainViewModel: MainViewModel by viewModels()
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
@@ -89,6 +95,7 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
               )
             )
         )
+      R.string.write_to_card -> launchWriteToCard(patientViewModel.patientItem.value)
     }
   }
 
@@ -165,5 +172,34 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
         )
       }
     }
+  }
+
+  private fun launchWriteToCard(patientItem: PatientItem?) {
+    mainViewModel.generateProtoFile()
+    // InitializeSAM
+    mainViewModel.initSAM()
+    // Perform Write action with the UI given by the Service
+
+    val patientNfcItem = patientItem?.let {
+      PatientNfcItem(
+        patientId = it.id,
+        //identifier = dto.identifierFirstRep.value ?: "",
+        firstName = it.name,
+        gender = it.gender.toString(),
+        age = it.age,
+        lastName = "",
+        middleName = "",
+        birthDate = "",
+        caretakerName = "",
+        caretakerRelationship = "",
+        village = "",
+        healthCenter = "",
+        beneficiaryGroup = "",
+        registrationDate = "",
+        creationDate = ""
+    )
+    }
+    val json = Gson().toJson(patientNfcItem)
+    mainViewModel.writeSerialized(json)
   }
 }

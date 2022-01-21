@@ -117,6 +117,12 @@ fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
             questPatientDetailViewModel.onMenuItemClickListener(R.string.run_cql)
           }
         ) { Text(text = stringResource(id = R.string.run_cql)) }
+        DropdownMenuItem(
+          onClick = {
+            showMenu = false
+            questPatientDetailViewModel.onMenuItemClickListener(R.string.write_to_card)
+          }
+        ) { Text(text = stringResource(id = R.string.write_to_card)) }
       }
     }
   )
