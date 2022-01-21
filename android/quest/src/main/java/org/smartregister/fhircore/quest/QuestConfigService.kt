@@ -25,6 +25,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
 import org.json.JSONArray
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.APP_SYNC_CONFIG
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.ID
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.ORGANIZATION
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.PUBLISHER
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
@@ -33,6 +34,7 @@ import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.decodeJson
+import timber.log.Timber
 
 class QuestConfigService
 @Inject
@@ -50,10 +52,11 @@ constructor(
       // TODO: expressionValue supports for Organization and Publisher, extend it using
       // Composition resource
       val expressionValue =
-        searchParams[i].expression?.let {
+        searchParams[i].name!!.let {
           when {
             it.contains(ORGANIZATION) -> authenticatedUserInfo?.organization
             it.contains(PUBLISHER) -> authenticatedUserInfo?.questionnairePublisher
+            it.contains(ID) -> searchParams[i].expression
             else -> null
           }
         }
@@ -61,10 +64,12 @@ constructor(
       pairs.add(
         Pair(
           ResourceType.fromCode(searchParams[i].base[0].code),
-          expressionValue?.let { mapOf(searchParams[i].expression to it) } ?: mapOf()
+          expressionValue?.let { mapOf(searchParams[i].code to it) } ?: mapOf()
         )
       )
     }
+
+    Timber.i("SYNC CONFIG $pairs")
 
     mapOf(*pairs.toTypedArray())
   }

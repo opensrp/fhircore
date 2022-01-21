@@ -111,7 +111,7 @@ class SimpleDetailsScreenTest : RobolectricTest() {
     composeRule.setContent { simpleDetailsScreenView1() }
 
     val rows = composeRule.onAllNodesWithTag(DETAILS_DATA_ROW, true)
-    rows.assertCountEquals(4)
+    rows.assertCountEquals(6)
     rows[0].onChildAt(0).assert(hasText("Sample Label 1"))
     rows[0].onChildAt(1).assert(hasText("Val 1"))
     rows[0].onChildAt(2).assert(hasText("Sample Label Two"))
@@ -119,6 +119,9 @@ class SimpleDetailsScreenTest : RobolectricTest() {
     rows[1].onChildren().assertCountEquals(0)
     rows[2].onChildAt(0).assert(hasText("Label 1"))
     rows[2].onChildAt(1).assert(hasText("Value of Yellow"))
+    rows[3].onChildAt(0).assert(hasText("What is the value of Label"))
+    rows[4].onChildAt(0).assert(hasText("My test label with long text"))
+    rows[5].onChildAt(1).assert(hasText("Another Dynamic value 1 having a different sample text"))
   }
 
   @Test
