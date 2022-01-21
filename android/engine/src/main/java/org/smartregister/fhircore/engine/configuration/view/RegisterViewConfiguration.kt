@@ -21,6 +21,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.util.extension.getAppLocale
 
 @Serializable
 @Stable
@@ -39,7 +40,11 @@ data class RegisterViewConfiguration(
   var registrationForm: String = "patient-registration",
   var showSideMenu: Boolean = true,
   var showBottomMenu: Boolean = false,
-  var primaryFilter: SearchFilter? = null
+  var primaryFilter: SearchFilter? = null,
+  var appTitle_lang : HashMap<String, String> = hashMapOf("en" to appTitle),
+  var filterText_lang : HashMap<String, String> = hashMapOf("en" to filterText),
+  var searchBarHint_lang : HashMap<String, String> = hashMapOf("en" to searchBarHint),
+  var newClientButtonText_lang : HashMap<String, String> = hashMapOf("en" to newClientButtonText),
 ) : Configuration
 
 @Serializable
@@ -97,4 +102,14 @@ fun Context.registerViewConfigurationOf(
     showSideMenu = showSideMenu,
     showBottomMenu = showBottomMenu,
   )
+}
+
+fun HashMap<String, String>.getString(context: Context) : String {
+  val appLocale = context.getAppLocale()
+
+  return if (containsKey(appLocale)) {
+    get(appLocale)!!
+  } else {
+    ""
+  }
 }

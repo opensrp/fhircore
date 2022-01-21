@@ -46,9 +46,25 @@
     "appId": "wfp-coda",
     "classification": "patient_register",
     "appTitle": "Beneficiaries",
+    "appTitle_lang": {
+      "en": "Beneficiaries",
+      "fr": "Bénéficiaires"
+    },
     "filterText": "Show overdue",
+    "filterText_lang": {
+      "en": "Show overdue",
+      "fr": "Afficher en retard"
+    },
     "searchBarHint": "Search for ID or beneficiary name",
+    "searchBarHint_lang": {
+      "en": "Search for ID or beneficiary name",
+      "fr": "Rechercher ID ou nom de bénéficiaire"
+    },
     "newClientButtonText": "Register new beneficiary",
+    "newClientButtonText_lang": {
+      "en": "Register new beneficiary",
+      "fr": "Enregistrer un nouveau bénéficiaire"
+    },
     "newClientButtonStyle": "rounded_corner",
     "showSearchBar": true,
     "showFilter": false,
