@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.patient.details
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
@@ -28,9 +27,9 @@ import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator.Companion.OUTPUT_PARAMETER_KEY
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
@@ -39,16 +38,22 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_RESPONSE
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.configuration.parser.DetailConfigParser
+import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
+import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.ui.patient.details.SimpleDetailsActivity.Companion.RECORD_ID_ARG
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
-import timber.log.Timber
 
 @AndroidEntryPoint
-class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
+class QuestPatientDetailActivity :
+  BaseMultiLanguageActivity(), ConfigurableComposableView<PatientDetailsViewConfiguration> {
 
+  private lateinit var profileConfig: QuestPatientDetailViewModel.ProfileConfig
+  private lateinit var patientDetailConfig: PatientDetailsViewConfiguration
   private lateinit var patientId: String
+  private var parser: DetailConfigParser? = null
 
   val patientViewModel by viewModels<QuestPatientDetailViewModel>()
 
@@ -68,10 +73,25 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
       onFormItemClicked.observe(detailActivity, detailActivity::launchQuestionnaireForm)
       onFormTestResultClicked.observe(detailActivity, detailActivity::onTestResultItemClickListener)
     }
+
+    patientDetailConfig =
+      configurationRegistry.retrieveConfiguration(
+        configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
+      )
+
+    parser = patientViewModel.loadParser(packageName, patientDetailConfig)
+
+    // TODO Load binary resources
+    profileConfig =
+      AssetUtil.decodeAsset(fileName = QuestPatientDetailViewModel.PROFILE_CONFIG, this)
+
+    if (configurationRegistry.isAppIdInitialized()) {
+      configureViews(patientDetailConfig)
+    }
     patientViewModel.run {
-      getDemographics(patientId)
-      getAllResults(patientId)
-      getAllForms(this@QuestPatientDetailActivity)
+      getDemographicsWithAdditionalData(patientId, patientDetailConfig)
+      getAllResults(patientId, profileConfig, patientDetailConfig, parser)
+      getAllForms(profileConfig)
     }
     setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
   }
@@ -80,9 +100,9 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
     super.onResume()
 
     patientViewModel.run {
-      getDemographics(patientId)
-      getAllResults(patientId)
-      getAllForms(this@QuestPatientDetailActivity)
+      getDemographicsWithAdditionalData(patientId, patientDetailConfig)
+      getAllResults(patientId, profileConfig, patientDetailConfig, parser)
+      getAllForms(profileConfig)
     }
   }
 
@@ -145,7 +165,8 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
     if (resultCode == Activity.RESULT_OK)
       if (configurationRegistry.appId == "g6pd") {
         data?.getStringExtra(QUESTIONNAIRE_RESPONSE)?.let {
-          val response = FhirContext.forR4().newJsonParser().parseResource(it) as QuestionnaireResponse
+          val response =
+            FhirContext.forR4().newJsonParser().parseResource(it) as QuestionnaireResponse
           response.contained.find { it.resourceType == ResourceType.Encounter }?.logicalId?.let {
             startActivity(
               Intent(this, SimpleDetailsActivity::class.java).apply {
@@ -157,6 +178,8 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
       }
   }
 
+  // TODO https://github.com/opensrp/fhircore/issues/961
+  // allow handling the data back and forth between activities via workflow or config
   private fun launchQuestionnaireForm(questionnaireConfig: QuestionnaireConfig?) {
     if (questionnaireConfig != null) {
       startActivityForResult(
@@ -173,51 +196,11 @@ class QuestPatientDetailActivity : BaseMultiLanguageActivity() {
     }
   }
 
-  private fun onTestResultItemClickListener(questionnaireResponse: QuestionnaireResponse?) {
-    if (questionnaireResponse != null) {
-      if (questionnaireResponse.questionnaire != null) {
-        // TODO https://github.com/opensrp/fhircore/issues/778
-        //  1- handle via config/menu, 2- pass encounterId from quest details screen
-        if (configurationRegistry.appId == "g6pd") {
-          val encounterId =
-            questionnaireResponse.contained
-              ?.find { it.resourceType == ResourceType.Encounter }
-              ?.logicalId
-          if (encounterId == null) showToast("Missing linked encounter. Invalid data")
-          else
-            startActivity(
-              Intent(this, SimpleDetailsActivity::class.java).apply {
-                putExtra(RECORD_ID_ARG, encounterId.replace("#", ""))
-              }
-            )
-        } else {
-          val questionnaireId = questionnaireResponse.questionnaire.split("/")[1]
-          val populationResources = ArrayList<Resource>().apply { add(questionnaireResponse) }
-          startActivity(
-            Intent(this, QuestionnaireActivity::class.java)
-              .putExtras(
-                QuestionnaireActivity.intentArgs(
-                  clientIdentifier = patientId,
-                  formName = questionnaireId,
-                  readOnly = true,
-                  populationResources = populationResources
-                )
-              )
-          )
-        }
-      } else {
-        Toast.makeText(
-            this,
-            getString(R.string.cannot_find_parent_questionnaire),
-            Toast.LENGTH_LONG
-          )
-          .show()
-        Timber.e(
-          Exception(
-            "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
-          )
-        )
-      }
-    }
+  private fun onTestResultItemClickListener(resultItem: QuestResultItem?) {
+    resultItem?.let { parser?.onResultItemClicked(resultItem, this, patientId) }
+  }
+
+  override fun configureViews(viewConfiguration: PatientDetailsViewConfiguration) {
+    patientViewModel.updateViewConfigurations(viewConfiguration)
   }
 }

@@ -55,7 +55,6 @@
     <string name="questionnaire_alert_back_pressed_button_title">Abandonner</string>
     <string name="questionnaire_alert_submit_message">Confirmez que vous avez terminé de remplir les détails du client. Vous pouvez modifier les informations du client plus tard</string>
     <string name="questionnaire_alert_submit_title">Enregistrer les données du client</string>
-    <string name="questionnaire_alert_submit_button_title">Enregistrer</string>
     <string name="questionnaire_alert_neutral_button_title">Annuler</string>
     <string name="questionnaire_alert_confirm_button_title">Oui</string>
     <string name="questionnaire_alert_invalid_message">Les détails donnés ont des erreurs de validation. Résoudre les erreurs et soumettre à nouveau</string>
@@ -90,4 +89,7 @@
     <string name="application_not_supported">Application %1$s pas trouvée</string>
     <string name="eCBIS_app_name">eCBIS</string>
     <string name="invalid_login_credentials">Nom d\'utilisateur ou Mot de passe sont incorrects</string>
+    <string name="no">Non</string>
+    <string name="yes">Oui</string>
+    <string name="required_constraint_validation_error_msg">Il n\'y a pas de réponse au champ obligatoire.</string>
 </resources>

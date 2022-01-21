@@ -72,9 +72,9 @@ class SimpleDetailsViewModelTest : RobolectricTest() {
       Encounter().apply { id = encounterId }
 
     coEvery { viewModel.getCondition(any(), any()) } returns
-      Condition().apply { code.addCoding(Coding("s", "c", "d")) }
+      listOf(Condition().apply { code.addCoding(Coding("s", "c", "d")) })
     coEvery { viewModel.getObservation(any(), any()) } returns
-      Observation().apply { value = StringType("1234") }
+      listOf(Observation().apply { value = StringType("1234") })
 
     viewModel.loadData(encounterId)
 
@@ -97,7 +97,7 @@ class SimpleDetailsViewModelTest : RobolectricTest() {
 
     coVerify { fhirEngine.search<Condition>(any()) }
 
-    Assert.assertEquals("c1", result!!.logicalId)
+    Assert.assertEquals("c1", result!!.first().logicalId)
   }
 
   @Test
@@ -115,7 +115,7 @@ class SimpleDetailsViewModelTest : RobolectricTest() {
 
     coVerify { fhirEngine.search<Observation>(any()) }
 
-    Assert.assertEquals("o1", result!!.logicalId)
+    Assert.assertEquals("o1", result.first().logicalId)
   }
 
   @Test
