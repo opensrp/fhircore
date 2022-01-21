@@ -16,21 +16,14 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
-import kotlinx.coroutines.test.runBlockingTest
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Library
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
@@ -133,46 +126,6 @@ class QuestPatientDetailViewModelTest : RobolectricTest() {
       "67890",
       questPatientDetailViewModel.questionnaireConfigs.value!!.last().identifier
     )
-  }
-
-  @Test
-  fun testGetAllDataFor() = runBlockingTest {
-    val fhirEngineMock = mockk<FhirEngine>()
-    coEvery { patientRepository.fhirEngine } returns fhirEngineMock
-    coEvery { fhirEngineMock.load(Patient::class.java, "1111") } returns
-      Patient().apply { id = "1111" }
-
-    coEvery {
-      hint(Condition::class)
-      fhirEngineMock.search<Condition>(any())
-    } returns listOf(Condition().apply { id = "c1" })
-
-    val result = questPatientDetailViewModel.getAllDataFor("1111")
-
-    Assert.assertNotNull(result.first())
-    Assert.assertEquals("1111", result[0].id)
-    Assert.assertEquals("c1", result[1].id)
-  }
-
-  @Test
-  fun testRunCqlFor() = runBlockingTest {
-    val fhirEngineMock = mockk<FhirEngine>()
-    coEvery { patientRepository.fhirEngine } returns fhirEngineMock
-    coEvery { fhirEngineMock.load(Library::class.java, any()) } returns Library()
-
-    coEvery { fhirEngineMock.load(Patient::class.java, "1111") } returns
-      Patient().apply { id = "1111" }
-
-    coEvery {
-      hint(Condition::class)
-      fhirEngineMock.search<Condition>(any())
-    } returns listOf(Condition().apply { id = "c1" })
-
-    coEvery { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) } returns listOf("1", "2")
-
-    questPatientDetailViewModel.runCqlFor("1111", ApplicationProvider.getApplicationContext())
-
-    coVerify { libraryEvaluator.runCqlLibrary(any(), any(), any(), any()) }
   }
 
   fun testFetchResultNonNullNameShouldReturnNameValue() {

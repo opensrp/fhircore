@@ -15,6 +15,7 @@
           {
             "resourceType": "OBSERVATION",
             "key": "code",
+            "displayableProperty": "value",
             "valueType": "CODEABLECONCEPT",
             "label": "G6PD (U/g Hb)",
             "valueCoding": {
@@ -31,6 +32,7 @@
           {
             "resourceType": "OBSERVATION",
             "key": "code",
+            "displayableProperty": "value",
             "valueType": "CODEABLECONCEPT",
             "label": "Haemoglobin (Hb)",
             "valueCoding": {
@@ -54,6 +56,7 @@
           {
             "resourceType": "CONDITION",
             "key": "category",
+            "displayableProperty": "code",
             "valueType": "CODEABLECONCEPT",
             "label": "Status ",
             "valueCoding": {
@@ -88,6 +91,7 @@
           {
             "resourceType": "CONDITION",
             "key": "category",
+            "displayableProperty": "code",
             "valueType": "CODEABLECONCEPT",
             "label": "How is status determined? ",
             "valueCoding": {
@@ -100,6 +104,56 @@
                 "Deficient": "People with G6PD values <= 3.9 U/g Hb are considered G6PD deficient",
                 "Intermediate": "Females with G6PD values between 4.1 - 6.0 U/g Hb are considered G6PD intermediate",
                 "Normal": "Females with G6PD values >= 6.0 U/g Hb are considered G6PD normal\nMales with G6PD values >= 4.1 U/g Hb are considered G6PD normal"
+              },
+              "value": {
+                "textSize": 16
+              }
+            }
+          }
+        ]
+      },
+      {
+        "filters": [
+          {
+            "resourceType": "MEDICATIONREQUEST",
+            "key": "category",
+            "displayableProperty": "dosageInstruction.timing",
+            "valueType": "CODEABLECONCEPT",
+            "label": "Recommended PQ Regimen ",
+            "valueCoding": {
+              "system": "http://snomed.info/sct",
+              "code": "86859003"
+            },
+            "properties": {
+              "labelDirection": "UP",
+              "valueFormatter": {
+                "missing": "N/A"
+              },
+              "value": {
+                "textSize": 45
+              }
+            }
+          }
+        ]
+      },
+      {
+        "filters": [
+          {
+            "resourceType": "MEDICATIONREQUEST",
+            "key": "category",
+            "displayableProperty": "dosageInstruction.timing.repeat.period",
+            "valueType": "CODEABLECONCEPT",
+            "label": "Why this PQ regimen recommended? ",
+            "valueCoding": {
+              "system": "http://snomed.info/sct",
+              "code": "86859003"
+            },
+            "properties": {
+              "labelDirection": "UP",
+              "valueFormatter": {
+                "8.0": "People with G6PD status Deficient or Intermediate are given 8 Weeks regimen",
+                "2.0": "People with G6PD status Normal are given 2 Weeks regimen",
+                "missing": "The following persons do not qualify for Treatment Regimen :  Persons below 16yrs of Age, Have an Hemoglobin level <9.0  , or are Pregnant"
               },
               "value": {
                 "textSize": 16

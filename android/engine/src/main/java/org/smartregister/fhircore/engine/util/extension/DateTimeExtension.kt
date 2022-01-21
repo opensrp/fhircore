@@ -29,6 +29,7 @@ import org.hl7.fhir.r4.model.DateType
 
 val SDF_DD_MMM_YYYY = SimpleDateFormat("dd-MMM-yyyy")
 val SDF_YYYY_MM_DD = SimpleDateFormat("yyyy-MM-dd")
+val SDF_YYYY_MM_DD_HH_MM_SS = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
 fun OffsetDateTime.asString(): String {
   return this.format(DateTimeFormatter.RFC_1123_DATE_TIME)
@@ -40,6 +41,10 @@ fun Date.asDdMmmYyyy(): String {
 
 fun Date.asYyyyMmDd(): String {
   return SDF_YYYY_MM_DD.format(this)
+}
+
+fun Date.asYyyyMmDdHHmmss(): String {
+  return SDF_YYYY_MM_DD_HH_MM_SS.format(this)
 }
 
 fun Date.toHumanDisplay(): String =

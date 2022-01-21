@@ -16,20 +16,25 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
+import ca.uhn.fhir.context.FhirContext
+import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
-import org.smartregister.fhircore.engine.cql.LibraryEvaluator.Companion.OUTPUT_PARAMETER_KEY
-import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_RESPONSE
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.AssetUtil
@@ -38,6 +43,7 @@ import org.smartregister.fhircore.quest.configuration.parser.DetailConfigParser
 import org.smartregister.fhircore.quest.configuration.parser.QuestDetailConfigParser
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
+import org.smartregister.fhircore.quest.ui.patient.details.SimpleDetailsActivity.Companion.RECORD_ID_ARG
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @AndroidEntryPoint
@@ -50,6 +56,9 @@ class QuestPatientDetailActivity :
   val patientViewModel by viewModels<QuestPatientDetailViewModel>()
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  lateinit var patientDetailConfig: PatientDetailsViewConfiguration
+  lateinit var profileConfig: QuestPatientDetailViewModel.ProfileConfig
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -66,13 +75,13 @@ class QuestPatientDetailActivity :
       onFormTestResultClicked.observe(detailActivity, detailActivity::onTestResultItemClickListener)
     }
 
-    val patientDetailConfig =
+    patientDetailConfig =
       configurationRegistry.retrieveConfiguration<PatientDetailsViewConfiguration>(
         configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW
       )
 
     // TODO Load binary resources
-    val profileConfig =
+    profileConfig =
       AssetUtil.decodeAsset<QuestPatientDetailViewModel.ProfileConfig>(
         fileName = QuestPatientDetailViewModel.PROFILE_CONFIG,
         this
@@ -89,15 +98,18 @@ class QuestPatientDetailActivity :
     setContent { AppTheme { QuestPatientDetailScreen(patientViewModel) } }
   }
 
+  override fun onResume() {
+    super.onResume()
+
+    patientViewModel.run {
+      getDemographicsWithAdditionalData(patientId, patientDetailConfig)
+      getAllResults(patientId, profileConfig, patientDetailConfig, parser)
+      getAllForms(profileConfig)
+    }
+  }
+
   private fun launchTestResults(@StringRes id: Int) {
     when (id) {
-      R.string.test_results ->
-        startActivity(
-          Intent(this, SimpleDetailsActivity::class.java).apply {
-            putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, patientId)
-          }
-        )
-      R.string.run_cql -> runCql()
       R.string.edit_patient_info ->
         startActivity(
           Intent(this, QuestionnaireActivity::class.java)
@@ -119,30 +131,32 @@ class QuestPatientDetailActivity :
       .registrationForm
   }
 
-  fun runCql() {
-    val progress = AlertDialogue.showProgressAlert(this, R.string.loading)
+  // TODO https://github.com/opensrp/fhircore/issues/961
+  // allow handling the data back and forth between activities via workflow or config
+  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    super.onActivityResult(requestCode, resultCode, data)
 
-    patientViewModel
-      .runCqlFor(patientId, this)
-      .observe(
-        this,
-        {
-          if (it?.isNotBlank() == true) {
-            progress.dismiss()
-
-            AlertDialogue.showInfoAlert(this, it, getString(R.string.run_cql_log))
-            // show separate alert for output resources generated
-            it.substringAfter(OUTPUT_PARAMETER_KEY, "").takeIf { it.isNotBlank() }?.let {
-              AlertDialogue.showInfoAlert(this, it, getString(R.string.run_cql_output))
+    if (resultCode == Activity.RESULT_OK)
+      if (configurationRegistry.appId == "g6pd") {
+        data?.getStringExtra(QUESTIONNAIRE_RESPONSE)?.let {
+          val response =
+            FhirContext.forR4().newJsonParser().parseResource(it) as QuestionnaireResponse
+          // TODO replace with proper implementation
+          if (data.getStringExtra(QUESTIONNAIRE_ARG_FORM)?.equals("14222") == false)
+            response.contained.find { it.resourceType == ResourceType.Encounter }?.logicalId?.let {
+              startActivity(
+                Intent(this, SimpleDetailsActivity::class.java).apply {
+                  putExtra(RECORD_ID_ARG, it.replace("#", ""))
+                }
+              )
             }
-          }
         }
-      )
+      }
   }
 
   private fun launchQuestionnaireForm(questionnaireConfig: QuestionnaireConfig?) {
     if (questionnaireConfig != null) {
-      startActivity(
+      startActivityForResult(
         Intent(this, QuestionnaireActivity::class.java).apply {
           putExtras(
             QuestionnaireActivity.intentArgs(
@@ -150,7 +164,8 @@ class QuestPatientDetailActivity :
               formName = questionnaireConfig.identifier
             )
           )
-        }
+        },
+        0
       )
     }
   }

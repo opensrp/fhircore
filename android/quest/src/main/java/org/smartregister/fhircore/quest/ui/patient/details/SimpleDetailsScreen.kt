@@ -43,9 +43,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.ui.core.Direction
+import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.StringType
-import org.hl7.fhir.r4.model.Type
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.R
@@ -113,12 +113,7 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
 fun DetailsViewCell(cell: DetailsViewItemCell) {
   with(cell.filter) {
     this.label?.let {
-      TextView(
-        this.properties?.label,
-        StringType(this.label),
-        this.dynamicColors,
-        this.properties?.valueFormatter
-      )
+      TextView(this.properties?.label, StringType(this.label), this.dynamicColors, null)
     }
 
     TextView(
@@ -134,7 +129,7 @@ fun DetailsViewCell(cell: DetailsViewItemCell) {
 @Composable
 fun TextView(
   property: Property?,
-  value: Type?,
+  value: Base?,
   colors: List<DynamicColor>?,
   valueFormatter: Map<String, String>?
 ) {
@@ -147,10 +142,11 @@ fun TextView(
       else -> "FF888888"
     }
 
-  val formattedValue = valueFormatter?.get(valueStr) ?: valueStr
+  val formattedValue =
+    if (valueStr.isBlank()) valueFormatter?.get("missing") else valueFormatter?.get(valueStr)
   val size = property?.textSize?.toFloat() ?: 16f
   Text(
-    text = formattedValue,
+    text = formattedValue ?: valueStr,
     color = Color(color.toLong(radix = 16)),
     fontSize = TextUnit(size, TextUnitType.Sp),
   )
@@ -203,6 +199,23 @@ fun simpleDetailsScreenView1() {
         )
     )
 
+  val row5Props =
+    Properties(
+      labelDirection = Direction.UP,
+      label = Property(color = "FF888888", textSize = 15),
+      value = Property(textSize = 40)
+    )
+
+  val row6Props =
+    Properties(
+      labelDirection = Direction.UP,
+      valueFormatter =
+        mapOf(
+          "Dynamic Value 1" to "Another Dynamic value 1 having a different sample text",
+          "Dynamic Value 2" to "Another Dynamic value 2 having a different sample text"
+        )
+    )
+
   SimpleDetailsScreen(
     object : SimpleDetailsDataProvider {
       override val onBackPressClicked: LiveData<Boolean> = MutableLiveData(true)
@@ -227,6 +240,7 @@ fun simpleDetailsScreenView1() {
                         )
                       )
                   ),
+                  // section 2
                   DetailsViewItemRow(),
                   DetailsViewItemRow(
                     cells =
@@ -243,6 +257,25 @@ fun simpleDetailsScreenView1() {
                         DetailsViewItemCell(
                           StringType("Dynamic Value 1"),
                           filterOf("key 1", "What is the value of Label", row4Props)
+                        )
+                      )
+                  ),
+                  // section 3
+                  DetailsViewItemRow(
+                    cells =
+                      mutableListOf(
+                        DetailsViewItemCell(
+                          StringType("Value of Gray"),
+                          filterOf("key 1", "My test label with long text", row5Props)
+                        )
+                      )
+                  ),
+                  DetailsViewItemRow(
+                    cells =
+                      mutableListOf(
+                        DetailsViewItemCell(
+                          StringType("Dynamic Value 1"),
+                          filterOf("key 1", "Here is the long value of line", row6Props)
                         )
                       )
                   )

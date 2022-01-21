@@ -48,6 +48,7 @@ import org.smartregister.fhircore.quest.app.fakes.Faker.buildPatient
 import org.smartregister.fhircore.quest.configuration.parser.QuestDetailConfigParser
 import org.smartregister.fhircore.quest.configuration.view.patientDetailsViewConfigurationOf
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
+import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.genderFull
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
@@ -88,6 +89,21 @@ class PatientRepositoryTest : RobolectricTest() {
       val patient = repository.fetchDemographics("1")
       Assert.assertEquals("john", patient.name?.first()?.given?.first()?.value)
       Assert.assertEquals("doe", patient.name?.first()?.family)
+    }
+
+  @Test
+  fun testFetchDemographicsWithAdditionalDataShouldReturnTestPatientWithAdditionalData() =
+    coroutineTestRule.runBlockingTest {
+      mockkStatic(::loadAdditionalData)
+      coEvery { loadAdditionalData(any(), any(), any()) } returns
+        listOf(AdditionalData("label", "value", "valuePrefix", null))
+      coEvery { fhirEngine.load(Patient::class.java, "1") } returns
+        buildPatient("1", "doe", "john", 0)
+
+      val patientItem = repository.fetchDemographicsWithAdditionalData("1")
+      Assert.assertEquals("John Doe", patientItem.name)
+      Assert.assertTrue(patientItem.additionalData!!.isNotEmpty())
+      unmockkStatic(::loadAdditionalData)
     }
 
   @Test
@@ -258,6 +274,24 @@ class PatientRepositoryTest : RobolectricTest() {
       val results = repository.fetchTestForms(SearchFilter("", "abc", "cde"))
       with(results.first()) {
         Assert.assertEquals("Form name", form)
+        Assert.assertEquals("Form name", title)
+      }
+    }
+
+  @Test
+  fun testFetchTestFormShouldHandleNullName() =
+    coroutineTestRule.runBlockingTest {
+      coEvery { fhirEngine.search<Questionnaire>(any()) } returns
+        listOf(
+          Questionnaire().apply {
+            id = "1234"
+            title = "Form name"
+          }
+        )
+
+      val results = repository.fetchTestForms(SearchFilter("", "abc", "cde"))
+      with(results.first()) {
+        Assert.assertEquals("1234", form)
         Assert.assertEquals("Form name", title)
       }
     }
