@@ -105,7 +105,7 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
               if (r.cells.size == 0) {
                 Divider(
                   color = colorResource(id = R.color.white_smoke),
-                  modifier = Modifier.padding(20.dp)
+                  modifier = Modifier.padding(15.dp)
                 )
               }
             }
@@ -114,7 +114,7 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
       }
 
       Column(
-        modifier = Modifier.padding(30.dp).fillMaxWidth().fillMaxHeight(),
+        modifier = Modifier.padding(20.dp).fillMaxWidth().fillMaxHeight(),
         verticalArrangement = Arrangement.Bottom,
         horizontalAlignment = Alignment.CenterHorizontally
       ) {

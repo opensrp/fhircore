@@ -355,7 +355,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       editMode: Boolean = false,
       questionnaireResponse: QuestionnaireResponse? = null,
       immunizationId: String? = null,
-      populationResources: ArrayList<Resource> = ArrayList(),
+      populationResources: ArrayList<Resource> = ArrayList()
     ) =
       bundleOf(
         Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),

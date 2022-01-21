@@ -189,17 +189,12 @@ constructor(
         }
 
         questionnaire.cqfLibraryIds().forEach {
-          // TODO temporarily handling the cql failure. remove it once app is stable
-          kotlin
-            .runCatching {
-              libraryEvaluator.runCqlLibrary(
-                it,
-                loadPatient(questionnaireResponse.subject.extractId())!!,
-                bundle,
-                defaultRepository
-              )
-            }
-            .onFailure { Timber.e(it.stackTraceToString()) }
+          libraryEvaluator.runCqlLibrary(
+            it,
+            loadPatient(questionnaireResponse.subject.extractId())!!,
+            bundle,
+            defaultRepository
+          )
         }
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)

@@ -149,9 +149,7 @@ class LibraryEvaluatorTest {
       evaluator!!.runCqlLibrary(
         cqlLibrary.logicalId,
         patient,
-        dataBundle.entry.filter { it.resource.resourceType != ResourceType.Patient }.map {
-          it.resource
-        },
+        dataBundle.apply { entry.removeIf { it.resource.resourceType == ResourceType.Patient } },
         defaultRepository
       )
     }
