@@ -107,18 +107,13 @@ class PatientRegisterActivity : BaseRegisterActivity() {
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_users)!!
       ),
       NavigationMenuOption(
+        id = R.id.scan_nfc,
+        title = getString(R.string.scan_nfc),
+        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_nfc_card)!!
+      ),
+      NavigationMenuOption(
         id = R.id.menu_item_settings,
         title = getString(R.string.menu_settings),
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_settings)!!
-      ),
-      NavigationMenuOption(
-        id = R.id.write_to_card,
-        title = getString(R.string.write_to_card),
-        iconResource = ContextCompat.getDrawable(this, R.drawable.ic_settings)!!
-      ),
-      NavigationMenuOption(
-        id = R.id.read_from_card,
-        title = getString(R.string.read_from_card),
         iconResource = ContextCompat.getDrawable(this, R.drawable.ic_settings)!!
       )
     )
@@ -133,8 +128,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
           isRegisterFragment = false,
           toolbarTitle = getString(R.string.settings)
         )
-      R.id.read_from_card -> readFromCard(false)
-      R.id.write_to_card -> writeToCard()
+      R.id.scan_nfc -> readFromCard(false)
     }
     return true
   }

@@ -23,7 +23,7 @@
     <string name="enter_age_in_months">Enter age in months</string>
     <string name="beneficiary_not_eligible_for_program">Beneficiary is not eligible for the program</string>
     <string name="write_to_card">Write to card</string>
-    <string name="read_from_card">Read from card</string>
+    <string name="scan_nfc">Scan NFC</string>
     <string name="card_not_blank">Card is not blank!</string>
     <string name="card_has_exisiting_data">The NFC card contains existing client information. New registration requires blank information. Erase card to proceed with registration</string>
     <string name="erase_card">Erase Card</string>
