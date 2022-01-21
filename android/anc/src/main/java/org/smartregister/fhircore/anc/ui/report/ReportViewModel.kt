@@ -88,9 +88,6 @@ constructor(
 
   val resultForIndividual: MutableLiveData<ResultItem?> = MutableLiveData(null)
 
-  val dateRange: LiveData<androidx.core.util.Pair<Long, Long>>
-    get() = _dateRange
-
   var currentScreen by mutableStateOf(ReportScreen.HOME)
 
   var searchTextState = mutableStateOf(TextFieldValue(""))
@@ -109,6 +106,8 @@ constructor(
         MaterialDatePicker.todayInUtcMilliseconds()
       )
     )
+  val dateRange: LiveData<androidx.core.util.Pair<Long, Long>>
+    get() = _dateRange
 
   private val _startDate = MutableLiveData("")
   val startDate: LiveData<String>
@@ -121,10 +120,6 @@ constructor(
   private val _filterValue = MutableLiveData<Pair<RegisterFilterType, Any?>>()
   val filterValue
     get() = _filterValue
-
-  private val _isReadyToGenerateReport = MutableLiveData(false)
-  val isReadyToGenerateReport: LiveData<Boolean>
-    get() = _isReadyToGenerateReport
 
   fun onDateRangeClick() {
     showDatePicker.value = true
@@ -167,7 +162,7 @@ constructor(
     updateGenerateReport()
   }
 
-  private fun resetValues() {
+  fun resetValues() {
     currentReportType.value = ""
     selectedPatientItem.value = null
     resultForIndividual.value = null
@@ -272,6 +267,10 @@ constructor(
       _startDate.value!!.matches(regex) &&
         _endDate.value!!.matches(regex) &&
         currentReportType.value!!.isNotEmpty()
+  }
+
+  override fun onCleared() {
+    resetValues()
   }
 
   enum class ReportScreen {

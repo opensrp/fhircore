@@ -33,8 +33,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -115,8 +113,8 @@ fun ReportFilterPage(
 
 @Composable
 fun ReportFilterScreen(viewModel: ReportViewModel) {
-  val reportMeasureItem by remember { mutableStateOf(viewModel.selectedMeasureReportItem.value) }
-  val selectedPatient by remember { mutableStateOf(viewModel.getSelectedPatient().value) }
+  val reportMeasureItem by viewModel.selectedMeasureReportItem.observeAsState(null)
+  val selectedPatient by viewModel.getSelectedPatient().observeAsState(initial = null)
   val startDate by viewModel.startDate.observeAsState("")
   val endDate by viewModel.endDate.observeAsState("")
   val reportType by viewModel.currentReportType.observeAsState("")

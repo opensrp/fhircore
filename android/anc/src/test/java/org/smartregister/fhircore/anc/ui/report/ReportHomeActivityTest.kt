@@ -17,30 +17,27 @@
 package org.smartregister.fhircore.anc.ui.report
 
 import android.app.Activity
+import android.os.Looper
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.MockKAnnotations
-import io.mockk.coEvery
-import io.mockk.mockkObject
+import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
-import io.mockk.unmockkObject
-import io.mockk.verify
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.Shadows.shadowOf
 import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.data.report.ReportRepository
 import org.smartregister.fhircore.anc.robolectric.ActivityRobolectricTest
-import org.smartregister.fhircore.engine.util.FileUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
@@ -56,13 +53,11 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   private lateinit var reportHomeActivity: ReportHomeActivity
   private lateinit var reportHomeActivitySpy: ReportHomeActivity
   private val fhirEngine: FhirEngine = spyk()
-  private val fhirOperator: FhirOperator = spyk()
+  private val fhirOperator: FhirOperator = mockk()
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    MockKAnnotations.init(this, relaxUnitFun = true)
-    mockkObject(FileUtil)
     reportViewModel =
       spyk(
         ReportViewModel(
@@ -76,16 +71,17 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
       )
     reportHomeActivity = Robolectric.buildActivity(ReportHomeActivity::class.java).create().get()
     reportHomeActivitySpy = spyk(objToCopy = reportHomeActivity)
+    every { reportHomeActivitySpy.reportViewModel } returns reportViewModel
+  }
+
+  override fun tearDown() {
+    shadowOf(Looper.getMainLooper()).idle()
+    reportHomeActivitySpy.finish()
+    reportHomeActivity.finish()
   }
 
   override fun getActivity(): Activity {
     return reportHomeActivity
-  }
-
-  @After
-  override fun tearDown() {
-    super.tearDown()
-    unmockkObject(FileUtil)
   }
 
   @Test
@@ -95,7 +91,8 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testShowDatePicker() {
-    coEvery { reportViewModel.showDatePicker.value } returns true
-    verify { reportHomeActivitySpy.showDateRangePicker() }
+    reportHomeActivitySpy.showDateRangePicker()
+    // Date range was set when the dialog is displayed
+    Assert.assertNotNull(reportViewModel.dateRange.value)
   }
 }
