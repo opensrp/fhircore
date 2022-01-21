@@ -140,7 +140,7 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     editMode: Boolean = false
   ) {
-    viewModelScope.launch {
+    viewModelScope.launch(dispatcherProvider.io()) {
       // important to set response subject so that structure map can handle subject for all entities
       handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
 
@@ -189,7 +189,7 @@ constructor(
           editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
         }
 
-        if (questionnaireResponse.subject.reference.startsWith("Patient/"))
+        /*if (questionnaireResponse.subject.reference.startsWith("Patient/"))
           questionnaire.cqfLibraryId()?.run {
             libraryEvaluator.runCqlLibrary(
               this,
@@ -197,7 +197,7 @@ constructor(
               bundle.entry.map { it.resource },
               defaultRepository
             )
-          }
+          }*/
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
       }
