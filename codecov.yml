@@ -4,14 +4,17 @@ codecov:
 coverage:
   status:
     project:
-      enabled: yes
-      target: auto
-      threshold: 2%
-    patch: yes
+      default:
+        enabled: yes
+        target: auto
+        threshold: 1%
+    patch:
+      default:
+        target: 60%
     changes: no
-  precision: 2
+  precision: 1
   round: down
-  range: "70...90"
+  range: "70...100"
 
 comment:
   layout: "header, diff, changes, uncovered, tree"
