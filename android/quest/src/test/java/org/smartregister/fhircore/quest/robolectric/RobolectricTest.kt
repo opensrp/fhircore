@@ -162,7 +162,7 @@ abstract class RobolectricTest {
         File.separator +
         "src" +
         File.separator +
-        "main" +
+        "test" +
         File.separator +
         "resources" +
         File.separator)
