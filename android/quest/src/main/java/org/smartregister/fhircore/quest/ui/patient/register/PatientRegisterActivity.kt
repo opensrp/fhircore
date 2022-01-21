@@ -23,9 +23,12 @@ import android.os.Bundle
 import android.text.InputType
 import android.view.MenuItem
 import androidx.activity.viewModels
+import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.view.marginLeft
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.famoco.desfireservicelib.DESFireServiceAccess
@@ -41,6 +44,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.nfc.MainViewModel
+import org.smartregister.fhircore.engine.configuration.view.getString
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.nfc.main.PatientNfcItem
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -145,7 +149,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     listOf(
       RegisterItem(
         uniqueTag = PatientRegisterFragment.TAG,
-        title = getString(R.string.clients),
+        title = registerViewModel.registerViewConfiguration.value?.appTitle_lang?.getString(this) ?: getString(R.string.clients),
         isSelected = true
       )
     )
@@ -253,15 +257,22 @@ override fun registerClient(clientIdentifier: String?) {
   fun showAgeDialog(
     cancelClickListener: DialogInterface.OnClickListener
   ) {
+    val layout = LinearLayout(this).apply {
+      orientation = LinearLayout.VERTICAL
+      layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+      setPadding(50, 20, 50, 20)
+    }
     val input =
       EditText(this).apply {
         setHint(getString(R.string.enter_age_in_months))
         inputType = InputType.TYPE_CLASS_NUMBER
       }
 
+    layout.addView(input)
+
     AlertDialog.Builder(this)
       .setTitle(getString(R.string.enter_beneficiary_age))
-      .setView(input)
+      .setView(layout)
       .setPositiveButton(android.R.string.ok) { dialog, which ->
         val age = input.text.toString()
 

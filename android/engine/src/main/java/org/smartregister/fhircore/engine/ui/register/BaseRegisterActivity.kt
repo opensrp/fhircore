@@ -57,6 +57,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableView
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
+import org.smartregister.fhircore.engine.configuration.view.getString
 import org.smartregister.fhircore.engine.databinding.BaseRegisterActivityBinding
 import org.smartregister.fhircore.engine.databinding.DrawerMenuHeaderBinding
 import org.smartregister.fhircore.engine.sync.OnSyncListener
@@ -307,7 +308,7 @@ abstract class BaseRegisterActivity :
       if (registerViewConfiguration.newClientButtonStyle.isNotEmpty()) {
         this.background = getDrawable(registerViewConfiguration.newClientButtonStyle)
       }
-      this.text = registerViewConfiguration.newClientButtonText
+      this.text = registerViewConfiguration.newClientButtonText_lang.getString(this@BaseRegisterActivity)
     }
   }
 
@@ -337,7 +338,7 @@ abstract class BaseRegisterActivity :
 
     drawerMenuHeaderBinding =
       DataBindingUtil.bind(registerActivityBinding.navView.getHeaderView(0))!!
-    drawerMenuHeaderBinding.tvNavHeader.text = viewConfiguration.appTitle
+    drawerMenuHeaderBinding.tvNavHeader.text = viewConfiguration.appTitle_lang.getString(this)
 
     setupSideMenu()
 
@@ -444,7 +445,7 @@ abstract class BaseRegisterActivity :
       }
       editTextSearch.apply {
         toggleVisibility(viewConfiguration.showSearchBar)
-        hint = viewConfiguration.searchBarHint
+        hint = viewConfiguration.searchBarHint_lang.getString(this@BaseRegisterActivity)
       }
       btnScanBarcode.toggleVisibility(viewConfiguration.showScanQRCode)
     }
@@ -487,7 +488,7 @@ abstract class BaseRegisterActivity :
   private fun updateRegisterTitle() {
     registerActivityBinding.toolbarLayout.tvClientsListTitle.text =
       selectedMenuOption?.titleResource?.let { getString(it) }
-        ?: registerViewModel.registerViewConfiguration.value?.appTitle
+        ?: registerViewModel.registerViewConfiguration.value?.appTitle_lang?.getString(this)
   }
 
   private fun renderSelectLanguageDialog(context: Activity): AlertDialog {
@@ -569,7 +570,7 @@ abstract class BaseRegisterActivity :
       }
     } else {
       registerActivityBinding.toolbarLayout.registerFilterTextview.text =
-        getString(R.string.clients)
+        registerViewModel.registerViewConfiguration.value?.appTitle_lang?.getString(this)
     }
 
     // Show searchbar/filter button for registers, hide otherwise
