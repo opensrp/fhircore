@@ -29,6 +29,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -148,7 +149,7 @@ constructor(
               .runCqlLibrary(
                 libraryId = config.cqlProfileLibraryFilter.code,
                 patient = patient as Patient,
-                resources = otherResources,
+                data = Bundle().apply { otherResources.forEach { this.addEntry().resource = it } },
                 repository = defaultRepository
               )
               .joinToString("\n")

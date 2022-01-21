@@ -38,6 +38,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.Timing
 import org.hl7.fhir.r4.model.UriType
 import org.json.JSONObject
 import org.junit.Assert
@@ -505,6 +506,15 @@ class ResourceExtensionTest : RobolectricTest() {
         .apply {
           this.value = BigDecimal.valueOf(3.4)
           this.unit = "G"
+        }
+        .valueToString()
+    )
+    Assert.assertEquals(
+      "8 Week (s)",
+      Timing()
+        .apply {
+          repeat.period = BigDecimal(8.0)
+          repeat.periodUnit = Timing.UnitsOfTime.WK
         }
         .valueToString()
     )
