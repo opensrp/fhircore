@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.patient.register
 
 import android.app.AlertDialog
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.view.MenuItem
@@ -42,6 +43,7 @@ import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfigur
 import org.smartregister.fhircore.engine.nfc.MainViewModel
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.nfc.main.PatientNfcItem
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
@@ -58,6 +60,8 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   private val mainViewModel: MainViewModel by viewModels()
 
   private lateinit var eventJob: Job
+
+  private val scanForRegistration = true;
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -195,46 +199,59 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     // After reading the card, the end-user will need the content that has been read on the card
     DESFireServiceAccess.readResult.observe(this) { result ->
       if (!result.isNullOrEmpty()) {
-        val stringBuilder = StringBuilder().append("Here is the result after reading the card :\n")
-        result.forEach { stringBuilder.append(it).append("\n") }
+        val stringBuilder = StringBuilder().append("")
+        result.forEach { stringBuilder.append(it) }
         val readResult = stringBuilder.toString()
+        if (scanForRegistration) {
+          if (readResult == "{\n}") {
+            showAgeDialog{ dialog, which -> dialog.dismiss() }
+          } else {
+            showEraseCardDialog { dialog, which -> dialog.dismiss() }
+          }
+        }
       }
     }
   }
 
-  private fun writeToCard() {
+  private fun writeToCard(isDelete: Boolean = false) {
     mainViewModel.generateProtoFile()
     // InitializeSAM
     mainViewModel.initSAM()
     // Perform Write action with the UI given by the Service
     val patient = PatientNfcItem(
-      patientId = "222222222",
-      firstName = "222222222",
-      lastName = "222222222",
-      middleName = "222222222",
-      age = "222222222",
-      birthDate = "222222222",
-      gender = "222222222",
-      caretakerName = "222222222",
-      caretakerRelationship = "222222222",
-      village = "222222222",
-      healthCenter = "222222222",
-      beneficiaryGroup = "222222222",
-      registrationDate = "222222222",
-      creationDate = "222222222"
+      patientId = "",
+      firstName = "",
+      lastName = "",
+      middleName = "",
+      age = "",
+      birthDate = "",
+      gender = "",
+      caretakerName = "",
+      caretakerRelationship = "",
+      village = "",
+      healthCenter = "",
+      beneficiaryGroup = "",
+      registrationDate = "",
+      creationDate = ""
     )
-    val json = Gson().toJson(patient)
+    val json: String = if (isDelete) {
+      "{}"
+    } else
+    {
+      Gson().toJson(patient)
+    }
     mainViewModel.writeSerialized(json)
   }
 
 
 
 override fun registerClient(clientIdentifier: String?) {
-    showAgeDialog({ super.registerClient(clientIdentifier) }, { dialog, which -> dialog.dismiss() })
+    //showAgeDialog({ super.registerClient(clientIdentifier) }, { dialog, which -> dialog.dismiss() })
+  readFromCard();
   }
 
+
   fun showAgeDialog(
-    okClickListener: () -> Unit,
     cancelClickListener: DialogInterface.OnClickListener
   ) {
     val input =
@@ -250,7 +267,7 @@ override fun registerClient(clientIdentifier: String?) {
         val age = input.text.toString()
 
         if (age.isNotEmpty() && age.toInt() in (6..59)) {
-          okClickListener()
+          initiateClientRegistration()
         } else {
           Toast.makeText(
               this,
@@ -264,4 +281,32 @@ override fun registerClient(clientIdentifier: String?) {
       .setNegativeButton(R.string.cancel, cancelClickListener)
       .show()
   }
+
+  private fun showEraseCardDialog(
+    cancelClickListener: DialogInterface.OnClickListener
+  ) {
+
+    AlertDialog.Builder(this)
+      .setTitle(getString(R.string.card_not_blank))
+      .setMessage(getString(R.string.card_has_exisiting_data))
+      .setPositiveButton(R.string.erase_card) { dialog, which ->
+        writeToCard(true)
+        dialog.dismiss()
+      }
+      .setNegativeButton(R.string.cancel, cancelClickListener)
+      .show()
+  }
+
+  private fun initiateClientRegistration(clientIdentifier: String? = null) {
+    startActivity(
+      Intent(this, QuestionnaireActivity::class.java)
+        .putExtras(
+          QuestionnaireActivity.intentArgs(
+            clientIdentifier = clientIdentifier,
+            formName = registerViewModel.registerViewConfiguration.value?.registrationForm!!
+          )
+        )
+    )
+  }
+
 }
