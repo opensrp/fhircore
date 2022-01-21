@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.data.patient
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.getLocalizedText
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
@@ -160,8 +161,8 @@ constructor(
       result.map {
         QuestionnaireConfig(
           appId = configurationRegistry.appId,
-          form = it.name ?: it.logicalId,
-          title = it.title ?: it.name ?: it.logicalId,
+          form = it.nameElement.getLocalizedText() ?: it.logicalId,
+          title = it.titleElement.getLocalizedText() ?: it.name ?: it.logicalId,
           identifier = it.logicalId
         )
       }
