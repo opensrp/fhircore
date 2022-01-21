@@ -44,11 +44,13 @@ import org.smartregister.fhircore.engine.nfc.MainViewModel
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.nfc.main.PatientNfcItem
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
 import org.smartregister.fhircore.engine.ui.register.BaseRegisterActivity
 import org.smartregister.fhircore.engine.ui.register.model.NavigationMenuOption
 import org.smartregister.fhircore.engine.ui.register.model.RegisterItem
 import org.smartregister.fhircore.engine.ui.userprofile.UserProfileFragment
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.patient.details.QuestPatientDetailActivity
 import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @AndroidEntryPoint
@@ -61,7 +63,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   private lateinit var eventJob: Job
 
-  private val scanForRegistration = true;
+  private var scanForRegistration = true;
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -131,7 +133,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
           isRegisterFragment = false,
           toolbarTitle = getString(R.string.settings)
         )
-      R.id.read_from_card -> readFromCard()
+      R.id.read_from_card -> readFromCard(false)
       R.id.write_to_card -> writeToCard()
     }
     return true
@@ -176,8 +178,8 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     eventJob.cancel()
   }
 
-  private fun readFromCard() {
-
+  private fun readFromCard(isRegistration:Boolean = true) {
+    scanForRegistration = isRegistration
     mainViewModel.generateProtoFile()
     // InitializeSAM
     mainViewModel.initSAM()
@@ -208,6 +210,9 @@ class PatientRegisterActivity : BaseRegisterActivity() {
           } else {
             showEraseCardDialog { dialog, which -> dialog.dismiss() }
           }
+        } else {
+          val patientNFCItem = Gson().fromJson(readResult, PatientNfcItem::class.java)
+          navigateToDetails(patientNFCItem.patientId)
         }
       }
     }
@@ -306,6 +311,13 @@ override fun registerClient(clientIdentifier: String?) {
             formName = registerViewModel.registerViewConfiguration.value?.registrationForm!!
           )
         )
+    )
+  }
+
+  private fun navigateToDetails(uniqueIdentifier: String) {
+    startActivity(
+      Intent(this, QuestPatientDetailActivity::class.java)
+        .putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier)
     )
   }
 
