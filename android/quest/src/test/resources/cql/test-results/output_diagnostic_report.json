@@ -1,0 +1,31 @@
+{
+  "resourceType": "DiagnosticReport",
+  "status": "final",
+  "category": [
+    {
+      "coding": [
+        {
+          "system": "http://hl7.org/fhir/ValueSet/diagnostic-service-sections",
+          "code": "HM",
+          "display": "Hematology"
+        }
+      ]
+    }
+  ],
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "86859003",
+        "display": "G6PD Enzyme"
+      }
+    ]
+  },
+  "subject": {
+    "reference": "Patient/P1"
+  },
+  "encounter": {
+    "reference": "Encounter/E1"
+  },
+  "effectiveDateTime": "#NOW"
+}

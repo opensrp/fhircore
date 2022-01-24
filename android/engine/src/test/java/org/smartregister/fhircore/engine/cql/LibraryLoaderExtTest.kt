@@ -22,12 +22,12 @@ import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-class FhirLibraryLoaderTest : RobolectricTest() {
+class LibraryLoaderExtTest : RobolectricTest() {
 
   @Test
   fun testJsonReaderShouldMapLibrary() {
     val elmJson = "cql/g6pdlibraryevaluator/library-elm.json".readFile()
-    val result = FhirLibraryLoader(ModelManager(), listOf()).readJxson(elmJson.byteInputStream())
+    val result = LibraryLoaderExt(ModelManager(), listOf()).readJxson(elmJson.byteInputStream())
 
     Assert.assertEquals(1, result.annotation.size)
     Assert.assertTrue(result.usings.def.isNotEmpty())
@@ -36,7 +36,7 @@ class FhirLibraryLoaderTest : RobolectricTest() {
 
   @Test
   fun testTranslatorOptionShorldMatchShouldReturnTrue() {
-    val loader = FhirLibraryLoader(ModelManager(), listOf())
+    val loader = LibraryLoaderExt(ModelManager(), listOf())
 
     Assert.assertTrue(loader.translatorOptionsMatch(Library()))
   }
