@@ -22,6 +22,7 @@ enum class QuestConfigClassification : ConfigClassification {
   PATIENT_REGISTER,
   PATIENT_REGISTER_ROW,
   TEST_RESULT_DETAIL_VIEW,
-  PATIENT_DETAILS_VIEW;
+  PATIENT_DETAILS_VIEW,
+  REGISTER_NAVIGATION;
   override val classification: String = name.lowercase()
 }
