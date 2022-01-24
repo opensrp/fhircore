@@ -135,6 +135,11 @@ dependencies {
     implementation 'androidx.ui:ui-foundation:0.1.0-dev03'
     implementation deps.lifecycle.viewmodel
 
+    //Configure famoco sdk
+    implementation fileTree(include: ['*.aar'], dir: 'libs')
+    compileOnly files('../engine/libs/desfireservice-lib-1.0.1-debug.aar')
+    compileOnly files('../engine/libs/famocodialog-1.1.0-release.aar')
+
     //Hilt - Dependency Injection
     implementation "com.google.dagger:hilt-android:$hiltVersion"
     kapt "com.google.dagger:hilt-compiler:$hiltVersion"

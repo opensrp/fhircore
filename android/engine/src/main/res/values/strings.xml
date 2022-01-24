@@ -92,4 +92,12 @@
     <string name="application_not_supported">Application %1$s not found</string>
     <string name="eCBIS_app_name">eCBIS</string>
     <string name="invalid_login_credentials">username or password is invalid</string>
+    <string name="app_name">DESFire Service - Sample</string>
+    <string name="success">Success</string>
+    <string name="read_success_content">Some data has been read on the card</string>
+    <string name="error">Error</string>
+    <string name="read_error_content_format">Something went wrong with the Read action.\nError : %s (Error code : %d)</string>
+    <string name="close">Close</string>
+    <string name="write_success_content">The data has been well written on the card</string>
+    <string name="write_error_content_format">Something went wrong with the Write action.\nError : %s (Error code : %d)</string>
 </resources>

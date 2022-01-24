@@ -35,7 +35,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
@@ -145,7 +147,24 @@ constructor(
       handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
 
       if (questionnaire.isExtractionCandidate()) {
-        val bundle = performExtraction(context, questionnaire, questionnaireResponse)
+        //val bundle = performExtraction(context, questionnaire, questionnaireResponse)
+          val patient = Patient().apply {
+            name = listOf(HumanName().apply {
+              given.add(questionnaireResponse.find("f0361e64-db57-495a-8c82-fa6576e84f74")?.answer?.get(0)?.valueStringType)
+              family = questionnaireResponse.find("007eadd1-3929-4786-803a-72df7a11735b")?.answer?.get(0)?.valueStringType?.toString()
+            })
+            active = true
+            gender = Enumerations.AdministrativeGender.fromCode(questionnaireResponse.find("23e7f371-6996-417e-af8c-6df395ba04e1")?.answer?.get(0)?.valueCoding?.code)
+            birthDate = Calendar.getInstance().run {
+              add(Calendar.MONTH, - (questionnaireResponse.find("38896946-7046-42f0-dabd-6ed855965a38")?.answer?.get(0)!!.valueIntegerType.value))
+              time
+            }
+          }
+          val bundle = Bundle().apply {
+            addEntry(Bundle.BundleEntryComponent().apply {
+              resource = patient
+            })
+          }
 
         bundle.entry.forEach { bun ->
           // add organization to entities representing individuals in registration questionnaire

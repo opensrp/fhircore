@@ -117,6 +117,12 @@ fun Toolbar(questPatientDetailViewModel: QuestPatientDetailViewModel) {
             questPatientDetailViewModel.onMenuItemClickListener(R.string.run_cql)
           }
         ) { Text(text = stringResource(id = R.string.run_cql)) }
+        DropdownMenuItem(
+          onClick = {
+            showMenu = false
+            questPatientDetailViewModel.onMenuItemClickListener(R.string.write_to_card)
+          }
+        ) { Text(text = stringResource(id = R.string.write_to_card)) }
       }
     }
   )
@@ -231,7 +237,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
 
         // Responses section
         Text(
-          text = "RESPONSES (${testResults?.size?.toString() ?: ""})",
+          text = stringResource(id = R.string.visit_history) + " (${testResults?.size?.toString() ?: ""})",
           color = colorResource(id = R.color.grayText),
           fontSize = 16.sp,
           fontWeight = FontWeight.Bold
