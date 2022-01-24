@@ -1,21 +1,22 @@
 {
   "resourceType": "Questionnaire",
-  "id": "3440",
-  "meta": {
-    "versionId": "31",
-    "lastUpdated": "2021-12-14T00:32:08.720+00:00",
-    "source": "#161c3d17c58686e0"
-  },
+  "id": "11687",
   "language": "en",
   "extension": [ {
     "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
     "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/5875"
-  } ],
+  }, {
+    "url": "http://hl7.org/fhir/StructureDefinition/cqf-library",
+    "valueCanonical": "Library/46831"
+  },{
+    "url": "http://hl7.org/fhir/StructureDefinition/cqf-library",
+    "valueCanonical": "Library/46823"
+  }],
   "name": "G6PD Test Photo Result",
   "title": "G6PD Test Photo Result",
   "status": "active",
   "subjectType": [ "Patient" ],
-  "publisher": "ONA",
+  "publisher": "g6pd",
   "useContext": [ {
     "code": {
       "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
@@ -29,13 +30,6 @@
       } ]
     }
   } ],
-  "extension": [ {
-    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
-    "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/5875"
-  }, {
-    "url": "http://hl7.org/fhir/StructureDefinition/cqf-library",
-    "valueCanonical": "Library/4575"
-  }],
   "item": [ {
     "extension": [ {
       "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/cpg-itemImage",
@@ -64,19 +58,19 @@
     "required": true,
     "answerOption": [ {
       "valueCoding": {
-        "system": "http://snomed.info/sct",
+        "system": "https://www.snomed.org",
         "code": "410680006",
         "display": "Number"
       }
     }, {
       "valueCoding": {
-        "system": "http://snomed.info/sct",
+        "system": "https://www.snomed.org",
         "code": "405358009",
         "display": "Error"
       }
     }, {
       "valueCoding": {
-        "system": "http://snomed.info/sct",
+        "system": "https://www.snomed.org",
         "code": "385432009",
         "display": "N/A"
       }
@@ -88,7 +82,7 @@
     } ],
     "linkId": "haemoglobin_level",
     "code": [ {
-      "system": "http://snomed.info/sct",
+      "system": "https://www.snomed.org",
       "code": "104142005",
       "display": "Plasma haemoglobin level"
     } ],
@@ -98,19 +92,19 @@
       "question": "result_type",
       "operator": "=",
       "answerCoding": {
-        "system": "http://snomed.info/sct",
+        "system": "https://www.snomed.org",
         "code": "385432009"
       }
     } ],
     "answerOption": [ {
       "valueCoding": {
-        "system": "http://snomed.info/sct",
+        "system": "https://www.snomed.org",
         "code": "75540009",
         "display": "High"
       }
     }, {
       "valueCoding": {
-        "system": "http://snomed.info/sct",
+        "system": "https://www.snomed.org",
         "code": "62482003",
         "display": "Low"
       }
@@ -121,7 +115,7 @@
       "valueBoolean": true
     }, {
       "url": "http://hl7.org/fhir/StructureDefinition/minValue",
-      "valueDecimal": 1.0
+      "valueDecimal": 1
     }, {
       "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
       "valueDecimal": 6.7
@@ -138,14 +132,14 @@
       "question": "result_type",
       "operator": "=",
       "answerCoding": {
-        "system": "http://snomed.info/sct",
+        "system": "https://www.snomed.org",
         "code": "410680006"
       }
     }, {
       "question": "result_type",
       "operator": "=",
       "answerCoding": {
-        "system": "http://snomed.info/sct",
+        "system": "https://www.snomed.org",
         "code": "385432009"
       }
     } ],
@@ -157,10 +151,10 @@
       "valueBoolean": true
     }, {
       "url": "http://hl7.org/fhir/StructureDefinition/minValue",
-      "valueDecimal": 4.0
+      "valueDecimal": 4
     }, {
       "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-      "valueDecimal": 19.0
+      "valueDecimal": 19
     } ],
     "linkId": "haemoglobin",
     "code": [ {
@@ -174,14 +168,14 @@
       "question": "result_type",
       "operator": "=",
       "answerCoding": {
-        "system": "http://snomed.info/sct",
+        "system": "https://www.snomed.org",
         "code": "410680006"
       }
     }, {
       "question": "result_type",
       "operator": "=",
       "answerCoding": {
-        "system": "http://snomed.info/sct",
+        "system": "https://www.snomed.org",
         "code": "385432009"
       }
     } ],
@@ -199,14 +193,14 @@
       "question": "result_type",
       "operator": "=",
       "answerCoding": {
-        "system": "http://snomed.info/sct",
+        "system": "https://www.snomed.org",
         "code": "410680006"
       }
     }, {
       "question": "result_type",
       "operator": "=",
       "answerCoding": {
-        "system": "http://snomed.info/sct",
+        "system": "https://www.snomed.org",
         "code": "385432009"
       }
     } ],

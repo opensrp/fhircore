@@ -21,6 +21,7 @@ import android.widget.TextView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
+import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import dagger.hilt.android.testing.BindValue
@@ -121,6 +122,7 @@ internal class VitalSignsDetailsFragmentTest : RobolectricTest() {
 
   @After
   fun tearDown() {
+    activityScenarioRule.scenario.moveToState(Lifecycle.State.DESTROYED)
     patientDetailsActivityController.destroy()
   }
 

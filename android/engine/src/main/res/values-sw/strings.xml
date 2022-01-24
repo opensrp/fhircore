@@ -4,8 +4,8 @@
         <string name="empty_client_list_message_title">Hakuna Matokeo</string>
         <string name="empty_client_list_message_details">Pole, hatukupata mteja kwa hilo Jina wala ID</string>
         <string name="search_hint">Tafuta jina ama ID</string>
-        <string name="str_next">Ijayo &gt;&gt;</string>
-        <string name="str_previous">&lt;&lt; Iliyopita</string>
+        <string name="str_next">Ijayo</string>
+        <string name="str_previous">Iliyopita</string>
         <string name="str_page_info">Ukurasa %1$d of %2$d</string>
         <string name="status_vaccinated">Amechanjwa</string>
         <string name="status_overdue">Imechelewa</string>
@@ -19,7 +19,7 @@
         <string name="str_save">Hifadhi</string>
         <string name="last_sync_timestamp">Mara ya mwisho: %1$s</string>
         <string name="logout_as_user">Toka kama Francis</string>
-        <string name="login_text">Ingia kwenye mfumo</string>
+        <string name="login_text">Ingia</string>
         <string name="username_input_hint">Ingiza jina la mtumiaji</string>
         <string name="password_input_hint">Ingiza neno la siri</string>
         <string name="login_call_fail_error_message">Hitalfu imetokea wakati wa kuingia server. Tafadhali jaribu tena</string>
@@ -87,4 +87,7 @@
         <string name="logout">Toka</string>
         <string name="remember_app">Kumbuka programu</string>
         <string name="questionnaire_alert_submit_title">Hifadhi data ya mteja</string>
+        <string name="no">Hapana</string>
+        <string name="yes">Ndio</string>
+        <string name="required_constraint_validation_error_msg">Jibu linahitajika</string>
 </resources>

@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.anc.ui.family.details
 
 import android.app.Application
+import android.os.Looper
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
@@ -40,10 +41,13 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
+import org.junit.After
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.Shadows
 import org.smartregister.fhircore.anc.R
+import org.smartregister.fhircore.anc.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.anc.data.family.model.FamilyMemberItem
 import org.smartregister.fhircore.anc.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
@@ -51,7 +55,9 @@ import org.smartregister.fhircore.engine.util.extension.plusYears
 
 class FamilyDetailScreenTest : RobolectricTest() {
 
-  @get:Rule val composeRule = createComposeRule()
+  @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
+
+  @get:Rule(order = 2) val composeRule = createComposeRule()
 
   private val listenerObjectSpy =
     spyk(
@@ -74,6 +80,11 @@ class FamilyDetailScreenTest : RobolectricTest() {
         }
       }
     )
+
+  @After
+  fun tearDown() {
+    Shadows.shadowOf(Looper.getMainLooper()).runToEndOfTasks()
+  }
 
   @Test
   fun testSurfaceComponent() {

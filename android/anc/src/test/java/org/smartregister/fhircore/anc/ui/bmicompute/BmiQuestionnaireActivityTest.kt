@@ -70,7 +70,6 @@ internal class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
 
   private lateinit var bmiQuestionnaireActivity: BmiQuestionnaireActivity
   private lateinit var bmiQuestionnaireActivitySpy: BmiQuestionnaireActivity
-  private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   @BindValue val patientRepository: PatientRepository = mockk()
 
   @Before
@@ -97,7 +96,9 @@ internal class BmiQuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @After
-  fun cleanup() {
+  override fun tearDown() {
+    super.tearDown()
+    bmiQuestionnaireActivitySpy.finish()
     unmockkObject(Sync)
   }
 
