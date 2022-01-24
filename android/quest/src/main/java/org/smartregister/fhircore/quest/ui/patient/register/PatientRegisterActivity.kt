@@ -330,8 +330,4 @@ override fun registerClient(clientIdentifier: String?) {
         .putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier)
     )
   }
-
-  override fun onPause() {
-    super.onPause()
-  }
 }
