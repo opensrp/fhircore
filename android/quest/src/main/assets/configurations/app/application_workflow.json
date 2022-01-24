@@ -22,6 +22,12 @@
         "description": "Configurations for Patient Row"
       },
       {
+        "workflowPoint": "patient_details_view",
+        "resource": "PatientDetailsViewConfiguration",
+        "classification": "patient_details_view",
+        "description": "Configurations for patient details view"
+      },
+      {
         "workflowPoint": "test_result_detail_view",
         "resource": "DetailViewConfiguration",
         "classification": "test_result_detail_view",
@@ -62,6 +68,12 @@
         "resource": "DetailViewConfiguration",
         "classification": "test_result_detail_view",
         "description": "Configurations for Test Results Details"
+      },
+      {
+        "workflowPoint": "patient_details_view",
+        "resource": "PatientDetailsViewConfiguration",
+        "classification": "patient_details_view",
+        "description": "Configurations for patient details view"
       },
       {
         "workflowPoint": "register_navigation",

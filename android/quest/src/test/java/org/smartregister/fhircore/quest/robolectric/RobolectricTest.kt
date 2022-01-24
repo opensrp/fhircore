@@ -27,6 +27,7 @@ import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.clearAllMocks
 import java.io.File
 import java.io.FileReader
+import java.util.Base64
 import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -37,7 +38,6 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
 import org.hl7.fhir.utilities.npm.ToolsVersion
@@ -86,6 +86,10 @@ abstract class RobolectricTest {
     return String(charArray)
   }
 
+  fun String.readFileToBase64Encoded(): String {
+    return Base64.getEncoder().encodeToString(this.readFile().toByteArray())
+  }
+
   fun String.parseSampleResource(): IBaseResource =
     this.readFile()
       .let {
@@ -93,12 +97,18 @@ abstract class RobolectricTest {
       }
       .let { FhirContext.forR4().newJsonParser().parseResource(it) }
 
-  fun Resource.convertToString(trimTime: Boolean) =
+  fun IBaseResource.convertToString(trimTime: Boolean) =
     FhirContext.forR4Cached().newJsonParser().encodeResourceToString(this).let {
       // replace time part 11:11:11+05:00 with xx:xx:xx+xx:xx
       if (trimTime) it.replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}"), "xx:xx:xx+xx:xx")
       else it
     }
+
+  fun String.replaceTimePart() =
+    // replace time part 11:11:11+05:00 with xx:xx:xx+xx:xx
+    // replace time part 11:11:11.111+05:00 with xx:xx:xx+xx:xx
+    this.replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}"), "xx:xx:xx+xx:xx")
+      .replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{3}.\\d{2}:\\d{2}"), "xx:xx:xx+xx:xx")
 
   fun buildStructureMapUtils(): StructureMapUtilities {
     val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
@@ -152,7 +162,7 @@ abstract class RobolectricTest {
         File.separator +
         "src" +
         File.separator +
-        "main" +
+        "test" +
         File.separator +
         "resources" +
         File.separator)

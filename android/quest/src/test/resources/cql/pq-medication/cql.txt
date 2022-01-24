@@ -1,0 +1,135 @@
+//Declare name and version of lib
+library PQMedication version '1'
+
+//FHIR as a data model and version of FHIR
+using FHIR version '4.0.1'
+
+//functions to help FHIR vs CQL primitives
+include "FHIRHelpers" version '4.0.1' called FHIRHelpers
+
+//System declarations  : Codable concept codes systems
+codesystem "SNOMED": 'http://snomed.info/sct'
+codesystem "ConditionClinicalStatusCodes": 'http://terminology.hl7.org/CodeSystem/condition-clinical'
+codesystem "DosageTypeCodes": 'http://terminology.hl7.org/CodeSystem/dose-rate-type'
+
+//Code used as identifers
+code "Pregnancy code": '77386006' from "SNOMED" display 'Pregnant'
+code "G6PD code": '86859003' from "SNOMED" display 'G6PD Enzyme'
+code "Haemoglobin code": '259695003' from "SNOMED" display 'Haemoglobin'
+code "active": 'active' from "ConditionClinicalStatusCodes"
+
+code "g6pdStatusCode": '9024005' from "SNOMED" display 'G6PD Status'
+code "normalResultCode": '280413001' from "SNOMED" display 'Normal'
+code "deficientResultCode": '260372006' from "SNOMED" display 'Deficient'
+code "intermediateResultCode": '11896004' from "SNOMED" display 'Intermediate'
+
+code "dosageRouteCode": '26643006' from "SNOMED" display 'Oral use'
+code "dosageTypeCode": 'ordered' from "DosageTypeCodes" display 'Ordered'
+code "g6pdAnaemiaCode": '86859003' from "SNOMED" display 'Glucose-6-phosphate dehydrogenase deficiency anaemia'
+code "pqRegimenCode": '429663004' from "SNOMED" display 'Primaquine (substance)'
+
+context Patient
+
+// TODO see if we need to do any more filtering and sorting; rightnow only one encounter is passed
+define "Encounter":
+  Last([Encounter] E
+    where E.status ~ 'finished' )
+
+define "DiagnosticReport":
+  Last([DiagnosticReport] D
+    where D.status ~ 'final' )
+
+define "AgeRange":
+  AgeInYears() >= 16
+
+define "Female":
+  Patient.gender = 'female'
+
+define "Male":
+  Patient.gender = 'male'
+
+define "is Pregnant":
+  Last([Condition: "Pregnancy code"] O
+    where O.clinicalStatus ~ "active"
+      sort by recordedDate) is not null
+
+define "G6pd Status":
+  Last([Condition: category in "g6pdStatusCode"] G
+    where G.clinicalStatus ~ "active"
+      sort by recordedDate)
+
+define "Registerd Haem":
+  Last([Observation: "Haemoglobin code"] H
+    where H.status ~ 'registered')
+
+define "Registerd G6PD":
+  Last([Observation: "G6PD code"] G
+    where G.status ~ 'registered')
+
+
+define "Abnormal Haemoglobin": "Registerd Haem".value.value <= 8.0
+
+
+//Define Thresholds
+define "Deficient": "G6pd Status".code ~ "deficientResultCode"
+
+define "Intermediate": "G6pd Status".code ~ "intermediateResultCode"
+
+define "Normal": "G6pd Status".code ~ "normalResultCode"
+
+define "recommendedDosageTiming":
+  if not "Abnormal Haemoglobin" and ("Deficient" or "Intermediate") then decimal { value: 8.0 }
+  else if not "Abnormal Haemoglobin" then decimal { value: 2.0 }
+else null
+
+define "patientRef": ReplaceMatches('Patient/'+Patient.id,'#','')
+define "encounterRef": ReplaceMatches('Encounter/'+Encounter.id,'#','')
+
+define "medication": if "AgeRange" and "recommendedDosageTiming" is not null and not "is Pregnant"
+then CreateConcept("pqRegimenCode") else null
+
+define "dosage": Dosage {
+  timing: Timing {
+    repeat: FHIR.Timing.Repeat {
+     frequency: positiveInt {value: 1},
+     period: "recommendedDosageTiming",
+     periodUnit: UnitsOfTime { value: 'wk' }
+	}
+  },
+  route: CreateConcept("dosageRouteCode"),
+  doseAndRate: {
+    FHIR.Dosage.DoseAndRate {
+       type: CreateConcept("dosageTypeCode"),
+       dose: SimpleQuantity {
+         value: decimal {value:  0.75},
+         unit: string {value: 'mg/kg'},
+         system: uri {value: 'http://unitsofmeasure.org'}
+       }
+    }
+  }
+}
+
+define "medicationRequest": if "medication" is not null
+   then MedicationRequest {
+     subject: Reference {reference: string { value: "patientRef" } },
+     encounter: Reference {reference: string { value: "encounterRef" } },
+     authoredOn: dateTime{ value: Now() },
+     status: MedicationRequestStatus {value: 'active'},
+     intent: MedicationRequestIntent {value: 'proposal'},
+     category: { CreateConcept("g6pdAnaemiaCode") },
+     medication: "medication",
+     dosageInstruction: { "dosage" }
+} else null
+
+// output to save or display by the engine or parser
+define "OUTPUT": List { "medicationRequest" }
+
+// helper functions
+define function "CreateConcept"(code Code):
+  CodeableConcept { coding: {
+        Coding {
+          code: code {value: "code".code },
+          system: uri {value: "code".system },
+          display: string {value: "code".display }
+        }
+  } }

@@ -30,9 +30,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
@@ -353,10 +351,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
     val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
 
-    Assert.assertEquals(
-      "ABC",
-      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
-    )
+    Assert.assertEquals("ABC", alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text)
   }
 
   private fun buildQuestionnaireWithConstraints(): Questionnaire {

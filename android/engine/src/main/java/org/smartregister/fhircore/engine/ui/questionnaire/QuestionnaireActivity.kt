@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.questionnaire
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -202,7 +203,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       if (readOnly) {
         finish()
       } else {
-        showFormSubmissionConfirmAlert()
+        showConfirmAlert(
+          context = this,
+          message = R.string.questionnaire_alert_submit_message,
+          title = R.string.questionnaire_alert_submit_title,
+          confirmButtonListener = { handleQuestionnaireSubmit() },
+          confirmButtonText = R.string.str_save
+        )
       }
     } else {
       showToast(getString(R.string.error_saving_form))
@@ -271,24 +278,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     )
   }
 
-  fun postSuccessfulExtraction(questionnaireResponse: QuestionnaireResponse){
-    val message = questionnaireViewModel.extractionProgressMessage.value
-    if (message?.isNotBlank() == true)
-      AlertDialogue.showInfoAlert(
-        this,
-        message,
-        getString(R.string.done),
-        {
-          it.dismiss()
-          postSaveSuccessful(questionnaireResponse)
-        }
-      )
-    else postSaveSuccessful(questionnaireResponse)
-  }
-
   open fun populateInitialValues(questionnaire: Questionnaire) = Unit
 
   open fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
+    setResult(
+      Activity.RESULT_OK,
+      Intent().apply {
+        putExtra(QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(questionnaireResponse))
+      }
+    )
     val message = questionnaireViewModel.extractionProgressMessage.value
     if (message?.isNotBlank() == true)
       AlertDialogue.showInfoAlert(
@@ -303,16 +301,46 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     else finish()
   }
 
+  fun deepFlat(
+    qItems: List<Questionnaire.QuestionnaireItemComponent>,
+    questionnaireResponse: QuestionnaireResponse,
+    targetQ: MutableList<Questionnaire.QuestionnaireItemComponent>,
+    targetQR: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>,
+  ) {
+    qItems.forEach { qit ->
+      // process each inner item list
+      deepFlat(qit.item, questionnaireResponse, targetQ, targetQR)
+
+      // remove nested structure to prevent validation recursion; it is already processed above
+      qit.item.clear()
+
+      // add questionnaire and response pair for each linkid on same index
+      questionnaireResponse.find(qit.linkId)?.let { qrit ->
+        targetQ.add(qit)
+        targetQR.add(qrit)
+      }
+    }
+  }
+
+  // TODO change this when SDK bug for validation is fixed
+  // https://github.com/google/android-fhir/issues/912
   fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse): Boolean {
-    val questionnaireResource =
-      parser.parseResource(parser.encodeResourceToString(questionnaire)) as Questionnaire
-    val questionnaireResponseResource =
+    // clone questionnaire and response for processing and changing structure
+    val q = parser.parseResource(parser.encodeResourceToString(questionnaire)) as Questionnaire
+    val qr =
       parser.parseResource(parser.encodeResourceToString(questionnaireResponse)) as
         QuestionnaireResponse
 
+    // flatten and pair all responses temporarily to fix index mapping issue for questionnaire and
+    // questionnaire response
+    val qItems = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
+    val qrItems = mutableListOf<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
+
+    deepFlat(q.item, qr, qItems, qrItems)
+
     return QuestionnaireResponseValidator.validateQuestionnaireResponseAnswers(
-        questionnaireResource.item,
-        questionnaireResponseResource.item,
+        qItems,
+        qrItems,
         this
       )
       .values

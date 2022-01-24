@@ -1,0 +1,12 @@
+// helper functions
+define function "CreateConcept"(code Code):
+  CodeableConcept { coding: {
+        Coding {
+          code: code {value: "code".code },
+          system: uri {value: "code".system },
+          display: string {value: "code".display }
+        }
+  } }
+
+define function "CreateReference"(ref String):
+  Reference {reference: string { value: "ref" } }

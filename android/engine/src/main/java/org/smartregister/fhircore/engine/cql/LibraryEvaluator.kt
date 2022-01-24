@@ -36,7 +36,6 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.Type
 import org.json.JSONArray
 import org.json.JSONObject
 import org.opencds.cqf.cql.engine.data.CompositeDataProvider
@@ -76,7 +75,7 @@ class LibraryEvaluator @Inject constructor() {
   val cqlFhirParametersConverter by lazy {
     CqlFhirParametersConverter(fhirContext, adapterFactory, fhirTypeConverter)
   }
-  val fhirModelResolver by lazy { R4FhirModelResolver() }
+  val fhirModelResolver by lazy { R4FhirModelResolverExt() }
   /**
    * This method loads configurations for CQL evaluation
    * @param libraryResources Fhir resource type Library
@@ -202,7 +201,7 @@ class LibraryEvaluator @Inject constructor() {
   suspend fun runCqlLibrary(
     libraryId: String,
     patient: Patient?,
-    resources: List<Resource>,
+    data: Bundle,
     // TODO refactor class by modular and single responsibility principle
     repository: DefaultRepository,
     outputLog: Boolean = false
@@ -223,7 +222,8 @@ class LibraryEvaluator @Inject constructor() {
       library,
       helpers,
       Bundle(),
-      createBundle(listOfNotNull(patient, *resources.toTypedArray()))
+      // TODO check and handle when data bundle has multiple Patient resources
+      createBundle(listOfNotNull(patient, *data.entry.map { it.resource }.toTypedArray()))
     )
 
     val result =
@@ -238,21 +238,24 @@ class LibraryEvaluator @Inject constructor() {
     parser.setPrettyPrint(false)
     return result.parameter.mapNotNull { p ->
       (p.value ?: p.resource)?.let {
-        if (p.name.equals(OUTPUT_PARAMETER_KEY) && it.isResource)
+        if (p.name.equals(OUTPUT_PARAMETER_KEY) && it.isResource) {
+          data.addEntry().apply { this.resource = p.resource }
           repository.save(it as Resource)
+        }
 
         when {
-          outputLog -> "${p.name} -> ${getStringValue(it)}"
-          p.name.equals(OUTPUT_PARAMETER_KEY) && !it.isResource -> "-> ${getStringValue(it)}"
+          // send as result only if outlog needed or is an output param of primitive type
+          outputLog -> "${p.name} -> ${getStringRepresentation(it)}"
+          p.name.equals(OUTPUT_PARAMETER_KEY) && !it.isResource ->
+            "-> ${getStringRepresentation(it)}"
           else -> null
         }
       }
     }
   }
 
-  fun getStringValue(base: Base) =
-    if (base.isResource) parser.encodeResourceToString(base as Resource)
-    else base.toString()
+  fun getStringRepresentation(base: Base) =
+    if (base.isResource) parser.encodeResourceToString(base as Resource) else base.toString()
 
   private fun loadConfigs(
     library: org.hl7.fhir.r4.model.Library,
@@ -296,7 +299,7 @@ class LibraryEvaluator @Inject constructor() {
 
     cqlEvaluator =
       CqlEvaluator(
-        FhirLibraryLoader(ModelManager(), listOf(libraryProvider)),
+        LibraryLoaderExt(ModelManager(), listOf(libraryProvider)),
         mapOf("http://hl7.org/fhir" to CompositeDataProvider(fhirModelResolver, retrieveProvider)),
         terminologyProvider
       )
