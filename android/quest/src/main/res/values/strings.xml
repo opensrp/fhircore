@@ -4,16 +4,11 @@
 
     <string name="back_to_clients">Back to client list</string>
     <string name="test_results">Test Results</string>
-    <string name="run_cql">Run CQL</string>
-    <string name="run_cql_log">CQL FULL LOG</string>
-    <string name="run_cql_output">CQL OUTPUT DATA</string>
-    <string name="run_control_test">Run Control Test</string>
 
     <string name="edit_patient_info">Edit Info</string>
 
     <string name="menu_clients">Clients</string>
     <string name="menu_settings">Settings</string>
-    <string name="menu_control_test">Control Test</string>
     <string name="cannot_find_parent_questionnaire">Cannot find the parent Questionnaire!</string>
 
     <string name="loading_forms">Loading forms ...</string>
