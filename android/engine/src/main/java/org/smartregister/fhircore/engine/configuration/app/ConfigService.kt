@@ -39,6 +39,8 @@ interface ConfigService {
 
   val resourceSyncParams: Map<ResourceType, Map<String, String>>
 
+  var appId: String
+
   /** Provide [AuthConfiguration] for the Application */
   fun provideAuthConfiguration(): AuthConfiguration
 

@@ -40,6 +40,9 @@ constructor(
   @ApplicationContext val context: Context,
   val sharedPreferencesHelper: SharedPreferencesHelper
 ) : ConfigService {
+
+  override var appId = ""
+
   private val authenticatedUserInfo by lazy {
     sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
   }
@@ -58,10 +61,16 @@ constructor(
           }
         }
 
+      val filterPairs = mutableListOf("_tag" to "https://smartregister.org/appId|$appId")
+
+      if (expressionValue != null) {
+        filterPairs.add(expressionValue.let { searchParams[i].expression to it })
+      }
+
       pairs.add(
         Pair(
           ResourceType.fromCode(searchParams[i].base[0].code),
-          expressionValue?.let { mapOf(searchParams[i].expression to it) } ?: mapOf()
+          mapOf(*filterPairs.toTypedArray())
         )
       )
     }

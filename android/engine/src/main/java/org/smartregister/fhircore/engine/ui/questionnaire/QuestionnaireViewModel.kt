@@ -58,7 +58,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.assertSubject
-import org.smartregister.fhircore.engine.util.extension.cqfLibraryId
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -147,24 +146,54 @@ constructor(
       handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
 
       if (questionnaire.isExtractionCandidate()) {
-        //val bundle = performExtraction(context, questionnaire, questionnaireResponse)
-          val patient = Patient().apply {
-            name = listOf(HumanName().apply {
-              given.add(questionnaireResponse.find("f0361e64-db57-495a-8c82-fa6576e84f74")?.answer?.get(0)?.valueStringType)
-              family = questionnaireResponse.find("007eadd1-3929-4786-803a-72df7a11735b")?.answer?.get(0)?.valueStringType?.toString()
-            })
+        // val bundle = performExtraction(context, questionnaire, questionnaireResponse)
+        val patient =
+          Patient().apply {
+            name =
+              listOf(
+                HumanName().apply {
+                  given.add(
+                    questionnaireResponse
+                      .find("f0361e64-db57-495a-8c82-fa6576e84f74")
+                      ?.answer
+                      ?.get(0)
+                      ?.valueStringType
+                  )
+                  family =
+                    questionnaireResponse
+                      .find("007eadd1-3929-4786-803a-72df7a11735b")
+                      ?.answer
+                      ?.get(0)
+                      ?.valueStringType
+                      ?.toString()
+                }
+              )
             active = true
-            gender = Enumerations.AdministrativeGender.fromCode(questionnaireResponse.find("23e7f371-6996-417e-af8c-6df395ba04e1")?.answer?.get(0)?.valueCoding?.code)
-            birthDate = Calendar.getInstance().run {
-              add(Calendar.MONTH, - (questionnaireResponse.find("38896946-7046-42f0-dabd-6ed855965a38")?.answer?.get(0)!!.valueIntegerType.value))
-              time
-            }
+            gender =
+              Enumerations.AdministrativeGender.fromCode(
+                questionnaireResponse
+                  .find("23e7f371-6996-417e-af8c-6df395ba04e1")
+                  ?.answer
+                  ?.get(0)
+                  ?.valueCoding
+                  ?.code
+              )
+            birthDate =
+              Calendar.getInstance().run {
+                add(
+                  Calendar.MONTH,
+                  -(questionnaireResponse
+                      .find("38896946-7046-42f0-dabd-6ed855965a38")
+                      ?.answer
+                      ?.get(0)!!
+                    .valueIntegerType
+                    .value)
+                )
+                time
+              }
           }
-          val bundle = Bundle().apply {
-            addEntry(Bundle.BundleEntryComponent().apply {
-              resource = patient
-            })
-          }
+        val bundle =
+          Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
 
         bundle.entry.forEach { bun ->
           // add organization to entities representing individuals in registration questionnaire
@@ -209,14 +238,14 @@ constructor(
         }
 
         /*if (questionnaireResponse.subject.reference.startsWith("Patient/"))
-          questionnaire.cqfLibraryId()?.run {
-            libraryEvaluator.runCqlLibrary(
-              this,
-              loadPatient(questionnaireResponse.subject.extractId())!!,
-              bundle.entry.map { it.resource },
-              defaultRepository
-            )
-          }*/
+        questionnaire.cqfLibraryId()?.run {
+          libraryEvaluator.runCqlLibrary(
+            this,
+            loadPatient(questionnaireResponse.subject.extractId())!!,
+            bundle.entry.map { it.resource },
+            defaultRepository
+          )
+        }*/
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
       }

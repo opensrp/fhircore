@@ -28,7 +28,6 @@ import android.widget.Toast
 import androidx.annotation.StyleRes
 import androidx.core.content.ContextCompat
 import java.util.Locale
-import java.util.jar.Manifest
 import org.smartregister.fhircore.engine.R
 import timber.log.Timber
 
@@ -67,7 +66,6 @@ fun Context.getAppLocale(): String =
   } else {
     this.resources.configuration.locale.toLanguageTag()
   }
-
 
 fun Context.getDrawable(name: String): Drawable {
   var resourceId = this.resources.getIdentifier(name, "drawable", packageName)

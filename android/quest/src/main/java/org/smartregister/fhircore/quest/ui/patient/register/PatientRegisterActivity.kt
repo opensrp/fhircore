@@ -28,7 +28,6 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.core.view.marginLeft
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.famoco.desfireservicelib.DESFireServiceAccess
@@ -149,7 +148,8 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     listOf(
       RegisterItem(
         uniqueTag = PatientRegisterFragment.TAG,
-        title = registerViewModel.registerViewConfiguration.value?.appTitle_lang?.getString(this) ?: getString(R.string.clients),
+        title = registerViewModel.registerViewConfiguration.value?.appTitle_lang?.getString(this)
+            ?: getString(R.string.clients),
         isSelected = true
       )
     )
@@ -257,11 +257,16 @@ override fun registerClient(clientIdentifier: String?) {
   fun showAgeDialog(
     cancelClickListener: DialogInterface.OnClickListener
   ) {
-    val layout = LinearLayout(this).apply {
-      orientation = LinearLayout.VERTICAL
-      layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-      setPadding(50, 20, 50, 20)
-    }
+    val layout =
+      LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        layoutParams =
+          ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+          )
+        setPadding(50, 20, 50, 20)
+      }
     val input =
       EditText(this).apply {
         setHint(getString(R.string.enter_age_in_months))
@@ -326,4 +331,7 @@ override fun registerClient(clientIdentifier: String?) {
     )
   }
 
+  override fun onPause() {
+    super.onPause()
+  }
 }

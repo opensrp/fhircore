@@ -41,10 +41,10 @@ data class RegisterViewConfiguration(
   var showSideMenu: Boolean = true,
   var showBottomMenu: Boolean = false,
   var primaryFilter: SearchFilter? = null,
-  var appTitle_lang : HashMap<String, String> = hashMapOf("en" to appTitle),
-  var filterText_lang : HashMap<String, String> = hashMapOf("en" to filterText),
-  var searchBarHint_lang : HashMap<String, String> = hashMapOf("en" to searchBarHint),
-  var newClientButtonText_lang : HashMap<String, String> = hashMapOf("en" to newClientButtonText),
+  var appTitle_lang: HashMap<String, String> = hashMapOf("en" to appTitle),
+  var filterText_lang: HashMap<String, String> = hashMapOf("en" to filterText),
+  var searchBarHint_lang: HashMap<String, String> = hashMapOf("en" to searchBarHint),
+  var newClientButtonText_lang: HashMap<String, String> = hashMapOf("en" to newClientButtonText),
 ) : Configuration
 
 @Serializable
@@ -104,7 +104,7 @@ fun Context.registerViewConfigurationOf(
   )
 }
 
-fun HashMap<String, String>.getString(context: Context) : String {
+fun HashMap<String, String>.getString(context: Context): String {
   val appLocale = context.getAppLocale()
 
   return if (containsKey(appLocale)) {

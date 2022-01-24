@@ -117,6 +117,7 @@ constructor(
   ) {
     // TODO Download configurations that do not require login at this point. Default to assets
     this.appId = appId
+    configService.appId = appId
     val applicationWorkflowsMap =
       context
         .assets
