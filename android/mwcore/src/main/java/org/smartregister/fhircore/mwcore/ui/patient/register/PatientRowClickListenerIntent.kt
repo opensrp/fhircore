@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.mwcore.ui.patient.register
 
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 import org.smartregister.fhircore.engine.util.ListenerIntent
 
 sealed interface PatientRowClickListenerIntent : ListenerIntent
