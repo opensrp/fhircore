@@ -6,8 +6,8 @@
       "key": "code",
       "valueType": "CODEABLECONCEPT",
       "valueCoding": {
-        "system": "",
-        "code": "edd"
+        "system": "http://snomed.info/sct",
+        "code": "161714006"
       }
     },
     "gaFilter": {

@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.quest.data.patient.model
 
 import androidx.compose.runtime.Stable
-import org.hl7.fhir.r4.model.Type
+import org.hl7.fhir.r4.model.Base
 import org.smartregister.fhircore.quest.configuration.view.Filter
 
 @Stable
@@ -29,4 +29,4 @@ data class DetailsViewItem(
 @Stable
 data class DetailsViewItemRow(val cells: MutableList<DetailsViewItemCell> = mutableListOf())
 
-@Stable data class DetailsViewItemCell(val value: Type?, val filter: Filter)
+@Stable data class DetailsViewItemCell(val value: Base?, val filter: Filter)

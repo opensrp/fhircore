@@ -118,9 +118,8 @@ fun FamilyDetailScreen(familyDetailViewModel: FamilyDetailViewModel) {
             .padding(12.dp)
       ) {
         val familyName = patient.value?.name?.firstOrNull()?.family ?: ""
-        val firstName = patient.value?.name?.firstOrNull()?.given?.firstOrNull()?.value ?: ""
         Text(
-          text = "$familyName $firstName",
+          text = stringResource(id = R.string.so_and_so_family, "$familyName"),
           color = colorResource(id = R.color.white),
           fontSize = 25.sp
         )

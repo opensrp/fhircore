@@ -59,21 +59,26 @@ class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
                   }
                 )
 
-                questionnaireViewModel.performExtraction(questionnaire, questionnaireResponse).run {
-                  val immunizationEntry = entry.firstOrNull { it.resource is Immunization }
-                  if (immunizationEntry == null) {
-                    val fhirJsonParser = FhirContext.forR4().newJsonParser()
-                    Timber.e(
-                      "Immunization extraction failed for ${fhirJsonParser.encodeResourceToString(questionnaireResponse)} producing ${fhirJsonParser.encodeResourceToString(this)}"
-                    )
-                    lifecycleScope.launch(Dispatchers.Main) { handleExtractionError() }
-                  } else {
-                    (immunizationEntry.resource as Immunization).reaction.addAll(
-                      oldImmunization.reaction
-                    )
-                    questionnaireViewModel.saveBundleResources(this)
+                questionnaireViewModel.performExtraction(
+                    parent,
+                    questionnaire,
+                    questionnaireResponse
+                  )
+                  .run {
+                    val immunizationEntry = entry.firstOrNull { it.resource is Immunization }
+                    if (immunizationEntry == null) {
+                      val fhirJsonParser = FhirContext.forR4().newJsonParser()
+                      Timber.e(
+                        "Immunization extraction failed for ${fhirJsonParser.encodeResourceToString(questionnaireResponse)} producing ${fhirJsonParser.encodeResourceToString(this)}"
+                      )
+                      lifecycleScope.launch(Dispatchers.Main) { handleExtractionError() }
+                    } else {
+                      (immunizationEntry.resource as Immunization).reaction.addAll(
+                        oldImmunization.reaction
+                      )
+                      questionnaireViewModel.saveBundleResources(this)
+                    }
                   }
-                }
               }
             }
           }

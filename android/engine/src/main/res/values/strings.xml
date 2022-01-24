@@ -51,12 +51,11 @@
     <string name="error_loading_form">Error loading form</string>
     <string name="error_saving_form">Error encountered cannot save form</string>
     <string name="saving_registration">Saving data. Please wait</string>
-    <string name="questionnaire_alert_back_pressed_message">Are you sure you want to go back. Changes made into form would be lost</string>
+    <string name="questionnaire_alert_back_pressed_message">Are you sure you want to go back? Changes made into form would be lost</string>
     <string name="questionnaire_alert_back_pressed_title">Discard changes</string>
     <string name="questionnaire_alert_back_pressed_button_title">Discard</string>
     <string name="questionnaire_alert_submit_message">Confirm that you are finished filling out the client details. You can edit client information later</string>
     <string name="questionnaire_alert_submit_title">Save client data</string>
-    <string name="questionnaire_alert_submit_button_title">Save</string>
     <string name="questionnaire_alert_neutral_button_title">Cancel</string>
     <string name="questionnaire_alert_confirm_button_title">Yes</string>
     <string name="questionnaire_alert_invalid_message">Given details have validation errors. Resolve errors and submit again</string>
@@ -83,13 +82,16 @@
     <string name="enter_app_id">Enter Application ID</string>
     <string name="app_id_sample" translatable="false">E.g. anc, covax, g6pd, jnj, quest</string>
     <string name="load_configurations">LOAD CONFIGURATIONS</string>
-    <string name="fhir_core_app">FHIRCORE APP</string>
+    <string name="fhir_core_app" translatable="false">FHIRCORE APP</string>
     <string name="remember_app">Remember application</string>
     <string name="done">Done</string>
     <string name="replace_photo">Replace photo</string>
     <string name="take_photo">Take photo</string>
     <string name="edit">Edit</string>
     <string name="application_not_supported">Application %1$s not found</string>
-    <string name="eCBIS_app_name">eCBIS</string>
+    <string name="eCBIS_app_name" translatable="false">eCBIS</string>
     <string name="invalid_login_credentials">username or password is invalid</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+    <string name="required_constraint_validation_error_msg">There is no response to the required field.</string>
 </resources>

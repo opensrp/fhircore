@@ -1,0 +1,47 @@
+{
+  "resourceType": "Condition",
+  "clinicalStatus": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+        "code": "active"
+      }
+    ]
+  },
+  "verificationStatus": {
+    "coding": [
+      {
+        "system": "http://hl7.org/fhir/ValueSet/condition-ver-status",
+        "code": "confirmed"
+      }
+    ]
+  },
+  "category": [
+    {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "9024005",
+          "display": "G6PD Status"
+        }
+      ]
+    }
+  ],
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "11896004",
+        "display": "Intermediate"
+      }
+    ]
+  },
+  "subject": {
+    "reference": "Patient/P1"
+  },
+  "encounter": {
+    "reference": "Encounter/E1"
+  },
+  "onsetDateTime": "#NOW",
+  "recordedDate": "#NOW"
+}
