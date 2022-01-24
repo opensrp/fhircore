@@ -110,6 +110,11 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
     reportHomeActivitySpy.libraryMeasure = reportHomeActivitySpy.valueSetBundle
   }
 
+  @After
+  fun cleanup(){
+    unmockkObject(FileUtil)
+  }
+
   @Test
   fun testActivityNotNull() {
     Assert.assertNotNull(reportHomeActivity)

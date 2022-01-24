@@ -86,8 +86,6 @@ class EncounterRepositoryTest : RobolectricTest() {
       repository.load(PagingSource.LoadParams.Refresh(null, 1, false))
     )
 
-    mockkObject(PagingSource.LoadResult.Error::class)
-
     encounter.class_ = null
 
     coEvery {

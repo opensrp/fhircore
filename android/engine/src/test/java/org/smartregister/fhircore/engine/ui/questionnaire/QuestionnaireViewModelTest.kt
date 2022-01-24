@@ -397,9 +397,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       coVerify { defaultRepo.addOrUpdate(patient) }
       coVerify { defaultRepo.addOrUpdate(questionnaireResponse) }
       coVerify(timeout = 10000) { ResourceMapper.extract(any(), any(), any(), any(), any()) }
-
-      unmockkObject(ResourceMapper)
     }
+    unmockkObject(ResourceMapper)
   }
 
   @Test
