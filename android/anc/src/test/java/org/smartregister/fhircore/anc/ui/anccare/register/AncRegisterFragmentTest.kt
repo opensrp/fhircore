@@ -22,7 +22,6 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
-import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -41,14 +40,11 @@ import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
 
 @HiltAndroidTest
 class AncRegisterFragmentTest : RobolectricTest() {
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
-
-  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
-  private val activityController = Robolectric.buildActivity(FamilyRegisterActivity::class.java)
 
   private lateinit var registerFragment: AncRegisterFragment
 
@@ -59,16 +55,13 @@ class AncRegisterFragmentTest : RobolectricTest() {
       appId = "anc",
       accountAuthenticator = accountAuthenticator
     ) {}
-    val familyRegisterActivity = activityController.create().resume().get()
-    familyRegisterActivity.supportFragmentManager.commitNow {
-      registerFragment = AncRegisterFragment()
+    registerFragment = AncRegisterFragment()
+
+    val registerActivity =
+      Robolectric.buildActivity(FamilyRegisterActivity::class.java).create().resume().get()
+    registerActivity.supportFragmentManager.commitNow {
       add(registerFragment, AncRegisterFragment.TAG)
     }
-  }
-
-  @After
-  fun cleanup() {
-    activityController.destroy()
   }
 
   @Test

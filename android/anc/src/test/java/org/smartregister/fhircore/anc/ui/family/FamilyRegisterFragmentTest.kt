@@ -52,14 +52,11 @@ import org.smartregister.fhircore.engine.util.extension.plusYears
 
 @HiltAndroidTest
 class FamilyRegisterFragmentTest : RobolectricTest() {
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
-
-  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
-  private val activityController = Robolectric.buildActivity(FamilyRegisterActivity::class.java)
 
   private lateinit var registerFragment: FamilyRegisterFragment
 
@@ -70,16 +67,12 @@ class FamilyRegisterFragmentTest : RobolectricTest() {
       appId = "anc",
       accountAuthenticator = accountAuthenticator
     ) {}
-    val registerActivity = activityController.create().resume().get()
     registerFragment = FamilyRegisterFragment()
+    val registerActivity =
+      Robolectric.buildActivity(FamilyRegisterActivity::class.java).create().resume().get()
     registerActivity.supportFragmentManager.commitNow {
       add(registerFragment, FamilyRegisterFragment.TAG)
     }
-  }
-
-  @After
-  fun tearDown() {
-    activityController.destroy()
   }
 
   @Test
