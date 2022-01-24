@@ -397,9 +397,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       coVerify { defaultRepo.addOrUpdate(patient) }
       coVerify { defaultRepo.addOrUpdate(questionnaireResponse) }
       coVerify(timeout = 10000) { ResourceMapper.extract(any(), any(), any(), any(), any()) }
-
-      unmockkObject(ResourceMapper)
     }
+    unmockkObject(ResourceMapper)
   }
 
   @Test
@@ -602,6 +601,48 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
     coVerify { defaultRepo.addOrUpdate(questionnaireResponse) }
+  }
+
+  @Test
+  fun testSaveQuestionnaireResponseWithExperimentalQuestionnaireShouldNotSave() {
+
+    val questionnaire = Questionnaire().apply { experimental = true }
+    val questionnaireResponse = QuestionnaireResponse()
+
+    runBlocking {
+      questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
+    }
+
+    coVerify(inverse = true) { defaultRepo.addOrUpdate(questionnaireResponse) }
+  }
+
+  @Test
+  fun testExtractAndSaveResourcesWithExperimentalQuestionnaireShouldNotSave() {
+    mockkObject(ResourceMapper)
+
+    coEvery { ResourceMapper.extract(any(), any(), any(), any(), any()) } returns
+      Bundle().apply { addEntry().apply { resource = Patient() } }
+
+    val questionnaire =
+      Questionnaire().apply {
+        experimental = true
+        addExtension().url = "sdc-questionnaire-itemExtractionContext"
+      }
+    val questionnaireResponse = QuestionnaireResponse()
+
+    runBlocking {
+      questionnaireViewModel.extractAndSaveResources(
+        ApplicationProvider.getApplicationContext(),
+        null,
+        questionnaire,
+        questionnaireResponse
+      )
+    }
+
+    coVerify { ResourceMapper.extract(any(), any(), any(), any(), any()) }
+    coVerify(inverse = true) { defaultRepo.addOrUpdate(questionnaireResponse) }
+
+    unmockkObject(ResourceMapper)
   }
 
   @Test

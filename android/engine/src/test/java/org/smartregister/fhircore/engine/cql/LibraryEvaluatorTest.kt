@@ -34,6 +34,7 @@ import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.DecimalType
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -101,6 +102,26 @@ class LibraryEvaluatorTest {
   }
 
   @Test
+  fun testGetStringValueWithResourceShouldReturnCorrectStringRepresentation() {
+    val resource = Patient().apply { id = "123" }
+    val resourceStr = FhirContext.forR4().newJsonParser().encodeResourceToString(resource)
+
+    val result = evaluator!!.getStringRepresentation(resource)
+
+    Assert.assertEquals(resourceStr, result)
+  }
+
+  @Test
+  fun testGetStringValueWithTypeDataShouldReturnCorrectStringRepresentation() {
+    val type = DecimalType(123)
+    val typeStr = type.toString()
+
+    val result = evaluator!!.getStringRepresentation(type)
+
+    Assert.assertEquals(typeStr, result)
+  }
+
+  @Test
   fun createBundleTestForG6pd() {
     val result = evaluator!!.createBundle(listOf(Patient(), Observation(), Condition()))
 
@@ -150,7 +171,8 @@ class LibraryEvaluatorTest {
         cqlLibrary.logicalId,
         patient,
         dataBundle.apply { entry.removeIf { it.resource.resourceType == ResourceType.Patient } },
-        defaultRepository
+        defaultRepository,
+        true
       )
     }
 

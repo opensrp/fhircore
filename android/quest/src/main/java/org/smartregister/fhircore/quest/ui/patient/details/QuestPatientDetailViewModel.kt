@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.patient.details
 
-import android.content.Context
 import androidx.annotation.StringRes
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -24,24 +23,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.engine.util.AssetUtil
-import org.smartregister.fhircore.engine.util.extension.isPatient
 import org.smartregister.fhircore.quest.configuration.parser.DetailConfigParser
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
@@ -111,54 +102,6 @@ constructor(
         )
       )
     }
-  }
-
-  suspend fun getAllDataFor(patientId: String): List<Resource> {
-    val fhirEngine = patientRepository.fhirEngine
-    val patient = fhirEngine.load(Patient::class.java, patientId)
-    val observations =
-      fhirEngine.search<Observation> {
-        filter(Observation.SUBJECT, { this.value = "Patient/$patientId" })
-      }
-    val conditions =
-      fhirEngine.search<Condition> {
-        filter(Condition.SUBJECT, { this.value = "Patient/$patientId" })
-      }
-
-    return mutableListOf<Resource>().apply {
-      add(patient)
-      addAll(observations)
-      addAll(conditions)
-    }
-  }
-
-  fun runCqlFor(patientId: String, context: Context): MutableLiveData<String?> {
-    val result = MutableLiveData("")
-    viewModelScope.launch {
-      val dataBundle = getAllDataFor(patientId)
-      val config =
-        AssetUtil.decodeAsset<ProfileConfig>(fileName = PROFILE_CONFIG, context = context)
-
-      val patient = dataBundle.first { it.isPatient(patientId) }
-      val otherResources = dataBundle.filterNot { it.isPatient(patientId) }
-
-      val data =
-        kotlin
-          .runCatching {
-            libraryEvaluator
-              .runCqlLibrary(
-                libraryId = config.cqlProfileLibraryFilter.code,
-                patient = patient as Patient,
-                data = Bundle().apply { otherResources.forEach { this.addEntry().resource = it } },
-                repository = defaultRepository
-              )
-              .joinToString("\n")
-          }
-          .onFailure { result.postValue(it.stackTraceToString()) }
-          .getOrNull()
-      result.postValue(data)
-    }
-    return result
   }
 
   fun onMenuItemClickListener(@StringRes id: Int) {
