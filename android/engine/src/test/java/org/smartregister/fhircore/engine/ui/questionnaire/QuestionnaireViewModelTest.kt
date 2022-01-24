@@ -621,7 +621,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testExtractAndSaveResourcesWithExperimentalQuestionnaireShouldNotSave() {
     mockkObject(ResourceMapper)
 
-    coEvery { ResourceMapper.extract(any(), any(), any(), any()) } returns
+    coEvery { ResourceMapper.extract(any(), any(), any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = Patient() } }
 
     val questionnaire =
@@ -640,7 +640,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       )
     }
 
-    coVerify { ResourceMapper.extract(any(), any(), any(), any()) }
+    coVerify { ResourceMapper.extract(any(), any(), any(), any(), any()) }
     coVerify(inverse = true) { defaultRepo.addOrUpdate(questionnaireResponse) }
 
     unmockkObject(ResourceMapper)

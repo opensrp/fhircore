@@ -134,11 +134,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
       findViewById<Button>(R.id.btn_save_client_info).apply {
         setOnClickListener(this@QuestionnaireActivity)
-        if (readOnly) {
+        if (readOnly || questionnaire.experimental) {
           text = context.getString(R.string.done)
         } else if (editMode) {
           text = getString(R.string.edit)
-        } else if (questionnaire.experimental) text = context.getString(R.string.done)
+        }
       }
 
       // Only add the fragment once, when the activity is first created.
@@ -203,13 +203,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       if (readOnly) {
         finish()
       } else {
-        showConfirmAlert(
-          context = this,
-          message = R.string.questionnaire_alert_submit_message,
-          title = R.string.questionnaire_alert_submit_title,
-          confirmButtonListener = { handleQuestionnaireSubmit() },
-          confirmButtonText = R.string.str_save
-        )
+        showFormSubmissionConfirmAlert()
       }
     } else {
       showToast(getString(R.string.error_saving_form))

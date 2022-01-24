@@ -247,7 +247,7 @@ class LibraryEvaluator @Inject constructor() {
           // send as result only if outlog needed or is an output param of primitive type
           outputLog -> "${p.name} -> ${getStringRepresentation(it)}"
           p.name.equals(OUTPUT_PARAMETER_KEY) && !it.isResource ->
-            "-> ${getStringRepresentation(it)}"
+            "${p.name} -> ${getStringRepresentation(it)}"
           else -> null
         }
       }
