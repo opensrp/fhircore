@@ -89,4 +89,9 @@
         <string name="no">Hapana</string>
         <string name="yes">Ndio</string>
         <string name="required_constraint_validation_error_msg">Jibu linahitajika</string>
+        <string name="questionnaire_alert_submit_button_title">Hifadhi</string>
+        <string name="form_progress_message">Inachakata data. Tafadhali subiri</string>
+        <string name="questionnaire_alert_test_only_button_title">Chakata</string>
+        <string name="questionnaire_alert_test_only_title">Mchakato wa data ya fomu</string>
+        <string name="questionnaire_alert_test_only_message">Thibitisha kuwa umemaliza kujaza data. Kumbuka hii ni fomu ya majaribio tu na haihifadhi data yoyote</string>
 </resources>
