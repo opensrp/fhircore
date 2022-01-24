@@ -229,7 +229,7 @@ class LibraryEvaluator @Inject constructor() {
     val result =
       libEvaluator!!.evaluate(
         VersionedIdentifier().withId(library.name).withVersion(library.version),
-        if (patient != null) Pair.of("Patient", patient.logicalId) else null,
+        patient?.let { Pair.of("Patient", it.logicalId) },
         null,
         null
       ) as
