@@ -22,7 +22,6 @@ import androidx.paging.PagingState
 import com.google.android.fhir.FhirEngine
 import io.mockk.coEvery
 import io.mockk.mockk
-import io.mockk.mockkObject
 import java.text.SimpleDateFormat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest

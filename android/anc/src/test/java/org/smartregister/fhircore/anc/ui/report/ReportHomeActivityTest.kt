@@ -111,7 +111,7 @@ class ReportHomeActivityTest : ActivityRobolectricTest() {
   }
 
   @After
-  fun cleanup(){
+  fun cleanup() {
     unmockkObject(FileUtil)
   }
 
