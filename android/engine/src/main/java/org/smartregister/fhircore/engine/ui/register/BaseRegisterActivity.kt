@@ -308,7 +308,8 @@ abstract class BaseRegisterActivity :
       if (registerViewConfiguration.newClientButtonStyle.isNotEmpty()) {
         this.background = getDrawable(registerViewConfiguration.newClientButtonStyle)
       }
-      this.text = registerViewConfiguration.newClientButtonText_lang.getString(this@BaseRegisterActivity)
+      this.text =
+        registerViewConfiguration.newClientButtonText_lang.getString(this@BaseRegisterActivity)
     }
   }
 
