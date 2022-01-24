@@ -46,15 +46,16 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.questionnaireResponse
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.assertSubject
+import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -76,7 +77,8 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val transformSupportServices: TransformSupportServices,
   val dispatcherProvider: DispatcherProvider,
-  val sharedPreferencesHelper: SharedPreferencesHelper
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val libraryEvaluator: LibraryEvaluator
 ) : ViewModel() {
 
   private val authenticatedUserInfo by lazy {
@@ -131,6 +133,7 @@ constructor(
   }
 
   fun extractAndSaveResources(
+    context: Context,
     resourceId: String?,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
@@ -141,7 +144,7 @@ constructor(
       handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
 
       if (questionnaire.isExtractionCandidate()) {
-        val bundle = performExtraction(questionnaire, questionnaireResponse)
+        val bundle = performExtraction(context, questionnaire, questionnaireResponse)
 
         bundle.entry.forEach { bun ->
           // add organization to entities representing individuals in registration questionnaire
@@ -184,10 +187,20 @@ constructor(
         if (editMode && editQuestionnaireResponse != null) {
           editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
         }
+
+        questionnaire.cqfLibraryIds().forEach {
+          libraryEvaluator.runCqlLibrary(
+            it,
+            loadPatient(questionnaireResponse.subject.extractId())!!,
+            bundle,
+            defaultRepository
+          )
+        }
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
-        viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
       }
+
+      viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
     }
   }
 
@@ -195,7 +208,7 @@ constructor(
    * Sets questionnaireResponse subject with proper subject-type defined in questionnaire with an
    * existing resourceId or if null generate a new one
    */
-  fun handleQuestionnaireResponseSubject(
+  private fun handleQuestionnaireResponseSubject(
     resourceId: String?,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
@@ -227,11 +240,13 @@ constructor(
   }
 
   suspend fun performExtraction(
+    context: Context,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ): Bundle {
 
     return ResourceMapper.extract(
+      context = context,
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
       structureMapProvider = retrieveStructureMapProvider(),
@@ -239,13 +254,9 @@ constructor(
     )
   }
 
-  fun saveBundleResources(bundle: Bundle) {
-    viewModelScope.launch {
-      if (!bundle.isEmpty) {
-        bundle.entry.forEach { bundleEntry -> defaultRepository.addOrUpdate(bundleEntry.resource) }
-      }
-
-      viewModelScope.launch(Dispatchers.Main) { extractionProgress.postValue(true) }
+  suspend fun saveBundleResources(bundle: Bundle) {
+    if (!bundle.isEmpty) {
+      bundle.entry.forEach { bundleEntry -> defaultRepository.addOrUpdate(bundleEntry.resource) }
     }
   }
 

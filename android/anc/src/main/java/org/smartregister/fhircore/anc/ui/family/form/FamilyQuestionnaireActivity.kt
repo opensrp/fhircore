@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.anc.ui.family.form
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
@@ -24,14 +23,14 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.anc.R
 import org.smartregister.fhircore.anc.data.family.FamilyRepository
-import org.smartregister.fhircore.anc.ui.family.details.FamilyDetailsActivity
-import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
 import org.smartregister.fhircore.anc.util.startAncEnrollment
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.hide
 
@@ -47,106 +46,49 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
     super.onCreate(savedInstanceState)
 
     isEditFamily = intent.extras?.getBoolean(FamilyFormConstants.FAMILY_EDIT_INFO) ?: false
-
     saveBtn = findViewById(org.smartregister.fhircore.engine.R.id.btn_save_client_info)
-    if (isEditFamily) {
-      when (intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!) {
-        FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_anc_client)
-        FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM ->
-          saveBtn.setText(R.string.family_member_update_label)
-        FamilyFormConstants.FAMILY_REGISTER_FORM -> saveBtn.setText(R.string.family_update_label)
-      }
-    } else {
-      when (intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!) {
-        FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_anc_client)
-        FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM ->
-          saveBtn.setText(R.string.family_member_save_label)
-        FamilyFormConstants.FAMILY_REGISTER_FORM -> saveBtn.setText(R.string.family_save_label)
-      }
+
+    val action =
+      if (isEditFamily) getString(R.string.form_action_edit)
+      else getString(R.string.form_action_save)
+
+    when (intent.getStringExtra(QUESTIONNAIRE_ARG_FORM)!!) {
+      FamilyFormConstants.ANC_ENROLLMENT_FORM -> saveBtn.setText(R.string.mark_as_anc_client)
+      FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM ->
+        saveBtn.text = getString(R.string.family_member_save_label, action)
+      FamilyFormConstants.FAMILY_REGISTER_FORM ->
+        saveBtn.text = getString(R.string.family_save_label, action)
     }
   }
 
   override fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
-    lifecycleScope.launch {
-      saveBtn.hide(false)
-      if (isEditFamily) {
-        when (questionnaireConfig.form) {
-          FamilyFormConstants.FAMILY_REGISTER_FORM -> {
-            familyRepository.updateProcessFamilyHead(
-              intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!,
-              questionnaire!!,
-              questionnaireResponse
-            )
-            handlePregnancy(
-              intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!,
-              questionnaireResponse,
-              FamilyFormConstants.FAMILY_REGISTER_FORM
-            )
-          }
-          FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM -> {
-            val relatedTo = intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)
-            familyRepository.updateProcessFamilyMember(
-              intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!,
-              questionnaire!!,
-              questionnaireResponse,
-              relatedTo
-            )
-            handlePregnancy(
-              intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!,
-              questionnaireResponse,
-              FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
-            )
-          }
-        }
-      } else {
-        when (questionnaireConfig.form) {
-          FamilyFormConstants.ANC_ENROLLMENT_FORM -> {
-            val patientId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY)!!
-            familyRepository.enrollIntoAnc(questionnaire, questionnaireResponse, patientId)
-            endActivity()
-          }
-          FamilyFormConstants.FAMILY_REGISTER_FORM -> {
-            val patientId =
-              familyRepository.postProcessFamilyHead(questionnaire, questionnaireResponse)
-            familyRepository.fhirEngine.load(Patient::class.java, patientId).run {
-              questionnaireViewModel.appendOrganizationInfo(this)
+    saveBtn.hide(false)
 
-              familyRepository.fhirEngine.save(this)
-            }
-            addOrganizationToPatient(patientId)
+    questionnaireViewModel.extractAndSaveResources(
+      this,
+      intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
+      questionnaire,
+      questionnaireResponse,
+      isEditFamily
+    )
+  }
 
-            handlePregnancy(
-              patientId = patientId,
-              questionnaireResponse = questionnaireResponse,
-              ancEnrollmentForm = FamilyFormConstants.FAMILY_REGISTER_FORM
-            )
-          }
-          FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM -> {
-            val relatedTo = intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)
-            val patientId =
-              familyRepository.postProcessFamilyMember(
-                questionnaire = questionnaire,
-                questionnaireResponse = questionnaireResponse,
-                relatedTo = relatedTo
-              )
-            addOrganizationToPatient(patientId)
-
-            handlePregnancy(
-              patientId = patientId,
-              questionnaireResponse = questionnaireResponse,
-              ancEnrollmentForm = FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM
-            )
-          }
-        }
-      }
+  override fun populateInitialValues(questionnaire: Questionnaire) {
+    if (questionnaireConfig.form == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
+      questionnaire.find(HEAD_RECORD_ID_KEY)!!.initialFirstRep.value =
+        StringType(intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!)
     }
   }
 
-  suspend fun addOrganizationToPatient(patientId: String) {
-    familyRepository.fhirEngine.load(Patient::class.java, patientId).run {
-      questionnaireViewModel.appendOrganizationInfo(this)
+  override fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
+    lifecycleScope.launch {
+      val patientId = questionnaireResponse.subject.extractId()
 
-      familyRepository.fhirEngine.save(this)
+      if (questionnaireConfig.form == FamilyFormConstants.ANC_ENROLLMENT_FORM) {
+        finish()
+      } else {
+        handlePregnancy(patientId, questionnaireResponse)
+      }
     }
   }
 
@@ -156,21 +98,7 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
       .setCancelable(false)
       .setNegativeButton(R.string.unsaved_changes_neg) { dialogInterface, _ ->
         dialogInterface.dismiss()
-        if (isEditFamily) {
-          finish()
-        } else {
-          if (questionnaireConfig.form == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
-            startActivity(
-              Intent(this, FamilyDetailsActivity::class.java).apply {
-                putExtra(
-                  QUESTIONNAIRE_ARG_PATIENT_KEY,
-                  intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!
-                )
-              }
-            )
-          }
-          finish()
-        }
+        finish()
       }
       .setPositiveButton(R.string.unsaved_changes_pos) { dialogInterface, _ ->
         dialogInterface.dismiss()
@@ -178,45 +106,25 @@ class FamilyQuestionnaireActivity : QuestionnaireActivity() {
       .show()
   }
 
-  private fun handlePregnancy(
-    patientId: String,
-    questionnaireResponse: QuestionnaireResponse,
-    ancEnrollmentForm: String
-  ) {
-    val pregnantItem = questionnaireResponse.find(IS_PREGNANT_KEY)
-    val pregnancy = pregnantItem?.answer?.firstOrNull()?.valueBooleanType?.booleanValue()
+  private fun handlePregnancy(patientId: String, questionnaireResponse: QuestionnaireResponse) {
+    val pregnancy =
+      questionnaireResponse
+        .find(IS_PREGNANT_KEY)
+        ?.answer
+        ?.firstOrNull()
+        ?.valueBooleanType
+        ?.booleanValue()
     if (pregnancy == true) {
       this.startAncEnrollment(patientId)
     } else {
-      if (isEditFamily) {
-        finish()
-      } else {
-        if (ancEnrollmentForm == FamilyFormConstants.FAMILY_MEMBER_REGISTER_FORM) {
-          startActivity(
-            Intent(this, FamilyDetailsActivity::class.java).apply {
-              putExtra(
-                QUESTIONNAIRE_ARG_PATIENT_KEY,
-                intent.getStringExtra(QUESTIONNAIRE_RELATED_TO_KEY)!!
-              )
-            }
-          )
-          endActivity()
-        } else endActivity()
-      }
+      finish()
     }
-  }
-
-  private fun endActivity() {
-    when (intent.getStringExtra(QUESTIONNAIRE_CALLING_ACTIVITY) ?: "") {
-      FamilyRegisterActivity::class.java.name ->
-        startActivity(Intent(this, FamilyRegisterActivity::class.java))
-    }
-    finish()
   }
 
   companion object {
     const val QUESTIONNAIRE_RELATED_TO_KEY = "questionnaire-related-to"
     const val QUESTIONNAIRE_CALLING_ACTIVITY = "questionnaire-calling-activity"
     const val IS_PREGNANT_KEY = "is_pregnant"
+    const val HEAD_RECORD_ID_KEY = "head_record_id"
   }
 }

@@ -25,9 +25,9 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
-import io.mockk.verify
 import java.text.SimpleDateFormat
 import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -40,6 +40,7 @@ import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PositiveIntType
 import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -84,7 +85,8 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
         transformSupportServices = mockk(),
         patientRepository = mockk(),
         dispatcherProvider = DefaultDispatcherProvider(),
-        sharedPreferencesHelper = mockk()
+        sharedPreferencesHelper = mockk(),
+        libraryEvaluator = mockk()
       )
     )
 
@@ -116,7 +118,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testHandleQuestionnaireResponseWithDose2ShouldShowAlert() = runBlockingTest {
-    coEvery { recordVaccineViewModel.performExtraction(any(), any()) } returns
+    coEvery { recordVaccineViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
     coEvery { recordVaccineViewModel.loadLatestVaccine(any()) } returns
@@ -135,7 +137,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testHandleQuestionnaireResponseShouldCallSaveBundleResources() = runBlockingTest {
-    coEvery { recordVaccineViewModel.performExtraction(any(), any()) } returns
+    coEvery { recordVaccineViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
     coEvery { recordVaccineViewModel.loadLatestVaccine(any()) } returns
@@ -143,7 +145,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
     recordVaccineActivity.handleQuestionnaireResponse(mockk())
 
-    verify { recordVaccineViewModel.saveBundleResources(any()) }
+    coVerify { recordVaccineViewModel.saveBundleResources(any()) }
   }
 
   @Test
@@ -153,7 +155,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
     ReflectionHelpers.setField(recordVaccineActivity, "savedImmunization", savedImmunization)
 
-    recordVaccineActivity.postSaveSuccessful()
+    recordVaccineActivity.postSaveSuccessful(QuestionnaireResponse())
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
 
@@ -172,7 +174,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
     ReflectionHelpers.setField(recordVaccineActivity, "savedImmunization", savedImmunization)
 
-    recordVaccineActivity.postSaveSuccessful()
+    recordVaccineActivity.postSaveSuccessful(QuestionnaireResponse())
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
 
@@ -186,7 +188,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testVerifyRecordedVaccineSavedDialogProperty() = runBlockingTest {
-    coEvery { recordVaccineViewModel.performExtraction(any(), any()) } returns
+    coEvery { recordVaccineViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
     coEvery { recordVaccineViewModel.loadLatestVaccine(any()) } returns
@@ -220,7 +222,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testShowVaccineRecordDialogShouldShowNextDue() {
-    coEvery { recordVaccineViewModel.performExtraction(any(), any()) } returns
+    coEvery { recordVaccineViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
     coEvery { recordVaccineViewModel.loadLatestVaccine(any()) } returns
@@ -244,7 +246,7 @@ class RecordVaccineActivityTest : ActivityRobolectricTest() {
   @Test
   fun testShowVaccineRecordDialogShouldShowFullyVaccinated() {
 
-    coEvery { recordVaccineViewModel.performExtraction(any(), any()) } returns
+    coEvery { recordVaccineViewModel.performExtraction(any(), any(), any()) } returns
       Bundle().apply { addEntry().apply { resource = getImmunization() } }
 
     coEvery { recordVaccineViewModel.loadLatestVaccine(any()) } returns

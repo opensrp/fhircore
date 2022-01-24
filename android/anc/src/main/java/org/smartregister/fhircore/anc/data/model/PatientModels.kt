@@ -39,7 +39,8 @@ data class PatientItem(
   val address: String = "",
   val isPregnant: Boolean? = null,
   val visitStatus: VisitStatus = VisitStatus.PLANNED,
-  val isHouseHoldHead: Boolean? = null
+  val isHouseHoldHead: Boolean? = null,
+  val headId: String? = null
 )
 
 fun PatientItem.demographics() = "$name, $gender, ${birthDate.toAgeDisplay()}"
@@ -106,5 +107,37 @@ data class PatientVitalItem(
   var bpds: String = "",
   var bpdsUnit: String = "",
   var pulse: String = "",
-  var pulseUnit: String = ""
-)
+  var pulseUnit: String = "",
+  var bmi: String = "",
+  var bmiUnit: String = ""
+) {
+  fun isValidWeightAndHeight(): Boolean {
+    return weight.isNotEmpty() &&
+      height.isNotEmpty() &&
+      weight.toDouble() > 0 &&
+      height.toDouble() > 0
+  }
+
+  fun isWeightAndHeightAreInMetricUnit(): Boolean {
+    return weightUnit.equals(UnitConstants.UNIT_WEIGHT_METRIC, true) &&
+      heightUnit.equals(UnitConstants.UNIT_HEIGHT_METRIC, true)
+  }
+
+  fun isWeightAndHeightAreInUscUnit(): Boolean {
+    return weightUnit.equals(UnitConstants.UNIT_WEIGHT_USC, true) &&
+      heightUnit.equals(UnitConstants.UNIT_HEIGHT_USC, true)
+  }
+}
+
+object UnitConstants {
+  const val UNIT_WEIGHT_METRIC = "kg"
+  const val UNIT_HEIGHT_METRIC = "cm"
+  const val UNIT_CODE_WEIGHT_METRIC = "kg"
+  const val UNIT_CODE_HEIGHT_METRIC = "cm"
+  const val UNIT_BMI_METRIC = "kg/m2"
+  const val UNIT_WEIGHT_USC = "lb"
+  const val UNIT_HEIGHT_USC = "in"
+  const val UNIT_CODE_WEIGHT_USC = "[lb_av]"
+  const val UNIT_CODE_HEIGHT_USC = "[in_i]"
+  const val UNIT_BMI_USC = "kg/m2" // can be set as lb/in2
+}

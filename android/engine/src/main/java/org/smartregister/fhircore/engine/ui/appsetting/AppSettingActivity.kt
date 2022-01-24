@@ -20,6 +20,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import dagger.hilt.android.AndroidEntryPoint
@@ -42,6 +43,7 @@ class AppSettingActivity : AppCompatActivity() {
   val appSettingViewModel: AppSettingViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
+    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     super.onCreate(savedInstanceState)
     appSettingViewModel.loadConfigs.observe(
       this,
@@ -51,9 +53,15 @@ class AppSettingActivity : AppCompatActivity() {
           configurationRegistry.loadAppConfigurations(
             appId = applicationId,
             accountAuthenticator = accountAuthenticator
-          ) {
-            sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
-            finish()
+          ) { loadSuccessful: Boolean ->
+            if (loadSuccessful) {
+              sharedPreferencesHelper.write(APP_ID_CONFIG, applicationId)
+              finish()
+            } else {
+              showToast(
+                getString(R.string.application_not_supported, appSettingViewModel.appId.value)
+              )
+            }
           }
         } else if (loadConfigs != null && !loadConfigs)
           showToast(getString(R.string.application_not_supported, appSettingViewModel.appId.value))

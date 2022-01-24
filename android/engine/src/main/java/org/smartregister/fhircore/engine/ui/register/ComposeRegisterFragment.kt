@@ -48,21 +48,23 @@ abstract class ComposeRegisterFragment<I : Any, O : Any> : BaseRegisterFragment<
           val pagingItems = registerData.value.collectAsLazyPagingItems()
           val showResultsCount by registerDataViewModel.showResultsCount.observeAsState(false)
           val showLoader by registerDataViewModel.showLoader.observeAsState(false)
-
-          if (showLoader) LoaderDialog(modifier = Modifier)
+          val modifier = Modifier
+          if (showLoader) LoaderDialog(modifier = modifier)
           PaginatedRegister(
             loadState = pagingItems.loadState.refresh,
             showResultsCount = showResultsCount,
             resultCount = pagingItems.itemCount,
-            body = { ConstructRegisterList(pagingItems) },
+            body = { ConstructRegisterList(pagingItems, modifier) },
             currentPage = registerDataViewModel.currentPage(),
             pagesCount = registerDataViewModel.countPages(),
             previousButtonClickListener = { registerDataViewModel.previousPage() },
-            nextButtonClickListener = { registerDataViewModel.nextPage() }
+            nextButtonClickListener = { registerDataViewModel.nextPage() },
+            modifier = modifier
           )
         }
       }
     }
 
-  @Composable abstract fun ConstructRegisterList(pagingItems: LazyPagingItems<O>)
+  @Composable
+  abstract fun ConstructRegisterList(pagingItems: LazyPagingItems<O>, modifier: Modifier)
 }

@@ -36,6 +36,8 @@ import com.google.android.fhir.datacapture.views.QuestionnaireItemViewHolderFact
 import com.google.android.fhir.datacapture.views.QuestionnaireItemViewItem
 import com.google.android.material.button.MaterialButton
 import id.zelory.compressor.Compressor.compress
+import id.zelory.compressor.constraint.quality
+import id.zelory.compressor.constraint.size
 import id.zelory.compressor.extension
 import java.io.File
 import kotlinx.coroutines.launch
@@ -45,6 +47,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.databinding.CustomPhotoCaptureLayoutBinding
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.encodeToByteArray
 import org.smartregister.fhircore.engine.util.extension.hide
 import org.smartregister.fhircore.engine.util.extension.show
@@ -75,7 +78,11 @@ class CustomPhotoCaptureFactory(
       if (result) {
         lifecycleScope
           .launch(dispatcher.io()) {
-            imageFile = compress(context, imageFile)
+            imageFile =
+              compress(context, imageFile) {
+                quality(30)
+                size(64_000)
+              }
             val imageBitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
             loadThumbnail(imageBitmap)
             val imageBytes = imageBitmap.encodeToByteArray()
@@ -146,11 +153,22 @@ class CustomPhotoCaptureFactory(
           imageFile = createImageFile()
           launchCamera()
         }
+        questionnaireItemViewItem.singleAnswerOrNull?.valueAttachment?.data?.decodeToBitmap()
+          ?.let { imageBitmap -> loadThumbnail(imageBitmap) }
+        setReadOnly(questionnaireItemViewItem.questionnaireItem.readOnly)
         questionnaireItemViewItem.singleAnswerOrNull = questionnaireResponse
       }
 
       override fun displayValidationResult(validationResult: ValidationResult) {
         // Custom validation message
+      }
+
+      // TODO -> Should use the overridden setReadOnly()
+      // after upgrading Data Capture library to Beta
+
+      override fun setReadOnly(isReadOnly: Boolean) {
+        ivThumbnail.isEnabled = !isReadOnly
+        btnTakePhoto.isEnabled = !isReadOnly
       }
     }
 

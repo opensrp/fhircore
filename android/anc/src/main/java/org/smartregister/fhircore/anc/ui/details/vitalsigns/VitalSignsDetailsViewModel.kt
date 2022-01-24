@@ -26,8 +26,11 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Observation
 import org.smartregister.fhircore.anc.data.model.EncounterItem
 import org.smartregister.fhircore.anc.data.model.PatientVitalItem
+import org.smartregister.fhircore.anc.data.model.UnitConstants
 import org.smartregister.fhircore.anc.data.patient.PatientRepository
 import org.smartregister.fhircore.anc.ui.anccare.details.EncounterItemMapper
+import org.smartregister.fhircore.anc.util.computeBmiViaMetricUnits
+import org.smartregister.fhircore.anc.util.computeBmiViaUscUnits
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @HiltViewModel
@@ -83,6 +86,35 @@ constructor(val patientRepository: PatientRepository, var dispatcher: Dispatcher
 
       patientVitalItem.spO2 = observationValueOrDefault(listObservationspO2)
       patientVitalItem.spO2Unit = listObservationspO2.valueQuantity.unit ?: ""
+
+      // Todo: confirm if BMI can be displayed from
+      //  Add-Vitals height/weight if its of same Units
+      if (patientVitalItem.bmi.isEmpty() && patientVitalItem.isValidWeightAndHeight()) {
+        when {
+          patientVitalItem.isWeightAndHeightAreInMetricUnit() -> {
+            patientVitalItem.bmi =
+              computeBmiViaMetricUnits(
+                  patientVitalItem.height.toDouble(),
+                  patientVitalItem.weight.toDouble()
+                )
+                .toString()
+            patientVitalItem.bmiUnit = UnitConstants.UNIT_BMI_METRIC
+          }
+          patientVitalItem.isWeightAndHeightAreInUscUnit() -> {
+            patientVitalItem.bmi =
+              computeBmiViaUscUnits(
+                  patientVitalItem.height.toDouble(),
+                  patientVitalItem.weight.toDouble()
+                )
+                .toString()
+            // Todo: confirm if bmi unit can be displayed in lb/in2 or only in kg/m2
+            patientVitalItem.bmiUnit = UnitConstants.UNIT_BMI_USC
+          }
+          else -> {
+            patientVitalItem.bmi = "N/A"
+          }
+        }
+      }
 
       patientAncOverviewItem.postValue(patientVitalItem)
     }

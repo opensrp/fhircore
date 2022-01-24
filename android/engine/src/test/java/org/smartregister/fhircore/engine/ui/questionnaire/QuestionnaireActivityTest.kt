@@ -77,7 +77,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         configurationRegistry = mockk(),
         transformSupportServices = mockk(),
         dispatcherProvider = mockk(),
-        sharedPreferencesHelper = mockk()
+        sharedPreferencesHelper = mockk(),
+        libraryEvaluator = mockk()
       )
     )
 
@@ -223,7 +224,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     questionnaireActivity.handleQuestionnaireResponse(QuestionnaireResponse())
 
-    verify { questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any()) }
+    verify { questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any(), any()) }
   }
 
   @Test
@@ -240,7 +241,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     )
 
     verify(timeout = 2000) {
-      questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any())
+      questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any(), any())
     }
   }
 
@@ -260,7 +261,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     )
 
     verify(inverse = true) {
-      questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any())
+      questionnaireViewModel.extractAndSaveResources(any(), any(), any(), any(), any())
     }
   }
 
