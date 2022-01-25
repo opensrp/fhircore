@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.mwcore.util
+package org.smartregister.fhircore.mwcore.configuration.view
 
-import org.smartregister.fhircore.engine.configuration.ConfigClassification
+import androidx.compose.runtime.Stable
+import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.Configuration
 
-enum class MwCoreConfigClassification : ConfigClassification {
-  PATIENT_REGISTER,
-  PATIENT_REGISTER_ROW,
-  TEST_RESULT_DETAIL_VIEW,
-  PATIENT_DETAILS_VIEW;
-  override val classification: String = name.lowercase()
-}
+@Stable
+@Serializable
+class DetailViewConfiguration(
+  override val appId: String,
+  override val classification: String,
+  val label: String = "",
+  val rows: List<DetailViewRowConfiguration>
+) : Configuration
+
+@Stable @Serializable class DetailViewRowConfiguration(val filters: List<Filter>)

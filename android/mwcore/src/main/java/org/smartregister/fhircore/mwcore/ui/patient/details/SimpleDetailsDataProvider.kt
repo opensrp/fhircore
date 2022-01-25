@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.mwcore.util
+package org.smartregister.fhircore.mwcore.ui.patient.details
 
-import org.smartregister.fhircore.engine.configuration.ConfigClassification
+import androidx.lifecycle.LiveData
+import org.smartregister.fhircore.mwcore.data.patient.model.DetailsViewItem
 
-enum class MwCoreConfigClassification : ConfigClassification {
-  PATIENT_REGISTER,
-  PATIENT_REGISTER_ROW,
-  TEST_RESULT_DETAIL_VIEW,
-  PATIENT_DETAILS_VIEW;
-  override val classification: String = name.lowercase()
+interface SimpleDetailsDataProvider {
+  val detailsViewItem: LiveData<DetailsViewItem>
+  val onBackPressClicked: LiveData<Boolean>
+
+  fun onBackPressed(back: Boolean)
 }
