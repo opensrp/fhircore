@@ -26,10 +26,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement.End
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -175,9 +172,9 @@ fun HorizontalPager(
 @Composable
 fun TabWithPager(questPatientDetailViewModel: QuestPatientDetailViewModel) {
   val tabData = listOf(
-    "Demographic" to Icons.Filled.Home,
-    "Visit" to Icons.Filled.ShoppingCart,
-    "History" to Icons.Filled.AccountBox,
+    "Details" to Icons.Filled.Feed,
+    "Visit" to Icons.Filled.DirectionsRun,
+    "History" to Icons.Filled.History,
   )
   val pagerState = rememberPagerState(
     pageCount = tabData.size,
@@ -270,7 +267,14 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
         IconButton(
           onClick = { questPatientDetailViewModel.onBackPressed(true) },
           Modifier.testTag(TOOLBAR_BACK_ARROW),
-        ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow",) }
+        ) {
+          Image(
+            painter = painterResource(id = R.drawable.ic_arrow_back),
+            contentDescription = "",
+            colorFilter = ColorFilter.tint(colorResource(id = R.color.white))
+          )
+
+        }
 
         Text(
           text =
@@ -289,7 +293,11 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
         IconButton(
           onClick = { showMenu = !showMenu },
           modifier = Modifier
-        ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)}
+        ) { Image(
+          painter = painterResource(id = R.drawable.ic_more_vert),
+          contentDescription = "",
+          colorFilter = ColorFilter.tint(colorResource(id = R.color.white))
+        )}
         DropdownMenu(
           expanded = showMenu,
           onDismissRequest = { showMenu = false },
