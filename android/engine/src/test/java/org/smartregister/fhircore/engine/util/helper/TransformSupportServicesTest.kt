@@ -117,12 +117,14 @@ class TransformSupportServicesTest : RobolectricTest() {
 
   @Test
   fun `createResource() should add resource into output when given Patient and atRootOfTransForm as True`() {
+    Assert.assertEquals(transformSupportServices.outputs.size, 0)
     transformSupportServices.createResource("", Patient(), true)
     Assert.assertEquals(transformSupportServices.outputs.size, 1)
   }
 
   @Test
   fun `createResource() should not add resource into output when given Patient and atRootOfTransForm as False`() {
+    Assert.assertEquals(transformSupportServices.outputs.size, 0)
     transformSupportServices.createResource("", Patient(), false)
     Assert.assertEquals(transformSupportServices.outputs.size, 0)
   }
