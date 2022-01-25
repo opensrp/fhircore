@@ -29,7 +29,7 @@ jobs:
         run: echo $KEYSTORE_FILE > keystore.jks
 
       - name: Generate local.properties file
-        run: echo $KEYSTORE_FILE > local.properties
+        run: echo $LOCAL_PROPERTIES_FILE > local.properties
         run: chmod +x gradlew
         working-directory: android
 
