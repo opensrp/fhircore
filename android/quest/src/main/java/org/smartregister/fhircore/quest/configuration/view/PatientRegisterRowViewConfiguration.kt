@@ -40,6 +40,7 @@ data class Filter(
   val extractionKey: String? = null,
   val displayableProperty: String = key,
   val valuePrefix: String? = null,
+  val valuePostfix: String? = null,
   val label: String? = null,
   val valueType: Enumerations.DataType,
   val valueCoding: Code?,

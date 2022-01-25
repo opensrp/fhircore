@@ -21,10 +21,8 @@ import android.content.Intent
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import javax.inject.Inject
-import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
-import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -39,7 +37,8 @@ import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.util.getSearchResults
 
-class QuestDetailConfigParser @Inject constructor(fhirEngine: FhirEngine) : DetailConfigParser(fhirEngine) {
+class QuestDetailConfigParser @Inject constructor(fhirEngine: FhirEngine) :
+  DetailConfigParser(fhirEngine) {
 
   override suspend fun getResultItem(
     questionnaire: Questionnaire,
@@ -58,19 +57,19 @@ class QuestDetailConfigParser @Inject constructor(fhirEngine: FhirEngine) : Deta
           )
 
         return QuestResultItem(Pair(questionnaireResponse, questionnaire), data)
-      } else -> {
-      val encounterId = getEncounterId(questionnaireResponse)
-     // val encounter = loadEncounter(encounterId)
+      }
+      else -> {
+        val encounterId = getEncounterId(questionnaireResponse)
+        // val encounter = loadEncounter(encounterId)
 
-      val data : MutableList<List<AdditionalData>> = mutableListOf()
+        val data: MutableList<List<AdditionalData>> = mutableListOf()
 
-      patientDetailsViewConfiguration.dynamicRows.forEach { filters ->
+        patientDetailsViewConfiguration.dynamicRows.forEach { filters ->
+          val additionalDataList = mutableListOf<AdditionalData>()
 
-        val additionalDataList = mutableListOf<AdditionalData>()
+          filters.forEach { filter ->
 
-        filters.forEach { filter ->
-
-/*          val value =
+            /*          val value =
             when (filter.resourceType) {
               Enumerations.ResourceType.CONDITION ->
                 getCondition(encounter, filter)?.code?.codingFirstRep
@@ -78,13 +77,12 @@ class QuestDetailConfigParser @Inject constructor(fhirEngine: FhirEngine) : Deta
               else -> null
             }*/
 
-          additionalDataList.add(AdditionalData(value = ""))
-
+            additionalDataList.add(AdditionalData(value = ""))
+          }
+          data.add(additionalDataList)
         }
-        data.add(additionalDataList)
-      }
 
-      return QuestResultItem(Pair(questionnaireResponse, questionnaire), data)
+        return QuestResultItem(Pair(questionnaireResponse, questionnaire), data)
       }
     }
   }
@@ -127,24 +125,24 @@ class QuestDetailConfigParser @Inject constructor(fhirEngine: FhirEngine) : Deta
 
   suspend fun getCondition(encounter: Encounter, filter: Filter): Condition? {
     return getSearchResults<Condition>(
-      encounter.referenceValue(),
-      Condition.ENCOUNTER,
-      filter,
-      fhirEngine
-    )
+        encounter.referenceValue(),
+        Condition.ENCOUNTER,
+        filter,
+        fhirEngine
+      )
       .firstOrNull()
   }
 
   suspend fun getObservation(encounter: Encounter, filter: Filter): Observation? {
     return getSearchResults<Observation>(
-      encounter.referenceValue(),
-      Observation.ENCOUNTER,
-      filter,
-      fhirEngine
-    )
+        encounter.referenceValue(),
+        Observation.ENCOUNTER,
+        filter,
+        fhirEngine
+      )
       .firstOrNull()
   }
 
-/*  suspend fun loadEncounter(id: String): Encounter =
-    withContext(dispatcherProvider.io()) { fhirEngine.load(Encounter::class.java, id) }*/
+  /*  suspend fun loadEncounter(id: String): Encounter =
+  withContext(dispatcherProvider.io()) { fhirEngine.load(Encounter::class.java, id) }*/
 }

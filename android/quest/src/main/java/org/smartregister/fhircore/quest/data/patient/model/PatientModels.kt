@@ -37,6 +37,7 @@ data class AdditionalData(
   val label: String? = null,
   val value: String,
   var valuePrefix: String? = null,
+  var valuePostfix: String? = null,
   val properties: Properties? = null
 )
 

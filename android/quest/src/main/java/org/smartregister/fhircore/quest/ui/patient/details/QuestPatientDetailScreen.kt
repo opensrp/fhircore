@@ -144,7 +144,7 @@ fun ResultItem(
             }
 
             Text(
-              text = (item.valuePrefix ?: "") + item.value,
+              text = (item.valuePrefix ?: "") + item.value + (item.valuePostfix ?: ""),
               color =
                 Color(
                   android.graphics.Color.parseColor(item.properties?.value?.color ?: "#000000")
@@ -231,7 +231,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
             }
 
             Text(
-              text = (it.valuePrefix ?: "") + it.value,
+              text = (it.valuePrefix ?: "") + it.value + (it.valuePostfix ?: ""),
               color =
                 Color(android.graphics.Color.parseColor(it.properties?.value?.color ?: "#000000")),
               fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,

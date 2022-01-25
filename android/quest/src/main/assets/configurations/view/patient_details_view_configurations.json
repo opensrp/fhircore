@@ -12,71 +12,72 @@
     "contentTitle": "TEST RESULTS",
     "dynamicRows": [
       [
-        [
-          {
-            "resourceType": "CONDITION",
-            "key": "category",
-            "valueType": "CODEABLECONCEPT",
-            "valueCoding": {
-              "system": "http://snomed.info/sct",
-              "code": "9024005"
-            }
-          },
-          {
-            "resourceType": "CONDITION",
-            "key": "category",
-            "valueType": "CODEABLECONCEPT",
-            "valueCoding": {
-              "system": "http://snomed.info/sct",
-              "code": "9024005"
-            },
-            "extractionKey": "recordedDate"
+        {
+          "resourceType": "CONDITION",
+          "key": "category",
+          "displayableProperty": "code",
+          "valueType": "CODEABLECONCEPT",
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "9024005"
           }
-        ]
+        },
+        {
+          "resourceType": "CONDITION",
+          "key": "category",
+          "displayableProperty": "recordedDate",
+          "valueType": "CODEABLECONCEPT",
+          "valuePrefix": " (",
+          "valuePostfix": ")",
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "9024005"
+          }
+        }
       ],
       [
-        [
-          {
-            "resourceType": "OBSERVATION",
-            "key": "code",
-            "valueType": "CODEABLECONCEPT",
-            "label": "G6PD: ",
-            "valueCoding": {
-              "system": "http://snomed.info/sct",
-              "code": "86859003"
-            },
-            "properties": {
-              "label": {
-                "color": "#74787A",
-                "textSize": 16
-              },
-              "value": {
-                "color": "#74787A",
-                "textSize": 16
-              }
-            }
+        {
+          "resourceType": "OBSERVATION",
+          "key": "code",
+          "displayableProperty": "value",
+          "valueType": "CODEABLECONCEPT",
+          "label": "G6PD: ",
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "86859003"
           },
-          {
-            "resourceType": "OBSERVATION",
-            "key": "code",
-            "valueType": "CODEABLECONCEPT",
-            "label": " - Hb: ",
-            "valueCoding": {
-              "system": "http://snomed.info/sct",
-              "code": "259695003"
+          "properties": {
+            "label": {
+              "color": "#74787A",
+              "textSize": 16
             },
-            "properties": {
-              "label": {
-                "color": "#74787A",
-                "textSize": 16
-              },
-              "value": {
-                "color": "#74787A",
-                "textSize": 16
-              }
+            "value": {
+              "color": "#74787A",
+              "textSize": 16
             }
           }
-        ]
+        },
+        {
+          "resourceType": "OBSERVATION",
+          "key": "code",
+          "displayableProperty": "value",
+          "valueType": "CODEABLECONCEPT",
+          "label": " - Hb: ",
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "259695003"
+          },
+          "properties": {
+            "label": {
+              "color": "#74787A",
+              "textSize": 16
+            },
+            "value": {
+              "color": "#74787A",
+              "textSize": 16
+            }
+          }
+        }
       ]
     ]
   }
