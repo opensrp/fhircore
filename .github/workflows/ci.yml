@@ -31,7 +31,6 @@ jobs:
       - name: Generate local.properties file
         run: echo $LOCAL_PROPERTIES_FILE > local.properties
         run: chmod +x gradlew
-        working-directory: android
 
   engine-tests:
     runs-on: ubuntu-latest
