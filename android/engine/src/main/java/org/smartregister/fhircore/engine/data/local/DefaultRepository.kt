@@ -91,7 +91,7 @@ constructor(
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         resource.generateMissingId()
-        resource.meta.tag = listOf(appTag(configurationRegistry.appId))
+        resource.meta.tag.add(appTag(configurationRegistry.appId))
         fhirEngine.save(resource)
       }
     }
