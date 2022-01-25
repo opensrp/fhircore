@@ -4,8 +4,8 @@
         <string name="empty_client_list_message_title">Hakuna Matokeo</string>
         <string name="empty_client_list_message_details">Pole, hatukupata mteja kwa hilo Jina wala ID</string>
         <string name="search_hint">Tafuta jina ama ID</string>
-        <string name="str_next">Ijayo &gt;&gt;</string>
-        <string name="str_previous">&lt;&lt; Iliyopita</string>
+        <string name="str_next">Ijayo</string>
+        <string name="str_previous">Iliyopita</string>
         <string name="str_page_info">Ukurasa %1$d of %2$d</string>
         <string name="status_vaccinated">Amechanjwa</string>
         <string name="status_overdue">Imechelewa</string>
@@ -89,4 +89,9 @@
         <string name="no">Hapana</string>
         <string name="yes">Ndio</string>
         <string name="required_constraint_validation_error_msg">Jibu linahitajika</string>
+        <string name="questionnaire_alert_submit_button_title">Hifadhi</string>
+        <string name="form_progress_message">Inachakata data. Tafadhali subiri</string>
+        <string name="questionnaire_alert_test_only_button_title">Chakata</string>
+        <string name="questionnaire_alert_test_only_title">Mchakato wa data ya fomu</string>
+        <string name="questionnaire_alert_test_only_message">Thibitisha kuwa umemaliza kujaza data. Kumbuka hii ni fomu ya majaribio tu na haihifadhi data yoyote</string>
 </resources>

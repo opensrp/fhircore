@@ -33,13 +33,11 @@ import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposab
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_RESPONSE
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.AssetUtil
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.configuration.parser.DetailConfigParser
 import org.smartregister.fhircore.quest.configuration.parser.QuestDetailConfigParser
 import org.smartregister.fhircore.quest.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
@@ -50,15 +48,14 @@ import org.smartregister.fhircore.quest.util.QuestConfigClassification
 class QuestPatientDetailActivity :
   BaseMultiLanguageActivity(), ConfigurableComposableView<PatientDetailsViewConfiguration> {
 
+  private lateinit var profileConfig: QuestPatientDetailViewModel.ProfileConfig
+  private lateinit var patientDetailConfig: PatientDetailsViewConfiguration
   private lateinit var patientId: String
   @Inject lateinit var parser: QuestDetailConfigParser
 
   val patientViewModel by viewModels<QuestPatientDetailViewModel>()
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
-
-  lateinit var patientDetailConfig: PatientDetailsViewConfiguration
-  lateinit var profileConfig: QuestPatientDetailViewModel.ProfileConfig
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -82,10 +79,7 @@ class QuestPatientDetailActivity :
 
     // TODO Load binary resources
     profileConfig =
-      AssetUtil.decodeAsset<QuestPatientDetailViewModel.ProfileConfig>(
-        fileName = QuestPatientDetailViewModel.PROFILE_CONFIG,
-        this
-      )
+      AssetUtil.decodeAsset(fileName = QuestPatientDetailViewModel.PROFILE_CONFIG, this)
 
     if (configurationRegistry.isAppIdInitialized()) {
       configureViews(patientDetailConfig)
@@ -141,19 +135,19 @@ class QuestPatientDetailActivity :
         data?.getStringExtra(QUESTIONNAIRE_RESPONSE)?.let {
           val response =
             FhirContext.forR4().newJsonParser().parseResource(it) as QuestionnaireResponse
-          // TODO replace with proper implementation
-          if (data.getStringExtra(QUESTIONNAIRE_ARG_FORM)?.equals("14222") == false)
-            response.contained.find { it.resourceType == ResourceType.Encounter }?.logicalId?.let {
-              startActivity(
-                Intent(this, SimpleDetailsActivity::class.java).apply {
-                  putExtra(RECORD_ID_ARG, it.replace("#", ""))
-                }
-              )
-            }
+          response.contained.find { it.resourceType == ResourceType.Encounter }?.logicalId?.let {
+            startActivity(
+              Intent(this, SimpleDetailsActivity::class.java).apply {
+                putExtra(RECORD_ID_ARG, it.replace("#", ""))
+              }
+            )
+          }
         }
       }
   }
 
+  // TODO https://github.com/opensrp/fhircore/issues/961
+  // allow handling the data back and forth between activities via workflow or config
   private fun launchQuestionnaireForm(questionnaireConfig: QuestionnaireConfig?) {
     if (questionnaireConfig != null) {
       startActivityForResult(

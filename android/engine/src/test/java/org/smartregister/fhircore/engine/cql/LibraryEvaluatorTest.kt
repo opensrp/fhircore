@@ -106,7 +106,7 @@ class LibraryEvaluatorTest {
     val resource = Patient().apply { id = "123" }
     val resourceStr = FhirContext.forR4().newJsonParser().encodeResourceToString(resource)
 
-    val result = evaluator!!.getStringValue(resource)
+    val result = evaluator!!.getStringRepresentation(resource)
 
     Assert.assertEquals(resourceStr, result)
   }
@@ -116,7 +116,7 @@ class LibraryEvaluatorTest {
     val type = DecimalType(123)
     val typeStr = type.toString()
 
-    val result = evaluator!!.getStringValue(type)
+    val result = evaluator!!.getStringRepresentation(type)
 
     Assert.assertEquals(typeStr, result)
   }
@@ -170,9 +170,7 @@ class LibraryEvaluatorTest {
       evaluator!!.runCqlLibrary(
         cqlLibrary.logicalId,
         patient,
-        dataBundle.entry.filter { it.resource.resourceType != ResourceType.Patient }.map {
-          it.resource
-        },
+        dataBundle.apply { entry.removeIf { it.resource.resourceType == ResourceType.Patient } },
         defaultRepository,
         true
       )

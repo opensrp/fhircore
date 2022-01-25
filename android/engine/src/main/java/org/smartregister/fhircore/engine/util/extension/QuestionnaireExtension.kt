@@ -25,12 +25,10 @@ fun Questionnaire.isExtractionCandidate() =
   this.targetStructureMap != null ||
     this.extension.any { it.url.contains("sdc-questionnaire-itemExtractionContext") }
 
-fun Questionnaire.cqfLibraryId() =
-  this.extension
-    .singleOrNull { it.url.contains("cqf-library") }
-    ?.value
-    ?.asStringValue()
-    ?.replace("Library/", "")
+fun Questionnaire.cqfLibraryIds() =
+  this.extension.filter { it.url.contains("cqf-library") }.mapNotNull {
+    it.value?.asStringValue()?.replace("Library/", "")
+  }
 
 fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {
   return item.find(linkId, null)

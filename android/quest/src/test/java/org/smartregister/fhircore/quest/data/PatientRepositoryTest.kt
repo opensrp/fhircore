@@ -172,11 +172,11 @@ class PatientRepositoryTest : RobolectricTest() {
           parser
         )
 
-      Assert.assertEquals("First Questionnaire", results[0].rowData[0][0].value)
-      Assert.assertEquals(" (${today.asDdMmmYyyy()})", results[0].rowData[0][1].value)
+      Assert.assertEquals("First Questionnaire", results[0].data[0][0].value)
+      Assert.assertEquals(" (${today.asDdMmmYyyy()})", results[0].data[0][1].value)
 
-      Assert.assertEquals("Second Questionnaire", results[1].rowData[0][0].value)
-      Assert.assertEquals(" (${yesterday.asDdMmmYyyy()})", results[1].rowData[0][1].value)
+      Assert.assertEquals("Second Questionnaire", results[1].data[0][0].value)
+      Assert.assertEquals(" (${yesterday.asDdMmmYyyy()})", results[1].data[0][1].value)
     }
 
   @Test

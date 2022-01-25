@@ -20,9 +20,17 @@ import android.app.Activity
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
+import com.google.android.fhir.sync.Sync
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.runs
+import io.mockk.unmockkObject
 import javax.inject.Inject
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -46,21 +54,30 @@ internal class FamilyRegisterActivityTest : ActivityRobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
-
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   private lateinit var familyRegisterActivity: FamilyRegisterActivity
 
   @Before
   fun setUp() {
+    mockkObject(Sync)
+
+    val accountAuthenticator = mockk<AccountAuthenticator>()
+    every { accountAuthenticator.launchLoginScreen() } just runs
+
     hiltRule.inject()
+
     configurationRegistry.loadAppConfigurations(
       appId = "anc",
       accountAuthenticator = accountAuthenticator
     ) {}
     familyRegisterActivity =
       Robolectric.buildActivity(FamilyRegisterActivity::class.java).create().get()
+  }
+
+  @After
+  fun cleanup() {
+    unmockkObject(Sync)
   }
 
   @Test

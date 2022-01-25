@@ -21,6 +21,7 @@ import org.opencds.cqf.cql.engine.fhir.model.R4FhirModelResolver
 
 class R4FhirModelResolverExt : R4FhirModelResolver() {
   override fun resolveType(typeName: String): Class<*> {
+    // TODO https://github.com/DBCG/cql_engine/issues/537
     // FHIR has a bug that does not allow processing inner static classes
     // i.e. Dosage.DosageDoseAndRateComponent hence creating those on own.
     // This is would be represented by Dosage.DoseAndRate in cql and should resolve to above

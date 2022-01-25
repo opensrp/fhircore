@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.configuration.view
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.Configuration
-import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 
 @Stable
 @Serializable

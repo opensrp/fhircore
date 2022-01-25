@@ -34,7 +34,6 @@ import org.opencds.cqf.cql.evaluator.engine.retrieve.BundleRetrieveProvider
 import org.opencds.cqf.cql.evaluator.engine.terminology.BundleTerminologyProvider
 import org.opencds.cqf.cql.evaluator.fhir.adapter.r4.AdapterFactory
 import org.opencds.cqf.cql.evaluator.fhir.dal.BundleFhirDal
-import org.opencds.cqf.cql.evaluator.measure.MeasureEvalConfig
 import org.opencds.cqf.cql.evaluator.measure.r4.R4MeasureProcessor
 
 /**
@@ -94,20 +93,8 @@ class MeasureEvaluator {
       )
     val fhirDal = BundleFhirDal(fhirContext, library)
 
-    val config = MeasureEvalConfig.defaultConfig()
     measureProcessor =
-      R4MeasureProcessor(
-        null,
-        null,
-        null,
-        null,
-        null,
-        terminologyProvider,
-        libraryContentProvider,
-        dataProvider,
-        fhirDal,
-        config
-      )
+      R4MeasureProcessor(terminologyProvider, libraryContentProvider, dataProvider, fhirDal)
   }
 
   /**

@@ -17,11 +17,8 @@
 package org.smartregister.fhircore.quest.data.patient.model
 
 import androidx.compose.runtime.Stable
-import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Type
-import org.smartregister.fhircore.quest.configuration.view.Filter
 import org.smartregister.fhircore.quest.configuration.view.Properties
 
 @Stable
@@ -36,7 +33,6 @@ data class PatientItem(
 )
 
 @Stable
-@Serializable
 data class AdditionalData(
   val label: String? = null,
   val value: String,
@@ -57,4 +53,3 @@ data class QuestResultItem(
   val source: Pair<QuestionnaireResponse, Questionnaire>,
   val data: List<List<AdditionalData>>
 )
-

@@ -134,7 +134,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
       findViewById<Button>(R.id.btn_save_client_info).apply {
         setOnClickListener(this@QuestionnaireActivity)
-        if (readOnly) {
+        if (readOnly || questionnaire.experimental) {
           text = context.getString(R.string.done)
         } else if (editMode) {
           text = getString(R.string.edit)
@@ -275,6 +275,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   open fun populateInitialValues(questionnaire: Questionnaire) = Unit
 
   open fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
+    setResult(
+      Activity.RESULT_OK,
+      Intent().apply {
+        putExtra(QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(questionnaireResponse))
+      }
+    )
     val message = questionnaireViewModel.extractionProgressMessage.value
     if (message?.isNotBlank() == true)
       AlertDialogue.showInfoAlert(
@@ -283,21 +289,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         getString(R.string.done),
         {
           it.dismiss()
-          finishActivity(questionnaireResponse)
+          finish()
         }
       )
-    else finishActivity(questionnaireResponse)
-  }
-
-  fun finishActivity(questionnaireResponse: QuestionnaireResponse) {
-    setResult(
-      Activity.RESULT_OK,
-      Intent().apply {
-        putExtra(QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(questionnaireResponse))
-        putExtra(QUESTIONNAIRE_ARG_FORM, questionnaire.logicalId)
-      }
-    )
-    finish()
+    else finish()
   }
 
   fun deepFlat(

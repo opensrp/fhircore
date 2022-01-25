@@ -52,8 +52,6 @@ data class Filter(
 @Serializable
 data class Code(val system: String? = null, val code: String? = null, val display: String? = null)
 
-fun Code.toCoding() = Coding(this.system, this.code, this.display)
-
 fun Code.isSimilar(coding: Coding) = this.code == coding.code && this.system == coding.system
 
 fun Code.isSimilar(concept: CodeableConcept) =

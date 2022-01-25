@@ -256,8 +256,8 @@ class QuestPatientDetailScreenTest : RobolectricTest() {
 
     verify { questPatientDetailViewModel.onTestResultItemClickListener(any()) }
 
-    assertEquals("Sample Order", resultItemClicks[0].rowData[0][0].value)
-    assertEquals("Sample Test", resultItemClicks[1].rowData[0][0].value)
+    assertEquals("Sample Order", resultItemClicks[0].data[0][0].value)
+    assertEquals("Sample Test", resultItemClicks[1].data[0][0].value)
   }
 
   @Test
