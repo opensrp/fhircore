@@ -67,7 +67,7 @@ class AdverseEventQuestionnaireActivity : QuestionnaireActivity() {
                   .run {
                     val immunizationEntry = entry.firstOrNull { it.resource is Immunization }
                     if (immunizationEntry == null) {
-                      val fhirJsonParser = FhirContext.forR4().newJsonParser()
+                      val fhirJsonParser = FhirContext.forR4Cached().newJsonParser()
                       Timber.e(
                         "Immunization extraction failed for ${fhirJsonParser.encodeResourceToString(questionnaireResponse)} producing ${fhirJsonParser.encodeResourceToString(this)}"
                       )
