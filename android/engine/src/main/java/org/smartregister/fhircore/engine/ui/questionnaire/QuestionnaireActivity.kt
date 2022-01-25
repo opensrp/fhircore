@@ -145,7 +145,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
       findViewById<Button>(R.id.btn_save_client_info).apply {
         setOnClickListener(this@QuestionnaireActivity)
-        if (readOnly) {
+        if (readOnly || questionnaire.experimental) {
           text = context.getString(R.string.done)
         } else if (editMode) {
           text = getString(R.string.edit)
@@ -214,13 +214,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       if (readOnly) {
         finish()
       } else {
-        showConfirmAlert(
-          context = this,
-          message = R.string.questionnaire_alert_submit_message,
-          title = R.string.questionnaire_alert_submit_title,
-          confirmButtonListener = { handleQuestionnaireSubmit() },
-          confirmButtonText = R.string.str_save
-        )
+        showFormSubmissionConfirmAlert()
       }
     } else if (view.id == R.id.btn_edit_qr) {
       readOnly = false
@@ -251,6 +245,25 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
+  fun showFormSubmissionConfirmAlert() {
+    if (questionnaire.experimental)
+      showConfirmAlert(
+        context = this,
+        message = R.string.questionnaire_alert_test_only_message,
+        title = R.string.questionnaire_alert_test_only_title,
+        confirmButtonListener = { handleQuestionnaireSubmit() },
+        confirmButtonText = R.string.questionnaire_alert_test_only_button_title
+      )
+    else
+      showConfirmAlert(
+        context = this,
+        message = R.string.questionnaire_alert_submit_message,
+        title = R.string.questionnaire_alert_submit_title,
+        confirmButtonListener = { handleQuestionnaireSubmit() },
+        confirmButtonText = R.string.questionnaire_alert_submit_button_title
+      )
+  }
+
   fun getQuestionnaireResponse(): QuestionnaireResponse {
     val questionnaireFragment =
       supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
@@ -265,7 +278,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   open fun handleQuestionnaireSubmit() {
-    saveProcessingAlertDialog = showProgressAlert(this, R.string.saving_registration)
+    saveProcessingAlertDialog = showProgressAlert(this, R.string.form_progress_message)
 
     val questionnaireResponse = getQuestionnaireResponse()
     if (!validQuestionnaireResponse(questionnaireResponse)) {
@@ -303,7 +316,18 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         putExtra(QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(questionnaireResponse))
       }
     )
-    finish()
+    val message = questionnaireViewModel.extractionProgressMessage.value
+    if (message?.isNotBlank() == true)
+      AlertDialogue.showInfoAlert(
+        this,
+        message,
+        getString(R.string.done),
+        {
+          it.dismiss()
+          finish()
+        }
+      )
+    else finish()
   }
 
   fun deepFlat(

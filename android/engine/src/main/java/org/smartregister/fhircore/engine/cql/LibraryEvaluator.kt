@@ -200,7 +200,7 @@ class LibraryEvaluator @Inject constructor() {
 
   suspend fun runCqlLibrary(
     libraryId: String,
-    patient: Patient,
+    patient: Patient?,
     data: Bundle,
     // TODO refactor class by modular and single responsibility principle
     repository: DefaultRepository,
@@ -223,13 +223,13 @@ class LibraryEvaluator @Inject constructor() {
       helpers,
       Bundle(),
       // TODO check and handle when data bundle has multiple Patient resources
-      createBundle(listOf(patient, *data.entry.map { it.resource }.toTypedArray()))
+      createBundle(listOfNotNull(patient, *data.entry.map { it.resource }.toTypedArray()))
     )
 
     val result =
       libEvaluator!!.evaluate(
         VersionedIdentifier().withId(library.name).withVersion(library.version),
-        Pair.of("Patient", patient.logicalId),
+        patient?.let { Pair.of("Patient", it.logicalId) },
         null,
         null
       ) as
@@ -240,17 +240,21 @@ class LibraryEvaluator @Inject constructor() {
       (p.value ?: p.resource)?.let {
         if (p.name.equals(OUTPUT_PARAMETER_KEY) && it.isResource) {
           data.addEntry().apply { this.resource = p.resource }
-
           repository.save(it as Resource)
+        }
 
-          // display full resource log only if it is OUTPUT
-          "${p.name} -> ${getStringRepresentation(it)}"
-        } else if (outputLog) "${p.name} -> ${getStringRepresentation(it)}" else "${p.name} -> $it"
+        when {
+          // send as result only if outlog needed or is an output param of primitive type
+          outputLog -> "${p.name} -> ${getStringRepresentation(it)}"
+          p.name.equals(OUTPUT_PARAMETER_KEY) && !it.isResource ->
+            "${p.name} -> ${getStringRepresentation(it)}"
+          else -> null
+        }
       }
     }
   }
 
-  private fun getStringRepresentation(base: Base) =
+  fun getStringRepresentation(base: Base) =
     if (base.isResource) parser.encodeResourceToString(base as Resource) else base.toString()
 
   private fun loadConfigs(

@@ -86,6 +86,7 @@ constructor(
   }
 
   val extractionProgress = MutableLiveData<Boolean>()
+  val extractionProgressMessage = MutableLiveData<String>()
 
   var editQuestionnaireResponse: QuestionnaireResponse? = null
 
@@ -156,7 +157,7 @@ constructor(
           }
 
           // response MUST have subject by far otherwise flow has issues
-          questionnaireResponse.assertSubject()
+          if (!questionnaire.experimental) questionnaireResponse.assertSubject()
 
           // TODO https://github.com/opensrp/fhircore/issues/900
           // for edit mode replace client and resource subject ids.
@@ -173,7 +174,11 @@ constructor(
           questionnaireResponse.contained.add(bun.resource)
         }
 
-        saveBundleResources(bundle)
+        if (questionnaire.experimental) {
+          Timber.w(
+            "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save any data"
+          )
+        } else saveBundleResources(bundle)
 
         if (editMode && editQuestionnaireResponse != null) {
           questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
@@ -189,12 +194,12 @@ constructor(
         }
 
         questionnaire.cqfLibraryIds().forEach {
-          libraryEvaluator.runCqlLibrary(
-            it,
-            loadPatient(questionnaireResponse.subject.extractId())!!,
-            bundle,
-            defaultRepository
-          )
+          val patient =
+            if (questionnaireResponse.hasSubject())
+              loadPatient(questionnaireResponse.subject.extractId())
+            else null
+          val output = libraryEvaluator.runCqlLibrary(it, patient, bundle, defaultRepository)
+          if (output.isNotEmpty()) extractionProgressMessage.postValue(output.joinToString("\n"))
         }
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
@@ -223,6 +228,13 @@ constructor(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse
   ) {
+    if (questionnaire.experimental) {
+      Timber.w(
+        "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save any data"
+      )
+      return
+    }
+
     questionnaireResponse.assertSubject() // should not allow further flow without subject
 
     questionnaireResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
