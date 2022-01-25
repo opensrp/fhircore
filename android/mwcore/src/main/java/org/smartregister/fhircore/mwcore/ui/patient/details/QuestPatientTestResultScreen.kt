@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.mwcore.R
 
+// TODO Look into removing this file as it no longer exists in the Quest app
 const val PATIENT_BIO_INFO = "patientBioInfo"
 
 @Composable

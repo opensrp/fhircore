@@ -23,15 +23,21 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltAndroidApp
-class MwCoreApplication : Application() {
+class MwCoreApplication : Application(), DataCaptureConfig.Provider {
   @Inject
   lateinit var referenceAttachmentResolver: ReferenceAttachmentResolver
+  private var configuration: DataCaptureConfig? = null
 
   override fun onCreate() {
     super.onCreate()
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
-    DataCaptureConfig.attachmentResolver = referenceAttachmentResolver
+  }
+
+  override fun getDataCaptureConfig(): DataCaptureConfig {
+    configuration =
+      configuration ?: DataCaptureConfig(attachmentResolver = referenceAttachmentResolver)
+    return configuration as DataCaptureConfig
   }
 }

@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.mwcore.util
+package org.smartregister.fhircore.mwcore.data.patient.model
 
-import org.smartregister.fhircore.engine.configuration.ConfigClassification
+import androidx.compose.runtime.Stable
+import org.hl7.fhir.r4.model.Base
+import org.smartregister.fhircore.mwcore.configuration.view.Filter
 
-enum class MwCoreConfigClassification : ConfigClassification {
-  PATIENT_REGISTER,
-  PATIENT_REGISTER_ROW,
-  TEST_RESULT_DETAIL_VIEW,
-  PATIENT_DETAILS_VIEW;
-  override val classification: String = name.lowercase()
-}
+@Stable
+data class DetailsViewItem(
+  var label: String = "",
+  val rows: MutableList<DetailsViewItemRow> = mutableListOf()
+)
+
+@Stable
+data class DetailsViewItemRow(val cells: MutableList<DetailsViewItemCell> = mutableListOf())
+
+@Stable data class DetailsViewItemCell(val value: Base?, val filter: Filter)
