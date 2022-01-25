@@ -96,7 +96,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
     files.forEach { fileName ->
       val jsonString = assets.open(fileName).bufferedReader().readText()
-      val questionnaire = FhirContext.forR4().newJsonParser().parseResource(jsonString)
+      val questionnaire = FhirContext.forR4Cached().newJsonParser().parseResource(jsonString)
 
       GlobalScope.launch { defaultRepository.addOrUpdate(questionnaire as Resource) }
     }
@@ -250,7 +250,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
 override fun registerClient(clientIdentifier: String?) {
     //showAgeDialog({ super.registerClient(clientIdentifier) }, { dialog, which -> dialog.dismiss() })
-  readFromCard();
+    readFromCard();
   }
 
 
