@@ -143,7 +143,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     )
     Assert.assertTrue(result.getBoolean(QuestionnaireActivity.QUESTIONNAIRE_READ_ONLY))
     Assert.assertEquals(
-      FhirContext.forR4().newJsonParser().encodeResourceToString(questionnaireResponse),
+      FhirContext.forR4Cached().newJsonParser().encodeResourceToString(questionnaireResponse),
       result.getString(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
     )
     Assert.assertEquals(
@@ -151,7 +151,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       result.getString(QuestionnaireActivity.ADVERSE_EVENT_IMMUNIZATION_ITEM_KEY)
     )
     Assert.assertEquals(
-      FhirContext.forR4().newJsonParser().encodeResourceToString(patient),
+      FhirContext.forR4Cached().newJsonParser().encodeResourceToString(patient),
       result.getStringArrayList(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.get(0)
     )
   }
