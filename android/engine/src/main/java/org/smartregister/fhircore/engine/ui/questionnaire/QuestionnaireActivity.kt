@@ -76,7 +76,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   var readOnly: Boolean = false
   var editMode = false
   lateinit var fragment: FhirCoreQuestionnaireFragment
-  private val parser = FhirContext.forR4().newJsonParser()
+  private val parser = FhirContext.forR4Cached().newJsonParser()
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
@@ -229,7 +229,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     saveProcessingAlertDialog = showProgressAlert(this, R.string.saving_registration)
 
     val questionnaireResponse = getQuestionnaireResponse()
-    if (!validQuestionnaireResponse(questionnaireResponse)) {
+/*    if (!validQuestionnaireResponse(questionnaireResponse)) {
       saveProcessingAlertDialog.dismiss()
 
       AlertDialogue.showErrorAlert(
@@ -238,7 +238,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         R.string.questionnaire_alert_invalid_title
       )
       return
-    }
+    }*/
 
     handleQuestionnaireResponse(questionnaireResponse)
 
@@ -355,7 +355,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         Pair(QUESTIONNAIRE_EDIT_MODE, editMode)
       )
         .apply {
-          val jsonParser = FhirContext.forR4().newJsonParser()
+          val jsonParser = FhirContext.forR4Cached().newJsonParser()
           if (questionnaireResponse != null) {
             putString(
               QUESTIONNAIRE_RESPONSE,
