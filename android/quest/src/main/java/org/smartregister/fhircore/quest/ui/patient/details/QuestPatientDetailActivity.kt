@@ -134,7 +134,7 @@ class QuestPatientDetailActivity :
       if (configurationRegistry.appId == "g6pd") {
         data?.getStringExtra(QUESTIONNAIRE_RESPONSE)?.let {
           val response =
-            FhirContext.forR4().newJsonParser().parseResource(it) as QuestionnaireResponse
+            FhirContext.forR4Cached().newJsonParser().parseResource(it) as QuestionnaireResponse
           response.contained.find { it.resourceType == ResourceType.Encounter }?.logicalId?.let {
             startActivity(
               Intent(this, SimpleDetailsActivity::class.java).apply {
