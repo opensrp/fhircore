@@ -38,7 +38,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.FhirCoreQuestionnaireFragment
 import timber.log.Timber
 
-fun Resource.toJson(parser: IParser = FhirContext.forR4().newJsonParser()): String =
+fun Resource.toJson(parser: IParser = FhirContext.forR4Cached().newJsonParser()): String =
   parser.encodeResourceToString(this)
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
@@ -50,7 +50,7 @@ fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   if (this is Patient) {
     extension = this.extension
   }
-  val jsonParser = FhirContext.forR4().newJsonParser()
+  val jsonParser = FhirContext.forR4Cached().newJsonParser()
   val stringJson = toJson(jsonParser)
   val originalResourceJson = JSONObject(stringJson)
 
