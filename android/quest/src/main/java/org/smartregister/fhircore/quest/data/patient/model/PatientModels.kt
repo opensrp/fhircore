@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.data.patient.model
 
 import androidx.compose.runtime.Stable
+import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Type
@@ -35,6 +36,7 @@ data class PatientItem(
 )
 
 @Stable
+@Serializable
 data class AdditionalData(
   val label: String? = null,
   val value: String,
@@ -53,13 +55,6 @@ fun PatientItem.genderFull(): String {
 @Stable
 data class QuestResultItem(
   val source: Pair<QuestionnaireResponse, Questionnaire>,
-  val rowData: QuestResultItemRow
+  val data: List<List<AdditionalData>>
 )
-
-@Stable data class QuestResultItemRow(val subItems: MutableList<QuestResultSubItemRow> = mutableListOf())
-
-@Stable
-data class QuestResultSubItemRow(val cells: List<QuestResultItemCell> = mutableListOf())
-
-@Stable data class QuestResultItemCell(val value: Type?, val filter: Filter)
 

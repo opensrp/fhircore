@@ -37,6 +37,7 @@ class PatientRegisterRowViewConfiguration(
 data class Filter(
   val resourceType: Enumerations.ResourceType,
   val key: String,
+  val extractionKey: String? = null,
   val displayableProperty: String = key,
   val valuePrefix: String? = null,
   val label: String? = null,

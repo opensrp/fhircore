@@ -3,16 +3,16 @@
     "appId": "quest",
     "classification": "patient_details_view",
     "contentTitle": "Responses",
-    "rows": []
+    "dynamicRows": []
   },
   {
     "appId": "g6pd",
     "classification": "patient_details_view",
     "valuePrefix": "G6PD ",
     "contentTitle": "TEST RESULTS",
-    "rows": [
-      {
-        "filters": [
+    "dynamicRows": [
+      [
+        [
           {
             "resourceType": "CONDITION",
             "key": "category",
@@ -21,11 +21,21 @@
               "system": "http://snomed.info/sct",
               "code": "9024005"
             }
+          },
+          {
+            "resourceType": "CONDITION",
+            "key": "category",
+            "valueType": "CODEABLECONCEPT",
+            "valueCoding": {
+              "system": "http://snomed.info/sct",
+              "code": "9024005"
+            },
+            "extractionKey": "recordedDate"
           }
         ]
-      },
-      {
-        "filters": [
+      ],
+      [
+        [
           {
             "resourceType": "OBSERVATION",
             "key": "code",
@@ -67,7 +77,7 @@
             }
           }
         ]
-      }
+      ]
     ]
   }
 ]

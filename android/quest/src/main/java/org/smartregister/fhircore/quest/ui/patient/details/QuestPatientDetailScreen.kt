@@ -127,7 +127,7 @@ fun ResultItem(
         .testTag(RESULT_ITEM)
   ) {
     Column(verticalArrangement = Arrangement.Center) {
-      testResult.rowData.forEach { dataList ->
+      testResult.data.forEach { dataList ->
         Row(modifier = Modifier.padding(end = 12.dp)) {
           dataList.forEach { item ->
             item.label?.let {
