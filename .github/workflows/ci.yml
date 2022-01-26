@@ -15,7 +15,6 @@ env:
  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
  KEYSTORE_CREDENTIALS: ${{ secrets.KEYSTORE_CREDENTIALS }}
  KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
- LOCAL_PROPERTIES_FILE: ${{ secrets.LOCAL_PROPERTIES }}
 
 jobs:
   setup:
@@ -28,10 +27,6 @@ jobs:
       - name: Generate keystore file
         run: echo $KEYSTORE_FILE > keystore.jks
         run: chmod +x gradlew
-        working-directory: android
-
-      - name: Generate local.properties file
-        run: echo $LOCAL_PROPERTIES_FILE > local.properties
         working-directory: android
 
   engine-tests:
