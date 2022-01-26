@@ -22,29 +22,29 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.view.MenuItem
-import androidx.activity.viewModels
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.famoco.desfireservicelib.DESFireServiceAccess
 import ca.uhn.fhir.context.FhirContext
+import com.famoco.desfireservicelib.DESFireServiceAccess
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
-import org.smartregister.fhircore.engine.nfc.MainViewModel
 import org.smartregister.fhircore.engine.configuration.view.getString
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.nfc.MainViewModel
 import org.smartregister.fhircore.engine.nfc.main.PatientNfcItem
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_PATIENT_KEY
@@ -66,7 +66,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
   private lateinit var eventJob: Job
 
-  private var scanForRegistration = true;
+  private var scanForRegistration = true
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -176,7 +176,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     eventJob.cancel()
   }
 
-  private fun readFromCard(isRegistration:Boolean = true) {
+  private fun readFromCard(isRegistration: Boolean = true) {
     scanForRegistration = isRegistration
     mainViewModel.generateProtoFile()
     // InitializeSAM
@@ -221,42 +221,38 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     // InitializeSAM
     mainViewModel.initSAM()
     // Perform Write action with the UI given by the Service
-    val patient = PatientNfcItem(
-      patientId = "",
-      firstName = "",
-      lastName = "",
-      middleName = "",
-      age = "",
-      birthDate = "",
-      gender = "",
-      caretakerName = "",
-      caretakerRelationship = "",
-      village = "",
-      healthCenter = "",
-      beneficiaryGroup = "",
-      registrationDate = "",
-      creationDate = ""
-    )
-    val json: String = if (isDelete) {
-      "{}"
-    } else
-    {
-      Gson().toJson(patient)
-    }
+    val patient =
+      PatientNfcItem(
+        patientId = "",
+        firstName = "",
+        lastName = "",
+        middleName = "",
+        age = "",
+        birthDate = "",
+        gender = "",
+        caretakerName = "",
+        caretakerRelationship = "",
+        village = "",
+        healthCenter = "",
+        beneficiaryGroup = "",
+        registrationDate = "",
+        creationDate = ""
+      )
+    val json: String =
+      if (isDelete) {
+        "{}"
+      } else {
+        Gson().toJson(patient)
+      }
     mainViewModel.writeSerialized(json)
   }
 
-
-
-override fun registerClient(clientIdentifier: String?) {
-    //showAgeDialog({ super.registerClient(clientIdentifier) }, { dialog, which -> dialog.dismiss() })
-  readFromCard();
+  override fun registerClient(clientIdentifier: String?) {
+    //showAgeDialog({ dialog, which -> dialog.dismiss() })
+    readFromCard()
   }
 
-
-  fun showAgeDialog(
-    cancelClickListener: DialogInterface.OnClickListener
-  ) {
+  fun showAgeDialog(cancelClickListener: DialogInterface.OnClickListener) {
     val layout =
       LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
@@ -297,9 +293,7 @@ override fun registerClient(clientIdentifier: String?) {
       .show()
   }
 
-  private fun showEraseCardDialog(
-    cancelClickListener: DialogInterface.OnClickListener
-  ) {
+  private fun showEraseCardDialog(cancelClickListener: DialogInterface.OnClickListener) {
 
     AlertDialog.Builder(this)
       .setTitle(getString(R.string.card_not_blank))
