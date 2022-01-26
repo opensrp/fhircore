@@ -57,7 +57,7 @@ class QuestionnaireExtensionTest : RobolectricTest() {
 
   @Test
   fun testCqfLibraryIdShouldReturnExpectedUrl() {
-    Assert.assertNull(Questionnaire().cqfLibraryId())
+    Assert.assertTrue(Questionnaire().cqfLibraryIds().isEmpty())
 
     Assert.assertEquals(
       "",
@@ -68,7 +68,21 @@ class QuestionnaireExtensionTest : RobolectricTest() {
             setValue(StringType("Library/"))
           }
         }
-        .cqfLibraryId()
+        .cqfLibraryIds()
+        .first()
+    )
+
+    Assert.assertEquals(
+      "112233",
+      Questionnaire()
+        .apply {
+          addExtension().apply {
+            url = "cqf-library"
+            setValue(StringType("Library/112233"))
+          }
+        }
+        .cqfLibraryIds()
+        .first()
     )
   }
 

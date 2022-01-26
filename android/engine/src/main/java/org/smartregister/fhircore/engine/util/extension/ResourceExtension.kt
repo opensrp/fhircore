@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import androidx.compose.ui.text.capitalize
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.common.datatype.asStringValue
@@ -37,26 +38,31 @@ import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
-import org.hl7.fhir.r4.model.Type
+import org.hl7.fhir.r4.model.Timing
 import org.json.JSONException
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.FhirCoreQuestionnaireFragment
 import timber.log.Timber
 
-fun Type?.valueToString(): String {
-  return if (this == null) ""
+fun Base?.valueToString(): String {
+  return if (this == null) return ""
   else if (this.isDateTime) (this as BaseDateTimeType).value.makeItReadable()
   else if (this.isPrimitive) (this as PrimitiveType<*>).asStringValue()
   else if (this is Coding) this.display ?: code
   else if (this is CodeableConcept) this.stringValue()
-  else if (this is Quantity) this.value.toPlainString() else this.asStringValue()
+  else if (this is Quantity) this.value.toPlainString()
+  else if (this is Timing)
+    this.repeat.let {
+      it.period.toPlainString().plus(" ").plus(it.periodUnit.display.capitalize()).plus(" (s)")
+    }
+  else this.toString()
 }
 
 fun CodeableConcept.stringValue(): String =
   this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
 
-fun Resource.toJson(parser: IParser = FhirContext.forR4().newJsonParser()): String =
+fun Resource.toJson(parser: IParser = FhirContext.forR4Cached().newJsonParser()): String =
   parser.encodeResourceToString(this)
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
@@ -68,7 +74,7 @@ fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   if (this is Patient) {
     extension = this.extension
   }
-  val jsonParser = FhirContext.forR4().newJsonParser()
+  val jsonParser = FhirContext.forR4Cached().newJsonParser()
   val stringJson = toJson(jsonParser)
   val originalResourceJson = JSONObject(stringJson)
 
@@ -185,11 +191,11 @@ suspend fun QuestionnaireResponse.deleteRelatedResources(defaultRepository: Defa
 }
 
 fun QuestionnaireResponse.retainMetadata(questionnaireResponse: QuestionnaireResponse) {
-  author = questionnaireResponse!!.author
-  authored = questionnaireResponse!!.authored
-  id = questionnaireResponse!!.logicalId
+  author = questionnaireResponse.author
+  authored = questionnaireResponse.authored
+  id = questionnaireResponse.logicalId
 
-  val versionId = Integer.parseInt(questionnaireResponse!!.meta.versionId ?: "1") + 1
+  val versionId = Integer.parseInt(questionnaireResponse.meta.versionId ?: "1") + 1
 
   questionnaireResponse.meta.apply {
     lastUpdated = Date()
@@ -219,3 +225,5 @@ fun Resource.referenceValue(): String = "${fhirType()}/$logicalId"
 
 fun Resource.setPropertySafely(name: String, value: Base) =
   kotlin.runCatching { this.setProperty(name, value) }.onFailure { Timber.w(it) }.getOrNull()
+
+fun ResourceType.generateUniqueId() = UUID.randomUUID().toString()

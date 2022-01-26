@@ -1,0 +1,77 @@
+//Declare name and version of lib
+library ControlTest version '1'
+
+//FHIR as a data model and version of FHIR
+using FHIR version '4.0.1'
+
+//functions to help FHIR vs CQL primitives
+include "FHIRHelpers" version '4.0.1' called FHIRHelpers
+
+//System declarations  : Codable concept codes systems
+codesystem "SNOMED": 'http://snomed.info/sct'
+codesystem "ONA": 'http://fhir.ona.io'
+
+//Code used as identifers
+code "G6PD code": '86859003' from "SNOMED" display 'G6PD Enzyme'
+code "Haemoglobin code": '259695003' from "SNOMED" display 'Haemoglobin'
+code "g6pdResultTypeCode": '000001' from "ONA" display 'G6PD Result Type'
+code "g6pdControl1": '410680006' from "SNOMED" display 'Control-mode 1'
+code "g6pdControl2": '405358009' from "SNOMED" display 'Control-mode 2'
+
+
+define "Control1Obs":
+  Last([Observation: "g6pdResultTypeCode"] H
+    where H.value ~ "g6pdControl1")
+
+define "Control2Obs":
+  Last([Observation: "g6pdResultTypeCode"] H
+    where H.value ~  "g6pdControl2")
+
+define "HaemoglobinObs":
+  Last([Observation: "Haemoglobin code"] H
+    where H.status ~ 'registered')
+
+define "G6PDObs":
+  Last([Observation: "G6PD code"] G
+    where G.status ~ 'registered')
+
+define "G6PD Value": ToString("G6PDObs".value.value.value)
+define "Haemoglobin Value": ToString("HaemoglobinObs".value.value.value)
+
+define "G6PD Normal":
+    if "Control1Obs" is not null and "G6PDObs".value.value between 0.0 and 3.0
+    	then true
+    else if "Control2Obs" is not null and "G6PDObs".value.value between 6.0 and 10.0
+    	then true
+    else false
+
+define "G6PD Conclusion":
+    if "Control1Obs" is not null and "G6PD Normal"
+    	then 'Value ('+ "G6PD Value"+') is in Normal G6PD Range 0-3'
+    else if "Control2Obs" is not null and "G6PD Normal"
+    	then 'Value ('+ "G6PD Value"+') is in Normal G6PD Range 6-12'
+    else 'Value('+"G6PD Value"+') is Non Deterministic G6PD result'
+
+define "Haemoglobin Normal":
+    if "Control1Obs" is not null and "HaemoglobinObs".value.value between 8.0 and 12.0
+    	then true
+    else if "Control2Obs" is not null and "HaemoglobinObs".value.value between 13.0 and 17.0
+    	then true
+    else false
+
+define "Haemoglobin Conclusion":
+    if "Control1Obs" is not null and "Haemoglobin Normal"
+    	then 'Value ('+ "Haemoglobin Value"+') is in Normal Haemoglobin Range 8-12'
+    else if "Control2Obs" is not null and "Haemoglobin Normal"
+    	then 'Value ('+ "Haemoglobin Value"+') is in Normal Haemoglobin Range 13-17'
+    else 'Value('+"Haemoglobin Value"+') is Non Deterministic Haemoglobin result'
+
+define "Conclusion":
+  if "G6PD Normal" and "Haemoglobin Normal" then 'Correct result'
+  else 'Invalid result'
+
+define "Conclusion Details": '\nDetails:\n'+ "G6PD Conclusion" + '\n' + "Haemoglobin Conclusion"
+
+
+define "OUTPUT": List { "Conclusion" , "Conclusion Details"}
+

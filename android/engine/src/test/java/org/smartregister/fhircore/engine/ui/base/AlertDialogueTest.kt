@@ -90,7 +90,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
 
   @Test
   fun testShowProgressAlertShouldShowAlertWithProgress() {
-    AlertDialogue.showProgressAlert(context = context, message = R.string.saving_registration)
+    AlertDialogue.showProgressAlert(context = context, message = R.string.form_progress_message)
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
     val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realAlertDialog")
@@ -99,7 +99,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
     Assert.assertTrue(alertDialog.isShowing)
 
     Assert.assertEquals(
-      getString(R.string.saving_registration),
+      getString(R.string.form_progress_message),
       dialog.view.findViewById<TextView>(R.id.tv_alert_message)!!.text
     )
 
@@ -116,7 +116,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
   fun testShowConfirmAlertShouldShowAlertWithCorrectData() {
     AlertDialogue.showConfirmAlert(
       context = context,
-      message = R.string.saving_registration,
+      message = R.string.form_progress_message,
       title = R.string.questionnaire_alert_invalid_title,
       confirmButtonListener = {},
       confirmButtonText = R.string.submit_button_text
@@ -127,7 +127,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
 
     assertSimpleMessageDialog(
       dialog,
-      getString(R.string.saving_registration),
+      getString(R.string.form_progress_message),
       getString(R.string.questionnaire_alert_invalid_title),
       getString(R.string.submit_button_text)
     )

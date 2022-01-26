@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.questionnaire
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -27,10 +28,10 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
 import ca.uhn.fhir.context.FhirContext
-import com.google.android.fhir.FhirEngineProvider.fhirEngine
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE
-import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.BUNDLE_KEY_QUESTIONNAIRE_RESPONSE
+import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.EXTRA_QUESTIONNAIRE_JSON_STRING
+import com.google.android.fhir.datacapture.QuestionnaireFragment.Companion.EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
@@ -70,6 +71,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
+  @Inject lateinit var fhirEngine: FhirEngine
+
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
 
   lateinit var questionnaireConfig: QuestionnaireConfig
@@ -80,7 +83,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   var readOnly: Boolean = false
   var editMode = false
   lateinit var fragment: FhirCoreQuestionnaireFragment
-  private val parser = FhirContext.forR4().newJsonParser()
+  private val parser = FhirContext.forR4Cached().newJsonParser()
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
@@ -142,7 +145,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
       findViewById<Button>(R.id.btn_save_client_info).apply {
         setOnClickListener(this@QuestionnaireActivity)
-        if (readOnly) {
+        if (readOnly || questionnaire.experimental) {
           text = context.getString(R.string.done)
         } else if (editMode) {
           text = getString(R.string.edit)
@@ -160,16 +163,18 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   private suspend fun renderFragment() {
     fragment =
       FhirCoreQuestionnaireFragment().apply {
+        populateInitialValues(questionnaire)
+
         val questionnaireString = parser.encodeResourceToString(questionnaire)
 
         // Generate Fragment bundle arguments. This is the Questionnaire & QuestionnaireResponse
         arguments =
           when {
             clientIdentifier == null -> {
-              bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, questionnaireString)).apply {
+              bundleOf(Pair(EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString)).apply {
                 val questionnaireResponse = intent.getStringExtra(QUESTIONNAIRE_RESPONSE)
                 if (readOnly && questionnaireResponse != null) {
-                  putString(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, questionnaireResponse)
+                  putString(EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING, questionnaireResponse)
                 }
               }
             }
@@ -186,11 +191,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
                 )
 
               bundleOf(
-                Pair(BUNDLE_KEY_QUESTIONNAIRE, parser.encodeResourceToString(questionnaire)),
-                Pair(BUNDLE_KEY_QUESTIONNAIRE_RESPONSE, serializedQuestionnaireResponse)
+                Pair(EXTRA_QUESTIONNAIRE_JSON_STRING, parser.encodeResourceToString(questionnaire)),
+                Pair(EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING, serializedQuestionnaireResponse)
               )
             }
-            else -> bundleOf(Pair(BUNDLE_KEY_QUESTIONNAIRE, questionnaireString))
+            else -> bundleOf(Pair(EXTRA_QUESTIONNAIRE_JSON_STRING, questionnaireString))
           }
       }
     supportFragmentManager.commit { add(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
@@ -209,13 +214,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       if (readOnly) {
         finish()
       } else {
-        showConfirmAlert(
-          context = this,
-          message = R.string.questionnaire_alert_submit_message,
-          title = R.string.questionnaire_alert_submit_title,
-          confirmButtonListener = { handleQuestionnaireSubmit() },
-          confirmButtonText = R.string.questionnaire_alert_submit_button_title
-        )
+        showFormSubmissionConfirmAlert()
       }
     } else if (view.id == R.id.btn_edit_qr) {
       readOnly = false
@@ -246,6 +245,25 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
+  fun showFormSubmissionConfirmAlert() {
+    if (questionnaire.experimental)
+      showConfirmAlert(
+        context = this,
+        message = R.string.questionnaire_alert_test_only_message,
+        title = R.string.questionnaire_alert_test_only_title,
+        confirmButtonListener = { handleQuestionnaireSubmit() },
+        confirmButtonText = R.string.questionnaire_alert_test_only_button_title
+      )
+    else
+      showConfirmAlert(
+        context = this,
+        message = R.string.questionnaire_alert_submit_message,
+        title = R.string.questionnaire_alert_submit_title,
+        confirmButtonListener = { handleQuestionnaireSubmit() },
+        confirmButtonText = R.string.questionnaire_alert_submit_button_title
+      )
+  }
+
   fun getQuestionnaireResponse(): QuestionnaireResponse {
     val questionnaireFragment =
       supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
@@ -260,7 +278,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   open fun handleQuestionnaireSubmit() {
-    saveProcessingAlertDialog = showProgressAlert(this, R.string.saving_registration)
+    saveProcessingAlertDialog = showProgressAlert(this, R.string.form_progress_message)
 
     val questionnaireResponse = getQuestionnaireResponse()
     if (!validQuestionnaireResponse(questionnaireResponse)) {
@@ -281,7 +299,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       { result ->
         saveProcessingAlertDialog.dismiss()
         if (result) {
-          postSaveSuccessful()
+          postSaveSuccessful(questionnaireResponse)
         } else {
           Timber.e("An error occurred during extraction")
         }
@@ -289,12 +307,29 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     )
   }
 
-  open fun postSaveSuccessful() {
-    finish()
+  open fun populateInitialValues(questionnaire: Questionnaire) = Unit
+
+  open fun postSaveSuccessful(questionnaireResponse: QuestionnaireResponse) {
+    setResult(
+      Activity.RESULT_OK,
+      Intent().apply {
+        putExtra(QUESTIONNAIRE_RESPONSE, parser.encodeResourceToString(questionnaireResponse))
+      }
+    )
+    val message = questionnaireViewModel.extractionProgressMessage.value
+    if (message?.isNotBlank() == true)
+      AlertDialogue.showInfoAlert(
+        this,
+        message,
+        getString(R.string.done),
+        {
+          it.dismiss()
+          finish()
+        }
+      )
+    else finish()
   }
 
-  // TODO remove this when SDK bug for validation is fixed
-  // https://github.com/google/android-fhir/issues/912
   fun deepFlat(
     qItems: List<Questionnaire.QuestionnaireItemComponent>,
     questionnaireResponse: QuestionnaireResponse,
@@ -332,13 +367,19 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     deepFlat(q.item, qr, qItems, qrItems)
 
-    return QuestionnaireResponseValidator.validate(qItems, qrItems, this).values.flatten().all {
-      it.isValid
-    }
+    return QuestionnaireResponseValidator.validateQuestionnaireResponseAnswers(
+        qItems,
+        qrItems,
+        this
+      )
+      .values
+      .flatten()
+      .all { it.isValid }
   }
 
   open fun handleQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) {
     questionnaireViewModel.extractAndSaveResources(
+      context = this,
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
       resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
@@ -383,7 +424,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         Pair(QUESTIONNAIRE_EDIT_MODE, editMode)
       )
         .apply {
-          val jsonParser = FhirContext.forR4().newJsonParser()
+          val jsonParser = FhirContext.forR4Cached().newJsonParser()
           if (questionnaireResponse != null) {
             putString(
               QUESTIONNAIRE_RESPONSE,

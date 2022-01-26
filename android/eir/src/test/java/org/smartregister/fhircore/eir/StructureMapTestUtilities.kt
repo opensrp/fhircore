@@ -66,7 +66,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(immunizationStructureMap, "ImmunizationRegistration")
 
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
     System.out.println(mapString)
@@ -109,7 +109,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(immunizationStructureMap, "ImmunizationRegistration")
 
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
     System.out.println(mapString)
@@ -140,7 +140,7 @@ class StructureMapTestUtilities : RobolectricTest() {
       "structure-map-questionnaires/patient-registration/related-person.json".readFile()
     val patientJson = "structure-map-questionnaires/patient-registration/patient.json".readFile()
 
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val questionnaire =
       iParser.parseResource(Questionnaire::class.java, patientRegistrationQuestionnaire)
     val patient = iParser.parseResource(Patient::class.java, patientJson)
@@ -182,7 +182,7 @@ class StructureMapTestUtilities : RobolectricTest() {
       "structure-map-questionnaires/adverse-event/structure-map.txt".readFile()
     val immunizationJson = "structure-map-questionnaires/adverse-event/immunization.json".readFile()
 
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val questionnaire = iParser.parseResource(Questionnaire::class.java, adverseEventQuestionnaire)
     val immunization = iParser.parseResource(Immunization::class.java, immunizationJson)
 
@@ -225,7 +225,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
     val map = scu.parse(patientRegistrationStructureMap, "PatientRegistration")
 
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
     System.out.println(mapString)
@@ -252,7 +252,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(patientRegistrationStructureMap, "PatientRegistration")
 
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
     System.out.println(mapString)
@@ -291,7 +291,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(adverseEventStructureMap, "AdverseEvent")
 
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
     System.out.println(mapString)
@@ -327,7 +327,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(vitalSignStructureMap, "VitalSigns")
 
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
     System.out.println(mapString)
@@ -363,7 +363,7 @@ class StructureMapTestUtilities : RobolectricTest() {
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(vitalSignStructureMap, "VitalSigns")
 
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
     System.out.println(mapString)

@@ -31,6 +31,7 @@ import org.cqframework.cql.elm.execution.Library
 import org.cqframework.cql.elm.execution.VersionedIdentifier
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.instance.model.api.IBaseResource
+import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
@@ -74,7 +75,7 @@ class LibraryEvaluator @Inject constructor() {
   val cqlFhirParametersConverter by lazy {
     CqlFhirParametersConverter(fhirContext, adapterFactory, fhirTypeConverter)
   }
-  val fhirModelResolver by lazy { R4FhirModelResolver() }
+  val fhirModelResolver by lazy { R4FhirModelResolverExt() }
   /**
    * This method loads configurations for CQL evaluation
    * @param libraryResources Fhir resource type Library
@@ -199,10 +200,11 @@ class LibraryEvaluator @Inject constructor() {
 
   suspend fun runCqlLibrary(
     libraryId: String,
-    patient: Patient,
-    resources: List<Resource>,
+    patient: Patient?,
+    data: Bundle,
     // TODO refactor class by modular and single responsibility principle
-    repository: DefaultRepository
+    repository: DefaultRepository,
+    outputLog: Boolean = false
   ): List<String> {
     val library = repository.fhirEngine.load(org.hl7.fhir.r4.model.Library::class.java, libraryId)
 
@@ -220,13 +222,14 @@ class LibraryEvaluator @Inject constructor() {
       library,
       helpers,
       Bundle(),
-      createBundle(listOf(patient, *resources.toTypedArray()))
+      // TODO check and handle when data bundle has multiple Patient resources
+      createBundle(listOfNotNull(patient, *data.entry.map { it.resource }.toTypedArray()))
     )
 
     val result =
       libEvaluator!!.evaluate(
         VersionedIdentifier().withId(library.name).withVersion(library.version),
-        Pair.of("Patient", patient.logicalId),
+        patient?.let { Pair.of("Patient", it.logicalId) },
         null,
         null
       ) as
@@ -236,14 +239,23 @@ class LibraryEvaluator @Inject constructor() {
     return result.parameter.mapNotNull { p ->
       (p.value ?: p.resource)?.let {
         if (p.name.equals(OUTPUT_PARAMETER_KEY) && it.isResource) {
+          data.addEntry().apply { this.resource = p.resource }
           repository.save(it as Resource)
+        }
 
-          // display full resource log only if it is OUTPUT
-          "${p.name} -> ${parser.encodeResourceToString(it)}"
-        } else "${p.name} -> $it"
+        when {
+          // send as result only if outlog needed or is an output param of primitive type
+          outputLog -> "${p.name} -> ${getStringRepresentation(it)}"
+          p.name.equals(OUTPUT_PARAMETER_KEY) && !it.isResource ->
+            "${p.name} -> ${getStringRepresentation(it)}"
+          else -> null
+        }
       }
     }
   }
+
+  fun getStringRepresentation(base: Base) =
+    if (base.isResource) parser.encodeResourceToString(base as Resource) else base.toString()
 
   private fun loadConfigs(
     library: org.hl7.fhir.r4.model.Library,
@@ -287,7 +299,7 @@ class LibraryEvaluator @Inject constructor() {
 
     cqlEvaluator =
       CqlEvaluator(
-        FhirLibraryLoader(ModelManager(), listOf(libraryProvider)),
+        LibraryLoaderExt(ModelManager(), listOf(libraryProvider)),
         mapOf("http://hl7.org/fhir" to CompositeDataProvider(fhirModelResolver, retrieveProvider)),
         terminologyProvider
       )

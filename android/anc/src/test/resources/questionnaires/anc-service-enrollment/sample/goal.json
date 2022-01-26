@@ -1,0 +1,8 @@
+{
+  "resourceType" : "Goal",
+  "id" : "#UID",
+  "lifecycleStatus" : "active",
+  "subject" : {
+    "reference" : "Patient/TEST_PATIENT"
+  }
+}

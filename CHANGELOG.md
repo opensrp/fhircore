@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANC | Integrate Hilt Dependency Injection
 - ANC | Patient details show vital signs
 - ANC | Patient details show height, weight and BMI post computing BMI
+- ANC | Activate language switcher on profile page
+- ANC | Implement vital signs observation extraction from questionnaires
 
 - Quest | Add the ability to search for patients by id
 - Quest | Add ability to view previous QuestionnaireResponse
@@ -33,6 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quest | CQL runner for G6PD
 - Quest | Extraction of resources for Patient, Condition, Encounter, Observations
 - Quest | Added G6PD login configuration
+- Quest | Add Swahili translations for patient registration questionnaire and activate language switcher
+- Quest | Swahili localization
+- Quest | Added G6PD Patient Details page to show G6PD Status and Test Results
 
 - EIR | Added workflow configurations
 - EIR | Add Adverse Events feature to log any reactions after the first dose of vaccine using Structure map
@@ -40,27 +45,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Engine | Integrate Hilt Dependency Injection
 - Engine | Fixed login authentication issue.
-- ANC | Implement vital signs observation extraction from questionnaires
 - Engine | Implement language switcher on profile page
-- Quest | Add Swahili translations for patient registration questionnaire and activate language switcher
-- ANC | Activate language switcher on profile page
 
 ### Fixed
 - ANC | Resolved a bug on measure reporting : App crash when All patient selected
 - ANC | Resolved a bug in the Patient details : App crash when computing BMI
+
 - EIR | Resolved a bug in the vaccination flow : App crush when saving vaccine
 - EIR | Ability for a complete immunixation flow from Record 1st Vaccine to Full Immunization
+
 - Quest | Fixed test result sorting issues
 - Quest | Fixed forms loading smoothly
 - Quest | Fixed multiple entries of same test results on quest patient detail screen
 - Quest | Fixed mislabeling of questionnaire responses on quest patient detail screen
 - Quest | Fix patient registration with estimated age/dob
+- Quest | Fix patient register data list items display
+
 - Engine | Fixed app crash when wrong appId is provided
 - Engine | Fixed login error message
 
 ### Changed
 - EIR | Updated overdue trigger flow for Vaccine Due date
 - EIR | Updated on save vaccine received alert dialogue
+
+- ANC | Removed custom extraction handling and moved Family/ANC forms to structure map
 
 - Quest | Updated Sync to sync user specific fhir resources using Search Parameters from assets
 
