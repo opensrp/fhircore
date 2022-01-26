@@ -16,13 +16,25 @@
 
 package org.smartregister.fhircore.mwcore.util
 
-import org.smartregister.fhircore.engine.configuration.ConfigClassification
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
+import java.lang.reflect.Type
+import org.hl7.fhir.r4.model.CodeType
+import org.hl7.fhir.r4.model.UriType
 
-enum class MwCoreConfigClassification : ConfigClassification {
-  PATIENT_REGISTER_CLIENT,
-  PATIENT_REGISTER_EXPOSED_INFANT,
-  PATIENT_REGISTER_ROW,
-  TEST_RESULT_DETAIL_VIEW,
-  PATIENT_DETAILS_VIEW;
-  override val classification: String = name.lowercase()
+class UriTypeDeserializer : JsonDeserializer<UriType> {
+  override fun deserialize(
+    json: JsonElement,
+    type: Type,
+    context: JsonDeserializationContext,
+  ): UriType = UriType(json.asString)
+}
+
+class CodeTypeDeserializer : JsonDeserializer<CodeType> {
+  override fun deserialize(
+    json: JsonElement,
+    type: Type,
+    context: JsonDeserializationContext,
+  ): CodeType = CodeType(json.asString)
 }

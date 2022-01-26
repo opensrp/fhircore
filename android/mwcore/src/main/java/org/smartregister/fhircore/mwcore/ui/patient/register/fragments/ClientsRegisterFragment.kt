@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.mwcore.ui.patient.register
+package org.smartregister.fhircore.mwcore.ui.patient.register.fragments
 
 import android.content.Intent
 import androidx.compose.runtime.Composable
@@ -33,10 +33,11 @@ import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.mwcore.data.patient.PatientRepository
 import org.smartregister.fhircore.mwcore.data.patient.model.PatientItem
 import org.smartregister.fhircore.mwcore.ui.patient.details.QuestPatientDetailActivity
+import org.smartregister.fhircore.mwcore.ui.patient.register.OpenPatientProfile
 import org.smartregister.fhircore.mwcore.ui.patient.register.components.PatientRegisterList
 
 @AndroidEntryPoint
-class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() {
+class ClientsRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() {
 
   @Inject lateinit var patientRepository: PatientRepository
 
@@ -94,6 +95,6 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
   }
 
   companion object {
-    const val TAG = "PatientRegisterFragment"
+    const val TAG = "ClientsRegisterFragment"
   }
 }

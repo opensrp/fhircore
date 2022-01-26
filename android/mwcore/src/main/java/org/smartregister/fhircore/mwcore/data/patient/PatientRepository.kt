@@ -16,11 +16,13 @@
 
 package org.smartregister.fhircore.mwcore.data.patient
 
+import android.content.Context
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
-import com.google.android.fhir.search.StringFilterModifier
+import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.*
@@ -30,42 +32,49 @@ import org.smartregister.fhircore.engine.data.domain.util.PaginationUtil
 import org.smartregister.fhircore.engine.data.domain.util.RegisterRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.countActivePatients
 import org.smartregister.fhircore.mwcore.configuration.parser.DetailConfigParser
 import org.smartregister.fhircore.mwcore.configuration.view.PatientDetailsViewConfiguration
 import org.smartregister.fhircore.mwcore.data.patient.model.PatientItem
 import org.smartregister.fhircore.mwcore.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.mwcore.ui.patient.register.PatientItemMapper
-import org.smartregister.fhircore.mwcore.util.loadAdditionalData
+import org.smartregister.fhircore.mwcore.ui.patient.register.fragments.ClientsRegisterFragment
+import org.smartregister.fhircore.mwcore.util.*
+import org.smartregister.fhircore.mwcore.util.SharedPrefsKeys.REGISTER_CONFIG
 import timber.log.Timber
 
 class PatientRepository
 @Inject
 constructor(
+  @ApplicationContext val context: Context,
   override val fhirEngine: FhirEngine,
   override val domainMapper: PatientItemMapper,
   private val dispatcherProvider: DispatcherProvider,
   val configurationRegistry: ConfigurationRegistry
 ) : RegisterRepository<Patient, PatientItem> {
 
+  private fun getCurrentRegisterConfiguration(): RegisterConfiguration {
+    val registerConfiguration = configurationRegistry.sharedPreferencesHelper.read(REGISTER_CONFIG, ClientsRegisterFragment.TAG)
+    if (registerConfiguration == ClientsRegisterFragment.TAG) {
+      return context.loadRegisterConfig(RegisterType.CLIENT_ID)
+    }
+
+    return context.loadRegisterConfig(RegisterType.EXPOSED_INFANT_ID)
+  }
+
   override suspend fun loadData(
     query: String,
     pageNumber: Int,
     loadAll: Boolean
   ): List<PatientItem> {
+    val registerConfig = getCurrentRegisterConfiguration()
+
     return withContext(dispatcherProvider.io()) {
       val patients =
         fhirEngine.search<Patient> {
+          filterBy(registerConfig.primaryFilter!!)
           filter(Patient.ACTIVE, { value = of(true) })
-          if (query.isNotBlank()) {
-            filter(
-              Patient.NAME,
-              {
-                modifier = StringFilterModifier.CONTAINS
-                value = query.trim()
-              }
-            )
-          }
+          filterByPatientName(query)
+
           sort(Patient.NAME, Order.ASCENDING)
           count = if (loadAll) countAll().toInt() else PaginationUtil.DEFAULT_PAGE_SIZE
           from = pageNumber * PaginationUtil.DEFAULT_PAGE_SIZE
@@ -83,8 +92,18 @@ constructor(
     }
   }
 
+  //  override suspend fun countAll(): Long =
+  //    withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
+
   override suspend fun countAll(): Long =
-    withContext(dispatcherProvider.io()) { fhirEngine.countActivePatients() }
+    withContext(dispatcherProvider.io()) {
+      val registerConfig = getCurrentRegisterConfiguration()
+
+      fhirEngine.count<Condition> {
+        filterBy(registerConfig.primaryFilter!!)
+        registerConfig.secondaryFilter?.let { filterBy(it) }
+      }
+    }
 
   suspend fun fetchDemographics(patientId: String): Patient =
     withContext(dispatcherProvider.io()) { fhirEngine.load(Patient::class.java, patientId) }

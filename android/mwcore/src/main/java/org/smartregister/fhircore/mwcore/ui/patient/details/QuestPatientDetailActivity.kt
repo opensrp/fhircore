@@ -131,7 +131,7 @@ class QuestPatientDetailActivity :
 
   fun getRegistrationForm(): String {
     return configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
-      configClassification = MwCoreConfigClassification.PATIENT_REGISTER
+      configClassification = MwCoreConfigClassification.PATIENT_REGISTER_CLIENT
     )
       .registrationForm
   }
