@@ -150,7 +150,11 @@ class CustomPhotoCaptureFactory(
       }
 
       override fun displayValidationResult(validationResult: ValidationResult) {
-        // Custom validation message
+        lifecycleScope.launchWhenResumed {
+          errorTextView.text =
+            if (validationResult.getSingleStringValidationMessage() == "") null
+            else validationResult.getSingleStringValidationMessage()
+        }
       }
 
       override fun setReadOnly(isReadOnly: Boolean) {
