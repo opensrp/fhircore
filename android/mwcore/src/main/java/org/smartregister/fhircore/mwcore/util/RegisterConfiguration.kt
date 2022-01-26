@@ -16,13 +16,20 @@
 
 package org.smartregister.fhircore.mwcore.util
 
-import org.smartregister.fhircore.engine.configuration.ConfigClassification
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Enumerations
 
-enum class MwCoreConfigClassification : ConfigClassification {
-  PATIENT_REGISTER_CLIENT,
-  PATIENT_REGISTER_EXPOSED_INFANT,
-  PATIENT_REGISTER_ROW,
-  TEST_RESULT_DETAIL_VIEW,
-  PATIENT_DETAILS_VIEW;
-  override val classification: String = name.lowercase()
-}
+data class RegisterConfiguration(
+  val id: String,
+  val primaryFilter: SearchFilter?,
+  val secondaryFilter: SearchFilter?
+)
+
+/** Only TokenClientParam, and StringClientParam supported as Register Primary Filter. */
+data class SearchFilter(
+  val key: String,
+  val filterType: Enumerations.SearchParamType,
+  val valueType: Enumerations.DataType,
+  val valueCoding: Coding? = null,
+  val valueString: String? = null
+)

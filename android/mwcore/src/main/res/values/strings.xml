@@ -11,6 +11,9 @@
 
     <string name="edit_patient_info">Edit Info</string>
 
+    <string name="register_clients">Clients</string>
+    <string name="register_exposed_infants">Exposed Infants</string>
+
     <string name="menu_register">Register</string>
     <string name="menu_appointments">Appointments</string>
     <string name="menu_tracing">Tracing</string>

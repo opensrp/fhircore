@@ -6,14 +6,38 @@
       {
         "workflowPoint": "registration",
         "resource": "RegisterViewConfiguration",
-        "classification": "patient_register",
-        "description": "Configurations for patient register"
+        "classification": "patient_register_client",
+        "description": "Configurations for patient register of a client"
+      },
+      {
+        "workflowPoint": "registration",
+        "resource": "RegisterViewConfiguration",
+        "classification": "patient_register_exposed_infant",
+        "description": "Configurations for patient register of an exposed infant"
       },
       {
         "workflowPoint": "login",
         "resource": "LoginViewConfiguration",
         "classification": "login",
         "description": "Configurations for login"
+      },
+      {
+        "workflowPoint": "patient_register_row",
+        "resource": "PatientRegisterRowViewConfiguration",
+        "classification": "patient_register_row",
+        "description": "Configurations for Patient Row"
+      },
+      {
+        "workflowPoint": "patient_details_view",
+        "resource": "PatientDetailsViewConfiguration",
+        "classification": "patient_details_view",
+        "description": "Configurations for patient details view"
+      },
+      {
+        "workflowPoint": "test_result_detail_view",
+        "resource": "DetailViewConfiguration",
+        "classification": "test_result_detail_view",
+        "description": "Configurations for Test Results Details"
       }
     ]
   }

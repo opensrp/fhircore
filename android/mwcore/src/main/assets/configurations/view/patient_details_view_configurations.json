@@ -1,0 +1,8 @@
+[
+  {
+    "appId": "mw-core",
+    "classification": "patient_details_view",
+    "contentTitle": "Responses",
+    "parser": "QuestDetailConfigParser"
+  }
+]
