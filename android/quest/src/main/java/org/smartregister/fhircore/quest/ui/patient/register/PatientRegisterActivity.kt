@@ -96,7 +96,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
 
     files.forEach { fileName ->
       val jsonString = assets.open(fileName).bufferedReader().readText()
-      val questionnaire = FhirContext.forR4().newJsonParser().parseResource(jsonString)
+      val questionnaire = FhirContext.forR4Cached().newJsonParser().parseResource(jsonString)
 
       GlobalScope.launch { defaultRepository.addOrUpdate(questionnaire as Resource) }
     }
