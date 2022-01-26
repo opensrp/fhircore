@@ -126,7 +126,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     // Setup sample resources
 
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val qJson =
       context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
 

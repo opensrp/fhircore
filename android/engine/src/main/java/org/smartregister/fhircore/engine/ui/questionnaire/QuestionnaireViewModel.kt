@@ -311,7 +311,7 @@ constructor(
     val resourcesList = mutableListOf<Resource>()
 
     intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.run {
-      val jsonParser = FhirContext.forR4().newJsonParser()
+      val jsonParser = FhirContext.forR4Cached().newJsonParser()
       forEach { resourcesList.add(jsonParser.parseResource(it) as Resource) }
     }
 
@@ -326,7 +326,7 @@ constructor(
                 system = QuestionnaireActivity.WHO_IDENTIFIER_SYSTEM
               }
             )
-          Timber.e(FhirContext.forR4().newJsonParser().encodeResourceToString(this))
+          Timber.e(FhirContext.forR4Cached().newJsonParser().encodeResourceToString(this))
         }
 
         resourcesList.add(this)
