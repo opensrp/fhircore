@@ -67,7 +67,7 @@ fun <T> Context.loadResourceTemplate(id: String, clazz: Class<T>, data: Map<Stri
   data.entries.forEach { it.value?.let { v -> json = json.replace(it.key, v) } }
 
   return if (Resource::class.java.isAssignableFrom(clazz))
-    FhirContext.forR4().newJsonParser().parseResource(json) as T
+    FhirContext.forR4Cached().newJsonParser().parseResource(json) as T
   else Gson().fromJson(json, clazz)
 }
 

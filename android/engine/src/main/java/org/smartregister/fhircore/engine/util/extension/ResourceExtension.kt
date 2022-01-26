@@ -62,7 +62,7 @@ fun Base?.valueToString(): String {
 fun CodeableConcept.stringValue(): String =
   this.text ?: this.codingFirstRep.display ?: this.codingFirstRep.code
 
-fun Resource.toJson(parser: IParser = FhirContext.forR4().newJsonParser()): String =
+fun Resource.toJson(parser: IParser = FhirContext.forR4Cached().newJsonParser()): String =
   parser.encodeResourceToString(this)
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
@@ -74,7 +74,7 @@ fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   if (this is Patient) {
     extension = this.extension
   }
-  val jsonParser = FhirContext.forR4().newJsonParser()
+  val jsonParser = FhirContext.forR4Cached().newJsonParser()
   val stringJson = toJson(jsonParser)
   val originalResourceJson = JSONObject(stringJson)
 

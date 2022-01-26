@@ -100,7 +100,7 @@ class SimpleDetailsActivityTest : RobolectricTest() {
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(g6pdStructureMap, "PatientRegistration")
 
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
     System.out.println(mapString)
@@ -135,7 +135,7 @@ class SimpleDetailsActivityTest : RobolectricTest() {
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(g6pdStructureMap, "TestResults")
 
-    val iParser: IParser = FhirContext.forR4().newJsonParser()
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
     val mapString = iParser.encodeResourceToString(map)
 
     System.out.println(mapString)

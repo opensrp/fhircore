@@ -4,9 +4,6 @@
 
     <string name="back_to_clients">Rudi kwa orodha ya wateja</string>
     <string name="test_results">Matokeo</string>
-    <string name="run_cql">Run CQL</string>
-    <string name="run_cql_log">CQL FULL LOG</string>
-    <string name="run_cql_output">CQL OUTPUT DATA</string>
 
     <string name="edit_patient_info">Hariri</string>
 
