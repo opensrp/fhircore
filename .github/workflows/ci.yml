@@ -15,6 +15,20 @@ env:
  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate keystore properties file
+        run: echo $KEYSTORE_CREDENTIALS > keystore.properties
+
+      - name: Generate keystore file
+        run: echo $KEYSTORE_FILE > keystore.jks
+        working-directory: android
+
+      - name: Generate local.properties file
+        run: echo $LOCAL_PROPERTIES_FILE > local.properties
+        working-directory: android
+        
   engine-tests:
     runs-on: ubuntu-latest
     steps:
