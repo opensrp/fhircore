@@ -26,7 +26,7 @@ class QuestLoginService @Inject constructor() : LoginService {
 
   override lateinit var loginActivity: LoginActivity
 
-  override fun navigateToHome() {
+  override fun navigateToHome(canSetOtp: Boolean) {
     val intent =
       Intent(loginActivity, PatientRegisterActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -35,5 +35,9 @@ class QuestLoginService @Inject constructor() : LoginService {
       startActivity(intent)
       finish()
     }
+  }
+
+  override fun navigateToOtpLogin() {
+    // Do nothing
   }
 }

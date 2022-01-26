@@ -131,4 +131,8 @@
     <string name="bullet_character">\u00b7</string>
     <string name="overdue">Overdue</string>
     <string name="so_and_so_family">%1$s Family</string>
+
+    <string name="app_name_ecbis">eCBIS</string>
+    <string name="enter_pin_w4vv01">Enter pin for W4VV-01</string>
+    <string name="forgot_pin">Forgot pin?</string>
 </resources>

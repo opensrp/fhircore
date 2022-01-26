@@ -30,6 +30,7 @@ class LoginViewConfiguration(
   var applicationVersionCode: Int = 1,
   var darkMode: Boolean = true,
   var showLogo: Boolean = false,
+  var enableOtp: Boolean = false
 ) : Configuration
 /**
  * A function providing a DSL for configuring [LoginViewConfiguration]. The configurations provided
@@ -50,7 +51,8 @@ fun loginViewConfigurationOf(
   applicationVersion: String = "0.0.1",
   applicationVersionCode: Int = 1,
   darkMode: Boolean = false,
-  showLogo: Boolean = false
+  showLogo: Boolean = false,
+  enableOtp: Boolean = false
 ) =
   LoginViewConfiguration(
     appId = appId,
@@ -59,5 +61,6 @@ fun loginViewConfigurationOf(
     applicationVersion = applicationVersion,
     applicationVersionCode = applicationVersionCode,
     darkMode = darkMode,
-    showLogo = showLogo
+    showLogo = showLogo,
+    enableOtp = enableOtp
   )

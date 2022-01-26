@@ -94,4 +94,6 @@
     <string name="no">No</string>
     <string name="yes">Yes</string>
     <string name="required_constraint_validation_error_msg">There is no response to the required field.</string>
+    <string name="set_pin">Set Pin</string>
+    <string name="set_pin_message">CHA will use this pin to login</string>
 </resources>

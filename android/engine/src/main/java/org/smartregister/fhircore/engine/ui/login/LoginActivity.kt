@@ -29,6 +29,7 @@ import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposab
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.OTP_PIN
 
 @AndroidEntryPoint
 class LoginActivity :
@@ -44,7 +45,14 @@ class LoginActivity :
     super.onCreate(savedInstanceState)
     loginService.loginActivity = this
     loginViewModel.apply {
-      navigateToHome.observe(this@LoginActivity, { loginService.navigateToHome() })
+      navigateToHome.observe(
+        this@LoginActivity,
+        {
+          loginService.navigateToHome(
+            loginViewModel.loginViewConfiguration.value?.enableOtp == true
+          )
+        }
+      )
       launchDialPad.observe(this@LoginActivity, { if (!it.isNullOrEmpty()) launchDialPad(it) })
       // loginUser() TODO commented out to make user login everytime. Make it configurable via
       // settings
@@ -52,6 +60,13 @@ class LoginActivity :
 
     if (configurationRegistry.isAppIdInitialized()) {
       configureViews(configurationRegistry.retrieveConfiguration(AppConfigClassification.LOGIN))
+    }
+
+    // Check if Otp enabled and stored then move to otp login
+    val isOtpEnabled = loginViewModel.loginViewConfiguration.value?.enableOtp ?: false
+    val lastOtp = loginViewModel.sharedPreferences.read(OTP_PIN, "")
+    if (isOtpEnabled && !lastOtp.isNullOrEmpty()) {
+      loginService.navigateToOtpLogin()
     }
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }

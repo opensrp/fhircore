@@ -18,5 +18,6 @@ package org.smartregister.fhircore.engine.ui.login
 
 interface LoginService {
   var loginActivity: LoginActivity
-  fun navigateToHome()
+  fun navigateToHome(canSetOtp: Boolean = false)
+  fun navigateToOtpLogin()
 }

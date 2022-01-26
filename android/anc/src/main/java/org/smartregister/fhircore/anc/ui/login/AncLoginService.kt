@@ -19,16 +19,48 @@ package org.smartregister.fhircore.anc.ui.login
 import android.content.Intent
 import javax.inject.Inject
 import org.smartregister.fhircore.anc.ui.family.register.FamilyRegisterActivity
+import org.smartregister.fhircore.anc.ui.otp.OtpLoginActivity
+import org.smartregister.fhircore.anc.ui.otp.OtpSetupActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
+import org.smartregister.fhircore.engine.util.OTP_PIN
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
-class AncLoginService @Inject constructor() : LoginService {
+class AncLoginService @Inject constructor(val sharedPreferencesHelper: SharedPreferencesHelper) :
+  LoginService {
 
   override lateinit var loginActivity: LoginActivity
 
-  override fun navigateToHome() {
+  override fun navigateToHome(canSetOtp: Boolean) {
+    // Todo: check whether to setup PIN     or moveTo Register Home
+    if (canSetOtp && sharedPreferencesHelper.read(OTP_PIN, "").isNullOrEmpty()) {
+      navigateToOtpSetup()
+    } else {
+      val intent =
+        Intent(loginActivity, FamilyRegisterActivity::class.java).apply {
+          addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+      loginActivity.run {
+        startActivity(intent)
+        finish()
+      }
+    }
+  }
+
+  override fun navigateToOtpLogin() {
     val intent =
-      Intent(loginActivity, FamilyRegisterActivity::class.java).apply {
+      Intent(loginActivity, OtpLoginActivity::class.java).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      }
+    loginActivity.run {
+      startActivity(intent)
+      finish()
+    }
+  }
+
+  private fun navigateToOtpSetup() {
+    val intent =
+      Intent(loginActivity, OtpSetupActivity::class.java).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       }
     loginActivity.run {
