@@ -13,12 +13,14 @@
         android:orientation="horizontal">
 
         <TextView
+            style="?attr/headerTextAppearanceQuestionnaire"
             android:id="@+id/tv_prefix"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone" />
 
         <TextView
+            style="?attr/headerTextAppearanceQuestionnaire"
             android:id="@+id/tv_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -38,8 +40,8 @@
         android:visibility="gone" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_take_photo"
         style="@style/Widget.AppCompat.Button.Borderless"
+        android:id="@+id/btn_take_photo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:letterSpacing="0"
@@ -49,5 +51,10 @@
         app:icon="@drawable/ic_baseline_photo_camera"
         app:iconPadding="@dimen/item_margin_horizontal"
         app:iconTint="@color/colorPrimaryLight" />
+
+    <include
+        android:id="@+id/error_text_view"
+        layout="@layout/input_error_text_view"
+        />
 
 </LinearLayout>
