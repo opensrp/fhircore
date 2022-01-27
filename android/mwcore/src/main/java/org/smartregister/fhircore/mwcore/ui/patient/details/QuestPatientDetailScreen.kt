@@ -153,21 +153,6 @@ fun rememberPagerState(
   )
 }
 
-@ExperimentalPagerApi
-@Composable
-fun HorizontalPager(
-  state: PagerState,
-  modifier: Modifier = Modifier,
-  reverseLayout: Boolean = false,
-  itemSpacing: Dp = 0.dp,
-  dragEnabled: Boolean = true,
-  flingBehavior: FlingBehavior = PagerDefaults.defaultPagerFlingConfig(state),
-  verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
-  horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
-  content: @Composable PagerScope.(page: Int) -> Unit,
-){
-
-}
 
 private val tabData = listOf(
   TabItem.Demographic,
@@ -205,13 +190,9 @@ fun TabWithPager() {
       }
     }
 
-    HorizontalPager(
-      state = pagerState,
-      modifier = Modifier.weight(1f),
-      dragEnabled = true,
-    ) { index ->
-      tabData[tabIndex].screenToLoad()
-
+    HorizontalPager(state = pagerState) {
+      page: Int ->
+      tabData[page].screenToLoad()
     }
   }
 }
@@ -414,5 +395,3 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
 @Preview
 @Composable
 fun TabPreview(){}
-
-

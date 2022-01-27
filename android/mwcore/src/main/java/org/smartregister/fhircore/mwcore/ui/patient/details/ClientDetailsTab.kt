@@ -40,12 +40,12 @@ sealed class TabItem(
 @Composable
 fun DemographicsTab() {
     Column(
-        content = {
-            Text(text = "You are in Demographics Screen")
-        }, modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
-    )
+    ){
+        Text(text = "You are in Demographics Screen")
+    }
 }
 
 
@@ -53,23 +53,24 @@ fun DemographicsTab() {
 @Composable
 fun VisitTab(){
     Column(
-        content = {
-            Text(text = "You are in Visit Screen")
-        }, modifier = Modifier.fillMaxSize(),
+         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     )
+    {
+        Text(text = "You are in Visit Screen")
+    }
 }
 
 @Composable
 fun HistoryTab(){
     Column(
-        content = {
-            Text(text = "You are in History Screen")
-        }, modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
-    )
+    ){
+        Text(text = "You are in History Screen")
+    }
 }
 
  private  val tabData = listOf(
