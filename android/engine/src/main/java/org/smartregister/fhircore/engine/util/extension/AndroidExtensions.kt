@@ -35,8 +35,8 @@ fun Context.showToast(message: String, toastLength: Int = Toast.LENGTH_LONG) =
   Toast.makeText(this, message, toastLength).show()
 
 fun Activity.refresh() {
-  startActivity(Intent(this, this.javaClass))
   finish()
+  startActivity(Intent(this, this.javaClass))
 }
 
 fun Context.setAppLocale(languageTag: String): Configuration? {
