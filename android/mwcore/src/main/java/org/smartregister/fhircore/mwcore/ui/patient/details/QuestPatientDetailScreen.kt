@@ -165,60 +165,62 @@ fun HorizontalPager(
   verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
   horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
   content: @Composable PagerScope.(page: Int) -> Unit,
-){}
+){
 
+}
+
+private val tabData = listOf(
+  TabItem.Demographic,
+  TabItem.Visit,
+  TabItem.History
+)
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun TabWithPager(questPatientDetailViewModel: QuestPatientDetailViewModel) {
-  val tabData = listOf(
-    "Details" to Icons.Filled.Feed,
-    "Visit" to Icons.Filled.DirectionsRun,
-    "History" to Icons.Filled.History,
-  )
+fun TabWithPager() {
   val pagerState = rememberPagerState(
     pageCount = tabData.size,
     infiniteLoop = true,
-    initialPage = 1,
+    initialPage = 0
   )
   val tabIndex = pagerState.currentPage
   val coroutineScope = rememberCoroutineScope()
+
   Column {
     TabRow(
       selectedTabIndex = tabIndex,
 
     ) {
-      tabData.forEachIndexed { index, pair ->
+      tabData.forEachIndexed { index, tabItem:TabItem ->
         Tab(selected = tabIndex == index, onClick = {
+          //onPageSelected(tabItem)
           coroutineScope.launch {
             pagerState.animateScrollToPage(index)
           }
-        }, text = {
-          Text(text = pair.first)
+        },text = {
+          Text(text = tabItem.title)
         }, icon = {
-          Icon(imageVector = pair.second, contentDescription = null)
+          Icon(tabItem.icon, "")
         })
       }
     }
+
     HorizontalPager(
       state = pagerState,
-      modifier = Modifier.weight(1f)
+      modifier = Modifier.weight(1f),
+      dragEnabled = true,
     ) { index ->
-      Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-      ) {
-        Text(
-          text = tabData[index].first,
-        )
-      }
+      tabData[tabIndex].screenToLoad()
+
     }
   }
 }
 
 
-//chisomoEND
+
+
+
+//chisomoEnd
 
 
 /*@Composable
@@ -282,7 +284,9 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
           color = colorResource(id = R.color.white),
           fontSize = 18.sp,
           fontWeight = FontWeight.Bold,
-          modifier = Modifier.testTag(PATIENT_NAME).align(Alignment.CenterVertically)
+          modifier = Modifier
+            .testTag(PATIENT_NAME)
+            .align(Alignment.CenterVertically)
         )
 
 
@@ -313,7 +317,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: QuestPatientDetailView
         }
 
       }
-      TabWithPager(questPatientDetailViewModel)
+      TabWithPager()
 
       /* Forms section
       Column(
