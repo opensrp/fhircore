@@ -53,10 +53,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: property_configs
-          path: android
-    
-      - name: Display structure of downloaded files
-        run: ls -R     
+          path: android   
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -91,9 +88,8 @@ jobs:
       - name: Download configuration setup artifacts 
         uses: actions/download-artifact@v2
         with:
-          name: property_configs 
-          
-      - run: cp property_configs/* .
+          name: property_configs
+          path: android   
       
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -128,9 +124,8 @@ jobs:
       - name: Download configuration setup artifacts 
         uses: actions/download-artifact@v2
         with:
-          name: property_configs 
-          
-      - run: cp property_configs/* .
+          name: property_configs
+          path: android   
       
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -165,9 +160,8 @@ jobs:
       - name: Download configuration setup artifacts 
         uses: actions/download-artifact@v2
         with:
-          name: property_configs 
-          
-      - run: cp property_configs/* .
+          name: property_configs
+          path: android
       
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
