@@ -31,26 +31,9 @@ fun Questionnaire.cqfLibraryIds() =
   }
 
 fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent? {
-  return item.find(linkId, null)
-}
-
-private fun List<Questionnaire.QuestionnaireItemComponent>.find(
-  linkId: String,
-  default: Questionnaire.QuestionnaireItemComponent?
-): Questionnaire.QuestionnaireItemComponent? {
-  var result = default
-  run loop@{
-    forEach {
-      if (it.linkId == linkId) {
-        result = it
-        return@loop
-      } else if (it.item.isNotEmpty()) {
-        result = it.item.find(linkId, result)
-      }
-    }
-  }
-
-  return result
+  val result = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
+  item.find(FieldType.LINK_ID, linkId, result)
+  return result.firstOrNull()
 }
 
 fun QuestionnaireResponse.find(
@@ -59,7 +42,7 @@ fun QuestionnaireResponse.find(
   return item.find(linkId, null)
 }
 
-private fun List<QuestionnaireResponse.QuestionnaireResponseItemComponent>.find(
+fun List<QuestionnaireResponse.QuestionnaireResponseItemComponent>.find(
   linkId: String,
   default: QuestionnaireResponse.QuestionnaireResponseItemComponent?
 ): QuestionnaireResponse.QuestionnaireResponseItemComponent? {
@@ -78,4 +61,47 @@ private fun List<QuestionnaireResponse.QuestionnaireResponseItemComponent>.find(
   }
 
   return result
+}
+
+enum class FieldType {
+  DEFINITION,
+  LINK_ID,
+  TYPE
+}
+
+fun Questionnaire.find(
+  fieldType: FieldType,
+  value: String
+): List<Questionnaire.QuestionnaireItemComponent> {
+  val result = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
+  item.find(fieldType, value, result)
+  return result
+}
+
+fun List<Questionnaire.QuestionnaireItemComponent>.find(
+  fieldType: FieldType,
+  value: String,
+  target: MutableList<Questionnaire.QuestionnaireItemComponent>
+) {
+  forEach {
+    when (fieldType) {
+      FieldType.DEFINITION -> {
+        if (it.definition?.contentEquals(value, true) == true) {
+          target.add(it)
+        }
+      }
+      FieldType.LINK_ID -> {
+        if (it.linkId == value) {
+          target.add(it)
+        }
+      }
+      FieldType.TYPE -> {
+        if (it.type == Questionnaire.QuestionnaireItemType.valueOf(value)) target.add(it)
+      }
+    }
+
+    if (it.item.isNotEmpty()) {
+      it.item.find(fieldType, value, target)
+    }
+  }
 }
