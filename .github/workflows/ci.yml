@@ -31,7 +31,7 @@ jobs:
         run: echo $KEYSTORE_FILE > property_configs/keystore.jks
         
       - name: Upload setup artifacts
-      - uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v2
         with:
           name: property_configs
           path: property_configs
