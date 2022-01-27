@@ -18,14 +18,23 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     steps:
+      - name: Create properties folder
+        run: mkdir property_configs
+        
       - name: Generate local.properties file
-        run: echo $LOCAL_PROPERTIES_FILE > local.properties
+        run: echo $LOCAL_PROPERTIES_FILE > property_configs/local.properties
         
       - name: Generate keystore properties file
-        run: echo $KEYSTORE_CREDENTIALS > keystore.properties
+        run: echo $KEYSTORE_CREDENTIALS > property_configs/keystore.properties
 
       - name: Generate keystore file
-        run: echo $KEYSTORE_FILE > keystore.jks
+        run: echo $KEYSTORE_FILE > property_configs/keystore.jks
+        
+      - name: Upload setup artifacts
+      - uses: actions/upload-artifact@v2
+        with:
+          name: property_configs
+          path: property_configs
         
   engine-tests:
     runs-on: ubuntu-latest
@@ -39,6 +48,16 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
+       
+      - name: Download configuration setup artifacts 
+        uses: actions/download-artifact@v2
+        with:
+          name: property_configs 
+          
+      - run: cp property_configs/* .    
+    
+      - name: Display structure of downloaded files
+        run: ls -R     
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -70,6 +89,13 @@ jobs:
         with:
           java-version: 11
 
+      - name: Download configuration setup artifacts 
+        uses: actions/download-artifact@v2
+        with:
+          name: property_configs 
+          
+      - run: cp property_configs/* .
+      
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: android
@@ -99,7 +125,14 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-
+       
+      - name: Download configuration setup artifacts 
+        uses: actions/download-artifact@v2
+        with:
+          name: property_configs 
+          
+      - run: cp property_configs/* .
+      
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: android
@@ -129,7 +162,14 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-
+       
+      - name: Download configuration setup artifacts 
+        uses: actions/download-artifact@v2
+        with:
+          name: property_configs 
+          
+      - run: cp property_configs/* .
+      
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: android
